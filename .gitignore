@@ -1,0 +1,57 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+.output
+dist
+dist-ssr
+out
+
+# Turbo
+.turbo
+
+# TanStack (from old WebSite)
+.vinxi
+.tanstack/**
+.nitro
+
+# Lock files (pnpm uses pnpm-lock.yaml, others are generated)
+package-lock.json
+bun.lock
+bun.lockb
+yarn.lock
+
+# Environment
+*.local
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Kilo / ZCode
+.kilo
+.zcode
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars

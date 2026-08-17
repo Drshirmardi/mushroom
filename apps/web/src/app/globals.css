@@ -1,0 +1,205 @@
+@import "tailwindcss" source(none);
+@source "../";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-3xl: calc(var(--radius) + 12px);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary-glow: var(--primary-glow);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-gold: var(--gold);
+    --color-border: var(--border);
+    --color-ring: var(--ring);
+    --font-sans: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
+    --font-serif: "EB Garamond", serif;
+}
+
+:root {
+    --radius: 0.875rem;
+    /* Warm, healing palette: deep teal + warm cream + soft gold */
+    --background: oklch(0.985 0.008 90);
+    --foreground: oklch(0.24 0.03 200);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.24 0.03 200);
+    --primary: oklch(0.44 0.07 195);
+    --primary-foreground: oklch(0.985 0.008 90);
+    --primary-glow: oklch(0.62 0.11 190);
+    --secondary: oklch(0.94 0.02 90);
+    --secondary-foreground: oklch(0.28 0.04 200);
+    --muted: oklch(0.95 0.015 95);
+    --muted-foreground: oklch(0.5 0.02 210);
+    --accent: oklch(0.93 0.04 80);
+    --accent-foreground: oklch(0.3 0.05 200);
+    --gold: oklch(0.72 0.14 75);
+    --border: oklch(0.9 0.015 100);
+    --ring: oklch(0.44 0.07 195);
+
+    --gradient-hero: linear-gradient(135deg, oklch(0.44 0.07 195) 0%, oklch(0.55 0.09 180) 60%, oklch(0.72 0.14 75) 100%);
+    --gradient-soft: linear-gradient(180deg, oklch(0.985 0.008 90) 0%, oklch(0.95 0.02 95) 100%);
+    --shadow-soft: 0 8px 30px -12px color-mix(in oklab, var(--primary) 22%, transparent);
+    --shadow-glow: 0 20px 60px -20px color-mix(in oklab, var(--primary-glow) 40%, transparent);
+    --shadow-premium: 0 1px 2px color-mix(in oklab, var(--primary) 6%, transparent), 0 12px 32px -16px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+@layer base {
+    * {
+        border-color: var(--color-border);
+    }
+
+    html {
+        direction: rtl;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--color-background);
+        color: var(--color-foreground);
+        font-family: var(--font-sans);
+        font-feature-settings: "ss01";
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        letter-spacing: -0.015em;
+    }
+
+    .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        display: inline-block;
+        line-height: 1;
+        vertical-align: middle;
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+}
+
+@utility gradient-hero {
+    background-image: var(--gradient-hero);
+}
+
+@utility gradient-soft {
+    background-image: var(--gradient-soft);
+}
+
+@utility shadow-soft {
+    box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-glow {
+    box-shadow: var(--shadow-glow);
+}
+
+@utility shadow-premium {
+    box-shadow: var(--shadow-premium);
+}
+
+@utility bg-dots {
+    background-image: radial-gradient(color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+@utility press {
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease, background-color 200ms ease, opacity 200ms ease;
+}
+
+
+@layer utilities {
+    .press:active {
+        transform: scale(0.97);
+    }
+
+    .rise {
+        animation: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .fade-up-1 {
+        animation-delay: 60ms;
+    }
+
+    .fade-up-2 {
+        animation-delay: 140ms;
+    }
+
+    .fade-up-3 {
+        animation-delay: 220ms;
+    }
+
+    .fade-up-4 {
+        animation-delay: 300ms;
+    }
+
+    .fade-up-5 {
+        animation-delay: 380ms;
+    }
+
+    .float-slow {
+        animation: floaty 9s ease-in-out infinite;
+    }
+
+    .float-slower {
+        animation: floaty 13s ease-in-out infinite reverse;
+    }
+
+    .glass {
+        background-color: color-mix(in oklab, var(--card) 72%, transparent);
+        backdrop-filter: blur(16px) saturate(140%);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes floaty {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+
+    50% {
+        transform: translateY(-18px) translateX(10px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .rise,
+    .float-slow,
+    .float-slower {
+        animation: none !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}

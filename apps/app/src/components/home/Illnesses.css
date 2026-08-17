@@ -1,0 +1,72 @@
+.illnesses {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 16px;
+}
+
+.illnesses__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.illnesses__dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #fed9ff, #c853ff);
+}
+
+.illnesses__header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.illnesses__header p {
+    margin: 4px 0 0;
+    color: #8b8b8b;
+    font-size: 12px;
+}
+
+.illnesses__grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 24px 14px;
+}
+
+@media(min-width:768px) {
+    .illnesses__grid {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+}
+
+.illness {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #031a32;
+}
+
+.illness__icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.illness__icon img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.illness span {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 22px;
+    white-space: nowrap;
+}
