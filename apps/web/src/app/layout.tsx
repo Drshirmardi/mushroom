@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -36,7 +37,10 @@ export default function RootLayout({
                     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
                 />
             </head>
-            <body>{children}</body>
+            <body>
+                {children}
+                <Toaster dir="rtl" position="top-center" richColors closeButton />
+            </body>
         </html>
     );
 }
