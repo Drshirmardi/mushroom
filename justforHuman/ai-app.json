@@ -1,0 +1,548 @@
+{
+    "metadata": {
+        "visual": {
+            "presentation": {
+                "themes": {
+                    "43f39fc8-4728-4f34-ad3c-7b89962ef1ff": {
+                        "themeColors": {
+                            "primaryColor": "#1a1a1a",
+                            "secondaryColor": "#7a7a7a",
+                            "backgroundColor": "#ffffff",
+                            "textColor": "#1a1a1a",
+                            "primaryTextColor": "#ffffff"
+                        },
+                        "template": "basic",
+                        "isDefaultTheme": true,
+                        "palette": {
+                            "primary": {
+                                "0": "#000000",
+                                "5": "#001417",
+                                "10": "#001f24",
+                                "15": "#002b30",
+                                "20": "#00363d",
+                                "25": "#00424a",
+                                "30": "#004f58",
+                                "35": "#005b66",
+                                "40": "#006874",
+                                "50": "#008391",
+                                "60": "#00a0b0",
+                                "70": "#22bccf",
+                                "80": "#4fd8eb",
+                                "90": "#97f0ff",
+                                "95": "#d0f8ff",
+                                "98": "#edfcff",
+                                "99": "#f6feff",
+                                "100": "#ffffff"
+                            },
+                            "secondary": {
+                                "0": "#000000",
+                                "5": "#001417",
+                                "10": "#051f23",
+                                "15": "#10292d",
+                                "20": "#1c3438",
+                                "25": "#273f43",
+                                "30": "#334b4f",
+                                "35": "#3e565b",
+                                "40": "#4a6267",
+                                "50": "#637b80",
+                                "60": "#7c959a",
+                                "70": "#96b0b4",
+                                "80": "#b1cbd0",
+                                "90": "#cde7ec",
+                                "95": "#dbf6fa",
+                                "98": "#edfcff",
+                                "99": "#f6feff",
+                                "100": "#ffffff"
+                            },
+                            "tertiary": {
+                                "0": "#000000",
+                                "5": "#030f2c",
+                                "10": "#0e1b37",
+                                "15": "#192541",
+                                "20": "#24304d",
+                                "25": "#2f3b58",
+                                "30": "#3b4664",
+                                "35": "#465271",
+                                "40": "#525e7d",
+                                "50": "#6b7697",
+                                "60": "#8490b2",
+                                "70": "#9faace",
+                                "80": "#bac6ea",
+                                "90": "#dae2ff",
+                                "95": "#eef0ff",
+                                "98": "#faf8ff",
+                                "99": "#fefbff",
+                                "100": "#ffffff"
+                            },
+                            "neutral": {
+                                "0": "#000000",
+                                "5": "#0e1212",
+                                "10": "#191c1d",
+                                "15": "#232627",
+                                "20": "#2e3132",
+                                "25": "#393c3d",
+                                "30": "#444748",
+                                "35": "#505354",
+                                "40": "#5c5f5f",
+                                "50": "#747878",
+                                "60": "#8e9192",
+                                "70": "#a9acac",
+                                "80": "#c4c7c7",
+                                "90": "#e1e3e3",
+                                "95": "#eff1f1",
+                                "98": "#f8fafa",
+                                "99": "#fafdfd",
+                                "100": "#ffffff"
+                            },
+                            "neutralVariant": {
+                                "0": "#000000",
+                                "5": "#091214",
+                                "10": "#141d1f",
+                                "15": "#1e2729",
+                                "20": "#293234",
+                                "25": "#343d3f",
+                                "30": "#3f484a",
+                                "35": "#4b5456",
+                                "40": "#576062",
+                                "50": "#6f797a",
+                                "60": "#899294",
+                                "70": "#a3adaf",
+                                "80": "#bfc8ca",
+                                "90": "#dbe4e6",
+                                "95": "#e9f2f4",
+                                "98": "#f2fbfd",
+                                "99": "#f6feff",
+                                "100": "#ffffff"
+                            },
+                            "error": {
+                                "0": "#000000",
+                                "5": "#2d0001",
+                                "10": "#410002",
+                                "15": "#540003",
+                                "20": "#690005",
+                                "25": "#7e0007",
+                                "30": "#93000a",
+                                "35": "#a80710",
+                                "40": "#ba1a1a",
+                                "50": "#de3730",
+                                "60": "#ff5449",
+                                "70": "#ff897d",
+                                "80": "#ffb4ab",
+                                "90": "#ffdad6",
+                                "95": "#ffedea",
+                                "98": "#fff8f7",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            }
+                        }
+                    },
+                    "d2fb9794-1a3a-40bb-aae9-8a4b87f69cf8": {
+                        "template": "basic",
+                        "templateAdditionalOptions": {},
+                        "palette": {
+                            "primary": {
+                                "0": "#000000",
+                                "5": "#001509",
+                                "10": "#002111",
+                                "15": "#002d19",
+                                "20": "#003921",
+                                "25": "#004529",
+                                "30": "#005231",
+                                "35": "#005f3a",
+                                "40": "#006d43",
+                                "50": "#168857",
+                                "60": "#3ba36f",
+                                "70": "#59be88",
+                                "80": "#75daa2",
+                                "90": "#92f7bd",
+                                "95": "#c0ffd6",
+                                "98": "#e9ffed",
+                                "99": "#f5fff5",
+                                "100": "#ffffff"
+                            },
+                            "secondary": {
+                                "0": "#000000",
+                                "5": "#02150a",
+                                "10": "#0b1f14",
+                                "15": "#162a1e",
+                                "20": "#213528",
+                                "25": "#2c4033",
+                                "30": "#374b3e",
+                                "35": "#425749",
+                                "40": "#4e6355",
+                                "50": "#667c6d",
+                                "60": "#809686",
+                                "70": "#9ab1a0",
+                                "80": "#b5ccbb",
+                                "90": "#d1e8d6",
+                                "95": "#dff7e4",
+                                "98": "#e9ffed",
+                                "99": "#f5fff5",
+                                "100": "#ffffff"
+                            },
+                            "tertiary": "",
+                            "error": {
+                                "0": "#000000",
+                                "5": "#2d0001",
+                                "10": "#410002",
+                                "15": "#540003",
+                                "20": "#690005",
+                                "25": "#7e0007",
+                                "30": "#93000a",
+                                "35": "#a80710",
+                                "40": "#ba1a1a",
+                                "50": "#de3730",
+                                "60": "#ff5449",
+                                "70": "#ff897d",
+                                "80": "#ffb4ab",
+                                "90": "#ffdad6",
+                                "95": "#ffedea",
+                                "98": "#fff8f7",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            },
+                            "neutral": {
+                                "0": "#000000",
+                                "5": "#0f120f",
+                                "10": "#191c1a",
+                                "15": "#232724",
+                                "20": "#2e312e",
+                                "25": "#393c39",
+                                "30": "#444744",
+                                "35": "#505350",
+                                "40": "#5c5f5c",
+                                "50": "#757874",
+                                "60": "#8f918e",
+                                "70": "#a9aca8",
+                                "80": "#c5c7c3",
+                                "90": "#e1e3df",
+                                "95": "#f0f1ed",
+                                "98": "#f8faf5",
+                                "99": "#fbfdf8",
+                                "100": "#ffffff"
+                            },
+                            "neutralVariant": {
+                                "0": "#000000",
+                                "5": "#0b130e",
+                                "10": "#161d18",
+                                "15": "#202822",
+                                "20": "#2a322c",
+                                "25": "#353d37",
+                                "30": "#404942",
+                                "35": "#4c544e",
+                                "40": "#58605a",
+                                "50": "#717972",
+                                "60": "#8a938b",
+                                "70": "#a5ada5",
+                                "80": "#c0c9c0",
+                                "90": "#dce5dc",
+                                "95": "#eaf3ea",
+                                "98": "#f3fcf2",
+                                "99": "#f6fff5",
+                                "100": "#ffffff"
+                            }
+                        },
+                        "themeColors": {
+                            "primaryColor": "",
+                            "secondaryColor": "",
+                            "backgroundColor": "",
+                            "primaryTextColor": "",
+                            "textColor": ""
+                        },
+                        "splashScreen": {
+                            "storedData": {
+                                "handle": "drive:/16h8D5VUm7znuviVC8-PiV3cPXOEmYEWs",
+                                "mimeType": "image/png",
+                                "contentLength": 1858396
+                            }
+                        }
+                    },
+                    "8715d9c3-644a-4307-89e8-e24db4222492": {
+                        "template": "basic",
+                        "templateAdditionalOptions": {},
+                        "palette": {
+                            "primary": {
+                                "0": "#000000",
+                                "5": "#240800",
+                                "10": "#351000",
+                                "15": "#451700",
+                                "20": "#561f00",
+                                "25": "#682700",
+                                "30": "#7a3002",
+                                "35": "#893b0d",
+                                "40": "#994719",
+                                "50": "#b85e2f",
+                                "60": "#d87746",
+                                "70": "#f8905d",
+                                "80": "#ffb694",
+                                "90": "#ffdbcc",
+                                "95": "#ffede6",
+                                "98": "#fff8f6",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            },
+                            "secondary": {
+                                "0": "#000000",
+                                "5": "#1f0c04",
+                                "10": "#2c160b",
+                                "15": "#372015",
+                                "20": "#432a1e",
+                                "25": "#503529",
+                                "30": "#5c4033",
+                                "35": "#694c3e",
+                                "40": "#765749",
+                                "50": "#917061",
+                                "60": "#ad8979",
+                                "70": "#c9a392",
+                                "80": "#e6bead",
+                                "90": "#ffdbcc",
+                                "95": "#ffede6",
+                                "98": "#fff8f6",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            },
+                            "tertiary": "",
+                            "error": {
+                                "0": "#000000",
+                                "5": "#2d0001",
+                                "10": "#410002",
+                                "15": "#540003",
+                                "20": "#690005",
+                                "25": "#7e0007",
+                                "30": "#93000a",
+                                "35": "#a80710",
+                                "40": "#ba1a1a",
+                                "50": "#de3730",
+                                "60": "#ff5449",
+                                "70": "#ff897d",
+                                "80": "#ffb4ab",
+                                "90": "#ffdad6",
+                                "95": "#ffedea",
+                                "98": "#fff8f7",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            },
+                            "neutral": {
+                                "0": "#000000",
+                                "5": "#15100d",
+                                "10": "#201a18",
+                                "15": "#2b2422",
+                                "20": "#362f2c",
+                                "25": "#413a37",
+                                "30": "#4d4542",
+                                "35": "#59514d",
+                                "40": "#655d59",
+                                "50": "#7f7571",
+                                "60": "#998f8b",
+                                "70": "#b4a9a5",
+                                "80": "#d0c4c0",
+                                "90": "#ede0db",
+                                "95": "#fbeee9",
+                                "98": "#fff8f6",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            },
+                            "neutralVariant": {
+                                "0": "#000000",
+                                "5": "#190e0a",
+                                "10": "#251914",
+                                "15": "#2f231d",
+                                "20": "#3b2d28",
+                                "25": "#463832",
+                                "30": "#52443d",
+                                "35": "#5f4f48",
+                                "40": "#6b5b54",
+                                "50": "#85736c",
+                                "60": "#a08d85",
+                                "70": "#bba79f",
+                                "80": "#d7c2ba",
+                                "90": "#f4ded5",
+                                "95": "#ffede6",
+                                "98": "#fff8f6",
+                                "99": "#fffbff",
+                                "100": "#ffffff"
+                            }
+                        },
+                        "themeColors": {
+                            "primaryColor": "",
+                            "secondaryColor": "",
+                            "backgroundColor": "",
+                            "primaryTextColor": "",
+                            "textColor": ""
+                        },
+                        "splashScreen": {
+                            "storedData": {
+                                "handle": "drive:/16SQbrG-3e_gTW_biElDrPN4NK1Lb56Tk",
+                                "mimeType": "image/png",
+                                "contentLength": 1809524
+                            }
+                        }
+                    }
+                },
+                "theme": "d2fb9794-1a3a-40bb-aae9-8a4b87f69cf8"
+            }
+        },
+        "intent": "",
+        "revision_intents": [
+            "باید یه پرامپت بدیم به سیستم که نسبت به ورودی که کاربر میده تشخیص مزاج بده یا سوال بپرسه و غیره پرامپتشو اماده کن\n\nدرواقع چنتا سوال بپرسه و بعد بدیم به مدل وردی که داشتیمو و بعد تشخیص مزاج کاربرو انجام بده و شخصیت شناسی بر اساس وضعیت کاربر بهمون بده",
+            "یک AI Mini App حرفه‌ای به زبان فارسی با موضوع **«ارزیابی و تحلیل مزاج»** بساز.\n\nهدف اپ این باشد که ابتدا اطلاعات اولیه کاربر را دریافت کند و سپس یک گفت‌وگوی هوشمند و چندمرحله‌ای با او انجام دهد تا گرایش مزاجی او را بر اساس مفاهیم طب سنتی ایرانی ارزیابی کند.\n\n## ساختار اپ\n\n### 1. دریافت اطلاعات اولیه\n\nدر ابتدا از کاربر بخواه اطلاعات اولیه و هدفش از انجام ارزیابی را وارد کند.\n\n### 2. گفت‌وگوی هوشمند و پرسشنامه\n\nیک AI Agent بساز که به‌صورت طبیعی و مرحله‌به‌مرحله سؤال بپرسد. سؤال‌ها باید کوتاه باشند و در صورت امکان به‌صورت گزینه‌ای ارائه شوند.\n\nاطلاعات زیر را بررسی کند:\n\n* احساس گرما یا سرما و تحمل آب‌وهوا\n* خشکی یا رطوبت پوست و بدن\n* وضعیت مو و ویژگی‌های ظاهری\n* خواب و میزان انرژی\n* اشتها، گوارش و تشنگی\n* علاقه به غذاها و نوشیدنی‌های گرم یا سرد\n* میزان فعالیت و واکنش به استرس\n* ویژگی‌های رفتاری و خلقی به‌صورت غیرقطعی\n\nهمه سؤال‌ها را یکجا نپرس. در هر مرحله حداکثر ۱ تا ۳ سؤال بپرس و بر اساس پاسخ‌های قبلی، سؤال بعدی را هوشمندانه انتخاب کن.\n\n### 3. سیستم تحلیل\n\nپاسخ‌ها را در چهار شاخص تحلیل کن:\n\n* گرمی\n* سردی\n* خشکی\n* تری\n\nپس از جمع‌آوری اطلاعات کافی، یک نتیجه نسبی تولید کن و مشخص کن که کاربر بیشتر به کدام حالت نزدیک است:\n\n* گرم و خشک\n* گرم و تر\n* سرد و خشک\n* سرد و تر\n* متعادل یا ترکیبی\n\nهمچنین برای هر بُعد یک امتیاز یا درصد تقریبی تولید کن و یک سطح اطمینان **پایین، متوسط یا بالا** تعیین کن.\n\nاگر اطلاعات کافی یا سازگار نیست، به‌جای نتیجه‌گیری عجولانه چند سؤال تکمیلی بپرس.\n\n### 4. گزارش نهایی\n\nپس از پایان گفتگو، یک صفحه گزارش حرفه‌ای و زیبا به زبان فارسی و RTL تولید کن که شامل موارد زیر باشد:\n\n* نتیجه اصلی مزاج\n* میزان اطمینان\n* نمایش بصری تعادل گرمی/سردی و خشکی/تری\n* دلایل اصلی نتیجه بر اساس پاسخ‌های کاربر\n* تحلیل ویژگی‌های جسمی\n* تحلیل عادت‌ها و سبک زندگی\n* تحلیل گرایش‌های رفتاری با لحن غیرقطعی\n* پیشنهادهای عمومی درباره سبک زندگی، خواب، فعالیت و تغذیه\n\nطراحی گزارش باید مدرن، Premium، آرامش‌بخش و مرتبط با سلامت و طب سنتی باشد؛ از کارت‌های زیبا، نمودار یا نمایش بصری، فضای سفید مناسب و طراحی کاملاً Responsive استفاده کن. نسخه موبایل باید بسیار خوب طراحی شود.\n\n## نکات مهم\n\n* اپ و تمام خروجی‌ها فارسی و RTL باشند.\n* لحن دوستانه، حرفه‌ای و همدلانه باشد.\n* از تشخیص قطعی بیماری یا تجویز دارو خودداری کن.\n* نتیجه را به‌عنوان «ارزیابی گرایش مزاجی بر اساس پاسخ‌های کاربر» نمایش بده، نه تشخیص پزشکی قطعی.\n* ساختار اپ به شکل زیر باشد:\n\n**User Input → AI Consultation Agent → Mezaj Analysis → Professional Visual Report**\n\nاپ را به‌صورت کامل بساز و Nodeها و ارتباط بین آن‌ها را خودت ایجاد کن. خروجی نهایی باید یک تجربه کامل از ورود اطلاعات، گفت‌وگوی هوشمند و دریافت گزارش شخصی‌سازی‌شده باشد.\n"
+        ],
+        "tags": [
+            "Health",
+            "Personalized Report",
+            "Mezaj",
+            "Traditional Medicine",
+            "Personalized Diagnosis",
+            "Wellness"
+        ],
+        "parameters": {}
+    },
+    "url": "drive:/1_Kj94Mh4XnYVx60LbL5AZKqT0VaycOyb",
+    "assets": {},
+    "title": "تشخیص مزاج",
+    "description": "با ترکیب طب سوزنی و تکنولوژی روند تشخیص مزاج و بیماری های شما تسریع پیدا میکنه !",
+    "version": "0.0.1",
+    "nodes": [
+        {
+            "id": "node_step_mezaj_diagnosis_response",
+            "metadata": {
+                "title": "Conduct Mezaj Diagnosis Chat",
+                "visual": {
+                    "x": 700,
+                    "y": 350,
+                    "collapsed": "expanded",
+                    "outputHeight": 88
+                },
+                "step_intent": "Initiate a multi-turn, interactive conversation in Persian with the user to gather data for temperament (Mezaj) analysis. The agent should ask 1-3 short, structured or descriptive questions at a time regarding physical symptoms, sleep, appetite, and behavioral habits, adapting future questions based on previous answers until sufficient health data is collected."
+            },
+            "type": "embed://a2/generate.bgl.json#module:main",
+            "configuration": {
+                "config$prompt": {
+                    "parts": [
+                        {
+                            "text": "Objective: Conduct a multi-turn interactive consultation in Persian to collect data for a temperament (Mezaj) analysis. Ask 1-3 short questions per turn regarding physical symptoms, sleep, appetite, and behavioral habits. Adjust the logic of your questions based on the user's previous answers to gain a deeper understanding of their physiological state.\n\nOutput Format: Engage the user by using the phrase Ask user for to gather freeform descriptions or Present choices to user when offering specific categories for selection. You are done when you have gathered all necessary information to determine the user's temperament. Return the chat log as outcome once you're done.\n\nUser Input / Context: Use the following information as the starting point for the conversation: {{\"type\":\"in\",\"path\":\"ask_user_user_health_details\",\"title\":\"User Health Details\"}}."
+                        }
+                    ],
+                    "role": "user"
+                },
+                "generation-mode": "agent",
+                "config$ask-user": true
+            }
+        },
+        {
+            "id": "node_step_mezaj_analysis_results",
+            "metadata": {
+                "title": "Mezaj Analysis",
+                "visual": {
+                    "x": 1050,
+                    "y": 350,
+                    "collapsed": "expanded",
+                    "outputHeight": 88
+                },
+                "step_intent": "Analyze the full chat history from the previous step to identify four temperament indicators: warmth, coldness, dryness, and moisture. Define the dominant temperament type (e.g., Warm-Dry), provide an approximate percentage/score for each dimension, assign a confidence level, and document rationale along with actionable lifestyle and dietary suggestions."
+            },
+            "type": "embed://a2/generate.bgl.json#module:main",
+            "configuration": {
+                "config$prompt": {
+                    "parts": [
+                        {
+                            "text": "Objective: Analyze the chat history provided in {{\"type\":\"in\",\"path\":\"node_step_mezaj_diagnosis_response\",\"title\":\"Conduct Mezaj Diagnosis Chat\"}} to identify four temperament indicators: warmth, coldness, dryness, and moisture. Determine the dominant temperament type (e.g., Warm-Dry), provide an approximate percentage or score for each dimension, and assign a confidence level to the diagnosis. Document the rationale for your assessment based on the chat data and provide actionable lifestyle and dietary suggestions tailored to the identified temperament. You are done when the final analysis and recommendations are provided.\n\nOutput Format: Provide the analysis in plain text with the following sections:\n1. Dominant Temperament Type\n2. Dimensional Scores (Warmth, Coldness, Dryness, Moisture)\n3. Confidence Level\n4. Rationale\n5. Lifestyle and Dietary Suggestions\n\nUser Input / Context: {{\"type\":\"in\",\"path\":\"node_step_mezaj_diagnosis_response\",\"title\":\"Conduct Mezaj Diagnosis Chat\"}}"
+                        }
+                    ],
+                    "role": "user"
+                },
+                "generation-mode": "agent"
+            }
+        },
+        {
+            "id": "node_step_mezaj_report",
+            "metadata": {
+                "title": "Generate Mezaj Report Webpage",
+                "visual": {
+                    "x": 1400,
+                    "y": 350,
+                    "collapsed": "expanded",
+                    "outputHeight": 88
+                },
+                "step_intent": "Generate a modern, premium, and professional web report in Persian with RTL layout. Combine the analysis data, the conversation context, and user inputs into a visual report. Include the temperament result, confidence level, visual representation of balances (charts/bars), behavioral/physical analysis, and lifestyle tips. Include a medical disclaimer that this is a temperament assessment only."
+            },
+            "type": "embed://a2/a2.bgl.json#module:render-outputs",
+            "configuration": {
+                "text": {
+                    "parts": [
+                        {
+                            "text": "Create a premium, professional, and modern single-page web report in Persian (RTL) for a \"Mezaj\" (Traditional Iranian Temperament) analysis. The design should feel holistic, trustworthy, and high-end, utilizing a clean aesthetic with a focus on data visualization and readability.\n\n### 1. Layout Organization\n- **Direction & Language**: Fully RTL (Right-to-Left) layout using Persian typography.\n- **Header**: A sophisticated header featuring a minimalist logo or title (\"گزارش تخصصی تحلیل مزاج\") and a date stamp.\n- **Hero Section (Summary)**: \n    - Display the dominant Temperament (e.g., \"دموی - گرم و تر\") in a bold, elegant font.\n    - Include a \"Confidence Level\" (سطح اطمینان) indicator using a subtle badge or a high-quality gauge (e.g., Low, Medium, High).\n- **Data Visualization Section**: \n    - Use a 2x2 grid or a radial chart to visualize the four dimensions: Warmth (گرمی), Coldness (سردی), Dryness (خشکی), and Moisture (تری). \n    - Use elegant progress bars or custom SVG charts with percentage labels to show the balance of these qualities.\n- **Analysis Cards**: \n    - A two-column layout (collapsing to one on mobile) to present the \"Physical Characteristics\" (ویژگی‌های جسمی) and \"Behavioral Traits\" (ویژگی‌های رفتاری) based on the chat analysis. \n    - Use icons to categorize different types of traits (e.g., sleep, digestion, skin).\n- **Lifestyle & Recommendations Section**: \n    - Use a card-based grid for actionable advice. Categories should include \"Dietary Suggestions\" (توصیه‌های تغذیه‌ای), \"Sleep & Activity\" (خواب و فعالیت), and \"General Lifestyle\" (سبک زندگی).\n    - Each recommendation should be bulleted for high scannability.\n- **Footer**: A prominent but integrated medical disclaimer section with a softer background color, stating that this is a temperament assessment and not a definitive medical diagnosis.\n\n### 2. Style Design Language\n- **Aesthetic Goal**: \"Premium Holistic\" — combining modern UI trends with a touch of traditional wisdom.\n- **Color Scheme**: Use a sophisticated palette:\n    - Primary: Deep Teal or Forest Green (representing health and balance).\n    - Accents: Saffron Gold or Terracotta (representing warmth/vitality).\n    - Background: Off-white or a very light cream (#F9F9F9) to reduce eye strain and feel organic.\n- **Typography**: Use professional Persian sans-serif fonts (like Vazirmatn, Samim, or IRANSans). Maintain a clear hierarchy with large headings for the dominant result and legible body text for recommendations.\n- **Spacing**: Generous whitespace to allow the content to \"breathe,\" reinforcing a sense of calm and clarity.\n- **Components**: \n    - Use rounded corners (12px-16px) for cards.\n    - Subtle drop shadows to create depth.\n    - Soft transitions/hover effects on interactive elements.\n\n### 3. Component Guidelines\n- **Charts**: Use clean, modern bar charts or a diamond-shaped radar chart to represent the four qualities. Use color-coding (e.g., Red for Warmth, Blue for Coldness).\n- **Badges**: Use pill-shaped badges for the Confidence Level.\n- **Disclaimer Box**: Style this with a subtle border or a light amber background to ensure it stands out as important information without being alarming.\n- **Responsiveness**: Ensure the layout is fully responsive, with fluid scaling for mobile devices.\n\n### 4. Content Integration\n- Map the `Mezaj Analysis` text generation output into the respective sections (Result, Rationale, Recommendations).\n- Ensure the tone of the Persian text remains empathetic, professional, and \"non-deterministic\" (using phrases like \"گرایش مزاجی\" or \"تمایل عمومی\").\n\nmezaj_analysis_results: {{\"type\":\"in\",\"path\":\"node_step_mezaj_analysis_results\",\"title\":\"Mezaj Analysis\"}}\n\nconduct_mezaj_diagnosis_chat: {{\"type\":\"in\",\"path\":\"node_step_mezaj_diagnosis_response\",\"title\":\"Conduct Mezaj Diagnosis Chat\"}}\n\nuser_health_details: {{\"type\":\"in\",\"path\":\"ask_user_user_health_details\",\"title\":\"User Health Details\"}}"
+                        }
+                    ],
+                    "role": "user"
+                },
+                "b-system-instruction": {
+                    "parts": [
+                        {
+                            "text": "You are an AI Web Developer. Your task is to generate a single, self-contained HTML document for rendering in an iframe, based on user instructions and data.\n\n**Visual aesthetic:**\n    * Aesthetics are crucial. Make the page look amazing, especially on mobile.\n    * Respect any instructions on style, color palette, or reference examples provided by the user.\n    * **CRITICAL: Aim for premium, state-of-the-art designs. Avoid simple minimum viable products.**\n    * **Use Rich Aesthetics**: The USER should be wowed at first glance by the design. Use best practices in modern web design (e.g. vibrant colors, dark modes, glassmorphism, and dynamic animations) to create a stunning first impression. Failure to do this is UNACCEPTABLE.\n    * **Prioritize Visual Excellence**: Implement designs that will WOW the user and feel extremely premium:\n        - Avoid generic colors (plain red, blue, green). Use curated, harmonious color palettes (e.g., HSL tailored colors, sleek dark modes).\n        - Using modern typography (e.g., from Google Fonts like Inter, Roboto, or Outfit) instead of browser defaults.\n        - Use smooth gradients.\n        - Add subtle micro-animations for enhanced user experience.\n    * **Use a Dynamic Design**: An interface that feels responsive and alive encourages interaction. Achieve this with hover effects and interactive elements. Micro-animations, in particular, are highly effective for improving user engagement.\n    * **Thematic Specificity**: Do not just create a generic layout. Define a clear \"vibe\" or theme based on the content. Use specific aesthetic keywords (e.g., \"Glassmorphism\", \"Neobrutalism\", \"Minimalist\", \"Comic Book Style\") to guide the design.\n    * **Typography Hierarchy**: Explicitly import and use font pairings. Use a distinct Display Font for headers and a highly readable Body Font for text.\n    * **Readability**: Pay extra attention to readability. Ensure the text is always readable with sufficient contrast against the background. Choose fonts and colors that enhance legibility.\n\n**Design and Functionality:**\n    * **Component-Based Design**: Do not just dump text into blocks. Semanticize the content into distinct UI components.\n    * **Layout Dynamics**: Break the grid. Avoid strict, identical grid columns. Use asymmetrical layouts, Bento grids, or responsive flexbox layouts where some elements span full width to create visual interest and emphasize key content.\n    * **Tailwind Configuration**: Extend the Tailwind configuration within a `<script>` block to define custom font families and color palettes that match the theme.\n    * Thoroughly analyze the user's instructions to determine the desired type of webpage, application, or visualization. What are the key features, layouts, or functionality?\n    * Analyze any provided data to identify the most compelling layout or visualization of it. For example, if the user requests a visualization, select an appropriate chart type (bar, line, pie, scatter, etc.) to create the most insightful and visually compelling representation. Or if user instructions say `use a carousel format`, you should consider how to break the content and any media into different card components to display within the carousel.\n    * If requirements are underspecified, make reasonable assumptions to complete the design and functionality. Your goal is to deliver a working product with no placeholder content.\n    * Ensure the generated code is valid and functional. Return only the code, and open the HTML codeblock with the literal string \"```html\".\n    * The output must be a complete and valid HTML document with no placeholder content for the developer to fill in.\n\n**Libraries:**\n  Unless otherwise specified, use:\n    * Tailwind for CSS\n    * **CRITICAL: Use the Tailwind CDN from `https://cdn.tailwindcss.com`. Do NOT use `tailwind.min.css` or any other local Tailwind file. Always include Tailwind using: `<script src=\"https://cdn.tailwindcss.com\"></script>`**\n\n**Constraints:**\n  * **External Links:** You ARE allowed to generate external links (`<a href=\"...\">` and `window.open(...)`) to external websites (e.g. google.com, wikipedia.org) for user navigation.\n  * **NO External Embeds:** Do NOT embed any external resources (e.g. `<script src=\"...\">`, `<img src=\"...\">`, `<iframe src=\"...\">`, `<link href=\"...\">`) from external URLs. Content Security Policy (CSP) will block them.\n  * **Media Restriction:** ONLY use media URLs that are explicitly passed in the input. Do NOT generate or hallucinate any other media URLs (e.g. from placeholder sites or external CDNs).\n  * **Render All Media:** You MUST render ALL media (images, videos, audio) that are passed in. Do NOT skip or omit any provided media items. Every passed-in media URL must appear in the final HTML output.\n  * **Navigation Restriction:** Do NOT generate unneeded fake links or buttons to sub-pages (e.g. \"About\", \"Contact\", \"Learn More\") unless explicitly requested. Stick to the plan and the provided content.\n  * **Footer Restriction:** **NEVER** generate any footer content, including legal footers like \"All rights reserved\" or \"Copyright 2024\". [It is a violation of Google's policies to hallucinate legal footers.]\n"
+                        }
+                    ],
+                    "role": "user"
+                },
+                "p-render-mode": "Auto",
+                "b-render-model-name": "gemini-flash"
+            }
+        },
+        {
+            "id": "ask_user_user_health_details",
+            "metadata": {
+                "title": "User Health Details",
+                "visual": {
+                    "x": 250,
+                    "y": 300,
+                    "collapsed": "expanded",
+                    "outputHeight": 88
+                }
+            },
+            "type": "embed://a2/a2.bgl.json#21ee02e7-83fa-49d0-964c-0cab10eafc2c",
+            "configuration": {
+                "description": {
+                    "parts": [
+                        {
+                            "text": "شرح وضعیت سلامت و علائم جسمی خود"
+                        }
+                    ],
+                    "role": "user"
+                },
+                "p-modality": "Any"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "from": "ask_user_user_health_details",
+            "to": "node_step_mezaj_diagnosis_response",
+            "out": "context",
+            "in": "p-z-ask_user_user_health_details"
+        },
+        {
+            "from": "ask_user_user_health_details",
+            "to": "node_step_mezaj_report",
+            "out": "context",
+            "in": "p-z-ask_user_user_health_details"
+        },
+        {
+            "from": "node_step_mezaj_diagnosis_response",
+            "to": "node_step_mezaj_analysis_results",
+            "out": "context",
+            "in": "p-z-node_step_mezaj_diagnosis_response"
+        },
+        {
+            "from": "node_step_mezaj_diagnosis_response",
+            "to": "node_step_mezaj_report",
+            "out": "context",
+            "in": "p-z-node_step_mezaj_diagnosis_response"
+        },
+        {
+            "from": "node_step_mezaj_analysis_results",
+            "to": "node_step_mezaj_report",
+            "out": "context",
+            "in": "p-z-node_step_mezaj_analysis_results"
+        }
+    ]
+}
