@@ -52,7 +52,7 @@
 - [x] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
 - [x] `F00-T05` — راه‌اندازی Prisma و migration اولیه
 - [x] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
-- [ ] `F00-T07` — ایجاد error contract پایدار
+- [x] `F00-T07` — ایجاد error contract پایدار
 - [ ] `F00-T08` — logging، correlation ID و redaction
 - [ ] `F00-T09` — health/readiness endpointها
 - [ ] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
@@ -76,6 +76,31 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T07
+Completed at: 2026-08-20 13:23 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/src/common/filters/http-exception.filter.ts
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد
+Tests run:
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - pnpm --filter @sabz-zendegi/api build → PASS
+  - آزمون مستقیم response خطای validation → PASS
+  - آزمون مستقیم response خطای داخلی و عدم نشت متن exception → PASS
+  - git diff --check → PASS
+Result:
+  - تمام خطاها contract پایدار `code`, `message`, `requestId`, `details` دارند → PASS
+  - codeهای انگلیسی بر اساس HTTP status map می‌شوند و `x-request-id` بازگردانده می‌شود → PASS
+  - exceptionهای غیرHTTP فقط پیام امن `Internal server error` می‌دهند → PASS
+Known limitations:
+  - تولید/پذیرش correlation ID برای logging در F00-T08 تکمیل می‌شود؛ contract فعلاً از request ID خود Fastify استفاده می‌کند.
+Next task:
+  - F00-T08
 
 Task ID: F00-T06
 Completed at: 2026-08-20 13:18 +03:30
