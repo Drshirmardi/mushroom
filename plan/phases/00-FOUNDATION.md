@@ -1,6 +1,6 @@
 # Phase 00 — Backend Foundation
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت اولیه: `IN_PROGRESS`
 - Milestone: `A`
 - پیش‌نیاز: ندارد
 - خروجی اصلی: API قابل اجرا، دیتابیس migration-based، استانداردهای سراسری و CI
@@ -12,7 +12,7 @@
 ## Taskها
 
 - [x] `F00-T01` — scaffold کردن NestJS در `apps/api` با Fastify adapter
-- [ ] `F00-T02` — تنظیم package scripts، workspace، Turbo tasks و TypeScript config
+- [x] `F00-T02` — تنظیم package scripts، workspace، Turbo tasks و TypeScript config
 - [ ] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
 - [ ] `F00-T04` — ایجاد Docker Compose توسعه برای PostgreSQL
 - [ ] `F00-T05` — نصب و راه‌اندازی Prisma، schema پایه و migration اولیه

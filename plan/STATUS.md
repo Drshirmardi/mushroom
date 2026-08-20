@@ -29,7 +29,7 @@
 
 ## وضعیت فازها
 
-- [ ] `Phase 00` — Foundation — `NOT_STARTED`
+- [ ] `Phase 00` — Foundation — `IN_PROGRESS`
 - [ ] `Phase 01` — Identity & Access — `NOT_STARTED`
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
@@ -47,7 +47,7 @@
 این بخش باید با checklist فاز فعال هماهنگ بماند.
 
 - [x] `F00-T01` — ایجاد scaffold بک‌اند NestJS در `apps/api`
-- [ ] `F00-T02` — تنظیم اسکریپت‌ها و اتصال به workspace/Turborepo
+- [x] `F00-T02` — تنظیم اسکریپت‌ها و اتصال به workspace/Turborepo
 - [ ] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
 - [ ] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
 - [ ] `F00-T05` — راه‌اندازی Prisma و migration اولیه
@@ -68,14 +68,39 @@
 قبل از شروع کار، Agent این بخش را پر می‌کند:
 
 ```text
-Task ID: F00-T02
+Task ID: F00-T03
 Agent/Thread: /root
-Started at: 2026-08-20 12:35 +03:30
-Scope: تنظیم scriptهای API و ریشه، Turbo taskها و TypeScript config برای اجرای یکنواخت workspace
-Expected files: package.json, turbo.json, apps/api/package.json, apps/api/tsconfig.json, apps/api/tsconfig.build.json, plan/STATUS.md, plan/phases/00-FOUNDATION.md
+Started at: 2026-08-20 12:41 +03:30
+Scope: ایجاد config module با validation متغیرهای پایه و template امن محیط API
+Expected files: apps/api/package.json, apps/api/src/app.module.ts, apps/api/src/main.ts, apps/api/src/config/*, apps/api/.env.example, pnpm-lock.yaml, plan/STATUS.md, plan/phases/00-FOUNDATION.md
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T02
+Completed at: 2026-08-20 12:39 +03:30
+Agent/Thread: /root
+Changed files:
+  - package.json
+  - turbo.json
+  - apps/api/package.json
+  - apps/app/package.json
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد (خارج از scope؛ F00-T05)
+Tests run:
+  - pnpm typecheck → PASS (۴ workspace: api, app, dashboard, web)
+  - pnpm --filter @sabz-zendegi/api build → PASS
+  - git diff --check → PASS
+Result:
+  - command ریشه `pnpm typecheck` تمام workspaceها را از طریق Turbo اجرا می‌کند → PASS
+  - API script استاندارد `dev` برای اجرای `pnpm dev` و دستور محدودشدهٔ `pnpm dev:api` دارد → PASS
+  - taskهای lint و typecheck در Turbo فاقد وابستگی نادرست به build هستند و خروجی cacheable تولید نمی‌کنند → PASS
+Known limitations:
+  - اجرای lint سراسری هنوز به تعریف lint واقعی برای همهٔ appها نیاز دارد و در F00-T13 همراه CI بررسی می‌شود.
+Next task:
+  - F00-T03
 
 Task ID: F00-T01
 Completed at: 2026-08-20 12:31 +03:30
