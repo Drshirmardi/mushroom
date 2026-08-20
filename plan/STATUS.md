@@ -7,7 +7,7 @@
 - آخرین به‌روزرسانی: `2026-08-20`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 00 — Foundation`
-- وضعیت فاز فعال: `NOT_STARTED`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - task فعال: `ندارد`
 - مسئول/Agent: `تعیین نشده`
 - blocker فعال: `ندارد`
@@ -46,7 +46,7 @@
 
 این بخش باید با checklist فاز فعال هماهنگ بماند.
 
-- [ ] `F00-T01` — ایجاد scaffold بک‌اند NestJS در `apps/api`
+- [x] `F00-T01` — ایجاد scaffold بک‌اند NestJS در `apps/api`
 - [ ] `F00-T02` — تنظیم اسکریپت‌ها و اتصال به workspace/Turborepo
 - [ ] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
 - [ ] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
@@ -68,16 +68,45 @@
 قبل از شروع کار، Agent این بخش را پر می‌کند:
 
 ```text
-Task ID: —
-Agent/Thread: —
-Started at: —
-Scope: —
-Expected files: —
+Task ID: F00-T02
+Agent/Thread: /root
+Started at: 2026-08-20 12:35 +03:30
+Scope: تنظیم scriptهای API و ریشه، Turbo taskها و TypeScript config برای اجرای یکنواخت workspace
+Expected files: package.json, turbo.json, apps/api/package.json, apps/api/tsconfig.json, apps/api/tsconfig.build.json, plan/STATUS.md, plan/phases/00-FOUNDATION.md
 ```
 
 ## شواهد آخرین تکمیل
 
-هنوز task اجرایی تکمیل نشده است.
+Task ID: F00-T01
+Completed at: 2026-08-20 12:31 +03:30
+Agent/Thread: /root
+Changed files:
+  - .gitignore
+  - apps/api/package.json
+  - apps/api/tsconfig.json
+  - apps/api/tsconfig.build.json
+  - apps/api/src/app.module.ts
+  - apps/api/src/main.ts
+  - apps/api/README.md
+  - pnpm-lock.yaml
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد (خارج از scope؛ F00-T05)
+Tests run:
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - pnpm --filter @sabz-zendegi/api build → PASS
+  - node apps/api/dist/main.js → PASS (Nest/Fastify bootstrap)
+  - اجرای موقت روی localhost:3003 و GET / → HTTP 404 مورد انتظار، listener فعال است
+Result:
+  - NestJS scaffold با FastifyAdapter و AppModule حداقلی → PASS
+  - خروجی JavaScript قابل اجرا و پورت پیش‌فرض 3003 → PASS
+  - وابستگی‌ها و lockfile workspace ثبت شدند → PASS
+Known limitations:
+  - Endpoint، config، validation، database و test harness عمداً به taskهای بعدی Phase 00 موکول شده‌اند.
+  - نسخه‌های NestJS دقیقاً روی 11.1.6 pin شدند: نسخهٔ 11.2.1 که از range اولیه resolve می‌شد در اجرای واقعی فایل runtime `abstract.interface.js` را نداشت؛ 11.1.6 با bootstrap تأیید شد.
+Next task:
+  - F00-T02
 
 برای هر task تکمیل‌شده این قالب اضافه شود:
 

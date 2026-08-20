@@ -11,7 +11,7 @@
 
 ## Taskها
 
-- [ ] `F00-T01` — scaffold کردن NestJS در `apps/api` با Fastify adapter
+- [x] `F00-T01` — scaffold کردن NestJS در `apps/api` با Fastify adapter
 - [ ] `F00-T02` — تنظیم package scripts، workspace، Turbo tasks و TypeScript config
 - [ ] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
 - [ ] `F00-T04` — ایجاد Docker Compose توسعه برای PostgreSQL

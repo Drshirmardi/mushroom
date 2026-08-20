@@ -47,7 +47,7 @@ next-env.d.ts
 *.log
 npm-debug.log*
 pnpm-debug.log*
-
+.pnpm-store
 # Kilo / ZCode
 .kilo
 .zcode
