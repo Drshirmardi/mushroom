@@ -54,7 +54,7 @@
 - [x] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
 - [x] `F00-T07` — ایجاد error contract پایدار
 - [x] `F00-T08` — logging، correlation ID و redaction
-- [ ] `F00-T09` — health/readiness endpointها
+- [x] `F00-T09` — health/readiness endpointها
 - [ ] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
 - [ ] `F00-T11` — test harness و integration test با PostgreSQL
 - [ ] `F00-T12` — migration smoke test و seed framework
@@ -76,6 +76,31 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T09
+Completed at: 2026-08-20 14:04 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/src/common/health/health.controller.ts
+  - apps/api/src/app.module.ts
+  - apps/api/src/common/errors/api-error.ts
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد
+Tests run:
+  - compiler مستقیم TypeScript (`tsc --noEmit`) → PASS
+  - compiler مستقیم TypeScript برای build config (`tsc -p tsconfig.build.json`) → PASS
+  - HTTP: `GET /v1/health/live` و `GET /v1/health/ready` با PostgreSQL در دسترس → PASS (200)
+  - HTTP: `GET /v1/health/ready` با DATABASE_URL غیرقابل‌دسترسی → PASS (503 با `SERVICE_UNAVAILABLE` و requestId)
+  - git diff --check → PASS
+Result:
+  - liveness بدون بررسی dependency خارجی قابل استفاده است → PASS
+  - readiness اتصال PostgreSQL را با query سبک بررسی می‌کند و هنگام failure، خطای استاندارد 503 بازمی‌گرداند → PASS
+Known limitations:
+  - `pnpm --filter @sabz-zendegi/api typecheck` و `build` فعلاً در pre-hook Prisma به ناسازگاری dependency `proper-lockfile` با runtime محلی برخورد می‌کنند؛ compiler مستقیم PASS است. رفع و verification دستورهای رسمی در F00-T13 انجام می‌شود.
+Next task:
+  - F00-T10
 
 Task ID: F00-T08
 Completed at: 2026-08-20 13:47 +03:30
