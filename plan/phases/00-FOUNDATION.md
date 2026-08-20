@@ -4,6 +4,7 @@
 - Milestone: `A`
 - پیش‌نیاز: ندارد
 - خروجی اصلی: API قابل اجرا، دیتابیس migration-based، استانداردهای سراسری و CI
+- لاگ اجرا: [`../logs/phase-00.md`](../logs/phase-00.md)
 
 ## هدف
 

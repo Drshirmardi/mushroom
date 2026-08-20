@@ -26,9 +26,9 @@ Before editing files:
 - Keep the change within the claimed task's scope, acceptance criteria, and Definition of Done.
 - Follow `plan/04-ENGINEERING-STANDARDS.md`; material architecture changes require an ADR and owner approval.
 - Run verification proportional to the task and review the final diff for unrelated changes.
-- Mark a task `[x]` only when its implementation exists, required checks pass, and evidence is recorded.
+- Mark a task `[x]` only when its implementation exists, required checks pass, and evidence is recorded in the active phase log under `plan/logs/`.
 - Keep the active phase checklist and `plan/STATUS.md` synchronized.
-- On completion, append evidence, clear the active-task claim, and identify the next eligible task without starting it.
+- On completion, append evidence to the active phase log, clear the active-task claim in `plan/STATUS.md`, and identify the next eligible task there without starting it.
 - If incomplete or blocked, leave the task unchecked and record completed work, remaining work, tests, blocker, and safe next action.
 
 ## Safety

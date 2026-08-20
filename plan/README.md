@@ -6,7 +6,7 @@
 
 هر Agent قبل از ایجاد تغییر باید این فایل‌ها را به‌ترتیب بخواند:
 
-1. [`STATUS.md`](STATUS.md) — وضعیت زنده، فاز فعال و task جاری.
+1. [`STATUS.md`](STATUS.md) — وضعیت زنده، فاز فعال، task جاری و handoff کوتاه.
 2. [`00-CURRENT-STATE.md`](00-CURRENT-STATE.md) — وضعیت واقعی repository در شروع برنامه.
 3. [`01-ARCHITECTURE-REVIEW.md`](01-ARCHITECTURE-REVIEW.md) — تصمیم‌هایی که پذیرفته، رد یا به آینده موکول شده‌اند.
 4. [`02-TARGET-ARCHITECTURE.md`](02-TARGET-ARCHITECTURE.md) — معماری هدف و مرز ماژول‌ها.
@@ -14,6 +14,10 @@
 6. [`04-ENGINEERING-STANDARDS.md`](04-ENGINEERING-STANDARDS.md) — استانداردهای اجباری داده، API، امنیت و تست.
 7. [`05-AGENT-WORKFLOW.md`](05-AGENT-WORKFLOW.md) — نحوه claim، اجرا، تست، تیک‌زدن و handoff.
 8. فایل فاز فعال در پوشه [`phases`](phases/).
+
+لاگ‌های تاریخیِ taskها در [`logs/`](logs/README.md) نگه‌داری می‌شوند. Agent نباید همهٔ
+لاگ‌ها را در شروع بخواند؛ فقط هنگام ادامه‌دادن یک handoff، بررسی تصمیم/محدودیت مرتبط، یا
+وقتی `STATUS.md` به entry مشخصی ارجاع می‌دهد، همان فایل لاگ فاز فعال را بخواند.
 
 تصمیم معماری جدید باید با قالب [`ADR-TEMPLATE.md`](decisions/ADR-TEMPLATE.md) در پوشه `decisions` ثبت شود.
 
@@ -70,9 +74,11 @@ Migration → Domain Rules → Application Use Case → API → Tests → API Cl
 
 ## منبع حقیقت
 
-- وضعیت اجرای پروژه: [`STATUS.md`](STATUS.md)
+- وضعیت اجرای پروژه و handoff: [`STATUS.md`](STATUS.md)
 - تصمیم معماری: [`02-TARGET-ARCHITECTURE.md`](02-TARGET-ARCHITECTURE.md)
 - وظایف و معیار خروج: فایل همان فاز
+- شواهد تکمیل taskها: [`logs/`](logs/README.md)
 - وضعیت واقعی کد: repository و تست‌ها
 
-اگر مستند با کد تناقض داشت، Agent نباید حدس بزند. تناقض را در `STATUS.md` ثبت کند، کد و تاریخچه را بررسی کند و سپس مستند را همراه همان تغییر اصلاح کند.
+اگر مستند با کد تناقض داشت، Agent نباید حدس بزند. تناقض زنده را در `STATUS.md` و نتیجهٔ
+حل‌شده را در لاگ همان فاز ثبت کند، سپس کد و مستند را همراه همان تغییر اصلاح کند.
