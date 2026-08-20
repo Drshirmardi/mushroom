@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 15:12 +03:30`
+- آخرین به‌روزرسانی: `2026-08-20 15:32 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
-- فاز فعال: `Phase 00 — Foundation`
-- وضعیت فاز فعال: `IN_PROGRESS`
-- task فعال: `F00-T13`
-- مسئول/Agent: `/root`
-- blocker فعال: `ندارد؛ خطای lint در حال اصلاح است.`
+- فاز فعال: `Phase 01 — Identity & Access`
+- وضعیت فاز فعال: `NOT_STARTED`
+- task فعال: `ندارد`
+- مسئول/Agent: `تعیین نشده`
+- blocker فعال: `ندارد`
 
 ## پیشرفت کلان
 
@@ -31,7 +31,7 @@
 
 ## وضعیت فازها
 
-- [ ] `Phase 00` — Foundation — `IN_PROGRESS` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
+- [x] `Phase 00` — Foundation — `DONE` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [ ] `Phase 01` — Identity & Access — `NOT_STARTED`
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
@@ -46,20 +46,20 @@
 
 ## handoff فاز فعال
 
-- آخرین task تکمیل‌شده: `F00-T16` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: اصلاح `F00-T13` برای جایگزینی `next lint` و اجرای دوبارهٔ CI
-- نتیجهٔ review مستقل: [CI run #1](https://github.com/Drshirmardi/mushroom/actions/runs/32364670878) در PR شمارهٔ ۱ هنگام `pnpm lint` شکست خورد؛ جزئیات در [`logs/phase-00.md`](logs/phase-00.md) ثبت شده است.
+- فاز قبلی: `Phase 00 — Foundation` با [CI run #3](https://github.com/Drshirmardi/mushroom/actions/runs/32366483270) موفق تکمیل شد؛ شواهد: [`logs/phase-00.md`](logs/phase-00.md)
+- Task بعدی واجد شرایط: `F01-T01` — نهایی‌کردن auth flow، cookie policy، token claims و session model
+- dependency: `Phase 00 DONE` → PASS
 
 ## task در حال اجرا
 
 قبل از شروع، Agent فقط این بخش را تکمیل می‌کند:
 
 ```text
-Task ID: F00-T13
-Agent/Thread: /root
-Started at: 2026-08-20 15:12 +03:30
-Scope: اصلاح lint داشبورد و تأیید کامل workflow CI در PR شمارهٔ ۱
-Expected files: apps/dashboard/package.json، فایل‌های لازم ESLint در صورت نیاز، pnpm-lock.yaml و فایل‌های plan
+Task ID: —
+Agent/Thread: —
+Started at: —
+Scope: —
+Expected files: —
 ```
 
 پس از تکمیل، Agent باید claim را پاک کند، `Task بعدی واجد شرایط` را به‌روز کند و شواهد کامل

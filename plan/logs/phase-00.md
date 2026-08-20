@@ -349,3 +349,33 @@ Known limitations:
   - Phase 00 تا جایگزینی lint command داشبورد و موفقیت اجرای کامل CI قابل علامت‌گذاری به‌عنوان `DONE` نیست.
 Next task:
   - اصلاح `F00-T13` و اجرای دوبارهٔ workflow روی PR شمارهٔ ۱
+
+## F00-T13 — اصلاح و تأیید CI پس از review
+
+Task ID: F00-T13
+Completed at: 2026-08-20 15:32 +03:30
+Agent/Thread: /root
+Changed files:
+  - `apps/dashboard/package.json` و `apps/dashboard/eslint.config.mjs`
+  - `apps/api/package.json`
+  - `turbo.json` و `pnpm-lock.yaml`
+  - `plan/phases/00-FOUNDATION.md`، `plan/logs/phase-00.md` و `plan/STATUS.md`
+Migrations:
+  - migration جدید ندارد؛ migration موجود در PostgreSQL محلی و GitHub CI اعمال شد.
+Tests run:
+  - lint مستقیم داشبورد با ESLint → PASS
+  - `pnpm lint` با pnpm 10.10.0 → PASS
+  - `pnpm typecheck` با pnpm 10.10.0 → PASS (۴ workspace)
+  - `pnpm test` با PostgreSQL واقعی → PASS (۳ فایل، ۶ تست)
+  - `pnpm build` با pnpm 10.10.0 → PASS (۴ workspace)
+  - [GitHub Actions CI run #3](https://github.com/Drshirmardi/mushroom/actions/runs/32366483270) روی revision `3f2ec19f7ad358b747f0ec3303e92a0aca9e6988` → PASS
+Result:
+  - `next lint` حذف و ESLint flat config رسمی Next.js 16 برای داشبورد فعال شد → PASS
+  - متغیرهای لازم CI از allowlist صریح Turborepo به taskهای API عبور می‌کنند → PASS
+  - typeهای `pg` برای compile شدن migration smoke test در نصب تمیز ثبت شدند → PASS
+  - install قفل‌شده، Prisma generate/deploy، lint، typecheck، test و build در GitHub CI → PASS
+  - review مستقل Phase 00 تکمیل و فاز آمادهٔ `DONE` شد → PASS
+Known limitations:
+  - ندارد
+Next task:
+  - `F01-T01`
