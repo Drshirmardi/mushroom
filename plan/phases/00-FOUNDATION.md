@@ -27,7 +27,7 @@
 - [x] `F00-T13` — CI برای install، lint، typecheck، test، build و migration check
 - [x] `F00-T14` — اصلاح دستورهای ریشه و README اجرای development
 - [x] `F00-T15` — local/self-host کردن فونت‌های app و dashboard یا ثبت task جداگانه برای حذف وابستگی build به شبکه
-- [ ] `F00-T16` — ثبت evidence و آماده‌سازی review فاز
+- [x] `F00-T16` — ثبت evidence و آماده‌سازی review فاز
 
 ## متغیرهای محیطی پایه
 

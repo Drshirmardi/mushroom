@@ -313,3 +313,19 @@ Result:
   - importهای `next/font/google` حذف شدند؛ build دیگر نیازمند دریافت فونت از شبکه نیست → PASS
 Next task:
   - F00-T16
+
+## F00-T16 — evidence و آماده‌سازی review
+
+Task ID: F00-T16
+Completed at: 2026-08-20 14:58 +03:30
+Agent/Thread: /root
+Tests run:
+  - `git diff --check` → PASS
+  - جست‌وجوی `next/font/google` در app و dashboard → بدون نتیجه
+Result:
+  - تمام checklistهای F00-T01 تا F00-T16 تکمیل و شواهد در همین لاگ ثبت شده‌اند → PASS
+  - Phase 00 برای review مستقل آماده است → READY_FOR_REVIEW
+Known limitations:
+  - نخستین اجرای workflow CI در GitHub هنوز باید با push/PR تأیید شود.
+Next task:
+  - review مستقل Phase 00

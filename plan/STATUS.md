@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 14:51 +03:30`
+- آخرین به‌روزرسانی: `2026-08-20 14:58 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 00 — Foundation`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - task فعال: `ندارد`
 - مسئول/Agent: `تعیین نشده`
 - blocker فعال: `ندارد`
@@ -31,7 +31,7 @@
 
 ## وضعیت فازها
 
-- [ ] `Phase 00` — Foundation — `IN_PROGRESS` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
+- [ ] `Phase 00` — Foundation — `READY_FOR_REVIEW` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [ ] `Phase 01` — Identity & Access — `NOT_STARTED`
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
@@ -46,9 +46,9 @@
 
 ## handoff فاز فعال
 
-- آخرین task تکمیل‌شده: `F00-T13` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F00-T16` — ثبت evidence و آماده‌سازی review فاز
-- dependency و blocker برای `F00-T16`: ندارد.
+- آخرین task تکمیل‌شده: `F00-T16` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
+- Task بعدی واجد شرایط: review مستقل Phase 00
+- dependency و blocker برای review: اجرای نخست workflow CI روی push/PR باید تأیید شود.
 
 ## task در حال اجرا
 
