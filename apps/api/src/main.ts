@@ -10,6 +10,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -26,6 +27,26 @@ async function bootstrap(): Promise<void> {
   const port = configService.get<number>('PORT', 3003);
 
   app.setGlobalPrefix('v1');
+  const openApiConfig = new DocumentBuilder()
+    .setTitle('Sabz Zendegi API')
+    .setDescription('REST API for Sabz Zendegi clinic services.')
+    .setVersion('1.0.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'bearerAuth',
+    )
+    .build();
+  const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
+
+  SwaggerModule.setup('docs', app, openApiDocument, {
+    jsonDocumentUrl: 'docs-json',
+    swaggerOptions: { persistAuthorization: true },
+    useGlobalPrefix: false,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

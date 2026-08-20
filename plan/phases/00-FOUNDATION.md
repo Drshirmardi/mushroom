@@ -20,7 +20,7 @@
 - [x] `F00-T07` — ایجاد error contract پایدار با `code` و `requestId`
 - [x] `F00-T08` — structured logging، correlation ID و redaction داده حساس
 - [x] `F00-T09` — ایجاد health و readiness endpointها
-- [ ] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
+- [x] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
 - [ ] `F00-T11` — test harness شامل unit و integration با PostgreSQL واقعی
 - [ ] `F00-T12` — migration smoke test و seed framework
 - [ ] `F00-T13` — CI برای install، lint، typecheck، test، build و migration check

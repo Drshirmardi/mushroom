@@ -55,7 +55,7 @@
 - [x] `F00-T07` — ایجاد error contract پایدار
 - [x] `F00-T08` — logging، correlation ID و redaction
 - [x] `F00-T09` — health/readiness endpointها
-- [ ] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
+- [x] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
 - [ ] `F00-T11` — test harness و integration test با PostgreSQL
 - [ ] `F00-T12` — migration smoke test و seed framework
 - [ ] `F00-T13` — CI و verification دستورات ریشه
@@ -76,6 +76,31 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T10
+Completed at: 2026-08-20 14:12 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/package.json
+  - apps/api/src/main.ts
+  - pnpm-lock.yaml
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد
+Tests run:
+  - compiler مستقیم TypeScript (`tsc --noEmit`) → PASS
+  - compiler مستقیم TypeScript برای build config (`tsc -p tsconfig.build.json`) → PASS
+  - HTTP: `GET /docs` و `GET /docs-json` و اعتبارسنجی health pathها و bearer scheme → PASS
+  - git diff --check → PASS
+Result:
+  - Swagger UI در `/docs` و سند OpenAPI در `/docs-json` سرو می‌شوند → PASS
+  - scheme اولیهٔ `bearerAuth` با HTTP bearer و JWT در OpenAPI ثبت شد → PASS
+Known limitations:
+  - endpointهای محافظت‌شده هنوز در Phase 01 وجود ندارند؛ اعمال scheme بر operationهای واقعی همراه auth انجام می‌شود.
+  - `pnpm --filter @sabz-zendegi/api typecheck` و `build` فعلاً در pre-hook Prisma به ناسازگاری dependency `proper-lockfile` با runtime محلی برخورد می‌کنند؛ compiler مستقیم PASS است. رفع و verification دستورهای رسمی در F00-T13 انجام می‌شود.
+Next task:
+  - F00-T11
 
 Task ID: F00-T09
 Completed at: 2026-08-20 14:04 +03:30
