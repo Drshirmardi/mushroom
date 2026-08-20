@@ -16,7 +16,7 @@
 - [x] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
 - [x] `F00-T04` — ایجاد Docker Compose توسعه برای PostgreSQL
 - [x] `F00-T05` — نصب و راه‌اندازی Prisma، schema پایه و migration اولیه
-- [ ] `F00-T06` — تنظیم global prefix `/v1`، validation، serialization و exception filter
+- [x] `F00-T06` — تنظیم global prefix `/v1`، validation، serialization و exception filter
 - [ ] `F00-T07` — ایجاد error contract پایدار با `code` و `requestId`
 - [ ] `F00-T08` — structured logging، correlation ID و redaction داده حساس
 - [ ] `F00-T09` — ایجاد health و readiness endpointها

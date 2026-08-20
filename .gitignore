@@ -8,6 +8,7 @@ dist
 dist-ssr
 out
 apps/api/generated
+apps/api/src/generated
 
 # Turbo
 .turbo

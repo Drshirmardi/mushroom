@@ -51,7 +51,7 @@
 - [x] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
 - [x] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
 - [x] `F00-T05` — راه‌اندازی Prisma و migration اولیه
-- [ ] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
+- [x] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
 - [ ] `F00-T07` — ایجاد error contract پایدار
 - [ ] `F00-T08` — logging، correlation ID و redaction
 - [ ] `F00-T09` — health/readiness endpointها
@@ -76,6 +76,38 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T06
+Completed at: 2026-08-20 13:18 +03:30
+Agent/Thread: /root
+Changed files:
+  - .gitignore
+  - apps/api/package.json
+  - apps/api/prisma/schema.prisma
+  - apps/api/src/common/filters/http-exception.filter.ts
+  - apps/api/src/database/prisma/prisma.service.ts
+  - apps/api/src/main.ts
+  - apps/api/tsconfig.json
+  - pnpm-lock.yaml
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد
+Tests run:
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - pnpm --filter @sabz-zendegi/api build → PASS
+  - آزمون مستقیم HttpExceptionFilter برای پاسخ HTTP 400 → PASS
+  - git diff --check → PASS
+Result:
+  - تمام routeهای آینده زیر prefix `/v1` قرار می‌گیرند → PASS
+  - ValidationPipe سراسری whitelist، منع property ناشناخته، transform و کنترل پیام production دارد → PASS
+  - ClassSerializerInterceptor سراسری فعال است → PASS
+  - exceptionهای HTTP به پاسخ امن HTTP تبدیل می‌شوند و خطای داخلی جزئیات runtime را نشت نمی‌دهد → PASS
+Known limitations:
+  - error contract دارای `code` و `requestId` عمداً در F00-T07 افزوده می‌شود.
+  - validation API-level با DTO و endpoint واقعی در F00-T11 تست خواهد شد.
+Next task:
+  - F00-T07
 
 Task ID: F00-T05
 Completed at: 2026-08-20 13:09 +03:30
