@@ -2,16 +2,16 @@
 
 داشبورد مدیریت کلینیک (فارسی/RTL) ساخته‌شده با **Next.js (App Router) + TypeScript + Tailwind CSS v4 + Recharts**.
 
-> این پروژه از یک خروجی Figma Make (Vite + React تک‌فایلی) به Next.js کامپوننت‌بندی‌شده تبدیل شده و آماده‌ی انتقال به monorepo (به‌عنوان یک اپ مستقل در `apps/`) است.
+> این پروژه اکنون یک اپ مستقل در monorepo است.
 
 ## اجرا
 
 ```bash
-npm i
-npm run dev      # حالت توسعه روی http://localhost:3000
-npm run build    # بیلد پروداکشن
-npm start        # اجرای بیلد
-npm run typecheck
+pnpm install
+pnpm --filter @sabz-zendegi/dashboard dev      # حالت توسعه روی http://localhost:3002
+pnpm --filter @sabz-zendegi/dashboard build
+pnpm --filter @sabz-zendegi/dashboard start
+pnpm --filter @sabz-zendegi/dashboard typecheck
 ```
 
 ## ساختار

@@ -1,9 +1,10 @@
 # Phase 00 — Backend Foundation
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت اولیه: `IN_PROGRESS`
 - Milestone: `A`
 - پیش‌نیاز: ندارد
 - خروجی اصلی: API قابل اجرا، دیتابیس migration-based، استانداردهای سراسری و CI
+- لاگ اجرا: [`../logs/phase-00.md`](../logs/phase-00.md)
 
 ## هدف
 
@@ -11,22 +12,22 @@
 
 ## Taskها
 
-- [ ] `F00-T01` — scaffold کردن NestJS در `apps/api` با Fastify adapter
-- [ ] `F00-T02` — تنظیم package scripts، workspace، Turbo tasks و TypeScript config
-- [ ] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
-- [ ] `F00-T04` — ایجاد Docker Compose توسعه برای PostgreSQL
-- [ ] `F00-T05` — نصب و راه‌اندازی Prisma، schema پایه و migration اولیه
-- [ ] `F00-T06` — تنظیم global prefix `/v1`، validation، serialization و exception filter
-- [ ] `F00-T07` — ایجاد error contract پایدار با `code` و `requestId`
-- [ ] `F00-T08` — structured logging، correlation ID و redaction داده حساس
-- [ ] `F00-T09` — ایجاد health و readiness endpointها
-- [ ] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
-- [ ] `F00-T11` — test harness شامل unit و integration با PostgreSQL واقعی
-- [ ] `F00-T12` — migration smoke test و seed framework
-- [ ] `F00-T13` — CI برای install، lint، typecheck، test، build و migration check
-- [ ] `F00-T14` — اصلاح دستورهای ریشه و README اجرای development
-- [ ] `F00-T15` — local/self-host کردن فونت‌های app و dashboard یا ثبت task جداگانه برای حذف وابستگی build به شبکه
-- [ ] `F00-T16` — ثبت evidence و آماده‌سازی review فاز
+- [x] `F00-T01` — scaffold کردن NestJS در `apps/api` با Fastify adapter
+- [x] `F00-T02` — تنظیم package scripts، workspace، Turbo tasks و TypeScript config
+- [x] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
+- [x] `F00-T04` — ایجاد Docker Compose توسعه برای PostgreSQL
+- [x] `F00-T05` — نصب و راه‌اندازی Prisma، schema پایه و migration اولیه
+- [x] `F00-T06` — تنظیم global prefix `/v1`، validation، serialization و exception filter
+- [x] `F00-T07` — ایجاد error contract پایدار با `code` و `requestId`
+- [x] `F00-T08` — structured logging، correlation ID و redaction داده حساس
+- [x] `F00-T09` — ایجاد health و readiness endpointها
+- [x] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
+- [x] `F00-T11` — test harness شامل unit و integration با PostgreSQL واقعی
+- [x] `F00-T12` — migration smoke test و seed framework
+- [x] `F00-T13` — CI برای install، lint، typecheck، test، build و migration check
+- [x] `F00-T14` — اصلاح دستورهای ریشه و README اجرای development
+- [x] `F00-T15` — local/self-host کردن فونت‌های app و dashboard یا ثبت task جداگانه برای حذف وابستگی build به شبکه
+- [x] `F00-T16` — ثبت evidence و آماده‌سازی review فاز
 
 ## متغیرهای محیطی پایه
 

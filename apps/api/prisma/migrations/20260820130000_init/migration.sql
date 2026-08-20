@@ -1,0 +1,1 @@
+-- Foundation baseline. Domain tables are introduced by their owning phases.

@@ -60,11 +60,14 @@ checkbox فقط زمانی `[x]` می‌شود که:
 - وضعیت و بخش انجام‌شده در handoff نوشته می‌شود.
 - در صورت مانع واقعی، task `BLOCKED` ثبت می‌شود.
 
-## ثبت شواهد
+## ثبت شواهد و handoff
 
-پس از تکمیل task، Agent در `STATUS.md` اضافه می‌کند:
+پس از تکمیل task، Agent یک entry کامل در `plan/logs/phase-XX.md` اضافه می‌کند. قالب و
+نام‌گذاری فایل‌ها در [`logs/README.md`](logs/README.md) منبع حقیقت هستند:
 
 ```text
+## F03-T07 — عنوان task
+
 Task ID: F03-T07
 Completed at: 2026-..-..
 Agent/Thread: ...
@@ -83,6 +86,14 @@ Next task:
   - F03-T08
 ```
 
+سپس Agent باید در `STATUS.md` فقط این موارد را به‌روز کند:
+
+1. claim بخش «task در حال اجرا» را پاک کند.
+2. `Task بعدی واجد شرایط` را با اولین task unchecked و بدون blocker در checklist فاز فعال تنظیم کند.
+3. در صورت وجود blocker یا handoff ضروری، یک خلاصهٔ کوتاه و link به entry لاگ ثبت کند.
+
+شواهد کامل task تکمیل‌شده نباید در `STATUS.md` نگه‌داری یا کپی شود.
+
 ## پایان فاز
 
 فاز فقط زمانی `READY_FOR_REVIEW` می‌شود که:
@@ -99,7 +110,7 @@ Next task:
 - فاز `DONE` می‌شود.
 - checkbox فاز در `STATUS.md` تیک می‌خورد.
 - فاز بعدی فعال می‌شود.
-- taskهای فاز بعدی به بخش «taskهای فاز فعال» منتقل می‌شوند.
+- `STATUS.md` به فایل checklist فاز بعدی و اولین Task واجد شرایط آن اشاره می‌کند.
 
 ## Handoff در کار ناقص
 

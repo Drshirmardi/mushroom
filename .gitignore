@@ -7,6 +7,8 @@ node_modules
 dist
 dist-ssr
 out
+apps/api/generated
+apps/api/src/generated
 
 # Turbo
 .turbo
@@ -47,7 +49,7 @@ next-env.d.ts
 *.log
 npm-debug.log*
 pnpm-debug.log*
-
+.pnpm-store
 # Kilo / ZCode
 .kilo
 .zcode

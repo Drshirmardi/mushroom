@@ -115,7 +115,8 @@ mock کردن PostgreSQL در integration test پذیرفته نیست.
 - migration، code و test مربوط به یک تغییر باید هماهنگ تحویل شوند.
 - تغییر unrelated وارد PR نمی‌شود.
 - فایل‌های کاربر یا تغییرهای موجود reset نمی‌شوند.
-- task فقط با ثبت test evidence در `STATUS.md` تیک می‌خورد.
+- task فقط با ثبت test evidence در فایل لاگ همان فاز تیک می‌خورد؛ `STATUS.md` فقط باید
+  handoff و Task بعدی را نشان دهد.
 
 ## Definition of Done عمومی
 
