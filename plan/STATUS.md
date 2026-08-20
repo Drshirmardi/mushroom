@@ -49,7 +49,7 @@
 - [x] `F00-T01` — ایجاد scaffold بک‌اند NestJS در `apps/api`
 - [x] `F00-T02` — تنظیم اسکریپت‌ها و اتصال به workspace/Turborepo
 - [x] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
-- [ ] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
+- [x] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
 - [ ] `F00-T05` — راه‌اندازی Prisma و migration اولیه
 - [ ] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
 - [ ] `F00-T07` — ایجاد error contract پایدار
@@ -76,6 +76,30 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T04
+Completed at: 2026-08-20 12:58 +03:30
+Agent/Thread: /root
+Changed files:
+  - compose.yaml
+  - apps/api/.env.example
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد (خارج از scope؛ F00-T05)
+Tests run:
+  - docker compose config → PASS
+  - docker compose up -d --wait --wait-timeout 60 postgres → PASS
+  - docker compose exec -T postgres pg_isready -U sabz_zendegi -d sabz_zendegi → PASS
+  - docker compose exec -T postgres psql ... "SELECT current_database(), current_user" → PASS (`sabz_zendegi|sabz_zendegi`)
+  - git diff --check → PASS
+Result:
+  - PostgreSQL 16 توسعه روی localhost:5432 با volume پایدار و healthcheck اجرا می‌شود → PASS
+  - متغیرهای Compose و DATABASE_URL نمونه با یکدیگر هم‌راستا هستند → PASS
+Known limitations:
+  - container توسعه برای استفادهٔ محلی در حال اجرا باقی مانده است؛ migration و schema عمداً به F00-T05 موکول شده‌اند.
+Next task:
+  - F00-T05
 
 Task ID: F00-T03
 Completed at: 2026-08-20 12:49 +03:30
