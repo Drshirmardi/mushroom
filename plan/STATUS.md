@@ -53,7 +53,7 @@
 - [x] `F00-T05` — راه‌اندازی Prisma و migration اولیه
 - [x] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
 - [x] `F00-T07` — ایجاد error contract پایدار
-- [ ] `F00-T08` — logging، correlation ID و redaction
+- [x] `F00-T08` — logging، correlation ID و redaction
 - [ ] `F00-T09` — health/readiness endpointها
 - [ ] `F00-T10` — Swagger/OpenAPI و security schemeهای اولیه
 - [ ] `F00-T11` — test harness و integration test با PostgreSQL
@@ -76,6 +76,30 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T08
+Completed at: 2026-08-20 13:47 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/src/common/logging/fastify-logging.config.ts
+  - apps/api/src/main.ts
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد
+Tests run:
+  - pnpm --filter @sabz-zendegi/api exec tsc --noEmit → PASS
+  - pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json → PASS
+  - آزمون مستقیم پذیرش/تولید correlation ID و مسیرهای redaction → PASS
+  - git diff --check → PASS
+Result:
+  - Fastify logger خروجی structured با LOG_LEVEL دارد → PASS
+  - `x-request-id` معتبر پذیرفته و مقدار نامعتبر با UUID جایگزین می‌شود → PASS
+  - authorization، cookie، password و tokenها در logger redact می‌شوند → PASS
+Known limitations:
+  - `pnpm --filter @sabz-zendegi/api typecheck` و `build` فعلاً در pre-hook Prisma به ناسازگاری dependency `proper-lockfile` با runtime محلی برخورد می‌کنند؛ compiler مستقیم PASS است. رفع و verification دستورهای رسمی در F00-T13 انجام می‌شود.
+Next task:
+  - F00-T09
 
 Task ID: F00-T07
 Completed at: 2026-08-20 13:23 +03:30
