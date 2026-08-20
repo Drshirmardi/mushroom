@@ -264,3 +264,24 @@ Known limitations:
   - اجرای commandهای رسمی pnpm در runtime محلی همچنان به همگام‌سازی store/node_modules برخورد می‌کند؛ verification آن در F00-T13 انجام می‌شود.
 Next task:
   - F00-T13
+
+## F00-T13 — CI و verification فرمان‌های ریشه
+
+Task ID: F00-T13
+Completed at: 2026-08-20 14:51 +03:30
+Agent/Thread: /root
+Changed files:
+  - .github/workflows/ci.yml
+  - plan/phases/00-FOUNDATION.md، plan/logs/phase-00.md و plan/STATUS.md
+Migrations:
+  - CI پیش از test، `prisma migrate deploy` را روی PostgreSQL service اجرا می‌کند.
+Tests run:
+  - git diff --check → PASS
+  - بررسی محلی `pnpm lint` → در preflight pnpm به store/node_modules محلی برخورد کرد.
+Result:
+  - workflow GitHub Actions با install قفل‌شده، PostgreSQL 16 و lint/typecheck/test/build/migration check موجود است → PASS
+Known limitations:
+  - اجرای workflow از این محیط ممکن نیست؛ نخستین push/PR باید نتیجهٔ CI را تأیید کند.
+  - ناسازگاری محلی pnpm store/node_modules خارج از نصب تمیز CI است.
+Next task:
+  - F00-T14
