@@ -1,19 +1,18 @@
 # API
 
-بک‌اند پروژه سبز زندگی با NestJS و Fastify ساخته می‌شود. این scaffold فقط bootstrap
-اپلیکیشن را فراهم می‌کند؛ config، دیتابیس، routeها، استانداردهای خطا و ماژول‌های business
-در taskهای بعدی Phase 00 اضافه می‌شوند.
+بک‌اند پروژه سبز زندگی با NestJS، Fastify، PostgreSQL و Prisma ساخته شده است.
 
 ## اجرای محلی
 
 پس از نصب وابستگی‌های workspace:
 
 ```bash
+docker compose up -d postgres
+pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
 pnpm --filter @sabz-zendegi/api start:dev
 ```
 
-API به‌صورت پیش‌فرض روی `http://localhost:3003` گوش می‌دهد. متغیر `PORT` موقتاً برای
-تغییر پورت پشتیبانی می‌شود؛ validation متغیرهای محیطی در `F00-T03` اضافه خواهد شد.
+API به‌صورت پیش‌فرض روی `http://localhost:3003` گوش می‌دهد. Swagger در `/docs` و سند OpenAPI در `/docs-json` قرار دارد.
 
 ## بررسی پایه
 

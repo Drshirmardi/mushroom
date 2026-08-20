@@ -47,8 +47,8 @@
 ## handoff فاز فعال
 
 - آخرین task تکمیل‌شده: `F00-T13` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F00-T14` — اصلاح دستورهای ریشه و README اجرای development
-- dependency و blocker برای `F00-T14`: ندارد.
+- Task بعدی واجد شرایط: `F00-T15` — حذف وابستگی build فونت‌های خارجی
+- dependency و blocker برای `F00-T15`: ندارد.
 
 ## task در حال اجرا
 

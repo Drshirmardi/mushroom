@@ -285,3 +285,18 @@ Known limitations:
   - ناسازگاری محلی pnpm store/node_modules خارج از نصب تمیز CI است.
 Next task:
   - F00-T14
+
+## F00-T14 — اصلاح README و دستورهای development
+
+Task ID: F00-T14
+Completed at: 2026-08-20 14:54 +03:30
+Agent/Thread: /root
+Changed files:
+  - README.md و apps/{api,app,dashboard}/README.md
+  - plan/phases/00-FOUNDATION.md و plan/STATUS.md و plan/logs/phase-00.md
+Tests run:
+  - git diff --check → PASS
+Result:
+  - پورت‌ها، pnpm workspace commandها، API و Swagger در مستندات development هم‌راستا شدند → PASS
+Next task:
+  - F00-T15

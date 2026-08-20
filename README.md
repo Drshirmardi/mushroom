@@ -10,7 +10,7 @@ mushroom/
 │   ├── web/          # وب‌سایت اصلی (لندینگ + ورود/ثبت‌نام) → sabz.local:3000
 │   ├── app/          # اپلیکیشن کاربر (نوبت‌دهی، درمان، فروشگاه) → app.sabz.local:3001
 │   ├── dashboard/    # داشبورد مدیریتی → dashboard.sabz.local:3002
-│   └── api/          # بک‌اند NestJS (placeholder — هنوز ساخته نشده) → api.sabz.local:3003
+│   └── api/          # بک‌اند NestJS/Fastify + PostgreSQL → api.sabz.local:3003
 ├── packages/         # کتابخانه‌های اشتراکی (آینده — فعلاً خالی)
 ├── pnpm-workspace.yaml
 ├── turbo.json
@@ -25,11 +25,11 @@ mushroom/
 | web | `sabz.example.com` | `localhost:3000` |
 | app | `app.sabz.example.com` | `localhost:3001` |
 | dashboard | `dashboard.sabz.example.com` | `localhost:3002` |
-| api | `api.sabz.example.com` | `localhost:3003` (آینده) |
+| api | `api.sabz.example.com` | `localhost:3003` |
 
 ## پیش‌نیازها
 
-- Node.js 20+
+- Node.js 24+
 - pnpm 10+ (`corepack enable` یا `npm i -g pnpm`)
 
 ## دستورات

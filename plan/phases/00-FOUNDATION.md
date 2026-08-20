@@ -25,7 +25,7 @@
 - [x] `F00-T11` — test harness شامل unit و integration با PostgreSQL واقعی
 - [x] `F00-T12` — migration smoke test و seed framework
 - [x] `F00-T13` — CI برای install، lint، typecheck، test، build و migration check
-- [ ] `F00-T14` — اصلاح دستورهای ریشه و README اجرای development
+- [x] `F00-T14` — اصلاح دستورهای ریشه و README اجرای development
 - [ ] `F00-T15` — local/self-host کردن فونت‌های app و dashboard یا ثبت task جداگانه برای حذف وابستگی build به شبکه
 - [ ] `F00-T16` — ثبت evidence و آماده‌سازی review فاز
 

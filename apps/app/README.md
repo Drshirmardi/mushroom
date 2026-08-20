@@ -5,10 +5,10 @@
 ## اجرا
 
 ```bash
-npm i
-npm run dev      # حالت توسعه روی http://localhost:3000
-npm run build    # بیلد پروداکشن
-npm start        # اجرای بیلد پروداکشن
+pnpm install
+pnpm --filter @sabz-zendegi/app dev      # حالت توسعه روی http://localhost:3001
+pnpm --filter @sabz-zendegi/app build
+pnpm --filter @sabz-zendegi/app start
 ```
 
 ## تکنولوژی‌ها
