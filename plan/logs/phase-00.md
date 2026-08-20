@@ -300,3 +300,16 @@ Result:
   - پورت‌ها، pnpm workspace commandها، API و Swagger در مستندات development هم‌راستا شدند → PASS
 Next task:
   - F00-T15
+
+## F00-T15 — حذف وابستگی فونت خارجی
+
+Task ID: F00-T15
+Completed at: 2026-08-20 14:56 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/app/src/app/layout.tsx
+  - apps/dashboard/src/app/layout.tsx
+Result:
+  - importهای `next/font/google` حذف شدند؛ build دیگر نیازمند دریافت فونت از شبکه نیست → PASS
+Next task:
+  - F00-T16
