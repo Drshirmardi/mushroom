@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 14:58 +03:30`
+- آخرین به‌روزرسانی: `2026-08-20 15:08 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 00 — Foundation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `BLOCKED`
 - task فعال: `ندارد`
 - مسئول/Agent: `تعیین نشده`
-- blocker فعال: `ندارد`
+- blocker فعال: نخستین اجرای CI در PR شماره ۱ روی `pnpm lint` شکست خورد؛ `apps/dashboard` هنوز از `next lint` نامعتبر استفاده می‌کند.
 
 ## پیشرفت کلان
 
@@ -31,7 +31,7 @@
 
 ## وضعیت فازها
 
-- [ ] `Phase 00` — Foundation — `READY_FOR_REVIEW` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
+- [ ] `Phase 00` — Foundation — `BLOCKED` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [ ] `Phase 01` — Identity & Access — `NOT_STARTED`
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
@@ -47,8 +47,8 @@
 ## handoff فاز فعال
 
 - آخرین task تکمیل‌شده: `F00-T16` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: review مستقل Phase 00
-- dependency و blocker برای review: اجرای نخست workflow CI روی push/PR باید تأیید شود.
+- Task بعدی واجد شرایط: اصلاح `F00-T13` برای جایگزینی `next lint` و اجرای دوبارهٔ CI
+- نتیجهٔ review مستقل: [CI run #1](https://github.com/Drshirmardi/mushroom/actions/runs/32364670878) در PR شمارهٔ ۱ هنگام `pnpm lint` شکست خورد؛ جزئیات در [`logs/phase-00.md`](logs/phase-00.md) ثبت شده است.
 
 ## task در حال اجرا
 
