@@ -27,7 +27,7 @@ ADMIN
 ## Taskها
 
 - [x] `F01-T01` — نهایی‌کردن auth flow، cookie policy، token claims و session model
-- [ ] `F01-T02` — migration مدل‌های identity
+- [x] `F01-T02` — migration مدل‌های identity
 - [ ] `F01-T03` — normalize شماره موبایل و unique constraint
 - [ ] `F01-T04` — password hashing با Argon2id و policy رمز
 - [ ] `F01-T05` — register use case و endpoint

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 19:43 +03:30`
+- آخرین به‌روزرسانی: `2026-08-20 19:54 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 01 — Identity & Access`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -32,7 +32,7 @@
 ## وضعیت فازها
 
 - [x] `Phase 00` — Foundation — `DONE` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
-- [ ] `Phase 01` — Identity & Access — `NOT_STARTED`
+- [ ] `Phase 01` — Identity & Access — `IN_PROGRESS`
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
 - [ ] `Phase 04` — Clinical Records & Treatment — `NOT_STARTED`
@@ -47,8 +47,8 @@
 ## handoff فاز فعال
 
 - فاز قبلی: `Phase 00 — Foundation` با [CI run #3](https://github.com/Drshirmardi/mushroom/actions/runs/32366483270) موفق تکمیل شد؛ شواهد: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F01-T02` — migration مدل‌های identity
-- dependency: `F01-T01` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- Task بعدی واجد شرایط: `F01-T03` — normalize شماره موبایل و unique constraint
+- dependency: `F01-T02` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 
 ## task در حال اجرا
 
