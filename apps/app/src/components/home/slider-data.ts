@@ -16,7 +16,7 @@ export const sliderItems = [
     },
     {
         id: 2,
-        title: "محصولات تب سوزنی",
+        title: "محصولات طب سوزنی",
         subtitle: "تسکین درد با روش‌های نوین",
         icon: Syringe,
         color: "from-emerald-500 to-teal-600",
