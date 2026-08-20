@@ -241,3 +241,26 @@ Known limitations:
   - اجرای `pnpm --filter @sabz-zendegi/api test` در runtime محلی پیش از شروع script به ناسازگاری store/node_modules و درخواست حذف non-interactive برخورد می‌کند؛ اجرای مستقیم commandهای همان script PASS است. رفع و verification دستورهای رسمی در F00-T13 انجام می‌شود.
 Next task:
   - F00-T12
+
+## F00-T12 — migration smoke test و seed framework
+
+Task ID: F00-T12
+Completed at: 2026-08-20 14:47 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/prisma.config.ts و prisma/seed.mjs
+  - apps/api/test/migrations.integration.spec.ts و package.json
+  - plan/phases/00-FOUNDATION.md، plan/logs/phase-00.md و plan/STATUS.md
+Migrations:
+  - `20260820130000_init` → PASS روی دیتابیس PostgreSQL خالی و موقت
+Tests run:
+  - `node prisma/seed.mjs` → PASS
+  - `vitest run test/migrations.integration.spec.ts --no-file-parallelism` → PASS
+  - git diff --check → PASS
+Result:
+  - seed development با اتصال واقعی آماده است و در نبود مدل business داده‌ای ایجاد نمی‌کند → PASS
+  - migration history از صفر روی PostgreSQL خالی اعمال می‌شود → PASS
+Known limitations:
+  - اجرای commandهای رسمی pnpm در runtime محلی همچنان به همگام‌سازی store/node_modules برخورد می‌کند؛ verification آن در F00-T13 انجام می‌شود.
+Next task:
+  - F00-T13

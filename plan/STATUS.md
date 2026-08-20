@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 14:31 +03:30`
+- آخرین به‌روزرسانی: `2026-08-20 14:47 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 00 — Foundation`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -46,9 +46,9 @@
 
 ## handoff فاز فعال
 
-- آخرین task تکمیل‌شده: `F00-T11` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F00-T12` — migration smoke test و seed framework
-- dependency و blocker برای `F00-T12`: ندارد؛ محدودیت شناخته‌شدهٔ فرمان‌های رسمی pnpm در لاگ `F00-T11` ثبت شده و باید در F00-T13 پیگیری شود.
+- آخرین task تکمیل‌شده: `F00-T12` — لاگ: [`logs/phase-00.md`](logs/phase-00.md)
+- Task بعدی واجد شرایط: `F00-T13` — CI و verification دستورات ریشه
+- dependency و blocker برای `F00-T13`: ندارد؛ محدودیت فرمان‌های رسمی pnpm در لاگ `F00-T12` ثبت شده است.
 
 ## task در حال اجرا
 
