@@ -1,6 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": ["APP_ORIGINS", "LOG_LEVEL", "NODE_ENV", "PORT"],
+  "globalPassThroughEnv": ["DATABASE_URL", "JWT_ACCESS_SECRET"],
   "tasks": {
     "dev": {
       "cache": false,

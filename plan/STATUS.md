@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 15:08 +03:30`
+- آخرین به‌روزرسانی: `2026-08-20 15:12 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 00 — Foundation`
-- وضعیت فاز فعال: `BLOCKED`
-- task فعال: `ندارد`
-- مسئول/Agent: `تعیین نشده`
-- blocker فعال: نخستین اجرای CI در PR شماره ۱ روی `pnpm lint` شکست خورد؛ `apps/dashboard` هنوز از `next lint` نامعتبر استفاده می‌کند.
+- وضعیت فاز فعال: `IN_PROGRESS`
+- task فعال: `F00-T13`
+- مسئول/Agent: `/root`
+- blocker فعال: `ندارد؛ خطای lint در حال اصلاح است.`
 
 ## پیشرفت کلان
 
@@ -31,7 +31,7 @@
 
 ## وضعیت فازها
 
-- [ ] `Phase 00` — Foundation — `BLOCKED` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
+- [ ] `Phase 00` — Foundation — `IN_PROGRESS` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [ ] `Phase 01` — Identity & Access — `NOT_STARTED`
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
@@ -55,11 +55,11 @@
 قبل از شروع، Agent فقط این بخش را تکمیل می‌کند:
 
 ```text
-Task ID: —
-Agent/Thread: —
-Started at: —
-Scope: —
-Expected files: —
+Task ID: F00-T13
+Agent/Thread: /root
+Started at: 2026-08-20 15:12 +03:30
+Scope: اصلاح lint داشبورد و تأیید کامل workflow CI در PR شمارهٔ ۱
+Expected files: apps/dashboard/package.json، فایل‌های لازم ESLint در صورت نیاز، pnpm-lock.yaml و فایل‌های plan
 ```
 
 پس از تکمیل، Agent باید claim را پاک کند، `Task بعدی واجد شرایط` را به‌روز کند و شواهد کامل
