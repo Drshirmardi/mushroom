@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { resolve } from 'node:path';
 
 import { environmentValidationSchema } from './config/environment.validation';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { environmentValidationSchema } from './config/environment.validation';
         allowUnknown: true,
       },
     }),
+    DatabaseModule,
   ],
 })
 export class AppModule {}

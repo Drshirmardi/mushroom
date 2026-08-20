@@ -50,7 +50,7 @@
 - [x] `F00-T02` — تنظیم اسکریپت‌ها و اتصال به workspace/Turborepo
 - [x] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
 - [x] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
-- [ ] `F00-T05` — راه‌اندازی Prisma و migration اولیه
+- [x] `F00-T05` — راه‌اندازی Prisma و migration اولیه
 - [ ] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
 - [ ] `F00-T07` — ایجاد error contract پایدار
 - [ ] `F00-T08` — logging، correlation ID و redaction
@@ -76,6 +76,40 @@ Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T05
+Completed at: 2026-08-20 13:09 +03:30
+Agent/Thread: /root
+Changed files:
+  - .gitignore
+  - apps/api/package.json
+  - apps/api/prisma.config.ts
+  - apps/api/prisma/schema.prisma
+  - apps/api/prisma/migrations/migration_lock.toml
+  - apps/api/prisma/migrations/20260820130000_init/migration.sql
+  - apps/api/src/app.module.ts
+  - apps/api/src/database/database.module.ts
+  - apps/api/src/database/prisma/prisma.service.ts
+  - pnpm-lock.yaml
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - `20260820130000_init` → applied to local PostgreSQL
+Tests run:
+  - pnpm --filter @sabz-zendegi/api prisma:generate → PASS
+  - pnpm --filter @sabz-zendegi/api prisma:migrate:deploy → PASS
+  - pnpm --filter @sabz-zendegi/api exec prisma migrate status → PASS (database schema up to date)
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - pnpm --filter @sabz-zendegi/api build → PASS
+  - git diff --check → PASS
+Result:
+  - Prisma 7 config، PostgreSQL datasource، generated client و PrismaPg adapter در DatabaseModule آماده‌اند → PASS
+  - migration history versioned از baseline آغاز شد، بدون ساخت مدل یا جدول business خارج از scope → PASS
+Known limitations:
+  - migration پایه عمداً خالی است؛ جدول‌ها فقط در task/faze مالک domain خود ایجاد می‌شوند.
+  - اتصال و readiness دیتابیس به endpointهای سلامت در F00-T09 افزوده می‌شود.
+Next task:
+  - F00-T06
 
 Task ID: F00-T04
 Completed at: 2026-08-20 12:58 +03:30
