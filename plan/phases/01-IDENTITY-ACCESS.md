@@ -26,7 +26,7 @@ ADMIN
 
 ## Taskها
 
-- [ ] `F01-T01` — نهایی‌کردن auth flow، cookie policy، token claims و session model
+- [x] `F01-T01` — نهایی‌کردن auth flow، cookie policy، token claims و session model
 - [ ] `F01-T02` — migration مدل‌های identity
 - [ ] `F01-T03` — normalize شماره موبایل و unique constraint
 - [ ] `F01-T04` — password hashing با Argon2id و policy رمز
@@ -98,3 +98,16 @@ POST   /v1/me/change-password
 - OAuth/social login
 - PatientProfile و DoctorProfile
 - permission builder پویا در dashboard
+
+## قرارداد Task F01-T01
+
+تصمیم اجرایی این task در
+[`ADR-0001 — قرارداد احراز هویت و session مرورگر`](../decisions/ADR-0001-auth-session-contract.md)
+ثبت شده است. معیار تکمیل task:
+
+- جریان register/login/refresh/logout و مرز پاسخ/cookie بدون ابهام تعریف شده باشد.
+- policy عمر access/refresh، `remember`، cookie و storage سمت frontend مشخص باشد.
+- claimهای مجاز JWT و ممنوعیت PII در token مشخص باشد.
+- مدل منطقی Session، rotation اتمیک و رفتار reuse detection مشخص باشد.
+- CORS، Origin validation و فرض same-site deployment مشخص باشد.
+- اثر تصمیم بر taskهای `F01-T02` تا `F01-T16` و تست‌های لازم ثبت شده باشد.
