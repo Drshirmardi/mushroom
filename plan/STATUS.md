@@ -48,7 +48,7 @@
 
 - [x] `F00-T01` — ایجاد scaffold بک‌اند NestJS در `apps/api`
 - [x] `F00-T02` — تنظیم اسکریپت‌ها و اتصال به workspace/Turborepo
-- [ ] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
+- [x] `F00-T03` — راه‌اندازی config و validation متغیرهای محیطی
 - [ ] `F00-T04` — راه‌اندازی PostgreSQL و Docker Compose توسعه
 - [ ] `F00-T05` — راه‌اندازی Prisma و migration اولیه
 - [ ] `F00-T06` — تنظیم global prefix، validation، serialization و exception filter
@@ -68,14 +68,43 @@
 قبل از شروع کار، Agent این بخش را پر می‌کند:
 
 ```text
-Task ID: F00-T03
-Agent/Thread: /root
-Started at: 2026-08-20 12:41 +03:30
-Scope: ایجاد config module با validation متغیرهای پایه و template امن محیط API
-Expected files: apps/api/package.json, apps/api/src/app.module.ts, apps/api/src/main.ts, apps/api/src/config/*, apps/api/.env.example, pnpm-lock.yaml, plan/STATUS.md, plan/phases/00-FOUNDATION.md
+Task ID: —
+Agent/Thread: —
+Started at: —
+Scope: —
+Expected files: —
 ```
 
 ## شواهد آخرین تکمیل
+
+Task ID: F00-T03
+Completed at: 2026-08-20 12:49 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/package.json
+  - apps/api/.env.example
+  - apps/api/src/app.module.ts
+  - apps/api/src/config/environment.validation.ts
+  - apps/api/src/main.ts
+  - pnpm-lock.yaml
+  - plan/phases/00-FOUNDATION.md
+  - plan/STATUS.md
+Migrations:
+  - ندارد (خارج از scope؛ F00-T05)
+Tests run:
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - pnpm --filter @sabz-zendegi/api build → PASS
+  - اجرای API با DATABASE_URL و JWT_ACCESS_SECRET معتبر → PASS (Nest bootstrap)
+  - اجرای API بدون DATABASE_URL → PASS (رد با `Config validation error`)
+  - git diff --check → PASS
+Result:
+  - متغیرهای NODE_ENV، PORT، DATABASE_URL، APP_ORIGINS، LOG_LEVEL و JWT_ACCESS_SECRET قبل از bootstrap اعتبارسنجی می‌شوند → PASS
+  - template فاقد secret واقعی و مسیرهای .env ریشه/API پشتیبانی می‌شوند → PASS
+  - ConfigService مقدار PORT معتبرشده را برای listener استفاده می‌کند → PASS
+Known limitations:
+  - DATABASE_URL در این task صرفاً validate می‌شود؛ اتصال و readiness دیتابیس در F00-T05 و F00-T09 پیاده‌سازی می‌شود.
+Next task:
+  - F00-T04
 
 Task ID: F00-T02
 Completed at: 2026-08-20 12:39 +03:30
@@ -129,7 +158,7 @@ Result:
   - وابستگی‌ها و lockfile workspace ثبت شدند → PASS
 Known limitations:
   - Endpoint، config، validation، database و test harness عمداً به taskهای بعدی Phase 00 موکول شده‌اند.
-  - نسخه‌های NestJS دقیقاً روی 11.1.6 pin شدند: نسخهٔ 11.2.1 که از range اولیه resolve می‌شد در اجرای واقعی فایل runtime `abstract.interface.js` را نداشت؛ 11.1.6 با bootstrap تأیید شد.
+  - وابستگی‌های NestJS در F00-T03 به 11.1.8 به‌روزرسانی شدند؛ نسخهٔ 11.1.6 در نصب مجدد به فایل runtime `abstract.interface.js` مفقود اشاره می‌کرد و 11.1.8 با bootstrap تأیید شد.
 Next task:
   - F00-T02
 

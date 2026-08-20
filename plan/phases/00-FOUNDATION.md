@@ -13,7 +13,7 @@
 
 - [x] `F00-T01` — scaffold کردن NestJS در `apps/api` با Fastify adapter
 - [x] `F00-T02` — تنظیم package scripts، workspace، Turbo tasks و TypeScript config
-- [ ] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
+- [x] `F00-T03` — ایجاد config module و validation متغیرهای محیطی
 - [ ] `F00-T04` — ایجاد Docker Compose توسعه برای PostgreSQL
 - [ ] `F00-T05` — نصب و راه‌اندازی Prisma، schema پایه و migration اولیه
 - [ ] `F00-T06` — تنظیم global prefix `/v1`، validation، serialization و exception filter
