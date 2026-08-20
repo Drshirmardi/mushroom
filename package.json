@@ -8,6 +8,7 @@
     "dev:api": "pnpm --filter @sabz-zendegi/api dev",
     "build": "turbo build",
     "lint": "turbo lint",
+    "test": "turbo test",
     "typecheck": "turbo typecheck",
     "clean": "turbo clean && rm -rf node_modules"
   },

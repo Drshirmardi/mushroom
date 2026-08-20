@@ -214,3 +214,30 @@ Known limitations:
   - دستورهای رسمی typecheck/build با pre-hook Prisma به ناسازگاری `proper-lockfile` در runtime محلی برخورد می‌کنند؛ رفع و verification در F00-T13 است.
 Next task:
   - F00-T11
+
+## F00-T11 — test harness با PostgreSQL واقعی
+
+Task ID: F00-T11
+Completed at: 2026-08-20 14:31 +03:30
+Agent/Thread: /root
+Changed files:
+  - apps/api/src/app.factory.ts و src/main.ts
+  - apps/api/test/health.controller.spec.ts و test/health.integration.spec.ts
+  - apps/api/tsconfig.test.json و package.json
+  - package.json، turbo.json و pnpm-lock.yaml
+  - plan/phases/00-FOUNDATION.md، plan/logs/phase-00.md و plan/STATUS.md
+Migrations:
+  - ندارد
+Tests run:
+  - `tsc -p tsconfig.test.json --noEmit` → PASS
+  - `vitest run --no-file-parallelism` → PASS (2 files, 5 tests)
+  - `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - git diff --check → PASS
+Result:
+  - harness Vitest و commandهای root/API برای test در repository موجود است → PASS
+  - unit test استقلال liveness، ready موفق و failure 503 را پوشش می‌دهد → PASS
+  - integration test با bootstrap واقعی API و PostgreSQL واقعی، endpointهای live/ready را پوشش می‌دهد → PASS
+Known limitations:
+  - اجرای `pnpm --filter @sabz-zendegi/api test` در runtime محلی پیش از شروع script به ناسازگاری store/node_modules و درخواست حذف non-interactive برخورد می‌کند؛ اجرای مستقیم commandهای همان script PASS است. رفع و verification دستورهای رسمی در F00-T13 انجام می‌شود.
+Next task:
+  - F00-T12
