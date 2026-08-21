@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { Client } from 'pg';
@@ -133,6 +134,16 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       const userId = user.rows[0]?.id;
       expect(userId).toBeDefined();
 
+      await expect(smokeClient.query(`
+        INSERT INTO users (id, phone, updated_at)
+        VALUES (gen_random_uuid(), '+989120000000', CURRENT_TIMESTAMP)
+      `)).rejects.toMatchObject({ code: '23505' });
+
+      await expect(smokeClient.query(`
+        INSERT INTO users (id, phone, updated_at)
+        VALUES (gen_random_uuid(), '09123456789', CURRENT_TIMESTAMP)
+      `)).rejects.toMatchObject({ code: '23514' });
+
       await smokeClient.query(`
         INSERT INTO credentials (id, user_id, password_hash, updated_at)
         VALUES (gen_random_uuid(), $1, $2, CURRENT_TIMESTAMP)
@@ -158,6 +169,39 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
           gen_random_uuid(), $1, repeat('b', 64), CURRENT_TIMESTAMP + INTERVAL '1 day', 'LOGOUT'
         )
       `, [userId])).rejects.toMatchObject({ code: '23514' });
+
+      await smokeClient.query(`
+        DROP INDEX "users_phone_key";
+        ALTER TABLE "users"
+          DROP CONSTRAINT "users_phone_format_check",
+          ALTER COLUMN "phone" TYPE VARCHAR(32);
+        CREATE INDEX "users_phone_idx" ON "users"("phone");
+        INSERT INTO "users" ("id", "phone", "updated_at")
+        VALUES
+          (gen_random_uuid(), '۰۹۱۳ ۱۲۳ ۴۵۶۷', CURRENT_TIMESTAMP),
+          (gen_random_uuid(), '00989141112233', CURRENT_TIMESTAMP);
+      `);
+
+      const canonicalPhoneMigration = readFileSync(
+        resolve(
+          process.cwd(),
+          'prisma/migrations/20260821081500_canonical_phone/migration.sql',
+        ),
+        'utf8',
+      );
+      await smokeClient.query(canonicalPhoneMigration);
+
+      const normalizedPhones = await smokeClient.query<{ phone: string }>(`
+        SELECT phone
+        FROM users
+        WHERE phone IN ('+989131234567', '+989141112233')
+        ORDER BY phone
+      `);
+
+      expect(normalizedPhones.rows.map(({ phone }) => phone)).toEqual([
+        '+989131234567',
+        '+989141112233',
+      ]);
     } finally {
       await smokeClient.end();
     }

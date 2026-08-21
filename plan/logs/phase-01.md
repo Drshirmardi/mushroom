@@ -67,3 +67,39 @@ Known limitations:
   - hash واقعی password و refresh token در taskهای `F01-T04` و `F01-T08` پیاده می‌شوند؛ این task فقط storage contract را ایجاد کرده است.
 Next task:
   - `F01-T03`
+
+## F01-T03 — normalize شماره موبایل و unique constraint
+
+Task ID: F01-T03
+Completed at: 2026-08-21 08:17 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/src/modules/identity/domain/phone-number.ts`
+  - `apps/api/test/phone-number.spec.ts`
+  - `apps/api/prisma/schema.prisma`
+  - `apps/api/prisma/migrations/20260821081500_canonical_phone/migration.sql`
+  - `apps/api/test/migrations.integration.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - `20260821081500_canonical_phone` → PASS روی دیتابیس development و PostgreSQL خالی موقت
+Tests run:
+  - Prisma `format`، `validate` و `generate` با CLI 7.9.1 → PASS
+  - unit/integration اختصاصی phone و migration → PASS (۲ فایل، ۱۷ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۴ فایل، ۲۲ تست)
+  - migration روی schema بازسازی‌شده قبل از F01-T03 با داده فارسی و `0098` → PASS
+  - PostgreSQL rejection برای format غیرcanonical و شماره تکراری → PASS (`23514` و `23505`)
+  - `migrate deploy`، `migrate status` و schema diff → PASS (no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` → PASS
+Result:
+  - شماره‌های موبایل معتبر ایران با ارقام لاتین/فارسی/عربی و قالب‌های محلی/کشوری به `+989XXXXXXXXX` تبدیل می‌شوند → PASS
+  - ورودی دارای حروف، کشور دیگر، تلفن ثابت یا طول نامعتبر با code پایدار `INVALID_PHONE_NUMBER` رد می‌شود → PASS
+  - migration داده موجود را normalize و در invalid/collision صریحاً fail می‌کند → PASS
+  - PostgreSQL canonical format، طول ۱۳ و uniqueness کاربر را enforce می‌کند → PASS
+Known limitations:
+  - اتصال normalizer به DTO/register در `F01-T05` انجام می‌شود.
+  - ثبت login attempt با شماره canonical در `F01-T06` انجام می‌شود.
+Next task:
+  - `F01-T04`

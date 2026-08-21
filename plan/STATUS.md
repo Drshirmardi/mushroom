@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-20 19:54 +03:30`
+- آخرین به‌روزرسانی: `2026-08-21 08:17 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 01 — Identity & Access`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -47,8 +47,8 @@
 ## handoff فاز فعال
 
 - فاز قبلی: `Phase 00 — Foundation` با [CI run #3](https://github.com/Drshirmardi/mushroom/actions/runs/32366483270) موفق تکمیل شد؛ شواهد: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F01-T03` — normalize شماره موبایل و unique constraint
-- dependency: `F01-T02` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- Task بعدی واجد شرایط: `F01-T04` — password hashing با Argon2id و policy رمز
+- dependency: `F01-T03` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 
 ## task در حال اجرا
 

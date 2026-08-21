@@ -28,7 +28,7 @@ ADMIN
 
 - [x] `F01-T01` — نهایی‌کردن auth flow، cookie policy، token claims و session model
 - [x] `F01-T02` — migration مدل‌های identity
-- [ ] `F01-T03` — normalize شماره موبایل و unique constraint
+- [x] `F01-T03` — normalize شماره موبایل و unique constraint
 - [ ] `F01-T04` — password hashing با Argon2id و policy رمز
 - [ ] `F01-T05` — register use case و endpoint
 - [ ] `F01-T06` — login use case، rate limit و ثبت login attempt
@@ -111,3 +111,15 @@ POST   /v1/me/change-password
 - مدل منطقی Session، rotation اتمیک و رفتار reuse detection مشخص باشد.
 - CORS، Origin validation و فرض same-site deployment مشخص باشد.
 - اثر تصمیم بر taskهای `F01-T02` تا `F01-T16` و تست‌های لازم ثبت شده باشد.
+
+## قرارداد Task F01-T03
+
+- نمایش canonical شماره موبایل ایران برابر `+989XXXXXXXXX` است.
+- ارقام لاتین، فارسی و عربی پذیرفته می‌شوند؛ قالب‌های `09...`، `9...`، `98...`،
+  `+98...` و `0098...` به یک مقدار تبدیل می‌شوند.
+- فاصله، خط تیره و پرانتز فقط به‌عنوان جداکننده پذیرفته می‌شوند؛ حروف، کشور دیگر،
+  تلفن ثابت و طول نامعتبر رد می‌شوند.
+- application باید پیش از persistence از normalizer دامنه استفاده کند.
+- PostgreSQL علاوه بر unique index، canonical format را با check constraint enforce می‌کند.
+- migration باید داده موجود را normalize کند و در برخورد با مقدار نامعتبر یا collision
+  صریحاً fail شود؛ اصلاح یا حذف ساکت داده مجاز نیست.
