@@ -103,3 +103,38 @@ Known limitations:
   - ثبت login attempt با شماره canonical در `F01-T06` انجام می‌شود.
 Next task:
   - `F01-T04`
+
+## F01-T04 — password hashing با Argon2id و policy رمز
+
+Task ID: F01-T04
+Completed at: 2026-08-21 08:35 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/package.json`
+  - `pnpm-lock.yaml`
+  - `apps/api/src/modules/identity/domain/password-policy.ts`
+  - `apps/api/src/modules/identity/infrastructure/password-hasher.ts`
+  - `apps/api/test/password-policy.spec.ts`
+  - `apps/api/test/password-hasher.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد
+Tests run:
+  - تست اختصاصی password policy و Argon2id → PASS (۲ فایل، ۱۸ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۶ فایل، ۴۰ تست)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - Prisma client generation → PASS
+  - `git diff --check` → PASS
+Result:
+  - policy حداقل ۱۵/حداکثر ۱۲۸ Unicode code point، NFC و بدون composition rule پیاده شد → PASS
+  - space، Unicode و نیم‌فاصله فارسی حفظ و control character/blocklist رد می‌شوند → PASS
+  - خطاهای policy code پایدار دارند و password خام را در message بازتاب نمی‌دهند → PASS
+  - Argon2id v19 با ۶۴ MiB، سه pass، چهار lane، salt تصادفی ۱۶‌بایتی و hash ۳۲‌بایتی تولید می‌شود → PASS
+  - verify صحیح/غلط/malformed و تشخیص rehash برای hash ضعیف پوشش داده شد → PASS
+Known limitations:
+  - baseline blocklist محلی حداقلی است؛ `F01-T05` می‌تواند مقادیر وابسته به کاربر مانند شماره موبایل را از طریق context مسدود کند.
+  - wrapper محلی pnpm 11 با store نصب‌شده pnpm 10 ناسازگار بود؛ dependency با pnpm 10.10.0 قفل شد و binaryهای همان workspace برای verification کامل استفاده شدند.
+Next task:
+  - `F01-T05`

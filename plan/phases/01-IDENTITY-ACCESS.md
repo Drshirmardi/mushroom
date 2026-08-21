@@ -29,7 +29,7 @@ ADMIN
 - [x] `F01-T01` — نهایی‌کردن auth flow، cookie policy، token claims و session model
 - [x] `F01-T02` — migration مدل‌های identity
 - [x] `F01-T03` — normalize شماره موبایل و unique constraint
-- [ ] `F01-T04` — password hashing با Argon2id و policy رمز
+- [x] `F01-T04` — password hashing با Argon2id و policy رمز
 - [ ] `F01-T05` — register use case و endpoint
 - [ ] `F01-T06` — login use case، rate limit و ثبت login attempt
 - [ ] `F01-T07` — access token و auth guard
@@ -123,3 +123,16 @@ POST   /v1/me/change-password
 - PostgreSQL علاوه بر unique index، canonical format را با check constraint enforce می‌کند.
 - migration باید داده موجود را normalize کند و در برخورد با مقدار نامعتبر یا collision
   صریحاً fail شود؛ اصلاح یا حذف ساکت داده مجاز نیست.
+
+## قرارداد Task F01-T04
+
+- رمز تک‌عاملی حداقل ۱۵ و حداکثر ۱۲۸ Unicode code point دارد؛ space و Unicode مجازند.
+- رمز با NFC normalize می‌شود ولی trim، lowercase یا truncate نمی‌شود.
+- composition rule، تغییر دوره‌ای اجباری و سؤال امنیتی بخشی از policy نیستند.
+- control character، مقدار تماماً whitespace و مقادیر baseline/context blocklist رد می‌شوند؛
+  Unicode format characterهایی مانند نیم‌فاصله فارسی حفظ می‌شوند.
+- خطای policy code پایدار دارد و password خام را در message بازتاب نمی‌دهد.
+- hash با Argon2id v19، salt تصادفی ۱۶ بایتی، خروجی ۳۲ بایتی، memory برابر ۶۴ MiB،
+  سه pass و parallelism چهار تولید می‌شود.
+- verify برای hash یا ورودی malformed فقط `false` می‌دهد و جزئیات داخلی را نشت نمی‌دهد.
+- hashهای غیر-Argon2id یا دارای cost/version قدیمی برای rehash علامت‌گذاری می‌شوند.
