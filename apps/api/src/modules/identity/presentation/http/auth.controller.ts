@@ -12,6 +12,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 
+import { Public } from '../../../../common/auth/public.decorator';
 import {
   RegisterUserUseCase,
   type RegisteredUser,
@@ -37,6 +38,7 @@ export class AuthController {
   constructor(private readonly registerUser: RegisterUserUseCase) {}
 
   @Post('register')
+  @Public()
   @ApiCreatedResponse({ type: RegisterResponseDto })
   @ApiConflictResponse({ description: 'Phone number is already registered.' })
   @ApiUnprocessableEntityResponse({ description: 'Phone or password is invalid.' })

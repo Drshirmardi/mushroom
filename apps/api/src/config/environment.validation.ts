@@ -37,5 +37,12 @@ export const environmentValidationSchema = Joi.object({
     .default('http://localhost:3000,http://localhost:3001,http://localhost:3002')
     .messages({ 'any.invalid': 'must be a comma-separated list of HTTP(S) origins' }),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('info'),
-  JWT_ACCESS_SECRET: Joi.string().min(32).required(),
+  JWT_ACCESS_SECRET: Joi.string()
+    .min(43)
+    .max(256)
+    .pattern(/^[A-Za-z0-9_-]+$/)
+    .invalid('replace-this-placeholder-with-a-unique-32-character-secret')
+    .required(),
+  JWT_ACCESS_ISSUER: Joi.string().trim().min(1).max(128).default('sabz-zendegi-api'),
+  JWT_ACCESS_AUDIENCE: Joi.string().trim().min(1).max(128).default('sabz-zendegi-frontends'),
 }).unknown(true);

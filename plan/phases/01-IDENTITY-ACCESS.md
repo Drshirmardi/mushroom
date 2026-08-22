@@ -32,7 +32,7 @@ ADMIN
 - [x] `F01-T04` — password hashing با Argon2id و policy رمز
 - [x] `F01-T05` — register use case و endpoint
 - [x] `F01-T06` — login use case، rate limit و ثبت login attempt
-- [ ] `F01-T07` — access token و auth guard
+- [x] `F01-T07` — access token و auth guard
 - [ ] `F01-T08` — refresh token rotation، hash storage و reuse detection
 - [ ] `F01-T09` — logout، logout-all و revoke session
 - [ ] `F01-T10` — endpointهای `/me` و change password
@@ -164,3 +164,19 @@ POST   /v1/me/change-password
   به‌جای مقدار خام با sentinel غیرحساس `INVALID` ثبت می‌شود.
 - این task هسته login را فراهم می‌کند؛ endpoint نهایی پس از ایجاد access token و session در
   `F01-T07` و `F01-T08` فعال می‌شود تا پاسخ login ناقص و بدون session منتشر نشود.
+
+## قرارداد Task F01-T07
+
+- access token یک JWT ده‌دقیقه‌ای با الگوریتم ثابت `HS256`، secret مستقل حداقل ۳۲ بایت،
+  issuer و audience صریح است؛ الگوریتم جایگزین پذیرفته نمی‌شود.
+- payload دقیقاً claimهای `iss`، `aud`، `sub`، `sid`، `roles`، `jti`، `iat` و `exp` را دارد؛
+  claim اضافه، PII، permission پویا یا lifetime طولانی‌تر رد می‌شود.
+- `sub`، `sid` و `jti` UUID معتبر و roleها مجموعه‌ای غیرتکراری از چهار role مصوب هستند.
+- guard به‌صورت global همه routeها را protected می‌کند؛ فقط handler/controller دارای
+  decorator صریح `Public` بدون bearer token قابل دسترسی است.
+- header باید یک Bearer credential منفرد باشد. نبودن header، قالب malformed، signature یا
+  claim نامعتبر و token منقضی همگی با پاسخ عمومی `UNAUTHORIZED` و بدون جزئیات parser رد می‌شوند.
+- principal اعتبارسنجی‌شده شامل user/session/token id، roleها و زمان‌های token روی request
+  قرار می‌گیرد؛ guard در این task برای هر درخواست session را از دیتابیس query نمی‌کند.
+- صدور token به session id نیاز دارد؛ اتصال login به صدور token پس از ساخت session در
+  `F01-T08` انجام می‌شود.

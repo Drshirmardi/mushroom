@@ -231,3 +231,51 @@ Known limitations:
   - rate limit ثبت‌نام، برخلاف یادداشت handoff `F01-T05`، در scope مصوب login این task نبود و باید پیش از release عمومی در `F01-T18`/Phase 11 تعیین تکلیف شود.
 Next task:
   - `F01-T07`
+
+## F01-T07 — access token و auth guard
+
+Task ID: F01-T07
+Completed at: 2026-08-22 15:06 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/package.json`
+  - `pnpm-lock.yaml`
+  - `turbo.json`
+  - `apps/api/.env.example`
+  - `apps/api/src/app.module.ts`
+  - `apps/api/src/common/auth/access-token.service.ts`
+  - `apps/api/src/common/auth/access-token.guard.ts`
+  - `apps/api/src/common/auth/auth.module.ts`
+  - `apps/api/src/common/auth/public.decorator.ts`
+  - `apps/api/src/common/health/health.controller.ts`
+  - `apps/api/src/config/environment.validation.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/test/access-token.spec.ts`
+  - `apps/api/test/access-token.guard.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد
+Tests run:
+  - unit اختصاصی access token و guard → PASS (۲ فایل، ۲۵ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۱۲ فایل، ۸۴ تست)
+  - token منقضی، algorithm/issuer/audience/signature نادرست، claim اضافه و lifetime طولانی → PASS
+  - Bearer header مفقود/malformed و mapping خطای عمومی → PASS
+  - routeهای public سلامت و register زیر global guard → PASS
+  - migration smoke روی PostgreSQL خالی → PASS
+  - Prisma validate، migrate status و schema diff → PASS (up to date، no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` → PASS
+Result:
+  - access JWT ده‌دقیقه‌ای با `HS256` و claimهای دقیق ADR صادر و validate می‌شود → PASS
+  - algorithm، issuer، audience، signature، زمان، UUID، role و فهرست claimها سخت‌گیرانه validate می‌شوند → PASS
+  - token نامعتبر یا منقضی بدون نشت جزئیات با `UNAUTHORIZED` رد می‌شود → PASS
+  - global guard همه routeها را پیش‌فرض protected و فقط `Public`های صریح را bypass می‌کند → PASS
+  - principal معتبر با user/session/token id و roleها روی request قرار می‌گیرد → PASS
+  - secret نمونه رد و secret حداقل ۳۲ بایت base64url همراه issuer/audience در config ثبت می‌شود → PASS
+Known limitations:
+  - صدور access token هنوز به login route وصل نیست؛ ایجاد Session و اتصال login در `F01-T08` انجام می‌شود.
+  - guard طبق ADR stateless است و revoke فوری access token را تضمین نمی‌کند؛ window حداکثر ده دقیقه است.
+Next task:
+  - `F01-T08`

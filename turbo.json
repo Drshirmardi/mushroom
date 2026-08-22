@@ -2,7 +2,12 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalEnv": ["APP_ORIGINS", "LOG_LEVEL", "NODE_ENV", "PORT"],
-  "globalPassThroughEnv": ["DATABASE_URL", "JWT_ACCESS_SECRET"],
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "JWT_ACCESS_SECRET",
+    "JWT_ACCESS_ISSUER",
+    "JWT_ACCESS_AUDIENCE"
+  ],
   "tasks": {
     "dev": {
       "cache": false,
