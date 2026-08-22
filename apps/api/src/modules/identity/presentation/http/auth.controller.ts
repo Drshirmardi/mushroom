@@ -4,7 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -20,23 +19,24 @@ import {
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   ApiBearerAuth,
-  ApiConflictResponse,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
-  ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
-  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
 import { ACCESS_TOKEN_TTL_SECONDS } from '../../../../common/auth/access-token.service';
 import { RequirePermissions } from '../../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../../common/auth/authorization.policy';
+import { ApiBrowserOrigin } from '../../../../common/auth/browser-origin.decorator';
 import { BrowserOriginService } from '../../../../common/auth/browser-origin.service';
 import { Public } from '../../../../common/auth/public.decorator';
+import { REFRESH_COOKIE_RESPONSE_HEADERS } from '../../../../common/auth/refresh-cookie.openapi';
 import { RefreshCookieService } from '../../../../common/auth/refresh-cookie.service';
+import { ApiErrorResponse } from '../../../../common/errors/api-error-response.decorator';
 import {
   LoginSessionUseCase,
   type SessionAuthenticationResult,
@@ -96,6 +96,12 @@ const getUserAgent = (request: FastifyRequest): string | undefined => {
   return Array.isArray(userAgent) ? userAgent[0] : userAgent;
 };
 
+const getOrigin = (request: FastifyRequest): string | undefined => {
+  const origin = request.headers.origin;
+
+  return Array.isArray(origin) ? origin[0] : origin;
+};
+
 const getAuditContext = (
   request: FastifyRequest,
   actorSessionId?: string,
@@ -119,15 +125,24 @@ export class AuthController {
 
   @Post('register')
   @Public()
+  @ApiBrowserOrigin()
+  @ApiOperation({
+    operationId: 'authRegister',
+    summary: 'Register a patient account',
+  })
   @ApiCreatedResponse({ type: RegisterResponseDto })
-  @ApiConflictResponse({ description: 'Phone number is already registered.' })
-  @ApiUnprocessableEntityResponse({ description: 'Phone or password is invalid.' })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
+  @ApiErrorResponse(HttpStatus.CONFLICT, 'Phone number is already registered.')
+  @ApiErrorResponse(
+    HttpStatus.UNPROCESSABLE_ENTITY,
+    'Phone or password is invalid.',
+  )
   async register(
     @Body() body: RegisterRequestDto,
     @Req() request: FastifyRequest,
-    @Headers('origin') origin?: string,
   ): Promise<RegisteredUser> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
 
     try {
       return await this.registerUser.execute({
@@ -165,17 +180,29 @@ export class AuthController {
 
   @Post('login')
   @Public()
+  @ApiBrowserOrigin()
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: AuthenticationResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Credentials are invalid.' })
-  @ApiTooManyRequestsResponse({ description: 'Login rate limit exceeded.' })
+  @ApiOperation({
+    operationId: 'authLogin',
+    summary: 'Create an authenticated session',
+  })
+  @ApiOkResponse({
+    type: AuthenticationResponseDto,
+    headers: REFRESH_COOKIE_RESPONSE_HEADERS,
+  })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Credentials are invalid.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
+  @ApiErrorResponse(
+    HttpStatus.TOO_MANY_REQUESTS,
+    'Login rate limit exceeded.',
+  )
   async login(
     @Body() body: LoginRequestDto,
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-    @Headers('origin') origin?: string,
   ): Promise<AuthenticationResponseDto> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
 
     try {
       const result = await this.loginSession.execute({
@@ -216,15 +243,24 @@ export class AuthController {
 
   @Post('refresh')
   @Public()
+  @ApiBrowserOrigin()
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: AuthenticationResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Refresh token is invalid.' })
+  @ApiOperation({
+    operationId: 'authRefresh',
+    summary: 'Rotate the refresh cookie and issue an access token',
+  })
+  @ApiCookieAuth('refreshCookie')
+  @ApiOkResponse({
+    type: AuthenticationResponseDto,
+    headers: REFRESH_COOKIE_RESPONSE_HEADERS,
+  })
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Refresh token is invalid.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
   async refresh(
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-    @Headers('origin') origin?: string,
   ): Promise<AuthenticationResponseDto> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
 
     try {
       const result = await this.refreshSession.execute({
@@ -256,15 +292,30 @@ export class AuthController {
 
   @Post('logout')
   @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
+  @ApiBrowserOrigin()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
-  @ApiNoContentResponse({ description: 'Current session was revoked.' })
+  @ApiOperation({
+    operationId: 'authLogout',
+    summary: 'Revoke the current session',
+  })
+  @ApiNoContentResponse({
+    description: 'Current session was revoked.',
+    headers: REFRESH_COOKIE_RESPONSE_HEADERS,
+  })
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token is missing or invalid.',
+  )
+  @ApiErrorResponse(
+    HttpStatus.FORBIDDEN,
+    'Permission or browser origin is invalid.',
+  )
   async logout(
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-    @Headers('origin') origin?: string,
   ): Promise<void> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
     await this.manageSessions.logout(
       request.auth.userId,
       request.auth.sessionId,
@@ -275,15 +326,30 @@ export class AuthController {
 
   @Post('logout-all')
   @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
+  @ApiBrowserOrigin()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
-  @ApiNoContentResponse({ description: 'All user sessions were revoked.' })
+  @ApiOperation({
+    operationId: 'authLogoutAll',
+    summary: 'Revoke every session owned by the current user',
+  })
+  @ApiNoContentResponse({
+    description: 'All user sessions were revoked.',
+    headers: REFRESH_COOKIE_RESPONSE_HEADERS,
+  })
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token is missing or invalid.',
+  )
+  @ApiErrorResponse(
+    HttpStatus.FORBIDDEN,
+    'Permission or browser origin is invalid.',
+  )
   async logoutAll(
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-    @Headers('origin') origin?: string,
   ): Promise<void> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
     await this.manageSessions.logoutAll(
       request.auth.userId,
       getAuditContext(request, request.auth.sessionId),
@@ -294,7 +360,17 @@ export class AuthController {
   @Get('sessions')
   @RequirePermissions(PERMISSIONS.SESSION_READ_SELF)
   @ApiBearerAuth('bearerAuth')
+  @ApiOperation({
+    operationId: 'authListSessions',
+    summary: 'List active sessions owned by the current user',
+  })
   @ApiOkResponse({ type: SessionListResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Pagination query is invalid.')
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token is missing or invalid.',
+  )
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   async sessions(
     @Req() request: AuthenticatedRequest,
     @Query() query: SessionListQueryDto,
@@ -309,16 +385,32 @@ export class AuthController {
 
   @Delete('sessions/:id')
   @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
+  @ApiBrowserOrigin()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
-  @ApiNoContentResponse({ description: 'Owned session was revoked.' })
+  @ApiOperation({
+    operationId: 'authRevokeSession',
+    summary: 'Revoke an owned session',
+  })
+  @ApiNoContentResponse({
+    description: 'Owned session was revoked.',
+    headers: REFRESH_COOKIE_RESPONSE_HEADERS,
+  })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Session id is invalid.')
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token is missing or invalid.',
+  )
+  @ApiErrorResponse(
+    HttpStatus.FORBIDDEN,
+    'Permission or browser origin is invalid.',
+  )
   async revokeSession(
     @Param('id', new ParseUUIDPipe({ version: '4' })) sessionId: string,
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-    @Headers('origin') origin?: string,
   ): Promise<void> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
     await this.manageSessions.revoke(
       request.auth.userId,
       sessionId,

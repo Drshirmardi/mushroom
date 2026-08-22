@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
+import { ROLE_CODES } from '../../../../../common/auth/authorization.policy';
+
 export class LoginRequestDto {
   @ApiProperty({ example: '09123456789', maxLength: 64 })
   @IsString()
@@ -24,15 +26,15 @@ export class AuthenticatedUserDto {
   @ApiProperty({ example: '+989123456789' })
   phone!: string;
 
-  @ApiProperty({ example: ['PATIENT'], isArray: true })
+  @ApiProperty({ enum: ROLE_CODES, example: ['PATIENT'], isArray: true })
   roles!: string[];
 }
 
 export class AuthenticationResponseDto {
-  @ApiProperty()
+  @ApiProperty({ format: 'jwt' })
   accessToken!: string;
 
-  @ApiProperty({ example: 'Bearer' })
+  @ApiProperty({ enum: ['Bearer'], example: 'Bearer' })
   tokenType!: 'Bearer';
 
   @ApiProperty({ example: 600 })

@@ -1,0 +1,30 @@
+{
+  "name": "@sabz-zendegi/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "generate": "openapi-typescript openapi.json --default-non-nullable false -o src/schema.generated.ts",
+    "build": "openapi-typescript openapi.json --default-non-nullable false --check -o src/schema.generated.ts && tsc -p tsconfig.json",
+    "test": "openapi-typescript openapi.json --default-non-nullable false --check -o src/schema.generated.ts && vitest run",
+    "typecheck": "openapi-typescript openapi.json --default-non-nullable false --check -o src/schema.generated.ts && tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.15.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.10.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.11"
+  }
+}

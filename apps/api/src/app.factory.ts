@@ -46,6 +46,16 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
       },
       'bearerAuth',
     )
+    .addCookieAuth(
+      '__Host-sz_refresh',
+      {
+        type: 'apiKey',
+        in: 'cookie',
+        description:
+          'HttpOnly refresh cookie. Local development uses sz_refresh_dev.',
+      },
+      'refreshCookie',
+    )
     .build();
   const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
 

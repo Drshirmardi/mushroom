@@ -38,7 +38,7 @@ ADMIN
 - [x] `F01-T10` — endpointهای `/me` و change password
 - [x] `F01-T11` — RBAC guard و permission contract پایه
 - [x] `F01-T12` — audit رویدادهای امنیتی
-- [ ] `F01-T13` — OpenAPI و API client احراز هویت
+- [x] `F01-T13` — OpenAPI و API client احراز هویت
 - [ ] `F01-T14` — اتصال login/signup در `apps/web`
 - [ ] `F01-T15` — session bootstrap و route protection در `apps/app`
 - [ ] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
@@ -266,3 +266,21 @@ POST   /v1/me/change-password
 - `AuditEvent` در این task فقط append می‌شود و API خواندن/ویرایش/حذف audit ارائه نمی‌شود.
 - endpoint تغییر role هنوز وجود ندارد؛ هر مسیر mutation نقش که بعداً اضافه شود باید پیش از انتشار
   از همین قرارداد transaction و context امن audit پیروی کند.
+
+## قرارداد Task F01-T13
+
+- هر ده operation احراز هویت، session و حساب دارای `operationId` ثابت، request/response schema،
+  statusهای موفق و error envelope مشترک شامل `code`، `message`، `requestId` و `details` است.
+- endpointهای محافظت‌شده bearer security و پاسخ‌های `401`/`403` صریح دارند؛ refresh فقط cookie
+  امنیتی HttpOnly را مستند می‌کند، request body ندارد و login/refresh/logout/change-password اثر
+  `Set-Cookie` را در response contract اعلام می‌کنند.
+- `Origin` فقط header اختیاری و browser-managed است؛ passwordها `writeOnly`، role/status/error code
+  محدود به union مصوب و timestampها در client تولیدشده رشته ISO هستند.
+- `packages/api-client/openapi.json` از document واقعی NestJS استخراج و
+  `src/schema.generated.ts` با `openapi-typescript` تولید می‌شود؛ ویرایش دستی هر دو ممنوع است و
+  `build`/`test`/`typecheck` stale بودن type تولیدشده را رد می‌کنند.
+- `createApiClient` روی generated paths ساخته شده، base URL را normalize و همه درخواست‌ها را با
+  `credentials: include` ارسال می‌کند؛ access token یا auth state را persist نمی‌کند و caller باید
+  bearer token حافظه‌ای را برای operation محافظت‌شده بفرستد.
+- اتصال package به `apps/web`، `apps/app` و `apps/dashboard` به‌ترتیب در `F01-T14` تا `F01-T16`
+  انجام می‌شود؛ این task mock یا auth state موجود frontendها را حذف نمی‌کند.

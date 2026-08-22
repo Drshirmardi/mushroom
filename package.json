@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:api": "pnpm --filter @sabz-zendegi/api dev",
+    "generate:api-client": "corepack pnpm --filter @sabz-zendegi/api openapi:export && corepack pnpm --filter @sabz-zendegi/api-client generate",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",

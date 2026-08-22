@@ -520,3 +520,61 @@ Known limitations:
   - خواندن و retention/export رویدادهای audit خارج از scope این task است.
 Next task:
   - `F01-T13`
+
+## F01-T13 — OpenAPI و API client احراز هویت
+
+Task ID: F01-T13
+Completed at: 2026-08-22 17:53 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/package.json`
+  - `apps/api/scripts/export-openapi.mjs`
+  - `apps/api/src/app.factory.ts`
+  - `apps/api/src/common/auth/browser-origin.decorator.ts`
+  - `apps/api/src/common/auth/refresh-cookie.openapi.ts`
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/common/errors/api-error.dto.ts`
+  - `apps/api/src/common/errors/api-error-response.decorator.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/src/modules/identity/presentation/http/me.controller.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/login.dto.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/me.dto.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/register.dto.ts`
+  - `apps/api/test/openapi-contract.spec.ts`
+  - `packages/api-client/package.json`
+  - `packages/api-client/README.md`
+  - `packages/api-client/tsconfig.json`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/index.ts`
+  - `packages/api-client/src/schema.generated.ts`
+  - `packages/api-client/test/api-client.spec.ts`
+  - `package.json`
+  - `pnpm-lock.yaml`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ این task فقط API contract و package client را تغییر می‌دهد
+Tests run:
+  - تولید OpenAPI و TypeScript client از runtime NestJS → PASS
+  - contract اختصاصی OpenAPI → PASS (۱ فایل، ۵ تست)
+  - تمام تست‌های غیر-migration API با PostgreSQL واقعی → PASS (۲۲ فایل، ۱۶۴ تست)
+  - migration smoke روی PostgreSQL خالی → PASS (۱ فایل، ۱ تست)
+  - تست runtime client و credentialed fetch → PASS (۱ فایل، ۱ تست)
+  - stale check، typecheck و build package `api-client` → PASS
+  - API test typecheck، no-emit typecheck و build typecheck → PASS
+  - typecheck مستقیم `apps/web`، `apps/app` و `apps/dashboard` → PASS
+  - `git diff --check` و مرور نهایی diff/lockfile → PASS
+Result:
+  - ده operation هویتی operation ID پایدار و schema کامل دارند → PASS
+  - bearer، refresh cookie، Set-Cookie و Origin اختیاری دقیقاً مستند شدند → PASS
+  - پاسخ‌های `401`/`403` و سایر خطاها error envelope تولیدپذیر دارند → PASS
+  - password write-only و role/status/error code به union محدود تبدیل شدند → PASS
+  - OpenAPI checked-in با runtime document همگام و stale type قابل تشخیص است → PASS
+  - client مشترک typed با `credentials: include` و بدون persistence token ساخته شد → PASS
+Known limitations:
+  - اتصال client به frontendها و refresh single-flight در `F01-T14` تا `F01-T16` انجام می‌شود.
+  - Turbo در runtime محلی Codex فرمان‌های child را با pnpm سراسری 11 اجرا کرد؛ typecheck مستقیم هر
+    پنج workspace با binary قفل‌شده پاس شد و CI دارای pnpm 10 تحت تأثیر نیست.
+Next task:
+  - `F01-T14`

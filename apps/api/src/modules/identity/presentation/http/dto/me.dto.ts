@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MaxLength } from 'class-validator';
 
+import { ROLE_CODES } from '../../../../../common/auth/authorization.policy';
+
 export class CurrentAccountResponseDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -8,10 +10,10 @@ export class CurrentAccountResponseDto {
   @ApiProperty({ example: '+989123456789' })
   phone!: string;
 
-  @ApiProperty({ example: 'ACTIVE' })
+  @ApiProperty({ enum: ['ACTIVE', 'DISABLED'], example: 'ACTIVE' })
   status!: 'ACTIVE' | 'DISABLED';
 
-  @ApiProperty({ example: ['PATIENT'], isArray: true })
+  @ApiProperty({ enum: ROLE_CODES, example: ['PATIENT'], isArray: true })
   roles!: string[];
 
   @ApiProperty({ format: 'date-time' })

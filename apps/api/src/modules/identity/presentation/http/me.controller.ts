@@ -3,7 +3,6 @@ import {
   ConflictException,
   Controller,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   Patch,
@@ -16,19 +15,20 @@ import {
 import type { FastifyReply } from 'fastify';
 import {
   ApiBearerAuth,
-  ApiConflictResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
-  ApiUnauthorizedResponse,
-  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../../common/auth/authorization.policy';
+import { ApiBrowserOrigin } from '../../../../common/auth/browser-origin.decorator';
 import { BrowserOriginService } from '../../../../common/auth/browser-origin.service';
+import { REFRESH_COOKIE_RESPONSE_HEADERS } from '../../../../common/auth/refresh-cookie.openapi';
 import { RefreshCookieService } from '../../../../common/auth/refresh-cookie.service';
+import { ApiErrorResponse } from '../../../../common/errors/api-error-response.decorator';
 import {
   CurrentAccountUnavailableError,
   InvalidCurrentPasswordError,
@@ -51,6 +51,12 @@ const passwordErrorMessages = {
   PASSWORD_BLOCKED: 'Password is not allowed.',
 } as const;
 
+const getOrigin = (request: AuthenticatedRequest): string | undefined => {
+  const origin = request.headers.origin;
+
+  return Array.isArray(origin) ? origin[0] : origin;
+};
+
 @ApiTags('Current Account')
 @ApiBearerAuth('bearerAuth')
 @Controller('me')
@@ -63,8 +69,16 @@ export class MeController {
 
   @Get()
   @RequirePermissions(PERMISSIONS.ACCOUNT_READ_SELF)
+  @ApiOperation({
+    operationId: 'accountGetCurrent',
+    summary: 'Get the current account',
+  })
   @ApiOkResponse({ type: CurrentAccountResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Account is unavailable.' })
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token or account is unavailable.',
+  )
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   async get(@Req() request: AuthenticatedRequest) {
     try {
       return await this.account.get(request.auth.userId);
@@ -75,16 +89,28 @@ export class MeController {
 
   @Patch()
   @RequirePermissions(PERMISSIONS.ACCOUNT_UPDATE_SELF)
+  @ApiBrowserOrigin()
+  @ApiOperation({
+    operationId: 'accountUpdateCurrent',
+    summary: 'Change the current account phone number',
+  })
   @ApiOkResponse({ type: CurrentAccountResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Current password is invalid.' })
-  @ApiConflictResponse({ description: 'Phone number is already registered.' })
-  @ApiUnprocessableEntityResponse({ description: 'Phone number is invalid.' })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token, account, or current password is invalid.',
+  )
+  @ApiErrorResponse(
+    HttpStatus.FORBIDDEN,
+    'Permission or browser origin is invalid.',
+  )
+  @ApiErrorResponse(HttpStatus.CONFLICT, 'Phone number is already registered.')
+  @ApiErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, 'Phone number is invalid.')
   async update(
     @Body() body: UpdateCurrentAccountDto,
     @Req() request: AuthenticatedRequest,
-    @Headers('origin') origin?: string,
   ) {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
 
     try {
       return await this.account.changePhone(
@@ -120,17 +146,35 @@ export class MeController {
 
   @Post('change-password')
   @RequirePermissions(PERMISSIONS.ACCOUNT_UPDATE_SELF)
+  @ApiBrowserOrigin()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse({ description: 'Password changed; all sessions revoked.' })
-  @ApiUnauthorizedResponse({ description: 'Current password is invalid.' })
-  @ApiUnprocessableEntityResponse({ description: 'New password is invalid.' })
+  @ApiOperation({
+    operationId: 'accountChangePassword',
+    summary: 'Change the current account password',
+  })
+  @ApiNoContentResponse({
+    description: 'Password changed; all sessions revoked.',
+    headers: REFRESH_COOKIE_RESPONSE_HEADERS,
+  })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(
+    HttpStatus.UNAUTHORIZED,
+    'Access token, account, or current password is invalid.',
+  )
+  @ApiErrorResponse(
+    HttpStatus.FORBIDDEN,
+    'Permission or browser origin is invalid.',
+  )
+  @ApiErrorResponse(
+    HttpStatus.UNPROCESSABLE_ENTITY,
+    'New password is invalid or unchanged.',
+  )
   async changePassword(
     @Body() body: ChangePasswordDto,
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-    @Headers('origin') origin?: string,
   ): Promise<void> {
-    this.browserOrigins.assertAllowed(origin);
+    this.browserOrigins.assertAllowed(getOrigin(request));
 
     try {
       await this.account.changePassword(
