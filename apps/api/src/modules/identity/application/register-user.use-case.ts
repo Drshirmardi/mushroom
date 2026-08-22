@@ -4,10 +4,11 @@ import {
   RegistrationRepository,
   type RegisteredUser,
 } from './ports/registration.repository';
+import type { SecurityAuditContext } from './security-audit';
 
 export type { RegisteredUser } from './ports/registration.repository';
 
-export interface RegisterUserCommand {
+export interface RegisterUserCommand extends SecurityAuditContext {
   phone: string;
   password: string;
 }
@@ -24,6 +25,13 @@ export class RegisterUserUseCase {
       blockedValues: [phone, phone.slice(3)],
     });
 
-    return this.registrations.createPatient({ phone, passwordHash });
+    return this.registrations.createPatient({
+      phone,
+      passwordHash,
+      audit: {
+        requestId: command.requestId,
+        ipAddress: command.ipAddress,
+      },
+    });
   }
 }

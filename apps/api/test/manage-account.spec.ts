@@ -21,6 +21,11 @@ describe('ManageAccountUseCase', () => {
     passwordChangedAt: new Date('2026-08-20T12:00:00.000Z'),
   };
   const credential = { ...account, passwordHash: 'encoded-current-hash' };
+  const audit = {
+    requestId: 'request-account',
+    ipAddress: '203.0.113.13',
+    actorSessionId: 'df846b14-c123-45bd-8efe-58220999e940',
+  };
   const findById = vi.fn();
   const findCredential = vi.fn();
   const changePhone = vi.fn();
@@ -70,11 +75,13 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'current password',
       '۰۹۱۲ ۱۱۱ ۲۲۳۳',
+      audit,
     )).resolves.toEqual(changed);
     expect(changePhone).toHaveBeenCalledWith({
       userId: account.id,
       expectedPasswordHash: credential.passwordHash,
       phone: '+989121112233',
+      audit,
     });
   });
 
@@ -85,6 +92,7 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'wrong password',
       'not-a-phone',
+      audit,
     )).rejects.toEqual(new InvalidCurrentPasswordError());
     expect(changePhone).not.toHaveBeenCalled();
   });
@@ -96,6 +104,7 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'current password',
       '09123456789',
+      audit,
     );
 
     expect(result).toEqual(account);
@@ -110,6 +119,7 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'current password',
       'not-a-phone',
+      audit,
     )).rejects.toBeInstanceOf(InvalidPhoneNumberError);
   });
 
@@ -120,6 +130,7 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'current password',
       'new secure password value',
+      audit,
     );
 
     expect(hash).toHaveBeenCalledWith('new secure password value', {
@@ -130,6 +141,7 @@ describe('ManageAccountUseCase', () => {
       expectedPasswordHash: credential.passwordHash,
       passwordHash: 'encoded-new-hash',
       changedAt: now,
+      audit,
     });
   });
 
@@ -140,6 +152,7 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'current password',
       'current password',
+      audit,
     )).rejects.toEqual(new PasswordUnchangedError());
     expect(hash).not.toHaveBeenCalled();
     expect(changePassword).not.toHaveBeenCalled();
@@ -153,6 +166,7 @@ describe('ManageAccountUseCase', () => {
       account.id,
       'current password',
       'new secure password value',
+      audit,
     )).rejects.toEqual(new InvalidCurrentPasswordError());
   });
 });

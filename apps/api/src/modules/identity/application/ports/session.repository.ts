@@ -1,3 +1,8 @@
+import type {
+  SecurityAuditAction,
+  SecurityAuditContext,
+} from '../security-audit';
+
 export interface SessionUser {
   id: string;
   phone: string;
@@ -12,6 +17,7 @@ export interface CreateSession {
   userAgent?: string;
   ipAddress: string;
   expiresAt: Date;
+  audit: SecurityAuditContext;
 }
 
 export interface RotateSessionRefresh {
@@ -21,6 +27,7 @@ export interface RotateSessionRefresh {
   usedAt: Date;
   ipAddress: string;
   userAgent?: string;
+  audit: SecurityAuditContext;
 }
 
 export type UserSessionRevocationReason = 'LOGOUT' | 'LOGOUT_ALL';
@@ -30,12 +37,15 @@ export interface RevokeSession {
   sessionId: string;
   reason: UserSessionRevocationReason;
   revokedAt: Date;
+  audit: SecurityAuditContext;
+  auditAction: SecurityAuditAction;
 }
 
 export interface RevokeAllSessions {
   userId: string;
   reason: UserSessionRevocationReason;
   revokedAt: Date;
+  audit: SecurityAuditContext;
 }
 
 export interface ListActiveSessions {

@@ -7,6 +7,7 @@ import {
   AccountRepository,
   type CurrentAccount,
 } from './ports/account.repository';
+import type { SecurityAuditContext } from './security-audit';
 
 export class CurrentAccountUnavailableError extends Error {
   readonly code = 'UNAUTHORIZED';
@@ -56,6 +57,7 @@ export class ManageAccountUseCase {
     userId: string,
     currentPassword: string,
     requestedPhone: string,
+    audit: SecurityAuditContext,
   ): Promise<CurrentAccount> {
     const credential = await this.activeCredential(userId);
     const passwordMatches = await this.passwords.verify(
@@ -75,6 +77,7 @@ export class ManageAccountUseCase {
       userId,
       expectedPasswordHash: credential.passwordHash,
       phone,
+      audit,
     });
     if (result.kind === 'STALE') throw new InvalidCurrentPasswordError();
 
@@ -85,6 +88,7 @@ export class ManageAccountUseCase {
     userId: string,
     currentPassword: string,
     newPassword: string,
+    audit: SecurityAuditContext,
   ): Promise<void> {
     const credential = await this.activeCredential(userId);
     const currentPasswordMatches = await this.passwords.verify(
@@ -107,6 +111,7 @@ export class ManageAccountUseCase {
       expectedPasswordHash: credential.passwordHash,
       passwordHash,
       changedAt: this.now(),
+      audit,
     });
     if (result.kind === 'STALE') throw new InvalidCurrentPasswordError();
   }

@@ -58,6 +58,7 @@ import {
   type RegisteredUser,
 } from '../../application/register-user.use-case';
 import { PhoneAlreadyRegisteredError } from '../../application/ports/registration.repository';
+import type { SecurityAuditContext } from '../../application/security-audit';
 import { InvalidPhoneNumberError } from '../../domain/phone-number';
 import { PasswordPolicyError } from '../../domain/password-policy';
 import {
@@ -95,6 +96,15 @@ const getUserAgent = (request: FastifyRequest): string | undefined => {
   return Array.isArray(userAgent) ? userAgent[0] : userAgent;
 };
 
+const getAuditContext = (
+  request: FastifyRequest,
+  actorSessionId?: string,
+): SecurityAuditContext => ({
+  requestId: request.id,
+  ipAddress: request.ip,
+  actorSessionId,
+});
+
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -114,12 +124,16 @@ export class AuthController {
   @ApiUnprocessableEntityResponse({ description: 'Phone or password is invalid.' })
   async register(
     @Body() body: RegisterRequestDto,
+    @Req() request: FastifyRequest,
     @Headers('origin') origin?: string,
   ): Promise<RegisteredUser> {
     this.browserOrigins.assertAllowed(origin);
 
     try {
-      return await this.registerUser.execute(body);
+      return await this.registerUser.execute({
+        ...body,
+        ...getAuditContext(request),
+      });
     } catch (error) {
       if (error instanceof InvalidPhoneNumberError) {
         throw new UnprocessableEntityException({
@@ -170,6 +184,7 @@ export class AuthController {
         remember: body.remember ?? false,
         ipAddress: request.ip,
         userAgent: getUserAgent(request),
+        requestId: request.id,
       });
       this.refreshCookie.set(
         reply,
@@ -216,6 +231,7 @@ export class AuthController {
         refreshToken: this.refreshCookie.read(request),
         ipAddress: request.ip,
         userAgent: getUserAgent(request),
+        requestId: request.id,
       });
       this.refreshCookie.set(
         reply,
@@ -252,6 +268,7 @@ export class AuthController {
     await this.manageSessions.logout(
       request.auth.userId,
       request.auth.sessionId,
+      getAuditContext(request, request.auth.sessionId),
     );
     this.refreshCookie.clear(reply);
   }
@@ -267,7 +284,10 @@ export class AuthController {
     @Headers('origin') origin?: string,
   ): Promise<void> {
     this.browserOrigins.assertAllowed(origin);
-    await this.manageSessions.logoutAll(request.auth.userId);
+    await this.manageSessions.logoutAll(
+      request.auth.userId,
+      getAuditContext(request, request.auth.sessionId),
+    );
     this.refreshCookie.clear(reply);
   }
 
@@ -299,7 +319,11 @@ export class AuthController {
     @Headers('origin') origin?: string,
   ): Promise<void> {
     this.browserOrigins.assertAllowed(origin);
-    await this.manageSessions.revoke(request.auth.userId, sessionId);
+    await this.manageSessions.revoke(
+      request.auth.userId,
+      sessionId,
+      getAuditContext(request, request.auth.sessionId),
+    );
 
     if (sessionId === request.auth.sessionId) {
       this.refreshCookie.clear(reply);

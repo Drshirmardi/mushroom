@@ -14,6 +14,7 @@ import {
 
 describe('session authentication use cases', () => {
   const now = new Date('2026-08-22T12:00:00.000Z');
+  const requestId = 'request-session';
   const user = {
     id: '37694db4-23a5-4498-a49d-135fc98de279',
     phone: '+989123456789',
@@ -83,6 +84,7 @@ describe('session authentication use cases', () => {
       remember,
       ipAddress: '203.0.113.10',
       userAgent: 'test-agent',
+      requestId,
     });
     const expiresAt = new Date(now.getTime() + lifetime);
 
@@ -99,6 +101,11 @@ describe('session authentication use cases', () => {
       userAgent: 'test-agent',
       ipAddress: '203.0.113.10',
       expiresAt,
+      audit: {
+        requestId,
+        ipAddress: '203.0.113.10',
+        actorSessionId: refresh.sessionId,
+      },
     });
     expect(result).toEqual({
       user,
@@ -123,6 +130,7 @@ describe('session authentication use cases', () => {
       password: 'candidate password',
       remember: false,
       ipAddress: '203.0.113.10',
+      requestId,
     })).rejects.toThrow('signing unavailable');
     expect(createSession).not.toHaveBeenCalled();
   });
@@ -149,6 +157,7 @@ describe('session authentication use cases', () => {
       refreshToken: refresh.rawToken,
       ipAddress: '203.0.113.11',
       userAgent: 'rotating-agent',
+      requestId,
     })).resolves.toMatchObject({
       user,
       accessToken: 'access-token',
@@ -161,6 +170,11 @@ describe('session authentication use cases', () => {
       usedAt: now,
       ipAddress: '203.0.113.11',
       userAgent: 'rotating-agent',
+      audit: {
+        requestId,
+        ipAddress: '203.0.113.11',
+        actorSessionId: refresh.sessionId,
+      },
     });
     expect(rotateRefresh.mock.invocationCallOrder[0])
       .toBeLessThan(issueAccess.mock.invocationCallOrder[0] ?? 0);
@@ -184,6 +198,7 @@ describe('session authentication use cases', () => {
       await expect(useCase.execute({
         refreshToken: refresh.rawToken,
         ipAddress: '203.0.113.11',
+        requestId,
       })).rejects.toEqual(new InvalidRefreshTokenError());
       expect(issueAccess).not.toHaveBeenCalled();
     },
@@ -201,6 +216,7 @@ describe('session authentication use cases', () => {
     await expect(useCase.execute({
       refreshToken: 'malformed',
       ipAddress: '203.0.113.11',
+      requestId,
     })).rejects.toEqual(new InvalidRefreshTokenError());
     expect(rotateRefresh).not.toHaveBeenCalled();
   });

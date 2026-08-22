@@ -1,6 +1,9 @@
+import type { SecurityAuditContext } from '../security-audit';
+
 export interface CreatePatientRegistration {
   phone: string;
   passwordHash: string;
+  audit: SecurityAuditContext;
 }
 
 export interface RegisteredUser {

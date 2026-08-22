@@ -1,6 +1,7 @@
 import { LoginUserUseCase } from './login-user.use-case';
 import { RefreshTokenManager } from './ports/refresh-token-manager';
 import { SessionRepository } from './ports/session.repository';
+import type { SecurityAuditContext } from './security-audit';
 
 export const SESSION_LIFETIME_MS = Object.freeze({
   standard: 24 * 60 * 60 * 1_000,
@@ -15,7 +16,7 @@ export interface AccessTokenIssuer {
   }): Promise<string>;
 }
 
-export interface LoginSessionCommand {
+export interface LoginSessionCommand extends SecurityAuditContext {
   phone: string;
   password: string;
   remember: boolean;
@@ -69,6 +70,11 @@ export class LoginSessionUseCase {
       userAgent: command.userAgent,
       ipAddress: command.ipAddress,
       expiresAt: refreshExpiresAt,
+      audit: {
+        requestId: command.requestId,
+        ipAddress: command.ipAddress,
+        actorSessionId: refresh.sessionId,
+      },
     });
 
     return {

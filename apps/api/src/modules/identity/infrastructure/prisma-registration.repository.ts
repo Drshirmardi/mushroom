@@ -9,6 +9,11 @@ import {
   type CreatePatientRegistration,
   type RegisteredUser,
 } from '../application/ports/registration.repository';
+import { SECURITY_AUDIT_ACTIONS } from '../application/security-audit';
+import {
+  AUDIT_SUBJECT_TYPES,
+  recordSecurityAudit,
+} from './prisma-security-audit';
 
 @Injectable()
 export class PrismaRegistrationRepository extends RegistrationRepository {
@@ -50,6 +55,15 @@ export class PrismaRegistrationRepository extends RegistrationRepository {
               },
             },
           },
+        });
+
+        await recordSecurityAudit(transaction, {
+          ...registration.audit,
+          action: SECURITY_AUDIT_ACTIONS.ACCOUNT_REGISTERED,
+          actorUserId: user.id,
+          subjectType: AUDIT_SUBJECT_TYPES.USER,
+          subjectId: user.id,
+          metadata: { initialRole: RoleCode.PATIENT },
         });
 
         return {

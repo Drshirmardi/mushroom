@@ -37,7 +37,7 @@ ADMIN
 - [x] `F01-T09` — logout، logout-all و revoke session
 - [x] `F01-T10` — endpointهای `/me` و change password
 - [x] `F01-T11` — RBAC guard و permission contract پایه
-- [ ] `F01-T12` — audit رویدادهای امنیتی
+- [x] `F01-T12` — audit رویدادهای امنیتی
 - [ ] `F01-T13` — OpenAPI و API client احراز هویت
 - [ ] `F01-T14` — اتصال login/signup در `apps/web`
 - [ ] `F01-T15` — session bootstrap و route protection در `apps/app`
@@ -252,3 +252,17 @@ POST   /v1/me/change-password
   سطح action است و کنترل ownership در query/use case باقی می‌ماند؛ `ADMIN` جایگزین ownership نیست.
 - permissionها داخل access token ذخیره نمی‌شوند و از roleهای validateشده محاسبه می‌شوند؛ تغییر
   role طبق ADR پس از پایان عمر حداکثر ده‌دقیقه‌ای access token جاری قطعیت پیدا می‌کند.
+
+## قرارداد Task F01-T12
+
+- تغییرات امنیتی موجود شامل ثبت حساب، ساخت session، تشخیص reuse، logout، logout-all، revoke
+  انتخابی، تغییر شماره و تغییر password با actionهای ثابت و allowlisted در `AuditEvent` ثبت می‌شوند.
+- رویداد audit و تغییر state مربوط به آن در همان transaction PostgreSQL نوشته می‌شوند؛ شکست
+  ثبت audit کل تغییر را rollback می‌کند و عملیات idempotent بدون تغییر state رویداد تکراری نمی‌سازد.
+- هر رویداد actor user/session در دسترس، subject صریح، request ID محدودشده، IP و metadata کمینه
+  دارد؛ رخدادهای login ناموفق همچنان فقط در `LoginAttempt` ثبت می‌شوند تا منبع حقیقت دوگانه نشود.
+- password، hash، refresh/access token، cookie، authorization، شماره تلفن و user-agent خام در
+  audit metadata ذخیره نمی‌شوند؛ metadata فقط شمارنده، دلیل غیرحساس، generation و role اولیه دارد.
+- `AuditEvent` در این task فقط append می‌شود و API خواندن/ویرایش/حذف audit ارائه نمی‌شود.
+- endpoint تغییر role هنوز وجود ندارد؛ هر مسیر mutation نقش که بعداً اضافه شود باید پیش از انتشار
+  از همین قرارداد transaction و context امن audit پیروی کند.

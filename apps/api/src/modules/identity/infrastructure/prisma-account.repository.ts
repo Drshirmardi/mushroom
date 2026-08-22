@@ -11,6 +11,11 @@ import {
   type ChangeAccountPhone,
   type CurrentAccount,
 } from '../application/ports/account.repository';
+import { SECURITY_AUDIT_ACTIONS } from '../application/security-audit';
+import {
+  AUDIT_SUBJECT_TYPES,
+  recordSecurityAudit,
+} from './prisma-security-audit';
 
 const accountSelect = {
   id: true,
@@ -89,6 +94,14 @@ export class PrismaAccountRepository extends AccountRepository {
         const account = toCurrentAccount(user);
         if (!account) return { kind: 'STALE' } as const;
 
+        await recordSecurityAudit(transaction, {
+          ...input.audit,
+          action: SECURITY_AUDIT_ACTIONS.ACCOUNT_PHONE_CHANGED,
+          actorUserId: input.userId,
+          subjectType: AUDIT_SUBJECT_TYPES.USER,
+          subjectId: input.userId,
+        });
+
         return { kind: 'CHANGED', account } as const;
       });
     } catch (error) {
@@ -119,7 +132,7 @@ export class PrismaAccountRepository extends AccountRepository {
       });
       if (updated.count !== 1) return { kind: 'STALE' };
 
-      await transaction.session.updateMany({
+      const revoked = await transaction.session.updateMany({
         where: { userId: input.userId, revokedAt: null },
         data: {
           revokedAt: input.changedAt,
@@ -131,6 +144,17 @@ export class PrismaAccountRepository extends AccountRepository {
         select: accountSelect,
       });
       const account = toCurrentAccount(user);
+
+      if (account) {
+        await recordSecurityAudit(transaction, {
+          ...input.audit,
+          action: SECURITY_AUDIT_ACTIONS.ACCOUNT_PASSWORD_CHANGED,
+          actorUserId: input.userId,
+          subjectType: AUDIT_SUBJECT_TYPES.USER,
+          subjectId: input.userId,
+          metadata: { revokedSessionCount: revoked.count },
+        });
+      }
 
       return account
         ? { kind: 'CHANGED', account }

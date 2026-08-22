@@ -91,6 +91,11 @@ export class MeController {
         request.auth.userId,
         body.currentPassword,
         body.phone,
+        {
+          requestId: request.id,
+          ipAddress: request.ip,
+          actorSessionId: request.auth.sessionId,
+        },
       );
     } catch (error) {
       if (error instanceof InvalidPhoneNumberError) {
@@ -132,6 +137,11 @@ export class MeController {
         request.auth.userId,
         body.currentPassword,
         body.newPassword,
+        {
+          requestId: request.id,
+          ipAddress: request.ip,
+          actorSessionId: request.auth.sessionId,
+        },
       );
       this.refreshCookie.clear(reply);
     } catch (error) {

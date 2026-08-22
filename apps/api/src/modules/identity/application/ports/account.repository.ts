@@ -1,3 +1,5 @@
+import type { SecurityAuditContext } from '../security-audit';
+
 export interface CurrentAccount {
   id: string;
   phone: string;
@@ -15,6 +17,7 @@ export interface ChangeAccountPhone {
   userId: string;
   expectedPasswordHash: string;
   phone: string;
+  audit: SecurityAuditContext;
 }
 
 export interface ChangeAccountPassword {
@@ -22,6 +25,7 @@ export interface ChangeAccountPassword {
   expectedPasswordHash: string;
   passwordHash: string;
   changedAt: Date;
+  audit: SecurityAuditContext;
 }
 
 export type AccountMutationResult =

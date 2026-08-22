@@ -466,3 +466,57 @@ Known limitations:
   - تغییر role ممکن است طبق access-token stateless مصوب تا پایان window حداکثر ده‌دقیقه‌ای دیده شود.
 Next task:
   - `F01-T12`
+
+## F01-T12 — audit رویدادهای امنیتی
+
+Task ID: F01-T12
+Completed at: 2026-08-22 17:20 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/src/modules/identity/application/security-audit.ts`
+  - `apps/api/src/modules/identity/application/login-session.use-case.ts`
+  - `apps/api/src/modules/identity/application/refresh-session.use-case.ts`
+  - `apps/api/src/modules/identity/application/register-user.use-case.ts`
+  - `apps/api/src/modules/identity/application/manage-account.use-case.ts`
+  - `apps/api/src/modules/identity/application/manage-sessions.use-case.ts`
+  - `apps/api/src/modules/identity/application/ports/account.repository.ts`
+  - `apps/api/src/modules/identity/application/ports/registration.repository.ts`
+  - `apps/api/src/modules/identity/application/ports/session.repository.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-security-audit.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-account.repository.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-registration.repository.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-session.repository.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/src/modules/identity/presentation/http/me.controller.ts`
+  - `apps/api/test/security-audit.integration.spec.ts`
+  - `apps/api/test/manage-account.spec.ts`
+  - `apps/api/test/manage-sessions.spec.ts`
+  - `apps/api/test/register-user.spec.ts`
+  - `apps/api/test/session-use-cases.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ مدل و indexهای `AuditEvent` از migration پایه موجود هستند
+Tests run:
+  - unit اختصاصی register/session/account → PASS (۴ فایل، ۲۳ تست)
+  - integration کامل audit روی API و PostgreSQL واقعی → PASS (۱ فایل، ۱ تست)
+  - تمام تست‌های غیر-migration API با PostgreSQL واقعی → PASS (۲۱ فایل، ۱۵۹ تست)
+  - migration smoke روی PostgreSQL خالی در اجرای جداگانه → PASS (۱ فایل، ۱ تست)
+  - ثبت actor/subject/request/IP و metadata امن برای همه mutationهای identity/session → PASS
+  - idempotent revoke بدون رویداد تکراری و refresh reuse با generation غیرحساس → PASS
+  - عدم حضور password، شماره، user-agent و refresh cookie در audit serial‌شده → PASS
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` و مرور نهایی diff → PASS
+Result:
+  - actionهای audit امنیتی در قرارداد مرکزی ثابت و محدود شدند → PASS
+  - ثبت حساب/session، reuse، logoutها، revoke و تغییر credential audit می‌شوند → PASS
+  - هر تغییر state و audit متناظر در transaction واحد PostgreSQL قرار گرفت → PASS
+  - عملیات no-op idempotent رکورد audit تکراری ایجاد نمی‌کند → PASS
+  - request ID، IP، actor session/user و subject قابل پیگیری ثبت می‌شوند → PASS
+  - secret، credential و PII در metadata ذخیره نمی‌شوند → PASS
+Known limitations:
+  - endpoint تغییر role هنوز وجود ندارد؛ mutation آینده باید پیش از انتشار همین قرارداد audit را اعمال کند.
+  - خواندن و retention/export رویدادهای audit خارج از scope این task است.
+Next task:
+  - `F01-T13`

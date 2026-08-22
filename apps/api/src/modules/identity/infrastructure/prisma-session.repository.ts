@@ -15,7 +15,12 @@ import {
   type SessionPage,
   type SessionRefreshResult,
 } from '../application/ports/session.repository';
+import { SECURITY_AUDIT_ACTIONS } from '../application/security-audit';
 import { constantTimeRefreshHashEquals } from './hmac-refresh-token-manager';
+import {
+  AUDIT_SUBJECT_TYPES,
+  recordSecurityAudit,
+} from './prisma-security-audit';
 
 interface LockedSessionRow {
   id: string;
@@ -36,16 +41,26 @@ export class PrismaSessionRepository extends SessionRepository {
   }
 
   async create(input: CreateSession): Promise<void> {
-    await this.prisma.session.create({
-      data: {
-        id: input.id,
-        userId: input.userId,
-        refreshTokenHash: input.refreshTokenHash,
-        remembered: input.remembered,
-        userAgent: limitUserAgent(input.userAgent),
-        ipAddress: input.ipAddress,
-        expiresAt: input.expiresAt,
-      },
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.session.create({
+        data: {
+          id: input.id,
+          userId: input.userId,
+          refreshTokenHash: input.refreshTokenHash,
+          remembered: input.remembered,
+          userAgent: limitUserAgent(input.userAgent),
+          ipAddress: input.ipAddress,
+          expiresAt: input.expiresAt,
+        },
+      });
+      await recordSecurityAudit(transaction, {
+        ...input.audit,
+        action: SECURITY_AUDIT_ACTIONS.SESSION_CREATED,
+        actorUserId: input.userId,
+        subjectType: AUDIT_SUBJECT_TYPES.SESSION,
+        subjectId: input.id,
+        metadata: { remembered: input.remembered },
+      });
     });
   }
 
@@ -85,6 +100,14 @@ export class PrismaSessionRepository extends SessionRepository {
             revokedAt: input.usedAt,
             revokedReason: SessionRevocationReason.REFRESH_REUSE_DETECTED,
           },
+        });
+        await recordSecurityAudit(transaction, {
+          ...input.audit,
+          action: SECURITY_AUDIT_ACTIONS.SESSION_REFRESH_REUSE_DETECTED,
+          actorUserId: session.userId,
+          subjectType: AUDIT_SUBJECT_TYPES.SESSION,
+          subjectId: session.id,
+          metadata: { generation: session.refreshGeneration },
         });
 
         return { kind: 'REUSED' };
@@ -138,29 +161,56 @@ export class PrismaSessionRepository extends SessionRepository {
   }
 
   async revoke(input: RevokeSession): Promise<void> {
-    await this.prisma.session.updateMany({
-      where: {
-        id: input.sessionId,
-        userId: input.userId,
-        revokedAt: null,
-      },
-      data: {
-        revokedAt: input.revokedAt,
-        revokedReason: input.reason,
-      },
+    await this.prisma.$transaction(async (transaction) => {
+      const revoked = await transaction.session.updateMany({
+        where: {
+          id: input.sessionId,
+          userId: input.userId,
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: input.revokedAt,
+          revokedReason: input.reason,
+        },
+      });
+      if (revoked.count === 0) return;
+
+      await recordSecurityAudit(transaction, {
+        ...input.audit,
+        action: input.auditAction,
+        actorUserId: input.userId,
+        subjectType: AUDIT_SUBJECT_TYPES.SESSION,
+        subjectId: input.sessionId,
+        metadata: { reason: input.reason },
+      });
     });
   }
 
   async revokeAll(input: RevokeAllSessions): Promise<void> {
-    await this.prisma.session.updateMany({
-      where: {
-        userId: input.userId,
-        revokedAt: null,
-      },
-      data: {
-        revokedAt: input.revokedAt,
-        revokedReason: input.reason,
-      },
+    await this.prisma.$transaction(async (transaction) => {
+      const revoked = await transaction.session.updateMany({
+        where: {
+          userId: input.userId,
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: input.revokedAt,
+          revokedReason: input.reason,
+        },
+      });
+      if (revoked.count === 0) return;
+
+      await recordSecurityAudit(transaction, {
+        ...input.audit,
+        action: SECURITY_AUDIT_ACTIONS.SESSIONS_LOGGED_OUT_ALL,
+        actorUserId: input.userId,
+        subjectType: AUDIT_SUBJECT_TYPES.USER,
+        subjectId: input.userId,
+        metadata: {
+          reason: input.reason,
+          revokedSessionCount: revoked.count,
+        },
+      });
     });
   }
 

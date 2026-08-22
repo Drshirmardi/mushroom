@@ -4,6 +4,7 @@ import type {
 } from './login-session.use-case';
 import { RefreshTokenManager } from './ports/refresh-token-manager';
 import { SessionRepository } from './ports/session.repository';
+import type { SecurityAuditContext } from './security-audit';
 
 export class InvalidRefreshTokenError extends Error {
   readonly code = 'INVALID_REFRESH_TOKEN';
@@ -14,7 +15,7 @@ export class InvalidRefreshTokenError extends Error {
   }
 }
 
-export interface RefreshSessionCommand {
+export interface RefreshSessionCommand extends SecurityAuditContext {
   refreshToken: string | undefined;
   ipAddress: string;
   userAgent?: string;
@@ -44,6 +45,11 @@ export class RefreshSessionUseCase {
       usedAt: this.now(),
       ipAddress: command.ipAddress,
       userAgent: command.userAgent,
+      audit: {
+        requestId: command.requestId,
+        ipAddress: command.ipAddress,
+        actorSessionId: inspected.sessionId,
+      },
     });
 
     if (rotation.kind !== 'ROTATED') throw new InvalidRefreshTokenError();

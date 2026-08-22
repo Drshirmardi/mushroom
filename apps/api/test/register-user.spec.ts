@@ -8,6 +8,7 @@ import {
 import { RegisterUserUseCase } from '../src/modules/identity/application/register-user.use-case';
 
 describe('RegisterUserUseCase', () => {
+  const audit = { requestId: 'request-register', ipAddress: '203.0.113.10' };
   const registeredUser: RegisteredUser = {
     id: '37694db4-23a5-4498-a49d-135fc98de279',
     phone: '+989123456789',
@@ -33,6 +34,7 @@ describe('RegisterUserUseCase', () => {
     await expect(useCase.execute({
       phone: '۰۹۱۲ ۳۴۵ ۶۷۸۹',
       password: 'correct horse battery staple',
+      ...audit,
     })).resolves.toEqual(registeredUser);
 
     expect(hash).toHaveBeenCalledWith('correct horse battery staple', {
@@ -41,6 +43,7 @@ describe('RegisterUserUseCase', () => {
     expect(createPatient).toHaveBeenCalledWith({
       phone: '+989123456789',
       passwordHash: '$argon2id$encoded',
+      audit,
     });
   });
 
@@ -50,6 +53,7 @@ describe('RegisterUserUseCase', () => {
     await expect(useCase.execute({
       phone: '09123456789',
       password: 'rejected password',
+      ...audit,
     })).rejects.toThrow('policy rejected');
     expect(createPatient).not.toHaveBeenCalled();
   });
