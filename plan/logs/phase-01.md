@@ -379,3 +379,49 @@ Known limitations:
   - access tokenهای قبلی طبق ADR stateless هستند و ممکن است حداکثر ده دقیقه تا expiry معتبر بمانند.
 Next task:
   - `F01-T10`
+
+## F01-T10 — endpointهای `/me` و change password
+
+Task ID: F01-T10
+Completed at: 2026-08-22 16:43 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/modules/identity/application/manage-account.use-case.ts`
+  - `apps/api/src/modules/identity/application/ports/account.repository.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-account.repository.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/me.dto.ts`
+  - `apps/api/src/modules/identity/presentation/http/me.controller.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/test/manage-account.spec.ts`
+  - `apps/api/test/me.integration.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ Credential و Session موجود update اتمیک و دلیل `PASSWORD_CHANGED` را پوشش می‌دهند
+Tests run:
+  - unit و integration اختصاصی current account → PASS (۲ فایل، ۱۹ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۲۰ فایل، ۱۴۴ تست)
+  - GET حساب active و رد حساب disabled بدون نشت credential → PASS
+  - تغییر شماره canonical، حالت بدون تغییر، شماره تکراری/نامعتبر و password اشتباه → PASS
+  - تغییر password، Argon2id جدید، timestamp و revoke تمام sessionها → PASS
+  - refresh قدیمی، login با password قدیمی و cookie پس از تغییر password → PASS
+  - رقابت دو تغییر password با credential قدیمی → PASS (یک `204`، یک `401`)
+  - bearer guard، Origin allowlist و OpenAPI هر سه endpoint → PASS
+  - Prisma validate، migrate status و schema diff → PASS (up to date، no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` و بررسی عدم وابستگی application/domain به Prisma/Nest/infrastructure → PASS
+Result:
+  - bootstrap حساب از PostgreSQL با response کمینه و امن پیاده شد → PASS
+  - PATCH شماره فقط با current password و unique/canonical enforcement انجام می‌شود → PASS
+  - تغییر password متفاوت با policy و Argon2id مصوب انجام می‌شود → PASS
+  - credential update و revoke تمام sessionها در transaction واحد قرار دارند → PASS
+  - compare-and-set روی hash قبلی race تغییر password را کنترل می‌کند → PASS
+  - password، hash و credential داخلی در body یا خطا نشت نمی‌کنند → PASS
+Known limitations:
+  - تأیید مالکیت شماره جدید با OTP خارج از scope Phase 01 است؛ فعلاً current password عامل تأیید است.
+  - audit تغییر شماره/password طبق برنامه در `F01-T12` اضافه می‌شود.
+  - access tokenهای قبلی طبق ADR ممکن است حداکثر ده دقیقه تا expiry معتبر بمانند.
+Next task:
+  - `F01-T11`

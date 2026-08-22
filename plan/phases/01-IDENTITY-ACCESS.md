@@ -35,7 +35,7 @@ ADMIN
 - [x] `F01-T07` — access token و auth guard
 - [x] `F01-T08` — refresh token rotation، hash storage و reuse detection
 - [x] `F01-T09` — logout، logout-all و revoke session
-- [ ] `F01-T10` — endpointهای `/me` و change password
+- [x] `F01-T10` — endpointهای `/me` و change password
 - [ ] `F01-T11` — RBAC guard و permission contract پایه
 - [ ] `F01-T12` — audit رویدادهای امنیتی
 - [ ] `F01-T13` — OpenAPI و API client احراز هویت
@@ -218,3 +218,20 @@ POST   /v1/me/change-password
   محدود است و refresh hash، IP و user-agent خام را نمایش نمی‌دهد.
 - تمام endpointها bearer-protected هستند و عملیات state-changing، Origin حاضر را با allowlist
   مصوب اعتبارسنجی می‌کنند.
+
+## قرارداد Task F01-T10
+
+- `GET /v1/me` حساب active را از دیتابیس می‌خواند و فقط id، شماره canonical، status، roleها،
+  زمان ساخت و `passwordChangedAt` را برمی‌گرداند؛ داده profile متعلق به Phase 02 است.
+- `PATCH /v1/me` در این فاز فقط شماره ورود را تغییر می‌دهد، password فعلی را الزامی می‌کند،
+  شماره جدید را canonical/unique می‌سازد و برای شماره canonical بدون تغییر idempotent است.
+- password اشتباه در عملیات حساس با `INVALID_CURRENT_PASSWORD`/`401` و شماره تکراری با
+  `PHONE_ALREADY_REGISTERED`/`409` پاسخ می‌گیرد؛ هیچ password یا hash در response/error نیست.
+- `POST /v1/me/change-password` password فعلی را verify، یک password متفاوت را با همان policy
+  و Argon2id مصوب hash و `passwordChangedAt` را به‌روز می‌کند.
+- تغییر credential و revoke تمام sessionهای revokeنشده با دلیل `PASSWORD_CHANGED` در یک
+  transaction انجام می‌شود؛ cookie جاری پاک و پاسخ موفق `204` است، بنابراین ورود دوباره لازم است.
+- update شرطی روی hash قبلی تضمین می‌کند دو درخواست هم‌زمان با password قدیمی فقط یک موفقیت
+  داشته باشند؛ درخواست stale همان خطای عمومی password فعلی را دریافت می‌کند.
+- هر سه endpoint bearer-protected هستند؛ PATCH و change-password، Origin حاضر را با allowlist
+  مصوب اعتبارسنجی می‌کنند و حساب disabled را نمی‌پذیرند.
