@@ -32,6 +32,8 @@ import {
 
 import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
 import { ACCESS_TOKEN_TTL_SECONDS } from '../../../../common/auth/access-token.service';
+import { RequirePermissions } from '../../../../common/auth/authorization.decorator';
+import { PERMISSIONS } from '../../../../common/auth/authorization.policy';
 import { BrowserOriginService } from '../../../../common/auth/browser-origin.service';
 import { Public } from '../../../../common/auth/public.decorator';
 import { RefreshCookieService } from '../../../../common/auth/refresh-cookie.service';
@@ -237,6 +239,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
   @ApiNoContentResponse({ description: 'Current session was revoked.' })
@@ -254,6 +257,7 @@ export class AuthController {
   }
 
   @Post('logout-all')
+  @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
   @ApiNoContentResponse({ description: 'All user sessions were revoked.' })
@@ -268,6 +272,7 @@ export class AuthController {
   }
 
   @Get('sessions')
+  @RequirePermissions(PERMISSIONS.SESSION_READ_SELF)
   @ApiBearerAuth('bearerAuth')
   @ApiOkResponse({ type: SessionListResponseDto })
   async sessions(
@@ -283,6 +288,7 @@ export class AuthController {
   }
 
   @Delete('sessions/:id')
+  @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
   @ApiNoContentResponse({ description: 'Owned session was revoked.' })

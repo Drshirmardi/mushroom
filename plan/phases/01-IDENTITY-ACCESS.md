@@ -36,7 +36,7 @@ ADMIN
 - [x] `F01-T08` — refresh token rotation، hash storage و reuse detection
 - [x] `F01-T09` — logout، logout-all و revoke session
 - [x] `F01-T10` — endpointهای `/me` و change password
-- [ ] `F01-T11` — RBAC guard و permission contract پایه
+- [x] `F01-T11` — RBAC guard و permission contract پایه
 - [ ] `F01-T12` — audit رویدادهای امنیتی
 - [ ] `F01-T13` — OpenAPI و API client احراز هویت
 - [ ] `F01-T14` — اتصال login/signup در `apps/web`
@@ -235,3 +235,20 @@ POST   /v1/me/change-password
   داشته باشند؛ درخواست stale همان خطای عمومی password فعلی را دریافت می‌کند.
 - هر سه endpoint bearer-protected هستند؛ PATCH و change-password، Origin حاضر را با allowlist
   مصوب اعتبارسنجی می‌کنند و حساب disabled را نمی‌پذیرند.
+
+## قرارداد Task F01-T11
+
+- roleهای معتبر فقط `PATIENT`، `DOCTOR`، `STAFF` و `ADMIN` هستند و همان قرارداد مرکزی هم
+  validation access token و هم policy مجوزها را تغذیه می‌کند.
+- مجوزهای پایه شامل self-service حساب و session، دسترسی dashboard و مدیریت user/role هستند؛
+  `PATIENT` مجوز dashboard ندارد، `DOCTOR`/`STAFF`/`ADMIN` دارند و مدیریت identity فقط برای
+  `ADMIN` است.
+- `RequireRoles` نقش‌های لازم را با منطق any-of و `RequirePermissions` مجوزهای لازم را با منطق
+  all-of روی handler/controller ثبت می‌کند؛ guard سراسری پس از access-token guard آن‌ها را اعمال
+  می‌کند و route عمومی را bypass می‌کند.
+- نبود principal برای policy محافظت‌شده با `UNAUTHORIZED` و کمبود role/permission با پاسخ عمومی
+  `FORBIDDEN` رد می‌شود؛ پاسخ denial نقش یا مجوز موردنیاز/اعطاشده را افشا نمی‌کند.
+- endpointهای موجود حساب و session به مجوزهای self صریح متصل‌اند. واژه `self` فقط capability
+  سطح action است و کنترل ownership در query/use case باقی می‌ماند؛ `ADMIN` جایگزین ownership نیست.
+- permissionها داخل access token ذخیره نمی‌شوند و از roleهای validateشده محاسبه می‌شوند؛ تغییر
+  role طبق ADR پس از پایان عمر حداکثر ده‌دقیقه‌ای access token جاری قطعیت پیدا می‌کند.

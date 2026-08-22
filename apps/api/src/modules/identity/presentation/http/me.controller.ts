@@ -25,6 +25,8 @@ import {
 } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
+import { RequirePermissions } from '../../../../common/auth/authorization.decorator';
+import { PERMISSIONS } from '../../../../common/auth/authorization.policy';
 import { BrowserOriginService } from '../../../../common/auth/browser-origin.service';
 import { RefreshCookieService } from '../../../../common/auth/refresh-cookie.service';
 import {
@@ -60,6 +62,7 @@ export class MeController {
   ) {}
 
   @Get()
+  @RequirePermissions(PERMISSIONS.ACCOUNT_READ_SELF)
   @ApiOkResponse({ type: CurrentAccountResponseDto })
   @ApiUnauthorizedResponse({ description: 'Account is unavailable.' })
   async get(@Req() request: AuthenticatedRequest) {
@@ -71,6 +74,7 @@ export class MeController {
   }
 
   @Patch()
+  @RequirePermissions(PERMISSIONS.ACCOUNT_UPDATE_SELF)
   @ApiOkResponse({ type: CurrentAccountResponseDto })
   @ApiUnauthorizedResponse({ description: 'Current password is invalid.' })
   @ApiConflictResponse({ description: 'Phone number is already registered.' })
@@ -110,6 +114,7 @@ export class MeController {
   }
 
   @Post('change-password')
+  @RequirePermissions(PERMISSIONS.ACCOUNT_UPDATE_SELF)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'Password changed; all sessions revoked.' })
   @ApiUnauthorizedResponse({ description: 'Current password is invalid.' })

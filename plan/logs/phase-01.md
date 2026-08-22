@@ -425,3 +425,44 @@ Known limitations:
   - access tokenهای قبلی طبق ADR ممکن است حداکثر ده دقیقه تا expiry معتبر بمانند.
 Next task:
   - `F01-T11`
+
+## F01-T11 — RBAC guard و permission contract پایه
+
+Task ID: F01-T11
+Completed at: 2026-08-22 17:06 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/src/common/auth/access-token.service.ts`
+  - `apps/api/src/common/auth/auth.module.ts`
+  - `apps/api/src/common/auth/authorization.decorator.ts`
+  - `apps/api/src/common/auth/authorization.guard.ts`
+  - `apps/api/src/common/auth/authorization.policy.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/src/modules/identity/presentation/http/me.controller.ts`
+  - `apps/api/test/authorization.guard.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ role reference data و assignmentهای موجود برای policy پایه کافی هستند
+Tests run:
+  - unit اختصاصی authorization به‌همراه access-token/guard → PASS (۳ فایل، ۴۰ تست)
+  - تمام تست‌های غیر-migration API با PostgreSQL واقعی → PASS (۲۰ فایل، ۱۵۷ تست)
+  - migration smoke روی PostgreSQL خالی در اجرای جداگانه → PASS (۱ فایل، ۱ تست)
+  - ماتریس `PATIENT`/`DOCTOR`/`STAFF`/`ADMIN` برای dashboard و identity management → PASS
+  - public bypass، principal مفقود، role any-of، permission all-of و denial بدون نشت policy → PASS
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` → PASS
+Result:
+  - قرارداد مرکزی چهار role و هفت permission پایه ایجاد و به validation JWT متصل شد → PASS
+  - authorization guard سراسری پس از authentication guard فعال شد → PASS
+  - بیمار مجوز dashboard ندارد و نقش‌های مدیریتی مصوب آن را دریافت می‌کنند → PASS
+  - مدیریت user/role فقط به `ADMIN` اعطا می‌شود و role غیرمنتظره هیچ مجوزی نمی‌گیرد → PASS
+  - endpointهای حساب و session با permission صریح self-service محافظت می‌شوند → PASS
+  - ownership همچنان در use case/query اعمال می‌شود و ADMIN آن را به‌طور ضمنی دور نمی‌زند → PASS
+Known limitations:
+  - اتصال routeهای واقعی dashboard به `DASHBOARD_ACCESS` در `F01-T16` انجام می‌شود.
+  - مستندسازی پاسخ `403` در OpenAPI و قرارداد client در `F01-T13` تکمیل می‌شود.
+  - تغییر role ممکن است طبق access-token stateless مصوب تا پایان window حداکثر ده‌دقیقه‌ای دیده شود.
+Next task:
+  - `F01-T12`

@@ -4,6 +4,8 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
+import { isRoleCode, type RoleCode } from './authorization.policy';
+
 export const ACCESS_TOKEN_ALGORITHM = 'HS256' as const;
 export const ACCESS_TOKEN_TTL_SECONDS = 10 * 60;
 export const ACCESS_TOKEN_CLOCK_TOLERANCE_SECONDS = 5;
@@ -13,7 +15,6 @@ export const ACCESS_TOKEN_CLOCK = Symbol('ACCESS_TOKEN_CLOCK');
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ROLE_CODES = new Set(['PATIENT', 'DOCTOR', 'STAFF', 'ADMIN']);
 const ALLOWED_HEADER_KEYS = ['alg', 'typ'];
 const ALLOWED_PAYLOAD_KEYS = [
   'aud',
@@ -35,7 +36,7 @@ export interface IssueAccessToken {
 export interface AccessTokenPrincipal {
   userId: string;
   sessionId: string;
-  roles: string[];
+  roles: RoleCode[];
   tokenId: string;
   issuedAt: number;
   expiresAt: number;
@@ -75,11 +76,11 @@ const hasExactKeys = (value: object, expectedKeys: string[]): boolean => {
     && keys.every((key, index) => key === expectedKeys[index]);
 };
 
-const hasValidRoles = (roles: unknown): roles is string[] =>
+const hasValidRoles = (roles: unknown): roles is RoleCode[] =>
   Array.isArray(roles)
   && roles.length > 0
   && new Set(roles).size === roles.length
-  && roles.every((role) => typeof role === 'string' && ROLE_CODES.has(role));
+  && roles.every(isRoleCode);
 
 @Injectable()
 export class AccessTokenService {
