@@ -31,7 +31,7 @@ ADMIN
 - [x] `F01-T03` — normalize شماره موبایل و unique constraint
 - [x] `F01-T04` — password hashing با Argon2id و policy رمز
 - [x] `F01-T05` — register use case و endpoint
-- [ ] `F01-T06` — login use case، rate limit و ثبت login attempt
+- [x] `F01-T06` — login use case، rate limit و ثبت login attempt
 - [ ] `F01-T07` — access token و auth guard
 - [ ] `F01-T08` — refresh token rotation، hash storage و reuse detection
 - [ ] `F01-T09` — logout، logout-all و revoke session
@@ -147,3 +147,20 @@ POST   /v1/me/change-password
 - phone/password نامعتبر با code پایدار و `422` پاسخ می‌گیرند و مقدار حساس در خطا echo نمی‌شود.
 - نام و profile خارج از مالکیت identity هستند و فیلد اضافه توسط validation سراسری رد می‌شود.
 - نقش‌های سیستمی به‌عنوان reference data توسط migration قابل‌اتکای deployment ایجاد می‌شوند.
+
+## قرارداد Task F01-T06
+
+- هسته login شماره را canonical می‌کند و برای password اشتباه، حساب ناشناخته، شماره نامعتبر
+  و حساب disabled فقط خطای عمومی `INVALID_CREDENTIALS` برمی‌گرداند.
+- verify برای حساب ناشناخته/شماره نامعتبر با Argon2id dummy hash هم‌هزینه اجرا می‌شود تا مسیر
+  سریع قابل استفاده برای account enumeration نباشد.
+- پنجره rate limit برابر ۱۵ دقیقه است: حداکثر ۵ failure برای هر شماره canonical و ۳۰ failure
+  برای هر IP؛ success و denialهای قبلی پنجره را تمدید نمی‌کنند.
+- رزرو attempt با advisory lock تراکنشی PostgreSQL انجام می‌شود؛ attemptهای `PENDING` نیز در
+  سقف شمرده می‌شوند تا درخواست موازی یا crash نتواند محدودیت را دور بزند.
+- هر درخواست پذیرفته‌شده با outcome نهایی `SUCCESS`، `INVALID_CREDENTIALS` یا
+  `ACCOUNT_DISABLED` و هر denial با `RATE_LIMITED` ثبت می‌شود؛ password خام ثبت نمی‌شود.
+- IP برای use case الزامی است، user-agent حداکثر ۵۱۲ کاراکتر ذخیره می‌شود و شماره malformed
+  به‌جای مقدار خام با sentinel غیرحساس `INVALID` ثبت می‌شود.
+- این task هسته login را فراهم می‌کند؛ endpoint نهایی پس از ایجاد access token و session در
+  `F01-T07` و `F01-T08` فعال می‌شود تا پاسخ login ناقص و بدون session منتشر نشود.

@@ -5,4 +5,6 @@ export abstract class PasswordHasher {
     password: string,
     policyContext?: PasswordPolicyContext,
   ): Promise<string>;
+
+  abstract verify(encodedHash: string, password: string): Promise<boolean>;
 }

@@ -24,6 +24,7 @@ enum RoleCode {
 }
 
 enum LoginAttemptOutcome {
+  PENDING
   SUCCESS
   INVALID_CREDENTIALS
   RATE_LIMITED

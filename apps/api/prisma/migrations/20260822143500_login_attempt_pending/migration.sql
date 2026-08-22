@@ -1,0 +1,1 @@
+ALTER TYPE "login_attempt_outcome" ADD VALUE 'PENDING' BEFORE 'SUCCESS';

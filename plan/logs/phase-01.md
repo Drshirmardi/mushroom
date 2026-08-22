@@ -186,3 +186,48 @@ Known limitations:
   - rate limit endpoint register همراه زیرساخت login rate limit در `F01-T06` اضافه می‌شود.
 Next task:
   - `F01-T06`
+
+## F01-T06 — login use case، rate limit و ثبت login attempt
+
+Task ID: F01-T06
+Completed at: 2026-08-22 14:44 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/prisma/schema.prisma`
+  - `apps/api/prisma/migrations/20260822143500_login_attempt_pending/migration.sql`
+  - `apps/api/src/modules/identity/application/login-user.use-case.ts`
+  - `apps/api/src/modules/identity/application/ports/login.repository.ts`
+  - `apps/api/src/modules/identity/application/ports/password-hasher.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-login.repository.ts`
+  - `apps/api/src/modules/identity/infrastructure/password-hasher.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/test/login-user.spec.ts`
+  - `apps/api/test/login.integration.spec.ts`
+  - `apps/api/test/migrations.integration.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - `20260822143500_login_attempt_pending` → PASS روی development و PostgreSQL خالی موقت
+Tests run:
+  - unit و integration اختصاصی login → PASS (۲ فایل، ۱۱ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۱۰ فایل، ۵۹ تست)
+  - رقابت ۱۲ رزرو هم‌زمان برای یک شماره → PASS (۵ مجاز، ۷ rate-limited)
+  - rate limit مشترک IP روی شماره‌های متفاوت → PASS
+  - migration smoke روی PostgreSQL خالی و بررسی enum `PENDING` → PASS
+  - Prisma validate، migrate status و schema diff → PASS (up to date، no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` → PASS
+Result:
+  - login برای credential معتبر principal کمینه و برای password/phone/account نامعتبر خطای عمومی یکسان می‌دهد → PASS
+  - dummy Argon2id verification مسیر حساب ناشناخته و شماره malformed را از مسیر سریع جدا می‌کند → PASS
+  - محدودیت ۱۵دقیقه‌ای ۵ failure برای شماره و ۳۰ failure برای IP اعمال می‌شود → PASS
+  - advisory lock تراکنشی و outcome موقت `PENDING` عبور درخواست‌های موازی از سقف را مسدود می‌کند → PASS
+  - نتیجه‌های success، invalid credentials، disabled و rate-limited همراه IP/user-agent در `LoginAttempt` ثبت می‌شوند → PASS
+  - password خام و شماره malformed در attempt ذخیره نمی‌شوند → PASS
+Known limitations:
+  - endpoint نهایی login عمداً تا ایجاد access token و session در `F01-T07` و `F01-T08` منتشر نمی‌شود.
+  - rate limit فعلاً بر PostgreSQL تکیه دارد؛ backend توزیع‌شده Redis در Phase 06/11 قابل جایگزینی است.
+  - rate limit ثبت‌نام، برخلاف یادداشت handoff `F01-T05`، در scope مصوب login این task نبود و باید پیش از release عمومی در `F01-T18`/Phase 11 تعیین تکلیف شود.
+Next task:
+  - `F01-T07`

@@ -134,6 +134,22 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'STAFF',
       ]);
 
+      const loginAttemptOutcomes = await smokeClient.query<{ value: string }>(`
+        SELECT enumlabel AS value
+        FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+        WHERE pg_type.typname = 'login_attempt_outcome'
+        ORDER BY enumsortorder
+      `);
+
+      expect(loginAttemptOutcomes.rows.map(({ value }) => value)).toEqual([
+        'PENDING',
+        'SUCCESS',
+        'INVALID_CREDENTIALS',
+        'RATE_LIMITED',
+        'ACCOUNT_DISABLED',
+      ]);
+
       const timestampColumns = await smokeClient.query<{ data_type: string }>(`
         SELECT data_type
         FROM information_schema.columns

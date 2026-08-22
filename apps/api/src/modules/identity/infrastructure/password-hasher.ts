@@ -64,4 +64,8 @@ export class Argon2PasswordHasher extends PasswordHasher {
   ): Promise<string> {
     return hashPassword(password, policyContext);
   }
+
+  async verify(encodedHash: string, password: string): Promise<boolean> {
+    return verifyPassword(encodedHash, password);
+  }
 }
