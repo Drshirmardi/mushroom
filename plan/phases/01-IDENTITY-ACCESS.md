@@ -30,7 +30,7 @@ ADMIN
 - [x] `F01-T02` — migration مدل‌های identity
 - [x] `F01-T03` — normalize شماره موبایل و unique constraint
 - [x] `F01-T04` — password hashing با Argon2id و policy رمز
-- [ ] `F01-T05` — register use case و endpoint
+- [x] `F01-T05` — register use case و endpoint
 - [ ] `F01-T06` — login use case، rate limit و ثبت login attempt
 - [ ] `F01-T07` — access token و auth guard
 - [ ] `F01-T08` — refresh token rotation، hash storage و reuse detection
@@ -136,3 +136,14 @@ POST   /v1/me/change-password
   سه pass و parallelism چهار تولید می‌شود.
 - verify برای hash یا ورودی malformed فقط `false` می‌دهد و جزئیات داخلی را نشت نمی‌دهد.
 - hashهای غیر-Argon2id یا دارای cost/version قدیمی برای rehash علامت‌گذاری می‌شوند.
+
+## قرارداد Task F01-T05
+
+- `POST /v1/auth/register` فقط `phone` و `password` می‌پذیرد و با `201` کاربر بدون session می‌سازد.
+- شماره پیش از persistence canonical و رمز پیش از transaction با Argon2id hash می‌شود.
+- ساخت `User`، `Credential` و assignment نقش `PATIENT` در یک transaction انجام می‌شود.
+- پاسخ فقط `id`، `phone`، `roles` و `createdAt` دارد؛ password/hash/token/cookie برنمی‌گردد.
+- شماره تکراری در race نیز یک user باقی می‌گذارد و با `PHONE_ALREADY_REGISTERED`/`409` پاسخ می‌دهد.
+- phone/password نامعتبر با code پایدار و `422` پاسخ می‌گیرند و مقدار حساس در خطا echo نمی‌شود.
+- نام و profile خارج از مالکیت identity هستند و فیلد اضافه توسط validation سراسری رد می‌شود.
+- نقش‌های سیستمی به‌عنوان reference data توسط migration قابل‌اتکای deployment ایجاد می‌شوند.

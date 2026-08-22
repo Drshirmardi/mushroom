@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { HealthController } from './common/health/health.controller';
 import { environmentValidationSchema } from './config/environment.validation';
 import { DatabaseModule } from './database/database.module';
+import { IdentityModule } from './modules/identity/identity.module';
 
 @Module({
   controllers: [HealthController],
@@ -23,6 +24,7 @@ import { DatabaseModule } from './database/database.module';
       },
     }),
     DatabaseModule,
+    IdentityModule,
   ],
 })
 export class AppModule {}

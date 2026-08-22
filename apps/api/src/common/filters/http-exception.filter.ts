@@ -11,6 +11,7 @@ import {
   ApiErrorResponse,
   getApiErrorCode,
   getDefaultErrorMessage,
+  isApiErrorCode,
 } from '../errors/api-error';
 
 @Catch()
@@ -23,16 +24,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
-    const errorCode = getApiErrorCode(status);
     const exceptionResponse =
       exception instanceof HttpException ? exception.getResponse() : undefined;
+    const exceptionBody =
+      typeof exceptionResponse === 'object' && exceptionResponse !== null
+        ? exceptionResponse as Record<string, unknown>
+        : undefined;
+    const errorCode = isApiErrorCode(exceptionBody?.code)
+      ? exceptionBody.code
+      : getApiErrorCode(status);
     const exceptionMessage =
       typeof exceptionResponse === 'string'
         ? exceptionResponse
-        : typeof exceptionResponse === 'object' &&
-            exceptionResponse !== null &&
-            'message' in exceptionResponse
-          ? exceptionResponse.message
+        : exceptionBody && 'message' in exceptionBody
+          ? exceptionBody.message
           : undefined;
     const body: ApiErrorResponse = {
       code: errorCode,
@@ -41,9 +46,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? exceptionMessage
           : getDefaultErrorMessage(errorCode),
       requestId: request.id,
-      details: Array.isArray(exceptionMessage)
-        ? { messages: exceptionMessage }
-        : {},
+      details:
+        exceptionBody?.details
+        && typeof exceptionBody.details === 'object'
+        && !Array.isArray(exceptionBody.details)
+          ? exceptionBody.details as Record<string, unknown>
+          : Array.isArray(exceptionMessage)
+            ? { messages: exceptionMessage }
+            : {},
     };
 
     response.header('x-request-id', request.id).status(status).send(body);

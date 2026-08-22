@@ -11,6 +11,12 @@ export type ApiErrorCode =
   | 'UNPROCESSABLE_ENTITY'
   | 'TOO_MANY_REQUESTS'
   | 'SERVICE_UNAVAILABLE'
+  | 'INVALID_PHONE_NUMBER'
+  | 'PHONE_ALREADY_REGISTERED'
+  | 'PASSWORD_TOO_SHORT'
+  | 'PASSWORD_TOO_LONG'
+  | 'PASSWORD_UNSUPPORTED_CHARACTERS'
+  | 'PASSWORD_BLOCKED'
   | 'HTTP_ERROR'
   | 'INTERNAL_SERVER_ERROR';
 
@@ -20,6 +26,30 @@ export interface ApiErrorResponse {
   requestId: string;
   details: Record<string, unknown>;
 }
+
+const apiErrorCodes = new Set<ApiErrorCode>([
+  'BAD_REQUEST',
+  'UNAUTHORIZED',
+  'FORBIDDEN',
+  'NOT_FOUND',
+  'CONFLICT',
+  'PAYLOAD_TOO_LARGE',
+  'UNSUPPORTED_MEDIA_TYPE',
+  'UNPROCESSABLE_ENTITY',
+  'TOO_MANY_REQUESTS',
+  'SERVICE_UNAVAILABLE',
+  'INVALID_PHONE_NUMBER',
+  'PHONE_ALREADY_REGISTERED',
+  'PASSWORD_TOO_SHORT',
+  'PASSWORD_TOO_LONG',
+  'PASSWORD_UNSUPPORTED_CHARACTERS',
+  'PASSWORD_BLOCKED',
+  'HTTP_ERROR',
+  'INTERNAL_SERVER_ERROR',
+]);
+
+export const isApiErrorCode = (value: unknown): value is ApiErrorCode =>
+  typeof value === 'string' && apiErrorCodes.has(value as ApiErrorCode);
 
 const errorCodeByStatus: Partial<Record<HttpStatus, ApiErrorCode>> = {
   [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',

@@ -58,6 +58,25 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
 
     expect(result.status, result.stderr).toBe(0);
 
+    const preSeedClient = new Client({ connectionString: createDatabaseUrl() });
+    await preSeedClient.connect();
+    try {
+      const migratedRoles = await preSeedClient.query<{ code: string }>(`
+        SELECT code::text
+        FROM roles
+        ORDER BY code
+      `);
+
+      expect(migratedRoles.rows.map(({ code }) => code)).toEqual([
+        'ADMIN',
+        'DOCTOR',
+        'PATIENT',
+        'STAFF',
+      ]);
+    } finally {
+      await preSeedClient.end();
+    }
+
     for (let run = 0; run < 2; run += 1) {
       const seedResult = spawnSync(
         process.execPath,

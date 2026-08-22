@@ -138,3 +138,51 @@ Known limitations:
   - wrapper محلی pnpm 11 با store نصب‌شده pnpm 10 ناسازگار بود؛ dependency با pnpm 10.10.0 قفل شد و binaryهای همان workspace برای verification کامل استفاده شدند.
 Next task:
   - `F01-T05`
+
+## F01-T05 — register use case و endpoint
+
+Task ID: F01-T05
+Completed at: 2026-08-21 08:57 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/src/app.module.ts`
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/common/filters/http-exception.filter.ts`
+  - `apps/api/src/modules/identity/application/ports/password-hasher.ts`
+  - `apps/api/src/modules/identity/application/ports/registration.repository.ts`
+  - `apps/api/src/modules/identity/application/register-user.use-case.ts`
+  - `apps/api/src/modules/identity/infrastructure/password-hasher.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-registration.repository.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/register.dto.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/prisma/migrations/20260821084000_seed_identity_roles/migration.sql`
+  - `apps/api/test/register-user.spec.ts`
+  - `apps/api/test/register.integration.spec.ts`
+  - `apps/api/test/migrations.integration.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - `20260821084000_seed_identity_roles` → PASS روی development و PostgreSQL خالی؛ چهار نقش قبل از اجرای development seed موجودند
+Tests run:
+  - unit و integration اختصاصی register/migration → PASS (۳ فایل، ۹ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۸ فایل، ۴۸ تست)
+  - race دو register معادل → PASS (یک `201`، یک `409`، فقط یک user)
+  - `migrate status` و schema diff → PASS (up to date، no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - OpenAPI path `/v1/auth/register` → PASS
+  - `git diff --check` و بررسی عدم وابستگی application/domain به Prisma/Nest/infrastructure → PASS
+Result:
+  - `POST /v1/auth/register` با DTO محدود به phone/password و پاسخ production-shaped ایجاد شد → PASS
+  - normalize، policy و Argon2id پیش از persistence اعمال می‌شوند → PASS
+  - User، Credential و UserRole/PATIENT در transaction واحد ذخیره می‌شوند → PASS
+  - response فاقد password/hash/token/cookie است و register طبق ADR session ایجاد نمی‌کند → PASS
+  - duplicate و race با `PHONE_ALREADY_REGISTERED` و status `409` مدیریت می‌شوند → PASS
+  - خطاهای phone/password با code پایدار و status `422` بدون echo مقدار حساس پاسخ می‌دهند → PASS
+  - reference roleها از migration deployment تأمین و seed توسعه همچنان idempotent است → PASS
+Known limitations:
+  - login، session و token خارج از scope این task و متعلق به `F01-T06` تا `F01-T08` هستند.
+  - rate limit endpoint register همراه زیرساخت login rate limit در `F01-T06` اضافه می‌شود.
+Next task:
+  - `F01-T06`

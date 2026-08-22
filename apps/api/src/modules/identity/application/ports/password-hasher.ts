@@ -1,0 +1,8 @@
+import type { PasswordPolicyContext } from '../../domain/password-policy';
+
+export abstract class PasswordHasher {
+  abstract hash(
+    password: string,
+    policyContext?: PasswordPolicyContext,
+  ): Promise<string>;
+}

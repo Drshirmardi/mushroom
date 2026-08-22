@@ -6,6 +6,7 @@ import {
   type HashOptions,
 } from 'argon2';
 
+import { PasswordHasher } from '../application/ports/password-hasher';
 import {
   assertPasswordPolicy,
   normalizePasswordForVerification,
@@ -55,3 +56,12 @@ export const passwordHashNeedsRehash = (encodedHash: string): boolean => {
     return true;
   }
 };
+
+export class Argon2PasswordHasher extends PasswordHasher {
+  async hash(
+    password: string,
+    policyContext?: PasswordPolicyContext,
+  ): Promise<string> {
+    return hashPassword(password, policyContext);
+  }
+}
