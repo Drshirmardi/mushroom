@@ -23,6 +23,41 @@ export interface RotateSessionRefresh {
   userAgent?: string;
 }
 
+export type UserSessionRevocationReason = 'LOGOUT' | 'LOGOUT_ALL';
+
+export interface RevokeSession {
+  userId: string;
+  sessionId: string;
+  reason: UserSessionRevocationReason;
+  revokedAt: Date;
+}
+
+export interface RevokeAllSessions {
+  userId: string;
+  reason: UserSessionRevocationReason;
+  revokedAt: Date;
+}
+
+export interface ListActiveSessions {
+  userId: string;
+  activeAt: Date;
+  page: number;
+  limit: number;
+}
+
+export interface SessionMetadata {
+  id: string;
+  remembered: boolean;
+  createdAt: Date;
+  lastUsedAt: Date;
+  expiresAt: Date;
+}
+
+export interface SessionPage {
+  items: SessionMetadata[];
+  total: number;
+}
+
 export type SessionRefreshResult =
   | {
       kind: 'ROTATED';
@@ -38,4 +73,7 @@ export abstract class SessionRepository {
   abstract rotateRefresh(
     input: RotateSessionRefresh,
   ): Promise<SessionRefreshResult>;
+  abstract revoke(input: RevokeSession): Promise<void>;
+  abstract revokeAll(input: RevokeAllSessions): Promise<void>;
+  abstract listActive(input: ListActiveSessions): Promise<SessionPage>;
 }

@@ -8,7 +8,11 @@ import {
 import {
   SessionRepository,
   type CreateSession,
+  type ListActiveSessions,
+  type RevokeAllSessions,
+  type RevokeSession,
   type RotateSessionRefresh,
+  type SessionPage,
   type SessionRefreshResult,
 } from '../application/ports/session.repository';
 import { constantTimeRefreshHashEquals } from './hmac-refresh-token-manager';
@@ -131,5 +135,58 @@ export class PrismaSessionRepository extends SessionRepository {
         generation,
       };
     });
+  }
+
+  async revoke(input: RevokeSession): Promise<void> {
+    await this.prisma.session.updateMany({
+      where: {
+        id: input.sessionId,
+        userId: input.userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: input.revokedAt,
+        revokedReason: input.reason,
+      },
+    });
+  }
+
+  async revokeAll(input: RevokeAllSessions): Promise<void> {
+    await this.prisma.session.updateMany({
+      where: {
+        userId: input.userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: input.revokedAt,
+        revokedReason: input.reason,
+      },
+    });
+  }
+
+  async listActive(input: ListActiveSessions): Promise<SessionPage> {
+    const where = {
+      userId: input.userId,
+      revokedAt: null,
+      expiresAt: { gt: input.activeAt },
+    } as const;
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.session.findMany({
+        where,
+        select: {
+          id: true,
+          remembered: true,
+          createdAt: true,
+          lastUsedAt: true,
+          expiresAt: true,
+        },
+        orderBy: [{ lastUsedAt: 'desc' }, { id: 'desc' }],
+        skip: (input.page - 1) * input.limit,
+        take: input.limit,
+      }),
+      this.prisma.session.count({ where }),
+    ]);
+
+    return { items, total };
   }
 }

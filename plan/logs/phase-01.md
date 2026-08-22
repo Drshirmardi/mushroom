@@ -338,3 +338,44 @@ Known limitations:
   - revoke و مدیریت session endpointها متعلق به `F01-T09` هستند.
 Next task:
   - `F01-T09`
+
+## F01-T09 — logout، logout-all و revoke session
+
+Task ID: F01-T09
+Completed at: 2026-08-22 16:04 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/src/modules/identity/application/manage-sessions.use-case.ts`
+  - `apps/api/src/modules/identity/application/ports/session.repository.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-session.repository.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/session.dto.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/test/manage-sessions.spec.ts`
+  - `apps/api/test/session-management.integration.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ enum و indexهای Session موجود دلایل revoke و query فعال را پوشش می‌دهند
+Tests run:
+  - unit و integration اختصاصی session management → PASS (۲ فایل، ۱۰ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۱۸ فایل، ۱۲۵ تست)
+  - logout و logout-all تکراری، refresh پس از logout و جداسازی session کاربر دیگر → PASS
+  - revoke session انتخابی/جاری، عدم افشای ownership و پاک‌سازی cookie جاری → PASS
+  - فهرست paginated، metadata امن، current marker و validation query/UUID → PASS
+  - bearer guard، Origin allowlist و security contract چهار endpoint در OpenAPI → PASS
+  - Prisma validate، migrate status و schema diff → PASS (up to date، no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` و بررسی عدم وابستگی application/domain به Prisma/Nest/infrastructure → PASS
+Result:
+  - logout فقط session جاری را با `LOGOUT` revoke و cookie را پاک می‌کند → PASS
+  - logout-all همه sessionهای revokeنشده کاربر را با `LOGOUT_ALL` لغو می‌کند → PASS
+  - revokeها idempotent هستند و عملیات روی session غیرمالک وجود آن را افشا نمی‌کند → PASS
+  - session جاری و session انتخابی با کنترل userId/sessionId دقیق از هم تفکیک می‌شوند → PASS
+  - فهرست session فقط داده امن و active را با pagination محدود برمی‌گرداند → PASS
+Known limitations:
+  - audit رویدادهای logout/logout-all/revoke طبق برنامه در `F01-T12` اضافه می‌شود.
+  - access tokenهای قبلی طبق ADR stateless هستند و ممکن است حداکثر ده دقیقه تا expiry معتبر بمانند.
+Next task:
+  - `F01-T10`

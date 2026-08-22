@@ -34,7 +34,7 @@ ADMIN
 - [x] `F01-T06` — login use case، rate limit و ثبت login attempt
 - [x] `F01-T07` — access token و auth guard
 - [x] `F01-T08` — refresh token rotation، hash storage و reuse detection
-- [ ] `F01-T09` — logout، logout-all و revoke session
+- [x] `F01-T09` — logout، logout-all و revoke session
 - [ ] `F01-T10` — endpointهای `/me` و change password
 - [ ] `F01-T11` — RBAC guard و permission contract پایه
 - [ ] `F01-T12` — audit رویدادهای امنیتی
@@ -201,3 +201,20 @@ POST   /v1/me/change-password
   `SameSite=Lax` و `Path=/` تنظیم می‌شود؛ development نام صریح جداگانه و بدون `Secure` دارد.
 - CORS فقط originهای دقیق `APP_ORIGINS` را با credentials می‌پذیرد و endpointهای browser در
   صورت وجود header مبدأ، آن را دوباره با همان allowlist اعتبارسنجی می‌کنند.
+
+## قرارداد Task F01-T09
+
+- `POST /v1/auth/logout` فقط session جاری claimشده در `sid` را در مالکیت `sub` با دلیل
+  `LOGOUT` revoke و refresh cookie را پاک می‌کند.
+- `POST /v1/auth/logout-all` تمام sessionهای revokeنشده همان کاربر را با دلیل `LOGOUT_ALL`
+  revoke و refresh cookie جاری را پاک می‌کند.
+- revoke تکی و سراسری idempotent هستند و پاسخ موفق `204` بدون body دارند؛ access tokenهای
+  صادرشده طبق ADR stateless تا پایان عمر حداکثر ده‌دقیقه‌ای خود معتبر می‌مانند.
+- `DELETE /v1/auth/sessions/:id` فقط session متعلق به همان `sub` را revoke می‌کند و برای id
+  موجود ولی متعلق به کاربر دیگر نیز همان `204` را می‌دهد تا ownership افشا نشود؛ حذف session
+  جاری cookie را هم پاک می‌کند.
+- `GET /v1/auth/sessions` فقط sessionهای فعال و منقضی‌نشده همان کاربر را با page pagination
+  و حداکثر ۵۰ مورد برمی‌گرداند؛ response به id، وضعیت current/remembered و timestampهای امن
+  محدود است و refresh hash، IP و user-agent خام را نمایش نمی‌دهد.
+- تمام endpointها bearer-protected هستند و عملیات state-changing، Origin حاضر را با allowlist
+  مصوب اعتبارسنجی می‌کنند.

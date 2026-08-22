@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AccessTokenService } from '../../common/auth/access-token.service';
 import { LoginSessionUseCase } from './application/login-session.use-case';
 import { LoginUserUseCase } from './application/login-user.use-case';
+import { ManageSessionsUseCase } from './application/manage-sessions.use-case';
 import { LoginRepository } from './application/ports/login.repository';
 import { PasswordHasher } from './application/ports/password-hasher';
 import { RegistrationRepository } from './application/ports/registration.repository';
@@ -92,7 +93,18 @@ import { AuthController } from './presentation/http/auth.controller';
         accessTokens,
       ),
     },
+    {
+      provide: ManageSessionsUseCase,
+      inject: [SessionRepository],
+      useFactory: (sessions: SessionRepository) =>
+        new ManageSessionsUseCase(sessions),
+    },
   ],
-  exports: [LoginUserUseCase, LoginSessionUseCase, RefreshSessionUseCase],
+  exports: [
+    LoginUserUseCase,
+    LoginSessionUseCase,
+    RefreshSessionUseCase,
+    ManageSessionsUseCase,
+  ],
 })
 export class IdentityModule {}

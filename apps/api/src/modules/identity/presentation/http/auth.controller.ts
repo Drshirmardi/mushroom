@@ -2,11 +2,16 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
+  Get,
   Headers,
   HttpCode,
   HttpException,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -14,8 +19,10 @@ import {
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
@@ -23,6 +30,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 
+import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
 import { ACCESS_TOKEN_TTL_SECONDS } from '../../../../common/auth/access-token.service';
 import { BrowserOriginService } from '../../../../common/auth/browser-origin.service';
 import { Public } from '../../../../common/auth/public.decorator';
@@ -35,6 +43,10 @@ import {
   InvalidCredentialsError,
   LoginRateLimitedError,
 } from '../../application/login-user.use-case';
+import {
+  ManageSessionsUseCase,
+  type SessionListResult,
+} from '../../application/manage-sessions.use-case';
 import {
   InvalidRefreshTokenError,
   RefreshSessionUseCase,
@@ -54,6 +66,10 @@ import {
   RegisterRequestDto,
   RegisterResponseDto,
 } from './dto/register.dto';
+import {
+  SessionListQueryDto,
+  SessionListResponseDto,
+} from './dto/session.dto';
 
 const passwordErrorMessages = {
   PASSWORD_TOO_SHORT: 'Password is too short.',
@@ -84,6 +100,7 @@ export class AuthController {
     private readonly registerUser: RegisterUserUseCase,
     private readonly loginSession: LoginSessionUseCase,
     private readonly refreshSession: RefreshSessionUseCase,
+    private readonly manageSessions: ManageSessionsUseCase,
     private readonly refreshCookie: RefreshCookieService,
     private readonly browserOrigins: BrowserOriginService,
   ) {}
@@ -216,6 +233,70 @@ export class AuthController {
       }
 
       throw error;
+    }
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth('bearerAuth')
+  @ApiNoContentResponse({ description: 'Current session was revoked.' })
+  async logout(
+    @Req() request: AuthenticatedRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+    @Headers('origin') origin?: string,
+  ): Promise<void> {
+    this.browserOrigins.assertAllowed(origin);
+    await this.manageSessions.logout(
+      request.auth.userId,
+      request.auth.sessionId,
+    );
+    this.refreshCookie.clear(reply);
+  }
+
+  @Post('logout-all')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth('bearerAuth')
+  @ApiNoContentResponse({ description: 'All user sessions were revoked.' })
+  async logoutAll(
+    @Req() request: AuthenticatedRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+    @Headers('origin') origin?: string,
+  ): Promise<void> {
+    this.browserOrigins.assertAllowed(origin);
+    await this.manageSessions.logoutAll(request.auth.userId);
+    this.refreshCookie.clear(reply);
+  }
+
+  @Get('sessions')
+  @ApiBearerAuth('bearerAuth')
+  @ApiOkResponse({ type: SessionListResponseDto })
+  async sessions(
+    @Req() request: AuthenticatedRequest,
+    @Query() query: SessionListQueryDto,
+  ): Promise<SessionListResult> {
+    return this.manageSessions.list(
+      request.auth.userId,
+      request.auth.sessionId,
+      query.page,
+      query.limit,
+    );
+  }
+
+  @Delete('sessions/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth('bearerAuth')
+  @ApiNoContentResponse({ description: 'Owned session was revoked.' })
+  async revokeSession(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) sessionId: string,
+    @Req() request: AuthenticatedRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+    @Headers('origin') origin?: string,
+  ): Promise<void> {
+    this.browserOrigins.assertAllowed(origin);
+    await this.manageSessions.revoke(request.auth.userId, sessionId);
+
+    if (sessionId === request.auth.sessionId) {
+      this.refreshCookie.clear(reply);
     }
   }
 }
