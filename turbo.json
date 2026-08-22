@@ -6,7 +6,8 @@
     "DATABASE_URL",
     "JWT_ACCESS_SECRET",
     "JWT_ACCESS_ISSUER",
-    "JWT_ACCESS_AUDIENCE"
+    "JWT_ACCESS_AUDIENCE",
+    "REFRESH_TOKEN_PEPPER"
   ],
   "tasks": {
     "dev": {

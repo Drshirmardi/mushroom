@@ -33,7 +33,7 @@ ADMIN
 - [x] `F01-T05` — register use case و endpoint
 - [x] `F01-T06` — login use case، rate limit و ثبت login attempt
 - [x] `F01-T07` — access token و auth guard
-- [ ] `F01-T08` — refresh token rotation، hash storage و reuse detection
+- [x] `F01-T08` — refresh token rotation، hash storage و reuse detection
 - [ ] `F01-T09` — logout، logout-all و revoke session
 - [ ] `F01-T10` — endpointهای `/me` و change password
 - [ ] `F01-T11` — RBAC guard و permission contract پایه
@@ -180,3 +180,24 @@ POST   /v1/me/change-password
   قرار می‌گیرد؛ guard در این task برای هر درخواست session را از دیتابیس query نمی‌کند.
 - صدور token به session id نیاز دارد؛ اتصال login به صدور token پس از ساخت session در
   `F01-T08` انجام می‌شود.
+
+## قرارداد Task F01-T08
+
+- refresh token یک credential opaque و versioned شامل session UUID و verifier تصادفی ۲۵۶بیتی
+  است؛ مقدار خام فقط در cookie مرورگر قرار می‌گیرد و هرگز در دیتابیس، response body یا log
+  ذخیره نمی‌شود.
+- دیتابیس فقط HMAC-SHA256 کل token را با pepper مستقل از access-token secret نگه می‌دارد؛
+  مقایسه hash با زمان ثابت انجام می‌شود.
+- login یک Session با deadline مطلق ۲۴ساعته یا، برای `remember=true`، سی‌روزه می‌سازد و access
+  token ده‌دقیقه‌ای را در JSON برمی‌گرداند.
+- refresh در transaction و با row lock انجام می‌شود؛ hash جایگزین، generation یک واحد زیاد و
+  metadata به‌روز می‌شود، اما deadline اولیه تمدید نمی‌شود.
+- ارائه token قدیمی یا hash نامطابق برای session فعال بدون grace period کل همان session را با
+  دلیل `REFRESH_REUSE_DETECTED` revoke می‌کند؛ درخواست‌های refresh هم‌زمان نیز از همین قرارداد
+  پیروی می‌کنند.
+- خطاهای malformed، مفقود، منقضی، revoked و reused همگی پاسخ عمومی `INVALID_REFRESH_TOKEN`/`401`
+  می‌دهند و cookie پاک می‌شود.
+- cookie در production با نام `__Host-sz_refresh` و گزینه‌های `HttpOnly`، `Secure`،
+  `SameSite=Lax` و `Path=/` تنظیم می‌شود؛ development نام صریح جداگانه و بدون `Secure` دارد.
+- CORS فقط originهای دقیق `APP_ORIGINS` را با credentials می‌پذیرد و endpointهای browser در
+  صورت وجود header مبدأ، آن را دوباره با همان allowlist اعتبارسنجی می‌کنند.

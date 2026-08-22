@@ -45,4 +45,11 @@ export const environmentValidationSchema = Joi.object({
     .required(),
   JWT_ACCESS_ISSUER: Joi.string().trim().min(1).max(128).default('sabz-zendegi-api'),
   JWT_ACCESS_AUDIENCE: Joi.string().trim().min(1).max(128).default('sabz-zendegi-frontends'),
+  REFRESH_TOKEN_PEPPER: Joi.string()
+    .min(43)
+    .max(256)
+    .pattern(/^[A-Za-z0-9_-]+$/)
+    .invalid('replace-this-placeholder-with-a-unique-refresh-token-pepper')
+    .invalid(Joi.ref('JWT_ACCESS_SECRET'))
+    .required(),
 }).unknown(true);

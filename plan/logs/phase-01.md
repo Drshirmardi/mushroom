@@ -279,3 +279,62 @@ Known limitations:
   - guard طبق ADR stateless است و revoke فوری access token را تضمین نمی‌کند؛ window حداکثر ده دقیقه است.
 Next task:
   - `F01-T08`
+
+## F01-T08 — refresh token rotation، hash storage و reuse detection
+
+Task ID: F01-T08
+Completed at: 2026-08-22 15:27 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/package.json`
+  - `pnpm-lock.yaml`
+  - `turbo.json`
+  - `apps/api/.env.example`
+  - `apps/api/src/app.factory.ts`
+  - `apps/api/src/common/auth/auth.module.ts`
+  - `apps/api/src/common/auth/browser-origin.service.ts`
+  - `apps/api/src/common/auth/refresh-cookie.service.ts`
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/config/environment.validation.ts`
+  - `apps/api/src/modules/identity/application/login-session.use-case.ts`
+  - `apps/api/src/modules/identity/application/ports/refresh-token-manager.ts`
+  - `apps/api/src/modules/identity/application/ports/session.repository.ts`
+  - `apps/api/src/modules/identity/application/refresh-session.use-case.ts`
+  - `apps/api/src/modules/identity/infrastructure/hmac-refresh-token-manager.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-session.repository.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/src/modules/identity/presentation/http/dto/login.dto.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/test/auth-session.integration.spec.ts`
+  - `apps/api/test/refresh-cookie-origin.spec.ts`
+  - `apps/api/test/refresh-token-manager.spec.ts`
+  - `apps/api/test/session-use-cases.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ مدل Session موجود تمام constraintها و fieldهای لازم را پوشش می‌دهد
+Tests run:
+  - unit و integration اختصاصی session/refresh/cookie/origin → PASS (۴ فایل، ۲۲ تست)
+  - Vitest کامل API با PostgreSQL واقعی → PASS (۱۶ فایل، ۱۱۵ تست)
+  - login عادی و remember، refresh موفق، reuse ترتیبی و refresh هم‌زمان → PASS
+  - token/cookie مفقود یا malformed، session منقضی و user غیرفعال → PASS
+  - عدم نشت refresh/password/hash در response و ذخیره فقط HMAC در دیتابیس → PASS
+  - cookie policy توسعه/production، Origin allowlist و OpenAPI login/refresh → PASS
+  - Prisma validate، migrate status و schema diff → PASS (up to date، no difference)
+  - `tsc -p tsconfig.test.json --noEmit`، `tsc --noEmit` و `tsc -p tsconfig.build.json` → PASS
+  - `git diff --check` و بررسی عدم وابستگی application/domain به Prisma/Nest/infrastructure → PASS
+Result:
+  - login واقعی Session و access token می‌سازد و refresh credential را فقط در cookie قرار می‌دهد → PASS
+  - refresh token opaque با verifier تصادفی و HMAC-SHA256/pepper مستقل پیاده شد → PASS
+  - rotation با row lock تراکنشی، replacement hash و generation اتمیک انجام می‌شود → PASS
+  - reuse token قدیمی، از جمله race دو refresh، session را بدون grace period revoke می‌کند → PASS
+  - deadline مطلق ۲۴ساعته/سی‌روزه در rotation تمدید نمی‌شود → PASS
+  - cookie امن production و variant صریح development همراه CORS credentialed/Origin validation فعال شد → PASS
+  - همه خطاهای refresh با پاسخ عمومی `INVALID_REFRESH_TOKEN` و پاک‌سازی cookie نگاشت می‌شوند → PASS
+Known limitations:
+  - refresh-specific rate limit در این task اضافه نشد؛ rotation تک‌مصرف و reuse detection فعال است،
+    اما محدودسازی درخواست‌های malformed باید در `F01-T18`/Phase 11 تکمیل و تست شود.
+  - revoke و مدیریت session endpointها متعلق به `F01-T09` هستند.
+Next task:
+  - `F01-T09`

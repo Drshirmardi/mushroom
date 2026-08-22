@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
+import fastifyCookie from '@fastify/cookie';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -22,6 +23,15 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
     ),
   );
   const configService = app.get(ConfigService);
+  const allowedOrigins = configService
+    .getOrThrow<string>('APP_ORIGINS')
+    .split(',');
+
+  await app.register(fastifyCookie as never);
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
 
   app.setGlobalPrefix('v1');
   const openApiConfig = new DocumentBuilder()
