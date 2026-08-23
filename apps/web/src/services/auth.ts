@@ -1,7 +1,6 @@
 import { createApiClient, type components } from "@sabz-zendegi/api-client";
 
 import { apiClient } from "../lib/api";
-import { authSession, type Authentication } from "./auth-session";
 
 export interface LoginPayload {
     phone: string;
@@ -18,7 +17,6 @@ export type AuthResult = { ok: true } | { ok: false; message: string };
 
 type ApiClient = ReturnType<typeof createApiClient>;
 type ApiError = components["schemas"]["ApiErrorResponseDto"];
-type SessionStore = { set: (authentication: Authentication) => void };
 
 const messages: Partial<Record<ApiError["code"], string>> = {
     INVALID_CREDENTIALS: "شماره موبایل یا رمز عبور اشتباه است.",
@@ -42,7 +40,7 @@ function errorMessage(error: ApiError | undefined): string {
     return messages[error.code] ?? "در انجام درخواست خطایی رخ داد؛ دوباره امتحان کنید.";
 }
 
-export function createAuthService(client: ApiClient, session: SessionStore) {
+export function createAuthService(client: ApiClient) {
     return {
         async login(payload: LoginPayload): Promise<AuthResult> {
             try {
@@ -54,7 +52,6 @@ export function createAuthService(client: ApiClient, session: SessionStore) {
                     return { ok: false, message: errorMessage(error) };
                 }
 
-                session.set(data);
                 return { ok: true };
             } catch {
                 return { ok: false, message: errorMessage(undefined) };
@@ -77,7 +74,7 @@ export function createAuthService(client: ApiClient, session: SessionStore) {
     };
 }
 
-const authService = createAuthService(apiClient, authSession);
+const authService = createAuthService(apiClient);
 
 export const loginWithPhone = authService.login;
 export const signupWithPhone = authService.signup;

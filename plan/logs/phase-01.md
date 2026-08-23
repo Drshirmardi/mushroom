@@ -711,3 +711,37 @@ Known limitations:
   - cleanup نهایی auth حافظه‌ای و verification در `F01-T17` انجام می‌شود.
 Next task:
   - `F01-T17`
+
+## F01-T17 — حذف auth حافظه‌ای پس از verification
+
+Task ID: F01-T17
+Completed at: 2026-08-23 08:59 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/web/src/services/auth-session.ts` (حذف شد)
+  - `apps/web/src/services/auth.ts`
+  - `apps/web/src/services/auth.test.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ این task فقط cleanup و verification احراز هویت frontend است
+Tests run:
+  - تست سرویس auth وب برای login واقعی credentialed، نبود session injection، ثبت‌نام و خطاها → PASS (۳ فایل، ۵ تست)
+  - تست session manager اپ برای refresh single-flight، failure و bearer logout → PASS (۱ فایل، ۴ تست)
+  - تست matrix نقش و session manager dashboard → PASS (۱ فایل، ۸ تست)
+  - تست و stale OpenAPI check در package `api-client` → PASS (۱ فایل، ۱ تست)
+  - typecheck مستقیم web، app، dashboard و api-client → PASS
+  - lint کامل dashboard → PASS
+  - production build web (۴ route)، app (۳۹ route) و dashboard (۳۶ route) → PASS
+  - ممیزی سورس سه frontend برای نبود `localStorage`، `sessionStorage`، `document.cookie`، auth mock و user map → PASS
+  - `git diff --check` و مرور نهایی diff → PASS
+Result:
+  - session module منسوخ وب و نگه‌داری authentication response پس از login حذف شد → PASS
+  - login/signup وب فقط از API client تولیدشده و refresh cookie امن استفاده می‌کنند → PASS
+  - access token/principal حافظه‌ای app و dashboard مطابق ADR برای bootstrap، Bearer request و logout حفظ شد → PASS
+  - هیچ auth mock، user map یا persistence قابل‌دسترسی JavaScript در سه frontend باقی نماند → PASS
+Known limitations:
+  - matrix امنیت یکپارچه، CORS/credential flow و evidence نهایی فاز در `F01-T18` اجرا و ثبت می‌شود.
+Next task:
+  - `F01-T18`

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-23 08:38 +03:30`
+- آخرین به‌روزرسانی: `2026-08-23 08:59 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 01 — Identity & Access`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -22,7 +22,7 @@
 - [x] داشبورد `apps/dashboard` پیاده‌سازی ظاهری و mock شده است.
 - [x] بک‌اند NestJS پایه ایجاد شده است.
 - [x] PostgreSQL و migration پایه ایجاد شده‌اند.
-- [ ] احراز هویت واقعی جایگزین mock شده است.
+- [x] احراز هویت واقعی جایگزین mock شده است.
 - [ ] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [ ] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
@@ -47,8 +47,8 @@
 ## handoff فاز فعال
 
 - فاز قبلی: `Phase 00 — Foundation` با [CI run #3](https://github.com/Drshirmardi/mushroom/actions/runs/32366483270) موفق تکمیل شد؛ شواهد: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F01-T17` — حذف auth حافظه‌ای پس از verification
-- dependency: `F01-T16` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- Task بعدی واجد شرایط: `F01-T18` — تست امنیت و ثبت evidence
+- dependency: `F01-T17` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 
 ## task در حال اجرا
 

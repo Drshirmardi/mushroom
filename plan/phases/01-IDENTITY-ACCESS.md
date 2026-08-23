@@ -42,7 +42,7 @@ ADMIN
 - [x] `F01-T14` — اتصال login/signup در `apps/web`
 - [x] `F01-T15` — session bootstrap و route protection در `apps/app`
 - [x] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
-- [ ] `F01-T17` — حذف auth حافظه‌ای پس از verification
+- [x] `F01-T17` — حذف auth حافظه‌ای پس از verification
 - [ ] `F01-T18` — تست امنیت و ثبت evidence
 
 ## Endpointها
@@ -317,3 +317,16 @@ POST   /v1/me/change-password
   از client تولیدشده با `credentials: include` عبور می‌کنند.
 - تست باید matrix نقش‌ها، single-flight credentialed/no-body refresh، failure، bearer logout، نبود persistence،
   route gate و build/typecheck/lint dashboard را پوشش دهد.
+
+## قرارداد Task F01-T17
+
+- پس از موفقیت اتصال واقعی login/signup و bootstrap نشست، `apps/web` هیچ user، credential،
+  access token یا authentication response را در mock، حافظه module، storage مرورگر یا cookie
+  قابل‌دسترسی JavaScript نگه نمی‌دارد؛ پاسخ login فقط موفقیت redirect را تعیین می‌کند و refresh
+  cookie امن منبع ادامه نشست است.
+- session managerهای `apps/app` و `apps/dashboard` حذف نمی‌شوند، زیرا مطابق ADR فقط access token
+  کوتاه‌عمر و principal جاری را در حافظه نگه می‌دارند و برای bootstrap، Bearer request و logout لازم‌اند.
+- ممیزی هر سه frontend باید نبود `localStorage`، `sessionStorage`، `document.cookie` و auth mock/user map
+  را تأیید کند؛ allowlistهای مقصد redirect و role و داده‌های mock غیرمرتبط با identity خارج از این حذف‌اند.
+- تست web باید credentialed بودن login واقعی و عدم تزریق یا نگه‌داری session محلی را پوشش دهد؛ تست‌های
+  app/dashboard نیز single-flight refresh، route/role gate و پاک‌شدن state در logout را حفظ می‌کنند.

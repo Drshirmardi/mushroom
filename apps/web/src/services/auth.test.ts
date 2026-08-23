@@ -20,13 +20,11 @@ function response(body: unknown, status: number) {
 }
 
 describe("web auth service", () => {
-    it("logs in through the credentialed generated client and keeps authentication in memory", async () => {
+    it("logs in through the credentialed generated client without retaining authentication", async () => {
         const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(response(authentication, 200));
-        const session = { set: vi.fn() };
-        const service = createAuthService(
-            createApiClient({ baseUrl: "https://api.example.test", fetch }),
-            session,
-        );
+        const service = createAuthService(createApiClient({ baseUrl: "https://api.example.test", fetch }));
+
+        expect(createAuthService).toHaveLength(1);
 
         await expect(
             service.login({ phone: "+989121234567", password: "safe-password-long", remember: true }),
@@ -40,7 +38,6 @@ describe("web auth service", () => {
             password: "safe-password-long",
             remember: true,
         });
-        expect(session.set).toHaveBeenCalledWith(authentication);
     });
 
     it("registers with identity fields only and does not create a session", async () => {
@@ -55,11 +52,7 @@ describe("web auth service", () => {
                 201,
             ),
         );
-        const session = { set: vi.fn() };
-        const service = createAuthService(
-            createApiClient({ baseUrl: "https://api.example.test", fetch }),
-            session,
-        );
+        const service = createAuthService(createApiClient({ baseUrl: "https://api.example.test", fetch }));
 
         await expect(
             service.signup({ phone: "+989121234567", password: "safe-password-long" }),
@@ -70,7 +63,6 @@ describe("web auth service", () => {
             phone: "+989121234567",
             password: "safe-password-long",
         });
-        expect(session.set).not.toHaveBeenCalled();
     });
 
     it("maps API errors and network failures to actionable Persian messages", async () => {
@@ -85,10 +77,8 @@ describe("web auth service", () => {
                 429,
             ),
         );
-        const session = { set: vi.fn() };
         const rateLimitedService = createAuthService(
             createApiClient({ baseUrl: "https://api.example.test", fetch: rateLimitedFetch }),
-            session,
         );
 
         await expect(
@@ -103,7 +93,6 @@ describe("web auth service", () => {
                 baseUrl: "https://api.example.test",
                 fetch: vi.fn<typeof globalThis.fetch>().mockRejectedValue(new Error("offline")),
             }),
-            session,
         );
         await expect(
             offlineService.signup({ phone: "+989121234567", password: "safe-password-long" }),
