@@ -578,3 +578,47 @@ Known limitations:
     پنج workspace با binary قفل‌شده پاس شد و CI دارای pnpm 10 تحت تأثیر نیست.
 Next task:
   - `F01-T14`
+
+## F01-T14 — اتصال login/signup در apps/web
+
+Task ID: F01-T14
+Completed at: 2026-08-23 07:58 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/web/.env.example`
+  - `apps/web/package.json`
+  - `apps/web/src/components/auth/LoginForm.tsx`
+  - `apps/web/src/components/auth/PasswordStrength.tsx`
+  - `apps/web/src/components/auth/SignupForm.tsx`
+  - `apps/web/src/lib/api.ts`
+  - `apps/web/src/lib/validation.ts`
+  - `apps/web/src/lib/validation.test.ts`
+  - `apps/web/src/services/auth-session.ts`
+  - `apps/web/src/services/auth.ts`
+  - `apps/web/src/services/auth.test.ts`
+  - `pnpm-lock.yaml`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ این task فقط frontend وب را به API موجود متصل می‌کند
+Tests run:
+  - تست سرویس auth وب، credentialed request، payload ثبت‌نام، session حافظه‌ای و خطاها → PASS (۱ فایل، ۳ تست)
+  - تست همگامی password validation وب با policy API و Unicode → PASS (۱ فایل، ۱ تست)
+  - typecheck مستقیم `apps/web` → PASS
+  - production build `apps/web` و prerender مسیرهای `/login` و `/signup` → PASS
+  - regression تست package `api-client` و stale OpenAPI check → PASS (۱ فایل، ۱ تست)
+  - تست مرورگر محلی صفحات signup/login، validation فارسی و console error → PASS
+  - بررسی نبود `localStorage`، `sessionStorage` و user map موقت در auth وب → PASS
+  - `git diff --check` و مرور نهایی diff/lockfile → PASS
+Result:
+  - فرم‌های login و signup به client تولیدشده و API واقعی متصل شدند → PASS
+  - تمام requestهای auth با credential ارسال می‌شوند و access token فقط در حافظه نگهداری می‌شود → PASS
+  - register فقط phone/password می‌فرستد، session نمی‌سازد و سپس کاربر را به login هدایت می‌کند → PASS
+  - login حالت remember، خطاهای عمومی/rate-limit/network و انتقال به اپ کاربر را پوشش می‌دهد → PASS
+  - policy رمز وب با حداقل ۱۵ و حداکثر ۱۲۸ code point API همگام و passphraseهای Unicode مجاز شد → PASS
+Known limitations:
+  - bootstrap از refresh cookie و route protection داخل `apps/app` در `F01-T15` انجام می‌شود.
+  - profile و دریافت نام کاربر طبق ADR در Phase 02 انجام می‌شود.
+Next task:
+  - `F01-T15`

@@ -1,3 +1,8 @@
+import { createApiClient, type components } from "@sabz-zendegi/api-client";
+
+import { apiClient } from "../lib/api";
+import { authSession, type Authentication } from "./auth-session";
+
 export interface LoginPayload {
     phone: string;
     password: string;
@@ -5,47 +10,74 @@ export interface LoginPayload {
 }
 
 export interface SignupPayload {
-    name: string;
     phone: string;
     password: string;
 }
 
 export type AuthResult = { ok: true } | { ok: false; message: string };
 
-function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+type ApiClient = ReturnType<typeof createApiClient>;
+type ApiError = components["schemas"]["ApiErrorResponseDto"];
+type SessionStore = { set: (authentication: Authentication) => void };
+
+const messages: Partial<Record<ApiError["code"], string>> = {
+    INVALID_CREDENTIALS: "شماره موبایل یا رمز عبور اشتباه است.",
+    LOGIN_RATE_LIMITED: "تعداد تلاش‌ها بیش از حد مجاز است؛ کمی بعد دوباره امتحان کنید.",
+    TOO_MANY_REQUESTS: "تعداد درخواست‌ها بیش از حد مجاز است؛ کمی بعد دوباره امتحان کنید.",
+    PHONE_ALREADY_REGISTERED: "این شماره موبایل قبلاً ثبت‌نام کرده است؛ می‌توانید وارد شوید.",
+    INVALID_PHONE_NUMBER: "شماره موبایل معتبر نیست.",
+    PASSWORD_TOO_SHORT: "رمز عبور کوتاه‌تر از حد مجاز است.",
+    PASSWORD_TOO_LONG: "رمز عبور طولانی‌تر از حد مجاز است.",
+    PASSWORD_UNSUPPORTED_CHARACTERS: "رمز عبور دارای نویسه پشتیبانی‌نشده است.",
+    PASSWORD_BLOCKED: "این رمز عبور قابل استفاده نیست؛ رمز دیگری انتخاب کنید.",
+    ORIGIN_NOT_ALLOWED: "امکان ارتباط امن با سرویس وجود ندارد.",
+    SERVICE_UNAVAILABLE: "سرویس موقتاً در دسترس نیست؛ کمی بعد دوباره امتحان کنید.",
+};
+
+function errorMessage(error: ApiError | undefined): string {
+    if (!error) {
+        return "ارتباط با سرویس برقرار نشد؛ اتصال اینترنت خود را بررسی کنید.";
+    }
+
+    return messages[error.code] ?? "در انجام درخواست خطایی رخ داد؛ دوباره امتحان کنید.";
 }
 
-// پیاده‌سازی موقت سمت کلاینت؛ کاربران فقط در حافظه مرورگر (تا رفرش صفحه)
-// نگهداری می‌شوند. با اتصال بک‌اند واقعی، بدنه این دو تابع با فراخوانی API
-// جایگزین می‌شود و امضای توابع بدون تغییر می‌ماند.
-const users = new Map<string, { name: string; password: string }>();
+export function createAuthService(client: ApiClient, session: SessionStore) {
+    return {
+        async login(payload: LoginPayload): Promise<AuthResult> {
+            try {
+                const { data, error } = await client.POST("/v1/auth/login", {
+                    body: payload,
+                });
 
-export async function loginWithPhone(payload: LoginPayload): Promise<AuthResult> {
-    await delay(800);
+                if (!data) {
+                    return { ok: false, message: errorMessage(error) };
+                }
 
-    const user = users.get(payload.phone);
-    if (!user) {
-        return {
-            ok: false,
-            message: "حسابی با این شماره موبایل یافت نشد؛ ابتدا ثبت‌نام کنید.",
-        };
-    }
-    if (user.password !== payload.password) {
-        return { ok: false, message: "شماره موبایل یا رمز عبور اشتباه است." };
-    }
-    return { ok: true };
+                session.set(data);
+                return { ok: true };
+            } catch {
+                return { ok: false, message: errorMessage(undefined) };
+            }
+        },
+
+        async signup(payload: SignupPayload): Promise<AuthResult> {
+            try {
+                const { data, error } = await client.POST("/v1/auth/register", {
+                    body: payload,
+                });
+
+                return data
+                    ? { ok: true }
+                    : { ok: false, message: errorMessage(error) };
+            } catch {
+                return { ok: false, message: errorMessage(undefined) };
+            }
+        },
+    };
 }
 
-export async function signupWithPhone(payload: SignupPayload): Promise<AuthResult> {
-    await delay(800);
+const authService = createAuthService(apiClient, authSession);
 
-    if (users.has(payload.phone)) {
-        return {
-            ok: false,
-            message: "این شماره موبایل قبلاً ثبت‌نام کرده است؛ می‌توانید وارد شوید.",
-        };
-    }
-    users.set(payload.phone, { name: payload.name, password: payload.password });
-    return { ok: true };
-}
+export const loginWithPhone = authService.login;
+export const signupWithPhone = authService.signup;

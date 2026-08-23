@@ -39,7 +39,7 @@ ADMIN
 - [x] `F01-T11` — RBAC guard و permission contract پایه
 - [x] `F01-T12` — audit رویدادهای امنیتی
 - [x] `F01-T13` — OpenAPI و API client احراز هویت
-- [ ] `F01-T14` — اتصال login/signup در `apps/web`
+- [x] `F01-T14` — اتصال login/signup در `apps/web`
 - [ ] `F01-T15` — session bootstrap و route protection در `apps/app`
 - [ ] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
 - [ ] `F01-T17` — حذف auth حافظه‌ای پس از verification
