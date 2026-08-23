@@ -745,3 +745,40 @@ Known limitations:
   - matrix امنیت یکپارچه، CORS/credential flow و evidence نهایی فاز در `F01-T18` اجرا و ثبت می‌شود.
 Next task:
   - `F01-T18`
+
+## F01-T18 — تست امنیت و ثبت evidence
+
+Task ID: F01-T18
+Completed at: 2026-08-23 12:46 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/api/test/identity-security-boundaries.spec.ts`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - migration smoke تمام migrationها روی PostgreSQL خالی را اعمال و seed/reference roleها را verify کرد → PASS
+Tests run:
+  - کل suite API شامل domain، guard، API و PostgreSQL integration و migration smoke → PASS (۲۴ فایل، ۱۷۰ تست)
+  - تست مرزهای امنیتی جدید برای preflight سه origin، رد origin ناشناخته و redaction لاگ → PASS (۱ فایل، ۵ تست)
+  - authorization matrix برای `PATIENT`، `DOCTOR`، `STAFF` و `ADMIN` و denial عمومی → PASS
+  - register تکراری/race، login نامعتبر/rate limit، JWT منقضی/نامعتبر، refresh rotation/reuse/concurrency و logout/revoke → PASS
+  - تست audit persistence و نبود password، phone، token، cookie و user-agent خام → PASS
+  - suite و typecheck وب → PASS (۳ فایل، ۵ تست)
+  - suite و typecheck app → PASS (۱ فایل، ۴ تست)
+  - suite، typecheck و lint dashboard → PASS (۱ فایل، ۸ تست)
+  - stale check، تست، typecheck و build package `api-client` → PASS (۱ فایل، ۱ تست)
+  - تولید OpenAPI و API client از runtime NestJS بدون diff ناخواسته → PASS
+  - typecheck و build API، web، app و dashboard → PASS
+  - ممیزی سه frontend برای نبود storage/cookie قابل‌دسترسی JavaScript، auth mock و user map → PASS
+  - `git diff --check` و مرور نهایی diff → PASS
+Result:
+  - تمام تست‌های اجباری Phase 01 و authorization matrix پاس شدند → PASS
+  - CORS فقط سه origin دقیق frontend را با credential مجاز می‌کند و origin ناشناخته `Allow-Origin` نمی‌گیرد → PASS
+  - client مشترک و جریان login/refresh/logout هر سه frontend credentialed هستند → PASS
+  - response، audit و تنظیمات logger از نشت password/token/cookie/authorization محافظت می‌کنند → PASS
+  - معیارهای خروج Phase 01 کامل و فاز برای review مستقل آماده است → PASS
+Known limitations:
+  - طبق workflow، تغییر وضعیت از `READY_FOR_REVIEW` به `DONE` و شروع Phase 02 به review مستقل نیاز دارد.
+Next task:
+  - review مستقل Phase 01

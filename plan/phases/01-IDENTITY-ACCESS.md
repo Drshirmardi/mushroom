@@ -43,7 +43,7 @@ ADMIN
 - [x] `F01-T15` — session bootstrap و route protection در `apps/app`
 - [x] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
 - [x] `F01-T17` — حذف auth حافظه‌ای پس از verification
-- [ ] `F01-T18` — تست امنیت و ثبت evidence
+- [x] `F01-T18` — تست امنیت و ثبت evidence
 
 ## Endpointها
 
@@ -330,3 +330,18 @@ POST   /v1/me/change-password
   را تأیید کند؛ allowlistهای مقصد redirect و role و داده‌های mock غیرمرتبط با identity خارج از این حذف‌اند.
 - تست web باید credentialed بودن login واقعی و عدم تزریق یا نگه‌داری session محلی را پوشش دهد؛ تست‌های
   app/dashboard نیز single-flight refresh، route/role gate و پاک‌شدن state در logout را حفظ می‌کنند.
+
+## قرارداد Task F01-T18
+
+- ماتریس نهایی باید تمام تست‌های اجباری فاز را در سطح domain، API، PostgreSQL integration و frontend
+  پوشش دهد؛ به‌ویژه duplicate register، credential نامعتبر/rate limit، access token منقضی، refresh و
+  reuse، logout/revoke، RBAC و عدم نشت secret.
+- CORS واقعی API برای originهای دقیق web، app و dashboard با `Access-Control-Allow-Credentials: true`
+  تست می‌شود و origin ناشناخته هیچ مجوز CORS دریافت نمی‌کند؛ client مشترک و هر سه frontend نیز باید
+  `credentials: include` را در جریان login/refresh/logout اثبات کنند.
+- redaction لاگ باید authorization، cookie/Set-Cookie و فیلدهای password/token را پوشش دهد و audit
+  persistence نباید password، phone، token، cookie یا user-agent خام داشته باشد.
+- migration smoke روی دیتابیس خالی، کل suite غیر-migration با PostgreSQL واقعی، OpenAPI stale check،
+  typecheck/build و ممیزی persistence frontend باید PASS شوند و نتیجه در log فاز ثبت شود.
+- با تکمیل این task و پاس‌شدن همه معیارهای خروج، فاز برای review مستقل به `READY_FOR_REVIEW` می‌رود؛
+  `DONE` و شروع Phase 02 فقط پس از همان review مجاز است.
