@@ -622,3 +622,44 @@ Known limitations:
   - profile و دریافت نام کاربر طبق ADR در Phase 02 انجام می‌شود.
 Next task:
   - `F01-T15`
+
+## F01-T15 — session bootstrap و route protection در apps/app
+
+Task ID: F01-T15
+Completed at: 2026-08-23 08:14 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/app/.env.example`
+  - `apps/app/package.json`
+  - `apps/app/src/app/layout.tsx`
+  - `apps/app/src/app/(app)/profile/page.tsx`
+  - `apps/app/src/auth/session.ts`
+  - `apps/app/src/auth/session.test.ts`
+  - `apps/app/src/components/auth/session-gate.tsx`
+  - `apps/app/src/lib/api.ts`
+  - `pnpm-lock.yaml`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ این task فقط session integration اپ کاربر را تغییر می‌دهد
+Tests run:
+  - تست session manager برای refresh credentialed و بدون body، single-flight، failure و logout → PASS (۱ فایل، ۴ تست)
+  - typecheck مستقیم `apps/app` → PASS
+  - production build تمام ۳۹ route اپ → PASS
+  - regression تست package `api-client` و stale OpenAPI check → PASS (۱ فایل، ۱ تست)
+  - تست مرورگر محلی `/` بدون session: نمایش gate و انتقال به `apps/web/login` بدون render محتوای محافظت‌شده → PASS
+  - بررسی console مرورگر هنگام route protection → PASS (بدون error/warning)
+  - بررسی نبود `localStorage`، `sessionStorage` و `document.cookie` در auth اپ → PASS
+  - `git diff --check` و مرور نهایی diff/lockfile → PASS
+Result:
+  - همه routeهای app شامل onboarding تا موفقیت bootstrap پشت SessionGate قرار گرفتند → PASS
+  - refresh cookie با client تولیدشده و single-flight مصرف و access token فقط در حافظه نگهداری می‌شود → PASS
+  - نبود/خرابی session به حالت anonymous و انتقال امن به login وب منجر می‌شود → PASS
+  - context تایپ‌شده principal/access token را در اختیار اپ قرار می‌دهد → PASS
+  - دکمه خروج profile به endpoint واقعی bearer-protected متصل و state موفق پاک می‌شود → PASS
+Known limitations:
+  - route protection نقش‌محور dashboard در `F01-T16` انجام می‌شود.
+  - اتصال داده profile و onboarding به API طبق مرز ماژول‌ها در Phase 02 انجام می‌شود.
+Next task:
+  - `F01-T16`

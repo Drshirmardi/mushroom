@@ -40,7 +40,7 @@ ADMIN
 - [x] `F01-T12` — audit رویدادهای امنیتی
 - [x] `F01-T13` — OpenAPI و API client احراز هویت
 - [x] `F01-T14` — اتصال login/signup در `apps/web`
-- [ ] `F01-T15` — session bootstrap و route protection در `apps/app`
+- [x] `F01-T15` — session bootstrap و route protection در `apps/app`
 - [ ] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
 - [ ] `F01-T17` — حذف auth حافظه‌ای پس از verification
 - [ ] `F01-T18` — تست امنیت و ثبت evidence
@@ -284,3 +284,19 @@ POST   /v1/me/change-password
   bearer token حافظه‌ای را برای operation محافظت‌شده بفرستد.
 - اتصال package به `apps/web`، `apps/app` و `apps/dashboard` به‌ترتیب در `F01-T14` تا `F01-T16`
   انجام می‌شود؛ این task mock یا auth state موجود frontendها را حذف نمی‌کند.
+
+## قرارداد Task F01-T15
+
+- همه routeهای `apps/app`، شامل onboarding، تا پایان bootstrap نشست محتوای محافظت‌شده را
+  render نمی‌کنند و کاربر بدون refresh session معتبر به login قابل‌تنظیم `apps/web` هدایت می‌شود.
+- bootstrap فقط `POST /v1/auth/refresh` بدون body و با cookie مرورگر را استفاده می‌کند؛ پاسخ موفق
+  access token و principal را فقط در حافظه نگه می‌دارد و هیچ auth data در storage قابل‌دسترسی
+  JavaScript یا cookie جدید persist نمی‌شود.
+- refreshهای هم‌زمان single-flight هستند تا rotation بدون grace period با درخواست موازی شکسته نشود؛
+  failure شبکه یا `INVALID_REFRESH_TOKEN` نشست را anonymous می‌کند و داده محافظت‌شده نمایش داده نمی‌شود.
+- session context دسترسی typed به principal/access token حافظه‌ای می‌دهد و خروج موجود profile را با
+  bearer token به `POST /v1/auth/logout` متصل می‌کند؛ خروج موفق state حافظه‌ای را پاک و login را نمایش می‌دهد.
+- API URL و web login URL از environment عمومی با defaultهای local مصوب خوانده می‌شوند و client مشترک
+  تولیدشده همه درخواست‌ها را با `credentials: include` ارسال می‌کند.
+- تست باید credentialed/no-body refresh، single-flight، bootstrap ناموفق، bearer logout، نبود persistence،
+  route gate و build/typecheck اپ را پوشش دهد.

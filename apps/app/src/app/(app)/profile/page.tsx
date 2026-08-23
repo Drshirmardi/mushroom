@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Activity,
@@ -16,6 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
 import { DEFAULT_MEZAJ, MEZAJ_TYPES } from "@/lib/data/mezaj";
 
 type MenuEntry = { icon: LucideIcon; label: string; color: string; screen: string };
@@ -40,7 +42,20 @@ const MENU_SECTIONS: { title: string; items: MenuEntry[] }[] = [
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { logout } = useAuthSession();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
   const mezaj = MEZAJ_TYPES.find(m => m.id === DEFAULT_MEZAJ) || MEZAJ_TYPES[3];
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    setLogoutError(null);
+    const succeeded = await logout();
+    if (!succeeded) {
+      setLogoutError("خروج از حساب انجام نشد؛ دوباره امتحان کنید.");
+      setLoggingOut(false);
+    }
+  };
   return (
     <div className="px-4 space-y-5">
       <div className="pt-3 pb-1"><h1 className="text-xl font-bold text-foreground">پروفایل</h1></div>
@@ -76,7 +91,10 @@ export default function ProfilePage() {
         </div>
       ))}
       <button onClick={() => router.push("/onboarding")} className="w-full bg-accent text-primary rounded-2xl py-3 font-semibold text-sm border border-primary/20 mb-2">تکمیل پروفایل پزشکی</button>
-      <button className="w-full bg-red-50 text-red-600 rounded-2xl py-4 font-bold text-sm border border-red-100 mb-4">خروج از حساب</button>
+      {logoutError && <p role="alert" className="text-center text-sm text-red-600">{logoutError}</p>}
+      <button onClick={handleLogout} disabled={loggingOut} className="w-full bg-red-50 text-red-600 rounded-2xl py-4 font-bold text-sm border border-red-100 mb-4 disabled:cursor-not-allowed disabled:opacity-60">
+        {loggingOut ? "در حال خروج…" : "خروج از حساب"}
+      </button>
     </div>
   );
 }
