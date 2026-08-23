@@ -157,6 +157,9 @@ importers:
 
   apps/dashboard:
     dependencies:
+      '@sabz-zendegi/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.2.8)
@@ -200,6 +203,9 @@ importers:
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@24.13.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12))
 
   apps/web:
     dependencies:

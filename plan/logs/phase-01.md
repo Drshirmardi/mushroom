@@ -663,3 +663,51 @@ Known limitations:
   - اتصال داده profile و onboarding به API طبق مرز ماژول‌ها در Phase 02 انجام می‌شود.
 Next task:
   - `F01-T16`
+
+## F01-T16 — route protection نقش‌محور در apps/dashboard
+
+Task ID: F01-T16
+Completed at: 2026-08-23 08:38 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/dashboard/.env.example`
+  - `apps/dashboard/package.json`
+  - `apps/dashboard/src/app/layout.tsx`
+  - `apps/dashboard/src/auth/session.ts`
+  - `apps/dashboard/src/auth/session.test.ts`
+  - `apps/dashboard/src/components/auth/dashboard-session-gate.tsx`
+  - `apps/dashboard/src/components/layout/sidebar.tsx`
+  - `apps/dashboard/src/lib/api.ts`
+  - `apps/web/.env.example`
+  - `apps/web/src/components/auth/LoginForm.tsx`
+  - `apps/web/src/lib/api.ts`
+  - `apps/web/src/lib/api.test.ts`
+  - `pnpm-lock.yaml`
+  - `plan/phases/01-IDENTITY-ACCESS.md`
+  - `plan/logs/phase-01.md`
+  - `plan/STATUS.md`
+Migrations:
+  - ندارد؛ این task فقط session و role integration frontend را تغییر می‌دهد
+Tests run:
+  - matrix نقش و session manager dashboard برای `DOCTOR`/`STAFF`/`ADMIN`/`PATIENT`، single-flight، failure و logout → PASS (۱ فایل، ۸ تست)
+  - تست allowlist مقصد پس از login وب و رد open redirect → PASS (همراه suite وب: ۳ فایل، ۵ تست)
+  - typecheck مستقیم dashboard و web → PASS
+  - lint کامل dashboard → PASS
+  - production build تمام ۳۶ route dashboard و ۴ route web → PASS
+  - regression تست package `api-client` و stale OpenAPI check → PASS (۱ فایل، ۱ تست)
+  - تست مرورگر محلی route محافظت‌شده و انتقال بدون render dashboard به login وب → PASS
+  - تست مرورگر مسیر بازگشت `/patients` در پارامتر `next` و console بدون error/warning → PASS
+  - بررسی نبود `localStorage`، `sessionStorage` و `document.cookie` در auth dashboard → PASS
+  - `git diff --check` و مرور نهایی diff/lockfile → PASS
+Result:
+  - تمام routeهای dashboard تا موفقیت bootstrap و تأیید نقش پشت gate قرار گرفتند → PASS
+  - فقط `DOCTOR`، `STAFF` یا `ADMIN` مجاز و نشست صرفاً `PATIENT` به app هدایت می‌شود → PASS
+  - refresh credentialed/no-body و single-flight است و access token فقط در حافظه می‌ماند → PASS
+  - نبود session به login وب و مقصد امن پس از ورود به route اولیه dashboard بازمی‌گردد → PASS
+  - مقصد خارجی پس از login رد و fallback اپ کاربر استفاده می‌شود → PASS
+  - خروج sidebar با bearer token به endpoint واقعی متصل و نقش حساب از principal واقعی نمایش داده می‌شود → PASS
+Known limitations:
+  - authorization نهایی هر API مدیریتی همچنان در backend enforce می‌شود؛ این gate فقط از render ناخواسته UI جلوگیری می‌کند.
+  - cleanup نهایی auth حافظه‌ای و verification در `F01-T17` انجام می‌شود.
+Next task:
+  - `F01-T17`

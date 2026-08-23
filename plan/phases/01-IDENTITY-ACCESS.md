@@ -41,7 +41,7 @@ ADMIN
 - [x] `F01-T13` — OpenAPI و API client احراز هویت
 - [x] `F01-T14` — اتصال login/signup در `apps/web`
 - [x] `F01-T15` — session bootstrap و route protection در `apps/app`
-- [ ] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
+- [x] `F01-T16` — route protection نقش‌محور در `apps/dashboard`
 - [ ] `F01-T17` — حذف auth حافظه‌ای پس از verification
 - [ ] `F01-T18` — تست امنیت و ثبت evidence
 
@@ -300,3 +300,20 @@ POST   /v1/me/change-password
   تولیدشده همه درخواست‌ها را با `credentials: include` ارسال می‌کند.
 - تست باید credentialed/no-body refresh، single-flight، bootstrap ناموفق، bearer logout، نبود persistence،
   route gate و build/typecheck اپ را پوشش دهد.
+
+## قرارداد Task F01-T16
+
+- همه routeهای `apps/dashboard` تا پایان bootstrap نشست محتوای مدیریتی را render نمی‌کنند؛ bootstrap
+  فقط refresh cookie را با `POST /v1/auth/refresh` بدون body و به‌صورت single-flight مصرف می‌کند.
+- نقش‌های مجاز dashboard دقیقاً `DOCTOR`، `STAFF` و `ADMIN` هستند؛ وجود حداقل یکی از آن‌ها اجازه ورود
+  می‌دهد و نشست صرفاً `PATIENT` به app کاربر هدایت می‌شود. این gate فقط لایه UX است و جایگزین authorization
+  اجباری API برای هر endpoint مدیریتی نیست.
+- نبود یا خرابی session به login وب هدایت می‌شود؛ حالت checking/anonymous/forbidden هیچ child مدیریتی
+  render نمی‌کند و access token فقط در حافظه نگهداری می‌شود. login مقصد dashboard را در پارامتر بازگشت
+  می‌گیرد و web فقط originهای صریح app/dashboard را برای جلوگیری از open redirect می‌پذیرد.
+- session context principal/access token typed را ارائه می‌دهد و کنترل خروج sidebar را با bearer token به
+  `POST /v1/auth/logout` متصل می‌کند؛ خروج موفق state را پاک و login را نمایش می‌دهد.
+- API، web login و app URL از environment عمومی با defaultهای local مصوب خوانده می‌شوند و درخواست‌ها
+  از client تولیدشده با `credentials: include` عبور می‌کنند.
+- تست باید matrix نقش‌ها، single-flight credentialed/no-body refresh، failure، bearer logout، نبود persistence،
+  route gate و build/typecheck/lint dashboard را پوشش دهد.

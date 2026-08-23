@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DashboardSessionGate } from "@/components/auth/dashboard-session-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className="bg-background">{children}</body>
+      <body className="bg-background">
+        <DashboardSessionGate>{children}</DashboardSessionGate>
+      </body>
     </html>
   );
 }

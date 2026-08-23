@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { appUrl } from "@/lib/api";
+import { resolvePostLoginUrl } from "@/lib/api";
 import { loginPasswordSchema, normalizePhone, phoneSchema } from "@/lib/validation";
 import { loginWithPhone } from "@/services/auth";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -51,7 +51,8 @@ export function LoginForm() {
 
         if (result.ok) {
             toast.success("خوش آمدید!", { description: "ورود شما با موفقیت انجام شد." });
-            window.location.assign(appUrl);
+            const requestedDestination = new URLSearchParams(window.location.search).get("next");
+            window.location.assign(resolvePostLoginUrl(requestedDestination));
         } else {
             setAuthError(result.message);
         }

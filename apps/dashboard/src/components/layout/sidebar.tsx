@@ -2,12 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Syringe } from "lucide-react";
+import { useState } from "react";
+import { LogOut, Settings, Syringe } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { NAV, NAV_GROUPS } from "@/lib/nav";
+
+const ROLE_LABELS = {
+  ADMIN: "مدیر سیستم",
+  DOCTOR: "پزشک",
+  STAFF: "کارمند کلینیک",
+  PATIENT: "بیمار",
+} as const;
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { authentication, logout } = useDashboardSession();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState(false);
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const roleLabel = ROLE_LABELS[authentication.user.roles.find((role) => role !== "PATIENT") ?? "PATIENT"];
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    setLogoutError(false);
+    if (!(await logout())) {
+      setLoggingOut(false);
+      setLogoutError(true);
+    }
+  };
 
   return (
     <aside className="w-[17rem] flex-shrink-0 flex flex-col h-screen overflow-y-auto" style={{ background: "#1B5E42" }}>
@@ -44,11 +66,13 @@ export function Sidebar() {
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">ا</div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold truncate">دکتر سید ابوالفتح شیرمردی</p>
-            <p className="text-white/45 text-[0.7rem]">متخصص طب سوزنی</p>
+            <p className="text-white text-sm font-semibold truncate">حساب مدیریتی</p>
+            <p className="text-white/45 text-[0.7rem]">{roleLabel}</p>
           </div>
           <Link href="/settings" className="text-white/40 hover:text-white transition-colors"><Settings size={15} /></Link>
+          <button type="button" onClick={handleLogout} disabled={loggingOut} aria-label="خروج از حساب" className="text-white/40 hover:text-white transition-colors disabled:opacity-50"><LogOut size={15} /></button>
         </div>
+        {logoutError && <p role="alert" className="mt-2 text-[0.7rem] text-red-200">خروج انجام نشد؛ دوباره امتحان کنید.</p>}
       </div>
     </aside>
   );
