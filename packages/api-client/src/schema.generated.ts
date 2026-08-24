@@ -205,9 +205,11 @@ export interface components {
             id: string;
             /** @example +989123456789 */
             phone: string;
-            /** @example [
+            /**
+             * @example [
              *       "PATIENT"
-             *     ] */
+             *     ]
+             */
             roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
             /** Format: date-time */
             createdAt: string;
@@ -239,9 +241,11 @@ export interface components {
             id: string;
             /** @example +989123456789 */
             phone: string;
-            /** @example [
+            /**
+             * @example [
              *       "PATIENT"
-             *     ] */
+             *     ]
+             */
             roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
         };
         AuthenticationResponseDto: {
@@ -285,9 +289,11 @@ export interface components {
              * @enum {string}
              */
             status: "ACTIVE" | "DISABLED";
-            /** @example [
+            /**
+             * @example [
              *       "PATIENT"
-             *     ] */
+             *     ]
+             */
             roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
             /** Format: date-time */
             createdAt: string;
