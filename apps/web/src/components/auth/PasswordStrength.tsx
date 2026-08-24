@@ -11,10 +11,11 @@ interface StrengthLevel {
 function evaluateStrength(password: string): StrengthLevel {
     if (!password) return { score: 0, label: "", className: "" };
 
+    const length = [...password].length;
     let score = 0;
-    if (password.length >= 8) score += 1;
-    if (/[a-zA-Z]/.test(password) && /\d/.test(password)) score += 1;
-    if (password.length >= 12 || /[^a-zA-Z0-9]/.test(password)) score += 1;
+    if (length >= 15) score += 1;
+    if (/\p{L}/u.test(password) && /\p{N}/u.test(password)) score += 1;
+    if (length >= 20 || /[^\p{L}\p{N}]/u.test(password)) score += 1;
     score = Math.min(score, 3) as 0 | 1 | 2 | 3;
 
     if (score <= 1) {

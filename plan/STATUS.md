@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-21 08:35 +03:30`
+- آخرین به‌روزرسانی: `2026-08-24 10:54 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
-- فاز فعال: `Phase 01 — Identity & Access`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- فاز فعال: `Phase 02 — Clinic, Doctors & Patients`
+- وضعیت فاز فعال: `NOT_STARTED`
 - task فعال: `ندارد`
-- مسئول/Agent: `تعیین نشده`
+- مسئول/Agent: `ندارد`
 - blocker فعال: `ندارد`
 
 ## پیشرفت کلان
@@ -22,7 +22,7 @@
 - [x] داشبورد `apps/dashboard` پیاده‌سازی ظاهری و mock شده است.
 - [x] بک‌اند NestJS پایه ایجاد شده است.
 - [x] PostgreSQL و migration پایه ایجاد شده‌اند.
-- [ ] احراز هویت واقعی جایگزین mock شده است.
+- [x] احراز هویت واقعی جایگزین mock شده است.
 - [ ] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [ ] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
@@ -32,7 +32,7 @@
 ## وضعیت فازها
 
 - [x] `Phase 00` — Foundation — `DONE` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
-- [ ] `Phase 01` — Identity & Access — `IN_PROGRESS`
+- [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
 - [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
 - [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
 - [ ] `Phase 04` — Clinical Records & Treatment — `NOT_STARTED`
@@ -46,20 +46,16 @@
 
 ## handoff فاز فعال
 
-- فاز قبلی: `Phase 00 — Foundation` با [CI run #3](https://github.com/Drshirmardi/mushroom/actions/runs/32366483270) موفق تکمیل شد؛ شواهد: [`logs/phase-00.md`](logs/phase-00.md)
-- Task بعدی واجد شرایط: `F01-T05` — register use case و endpoint
-- dependency: `F01-T04` → PASS؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- فاز قبلی: `Phase 01 — Identity & Access` پس از Bugbot و Security Review مستقل بدون یافته باز تکمیل شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- Task بعدی واجد شرایط: `F02-T01` — تعیین فیلدهای canonical از روی UI و حذف فیلدهای صرفاً نمایشی؛ هنوز شروع نشده است.
+- dependency: `Phase 01` → DONE.
 
 ## task در حال اجرا
 
 قبل از شروع، Agent فقط این بخش را تکمیل می‌کند:
 
 ```text
-Task ID: —
-Agent/Thread: —
-Started at: —
-Scope: —
-Expected files: —
+ندارد
 ```
 
 پس از تکمیل، Agent باید claim را پاک کند، `Task بعدی واجد شرایط` را به‌روز کند و شواهد کامل

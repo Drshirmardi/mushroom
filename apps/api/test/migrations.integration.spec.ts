@@ -58,6 +58,25 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
 
     expect(result.status, result.stderr).toBe(0);
 
+    const preSeedClient = new Client({ connectionString: createDatabaseUrl() });
+    await preSeedClient.connect();
+    try {
+      const migratedRoles = await preSeedClient.query<{ code: string }>(`
+        SELECT code::text
+        FROM roles
+        ORDER BY code
+      `);
+
+      expect(migratedRoles.rows.map(({ code }) => code)).toEqual([
+        'ADMIN',
+        'DOCTOR',
+        'PATIENT',
+        'STAFF',
+      ]);
+    } finally {
+      await preSeedClient.end();
+    }
+
     for (let run = 0; run < 2; run += 1) {
       const seedResult = spawnSync(
         process.execPath,
@@ -113,6 +132,22 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'DOCTOR',
         'PATIENT',
         'STAFF',
+      ]);
+
+      const loginAttemptOutcomes = await smokeClient.query<{ value: string }>(`
+        SELECT enumlabel AS value
+        FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+        WHERE pg_type.typname = 'login_attempt_outcome'
+        ORDER BY enumsortorder
+      `);
+
+      expect(loginAttemptOutcomes.rows.map(({ value }) => value)).toEqual([
+        'PENDING',
+        'SUCCESS',
+        'INVALID_CREDENTIALS',
+        'RATE_LIMITED',
+        'ACCOUNT_DISABLED',
       ]);
 
       const timestampColumns = await smokeClient.query<{ data_type: string }>(`

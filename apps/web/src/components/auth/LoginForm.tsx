@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { resolvePostLoginUrl } from "@/lib/api";
 import { loginPasswordSchema, normalizePhone, phoneSchema } from "@/lib/validation";
 import { loginWithPhone } from "@/services/auth";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -33,7 +33,6 @@ const loginSchema = z.object({
 type LoginValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
-    const router = useRouter();
     const [authError, setAuthError] = useState<string | null>(null);
 
     const form = useForm<LoginValues>({
@@ -52,7 +51,8 @@ export function LoginForm() {
 
         if (result.ok) {
             toast.success("خوش آمدید!", { description: "ورود شما با موفقیت انجام شد." });
-            router.push("/");
+            const requestedDestination = new URLSearchParams(window.location.search).get("next");
+            window.location.assign(resolvePostLoginUrl(requestedDestination));
         } else {
             setAuthError(result.message);
         }

@@ -7,10 +7,12 @@
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next node_modules"
   },
   "dependencies": {
+    "@sabz-zendegi/api-client": "workspace:*",
     "clsx": "2.1.1",
     "lucide-react": "0.487.0",
     "motion": "12.23.24",
@@ -29,6 +31,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "tailwindcss": "4.1.12",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   }
 }

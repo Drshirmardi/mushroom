@@ -7,20 +7,16 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
-import { nameSchema, normalizePhone, phoneSchema, signupPasswordSchema } from "@/lib/validation";
+import { normalizePhone, phoneSchema, signupPasswordSchema } from "@/lib/validation";
 import { signupWithPhone } from "@/services/auth";
-import { Icon } from "@/components/shared/Icon";
 import { GlassCard } from "@/components/shared/GlassCard";
 import {
     FormControl,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
     Form,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PhoneField } from "./PhoneField";
 import { PasswordField } from "./PasswordField";
@@ -31,7 +27,6 @@ import { AuthErrorAlert } from "./AuthErrorAlert";
 
 const signupSchema = z
     .object({
-        name: nameSchema,
         phone: phoneSchema,
         password: signupPasswordSchema,
         confirmPassword: z.string().min(1, "تکرار رمز عبور را وارد کنید"),
@@ -51,7 +46,7 @@ export function SignupForm() {
     const form = useForm<SignupValues>({
         resolver: zodResolver(signupSchema),
         mode: "onTouched",
-        defaultValues: { name: "", phone: "", password: "", confirmPassword: "", terms: false },
+        defaultValues: { phone: "", password: "", confirmPassword: "", terms: false },
     });
 
     const watchedPassword = form.watch("password");
@@ -59,7 +54,6 @@ export function SignupForm() {
     const onSubmit = async (values: SignupValues) => {
         setAuthError(null);
         const result = await signupWithPhone({
-            name: values.name.trim(),
             phone: normalizePhone(values.phone),
             password: values.password,
         });
@@ -86,38 +80,6 @@ export function SignupForm() {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     {authError && <AuthErrorAlert message={authError} />}
-
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field, fieldState }) => (
-                            <FormItem>
-                                <FormLabel>نام و نام خانوادگی</FormLabel>
-                                <div className="relative">
-                                    <Icon
-                                        name="person"
-                                        className={cn(
-                                            "pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xl text-muted-foreground transition-colors",
-                                            fieldState.error && "text-destructive",
-                                        )}
-                                    />
-                                    <FormControl>
-                                        <Input
-                                            autoComplete="name"
-                                            placeholder="مثلاً: سارا محمدی"
-                                            className={cn(
-                                                "h-12 rounded-xl pr-12",
-                                                fieldState.error &&
-                                                    "border-destructive bg-destructive/5 focus-visible:ring-2 focus-visible:ring-destructive",
-                                            )}
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
 
                     <PhoneField control={form.control} name="phone" />
 

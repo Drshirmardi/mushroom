@@ -31,6 +31,8 @@ export const createFastifyLoggingOptions = (
         'req.headers["set-cookie"]',
         'res.headers["set-cookie"]',
         'req.body.password',
+        'req.body.currentPassword',
+        'req.body.newPassword',
         'req.body.token',
         'req.body.refreshToken',
         'req.body.accessToken',

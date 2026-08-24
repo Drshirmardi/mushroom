@@ -44,6 +44,5 @@ export const loginPasswordSchema = z.string().min(1, "رمز عبور را وا�
 
 export const signupPasswordSchema = z
     .string()
-    .min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد")
-    .regex(/[a-zA-Z]/, "رمز عبور باید شامل حرف باشد")
-    .regex(/\d/, "رمز عبور باید شامل عدد باشد");
+    .min(15, "رمز عبور باید حداقل ۱۵ کاراکتر باشد")
+    .max(128, "رمز عبور باید حداکثر ۱۲۸ کاراکتر باشد");

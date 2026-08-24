@@ -24,6 +24,7 @@ enum RoleCode {
 }
 
 enum LoginAttemptOutcome {
+  PENDING
   SUCCESS
   INVALID_CREDENTIALS
   RATE_LIMITED
@@ -131,6 +132,16 @@ model LoginAttempt {
   @@index([ipAddress, createdAt], map: "login_attempts_ip_created_at_idx")
   @@index([userId, createdAt], map: "login_attempts_user_id_created_at_idx")
   @@map("login_attempts")
+}
+
+model AuthRateLimitBucket {
+  key             String   @id @db.Char(64)
+  windowStartedAt DateTime @map("window_started_at") @db.Timestamptz(3)
+  requestCount    Int      @map("request_count")
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([updatedAt], map: "auth_rate_limit_buckets_updated_at_idx")
+  @@map("auth_rate_limit_buckets")
 }
 
 model AuditEvent {

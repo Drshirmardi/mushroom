@@ -1,18 +1,35 @@
 import { HttpStatus } from '@nestjs/common';
 
-export type ApiErrorCode =
-  | 'BAD_REQUEST'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'CONFLICT'
-  | 'PAYLOAD_TOO_LARGE'
-  | 'UNSUPPORTED_MEDIA_TYPE'
-  | 'UNPROCESSABLE_ENTITY'
-  | 'TOO_MANY_REQUESTS'
-  | 'SERVICE_UNAVAILABLE'
-  | 'HTTP_ERROR'
-  | 'INTERNAL_SERVER_ERROR';
+export const API_ERROR_CODES = [
+  'BAD_REQUEST',
+  'UNAUTHORIZED',
+  'FORBIDDEN',
+  'NOT_FOUND',
+  'CONFLICT',
+  'PAYLOAD_TOO_LARGE',
+  'UNSUPPORTED_MEDIA_TYPE',
+  'UNPROCESSABLE_ENTITY',
+  'TOO_MANY_REQUESTS',
+  'SERVICE_UNAVAILABLE',
+  'INVALID_PHONE_NUMBER',
+  'PHONE_ALREADY_REGISTERED',
+  'PASSWORD_TOO_SHORT',
+  'PASSWORD_TOO_LONG',
+  'PASSWORD_UNSUPPORTED_CHARACTERS',
+  'PASSWORD_BLOCKED',
+  'INVALID_CREDENTIALS',
+  'LOGIN_RATE_LIMITED',
+  'REGISTRATION_RATE_LIMITED',
+  'REFRESH_RATE_LIMITED',
+  'INVALID_REFRESH_TOKEN',
+  'INVALID_CURRENT_PASSWORD',
+  'PASSWORD_UNCHANGED',
+  'ORIGIN_NOT_ALLOWED',
+  'HTTP_ERROR',
+  'INTERNAL_SERVER_ERROR',
+] as const;
+
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
 export interface ApiErrorResponse {
   code: ApiErrorCode;
@@ -20,6 +37,11 @@ export interface ApiErrorResponse {
   requestId: string;
   details: Record<string, unknown>;
 }
+
+const apiErrorCodes = new Set<ApiErrorCode>(API_ERROR_CODES);
+
+export const isApiErrorCode = (value: unknown): value is ApiErrorCode =>
+  typeof value === 'string' && apiErrorCodes.has(value as ApiErrorCode);
 
 const errorCodeByStatus: Partial<Record<HttpStatus, ApiErrorCode>> = {
   [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',

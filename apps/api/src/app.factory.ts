@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
+import fastifyCookie from '@fastify/cookie';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -14,14 +15,34 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { createFastifyLoggingOptions } from './common/logging/fastify-logging.config';
 
+export const SWAGGER_UI_OPTIONS = Object.freeze({
+  persistAuthorization: false,
+});
+
 export async function createApiApplication(): Promise<NestFastifyApplication> {
+  const trustedProxies = (process.env.TRUSTED_PROXIES ?? '')
+    .split(',')
+    .map((proxy) => proxy.trim())
+    .filter((proxy) => proxy.length > 0);
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(
-      createFastifyLoggingOptions(process.env.LOG_LEVEL ?? 'info'),
+      {
+        ...createFastifyLoggingOptions(process.env.LOG_LEVEL ?? 'info'),
+        trustProxy: trustedProxies.length > 0 ? trustedProxies : false,
+      },
     ),
   );
   const configService = app.get(ConfigService);
+  const allowedOrigins = configService
+    .getOrThrow<string>('APP_ORIGINS')
+    .split(',');
+
+  await app.register(fastifyCookie as never);
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
 
   app.setGlobalPrefix('v1');
   const openApiConfig = new DocumentBuilder()
@@ -36,14 +57,26 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
       },
       'bearerAuth',
     )
+    .addCookieAuth(
+      '__Host-sz_refresh',
+      {
+        type: 'apiKey',
+        in: 'cookie',
+        description:
+          'HttpOnly refresh cookie. Local development uses sz_refresh_dev.',
+      },
+      'refreshCookie',
+    )
     .build();
   const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
 
-  SwaggerModule.setup('docs', app, openApiDocument, {
-    jsonDocumentUrl: 'docs-json',
-    swaggerOptions: { persistAuthorization: true },
-    useGlobalPrefix: false,
-  });
+  if (configService.get<string>('NODE_ENV') !== 'production') {
+    SwaggerModule.setup('docs', app, openApiDocument, {
+      jsonDocumentUrl: 'docs-json',
+      swaggerOptions: SWAGGER_UI_OPTIONS,
+      useGlobalPrefix: false,
+    });
+  }
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

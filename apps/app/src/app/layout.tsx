@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SessionGate } from "@/components/auth/session-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <SessionGate>{children}</SessionGate>
+      </body>
     </html>
   );
 }
