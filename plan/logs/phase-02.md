@@ -94,6 +94,68 @@ Known limitations:
 Next batch:
   - F02-B03
 
+## F02-T05 — API self-profile و onboarding status
+
+Task ID: F02-T05
+Completed at: 2026-08-24 22:19 +03:30
+Agent/Thread: /root/self_profile_api
+Batch ID: F02-B03
+Reviewed by: Codex /root + /root/api_batch_review
+Changed files:
+  - apps/api/src/modules/patients/self-profile/**
+  - apps/api/test/self-profile.integration.spec.ts
+Tests run:
+  - PostgreSQL self-profile integration → PASS
+  - API full suite → PASS (migration integration skipped without configured migration test database)
+Result:
+  - self-only profile read/write and deterministic onboarding status → PASS
+
+## F02-T06 — API consent و medical intake
+
+Task ID: F02-T06
+Completed at: 2026-08-24 22:19 +03:30
+Agent/Thread: /root/intake_consent_api
+Batch ID: F02-B03
+Reviewed by: Codex /root + /root/api_batch_review
+Changed files:
+  - apps/api/src/modules/patients/intake/**
+  - apps/api/test/intake-consent*.spec.ts
+Tests run:
+  - consent/intake service and authorization regressions → PASS
+  - API full suite → PASS (migration integration skipped without configured migration test database)
+Result:
+  - patient-only consent/intake, immutable revisions, conflict/idempotency and consent gates → PASS
+
+## F02-T07 — API admin patient
+
+Task ID: F02-T07
+Completed at: 2026-08-24 22:19 +03:30
+Agent/Thread: /root/admin_patients_api
+Batch ID: F02-B03
+Reviewed by: Codex /root + /root/api_batch_review
+Changed files:
+  - apps/api/src/modules/patients/admin/**
+  - apps/api/test/admin-patients.authorization.spec.ts
+Tests run:
+  - admin authorization/idempotency regression → PASS
+  - OpenAPI contract and focused API suite (16 tests) → PASS
+  - API full suite → PASS (migration integration skipped without configured migration test database)
+Result:
+  - UUID public IDs, consent-gated admin medical access, canonical correction idempotency and accurate API schemas → PASS
+
+## F02-B03 — یکپارچه‌سازی API lanes
+
+Completed at: 2026-08-24 22:19 +03:30
+Coordinator: Codex /root
+Tests run:
+  - `pnpm openapi:export` → PASS
+  - `pnpm test` → PASS (2 migration integration tests skipped without migration test database)
+  - final independent review (/root/api_batch_review) → APPROVE
+Result:
+  - modules wired into the API application and checked-in OpenAPI regenerated.
+Next batch:
+  - F02-B04
+
 ## F02-T04 — فرم‌های canonical onboarding، consent و profile
 
 Task ID: F02-T04
