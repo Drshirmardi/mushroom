@@ -67,3 +67,55 @@ Known limitations:
   - APIهای profile/intake/consent و قواعد domain در taskهای بعدی Phase 02 پیاده‌سازی می‌شوند؛ این task فقط persistence و invariantهای DB را فراهم می‌کند.
 Next batch:
   - F02-B02 — F02-T03 و F02-T04، هنوز شروع نشده‌اند.
+
+## F02-T03 — هسته domain/access بیمار
+
+Task ID: F02-T03
+Completed at: 2026-08-24 19:36 +03:30
+Agent/Thread: Codex /root (main agent)
+Batch ID: F02-B02
+Reviewed by: Codex /root + /root/patient_domain_review
+Changed files:
+  - apps/api/src/modules/patients/domain/onboarding.ts
+  - apps/api/src/modules/patients/application/patient-audit.ts
+  - apps/api/src/common/auth/authorization.policy.ts
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/test/patient-domain.spec.ts
+Tests run:
+  - API typecheck and patient-domain/authorization tests → PASS
+  - API full test suite → PASS
+  - final independent review (/root/patient_domain_review) → APPROVE
+Result:
+  - canonical text/digit/date and declaration validation; NONE/UNKNOWN/PRESENT semantics → PASS
+  - deterministic completeness, blockers, start/continue/complete actions and consent-completion binding → PASS
+  - stable Phase 02 errors, self/admin permissions and PII-safe audit port → PASS
+Known limitations:
+  - persistence and HTTP use cases consume these rules in F02-T05 تا F02-T07.
+Next batch:
+  - F02-B03
+
+## F02-T04 — فرم‌های canonical onboarding، consent و profile
+
+Task ID: F02-T04
+Completed at: 2026-08-24 19:36 +03:30
+Agent/Thread: /root/onboarding_forms
+Batch ID: F02-B02
+Reviewed by: Codex /root
+Changed files:
+  - apps/app/src/app/onboarding/page.tsx
+  - apps/app/src/app/(app)/profile/edit/page.tsx
+  - apps/app/src/app/(app)/profile/medical/page.tsx
+  - apps/app/src/components/onboarding/consent-policy-panel.tsx
+  - apps/app/src/components/onboarding/medical-declaration-field.tsx
+  - apps/app/src/components/onboarding/profile-fields.tsx
+Tests run:
+  - app typecheck → PASS
+  - app build → PASS
+  - git diff --check → PASS
+Result:
+  - canonical field names/enums and required declarations are represented without clinical claims → PASS
+  - no hand-authored API contract, mock persist, age/BMI or placeholder legal-policy text remains in scope → PASS
+Known limitations:
+  - F02-T08 binds the forms to generated API client and published policy snapshot.
+Next batch:
+  - F02-B03

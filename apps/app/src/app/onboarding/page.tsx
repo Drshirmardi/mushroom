@@ -1,143 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
-import { Check, CheckCircle } from "lucide-react";
-import { toP } from "@/lib/format";
-import { useUiStore } from "@/stores/ui";
+import { ChevronRight } from "lucide-react";
+import { ConsentPolicyPanel } from "@/components/onboarding/consent-policy-panel";
+import { MedicalDeclarationField, type MedicalDeclaration } from "@/components/onboarding/medical-declaration-field";
+import { ProfileFields, type ProfileDraft } from "@/components/onboarding/profile-fields";
 
-const STEPS = [
-  { title: "خوش آمدید!", sub: "بیایید پرونده پزشکی شما را تکمیل کنیم", icon: "👋" },
-  { title: "اطلاعات شخصی", sub: "اطلاعات پایه‌ای شما", icon: "👤" },
-  { title: "مشخصات جسمی", sub: "قد، وزن و گروه خونی", icon: "📏" },
-  { title: "سابقه پزشکی", sub: "آلرژی و بیماری‌های مزمن", icon: "📋" },
-  { title: "سبک زندگی", sub: "خواب، ورزش و استرس", icon: "🌿" },
-  { title: "همه چیز آماده است!", sub: "پرونده شما ایجاد شد", icon: "✅" },
-];
+type IntakeDraft = {
+  birthDate: string; sexAtBirth: string; heightCm: string; weightKg: string; bloodType: string;
+  sleepDurationBand: string; exerciseFrequency: string; stressLevel: string; tobaccoUse: string;
+  allergyReport: MedicalDeclaration; chronicConditionReport: MedicalDeclaration; currentMedicationReport: MedicalDeclaration;
+};
+const EMPTY_DECLARATION: MedicalDeclaration = { items: [] };
+const SEX_OPTIONS = [["FEMALE", "زن"], ["MALE", "مرد"], ["INTERSEX", "اینترسکس"], ["UNKNOWN", "نمی‌دانم"], ["PREFER_NOT_TO_SAY", "ترجیح می‌دهم نگویم"]] as const;
+const OPTIONAL_FIELDS = [
+  { key: "bloodType", label: "گروه خونی", options: [["", "پاسخ نداده‌ام"], ["A_POSITIVE", "A+"], ["A_NEGATIVE", "A-"], ["B_POSITIVE", "B+"], ["B_NEGATIVE", "B-"], ["AB_POSITIVE", "AB+"], ["AB_NEGATIVE", "AB-"], ["O_POSITIVE", "O+"], ["O_NEGATIVE", "O-"], ["UNKNOWN", "نمی‌دانم"]] },
+  { key: "sleepDurationBand", label: "مدت خواب شبانه", options: [["", "پاسخ نداده‌ام"], ["LESS_THAN_5_HOURS", "کمتر از ۵ ساعت"], ["FROM_5_TO_LESS_THAN_7_HOURS", "۵ تا کمتر از ۷ ساعت"], ["FROM_7_TO_9_HOURS", "۷ تا ۹ ساعت"], ["MORE_THAN_9_HOURS", "بیشتر از ۹ ساعت"], ["UNKNOWN", "نمی‌دانم"]] },
+  { key: "exerciseFrequency", label: "دفعات ورزش", options: [["", "پاسخ نداده‌ام"], ["NONE", "ندارم"], ["ONCE_OR_TWICE_WEEKLY", "هفته‌ای ۱ یا ۲ بار"], ["THREE_OR_FOUR_TIMES_WEEKLY", "هفته‌ای ۳ یا ۴ بار"], ["DAILY", "روزانه"], ["UNKNOWN", "نمی‌دانم"]] },
+  { key: "stressLevel", label: "سطح استرس", options: [["", "پاسخ نداده‌ام"], ["LOW", "کم"], ["MODERATE", "متوسط"], ["HIGH", "زیاد"], ["VERY_HIGH", "خیلی زیاد"], ["UNKNOWN", "نمی‌دانم"]] },
+  { key: "tobaccoUse", label: "مصرف دخانیات", options: [["", "پاسخ نداده‌ام"], ["NEVER", "هرگز"], ["FORMER", "قبلاً"], ["CURRENT", "اکنون"], ["UNKNOWN", "نمی‌دانم"]] },
+] as const;
 
 export default function OnboardingPage() {
-  const router = useRouter();
-  const completeOnboarding = useUiStore((s) => s.completeOnboarding);
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<Record<string, any>>({});
+  const [profile, setProfile] = useState<ProfileDraft>({ firstName: "", lastName: "", email: "", cityName: "" });
+  const [intake, setIntake] = useState<IntakeDraft>({ birthDate: "", sexAtBirth: "", heightCm: "", weightKg: "", bloodType: "", sleepDurationBand: "", exerciseFrequency: "", stressLevel: "", tobaccoUse: "", allergyReport: EMPTY_DECLARATION, chronicConditionReport: EMPTY_DECLARATION, currentMedicationReport: EMPTY_DECLARATION });
+  const [accepted, setAccepted] = useState(false);
+  const steps = ["اطلاعات پایه", "اطلاعات خوداظهاری", "سبک زندگی", "رضایت"];
+  const updateIntake = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => setIntake((current) => ({ ...current, [key]: value }));
 
-  const goNext = () => { if (step < STEPS.length - 1) setStep(s => s + 1); else { completeOnboarding(); router.push("/"); } };
-
-  const stepContent = [
-    <div key={0} className="space-y-4 text-center py-6">
-      <div className="text-6xl">{STEPS[0].icon}</div>
-      <p className="text-sm text-muted-foreground leading-7">در چند قدم ساده پرونده پزشکی خود را تکمیل کنید تا بهترین مراقبت را دریافت نمایید.</p>
-      <div className="flex flex-col gap-2 mt-4 text-right">
-        {["ارزیابی سلامت شخصی‌سازی شده", "توصیه‌های درمانی متناسب با مزاج", "ارتباط مستقیم با پزشک"].map(f => (
-          <div key={f} className="flex items-center gap-2 bg-accent rounded-xl p-3">
-            <Check size={14} className="text-primary" strokeWidth={3} />
-            <span className="text-sm font-medium text-foreground">{f}</span>
-          </div>
-        ))}
-      </div>
-    </div>,
-    <div key={1} className="space-y-3">
-      {[{ l: "نام و نام‌خانوادگی", k: "name", v: "مریم احمدی" }, { l: "موبایل", k: "phone", v: "۰۹۱۲۳۴۵۶۷۸۹" }, { l: "سال تولد", k: "birth", v: "۱۳۶۷" }].map(f => (
-        <div key={f.k}><label className="text-xs font-bold text-muted-foreground block mb-1">{f.l}</label>
-          <input defaultValue={f.v} onChange={e => setData(d => ({ ...d, [f.k]: e.target.value }))} className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 text-right" dir="rtl" />
-        </div>
-      ))}
-      <div>
-        <label className="text-xs font-bold text-muted-foreground block mb-1">جنسیت</label>
-        <div className="flex gap-2">
-          {["زن", "مرد"].map(g => (
-            <button key={g} onClick={() => setData(d => ({ ...d, gender: g }))} className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all ${data.gender === g ? "bg-primary text-white border-primary" : "bg-muted border-border text-foreground"}`}>{g}</button>
-          ))}
-        </div>
-      </div>
-    </div>,
-    <div key={2} className="space-y-3">
-      {[{ l: "قد (سانتی‌متر)", k: "height", v: "۱۶۵" }, { l: "وزن (کیلوگرم)", k: "weight", v: "۵۸" }].map(f => (
-        <div key={f.k}><label className="text-xs font-bold text-muted-foreground block mb-1">{f.l}</label>
-          <input defaultValue={f.v} className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 text-right" dir="rtl" />
-        </div>
-      ))}
-      <div>
-        <label className="text-xs font-bold text-muted-foreground block mb-1">گروه خونی</label>
-        <div className="grid grid-cols-4 gap-2">
-          {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(b => (
-            <button key={b} onClick={() => setData(d => ({ ...d, blood: b }))} className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${data.blood === b ? "bg-primary text-white border-primary" : "bg-muted border-border"}`}>{b}</button>
-          ))}
-        </div>
-      </div>
-    </div>,
-    <div key={3} className="space-y-3">
-      <p className="text-sm font-semibold text-foreground">آلرژی‌های شناخته‌شده</p>
-      <div className="flex flex-wrap gap-2">
-        {["پنی‌سیلین", "آسپرین", "لاتکس", "گرده گل", "کنجد", "ندارم"].map(a => {
-          const sel = (data.allergies || []).includes(a);
-          return <button key={a} onClick={() => setData(d => ({ ...d, allergies: sel ? (d.allergies || []).filter((x: string) => x !== a) : [...(d.allergies || []), a] }))}
-            className={`px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${sel ? "bg-primary text-white border-primary" : "bg-muted border-border text-foreground"}`}>{a}</button>;
-        })}
-      </div>
-      <p className="text-sm font-semibold text-foreground mt-2">بیماری‌های مزمن</p>
-      <div className="flex flex-wrap gap-2">
-        {["دیابت", "فشار خون", "قلبی", "تیروئید", "آرتروز", "ندارم"].map(d => {
-          const sel = (data.diseases || []).includes(d);
-          return <button key={d} onClick={() => setData(x => ({ ...x, diseases: sel ? (x.diseases || []).filter((v: string) => v !== d) : [...(x.diseases || []), d] }))}
-            className={`px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${sel ? "bg-rose-500 text-white border-rose-500" : "bg-muted border-border text-foreground"}`}>{d}</button>;
-        })}
-      </div>
-    </div>,
-    <div key={4} className="space-y-4">
-      {[{ label: "ساعت خواب شبانه", opts: ["کمتر از ۵", "۵ تا ۷", "۷ تا ۹", "بیشتر از ۹"], key: "sleep" },
-      { label: "میزان ورزش هفتگی", opts: ["اصلاً نه", "۱-۲ بار", "۳-۴ بار", "روزانه"], key: "exercise" },
-      { label: "سطح استرس", opts: ["کم", "متوسط", "زیاد", "خیلی زیاد"], key: "stress" }].map(q => (
-        <div key={q.key}>
-          <p className="text-sm font-semibold text-foreground mb-2">{q.label}</p>
-          <div className="grid grid-cols-2 gap-2">
-            {q.opts.map(o => (
-              <button key={o} onClick={() => setData(d => ({ ...d, [q.key]: o }))}
-                className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${data[q.key] === o ? "bg-primary text-white border-primary" : "bg-muted border-border text-foreground"}`}>{o}</button>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>,
-    <div key={5} className="text-center py-6 space-y-4">
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 250 }}>
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle size={40} className="text-green-600" />
-        </div>
-      </motion.div>
-      <h3 className="text-lg font-bold text-foreground">پرونده شما ساخته شد!</h3>
-      <p className="text-sm text-muted-foreground leading-7">اطلاعات شما ثبت شد. اکنون می‌توانید از تمام امکانات برنامه استفاده کنید.</p>
-      <div className="bg-primary/5 rounded-2xl p-4 text-right border border-primary/20">
-        <p className="text-xs font-bold text-primary mb-2">مرحله بعد پیشنهادی:</p>
-        <p className="text-sm text-foreground">ارزیابی اولیه سلامت خود را تکمیل کنید تا مزاج‌تان مشخص شود.</p>
-      </div>
-    </div>,
-  ];
-
-  return (
-    <div className="min-h-screen bg-[#e8ede8] flex items-center justify-center">
-      <div className="relative w-full max-w-[720px] h-[100dvh] bg-background flex flex-col shadow-2xl overflow-hidden">
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-6 pb-4">
-          <div className="mb-6">
-            <div className="flex gap-1 mb-4">
-              {STEPS.map((_, i) => <div key={i} className={`flex-1 h-1.5 rounded-full transition-all ${i <= step ? "bg-primary" : "bg-muted"}`} />)}
-            </div>
-            <p className="text-xs text-muted-foreground">مرحله {toP(step + 1)} از {toP(STEPS.length)}</p>
-            <h2 className="text-xl font-bold text-foreground mt-1">{STEPS[step].title}</h2>
-            <p className="text-sm text-muted-foreground">{STEPS[step].sub}</p>
-          </div>
-          {stepContent[step]}
-        </div>
-        <div className="px-4 pb-6 pt-2 border-t border-border bg-background flex gap-3">
-          {step > 0 && step < STEPS.length - 1 && (
-            <button onClick={() => setStep(s => s - 1)} className="flex-1 py-4 bg-muted text-foreground rounded-2xl font-bold text-sm">قبلی</button>
-          )}
-          <button onClick={goNext} className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
-            {step === STEPS.length - 1 ? "شروع استفاده" : "ادامه"}
-          </button>
-        </div>
-      </div>
+  return <main className="min-h-screen bg-[#e8ede8] py-6"><div className="mx-auto w-full max-w-2xl rounded-3xl bg-background shadow-xl">
+    <div className="border-b border-border px-5 py-5"><p className="text-xs font-bold text-primary">پرونده اولیه</p><h1 className="mt-1 text-xl font-bold text-foreground">اطلاعات خوداظهاری بیمار</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">این اطلاعات تشخیص یا واقعیت بالینی تأییدشده نیستند.</p></div>
+    <div className="flex gap-1 px-5 pt-5">{steps.map((label, index) => <button type="button" key={label} onClick={() => setStep(index)} className={`h-1.5 flex-1 rounded-full ${index <= step ? "bg-primary" : "bg-muted"}`} aria-label={label} />)}</div>
+    <div className="px-5 py-6">
+      {step === 0 && <section className="space-y-5"><ProfileFields value={profile} onChange={setProfile} /><div><label className="mb-1 block text-xs font-bold text-muted-foreground">تاریخ تولد (میلادی) *</label><input type="date" value={intake.birthDate} onChange={(event) => updateIntake("birthDate", event.target.value)} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div><fieldset><legend className="mb-2 text-xs font-bold text-muted-foreground">جنس در بدو تولد *</legend><div className="grid gap-2 sm:grid-cols-2">{SEX_OPTIONS.map(([value, label]) => <button type="button" key={value} onClick={() => updateIntake("sexAtBirth", value)} className={`rounded-xl border px-3 py-3 text-sm font-semibold ${intake.sexAtBirth === value ? "border-primary bg-primary text-white" : "border-border bg-muted"}`}>{label}</button>)}</div></fieldset></section>}
+      {step === 1 && <section className="space-y-4"><MedicalDeclarationField label="آلرژی‌ها *" description="گزارش خود شماست و هشدار آلرژی تأییدشده محسوب نمی‌شود." value={intake.allergyReport} onChange={(value) => updateIntake("allergyReport", value)} /><MedicalDeclarationField label="بیماری‌های مزمن *" description="گزارش خود شماست و تشخیص پزشکی نیست." value={intake.chronicConditionReport} onChange={(value) => updateIntake("chronicConditionReport", value)} /><MedicalDeclarationField label="داروهای مصرفی *" description="گزارش خود شماست و نسخه یا داروی تأییدشده نیست." value={intake.currentMedicationReport} onChange={(value) => updateIntake("currentMedicationReport", value)} /></section>}
+      {step === 2 && <section className="space-y-4"><div className="grid gap-3 sm:grid-cols-2">{([ ["heightCm", "قد (سانتی‌متر)"], ["weightKg", "وزن (کیلوگرم)"] ] as const).map(([key, label]) => <div key={key}><label className="mb-1 block text-xs font-bold text-muted-foreground">{label} (اختیاری)</label><input type="number" min={key === "heightCm" ? 20 : 0.5} max={key === "heightCm" ? 300 : 1000} step={key === "weightKg" ? "0.01" : "1"} value={intake[key]} onChange={(event) => updateIntake(key, event.target.value)} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>)}</div>{OPTIONAL_FIELDS.map((field) => <div key={field.key}><label className="mb-1 block text-xs font-bold text-muted-foreground">{field.label} (اختیاری)</label><select value={intake[field.key]} onChange={(event) => updateIntake(field.key, event.target.value)} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30">{field.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>)}</section>}
+      {step === 3 && <ConsentPolicyPanel accepted={accepted} onAcceptedChange={setAccepted} />}
     </div>
-  );
+    <div className="flex gap-3 border-t border-border px-5 py-4">{step > 0 && <button type="button" onClick={() => setStep((current) => current - 1)} className="rounded-2xl bg-muted px-5 py-3 text-sm font-bold text-foreground">قبلی</button>}<button type="button" onClick={() => setStep((current) => Math.min(current + 1, steps.length - 1))} className="mr-auto inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white">{step === steps.length - 1 ? "در انتظار سیاست منتشرشده" : "ادامه"}<ChevronRight size={16} /></button></div>
+  </div></main>;
 }
