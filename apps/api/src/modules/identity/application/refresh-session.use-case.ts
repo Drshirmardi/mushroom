@@ -3,6 +3,7 @@ import type {
   SessionAuthenticationResult,
 } from './login-session.use-case';
 import { RefreshTokenManager } from './ports/refresh-token-manager';
+import { PublicAuthRateLimiter } from './ports/public-auth-rate-limiter';
 import { SessionRepository } from './ports/session.repository';
 import type { SecurityAuditContext } from './security-audit';
 
@@ -12,6 +13,21 @@ export class InvalidRefreshTokenError extends Error {
   constructor() {
     super('Refresh token is invalid.');
     this.name = 'InvalidRefreshTokenError';
+  }
+}
+
+export const REFRESH_RATE_LIMIT = Object.freeze({
+  windowMs: 15 * 60 * 1_000,
+  attemptsPerSession: 20,
+  attemptsPerIp: 60,
+});
+
+export class RefreshRateLimitedError extends Error {
+  readonly code = 'REFRESH_RATE_LIMITED';
+
+  constructor() {
+    super('Too many refresh attempts. Please try again later.');
+    this.name = 'RefreshRateLimitedError';
   }
 }
 
@@ -26,6 +42,7 @@ export class RefreshSessionUseCase {
     private readonly sessions: SessionRepository,
     private readonly refreshTokens: RefreshTokenManager,
     private readonly accessTokens: AccessTokenIssuer,
+    private readonly rateLimiter: PublicAuthRateLimiter,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -37,12 +54,24 @@ export class RefreshSessionUseCase {
     const inspected = this.refreshTokens.inspect(command.refreshToken);
     if (!inspected) throw new InvalidRefreshTokenError();
 
+    const currentTime = this.now();
+    const allowed = await this.rateLimiter.consume({
+      scope: 'refresh',
+      subjects: [
+        { kind: 'session', value: inspected.sessionId, limit: REFRESH_RATE_LIMIT.attemptsPerSession },
+        { kind: 'ip', value: command.ipAddress, limit: REFRESH_RATE_LIMIT.attemptsPerIp },
+      ],
+      windowMs: REFRESH_RATE_LIMIT.windowMs,
+      at: currentTime,
+    });
+    if (!allowed) throw new RefreshRateLimitedError();
+
     const replacement = this.refreshTokens.rotate(inspected.sessionId);
     const rotation = await this.sessions.rotateRefresh({
       sessionId: inspected.sessionId,
       presentedTokenHash: inspected.tokenHash,
       replacementTokenHash: replacement.tokenHash,
-      usedAt: this.now(),
+      usedAt: currentTime,
       ipAddress: command.ipAddress,
       userAgent: command.userAgent,
       audit: {

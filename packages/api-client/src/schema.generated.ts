@@ -205,11 +205,9 @@ export interface components {
             id: string;
             /** @example +989123456789 */
             phone: string;
-            /**
-             * @example [
+            /** @example [
              *       "PATIENT"
-             *     ]
-             */
+             *     ] */
             roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
             /** Format: date-time */
             createdAt: string;
@@ -219,7 +217,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -241,11 +239,9 @@ export interface components {
             id: string;
             /** @example +989123456789 */
             phone: string;
-            /**
-             * @example [
+            /** @example [
              *       "PATIENT"
-             *     ]
-             */
+             *     ] */
             roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
         };
         AuthenticationResponseDto: {
@@ -289,11 +285,9 @@ export interface components {
              * @enum {string}
              */
             status: "ACTIVE" | "DISABLED";
-            /**
-             * @example [
+            /** @example [
              *       "PATIENT"
-             *     ]
-             */
+             *     ] */
             roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
             /** Format: date-time */
             createdAt: string;
@@ -413,6 +407,15 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
+            /** @description Registration rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
         };
     };
     authLogin: {
@@ -512,6 +515,15 @@ export interface operations {
             };
             /** @description Browser origin is not allowed. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Refresh rate limit exceeded. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

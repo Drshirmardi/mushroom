@@ -51,9 +51,11 @@ import {
 } from '../../application/manage-sessions.use-case';
 import {
   InvalidRefreshTokenError,
+  RefreshRateLimitedError,
   RefreshSessionUseCase,
 } from '../../application/refresh-session.use-case';
 import {
+  RegistrationRateLimitedError,
   RegisterUserUseCase,
   type RegisteredUser,
 } from '../../application/register-user.use-case';
@@ -135,6 +137,10 @@ export class AuthController {
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
   @ApiErrorResponse(HttpStatus.CONFLICT, 'Phone number is already registered.')
   @ApiErrorResponse(
+    HttpStatus.TOO_MANY_REQUESTS,
+    'Registration rate limit exceeded.',
+  )
+  @ApiErrorResponse(
     HttpStatus.UNPROCESSABLE_ENTITY,
     'Phone or password is invalid.',
   )
@@ -172,6 +178,14 @@ export class AuthController {
           message: error.message,
           details: {},
         });
+      }
+
+      if (error instanceof RegistrationRateLimitedError) {
+        throw new HttpException({
+          code: error.code,
+          message: error.message,
+          details: {},
+        }, HttpStatus.TOO_MANY_REQUESTS);
       }
 
       throw error;
@@ -256,6 +270,10 @@ export class AuthController {
   })
   @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Refresh token is invalid.')
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
+  @ApiErrorResponse(
+    HttpStatus.TOO_MANY_REQUESTS,
+    'Refresh rate limit exceeded.',
+  )
   async refresh(
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
@@ -284,6 +302,14 @@ export class AuthController {
           message: error.message,
           details: {},
         });
+      }
+
+      if (error instanceof RefreshRateLimitedError) {
+        throw new HttpException({
+          code: error.code,
+          message: error.message,
+          details: {},
+        }, HttpStatus.TOO_MANY_REQUESTS);
       }
 
       throw error;

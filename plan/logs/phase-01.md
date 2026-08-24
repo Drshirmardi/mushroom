@@ -782,3 +782,59 @@ Known limitations:
   - طبق workflow، تغییر وضعیت از `READY_FOR_REVIEW` به `DONE` و شروع Phase 02 به review مستقل نیاز دارد.
 Next task:
   - review مستقل Phase 01
+
+## F01-T18 — remediation review مستقل و تکمیل Phase 01
+
+Task ID: F01-T18
+Completed at: 2026-08-24 10:54 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `.github/workflows/ci.yml`
+  - `apps/api/.env.example`
+  - `apps/api/prisma/schema.prisma`
+  - `apps/api/prisma/migrations/20260824095500_public_auth_rate_limits/migration.sql`
+  - `apps/api/src/app.factory.ts`
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/common/logging/fastify-logging.config.ts`
+  - `apps/api/src/config/environment.validation.ts`
+  - `apps/api/src/modules/identity/application/ports/public-auth-rate-limiter.ts`
+  - `apps/api/src/modules/identity/application/register-user.use-case.ts`
+  - `apps/api/src/modules/identity/application/refresh-session.use-case.ts`
+  - `apps/api/src/modules/identity/infrastructure/prisma-public-auth-rate-limiter.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+  - `apps/api/test/identity-security-boundaries.spec.ts`
+  - `apps/api/test/refresh-cookie-origin.spec.ts`
+  - `apps/api/test/register-user.spec.ts`
+  - `apps/api/test/session-use-cases.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - migration bucketهای rate-limit را روی PostgreSQL خالی اعمال و تمام migrationها را smoke کرد → PASS (۱ فایل، ۱ تست)
+Tests run:
+  - اعتبارسنجی دقیق secretهای CI و استقلال access/refresh secret → PASS
+  - typecheck مستقیم API و API client → PASS
+  - تست use case ثبت‌نام، refresh و مرزهای امنیتی → PASS (۳ فایل، ۱۷ تست)
+  - validation مستقیم trusted proxy برای production، CIDR معتبر و رد universal CIDR → PASS
+  - OpenAPI runtime export و تولید API client با `openapi-typescript 7.10.0` → PASS
+  - بررسی نگاشت مستقل `429` برای login و refresh در OpenAPI → PASS
+  - `git diff --check` → PASS
+  - Bugbot نهایی پس از remediation امنیتی → بدون یافته قابل اقدام
+  - Security Review نهایی → بدون یافته
+Result:
+  - CI secretها با validation هماهنگ و pepper مستقل اضافه شد → PASS
+  - redaction لاگ برای `currentPassword` و `newPassword` کامل شد → PASS
+  - register پیش از Argon2 با bucketهای اتمیک IP/phone محدود می‌شود → PASS
+  - refresh پیش از session lookup با bucketهای اتمیک IP/session محدود می‌شود → PASS
+  - کلید bucketها hash شده، advisory lock مرتب دارد و bucket منقضی cleanup می‌شود → PASS
+  - production فقط proxyهای IP/CIDR صریح را trust می‌کند و universal range رد می‌شود → PASS
+  - Swagger authorization را persist نمی‌کند و UI/docs در production منتشر نمی‌شود → PASS
+  - OpenAPI و client پاسخ‌های `429` صحیح و به‌روز دارند → PASS
+  - Phase 01 پس از review مستقل به `DONE` رسید → PASS
+Known limitations:
+  - dependency cache محلی pnpm چند package ناقص استخراج کرده بود؛ verification نهایی با نسخه‌های دقیق lockfile در محیط موقت سالم اجرا شد و هیچ فایل dependency وارد Git نشد.
+  - مقدار واقعی `TRUSTED_PROXIES` باید هنگام deployment بر اساس IP/CIDR load balancer نهایی تنظیم شود؛ production بدون آن start نمی‌شود.
+Next task:
+  - `F02-T01`

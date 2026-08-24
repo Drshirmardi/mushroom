@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PasswordHasher } from '../src/modules/identity/application/ports/password-hasher';
+import { PublicAuthRateLimiter } from '../src/modules/identity/application/ports/public-auth-rate-limiter';
 import {
   RegistrationRepository,
   type RegisteredUser,
 } from '../src/modules/identity/application/ports/registration.repository';
-import { RegisterUserUseCase } from '../src/modules/identity/application/register-user.use-case';
+import {
+  RegistrationRateLimitedError,
+  RegisterUserUseCase,
+} from '../src/modules/identity/application/register-user.use-case';
 
 describe('RegisterUserUseCase', () => {
   const audit = { requestId: 'request-register', ipAddress: '203.0.113.10' };
@@ -17,14 +21,30 @@ describe('RegisterUserUseCase', () => {
   };
   const createPatient = vi.fn();
   const hash = vi.fn();
+  const consume = vi.fn();
   const useCase = new RegisterUserUseCase(
     { createPatient } as unknown as RegistrationRepository,
     { hash } as unknown as PasswordHasher,
+    { consume } as unknown as PublicAuthRateLimiter,
   );
 
   beforeEach(() => {
     createPatient.mockReset();
     hash.mockReset();
+    consume.mockReset();
+    consume.mockResolvedValue(true);
+  });
+
+  it('stops before Argon2 and persistence when registration is rate limited', async () => {
+    consume.mockResolvedValueOnce(false);
+
+    await expect(useCase.execute({
+      phone: '09123456789',
+      password: 'correct horse battery staple',
+      ...audit,
+    })).rejects.toEqual(new RegistrationRateLimitedError());
+    expect(hash).not.toHaveBeenCalled();
+    expect(createPatient).not.toHaveBeenCalled();
   });
 
   it('normalizes and hashes before passing persistence-safe values to the repository', async () => {

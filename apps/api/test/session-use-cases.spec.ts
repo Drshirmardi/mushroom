@@ -6,9 +6,11 @@ import {
 } from '../src/modules/identity/application/login-session.use-case';
 import type { LoginUserUseCase } from '../src/modules/identity/application/login-user.use-case';
 import type { RefreshTokenManager } from '../src/modules/identity/application/ports/refresh-token-manager';
+import type { PublicAuthRateLimiter } from '../src/modules/identity/application/ports/public-auth-rate-limiter';
 import type { SessionRepository } from '../src/modules/identity/application/ports/session.repository';
 import {
   InvalidRefreshTokenError,
+  RefreshRateLimitedError,
   RefreshSessionUseCase,
 } from '../src/modules/identity/application/refresh-session.use-case';
 
@@ -37,6 +39,7 @@ describe('session authentication use cases', () => {
   const inspectRefresh = vi.fn();
   const rotateToken = vi.fn();
   const issueAccess = vi.fn();
+  const consume = vi.fn();
   const sessions = {
     create: createSession,
     rotateRefresh,
@@ -47,6 +50,7 @@ describe('session authentication use cases', () => {
     rotate: rotateToken,
   } as unknown as RefreshTokenManager;
   const accessTokens = { issue: issueAccess };
+  const rateLimiter = { consume } as unknown as PublicAuthRateLimiter;
 
   beforeEach(() => {
     executeLogin.mockReset();
@@ -56,11 +60,13 @@ describe('session authentication use cases', () => {
     inspectRefresh.mockReset();
     rotateToken.mockReset();
     issueAccess.mockReset();
+    consume.mockReset();
     executeLogin.mockResolvedValue(user);
     createRefresh.mockReturnValue(refresh);
     rotateToken.mockReturnValue(replacement);
     issueAccess.mockResolvedValue('access-token');
     createSession.mockResolvedValue(undefined);
+    consume.mockResolvedValue(true);
   });
 
   it.each([
@@ -150,6 +156,7 @@ describe('session authentication use cases', () => {
       sessions,
       refreshTokens,
       accessTokens,
+      rateLimiter,
       () => now,
     );
 
@@ -192,6 +199,7 @@ describe('session authentication use cases', () => {
         sessions,
         refreshTokens,
         accessTokens,
+        rateLimiter,
         () => now,
       );
 
@@ -204,12 +212,35 @@ describe('session authentication use cases', () => {
     },
   );
 
+  it('stops before session lookup when refresh is rate limited', async () => {
+    inspectRefresh.mockReturnValue({
+      sessionId: refresh.sessionId,
+      tokenHash: refresh.tokenHash,
+    });
+    consume.mockResolvedValueOnce(false);
+    const useCase = new RefreshSessionUseCase(
+      sessions,
+      refreshTokens,
+      accessTokens,
+      rateLimiter,
+      () => now,
+    );
+
+    await expect(useCase.execute({
+      refreshToken: refresh.rawToken,
+      ipAddress: '203.0.113.11',
+      requestId,
+    })).rejects.toEqual(new RefreshRateLimitedError());
+    expect(rotateRefresh).not.toHaveBeenCalled();
+  });
+
   it('rejects missing and malformed tokens before persistence', async () => {
     inspectRefresh.mockReturnValue(null);
     const useCase = new RefreshSessionUseCase(
       sessions,
       refreshTokens,
       accessTokens,
+      rateLimiter,
       () => now,
     );
 

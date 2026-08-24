@@ -3,7 +3,10 @@ import 'reflect-metadata';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { createApiApplication } from '../src/app.factory';
+import {
+  createApiApplication,
+  SWAGGER_UI_OPTIONS,
+} from '../src/app.factory';
 import { createFastifyLoggingOptions } from '../src/common/logging/fastify-logging.config';
 
 const frontendOrigins = [
@@ -68,10 +71,16 @@ describe('identity security boundaries', () => {
         'req.headers["set-cookie"]',
         'res.headers["set-cookie"]',
         'req.body.password',
+        'req.body.currentPassword',
+        'req.body.newPassword',
         'req.body.token',
         'req.body.refreshToken',
         'req.body.accessToken',
       ]),
     });
+  });
+
+  it('does not persist bearer authorization in Swagger UI', () => {
+    expect(SWAGGER_UI_OPTIONS.persistAuthorization).toBe(false);
   });
 });

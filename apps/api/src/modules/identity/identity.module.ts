@@ -8,6 +8,7 @@ import { ManageSessionsUseCase } from './application/manage-sessions.use-case';
 import { AccountRepository } from './application/ports/account.repository';
 import { LoginRepository } from './application/ports/login.repository';
 import { PasswordHasher } from './application/ports/password-hasher';
+import { PublicAuthRateLimiter } from './application/ports/public-auth-rate-limiter';
 import { RegistrationRepository } from './application/ports/registration.repository';
 import { RefreshTokenManager } from './application/ports/refresh-token-manager';
 import { SessionRepository } from './application/ports/session.repository';
@@ -17,6 +18,7 @@ import { Argon2PasswordHasher } from './infrastructure/password-hasher';
 import { PrismaAccountRepository } from './infrastructure/prisma-account.repository';
 import { HmacRefreshTokenManager } from './infrastructure/hmac-refresh-token-manager';
 import { PrismaLoginRepository } from './infrastructure/prisma-login.repository';
+import { PrismaPublicAuthRateLimiter } from './infrastructure/prisma-public-auth-rate-limiter';
 import { PrismaRegistrationRepository } from './infrastructure/prisma-registration.repository';
 import { PrismaSessionRepository } from './infrastructure/prisma-session.repository';
 import { AuthController } from './presentation/http/auth.controller';
@@ -34,6 +36,11 @@ import { MeController } from './presentation/http/me.controller';
     {
       provide: RegistrationRepository,
       useExisting: PrismaRegistrationRepository,
+    },
+    PrismaPublicAuthRateLimiter,
+    {
+      provide: PublicAuthRateLimiter,
+      useExisting: PrismaPublicAuthRateLimiter,
     },
     PrismaLoginRepository,
     {
@@ -57,11 +64,12 @@ import { MeController } from './presentation/http/me.controller';
     },
     {
       provide: RegisterUserUseCase,
-      inject: [RegistrationRepository, PasswordHasher],
+      inject: [RegistrationRepository, PasswordHasher, PublicAuthRateLimiter],
       useFactory: (
         registrations: RegistrationRepository,
         passwords: PasswordHasher,
-      ) => new RegisterUserUseCase(registrations, passwords),
+        rateLimiter: PublicAuthRateLimiter,
+      ) => new RegisterUserUseCase(registrations, passwords, rateLimiter),
     },
     {
       provide: LoginUserUseCase,
@@ -91,15 +99,22 @@ import { MeController } from './presentation/http/me.controller';
     },
     {
       provide: RefreshSessionUseCase,
-      inject: [SessionRepository, RefreshTokenManager, AccessTokenService],
+      inject: [
+        SessionRepository,
+        RefreshTokenManager,
+        AccessTokenService,
+        PublicAuthRateLimiter,
+      ],
       useFactory: (
         sessions: SessionRepository,
         refreshTokens: RefreshTokenManager,
         accessTokens: AccessTokenService,
+        rateLimiter: PublicAuthRateLimiter,
       ) => new RefreshSessionUseCase(
         sessions,
         refreshTokens,
         accessTokens,
+        rateLimiter,
       ),
     },
     {

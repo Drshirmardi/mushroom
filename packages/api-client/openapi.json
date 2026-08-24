@@ -103,6 +103,16 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Registration rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Register a patient account",
@@ -246,6 +256,16 @@
           },
           "403": {
             "description": "Browser origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refresh rate limit exceeded.",
             "content": {
               "application/json": {
                 "schema": {
@@ -883,6 +903,8 @@
               "PASSWORD_BLOCKED",
               "INVALID_CREDENTIALS",
               "LOGIN_RATE_LIMITED",
+              "REGISTRATION_RATE_LIMITED",
+              "REFRESH_RATE_LIMITED",
               "INVALID_REFRESH_TOKEN",
               "INVALID_CURRENT_PASSWORD",
               "PASSWORD_UNCHANGED",

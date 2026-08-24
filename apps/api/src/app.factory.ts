@@ -15,11 +15,22 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { createFastifyLoggingOptions } from './common/logging/fastify-logging.config';
 
+export const SWAGGER_UI_OPTIONS = Object.freeze({
+  persistAuthorization: false,
+});
+
 export async function createApiApplication(): Promise<NestFastifyApplication> {
+  const trustedProxies = (process.env.TRUSTED_PROXIES ?? '')
+    .split(',')
+    .map((proxy) => proxy.trim())
+    .filter((proxy) => proxy.length > 0);
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(
-      createFastifyLoggingOptions(process.env.LOG_LEVEL ?? 'info'),
+      {
+        ...createFastifyLoggingOptions(process.env.LOG_LEVEL ?? 'info'),
+        trustProxy: trustedProxies.length > 0 ? trustedProxies : false,
+      },
     ),
   );
   const configService = app.get(ConfigService);
@@ -59,11 +70,13 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
     .build();
   const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
 
-  SwaggerModule.setup('docs', app, openApiDocument, {
-    jsonDocumentUrl: 'docs-json',
-    swaggerOptions: { persistAuthorization: true },
-    useGlobalPrefix: false,
-  });
+  if (configService.get<string>('NODE_ENV') !== 'production') {
+    SwaggerModule.setup('docs', app, openApiDocument, {
+      jsonDocumentUrl: 'docs-json',
+      swaggerOptions: SWAGGER_UI_OPTIONS,
+      useGlobalPrefix: false,
+    });
+  }
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

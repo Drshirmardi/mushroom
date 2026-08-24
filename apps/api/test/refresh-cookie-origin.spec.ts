@@ -75,4 +75,23 @@ describe('refresh cookie and browser origin policy', () => {
 
     expect(result.error).toBeDefined();
   });
+
+  it('requires explicit trusted proxy addresses in production', () => {
+    const base = {
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgresql://user:password@localhost:5432/database',
+      JWT_ACCESS_SECRET: 'access-secret-that-is-long-enough-for-production-0123456789',
+      REFRESH_TOKEN_PEPPER: 'refresh-pepper-that-is-independent-and-long-enough-9876543210',
+    };
+
+    expect(environmentValidationSchema.validate(base).error).toBeDefined();
+    expect(environmentValidationSchema.validate({
+      ...base,
+      TRUSTED_PROXIES: '10.0.0.0/8,192.0.2.10',
+    }).error).toBeUndefined();
+    expect(environmentValidationSchema.validate({
+      ...base,
+      TRUSTED_PROXIES: '0.0.0.0/0',
+    }).error).toBeDefined();
+  });
 });
