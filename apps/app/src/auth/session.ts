@@ -1,4 +1,9 @@
-import { createApiClient, type components } from "@sabz-zendegi/api-client";
+import {
+  createApiClient,
+  DEFAULT_REQUEST_TIMEOUT_MS,
+  type components,
+  withRequestTimeout,
+} from "@sabz-zendegi/api-client";
 
 export type Authentication = components["schemas"]["AuthenticationResponseDto"];
 
@@ -24,6 +29,7 @@ export class AuthSessionManager {
   constructor(
     private readonly client: ApiClient,
     private readonly now: () => number = Date.now,
+    private readonly refreshTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
   ) {}
 
   readonly getSnapshot = () => this.snapshot;
@@ -80,7 +86,10 @@ export class AuthSessionManager {
     this.update({ status: "checking", authentication: null });
 
     try {
-      const { data } = await this.client.POST("/v1/auth/refresh");
+      const { data } = await withRequestTimeout(
+        this.client.POST("/v1/auth/refresh"),
+        this.refreshTimeoutMs,
+      );
       if (!data) {
         this.accessTokenExpiresAt = 0;
         return this.update({ status: "anonymous", authentication: null });

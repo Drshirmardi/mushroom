@@ -838,3 +838,171 @@ Known limitations:
   - مقدار واقعی `TRUSTED_PROXIES` باید هنگام deployment بر اساس IP/CIDR load balancer نهایی تنظیم شود؛ production بدون آن start نمی‌شود.
 Next task:
   - `F02-T01`
+
+## F01-R01 — اصلاح metadata تزریق وابستگی در dev runtime API
+
+Task ID: F01-R01
+Completed at: 2026-08-24 12:15 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `apps/api/package.json`
+  - `apps/api/scripts/dev.mjs`
+  - `apps/api/test/dev-runtime.spec.ts`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - build با TypeScript compiler و بررسی runtime metadata پارامتر `BrowserOriginService` → PASS (`ConfigService`)
+  - regression test مسیر dev runtime → PASS (۱ فایل، ۱ تست)
+  - startup واقعی dev server با watch compiler → PASS (`Nest application successfully started`، port `3003`)
+  - suite کامل API با PostgreSQL development → PASS؛ migration smoke به‌دلیل نبود `TEST_DATABASE_ADMIN_URL` skip شد
+  - `tsc -p tsconfig.test.json --noEmit` و `git diff --check` → PASS
+Result:
+  - `tsx` که `emitDecoratorMetadata` را در runtime dev تولید نمی‌کرد از مسیر startup API حذف شد → PASS
+  - dev runner ابتدا با compiler رسمی TypeScript build می‌کند، سپس compiler و Node را در watch mode نگه می‌دارد → PASS
+  - `AuthModule`، `DatabaseModule` و `IdentityModule` با dependency injection واقعی initialize شدند → PASS
+Known limitations:
+  - migration smoke در این regression تکرار نشد؛ تغییر schema/migration وجود ندارد و آزمون‌های migration فاز در شواهد قبلی پاس شده‌اند.
+Next task:
+  - `F02-T01`
+
+## F01-R02 — دکمه داشبورد در هدر وب برای session معتبر
+
+Task ID: F01-R02
+Completed at: 2026-08-24 12:30 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `apps/web/src/auth/web-session.ts`
+  - `apps/web/src/auth/web-session.test.ts`
+  - `apps/web/src/components/layout/Header.tsx`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - session/header و destination وب → PASS (۲ فایل، ۴ تست)
+  - `tsc --noEmit` در `apps/web` → PASS
+  - `next build` در `apps/web` → PASS
+  - `git diff --check` → PASS
+Result:
+  - هدر با refresh cookie HttpOnly، session را بدون نگه‌داری token در browser بررسی می‌کند → PASS
+  - session معتبر دکمه‌های ورود/ثبت‌نام را با دکمه «داشبورد» جایگزین می‌کند → PASS
+  - بیمار به app کاربر و نقش‌های `DOCTOR`/`STAFF`/`ADMIN` به dashboard مدیریتی مسیردهی می‌شوند → PASS
+Known limitations:
+  - در حالت checking، تا دریافت نتیجه refresh یک skeleton کوتاه نمایش داده می‌شود تا دکمه‌های anonymous به‌صورت لحظه‌ای ظاهر نشوند.
+Next task:
+  - `F02-T01`
+
+## F01-R03 — تشخیص اتصال LAN و session احراز هویت
+
+Task ID: F01-R03
+Completed at: 2026-08-24 13:23 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `apps/api/.env` (local ignored configuration)
+  - `apps/app/.env` (local ignored configuration)
+  - `apps/dashboard/.env` (local ignored configuration)
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - API listener روی `0.0.0.0:3003` → PASS
+  - CORS preflight برای `localhost:3001` و `192.168.1.105:3001` → PASS (origin دقیق و credentials)
+  - refresh بدون cookie از origin شبکه → `401 INVALID_REFRESH_TOKEN` با CORS header صحیح
+  - bundle فعال app در port `3001` → API URL شبکه `http://192.168.1.105:3003`
+Result:
+  - `localhost` و `192.168.1.105` دو host متفاوت‌اند; refresh cookie host-only است و بین آن‌ها به‌اشتراک گذاشته نمی‌شود → PASS
+  - لاگینی که با `localhost` ایجاد شده، هنگام بازکردن app با IP ارسال نمی‌شود و refresh درست نمی‌شود → PASS
+Known limitations:
+  - `SessionGate` برای request شبکه‌ای که timeout یا error ندارد، همیشه حالت checking را نمایش می‌دهد; این علت سر جا ماندن UI در برخی مرورگرهاست، اما اصلاحش خارج از scope تشخیص است.
+Next task:
+  - `F02-T01`
+
+## F01-R04 — جلوگیری از گیرکردن session refresh در رابط‌ها
+
+Task ID: F01-R04
+Completed at: 2026-08-24 13:36 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `packages/api-client/src/index.ts`
+  - `apps/app/src/auth/session.ts`
+  - `apps/app/src/auth/session.test.ts`
+  - `apps/dashboard/src/auth/session.ts`
+  - `apps/dashboard/src/auth/session.test.ts`
+  - `apps/web/src/auth/web-session.ts`
+  - `apps/web/src/auth/web-session.test.ts`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - stale OpenAPI check و build مستقیم `api-client` → PASS
+  - test manager اپ کاربر، شامل refresh معطل‌مانده → PASS (۱ فایل، ۵ تست)
+  - test manager dashboard، شامل refresh معطل‌مانده → PASS (۱ فایل، ۹ تست)
+  - test manager هدر وب، شامل refresh معطل‌مانده → PASS (۱ فایل، ۴ تست)
+  - typecheck مستقیم app و web → PASS
+  - typecheck مستقیم dashboard → فایل تولیدشدهٔ قبلی `.next/dev/types/validator.ts` نامعتبر بود و پیش از بررسی source متوقف شد
+  - `git diff --check` → PASS
+Result:
+  - request refresh هر سه frontend پس از ۱۰ ثانیه به‌صورت کنترل‌شده fail می‌شود و manager به حالت anonymous می‌رود → PASS
+  - `SessionGate` دیگر برای درخواست شبکه‌ای که هرگز settle نمی‌شود در حالت checking باقی نمی‌ماند و مسیر login عادی را اجرا می‌کند → PASS
+  - هم‌زمانی refresh و رفتار موفق/ناموفق قبلی حفظ شده است → PASS
+Known limitations:
+  - این تغییر cookie را بین `localhost` و `192.168.1.105` مشترک نمی‌کند؛ برای session معتبر روی IP باید با همان IP وارد شوید یا همهٔ رابط‌ها را با یک hostname واحد باز کنید.
+  - برای رفع خطای cache داشبورد، dev server dashboard را یک‌بار restart کنید تا `.next/dev/types/validator.ts` دوباره تولید شود.
+Next task:
+  - `F02-T01`
+
+## F01-R05 — پایدارسازی build dashboard در حضور cache توسعه Next.js
+
+Task ID: F01-R05
+Completed at: 2026-08-24 14:15 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `apps/dashboard/tsconfig.json`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - build production مستقیم dashboard → PASS (۳۶ route)
+  - build مستقیم API، شامل Prisma client generation و TypeScript → PASS
+  - build مستقیم web → PASS (۵ route)
+  - `corepack pnpm build` در root → PASS (۵ از ۵ package)
+  - `git diff --check` → PASS
+Result:
+  - فایل‌های موقت `.next/dev` از ورودی typecheck production dashboard خارج شدند → PASS
+  - cache ناقص Turbopack dev دیگر نمی‌تواند `next build` یا build کامل monorepo را متوقف کند → PASS
+Known limitations:
+  - ندارد
+Next task:
+  - `F02-T01`
+
+## F01-R06 — اجرای یک‌دست production workspace
+
+Task ID: F01-R06
+Completed at: 2026-08-24 14:21 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `package.json`
+  - `turbo.json`
+  - `apps/web/package.json`
+  - `apps/app/package.json`
+  - `apps/dashboard/package.json`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - اجرای `corepack pnpm start` → PASS؛ API، web، app و dashboard هم‌زمان بالا آمدند
+  - API روی `192.168.1.105:3003` و هر سه رابط Next روی `0.0.0.0` listen کردند → PASS
+  - `git diff --check` → PASS
+Result:
+  - دستور root `pnpm start` همهٔ سرویس‌های production را موازی اجرا می‌کند → PASS
+  - رابط‌های Next.js با hostname `0.0.0.0` برای دسترسی LAN اجرا می‌شوند → PASS
+Known limitations:
+  - پیش از `pnpm start` باید build موفق اجرا شده باشد.
+Next task:
+  - `F02-T01`
