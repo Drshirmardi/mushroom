@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-24 14:21 +03:30`
+- آخرین به‌رورسانی: `2026-08-24 16:08 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 02 — Clinic, Doctors & Patients`
 - وضعیت فاز فعال: `NOT_STARTED`
@@ -53,6 +53,7 @@
 - رابط‌های app، dashboard و web در صورت معطل‌ماندن refresh حداکثر پس از ۱۰ ثانیه از حالت checking خارج می‌شوند؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - build dashboard دیگر فایل cache موقت `.next/dev` را typecheck نمی‌کند؛ build کامل workspace پاس شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - اجرای production هر چهار سرویس با `pnpm start` ممکن است و رابط‌ها روی شبکه bind می‌شوند؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- runtime API و Prisma Client با CommonJS صریح هم‌راستا شدند؛ اجرای واقعی API روی پورت ۳۰۰۳ تأیید شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - Task بعدی واجد شرایط: `F02-T01` — تعیین فیلدهای canonical از روی UI و حذف فیلدهای صرفاً نمایشی؛ هنوز شروع نشده است.
 - dependency: `Phase 01` → DONE.
 

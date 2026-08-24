@@ -1006,3 +1006,30 @@ Known limitations:
   - پیش از `pnpm start` باید build موفق اجرا شده باشد.
 Next task:
   - `F02-T01`
+
+## F01-R07 — رفع ناسازگاری module format در اجرای dev API
+
+Task ID: F01-R07
+Completed at: 2026-08-24 16:08 +03:30
+Agent/Thread: Codex / current task
+Changed files:
+  - `apps/api/package.json`
+  - `apps/api/prisma/schema.prisma`
+  - `apps/api/test/dev-runtime.spec.ts`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - build مستقیم API، شامل Prisma client generation و TypeScript → PASS
+  - `vitest run test/dev-runtime.spec.ts` → PASS (۱ فایل، ۳ تست)
+  - اجرای مستقیم `node dist/main.js` → PASS؛ Nest بالا آمد و روی `192.168.1.105:3003` listen کرد
+  - `git diff --check` → PASS
+Result:
+  - محدودهٔ package API صراحتاً CommonJS است و دیگر فایل CommonJS به‌صورت ESM اجرا نمی‌شود → PASS
+  - Prisma Client با `moduleFormat = "cjs"` تولید می‌شود و با خروجی TypeScript API هم‌فرمت است → PASS
+  - خطاهای `exports is not defined in ES module scope` و `import.meta outside a module` در اجرای dev رفع شدند → PASS
+Known limitations:
+  - پس از دریافت این تغییر، فرایند dev API در حال اجرا باید یک‌بار restart شود تا Prisma Client جدید تولید و بارگذاری شود.
+Next task:
+  - `F02-T01`
