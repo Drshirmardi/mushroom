@@ -23,7 +23,12 @@ try {
       SET description = EXCLUDED.description,
           updated_at = CURRENT_TIMESTAMP
   `);
-  console.log('Development seed completed: identity roles are available.');
+  await client.query(`
+    INSERT INTO clinics (id, name, time_zone, status, updated_at)
+    SELECT gen_random_uuid(), 'کلینیک سبز زندگی', 'Asia/Tehran', 'ACTIVE', CURRENT_TIMESTAMP
+    WHERE NOT EXISTS (SELECT 1 FROM clinics WHERE status = 'ACTIVE')
+  `);
+  console.log('Development seed completed: identity roles and the active clinic are available.');
 } finally {
   await client.end();
 }
