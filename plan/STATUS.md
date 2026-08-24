@@ -6,9 +6,9 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-24 16:08 +03:30`
-- Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
-- فاز فعال: `Phase 02 — Clinic, Doctors & Patients`
+- آخرین به‌رورسانی: `2026-08-24 17:17 +03:30`
+- Milestone فعال: `Milestone A — بیمار آماده رزرو`
+- فاز فعال: `Phase 02 — Patient Onboarding & Consent`
 - وضعیت فاز فعال: `NOT_STARTED`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
@@ -23,6 +23,8 @@
 - [x] بک‌اند NestJS پایه ایجاد شده است.
 - [x] PostgreSQL و migration پایه ایجاد شده‌اند.
 - [x] احراز هویت واقعی جایگزین mock شده است.
+- [ ] onboarding پزشکی و consent واقعی شده‌اند.
+- [ ] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
 - [ ] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [ ] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
@@ -33,16 +35,18 @@
 
 - [x] `Phase 00` — Foundation — `DONE` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
-- [ ] `Phase 02` — Clinic, Doctors & Patients — `NOT_STARTED`
-- [ ] `Phase 03` — Scheduling & Appointments — `NOT_STARTED`
-- [ ] `Phase 04` — Clinical Records & Treatment — `NOT_STARTED`
-- [ ] `Phase 05` — Assessments & Health Tracking — `NOT_STARTED`
-- [ ] `Phase 06` — Notifications, Content & Jobs — `NOT_STARTED`
-- [ ] `Phase 07` — Commerce & Payments — `NOT_STARTED`
-- [ ] `Phase 08` — Chat & Online Consultation — `NOT_STARTED`
-- [ ] `Phase 09` — Reporting, CRM & Automation — `NOT_STARTED`
-- [ ] `Phase 10` — AI & Bots — `NOT_STARTED`
-- [ ] `Phase 11` — Scale & Production Hardening — `NOT_STARTED`
+- [ ] `Phase 02` — Patient Onboarding & Consent — `NOT_STARTED`
+- [ ] `Phase 03` — Assessment Engine & Booking Eligibility — `NOT_STARTED`
+- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `NOT_STARTED`
+- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
+- [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
+- [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
+- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
+- [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
+- [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
+- [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
+- [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
+- [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
@@ -54,7 +58,10 @@
 - build dashboard دیگر فایل cache موقت `.next/dev` را typecheck نمی‌کند؛ build کامل workspace پاس شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - اجرای production هر چهار سرویس با `pnpm start` ممکن است و رابط‌ها روی شبکه bind می‌شوند؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - runtime API و Prisma Client با CommonJS صریح هم‌راستا شدند؛ اجرای واقعی API روی پورت ۳۰۰۳ تأیید شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
-- Task بعدی واجد شرایط: `F02-T01` — تعیین فیلدهای canonical از روی UI و حذف فیلدهای صرفاً نمایشی؛ هنوز شروع نشده است.
+- roadmap از Phase 02 به بعد بر اساس app + dashboard + API بازطراحی شد؛ تصمیم: [`ADR-0002`](decisions/ADR-0002-feature-first-roadmap.md).
+- آزمون اصلی و booking eligibility به پیش از scheduling منتقل شدند؛ الزام آزمون از dashboard قابل خاموش/روشن‌کردن است.
+- Dashboard Home تدریجی است و widget فاقد منبع داده واقعی پنهان می‌شود؛ عدد mock/صفر ساختگی مجاز نیست.
+- Task بعدی واجد شرایط: `F02-T01` — قرارداد فیلدهای canonical، required fields، consent و مرز self-reported/clinical؛ هنوز شروع نشده است.
 - dependency: `Phase 01` → DONE.
 
 ## task در حال اجرا
@@ -71,11 +78,11 @@
 
 ## Blockerها و تصمیم‌های باز
 
-- [ ] تعیین provider نهایی deployment پیش از ورود به production؛ این تصمیم مانع فازهای ۰۰ تا ۰۸ نیست.
-- [ ] تعیین درگاه پرداخت و قرارداد webhook پیش از شروع `Phase 07`.
-- [ ] تعیین سرویس SMS/OTP پیش از فعال‌سازی OTP یا notification پیامکی در `Phase 06`.
-- [ ] تعیین الزامات حقوقی نگهداری پرونده، نسخه و رضایت بیمار پیش از release عمومی `Phase 04`.
-- [ ] تعیین provider مشاوره ویدئویی پیش از تکمیل `Phase 08`.
+- [ ] متن و الزامات حقوقی consent/retention پیش از release عمومی Phase 02؛ مدل versioned consent در خود Phase 02 اجباری است.
+- [ ] تعیین سرویس SMS/OTP پیش از فعال‌سازی کانال پیامکی در `Phase 08`؛ in-app notification مستقل است.
+- [ ] تعیین درگاه پرداخت و قرارداد webhook/تسویه پیش از شروع `Phase 09`.
+- [ ] تعیین provider و policy ویدئو پیش از قابلیت ویدئویی `Phase 10`؛ chat متنی می‌تواند مستقل اجرا شود.
+- [ ] تعیین deployment provider، RPO/RTO و secret manager در release planning فاز `Phase 12`.
 
 ## یادداشت وضعیت repository در زمان ایجاد این برنامه
 

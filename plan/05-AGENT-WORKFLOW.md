@@ -45,6 +45,17 @@ Expected files: فایل‌ها یا پوشه‌های مورد انتظار
 9. به‌روزرسانی docs و status
 10. handoff
 
+## اجرای feature slice سه‌لایه
+
+برای taskهایی که app، dashboard و API را درگیر می‌کنند:
+
+1. product rule و response/error contract ابتدا freeze می‌شود.
+2. schema/migration و OpenAPI یک owner واحد دارند.
+3. پس از contract freeze، app و dashboard می‌توانند با file ownership جدا موازی شوند.
+4. agent مستقل می‌تواند authorization، browser E2E و review را اجرا کند.
+5. هیچ دو agent هم‌زمان Prisma schema، migration یا generated API client را تغییر نمی‌دهند.
+6. task فقط وقتی کامل است که mock همان scope در هر دو رابط حذف شده باشد.
+
 ## قانون تیک‌زدن
 
 checkbox فقط زمانی `[x]` می‌شود که:
@@ -146,7 +157,7 @@ plan/decisions/ADR-0001-short-title.md
 
 ## قواعد کار موازی
 
-- پس از Phase 03، clinical و commerce می‌توانند با مرزهای مشخص موازی شوند.
+- فقط sliceهایی که contract و ownership فایل مستقل دارند می‌توانند موازی شوند.
 - تغییر مشترک در Prisma schema باید هماهنگ باشد.
 - هر migration prefix/time یکتا دارد.
 - تغییر در `common/auth`، error contract یا API client نیازمند اطلاع به تمام taskهای فعال است.

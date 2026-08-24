@@ -6,8 +6,8 @@
 apps/web ──────────┐
 apps/app ──────────┼──── HTTP/REST ──── apps/api ───── PostgreSQL
 apps/dashboard ────┘                         │
-                                             ├──── Object Storage (Phase 04)
-                                             └──── Redis + Worker (Phase 06)
+                                             ├──── Object Storage (first real file consumer)
+                                             └──── Redis + Worker (first real async job)
 ```
 
 `apps/api` تا زمان اثبات نیاز به تفکیک، یک Modular Monolith باقی می‌ماند. مرزهای داخلی باید به‌اندازه‌ای روشن باشند که تفکیک آینده ممکن باشد، ولی نباید هزینه microservice از روز اول پرداخت شود.
@@ -20,8 +20,8 @@ apps/dashboard ────┘                         │
 - Prisma ORM و Prisma Migrate
 - REST API
 - OpenAPI/Swagger
-- Redis و BullMQ از فاز ۰۶
-- S3-compatible Object Storage از فاز ۰۴
+- Redis و BullMQ فقط هنگام اولین reminder/job واقعی
+- S3-compatible Object Storage فقط هنگام اولین فایل پزشکی/چت واقعی
 - TypeScript در تمام workspace
 
 نسخه‌های دقیق dependency هنگام اجرای `F00-T01` بر اساس lockfile و نسخه‌های رسمی پایدار انتخاب و ثبت می‌شوند.
@@ -93,6 +93,7 @@ apps/api/
 - PatientProfile
 - اطلاعات جمعیت‌شناختی و تنظیمات بیمار
 - ارتباط بیمار با کلینیک
+- medical onboarding self-reported، consent و وضعیت تکمیل
 
 داده‌های encounter، diagnosis و prescription متعلق به clinical هستند.
 
@@ -122,6 +123,7 @@ apps/api/
 - Submission/Answer/Result
 - HealthObservation
 - MezajResult
+- ClinicPatientPolicy و booking eligibility مبتنی بر main assessment
 
 ### communications
 
@@ -218,6 +220,15 @@ modules/scheduling/
 - `Idempotency-Key` برای booking، order، payment و عملیات حساس create
 - timestampها در ISO 8601 و UTC
 - مبلغ با amount و currency صریح
+- onboarding/eligibility دارای blocker code و `nextAction` پایدار است.
+- create/reschedule booking eligibility را server-side enforce می‌کنند.
+
+## فرض دسترسی MVP
+
+- dashboard فعلاً توسط یک `ADMIN` اصلی کنترل می‌شود.
+- permissionهای عملیاتی ثابت از ابتدا روی endpointها قرار می‌گیرند و فعلاً همگی به ADMIN نگاشت می‌شوند.
+- UI role builder، staff invitation و multi-clinic switching تا requirement واقعی ساخته نمی‌شوند.
+- `clinicId` در داده‌های دامنه حفظ می‌شود، اما tenant context پویا در MVP وجود ندارد.
 
 نمونه خطا:
 

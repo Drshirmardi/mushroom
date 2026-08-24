@@ -55,6 +55,8 @@
 - AI اجازه ثبت مستقیم تشخیص یا نسخه تأییدشده ندارد.
 - متن پزشکی، فایل، شماره تماس و نام کامل در logهای عملیاتی ثبت نمی‌شود.
 - export و download پرونده permission و audit مستقل دارد.
+- medical onboarding بیمار self-reported است و بدون review به diagnosis/clinical fact تبدیل نمی‌شود.
+- نسخه consent و پذیرش/پس‌گرفتن آن پیش از ذخیره نهایی intake حساس ثبت می‌شود.
 
 ## فایل
 
@@ -86,8 +88,12 @@
 - concurrency test برای booking، inventory و payment
 - migration smoke test روی دیتابیس خالی
 - regression test برای bugهای رفع‌شده
+- browser E2E برای مسیر کامل میان web/app/dashboard در خروج هر Milestone
 
 mock کردن PostgreSQL در integration test پذیرفته نیست.
+
+برای رزرو، route gate frontend تست کافی نیست؛ create و reschedule باید eligibility را در use case
+authoritative دوباره بررسی کنند.
 
 ## Observability
 

@@ -1,6 +1,8 @@
-# نقشه اجرایی بک‌اند سبز زندگی
+# نقشه اجرایی محصول سبز زندگی
 
-این پوشه مرجع اصلی برنامه‌ریزی و پیگیری توسعه بک‌اند پروژه است. هدف آن این است که هر توسعه‌دهنده یا Agent، بدون اتکا به حافظه گفتگوها، بتواند وضعیت پروژه، تصمیم‌های معماری، مرحله فعال، کار بعدی و معیار پایان هر فاز را بفهمد.
+این پوشه مرجع اصلی برنامه‌ریزی و پیگیری توسعهٔ محصول است. از Phase 02 به بعد، واحد تحویل یک
+قابلیت کامل میان `apps/app`، `apps/dashboard` و `apps/api` است؛ فاز backend-only یا frontend-only
+کامل محسوب نمی‌شود.
 
 ## ترتیب مطالعه برای Agentها
 
@@ -11,9 +13,10 @@
 3. [`01-ARCHITECTURE-REVIEW.md`](01-ARCHITECTURE-REVIEW.md) — تصمیم‌هایی که پذیرفته، رد یا به آینده موکول شده‌اند.
 4. [`02-TARGET-ARCHITECTURE.md`](02-TARGET-ARCHITECTURE.md) — معماری هدف و مرز ماژول‌ها.
 5. [`03-FEATURE-MAP.md`](03-FEATURE-MAP.md) — نگاشت فیچرهای فعلی فرانت به فازهای بک‌اند.
-6. [`04-ENGINEERING-STANDARDS.md`](04-ENGINEERING-STANDARDS.md) — استانداردهای اجباری داده، API، امنیت و تست.
-7. [`05-AGENT-WORKFLOW.md`](05-AGENT-WORKFLOW.md) — نحوه claim، اجرا، تست، تیک‌زدن و handoff.
-8. فایل فاز فعال در پوشه [`phases`](phases/).
+6. [`06-PRODUCT-DELIVERY-STRATEGY.md`](06-PRODUCT-DELIVERY-STRATEGY.md) — قرارداد محصول، ترتیب قابلیت‌ها و سیاست تعویق.
+7. [`04-ENGINEERING-STANDARDS.md`](04-ENGINEERING-STANDARDS.md) — استانداردهای اجباری داده، API، امنیت و تست.
+8. [`05-AGENT-WORKFLOW.md`](05-AGENT-WORKFLOW.md) — نحوه claim، اجرا، تست، تیک‌زدن و handoff.
+9. فایل فاز فعال در پوشه [`phases`](phases/).
 
 لاگ‌های تاریخیِ taskها در [`logs/`](logs/README.md) نگه‌داری می‌شوند. Agent نباید همهٔ
 لاگ‌ها را در شروع بخواند؛ فقط هنگام ادامه‌دادن یک handoff، بررسی تصمیم/محدودیت مرتبط، یا
@@ -25,44 +28,53 @@
 
 - [`Phase 00 — Foundation`](phases/00-FOUNDATION.md)
 - [`Phase 01 — Identity & Access`](phases/01-IDENTITY-ACCESS.md)
-- [`Phase 02 — Clinic, Doctors & Patients`](phases/02-CLINIC-DOCTORS-PATIENTS.md)
-- [`Phase 03 — Scheduling & Appointments`](phases/03-SCHEDULING-APPOINTMENTS.md)
-- [`Phase 04 — Clinical Records & Treatment`](phases/04-CLINICAL-RECORDS-TREATMENT.md)
-- [`Phase 05 — Assessments & Health Tracking`](phases/05-ASSESSMENTS-HEALTH-TRACKING.md)
-- [`Phase 06 — Notifications, Content & Jobs`](phases/06-NOTIFICATIONS-CONTENT-JOBS.md)
-- [`Phase 07 — Commerce & Payments`](phases/07-COMMERCE-PAYMENTS.md)
-- [`Phase 08 — Chat & Online Consultation`](phases/08-CHAT-CONSULTATION.md)
-- [`Phase 09 — Reporting, CRM & Automation`](phases/09-REPORTING-CRM-AUTOMATION.md)
-- [`Phase 10 — AI & Bots`](phases/10-AI-BOTS.md)
-- [`Phase 11 — Scale & Production Hardening`](phases/11-SCALE-HARDENING.md)
+- [`Phase 02 — Patient Onboarding & Consent`](phases/02-PATIENT-ONBOARDING.md)
+- [`Phase 03 — Assessment Engine & Booking Eligibility`](phases/03-ASSESSMENT-ELIGIBILITY.md)
+- [`Phase 04 — Clinic, Doctors, Services & Availability`](phases/04-CLINIC-DIRECTORY-AVAILABILITY.md)
+- [`Phase 05 — Appointment Booking & Dashboard Operations`](phases/05-APPOINTMENT-OPERATIONS.md)
+- [`Phase 06 — Encounter & Clinical Workspace`](phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md)
+- [`Phase 07 — Prescription & Treatment`](phases/07-PRESCRIPTION-TREATMENT.md)
+- [`Phase 08 — Follow-up, Health Tracking, Notifications & Content`](phases/08-FOLLOWUP-CONTENT.md)
+- [`Phase 09 — Commerce, Inventory & Payments`](phases/09-COMMERCE-PAYMENTS.md)
+- [`Phase 10 — Chat & Online Consultation`](phases/10-CHAT-CONSULTATION.md)
+- [`Phase 11 — Dashboard Reporting & Access Expansion`](phases/11-REPORTING-ACCESS.md)
+- [`Phase 12 — Production Hardening`](phases/12-PRODUCTION-HARDENING.md)
+
+قابلیت‌های AI/Bot و automation پیشرفته در [`deferred/AI-BOTS-AUTOMATION.md`](deferred/AI-BOTS-AUTOMATION.md)
+نگه‌داری می‌شوند و جزو مسیر اجرای فعلی نیستند.
 
 ## Milestoneها
 
-### Milestone A — اولین نسخه عملیاتی کلینیک
+### Milestone A — بیمار آمادهٔ رزرو
 
-فازهای ۰۰ تا ۰۳. خروجی: ثبت‌نام واقعی، پزشک و بیمار واقعی، رزرو نوبت و مدیریت همان نوبت در داشبورد.
+فازهای ۰۰ تا ۰۳. خروجی: ثبت‌نام، پرونده پزشکی اولیه، رضایت، آزمون اصلی versioned و eligibility قابل تنظیم.
 
-### Milestone B — هسته بالینی
+### Milestone B — کلینیک قابل رزرو
 
-فازهای ۰۴ تا ۰۶. خروجی: ویزیت، پرونده پزشکی، نسخه، درمان، ارزیابی، پایش سلامت، اعلان و محتوای واقعی.
+فازهای ۰۴ و ۰۵. خروجی: پزشک، خدمت، تعرفه، ساعات کاری، رزرو، تقویم، صف و Dashboard Home عملیاتی.
 
-### Milestone C — درآمد و ارتباط
+### Milestone C — هسته درمان
 
-فازهای ۰۷ و ۰۸. خروجی: فروشگاه، موجودی، سفارش، پرداخت، چت و مشاوره آنلاین.
+فازهای ۰۶ تا ۰۸. خروجی: ویزیت، پرونده بالینی، نسخه، درمان، پیگیری، اعلان و محتوا.
 
-### Milestone D — رشد و هوشمندسازی
+### Milestone D — تجارت و ارتباط
 
-فازهای ۰۹ تا ۱۱. خروجی: گزارش، CRM، اتوماسیون، قابلیت‌های AI و سخت‌سازی برای مقیاس و production.
+فازهای ۰۹ و ۱۰. خروجی: فروشگاه، انبار، سفارش، پرداخت و مشاوره آنلاین.
+
+### Milestone E — عملیات و انتشار
+
+فازهای ۱۱ و ۱۲. خروجی: گزارش واقعی، گسترش کنترل دسترسی و production readiness.
 
 ## قانون اصلی تحویل
 
 هر فاز باید یک vertical slice کامل تحویل دهد:
 
 ```text
-Migration → Domain Rules → Application Use Case → API → Tests → API Client → Frontend Integration → Observability
+Product Rule → Migration → Domain Rules → API → OpenAPI Client → App → Dashboard → Tests → Observability
 ```
 
-ساخت صرفاً چند جدول، DTO یا endpoint به معنی تکمیل task یا فاز نیست.
+ساخت صرفاً چند جدول، DTO، endpoint یا صفحه به معنی تکمیل task یا فاز نیست. mock همان scope فقط
+پس از اتصال هر سه سطح و پاس‌شدن browser E2E حذف می‌شود.
 
 ## قرارداد وضعیت‌ها
 

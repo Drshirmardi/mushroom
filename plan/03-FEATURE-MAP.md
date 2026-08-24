@@ -1,185 +1,163 @@
-# نگاشت فیچرهای فرانت به فازهای بک‌اند
+# نگاشت فیچرهای فعلی به roadmap feature-first
 
-این سند تضمین می‌کند هیچ صفحه فعلی فرانت در برنامه بک‌اند گم نشود. وجود route به معنی آماده‌بودن feature نیست؛ هر route باید در فاز مربوطه از mock به API واقعی منتقل شود.
+وجود route به معنی آماده‌بودن feature نیست. هر route در فاز مالک خود از mock/local state به API واقعی
+متصل می‌شود. صفحه اصلی dashboard تدریجی است و فقط widget دارای منبع داده واقعی نمایش داده می‌شود.
 
-## Phase 01 — Identity & Access
+## Phase 01 — Identity & Access — DONE
 
-### apps/web
+- web: `/login` و `/signup`
+- app/dashboard: session bootstrap، route protection و logout
+- app: بخش واقعی change password/session management در `/profile/security`
+- MFA، biometric و delete account در این فاز اجرا نشده و باید تا زمان task مستقل feature-flag/hidden باشند.
 
-- `/login`
-- `/signup`
+## Phase 02 — Patient Onboarding & Consent
 
-### سراسری
-
-- session bootstrap برای app و dashboard
-- route protection
-- logout و logout-all
-- صفحه security و session management در app
-
-## Phase 02 — Clinic, Doctors & Patients
-
-### apps/app
-
-- `/doctors/[id]`
+### app
+- `/onboarding`
 - `/profile`
 - `/profile/edit`
-- بخش پایه `/profile/medical`
+- `/profile/medical` برای intake اولیه
 
-### apps/dashboard
-
+### dashboard
 - `/patients`
-- `/patients/[id]` برای summary پایه
-- doctor/service management که UI آن در ادامه تکمیل می‌شود
+- `/patients/[id]`: overview و medical
+- `/dashboard`: بیمار جدید و profile completion
 
-## Phase 03 — Scheduling & Appointments
+## Phase 03 — Assessment & Eligibility
 
-### apps/app
+### app
+- `/assessment`
+- `/assessment/[type]`
+- `/assessment/result`
+- gate و CTA در شروع booking
 
+### dashboard
+- `/assessments`
+- assessment tab در `/patients/[id]`
+- `/dashboard`: وضعیت آزمون اصلی و activity
+
+`/mezaj` در Phase 08 به result versioned وصل می‌شود؛ engine و main assessment در Phase 03 واقعی‌اند.
+
+## Phase 04 — Clinic Directory & Availability
+
+### app
+- `/doctors/[id]`
+- doctor/service data در `/appointments/book` و `/appointments/book/schedule`
+
+### dashboard
+- `/settings`: پروفایل پزشک، خدمات، تعرفه، ساعات، تعطیلی و مرخصی
+- `/dashboard`: schedule readiness
+
+## Phase 05 — Appointment Operations
+
+### app
 - `/appointments`
 - `/appointments/[id]`
 - `/appointments/book`
 - `/appointments/book/schedule`
 - `/appointments/book/confirm`
 - `/appointments/book/success`
-- `/appointments/waiting-room` فقط بخش status نوبت
-- `/appointments/summary` فقط summary نوبت
 
-### apps/dashboard
+confirm رزرو در MVP به payment online وابسته نیست. waiting-room و consultation content در
+Phase 10/06 تکمیل می‌شوند.
 
+### dashboard
 - `/appointments`
 - `/calendar`
 - `/queue`
-- KPIهای نوبت در `/dashboard`
+- `/dashboard`: Home V1 عملیاتی
 
-## Phase 04 — Clinical Records & Treatment
+## Phase 06 — Encounter & Clinical Workspace
 
-### apps/app
-
-- `/treatment`
-- `/treatment/meds/[id]`
-- `/treatment/sessions`
-- `/treatment/exercises`
-- `/treatment/progress`
-- `/profile/medical`
+### app
+- `/appointments/summary`
 - `/profile/history`
 - `/profile/health-record`
-- محتوای بالینی `/appointments/summary`
+- بخش clinical `/profile/medical`
 
-### apps/dashboard
+### dashboard
+- patient workspace: overview، medical، history، appointments، assessments، traditional، timeline و notes
+- placeholderهای این scope با داده واقعی جایگزین می‌شوند.
 
+## Phase 07 — Prescription & Treatment
+
+### app
+- تمام `/treatment/**`
+
+### dashboard
 - `/prescriptions`
-- بخش clinical در `/patients/[id]`
-- medical timeline
-- traditional medicine tab
-- treatment plan views
+- تب‌های prescription، treatment، diet و exercise در patient workspace
+- widgetهای درمان dashboard فقط پس از داده واقعی
 
-## Phase 05 — Assessments & Health Tracking
+## Phase 08 — Follow-up, Notifications & Content
 
-### apps/app
-
-- `/assessment`
-- `/assessment/[type]`
-- `/assessment/result`
-- `/mezaj`
+### app
 - `/trackers/pain`
 - `/trackers/mood`
-
-### apps/dashboard
-
-- `/assessments`
-- `/health-tracking`
-- health charts در patient workspace
-- `/bot-assessment` فقط بخش rule-based پس از تکمیل engine پایه
-
-## Phase 06 — Notifications, Content & Jobs
-
-### apps/app
-
+- `/mezaj`
 - `/notifications`
 - `/profile/notifications`
 - `/articles`
 - `/articles/[title]`
-- medication و appointment reminders
 
-### apps/dashboard
-
+### dashboard
+- `/health-tracking`
 - `/notifications`
 - `/content`
-- بخش اولیه `/automation`
+- health tab در patient workspace
 
-## Phase 07 — Commerce & Payments
+## Phase 09 — Commerce & Payments
 
-### apps/app
+### app
+- تمام `/store/**`
+- `/profile/wallet` فقط با تصمیم مستقل
 
-- `/store`
-- `/store/products/[id]`
-- `/store/cart`
-- `/store/checkout`
-- `/store/payment`
-- `/store/order-success`
-- `/store/order-tracking`
-- `/store/orders`
-- `/store/wishlist`
-- `/profile/wallet` فقط در صورت تأیید نیاز wallet واقعی
-
-### apps/dashboard
-
+### dashboard
 - `/store`
 - `/store-builder`
-- `/store-crm` بخش داده خرید
-- `/store-marketing` بخش داده فروش
 - `/orders`
 - `/discounts`
 - `/revenue`
+- بخش‌های متکی بر خرید واقعی در `/store-crm` و `/store-marketing`
+- widgetهای order/revenue در `/dashboard`
 
-## Phase 08 — Chat & Consultation
+## Phase 10 — Chat & Online Consultation
 
-### apps/app
-
+### app
 - `/chat`
-- realtime بخش `/appointments/waiting-room`
-- attachment در پرونده و چت
+- `/appointments/waiting-room`
 
-### apps/dashboard
-
+### dashboard
 - `/messages`
-- conversation داخل patient workspace
+- messages tab در patient workspace
 
-## Phase 09 — Reporting, CRM & Automation
+## Phase 11 — Reporting & Access Expansion
 
-### apps/dashboard
+- `/dashboard` با KPI نهایی دارای formula/source
+- `/revenue` گزارش‌های تکمیلی
+- `/store-crm` و `/store-marketing` فقط با داده واقعی
+- audit/support tooling
+- role/permission UI فقط در صورت requirement release
 
-- `/dashboard` با KPI واقعی
-- `/revenue` گزارش‌های تجمیعی
-- `/store-crm`
-- `/store-marketing`
+## Deferred
+
+تا تصمیم جدید، این routeها UI demo باقی می‌مانند و جزو roadmap فعلی نیستند:
+
 - `/automation`
-- campaign و segmentation پایه
-
-## Phase 10 — AI & Bots
-
-### apps/dashboard
-
 - `/bot-center`
 - `/bot-flows`
+- `/bot-assessment` بخش AI
 - `/bot-knowledge`
 - `/bot-conversations`
 - `/bot-campaigns`
 - `/bot-analytics`
-- بخش AI در `/bot-assessment`
 
-## صفحات تنظیمات
+## صفحات تنظیمات و امنیت
 
-`/settings` و تنظیمات پروفایل به‌صورت تدریجی در هر فاز تکمیل می‌شوند. هر setting باید در همان فازی پیاده شود که مالک رفتار آن است؛ ساخت یک جدول عمومی key/value برای تمام تنظیمات بدون schema مشخص ممنوع است.
+- هر کارت `/settings` در فاز مالک رفتار خود واقعی می‌شود؛ جدول key/value عمومی ممنوع است.
+- قابلیت‌های UI امنیت که backend ندارند باید تا task مستقل hidden/disabled و صریحاً برچسب‌گذاری شوند.
 
-## قانون حذف mock
+## قانون حذف mock و placeholder
 
-mock هر feature فقط زمانی حذف می‌شود که:
-
-- endpoint production-shaped وجود داشته باشد.
-- loading/error/empty state متصل شده باشد.
-- authorization تست شده باشد.
-- داده seed مناسب development وجود داشته باشد.
-- تست integration API پاس شده باشد.
-
-حذف یک‌باره تمام mockها در شروع پروژه ممنوع است؛ migration باید feature-by-feature باشد.
+mock فقط وقتی حذف می‌شود که endpoint، authorization، loading/error/empty state، seed و integration test
+وجود داشته باشد. تب dashboard فاقد backend باید مخفی شود؛ پیام دائمی «در حال بارگذاری» جایگزین feature نیست.
