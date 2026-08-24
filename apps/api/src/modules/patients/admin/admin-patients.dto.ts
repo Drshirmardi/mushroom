@@ -111,9 +111,9 @@ export class AdminMedicalIntakeCorrectionDto {
 
 export class AdminPatientListItemResponseDto {
   @ApiProperty({ format: 'uuid' }) patientId!: string;
-  @ApiPropertyOptional({ nullable: true }) displayName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) displayName!: string | null;
   @ApiProperty() phone!: string;
-  @ApiPropertyOptional({ nullable: true }) ageYears!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) ageYears!: number | null;
   @ApiProperty({ enum: ['ACTIVE', 'DISABLED'] }) accountStatus!: string;
   @ApiProperty({ enum: ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETE'] }) onboardingState!: string;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
@@ -128,17 +128,17 @@ export class AdminPatientListResponseDto {
 
 export class AdminPatientCreateResponseDto {
   @ApiProperty({ format: 'uuid' }) patientId!: string;
-  @ApiPropertyOptional({ nullable: true }) displayName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) displayName!: string | null;
   @ApiProperty() phone!: string;
   @ApiProperty({ enum: ['ACTIVE', 'DISABLED'] }) accountStatus!: string;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
 }
 
 export class AdminPatientProfileUpdateResponseDto {
-  @ApiPropertyOptional({ nullable: true }) firstName!: string | null;
-  @ApiPropertyOptional({ nullable: true }) lastName!: string | null;
-  @ApiPropertyOptional({ nullable: true }) email!: string | null;
-  @ApiPropertyOptional({ nullable: true }) cityName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) firstName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) lastName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) cityName!: string | null;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
 }
 
@@ -153,10 +153,10 @@ export class AdminOnboardingSummaryResponseDto {
 export class AdminMedicalIntakeRevisionResponseDto {
   @ApiProperty() revisionNumber!: number;
   @ApiProperty({ enum: ['DRAFT', 'COMPLETE'] }) revisionState!: string;
-  @ApiPropertyOptional({ nullable: true }) birthDate!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'date' }) birthDate!: string | null;
   @ApiPropertyOptional({ nullable: true, enum: sexAtBirthValues }) sexAtBirth!: string | null;
-  @ApiPropertyOptional({ nullable: true }) heightCm!: number | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Decimal value serialized as a string.' }) weightKg!: string | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) heightCm!: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Decimal value serialized as a string.' }) weightKg!: string | null;
   @ApiPropertyOptional({ nullable: true, enum: bloodTypeValues }) bloodType!: string | null;
   @ApiPropertyOptional({ nullable: true, type: MedicalDeclarationDto }) allergyReport!: MedicalDeclarationDto | null;
   @ApiPropertyOptional({ nullable: true, type: MedicalDeclarationDto }) chronicConditionReport!: MedicalDeclarationDto | null;
@@ -165,23 +165,23 @@ export class AdminMedicalIntakeRevisionResponseDto {
 }
 
 export class AdminPatientProfileResponseDto {
-  @ApiPropertyOptional({ nullable: true }) displayName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) displayName!: string | null;
   @ApiProperty() phone!: string;
   @ApiProperty({ enum: ['ACTIVE', 'DISABLED'] }) accountStatus!: string;
-  @ApiPropertyOptional({ nullable: true }) firstName!: string | null;
-  @ApiPropertyOptional({ nullable: true }) lastName!: string | null;
-  @ApiPropertyOptional({ nullable: true }) email!: string | null;
-  @ApiPropertyOptional({ nullable: true }) cityName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) firstName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) lastName!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) cityName!: string | null;
 }
 
 export class AdminPatientConsentResponseDto {
   @ApiProperty() active!: boolean;
-  @ApiPropertyOptional({ nullable: true, format: 'uuid' }) policyVersionId!: string | null;
-  @ApiPropertyOptional({ nullable: true, format: 'uuid' }) consentRecordId!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid' }) policyVersionId!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid' }) consentRecordId!: string | null;
 }
 
 export class AdminPatientIntakeResponseDto {
-  @ApiPropertyOptional({ nullable: true }) assignedSchemaVersion!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) assignedSchemaVersion!: number | null;
   @ApiProperty() currentRevision!: number;
   @ApiProperty({ enum: ['PATIENT_SELF_REPORTED'] }) provenance!: string;
   @ApiProperty({ enum: ['AVAILABLE', 'CONSENT_REQUIRED', 'NOT_STARTED'] }) status!: string;

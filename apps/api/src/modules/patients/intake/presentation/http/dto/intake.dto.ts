@@ -34,18 +34,18 @@ export class MedicalDeclarationDto {
 }
 
 export class IntakeSnapshotDto {
-  @ApiPropertyOptional({ format: 'date' }) @IsOptional() @IsString() birthDate?: string | null;
-  @ApiPropertyOptional({ enum: sexAtBirthValues }) @IsOptional() @IsIn(sexAtBirthValues) sexAtBirth?: (typeof sexAtBirthValues)[number] | null;
-  @ApiPropertyOptional({ minimum: 30, maximum: 300 }) @IsOptional() @IsInt() @Min(30) @Max(300) heightCm?: number | null;
-  @ApiPropertyOptional({ minimum: 2, maximum: 500 }) @IsOptional() @IsNumber({ maxDecimalPlaces: 2 }) @Min(2) @Max(500) weightKg?: number | null;
-  @ApiPropertyOptional({ enum: bloodTypeValues }) @IsOptional() @IsIn(bloodTypeValues) bloodType?: (typeof bloodTypeValues)[number] | null;
-  @ApiPropertyOptional({ type: MedicalDeclarationDto }) @IsOptional() @IsObject() allergyReport?: MedicalDeclarationDto | null;
-  @ApiPropertyOptional({ type: MedicalDeclarationDto }) @IsOptional() @IsObject() chronicConditionReport?: MedicalDeclarationDto | null;
-  @ApiPropertyOptional({ type: MedicalDeclarationDto }) @IsOptional() @IsObject() currentMedicationReport?: MedicalDeclarationDto | null;
-  @ApiPropertyOptional({ enum: sleepValues }) @IsOptional() @IsIn(sleepValues) sleepDurationBand?: (typeof sleepValues)[number] | null;
-  @ApiPropertyOptional({ enum: exerciseValues }) @IsOptional() @IsIn(exerciseValues) exerciseFrequency?: (typeof exerciseValues)[number] | null;
-  @ApiPropertyOptional({ enum: stressValues }) @IsOptional() @IsIn(stressValues) stressLevel?: (typeof stressValues)[number] | null;
-  @ApiPropertyOptional({ enum: tobaccoValues }) @IsOptional() @IsIn(tobaccoValues) tobaccoUse?: (typeof tobaccoValues)[number] | null;
+  @ApiPropertyOptional({ type: String, format: 'date', nullable: true }) @IsOptional() @IsString() birthDate?: string | null;
+  @ApiPropertyOptional({ enum: sexAtBirthValues, nullable: true }) @IsOptional() @IsIn(sexAtBirthValues) sexAtBirth?: (typeof sexAtBirthValues)[number] | null;
+  @ApiPropertyOptional({ type: Number, minimum: 30, maximum: 300, nullable: true }) @IsOptional() @IsInt() @Min(30) @Max(300) heightCm?: number | null;
+  @ApiPropertyOptional({ type: Number, minimum: 2, maximum: 500, nullable: true }) @IsOptional() @IsNumber({ maxDecimalPlaces: 2 }) @Min(2) @Max(500) weightKg?: number | null;
+  @ApiPropertyOptional({ enum: bloodTypeValues, nullable: true }) @IsOptional() @IsIn(bloodTypeValues) bloodType?: (typeof bloodTypeValues)[number] | null;
+  @ApiPropertyOptional({ type: MedicalDeclarationDto, nullable: true }) @IsOptional() @IsObject() allergyReport?: MedicalDeclarationDto | null;
+  @ApiPropertyOptional({ type: MedicalDeclarationDto, nullable: true }) @IsOptional() @IsObject() chronicConditionReport?: MedicalDeclarationDto | null;
+  @ApiPropertyOptional({ type: MedicalDeclarationDto, nullable: true }) @IsOptional() @IsObject() currentMedicationReport?: MedicalDeclarationDto | null;
+  @ApiPropertyOptional({ enum: sleepValues, nullable: true }) @IsOptional() @IsIn(sleepValues) sleepDurationBand?: (typeof sleepValues)[number] | null;
+  @ApiPropertyOptional({ enum: exerciseValues, nullable: true }) @IsOptional() @IsIn(exerciseValues) exerciseFrequency?: (typeof exerciseValues)[number] | null;
+  @ApiPropertyOptional({ enum: stressValues, nullable: true }) @IsOptional() @IsIn(stressValues) stressLevel?: (typeof stressValues)[number] | null;
+  @ApiPropertyOptional({ enum: tobaccoValues, nullable: true }) @IsOptional() @IsIn(tobaccoValues) tobaccoUse?: (typeof tobaccoValues)[number] | null;
 }
 
 export class SaveIntakeDraftDto extends IntakeSnapshotDto {
@@ -69,8 +69,8 @@ export class ConsentPolicyResponseDto {
   @ApiProperty() title!: string;
   @ApiProperty() body!: string;
   @ApiProperty() contentHash!: string;
-  @ApiPropertyOptional({ format: 'uuid', nullable: true }) acceptedConsentRecordId!: string | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true }) acceptedAt!: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) acceptedConsentRecordId!: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) acceptedAt!: Date | null;
 }
 
 export class ConsentRecordResponseDto {
@@ -78,12 +78,12 @@ export class ConsentRecordResponseDto {
   @ApiProperty({ format: 'uuid' }) policyVersionId!: string;
   @ApiProperty() contentHash!: string;
   @ApiProperty({ format: 'date-time' }) acceptedAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true }) withdrawnAt!: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) withdrawnAt!: Date | null;
 }
 
 export class MedicalIntakeResponseDto {
   @ApiPropertyOptional({ enum: ['DRAFT', 'COMPLETE'], nullable: true }) submissionState!: 'DRAFT' | 'COMPLETE' | null;
   @ApiProperty({ minimum: 0 }) currentRevision!: number;
-  @ApiPropertyOptional({ minimum: 1, nullable: true }) completedRevision!: number | null;
+  @ApiPropertyOptional({ type: Number, minimum: 1, nullable: true }) completedRevision!: number | null;
   @ApiPropertyOptional({ nullable: true, type: IntakeSnapshotDto }) snapshot!: IntakeSnapshotDto | null;
 }

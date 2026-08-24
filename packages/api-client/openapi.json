@@ -1998,24 +1998,24 @@
             ]
           },
           "firstName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "lastName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "email"
           },
           "cityName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "updatedAt": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "date-time"
           }
@@ -2030,23 +2030,23 @@
         "type": "object",
         "properties": {
           "firstName": {
-            "type": "object",
+            "type": "string",
             "maxLength": 80,
             "nullable": true
           },
           "lastName": {
-            "type": "object",
+            "type": "string",
             "maxLength": 100,
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "format": "email",
             "maxLength": 254,
             "nullable": true
           },
           "cityName": {
-            "type": "object",
+            "type": "string",
             "maxLength": 100,
             "nullable": true
           }
@@ -2096,7 +2096,7 @@
             "type": "string"
           },
           "assignedSchemaVersion": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "evaluatedSchemaVersion": {
@@ -2106,21 +2106,21 @@
             "type": "number"
           },
           "completedRevision": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "currentPolicyVersionId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "uuid"
           },
           "activeConsentRecordId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "uuid"
           },
           "updatedAt": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "date-time"
           }
@@ -2163,12 +2163,12 @@
             "type": "string"
           },
           "acceptedConsentRecordId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -2220,7 +2220,7 @@
             "type": "string"
           },
           "withdrawnAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -2260,8 +2260,9 @@
         "type": "object",
         "properties": {
           "birthDate": {
-            "type": "object",
-            "format": "date"
+            "type": "string",
+            "format": "date",
+            "nullable": true
           },
           "sexAtBirth": {
             "type": "string",
@@ -2271,17 +2272,20 @@
               "INTERSEX",
               "UNKNOWN",
               "PREFER_NOT_TO_SAY"
-            ]
+            ],
+            "nullable": true
           },
           "heightCm": {
-            "type": "object",
+            "type": "number",
             "minimum": 30,
-            "maximum": 300
+            "maximum": 300,
+            "nullable": true
           },
           "weightKg": {
-            "type": "object",
+            "type": "number",
             "minimum": 2,
-            "maximum": 500
+            "maximum": 500,
+            "nullable": true
           },
           "bloodType": {
             "type": "string",
@@ -2295,16 +2299,35 @@
               "O_POSITIVE",
               "O_NEGATIVE",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "allergyReport": {
-            "$ref": "#/components/schemas/MedicalDeclarationDto"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
           },
           "chronicConditionReport": {
-            "$ref": "#/components/schemas/MedicalDeclarationDto"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
           },
           "currentMedicationReport": {
-            "$ref": "#/components/schemas/MedicalDeclarationDto"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
           },
           "sleepDurationBand": {
             "type": "string",
@@ -2314,7 +2337,8 @@
               "FROM_7_TO_9_HOURS",
               "MORE_THAN_9_HOURS",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "exerciseFrequency": {
             "type": "string",
@@ -2324,7 +2348,8 @@
               "THREE_OR_FOUR_TIMES_WEEKLY",
               "DAILY",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "stressLevel": {
             "type": "string",
@@ -2334,7 +2359,8 @@
               "HIGH",
               "VERY_HIGH",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "tobaccoUse": {
             "type": "string",
@@ -2343,7 +2369,8 @@
               "FORMER",
               "CURRENT",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -2363,7 +2390,7 @@
             "minimum": 0
           },
           "completedRevision": {
-            "type": "object",
+            "type": "number",
             "minimum": 1,
             "nullable": true
           },
@@ -2385,8 +2412,9 @@
         "type": "object",
         "properties": {
           "birthDate": {
-            "type": "object",
-            "format": "date"
+            "type": "string",
+            "format": "date",
+            "nullable": true
           },
           "sexAtBirth": {
             "type": "string",
@@ -2396,17 +2424,20 @@
               "INTERSEX",
               "UNKNOWN",
               "PREFER_NOT_TO_SAY"
-            ]
+            ],
+            "nullable": true
           },
           "heightCm": {
-            "type": "object",
+            "type": "number",
             "minimum": 30,
-            "maximum": 300
+            "maximum": 300,
+            "nullable": true
           },
           "weightKg": {
-            "type": "object",
+            "type": "number",
             "minimum": 2,
-            "maximum": 500
+            "maximum": 500,
+            "nullable": true
           },
           "bloodType": {
             "type": "string",
@@ -2420,16 +2451,35 @@
               "O_POSITIVE",
               "O_NEGATIVE",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "allergyReport": {
-            "$ref": "#/components/schemas/MedicalDeclarationDto"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
           },
           "chronicConditionReport": {
-            "$ref": "#/components/schemas/MedicalDeclarationDto"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
           },
           "currentMedicationReport": {
-            "$ref": "#/components/schemas/MedicalDeclarationDto"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
           },
           "sleepDurationBand": {
             "type": "string",
@@ -2439,7 +2489,8 @@
               "FROM_7_TO_9_HOURS",
               "MORE_THAN_9_HOURS",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "exerciseFrequency": {
             "type": "string",
@@ -2449,7 +2500,8 @@
               "THREE_OR_FOUR_TIMES_WEEKLY",
               "DAILY",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "stressLevel": {
             "type": "string",
@@ -2459,7 +2511,8 @@
               "HIGH",
               "VERY_HIGH",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "tobaccoUse": {
             "type": "string",
@@ -2468,7 +2521,8 @@
               "FORMER",
               "CURRENT",
               "UNKNOWN"
-            ]
+            ],
+            "nullable": true
           },
           "expectedRevision": {
             "type": "number",
@@ -2499,14 +2553,14 @@
             "format": "uuid"
           },
           "displayName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
             "type": "string"
           },
           "ageYears": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "accountStatus": {
@@ -2604,7 +2658,7 @@
             "format": "uuid"
           },
           "displayName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
@@ -2633,7 +2687,7 @@
         "type": "object",
         "properties": {
           "displayName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
@@ -2647,19 +2701,19 @@
             ]
           },
           "firstName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "lastName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "cityName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -2675,12 +2729,12 @@
             "type": "boolean"
           },
           "policyVersionId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "uuid"
           },
           "consentRecordId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "uuid"
           }
@@ -2703,8 +2757,9 @@
             ]
           },
           "birthDate": {
-            "type": "object",
-            "nullable": true
+            "type": "string",
+            "nullable": true,
+            "format": "date"
           },
           "sexAtBirth": {
             "type": "string",
@@ -2718,11 +2773,11 @@
             ]
           },
           "heightCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "weightKg": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Decimal value serialized as a string."
           },
@@ -2785,7 +2840,7 @@
         "type": "object",
         "properties": {
           "assignedSchemaVersion": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "currentRevision": {
@@ -2853,19 +2908,19 @@
         "type": "object",
         "properties": {
           "firstName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "lastName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "cityName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "updatedAt": {

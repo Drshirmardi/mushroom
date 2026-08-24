@@ -156,6 +156,69 @@ Result:
 Next batch:
   - F02-B04
 
+## F02-T08 — اتصال onboarding/profile/medical در app
+
+Task ID: F02-T08
+Completed at: 2026-08-24 23:54 +03:30
+Agent/Thread: /root/app_onboarding_wiring
+Batch ID: F02-B04
+Reviewed by: Codex /root + /root/b04_review
+Changed files:
+  - apps/app/src/app/onboarding/**
+  - apps/app/src/app/(app)/profile/**
+  - apps/app/src/components/onboarding/**
+  - apps/app/src/lib/onboarding/**
+Tests run:
+  - app test, typecheck and build → PASS
+Result:
+  - profile, published consent, accept/withdraw, draft/resume/complete and persisted medical views use the generated client with loading/error/unauthorized states.
+
+## F02-T09 — اتصال patients dashboard
+
+Task ID: F02-T09
+Completed at: 2026-08-24 23:54 +03:30
+Agent/Thread: /root/dashboard_patients_wiring
+Batch ID: F02-B04
+Reviewed by: Codex /root + /root/b04_review
+Changed files:
+  - apps/dashboard/src/app/(app)/patients/**
+  - apps/dashboard/src/features/patients/**
+  - apps/dashboard/src/lib/patient-api.ts
+Tests run:
+  - dashboard test, typecheck and build → PASS
+Result:
+  - patient list/detail reads API data; clinical mock tabs were removed and only labelled self-reported intake is shown.
+
+## F02-T10 — شاخص‌های بیمار Dashboard Home
+
+Task ID: F02-T10
+Completed at: 2026-08-24 23:54 +03:30
+Agent/Thread: /root/dashboard_home_metrics
+Batch ID: F02-B04
+Reviewed by: Codex /root + /root/b04_review
+Changed files:
+  - apps/dashboard/src/features/dashboard/**
+  - apps/dashboard/src/lib/dashboard-onboarding-summary.*
+Tests run:
+  - dashboard test, typecheck and build → PASS
+Result:
+  - new-patient and onboarding KPIs use the real summary endpoint; unsupported mock widgets are hidden.
+
+## F02-B04 — یکپارچه‌سازی رابط‌ها
+
+Completed at: 2026-08-24 23:54 +03:30
+Coordinator: Codex /root
+Tests run:
+  - generated API client build → PASS
+  - app test/typecheck/build → PASS
+  - dashboard test/typecheck/build → PASS
+  - API full suite → PASS (2 migration integration tests skipped without migration test database)
+  - final independent review (/root/b04_review) → APPROVE
+Result:
+  - OpenAPI scalar/nullable schemas were corrected and regenerated; three UI lanes consume only generated client contracts.
+Next batch:
+  - F02-B05
+
 ## F02-T04 — فرم‌های canonical onboarding، consent و profile
 
 Task ID: F02-T04
