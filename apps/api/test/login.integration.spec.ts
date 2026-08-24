@@ -35,6 +35,7 @@ describe('Login core (PostgreSQL integration)', () => {
   }, 30_000);
 
   afterEach(async () => {
+    await prisma.authRateLimitBucket.deleteMany();
     if (usedIpAddresses.size > 0) {
       await prisma.loginAttempt.deleteMany({
         where: { ipAddress: { in: [...usedIpAddresses] } },

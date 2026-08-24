@@ -42,6 +42,7 @@ describe('security audit trail (PostgreSQL API integration)', () => {
   }, 30_000);
 
   afterEach(async () => {
+    await prisma.authRateLimitBucket.deleteMany();
     if (userId) {
       await prisma.auditEvent.deleteMany({ where: { actorUserId: userId } });
     }

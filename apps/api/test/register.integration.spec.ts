@@ -23,6 +23,7 @@ describe('POST /v1/auth/register (PostgreSQL integration)', () => {
   }, 30_000);
 
   afterEach(async () => {
+    await prisma.authRateLimitBucket.deleteMany();
     if (createdPhones.size === 0) return;
 
     await prisma.user.deleteMany({

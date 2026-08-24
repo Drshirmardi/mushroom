@@ -37,6 +37,7 @@ describe('current account (PostgreSQL API integration)', () => {
   }, 30_000);
 
   afterEach(async () => {
+    await prisma.authRateLimitBucket.deleteMany();
     if (createdPhones.size === 0) return;
 
     await prisma.loginAttempt.deleteMany({
