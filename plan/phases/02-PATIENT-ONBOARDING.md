@@ -35,7 +35,8 @@
 
 ## Taskها
 
-- [ ] `F02-T01` — قرارداد فیلدهای canonical، required fields، consent و مرز self-reported/clinical
+- [x] `F02-T01` — قرارداد فیلدهای canonical، required fields، consent و مرز self-reported/clinical؛
+  منبع پیاده‌سازی: [`../contracts/patient-onboarding-v1.md`](../contracts/patient-onboarding-v1.md)
 - [ ] `F02-T02` — migration و constraintهای profile، medical intake و consent
 - [ ] `F02-T03` — API وضعیت onboarding و next action
 - [ ] `F02-T04` — API ذخیره draft، resume و complete پرونده بیمار
@@ -58,8 +59,12 @@ PATCH /v1/patients/me
 GET   /v1/patients/me/medical-intake
 PUT   /v1/patients/me/medical-intake
 POST  /v1/patients/me/medical-intake/complete
+GET   /v1/patients/me/consent-policy
+POST  /v1/patients/me/consents
+POST  /v1/patients/me/consents/:consentRecordId/withdraw
 
 GET   /v1/admin/patients
+GET   /v1/admin/patients/onboarding-summary
 POST  /v1/admin/patients
 GET   /v1/admin/patients/:id
 PATCH /v1/admin/patients/:id
@@ -71,14 +76,14 @@ PATCH /v1/admin/patients/:id/medical-intake
 - completeness از required fields محاسبه می‌شود؛ boolean قابل دست‌کاری منبع حقیقت نیست.
 - مقدار «ندارم» و «نمی‌دانم» از مقدار خالی متمایز است.
 - سن ذخیره نمی‌شود؛ از تاریخ تولد محاسبه می‌شود.
-- بدون consent فعال، complete intake مجاز نیست.
+- بدون consent فعال، persist کردن draft پزشکی و complete intake مجاز نیست؛ profile غیرپزشکی مستقل است.
 - بیمار ناقص به پروفایل و onboarding دسترسی دارد، ولی booking-ready نیست.
 - read/write داده پزشکی و تغییر وضعیت حساب audit می‌شود.
 - تب‌های dashboard که هنوز منبع داده ندارند مخفی می‌شوند؛ placeholder ساختگی نمایش داده نمی‌شود.
 
 ## تست و معیار خروج
 
-- refresh و دستگاه دیگر draft onboarding را حفظ می‌کند.
+- پس از accept consent و اولین save، refresh و دستگاه دیگر draft onboarding را حفظ می‌کند.
 - بیمار به intake بیمار دیگر دسترسی ندارد.
 - admin همان داده persist‌شده app را می‌بیند و اصلاحش audit می‌شود.
 - migration هم روی DB خالی و هم upgrade از Phase 01 پاس می‌شود.

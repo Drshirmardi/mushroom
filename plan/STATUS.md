@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-24 17:17 +03:30`
+- آخرین به‌رورسانی: `2026-08-24 17:48 +03:30`
 - Milestone فعال: `Milestone A — بیمار آماده رزرو`
 - فاز فعال: `Phase 02 — Patient Onboarding & Consent`
-- وضعیت فاز فعال: `NOT_STARTED`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
 - blocker فعال: `ندارد`
@@ -61,7 +61,8 @@
 - roadmap از Phase 02 به بعد بر اساس app + dashboard + API بازطراحی شد؛ تصمیم: [`ADR-0002`](decisions/ADR-0002-feature-first-roadmap.md).
 - آزمون اصلی و booking eligibility به پیش از scheduling منتقل شدند؛ الزام آزمون از dashboard قابل خاموش/روشن‌کردن است.
 - Dashboard Home تدریجی است و widget فاقد منبع داده واقعی پنهان می‌شود؛ عدد mock/صفر ساختگی مجاز نیست.
-- Task بعدی واجد شرایط: `F02-T01` — قرارداد فیلدهای canonical، required fields، consent و مرز self-reported/clinical؛ هنوز شروع نشده است.
+- قرارداد onboarding v1 در `F02-T01` پس از سه review مستقل freeze شد؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
+- Task بعدی واجد شرایط: `F02-T02` — migration و constraintهای profile، medical intake و consent.
 - dependency: `Phase 01` → DONE.
 
 ## task در حال اجرا
