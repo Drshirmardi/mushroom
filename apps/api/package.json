@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "node scripts/dev.mjs",
     "build": "tsc -p tsconfig.build.json",
     "prebuild": "prisma generate",
     "pretypecheck": "prisma generate",
@@ -13,7 +13,7 @@
     "prisma:seed": "prisma db seed",
     "openapi:export": "tsc -p tsconfig.build.json && node scripts/export-openapi.mjs",
     "start": "node dist/main.js",
-    "start:dev": "tsx watch src/main.ts",
+    "start:dev": "node scripts/dev.mjs",
     "test": "tsc -p tsconfig.test.json --noEmit && vitest run --no-file-parallelism",
     "typecheck": "tsc --noEmit"
   },
