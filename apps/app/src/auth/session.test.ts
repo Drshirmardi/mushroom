@@ -71,6 +71,28 @@ describe("app auth session", () => {
     });
   });
 
+  it("becomes anonymous when refresh stalls", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetch = vi.fn<typeof globalThis.fetch>().mockReturnValue(new Promise<Response>(() => {}));
+      const manager = new AuthSessionManager(
+        createApiClient({ baseUrl: "https://api.example.test", fetch }),
+        () => 1_000,
+        100,
+      );
+
+      const bootstrap = manager.bootstrap();
+      await vi.advanceTimersByTimeAsync(100);
+
+      await expect(bootstrap).resolves.toEqual({
+        status: "anonymous",
+        authentication: null,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("logs out with the memory-only bearer token and clears the snapshot", async () => {
     const fetch = vi
       .fn<typeof globalThis.fetch>()

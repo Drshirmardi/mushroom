@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌روزرسانی: `2026-08-24 10:54 +03:30`
+- آخرین به‌رورسانی: `2026-08-24 14:21 +03:30`
 - Milestone فعال: `Milestone A — اولین نسخه عملیاتی کلینیک`
 - فاز فعال: `Phase 02 — Clinic, Doctors & Patients`
 - وضعیت فاز فعال: `NOT_STARTED`
@@ -47,6 +47,12 @@
 ## handoff فاز فعال
 
 - فاز قبلی: `Phase 01 — Identity & Access` پس از Bugbot و Security Review مستقل بدون یافته باز تکمیل شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- regression مسیر dev API که metadata تزریق وابستگی Nest را حذف می‌کرد در `F01-R01` اصلاح شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- هدر وب برای session معتبر دکمه داشبورد نمایش می‌دهد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- تشخیص LAN: CORS و API سالم‌اند؛ session cookie بین `localhost` و IP شبکه مشترک نیست؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- رابط‌های app، dashboard و web در صورت معطل‌ماندن refresh حداکثر پس از ۱۰ ثانیه از حالت checking خارج می‌شوند؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- build dashboard دیگر فایل cache موقت `.next/dev` را typecheck نمی‌کند؛ build کامل workspace پاس شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
+- اجرای production هر چهار سرویس با `pnpm start` ممکن است و رابط‌ها روی شبکه bind می‌شوند؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - Task بعدی واجد شرایط: `F02-T01` — تعیین فیلدهای canonical از روی UI و حذف فیلدهای صرفاً نمایشی؛ هنوز شروع نشده است.
 - dependency: `Phase 01` → DONE.
 
