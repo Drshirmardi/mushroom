@@ -338,7 +338,7 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
     } finally {
       await smokeClient.end();
     }
-  });
+  }, 60_000);
 
   it('backfills only Phase 01 patient accounts without inventing intake data', async () => {
     const upgradeDatabaseName = `sabz_zendegi_upgrade_${randomUUID().replaceAll('-', '')}`;

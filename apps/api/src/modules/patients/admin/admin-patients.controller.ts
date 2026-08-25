@@ -18,6 +18,8 @@ export class AdminPatientsController {
   @RequirePermissions(PERMISSIONS.PATIENTS_READ)
   @ApiOperation({ operationId: 'adminPatientsList', summary: 'List and search patients' })
   @ApiOkResponse({ type: AdminPatientListResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'List query is invalid.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.')
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   list(@Query() query: AdminPatientListQueryDto) { return this.patients.list(query); }
 
@@ -25,6 +27,7 @@ export class AdminPatientsController {
   @RequirePermissions(PERMISSIONS.PATIENTS_READ)
   @ApiOperation({ operationId: 'adminPatientsOnboardingSummary', summary: 'Get patient onboarding summary' })
   @ApiOkResponse({ type: AdminOnboardingSummaryResponseDto })
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.')
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   summary() { return this.patients.summary(); }
 
@@ -32,6 +35,8 @@ export class AdminPatientsController {
   @RequirePermissions(PERMISSIONS.PATIENTS_CREATE)
   @ApiOperation({ operationId: 'adminPatientsCreate', summary: 'Create a patient profile on behalf of a patient' })
   @ApiOkResponse({ type: AdminPatientCreateResponseDto })
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.')
+  @ApiErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, 'Patient profile input is invalid.')
   @ApiErrorResponse(HttpStatus.CONFLICT, 'Phone number is already registered.')
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   create(@Body() body: CreateAdminPatientDto, @Req() request: AuthenticatedRequest) {
@@ -43,7 +48,10 @@ export class AdminPatientsController {
   @ApiOperation({ operationId: 'adminPatientsGet', summary: 'Get an admin patient detail view' })
   @ApiParam({ name: 'patientId', format: 'uuid' })
   @ApiOkResponse({ type: AdminPatientDetailResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Patient id is invalid.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.')
   @ApiErrorResponse(HttpStatus.NOT_FOUND, 'Patient profile was not found.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   get(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Req() request: AuthenticatedRequest) {
     return this.patients.get(patientId, this.context(request));
   }
@@ -53,8 +61,11 @@ export class AdminPatientsController {
   @ApiOperation({ operationId: 'adminPatientsUpdate', summary: 'Update a patient non-medical profile' })
   @ApiParam({ name: 'patientId', format: 'uuid' })
   @ApiOkResponse({ type: AdminPatientProfileUpdateResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Patient id is invalid.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.')
   @ApiErrorResponse(HttpStatus.NOT_FOUND, 'Patient profile was not found.')
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
+  @ApiErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, 'Patient profile input is invalid.')
   update(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Body() body: UpdateAdminPatientDto, @Req() request: AuthenticatedRequest) {
     return this.patients.update(patientId, body, this.context(request));
   }
@@ -65,6 +76,8 @@ export class AdminPatientsController {
   @ApiParam({ name: 'patientId', format: 'uuid' })
   @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', maxLength: 255 } })
   @ApiOkResponse({ type: AdminMedicalIntakeRevisionResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Patient id is invalid.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.')
   @ApiErrorResponse(HttpStatus.NOT_FOUND, 'Patient profile was not found.')
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Current consent or permission is missing.')
   @ApiErrorResponse(HttpStatus.CONFLICT, 'Revision conflict or an idempotency key reuse conflict occurred.')

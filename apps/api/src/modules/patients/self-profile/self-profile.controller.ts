@@ -33,6 +33,8 @@ export class SelfProfileController {
   @RequirePermissions(PERMISSIONS.PATIENT_PROFILE_UPDATE_SELF)
   @ApiOperation({ operationId: 'patientUpdateSelfProfile', summary: 'Update self profile' })
   @ApiOkResponse({ type: SelfProfileResponseDto })
+  @ApiErrorResponse(401, 'Authentication is required.')
+  @ApiErrorResponse(403, 'Patient access is required.')
   @ApiErrorResponse(422, 'Profile fields are invalid.')
   async update(
     @Req() request: AuthenticatedRequest,
@@ -45,6 +47,8 @@ export class SelfProfileController {
   @RequirePermissions(PERMISSIONS.PATIENT_PROFILE_READ_SELF)
   @ApiOperation({ operationId: 'patientGetOnboardingStatus', summary: 'Get onboarding status' })
   @ApiOkResponse({ type: OnboardingStatusResponseDto })
+  @ApiErrorResponse(401, 'Authentication is required.')
+  @ApiErrorResponse(403, 'Patient access is required.')
   async onboardingStatus(@Req() request: AuthenticatedRequest) {
     return this.profiles.getOnboardingStatus(request.auth.userId);
   }

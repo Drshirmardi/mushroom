@@ -219,6 +219,52 @@ Result:
 Next batch:
   - F02-B05
 
+## F02-T11 — verification migration و upgrade
+
+Task ID: F02-T11
+Completed at: 2026-08-25 17:00 +03:30
+Agent/Thread: /root/phase02_migration_verification
+Batch ID: F02-B05
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/test/migrations.integration.spec.ts
+Tests run:
+  - isolated PostgreSQL migration integration (fresh deploy, seed twice, Phase 01 upgrade) → PASS
+Result:
+  - Phase 02 schema/constraints/indexes, active-clinic seed and PATIENT-only backfill are verified; smoke timeout was raised to 60 seconds to avoid a false negative.
+
+## F02-T12 — verification امنیت/API
+
+Task ID: F02-T12
+Completed at: 2026-08-25 17:00 +03:30
+Agent/Thread: /root/phase02_security_verification
+Batch ID: F02-B05
+Reviewed by: Codex /root + /root/phase02_security_verification
+Changed files:
+  - apps/api/src/modules/patients/intake/patient-intake.service.ts
+  - apps/api/src/modules/patients/{self-profile,intake,admin}/**/*.controller.ts
+  - apps/api/test/intake-consent.service.spec.ts
+  - apps/api/test/phase02-contract-guard-outcomes.spec.ts
+  - packages/api-client/openapi.json
+  - packages/api-client/src/schema.generated.ts
+Tests run:
+  - focused idempotency and OpenAPI contract tests → PASS
+  - API full suite → PASS (migration integration skipped without migration test database)
+  - final independent review → APPROVE
+Result:
+  - changed completion idempotency keys return `IDEMPOTENCY_KEY_REUSED`; all protected Phase 02 operations document typed guard outcomes.
+
+## F02-B05 — verification final فاز
+
+Status: BLOCKED
+Updated at: 2026-08-25 17:00 +03:30
+Accepted tasks: F02-T11, F02-T12
+Blocked task: F02-T13
+Blocker:
+  - Browser URL policy blocked further localhost interaction after the onboarding page opened. Local app/dashboard/API listeners were available, but no form was submitted and no synthetic medical data was sent.
+Safe next action:
+  - Enable local browser interaction for `http://localhost:3001`, then run the register → onboarding → consent → draft/complete → dashboard visibility flow and complete the mock/E2E evidence.
+
 ## F02-T04 — فرم‌های canonical onboarding، consent و profile
 
 Task ID: F02-T04

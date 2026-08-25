@@ -147,7 +147,9 @@ export class PatientIntakeService {
       if (!intake || !intake.revisions[0]) throw error(UnprocessableEntityException, 'MEDICAL_INTAKE_INCOMPLETE', 'Medical intake is incomplete.', { missingFields: ['birthDate', 'sexAtBirth', 'allergyReport', 'chronicConditionReport', 'currentMedicationReport'] });
       const replay = await tx.patientMedicalIntakeRevision.findFirst({ where: { intakeId: intake.id, mutationOperation: 'COMPLETE', mutationKey: key } });
       if (replay) {
-        if (replay.revisionNumber <= intake.currentRevisionNumber) return this.intakeResponse(intake, replay);
+        if (body.expectedRevision === replay.revisionNumber - 1) {
+          return this.intakeResponse(intake, replay);
+        }
         throw error(ConflictException, 'IDEMPOTENCY_KEY_REUSED', 'Idempotency key was already used for another request.');
       }
       if (intake.currentRevisionNumber !== body.expectedRevision) throw error(ConflictException, 'MEDICAL_INTAKE_REVISION_CONFLICT', 'Intake revision does not match.', { currentRevision: intake.currentRevisionNumber });

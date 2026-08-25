@@ -99,4 +99,49 @@ describe('PatientIntakeService', () => {
       response: { code: 'IDEMPOTENCY_KEY_REUSED' },
     });
   });
+
+  it('replays COMPLETE only for the exact expected revision and rejects a changed payload', async () => {
+    const consent = {
+      id: '55555555-5555-4555-8555-555555555555',
+      policyVersionId: '66666666-6666-4666-8666-666666666666',
+    };
+    const completedRevision = {
+      id: '77777777-7777-4777-8777-777777777777',
+      revisionNumber: 4,
+      birthDate: new Date('1990-01-01T00:00:00.000Z'),
+      sexAtBirth: 'FEMALE',
+      heightCm: null,
+      weightKg: null,
+      bloodType: null,
+      allergyReport: { status: 'NONE', items: [] },
+      chronicConditionReport: { status: 'NONE', items: [] },
+      currentMedicationReport: { status: 'NONE', items: [] },
+      sleepDurationBand: null,
+      exerciseFrequency: null,
+      stressLevel: null,
+      tobaccoUse: null,
+    };
+    const intake = {
+      id: '88888888-8888-4888-8888-888888888888',
+      submissionState: 'COMPLETE',
+      currentRevisionNumber: 4,
+      completedRevisionNumber: 4,
+      revisions: [completedRevision],
+    };
+    const tx = {
+      $queryRaw: vi.fn(),
+      patientProfile: { findUnique: vi.fn().mockResolvedValue(patient) },
+      consentPolicyVersion: { findFirst: vi.fn().mockResolvedValue({ id: consent.policyVersionId }) },
+      patientConsentRecord: { findFirst: vi.fn().mockResolvedValue(consent) },
+      patientMedicalIntake: { findUnique: vi.fn().mockResolvedValue(intake) },
+      patientMedicalIntakeRevision: { findFirst: vi.fn().mockResolvedValue(completedRevision) },
+    };
+    const prisma = { $transaction: (work: (value: typeof tx) => unknown) => work(tx) };
+    const service = new PatientIntakeService(prisma as never);
+
+    await expect(service.complete(audit.actorUserId, { expectedRevision: 3 }, 'complete-1', audit))
+      .resolves.toMatchObject({ currentRevision: 4, completedRevision: 4 });
+    await expect(service.complete(audit.actorUserId, { expectedRevision: 2 }, 'complete-1', audit))
+      .rejects.toMatchObject({ response: { code: 'IDEMPOTENCY_KEY_REUSED' } });
+  });
 });

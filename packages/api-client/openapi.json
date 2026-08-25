@@ -866,6 +866,26 @@
               }
             }
           },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Profile fields are invalid.",
             "content": {
@@ -899,6 +919,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OnboardingStatusResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }
@@ -1007,8 +1047,38 @@
               }
             }
           },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Policy is stale or the idempotency key was reused.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Consent acceptance input is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1072,6 +1142,36 @@
               }
             }
           },
+          "400": {
+            "description": "Consent record id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Consent is not active or the idempotency key was reused.",
             "content": {
@@ -1105,6 +1205,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MedicalIntakeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }
@@ -1144,6 +1264,16 @@
               }
             }
           },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Current consent is required.",
             "content": {
@@ -1156,6 +1286,16 @@
           },
           "409": {
             "description": "The supplied revision is stale.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Medical-intake draft input is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1207,6 +1347,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MedicalIntakeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }
@@ -1268,6 +1418,26 @@
               }
             }
           },
+          "400": {
+            "description": "List query is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Required permission is missing.",
             "content": {
@@ -1313,6 +1483,16 @@
               }
             }
           },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Required permission is missing.",
             "content": {
@@ -1325,6 +1505,16 @@
           },
           "409": {
             "description": "Phone number is already registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Patient profile input is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1356,6 +1546,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminOnboardingSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }
@@ -1403,6 +1603,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminPatientDetailResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Patient id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }
@@ -1462,6 +1692,26 @@
               }
             }
           },
+          "400": {
+            "description": "Patient id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Required permission is missing.",
             "content": {
@@ -1474,6 +1724,16 @@
           },
           "404": {
             "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Patient profile input is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1534,6 +1794,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminMedicalIntakeRevisionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Patient id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }

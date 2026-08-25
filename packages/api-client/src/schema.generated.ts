@@ -1375,6 +1375,24 @@ export interface operations {
                     "application/json": components["schemas"]["SelfProfileResponseDto"];
                 };
             };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Profile fields are invalid. */
             422: {
                 headers: {
@@ -1401,6 +1419,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OnboardingStatusResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
         };
@@ -1477,8 +1513,35 @@ export interface operations {
                     "application/json": components["schemas"]["ConsentRecordResponseDto"];
                 };
             };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Policy is stale or the idempotency key was reused. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Consent acceptance input is invalid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1520,6 +1583,33 @@ export interface operations {
                     "application/json": components["schemas"]["ConsentRecordResponseDto"];
                 };
             };
+            /** @description Consent record id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Consent is not active or the idempotency key was reused. */
             409: {
                 headers: {
@@ -1549,6 +1639,24 @@ export interface operations {
                     "application/json": components["schemas"]["MedicalIntakeResponseDto"];
                 };
             };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
         };
     };
     patientSaveMedicalIntakeDraft: {
@@ -1573,6 +1681,15 @@ export interface operations {
                     "application/json": components["schemas"]["MedicalIntakeResponseDto"];
                 };
             };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Current consent is required. */
             403: {
                 headers: {
@@ -1584,6 +1701,15 @@ export interface operations {
             };
             /** @description The supplied revision is stale. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Medical-intake draft input is invalid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1616,6 +1742,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MedicalIntakeResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
             /** @description Current consent is required. */
@@ -1664,6 +1799,24 @@ export interface operations {
                     "application/json": components["schemas"]["AdminPatientListResponseDto"];
                 };
             };
+            /** @description List query is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Required permission is missing. */
             403: {
                 headers: {
@@ -1696,6 +1849,15 @@ export interface operations {
                     "application/json": components["schemas"]["AdminPatientCreateResponseDto"];
                 };
             };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Required permission is missing. */
             403: {
                 headers: {
@@ -1707,6 +1869,15 @@ export interface operations {
             };
             /** @description Phone number is already registered. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile input is invalid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1731,6 +1902,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOnboardingSummaryResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
             /** @description Required permission is missing. */
@@ -1761,6 +1941,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminPatientDetailResponseDto"];
+                };
+            };
+            /** @description Patient id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
             /** @description Patient profile was not found. */
@@ -1797,6 +2004,24 @@ export interface operations {
                     "application/json": components["schemas"]["AdminPatientProfileUpdateResponseDto"];
                 };
             };
+            /** @description Patient id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
             /** @description Required permission is missing. */
             403: {
                 headers: {
@@ -1808,6 +2033,15 @@ export interface operations {
             };
             /** @description Patient profile was not found. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile input is invalid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1840,6 +2074,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMedicalIntakeRevisionResponseDto"];
+                };
+            };
+            /** @description Patient id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
             /** @description Current consent or permission is missing. */
