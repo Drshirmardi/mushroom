@@ -20,6 +20,8 @@ phase-01.md
 Task ID: Fxx-Tyy
 Completed at: YYYY-MM-DD HH:mm TZ
 Agent/Thread: شناسه قابل تشخیص
+Batch ID: Fxx-Bnn
+Reviewed by: Codex /root
 Changed files:
   - مسیر
 Migrations:
@@ -30,10 +32,11 @@ Result:
   - acceptance criterion → PASS
 Known limitations:
   - ندارد | مورد مشخص و مالک/Task پیگیری
-Next task:
-  - Fxx-Tzz | Phase review
+Next batch:
+  - Fxx-Bnn | Phase review
 ```
 
-`STATUS.md` محل نگهداری این entryها نیست. پس از تکمیل هر task، Agent باید entry را به
-لاگ همان فاز append کند، checklist فایل فاز را به‌روز کند و در `STATUS.md` فقط claim را
-پاک و Task بعدی واجد شرایط را ثبت کند.
+`STATUS.md` محل نگهداری این entryها نیست. worker فقط handoff می‌دهد و این فایل را تغییر
+نمی‌دهد. پس از عبور batch از review gate، Agent اصلی entry taskهای پذیرفته‌شده را به لاگ همان
+فاز append می‌کند، checklist را به‌روز می‌کند و در `STATUS.md` فقط claim را پاک و Batch بعدی
+واجد شرایط را ثبت می‌کند.

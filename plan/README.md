@@ -8,7 +8,7 @@
 
 هر Agent قبل از ایجاد تغییر باید این فایل‌ها را به‌ترتیب بخواند:
 
-1. [`STATUS.md`](STATUS.md) — وضعیت زنده، فاز فعال، task جاری و handoff کوتاه.
+1. [`STATUS.md`](STATUS.md) — وضعیت زنده، فاز فعال، batch جاری، ownership و handoff کوتاه.
 2. [`00-CURRENT-STATE.md`](00-CURRENT-STATE.md) — وضعیت واقعی repository در شروع برنامه.
 3. [`01-ARCHITECTURE-REVIEW.md`](01-ARCHITECTURE-REVIEW.md) — تصمیم‌هایی که پذیرفته، رد یا به آینده موکول شده‌اند.
 4. [`02-TARGET-ARCHITECTURE.md`](02-TARGET-ARCHITECTURE.md) — معماری هدف و مرز ماژول‌ها.

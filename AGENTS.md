@@ -12,24 +12,26 @@ Before editing files:
 3. Read the complete file for the active phase under `plan/phases/`.
 4. Inspect the repository and current Git changes. Preserve all unrelated user changes.
 
-## Automatic task selection
+## Automatic batch selection
 
-- If the user names a task ID, work only on that task after validating its dependencies.
-- Otherwise, use `plan/STATUS.md` to select work.
-- If a task is already active, do not start a different task. Continue it only when the current run is clearly its handoff and no concurrent agent owns it; otherwise report the ownership conflict.
-- If no task is active, choose the first unchecked task in the active phase whose dependencies are complete and which has no active blocker.
-- Claim exactly one task in `plan/STATUS.md` before changing implementation files, using the claim format in `plan/05-AGENT-WORKFLOW.md`.
-- Never begin the next task automatically in the same run.
+- If the user names a task ID, validate its dependencies and place only that task in a single-task batch.
+- Otherwise, use `plan/STATUS.md` and the active phase's batch map to select work.
+- If a batch is already active, do not start another batch. Continue it only when this run is its coordinator/handoff and there is no ownership conflict.
+- If no batch is active, the main agent may select up to three unchecked tasks whose dependencies are complete, blockers are clear, contracts are frozen, and owned paths do not overlap.
+- Three tasks are a maximum, not a quota. Use a one- or two-task batch when dependencies, shared files, risk, or verification isolation require it.
+- The main agent claims one batch in `plan/STATUS.md` before implementation starts. Each worker agent owns exactly one task and only the paths assigned in that claim.
+- Do not start the next batch until the current batch has passed the main-agent review gate and its evidence/status updates are complete.
 
 ## Execution and completion
 
 - Keep the change within the claimed task's scope, acceptance criteria, and Definition of Done.
 - Follow `plan/04-ENGINEERING-STANDARDS.md`; material architecture changes require an ADR and owner approval.
-- Run verification proportional to the task and review the final diff for unrelated changes.
-- Mark a task `[x]` only when its implementation exists, required checks pass, and evidence is recorded in the active phase log under `plan/logs/`.
+- Worker agents do not edit `plan/STATUS.md`, phase checkboxes, or phase logs. They return a structured handoff and mark their assigned task ready for review only through the coordinator.
+- The main agent reviews every worker handoff, the combined diff, acceptance criteria, shared contracts, and unrelated changes, then runs integration verification proportional to the batch.
+- Only the main agent may mark a task `[x]`, and only after the whole batch reaches its review gate, the task implementation exists, required checks pass, and evidence is recorded under `plan/logs/`.
 - Keep the active phase checklist and `plan/STATUS.md` synchronized.
-- On completion, append evidence to the active phase log, clear the active-task claim in `plan/STATUS.md`, and identify the next eligible task there without starting it.
-- If incomplete or blocked, leave the task unchecked and record completed work, remaining work, tests, blocker, and safe next action.
+- If review fails, leave affected tasks unchecked, set the batch/task to `REWORK` or `BLOCKED`, and record the exact safe next action. Do not open the next batch.
+- On batch completion, append evidence for accepted tasks, clear the active-batch claim, and identify the next eligible batch without starting it.
 
 ## Safety
 
@@ -39,4 +41,4 @@ Before editing files:
 
 ## Default user request
 
-When the user says "continue", "start", or asks to proceed according to the plan without naming a task, execute the automatic task-selection workflow above.
+When the user says "continue", "start", or asks to proceed according to the plan without naming a task, execute the automatic batch-selection workflow above.

@@ -13,7 +13,9 @@ export interface SignupPayload {
     password: string;
 }
 
-export type AuthResult = { ok: true } | { ok: false; message: string };
+export type AuthResult =
+    | { ok: true; roles: components["schemas"]["AuthenticationResponseDto"]["user"]["roles"] }
+    | { ok: false; message: string };
 
 type ApiClient = ReturnType<typeof createApiClient>;
 type ApiError = components["schemas"]["ApiErrorResponseDto"];
@@ -52,7 +54,7 @@ export function createAuthService(client: ApiClient) {
                     return { ok: false, message: errorMessage(error) };
                 }
 
-                return { ok: true };
+                return { ok: true, roles: data.user.roles };
             } catch {
                 return { ok: false, message: errorMessage(undefined) };
             }
@@ -65,7 +67,7 @@ export function createAuthService(client: ApiClient) {
                 });
 
                 return data
-                    ? { ok: true }
+                    ? { ok: true, roles: data.roles }
                     : { ok: false, message: errorMessage(error) };
             } catch {
                 return { ok: false, message: errorMessage(undefined) };
