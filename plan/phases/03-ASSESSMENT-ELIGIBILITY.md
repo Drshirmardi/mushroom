@@ -30,9 +30,9 @@
 
 - [x] `F03-T01` — قرارداد lifecycle، question types، scoring و policy رزرو؛ منبع: [`../contracts/assessment-booking-v1.md`](../contracts/assessment-booking-v1.md)
 - [x] `F03-T02` — migration definition/version/question/submission/result/policy
-- [ ] `F03-T03` — admin assessment CRUD draft، preview، duplicate، publish و archive
+- [x] `F03-T03` — admin assessment CRUD draft، preview، duplicate، publish و archive
 - [ ] `F03-T04` — تعیین main assessment و toggle الزام قبل از رزرو در transaction
-- [ ] `F03-T05` — patient list/start/save/resume/submit/result API
+- [x] `F03-T05` — patient list/start/save/resume/submit/result API
 - [ ] `F03-T06` — scoring deterministic، result snapshot و risk/review flag
 - [ ] `F03-T07` — booking eligibility service و endpoint دارای blocker code/nextAction
 - [ ] `F03-T08` — admin submissions/results/filter و اتصال به patient workspace

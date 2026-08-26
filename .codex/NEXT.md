@@ -1,18 +1,18 @@
 # Live Handoff
 
-- Updated: `2026-08-26 15:54 +03:30`
+- Updated: `2026-08-26 16:00 +03:30`
 - Status: `READY`
-- Active slice: complete `F03-T09`, dashboard assessment builder/list/results integration.
+- Active slice: complete `F03-T04`, make booking policy explicitly select the clinic main assessment in a transaction.
 
 ## Next action
 
-Continue `F03-T09`: assessment version list now reads persisted API data. Replace the remaining mock builder/result controls with generated-client operations for draft creation, preview, duplicate, publish/archive, policy and real submission results.
+Finish `F03-T04`: restrict the admin policy to a published `MAIN` assessment from the active clinic and update requirement/version/defaults transactionally. Then add the policy state matrix tests.
 
 ## Acceptance
 
-- Dashboard uses generated client operations only.
-- Builder states surface API validation/errors and immutable version behavior.
-- Result list and policy controls show real persisted data.
+- Requirement cannot point to a non-main assessment, draft, retired or another-clinic version.
+- Disabled policy clears its version and preserves historical submissions.
+- Toggle state matrix and generated API client pass.
 - OpenAPI, generated client, authorization and integration tests pass.
 
 ## Do not touch
