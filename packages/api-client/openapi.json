@@ -2257,6 +2257,80 @@
         ]
       }
     },
+    "/v1/admin/assessment-submissions": {
+      "get": {
+        "operationId": "adminAssessmentSubmissionsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAssessmentSubmissionListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic assessment submissions",
+        "tags": [
+          "Admin Assessment Submissions"
+        ]
+      }
+    },
+    "/v1/admin/assessment-submissions/{id}": {
+      "get": {
+        "operationId": "adminAssessmentSubmissionsGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a clinic assessment result",
+        "tags": [
+          "Admin Assessment Submissions"
+        ]
+      }
+    },
     "/v1/assessments": {
       "get": {
         "operationId": "patientAssessmentsList",
@@ -4016,6 +4090,90 @@
       "UpdateBookingAssessmentPolicyDto": {
         "type": "object",
         "properties": {}
+      },
+      "AdminAssessmentSubmissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentTitle": {
+            "type": "string"
+          },
+          "attemptNumber": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "attemptNumber",
+          "state",
+          "startedAt"
+        ]
+      },
+      "AdminAssessmentSubmissionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAssessmentSubmissionResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
       },
       "PatientAssessmentListItemDto": {
         "type": "object",

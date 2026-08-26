@@ -1,12 +1,12 @@
 # Live Handoff
 
-- Updated: `2026-08-26 15:35 +03:30`
+- Updated: `2026-08-26 15:42 +03:30`
 - Status: `READY`
 - Active slice: complete `F03-T08`, admin assessment submissions/results API and patient workspace view.
 
 ## Next action
 
-Implement authorized admin assessment-submission list/detail operations with clinic scope, state/version filters and audited sensitive-result access. Expose the result in the existing admin patient workspace response.
+Finish `F03-T08`: connect the new authorized/audited clinic-scoped admin submission list/detail APIs to the admin patient workspace response, then add authorization and cross-clinic integration coverage.
 
 ## Acceptance
 

@@ -486,6 +486,40 @@ export interface paths {
         patch: operations["adminBookingAssessmentPolicyUpdate"];
         trace?: never;
     };
+    "/v1/admin/assessment-submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic assessment submissions */
+        get: operations["adminAssessmentSubmissionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-submissions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a clinic assessment result */
+        get: operations["adminAssessmentSubmissionsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/assessments": {
         parameters: {
             query?: never;
@@ -986,6 +1020,32 @@ export interface components {
             updatedAt?: string | null;
         };
         UpdateBookingAssessmentPolicyDto: Record<string, never>;
+        AdminAssessmentSubmissionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentTitle: string;
+            attemptNumber: number;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            score?: string | null;
+            resultSnapshot?: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+        };
+        AdminAssessmentSubmissionListResponseDto: {
+            items: components["schemas"]["AdminAssessmentSubmissionResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
         PatientAssessmentListItemDto: {
             /** Format: uuid */
             id: string;
@@ -2677,6 +2737,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentSubmissionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAssessmentSubmissionListResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentSubmissionsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAssessmentSubmissionResponseDto"];
                 };
             };
         };
