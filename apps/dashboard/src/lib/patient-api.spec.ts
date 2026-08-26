@@ -1,7 +1,7 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
 import { describe, expect, it, vi } from "vitest";
 
-import { getAdminPatientAssessmentSubmissions } from "./patient-api";
+import { getAdminPatientAssessmentSubmissions, getAssessmentResultBandTitle } from "./patient-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 
@@ -16,5 +16,11 @@ describe("patient assessment submissions API", () => {
     const request = fetchMock.mock.calls[0]?.[0] as Request;
     expect(request.url).toBe("https://api.example.test/v1/admin/assessment-submissions?patientId=00000000-0000-4000-8000-000000000001&pageSize=50");
     expect(request.headers.get("authorization")).toBe("Bearer access-token");
+  });
+
+  it("reads the stored result-band title", () => {
+    expect(getAssessmentResultBandTitle({ resultBand: { id: "high", title: "نیازمند پیگیری" } })).toBe("نیازمند پیگیری");
+    expect(getAssessmentResultBandTitle(null)).toBeNull();
+    expect(getAssessmentResultBandTitle(undefined)).toBeNull();
   });
 });

@@ -38,6 +38,141 @@ Result:
   - F03-T02 → ACCEPTED
   - F03-T03 unblocked.
 
+## F03-T03 — admin assessment lifecycle
+
+Task ID: F03-T03
+Completed at: 2026-08-26 15:03 +03:30
+Agent/Thread: historical thread not recorded; implementation commit authored by `sayh3x`
+Batch ID: historical batch ID not recorded
+Reviewed by: historical reviewer not recorded; checklist acceptance recorded in commit `82dcb2a`
+Verified artifacts:
+  - commit `91f83b1` — secured admin list/get/create/update/duplicate/publish/archive lifecycle
+Changed files:
+  - `apps/api/src/modules/assessments/admin/admin-assessments.controller.ts`
+  - `apps/api/src/modules/assessments/admin/admin-assessments.dto.ts`
+  - `apps/api/src/modules/assessments/admin/admin-assessments.module.ts`
+  - `apps/api/src/modules/assessments/admin/admin-assessments.service.ts`
+  - `apps/api/src/modules/assessments/application/assessment-audit.ts`
+  - `apps/api/test/admin-assessments.authorization.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api exec vitest run test/admin-assessments.authorization.spec.ts test/admin-booking-policy.authorization.spec.ts test/patient-assessments.authorization.spec.ts test/assessment-scoring.spec.ts test/assessment-booking-contract.spec.ts --no-file-parallelism` → PASS (`5 files / 25 tests`, reconciliation run 2026-08-26)
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `pnpm --filter @sabz-zendegi/api-client typecheck` → PASS (generated contract matches committed output)
+Result:
+  - ADMIN-only lifecycle authorization → PASS
+  - malformed draft structure rejection، duplicate-to-draft behavior و idempotent republish → PASS
+  - OpenAPI/generated client artifacts exist in the implementation commit and pass current drift/type checks → PASS
+Known limitations:
+  - historical batch ID، thread ID و reviewer identity در artifacts موجود ثبت نشده‌اند.
+Next batch:
+  - historical handoff advanced to F03-T04.
+
+## F03-T04 — transactional main assessment policy
+
+Task ID: F03-T04
+Completed at: 2026-08-26 16:01 +03:30
+Agent/Thread: historical thread not recorded; implementation commit authored by `sayh3x`
+Batch ID: historical batch ID not recorded
+Reviewed by: historical reviewer not recorded; checklist acceptance recorded in commit `64f6fac`
+Verified artifacts:
+  - commit `6f8e031` — authorized booking-policy API and generated contract
+  - commit `64f6fac` — transactional update and selection of a published `MAIN` assessment from the active clinic
+Changed files:
+  - `apps/api/src/modules/assessments/admin/admin-booking-policy.controller.ts`
+  - `apps/api/src/modules/assessments/admin/admin-booking-policy.dto.ts`
+  - `apps/api/src/modules/assessments/admin/admin-booking-policy.service.ts`
+  - `apps/api/src/modules/assessments/admin/admin-assessments.module.ts`
+  - `apps/api/src/modules/assessments/application/assessment-audit.ts`
+  - `apps/api/test/admin-booking-policy.authorization.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - focused Phase 03 API command recorded under `F03-T03` → PASS (`5 files / 25 tests`)
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `pnpm --filter @sabz-zendegi/api-client typecheck` → PASS
+Result:
+  - ADMIN-only policy read/update and safe disabled defaults → PASS
+  - required policy filters by clinic، `MAIN` key و `PUBLISHED` status → PASS
+  - disabling policy clears version/validity/latest flags inside the transaction → PASS
+Known limitations:
+  - historical batch ID، thread ID و reviewer identity در artifacts موجود ثبت نشده‌اند.
+Next batch:
+  - historical handoff advanced to F03-T05.
+
+## F03-T05 — patient assessment submission API
+
+Task ID: F03-T05
+Completed at: 2026-08-26 15:22 +03:30
+Agent/Thread: historical thread not recorded; implementation commits authored by `sayh3x`
+Batch ID: historical batch ID not recorded
+Reviewed by: historical reviewer not recorded; checklist acceptance recorded in commit `82dcb2a`
+Verified artifacts:
+  - commits `4916894` and `dc620dc` — patient list/start/resume/save/submit/result endpoints and generated contract
+Changed files:
+  - `apps/api/src/modules/assessments/patient/patient-assessments.controller.ts`
+  - `apps/api/src/modules/assessments/patient/patient-assessments.dto.ts`
+  - `apps/api/src/modules/assessments/patient/patient-assessments.module.ts`
+  - `apps/api/src/modules/assessments/patient/patient-assessments.service.ts`
+  - `apps/api/src/modules/assessments/application/assessment-audit.ts`
+  - `apps/api/test/patient-assessments.authorization.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - focused Phase 03 API command recorded under `F03-T03` → PASS (`5 files / 25 tests`)
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `pnpm --filter @sabz-zendegi/api-client typecheck` → PASS
+Result:
+  - patient-only route authorization and ownership-safe not-found behavior → PASS
+  - completed submission cannot be saved and identical completion requests replay idempotently → PASS
+  - list/start/resume/save/submit/result route artifacts and generated contracts are present in repository history → PASS
+Known limitations:
+  - historical batch ID، thread ID و reviewer identity در artifacts موجود ثبت نشده‌اند.
+Next batch:
+  - historical handoff advanced to F03-T06.
+
+## F03-T06 — deterministic scoring and immutable result snapshot
+
+Task ID: F03-T06
+Completed at: 2026-08-26 16:08 +03:30
+Agent/Thread: historical thread not recorded; implementation commits authored by `sayh3x`
+Batch ID: historical batch ID not recorded
+Reviewed by: historical reviewer not recorded; completed checklist state is present in the current authoritative phase file
+Verified artifacts:
+  - commit `5643e5f` — deterministic scoring and result-band snapshot
+  - commit `b4aaae5` — persisted risk level and review flag classification
+Changed files:
+  - `apps/api/src/modules/assessments/domain/assessment-scoring.ts`
+  - `apps/api/src/modules/assessments/patient/patient-assessments.service.ts`
+  - `apps/api/test/assessment-scoring.spec.ts`
+  - `plan/phases/03-ASSESSMENT-ELIGIBILITY.md`
+Migrations:
+  - ندارد
+Tests run:
+  - focused Phase 03 API command recorded under `F03-T03` → PASS (`5 files / 25 tests`)
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+Result:
+  - all five supported answer types score deterministically → PASS
+  - malformed/unknown/duplicate answers and unmatched result bands are rejected → PASS
+  - result-band snapshot includes verified risk level and review flag → PASS
+Known limitations:
+  - historical batch ID، thread ID و reviewer identity در artifacts موجود ثبت نشده‌اند.
+Next batch:
+  - F03-B07.
+
+### Reconciliation verification note for F03-T03 through F03-T06
+
+- `pnpm --filter @sabz-zendegi/api test` → PARTIAL: `37` test files and `236` tests passed؛ migration smoke suite did not start because `DATABASE_URL` was not available (`1` failed suite، `2` skipped tests).
+- This run verifies the non-database API suite but is not evidence of a PostgreSQL migration/integration PASS for these historical tasks.
+- The original historical test commands/results، batch IDs، thread IDs and reviewer identities for `F03-T03` through `F03-T06` could not be recovered from the available repository artifacts.
+
 ## F03-T07 — booking eligibility blocker matrix
 
 Task ID: F03-T07
@@ -63,3 +198,37 @@ Known limitations:
   - ندارد
 Next batch:
   - تعریف نشده در `.codex/NEXT.md`
+
+## F03-T08 — admin assessment submissions and patient workspace
+
+Task ID: F03-T08
+Completed at: 2026-08-26 19:45 +03:30
+Agent/Thread: Codex /root/f03_t08
+Batch ID: F03-B08
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/assessments/admin/admin-assessment-submissions.controller.ts`
+  - `apps/api/test/admin-assessment-submissions.authorization.spec.ts`
+  - `apps/dashboard/src/features/patients/workspace/patient-workspace.tsx`
+  - `apps/dashboard/src/lib/patient-api.ts`
+  - `apps/dashboard/src/lib/patient-api.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api test -- admin-assessment-submissions.authorization.spec.ts` → PASS
+  - `pnpm --filter @sabz/dashboard test -- patient-api.spec.ts` → PASS
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `pnpm --filter @sabz-zendegi/api-client typecheck` → PASS
+  - `pnpm generate:api-client` → PASS
+  - `git diff --check` → PASS
+Result:
+  - ADMIN submission reads are permission-protected, clinic-scoped, and audited → PASS
+  - patient workspace renders actual submission/result state and truthful loading/error/empty states → PASS
+  - typed query parameters were exported to the generated client → PASS
+Known limitations:
+  - ندارد
+Next batch:
+  - F03-B09

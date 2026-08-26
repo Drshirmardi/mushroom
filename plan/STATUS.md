@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-26 14:52 +03:30`
+- آخرین به‌رورسانی: `2026-08-26 21:24 +03:30`
 - Milestone فعال: `Milestone A — بیمار آماده رزرو`
 - فاز فعال: `Phase 03 — Assessment Engine & Booking Eligibility`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `F03-B01`
-- task فعال: `F03-T03`
+- batch فعال: `F03-B09`
+- task فعال: `F03-T09`
 - مسئول/Agent: `Codex /root (coordinator)`
 - blocker فعال: `ندارد`
 
@@ -69,28 +69,34 @@
 - `F02-B03` با review مستقل و verification یکپارچه بسته شد؛ endpointهای self-profile، consent/intake و admin patient همراه OpenAPI freeze شدند؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
 - `F02-B04` با review مستقل و verification کامل app/dashboard/API بسته شد؛ UIها فقط از generated client استفاده می‌کنند و mockهای همان scope حذف شده‌اند؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
 - `F02-B05` با تأیید دستی جریان واقعی، رفع blocker مرورگر، mock audit و گیت کامل بسته شد؛ `F02-T13` پذیرفته شد.
-- قرارداد پایه و migration ارزیابی versioned و eligibility رزرو برای شروع `F03-T01/T02` اضافه و روی دیتابیس توسعه اعمال شد.
+- `F03-T01` تا `F03-T08` مطابق checklist فاز تکمیل شده‌اند؛ شواهد بازسازی‌شده `F03-T03` تا `F03-T06` و verification جدید در [`logs/phase-03.md`](logs/phase-03.md) ثبت شد.
 - dependency: `Phase 02` → DONE.
+
+## وضعیت taskهای فاز فعال
+
+- `F03-T01` تا `F03-T08` — `DONE`
+- `F03-T09` — `CLAIMED` در `F03-B09`
+- `F03-T10` تا `F03-T13` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
 ```text
-Batch ID: F03-B01
+Batch ID: F03-B09
 Coordinator/Thread: Codex /root (main agent)
-Started at: 2026-08-26 11:36 +03:30
+Started at: 2026-08-26 21:24 +03:30
 Phase: Phase 03
 Batch status: IN_PROGRESS
-Contract baseline: plan/phases/03-ASSESSMENT-ELIGIBILITY.md + versioned assessment/booking policy schema
-Coordinator-only files: plan/STATUS.md، plan/phases/02-PATIENT-ONBOARDING.md، plan/logs/phase-02.md، Prisma/OpenAPI/client and production code fixes
+Contract baseline: plan/phases/03-ASSESSMENT-ELIGIBILITY.md + plan/contracts/assessment-booking-v1.md
+Coordinator-only files: plan/STATUS.md، plan/phases/03-ASSESSMENT-ELIGIBILITY.md، plan/logs/phase-03.md، packages/api-client/openapi.json، packages/api-client/src/schema.generated.ts
 Tasks:
-  - Task ID: F03-T03
+  - Task ID: F03-T09
     Agent/Thread: /root
-    Status: IN_PROGRESS
-    Depends on: F03-T01, F03-T02 ACCEPTED
-    Scope: admin assessment CRUD draft، preview، duplicate، publish و archive
-    Owned paths: assessment admin module, OpenAPI/client and directly relevant tests
-    Shared/exclusive resource: Prisma/OpenAPI/client — single writer
-    Expected verification: authorization، lifecycle، OpenAPI and integration tests
+    Status: CLAIMED
+    Depends on: F03-T08 ACCEPTED
+    Scope: اتصال builder، list، lifecycle actions و results داشبورد به API واقعی
+    Owned paths: apps/dashboard/src/features/assessments/**، apps/dashboard/src/lib/assessment-api*، admin assessment DTO metadata در صورت اثبات نیاز، تست‌های مستقیم
+    Shared/exclusive resource: OpenAPI/generated client — فقط coordinator؛ F03-T10 تا آزادشدن این resource وارد batch نمی‌شود
+    Expected verification: focused dashboard assessment tests، dashboard typecheck، و در صورت تغییر contract تست/typecheck API و generated-client drift check
 Do not change: apps/app/src/components/home/slider-data.ts و justforcheck.md.
 ```
 

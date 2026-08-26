@@ -18,6 +18,13 @@ export class PatientApiError extends Error {
   }
 }
 
+export function getAssessmentResultBandTitle(snapshot: Record<string, unknown> | null | undefined) {
+  const band = snapshot?.resultBand;
+  return band && typeof band === "object" && "title" in band && typeof band.title === "string"
+    ? band.title
+    : null;
+}
+
 function authorization(accessToken: string) {
   return { authorization: `Bearer ${accessToken}` };
 }

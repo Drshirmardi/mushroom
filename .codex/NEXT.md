@@ -1,28 +1,32 @@
 # Active Task Batch
 
-- Updated: `2026-08-26 16:25 +03:30`
-- Batch: `F03-B08`
-- Status: `READY`
-- Goal: expose real assessment submissions and results to ADMIN, filtered by patient, and surface them in the patient workspace.
+- Updated: `2026-08-26 21:24 +03:30`
+- Batch: `F03-B09`
+- Status: `IN_PROGRESS`
+- Goal: complete the dashboard assessment builder/list/results integration with exclusive generated-contract ownership.
 
 ## Tasks
 
-### F03-T08 — `READY`
+### F03-T09 — `CLAIMED`
 
-- Dependencies: F03-T05, F03-T06, and F03-T07 are complete.
-- Scope: implement and verify the ADMIN submissions/results listing and patient filter, then connect that real data to the dashboard patient workspace.
-- Owned paths: assessment-submissions ADMIN API, dashboard patient workspace assessment views, generated client only if the API contract changes, and focused tests.
+- Dependencies: F03-T08 is complete.
+- Scope: connect the assessment builder, assessment list, and result views throughout the dashboard to real API data.
+- Owned paths: dashboard assessment features، `apps/dashboard/src/lib/assessment-api*`، admin assessment DTO metadata only if a write-flow proves it necessary، focused tests.
+- Shared/exclusive resource: `packages/api-client/openapi.json` and `packages/api-client/src/schema.generated.ts` are coordinator-only for this batch.
 - Acceptance:
-  - ADMIN can retrieve only authorized assessment submission/result data and filter it by patient.
-  - The patient workspace presents actual submission/result state; it does not fabricate empty counts or mock data.
-  - Medical data boundaries retain authorization and audit behavior.
-- Required checks: focused API authorization/integration tests, focused dashboard tests/typecheck, API typecheck, and OpenAPI/client generation check if the contract changes.
+  - Builder, list, and result views use generated client data rather than mock values.
+  - Loading, error, and unavailable states remain truthful.
+- Required checks: focused dashboard tests and dashboard typecheck; if contract files change, focused API tests/typecheck and generated-client drift/typecheck.
 
 ## Batch review gate
 
 - Main agent reviews the final diff, persisted snapshot immutability, authorization/audit boundaries, generated contract drift, tests, and unrelated files.
-- Set `F03-T08` to `DONE` only after all acceptance checks pass.
+- Set `F03-T09` to `DONE` only after its acceptance checks pass.
 - After acceptance, replace this file with the next eligible batch of up to three dependency-safe tasks; do not start that batch in the same turn.
+
+## Next eligible task
+
+- `F03-T10` remains unchecked and may be claimed only after `F03-B09` releases the generated OpenAPI/client paths.
 
 ## Protected
 

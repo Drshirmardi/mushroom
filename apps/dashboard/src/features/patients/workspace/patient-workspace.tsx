@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, FileText } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { Avatar, SectionCard, StatusBadge } from "@/components/shared";
-import { getAdminPatient, getAdminPatientAssessmentSubmissions, PatientApiError, type AdminAssessmentSubmissionList, type AdminPatientDetail } from "@/lib/patient-api";
+import { getAdminPatient, getAdminPatientAssessmentSubmissions, getAssessmentResultBandTitle, PatientApiError, type AdminAssessmentSubmissionList, type AdminPatientDetail } from "@/lib/patient-api";
 
 const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات خوداظهاری" }, { id: "assessments", label: "ارزیابی‌ها" }] as const;
 const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-", AB_POSITIVE: "AB+", AB_NEGATIVE: "AB-", O_POSITIVE: "O+", O_NEGATIVE: "O-", UNKNOWN: "نامشخص" };
@@ -82,6 +82,6 @@ function PatientAssessments({ assessments, error }: { assessments: AdminAssessme
   if (error?.status === 401 || error?.status === 403) return <Notice tone="amber">اجازهٔ مشاهدهٔ ارزیابی‌های این بیمار را ندارید.</Notice>;
   if (error) return <Notice tone="red">دریافت ارزیابی‌های بیمار ممکن نشد. صفحه را دوباره بارگذاری کنید.</Notice>;
   if (!assessments || assessments.items.length === 0) return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center"><FileText size={36} className="mx-auto mb-3 text-muted-foreground/40" /><p className="text-sm font-medium">هنوز هیچ ارزیابی‌ای برای این بیمار ارسال نشده است.</p></div>;
-  return <div className="max-w-3xl space-y-4">{assessments.items.map((assessment) => { const snapshot = assessment.resultSnapshot; const band = snapshot && typeof snapshot.resultBand === "string" ? snapshot.resultBand : null; return <SectionCard key={assessment.id} title={assessment.assessmentTitle}><Rows rows={[["وضعیت", assessmentState(assessment.state)], ["تلاش", String(assessment.attemptNumber)], ["امتیاز", assessment.score ?? "ثبت نشده"], ["نتیجه", band ?? "ثبت نشده"], ["تاریخ تکمیل", assessment.completedAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(assessment.completedAt)) : "ثبت نشده"]]} /></SectionCard>; })}</div>;
+  return <div className="max-w-3xl space-y-4">{assessments.items.map((assessment) => { const band = getAssessmentResultBandTitle(assessment.resultSnapshot); return <SectionCard key={assessment.id} title={assessment.assessmentTitle}><Rows rows={[["وضعیت", assessmentState(assessment.state)], ["تلاش", String(assessment.attemptNumber)], ["امتیاز", assessment.score ?? "ثبت نشده"], ["نتیجه", band ?? "ثبت نشده"], ["تاریخ تکمیل", assessment.completedAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(assessment.completedAt)) : "ثبت نشده"]]} /></SectionCard>; })}</div>;
 }
 function assessmentState(state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED") { return state === "COMPLETE" ? "تکمیل‌شده" : state === "IN_PROGRESS" ? "در حال تکمیل" : "نامعتبر"; }
