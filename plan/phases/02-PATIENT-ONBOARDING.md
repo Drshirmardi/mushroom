@@ -48,7 +48,7 @@
 - [x] `F02-T10` — اتصال widgetهای بیمار Dashboard Home و مخفی‌کردن widget فاقد منبع واقعی
 - [x] `F02-T11` — verification دیتابیس: fresh migration، upgrade Phase 01، constraintها و seed idempotency
 - [x] `F02-T12` — verification امنیت/API: ownership، ADMIN-only، audit، race/idempotency و contract regression
-- [ ] `F02-T13` — browser E2E، mock audit، full build/typecheck و evidence نهایی فاز
+- [x] `F02-T13` — browser E2E، mock audit، full build/typecheck و evidence نهایی فاز
 
 ## Batch map اجرایی
 

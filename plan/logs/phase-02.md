@@ -94,6 +94,23 @@ Known limitations:
 Next batch:
   - F02-B03
 
+## F02-T13 — verification نهایی مرورگر و mock audit
+
+Task ID: F02-T13
+Completed at: 2026-08-26 11:36 +03:30
+Reviewed by: Codex /root
+Verification:
+  - جریان onboarding و نمایش بیمار در dashboard توسط کاربر در مرورگر واقعی تأیید شد.
+  - اتصال Browser بازیابی شد؛ `http://localhost:3002/dashboard` با DOM واقعی خوانده شد و console error نداشت.
+  - فرم onboarding دارای validation مرحله‌ای، حفظ داده پس از consent، draft/resume و مسیر خروج واضح است.
+  - API full suite: 32 files / 211 tests → PASS.
+  - API typecheck، app tests/typecheck/build و dashboard page/assets در گیت‌های نهایی → PASS.
+  - mockهای scope onboarding/patient و widgetهای فاقد منبع واقعی حذف یا پنهان شدند.
+Result:
+  - F02-B05 → ACCEPTED
+  - Phase 02 → DONE
+  - Phase 03 unblocked.
+
 ## F02-T05 — API self-profile و onboarding status
 
 Task ID: F02-T05
