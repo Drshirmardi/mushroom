@@ -2256,6 +2256,162 @@
           "Admin Booking Policy"
         ]
       }
+    },
+    "/v1/assessments": {
+      "get": {
+        "operationId": "patientAssessmentsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List published assessments for the patient clinic",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessments/{assessmentVersionId}/submissions": {
+      "post": {
+        "operationId": "patientAssessmentSubmissionStart",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assessment was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start or resume an assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}": {
+      "get": {
+        "operationId": "patientAssessmentSubmissionGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the patient assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      },
+      "put": {
+        "operationId": "patientAssessmentSubmissionSave",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAssessmentAnswersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save answers for an in-progress assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
     }
   },
   "info": {
@@ -3748,6 +3904,102 @@
         ]
       },
       "UpdateBookingAssessmentPolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "PatientAssessmentListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "structure"
+        ]
+      },
+      "PatientAssessmentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAssessmentListItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PatientAssessmentSubmissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attemptNumber": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "attemptNumber",
+          "state",
+          "answers",
+          "startedAt"
+        ]
+      },
+      "SaveAssessmentAnswersDto": {
         "type": "object",
         "properties": {}
       }
