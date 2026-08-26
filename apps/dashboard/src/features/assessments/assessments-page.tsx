@@ -74,11 +74,19 @@ export function AssessmentsPage() {
     setPolicy(nextPolicy.status === "fulfilled" ? { status: "ready", data: nextPolicy.value } : { status: requestState(nextPolicy.reason) });
   }, [token]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.allSettled([listAssessments(token), getAssessmentPolicy(token)]).then(([list, nextPolicy]) => {
+      if (cancelled) return;
+      setVersions(list.status === "fulfilled" ? { status: "ready", data: list.value } : { status: requestState(list.reason) });
+      setPolicy(nextPolicy.status === "fulfilled" ? { status: "ready", data: nextPolicy.value } : { status: requestState(nextPolicy.reason) });
+    });
+    return () => { cancelled = true; };
+  }, [token]);
+
   useEffect(() => {
     if (view !== "results") return;
     let cancelled = false;
-    setSubmissions({ status: "loading" });
     void listAssessmentSubmissions(token, { assessmentVersionId: resultVersionId || undefined }).then(
       (data) => { if (!cancelled) setSubmissions({ status: "ready", data }); },
       (error: unknown) => { if (!cancelled) setSubmissions({ status: requestState(error) }); },
@@ -121,9 +129,9 @@ export function AssessmentsPage() {
   return <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
     <div className="flex items-center gap-2 bg-card border border-border rounded-2xl p-1.5 w-fit shadow-sm">{(["list", "builder", "results"] as const).map((item) => <button key={item} onClick={() => item === "builder" ? openNew() : setView(item)} className={`px-5 py-2.5 rounded-xl text-sm font-bold ${view === item ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{item === "list" ? "لیست ارزیابی‌ها" : item === "builder" ? "ساخت ارزیابی" : "نتایج"}</button>)}</div>
     {actionError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{actionError}</p>}
-    {view === "list" && <ListView state={versions} policy={policy} published={published} busy={busy} onNew={openNew} onEdit={(id) => void openDraft(id)} onResults={(id) => { setResultVersionId(id); setView("results"); }} onDuplicate={(id) => void lifecycle("duplicate", id)} onArchive={(id) => void lifecycle("archive", id)} onRequirement={(required, id) => void setRequirement(required, id)} />}
+    {view === "list" && <ListView state={versions} policy={policy} published={published} busy={busy} onNew={openNew} onEdit={(id) => void openDraft(id)} onResults={(id) => { setResultVersionId(id); setView("results"); setSubmissions({ status: "loading" }); }} onDuplicate={(id) => void lifecycle("duplicate", id)} onArchive={(id) => void lifecycle("archive", id)} onRequirement={(required, id) => void setRequirement(required, id)} />}
     {view === "builder" && <Builder title={title} questions={questions} busy={busy} editing={Boolean(draftId)} onTitle={setTitle} onQuestions={setQuestions} onSave={() => void saveDraft()} onPublish={() => void publishDraft()} />}
-    {view === "results" && <Results state={submissions} versions={versions.status === "ready" ? versions.data.items : []} selected={resultVersionId} onVersion={setResultVersionId} onPatient={(id) => router.push(`/patients/${id}`)} />}
+    {view === "results" && <Results state={submissions} versions={versions.status === "ready" ? versions.data.items : []} selected={resultVersionId} onVersion={(id) => { setResultVersionId(id); setSubmissions({ status: "loading" }); }} onPatient={(id) => router.push(`/patients/${id}`)} />}
   </div>;
 }
 
