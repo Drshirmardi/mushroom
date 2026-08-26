@@ -45,6 +45,110 @@ enum SessionRevocationReason {
   @@map("session_revocation_reason")
 }
 
+enum ClinicStatus {
+  ACTIVE
+  INACTIVE
+  @@map("clinic_status")
+}
+
+enum ConsentPolicyStatus {
+  DRAFT
+  ACTIVE
+  RETIRED
+  @@map("consent_policy_status")
+}
+
+enum MedicalIntakeSubmissionState {
+  DRAFT
+  COMPLETE
+  @@map("medical_intake_submission_state")
+}
+
+enum MedicalIntakeRevisionState {
+  DRAFT
+  COMPLETE
+  @@map("medical_intake_revision_state")
+}
+
+enum MedicalIntakeDataOrigin {
+  PATIENT_SELF_REPORTED
+  @@map("medical_intake_data_origin")
+}
+
+enum MedicalIntakeRecordingMode {
+  PATIENT_ENTRY
+  ADMIN_ON_BEHALF_CORRECTION
+  @@map("medical_intake_recording_mode")
+}
+
+enum MedicalIntakeMutationOperation {
+  ADMIN_CORRECTION
+  COMPLETE
+  @@map("medical_intake_mutation_operation")
+}
+
+enum SexAtBirth {
+  FEMALE
+  MALE
+  INTERSEX
+  UNKNOWN
+  PREFER_NOT_TO_SAY
+  @@map("sex_at_birth")
+}
+
+enum BloodType {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+  UNKNOWN
+  @@map("blood_type")
+}
+
+enum SleepDurationBand {
+  LESS_THAN_5_HOURS
+  FROM_5_TO_LESS_THAN_7_HOURS
+  FROM_7_TO_9_HOURS
+  MORE_THAN_9_HOURS
+  UNKNOWN
+  @@map("sleep_duration_band")
+}
+
+enum ExerciseFrequency {
+  NONE
+  ONCE_OR_TWICE_WEEKLY
+  THREE_OR_FOUR_TIMES_WEEKLY
+  DAILY
+  UNKNOWN
+  @@map("exercise_frequency")
+}
+
+enum StressLevel {
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+  UNKNOWN
+  @@map("stress_level")
+}
+
+enum TobaccoUse {
+  NEVER
+  FORMER
+  CURRENT
+  UNKNOWN
+  @@map("tobacco_use")
+}
+
+enum ConsentSource {
+  PATIENT_APP
+  @@map("consent_source")
+}
+
 model User {
   id            String         @id @default(uuid()) @db.Uuid
   phone         String         @unique(map: "users_phone_key") @db.VarChar(13)
@@ -57,6 +161,12 @@ model User {
   assignedRoles UserRole[]     @relation("UserRoleAssignedBy")
   loginAttempts LoginAttempt[]
   auditEvents   AuditEvent[]   @relation("AuditEventActor")
+  userProfile UserProfile?
+  patientProfile PatientProfile?
+  recordedIntakeRevisions PatientMedicalIntakeRevision[] @relation("IntakeRevisionRecordedBy")
+  acceptedConsentRecords PatientConsentRecord[] @relation("ConsentAcceptedBy")
+  withdrawnConsentRecords PatientConsentRecord[] @relation("ConsentWithdrawnBy")
+  publishedConsentPolicies ConsentPolicyVersion[] @relation("ConsentPolicyPublishedBy")
 
   @@map("users")
 }
@@ -88,6 +198,8 @@ model Session {
   revokedReason     SessionRevocationReason? @map("revoked_reason")
   user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   auditEvents       AuditEvent[]
+  acceptedConsentRecords PatientConsentRecord[] @relation("ConsentAcceptedBySession")
+  withdrawnConsentRecords PatientConsentRecord[] @relation("ConsentWithdrawnBySession")
 
   @@index([userId, revokedAt, expiresAt], map: "sessions_user_active_idx")
   @@map("sessions")
@@ -163,4 +275,149 @@ model AuditEvent {
   @@index([action, createdAt], map: "audit_events_action_created_at_idx")
   @@index([subjectType, subjectId, createdAt], map: "audit_events_subject_created_at_idx")
   @@map("audit_events")
+}
+
+model Clinic {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(160)
+  timeZone String @default("Asia/Tehran") @map("time_zone") @db.VarChar(64)
+  status ClinicStatus @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patientProfiles PatientProfile[]
+  medicalIntakes PatientMedicalIntake[]
+  consentPolicies ConsentPolicyVersion[]
+  @@map("clinics")
+}
+
+model UserProfile {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @unique(map: "user_profiles_user_id_key") @map("user_id") @db.Uuid
+  firstName String? @map("first_name") @db.VarChar(80)
+  lastName String? @map("last_name") @db.VarChar(100)
+  email String? @db.VarChar(254)
+  cityName String? @map("city_name") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@map("user_profiles")
+}
+
+model PatientProfile {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @unique(map: "patient_profiles_user_id_key") @map("user_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  medicalIntake PatientMedicalIntake?
+  consentRecords PatientConsentRecord[]
+  reportedIntakeRevisions PatientMedicalIntakeRevision[] @relation("IntakeRevisionReportedPatient")
+  @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
+  @@map("patient_profiles")
+}
+
+model PatientMedicalIntake {
+  id String @id @default(uuid()) @db.Uuid
+  patientId String @unique(map: "patient_medical_intakes_patient_id_key") @map("patient_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  assignedSchemaVersion Int @default(1) @map("assigned_schema_version")
+  currentRevisionNumber Int @default(0) @map("current_revision_number")
+  completedRevisionNumber Int? @map("completed_revision_number")
+  submissionState MedicalIntakeSubmissionState @default(DRAFT) @map("submission_state")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  revisions PatientMedicalIntakeRevision[]
+  @@index([clinicId, submissionState, updatedAt], map: "patient_medical_intakes_clinic_state_updated_at_idx")
+  @@map("patient_medical_intakes")
+}
+
+model PatientMedicalIntakeRevision {
+  id String @id @default(uuid()) @db.Uuid
+  intakeId String @map("intake_id") @db.Uuid
+  revisionNumber Int @map("revision_number")
+  assignedSchemaVersion Int @map("assigned_schema_version")
+  revisionState MedicalIntakeRevisionState @map("revision_state")
+  birthDate DateTime? @map("birth_date") @db.Date
+  sexAtBirth SexAtBirth? @map("sex_at_birth")
+  heightCm Int? @map("height_cm")
+  weightKg Decimal? @map("weight_kg") @db.Decimal(6, 2)
+  bloodType BloodType? @map("blood_type")
+  allergyReport Json? @map("allergy_report")
+  chronicConditionReport Json? @map("chronic_condition_report")
+  currentMedicationReport Json? @map("current_medication_report")
+  sleepDurationBand SleepDurationBand? @map("sleep_duration_band")
+  exerciseFrequency ExerciseFrequency? @map("exercise_frequency")
+  stressLevel StressLevel? @map("stress_level")
+  tobaccoUse TobaccoUse? @map("tobacco_use")
+  dataOrigin MedicalIntakeDataOrigin @default(PATIENT_SELF_REPORTED) @map("data_origin")
+  recordingMode MedicalIntakeRecordingMode @map("recording_mode")
+  reportedPatientId String @map("reported_patient_id") @db.Uuid
+  recordedByUserId String? @map("recorded_by_user_id") @db.Uuid
+  correctionReason String? @map("correction_reason") @db.VarChar(500)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+  completedConsentRecordId String? @map("completed_consent_record_id") @db.Uuid
+  mutationOperation MedicalIntakeMutationOperation? @map("mutation_operation")
+  mutationKey String? @map("mutation_key") @db.VarChar(255)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  intake PatientMedicalIntake @relation(fields: [intakeId], references: [id], onDelete: Restrict)
+  reportedPatient PatientProfile @relation("IntakeRevisionReportedPatient", fields: [reportedPatientId], references: [id], onDelete: Restrict)
+  recordedByUser User? @relation("IntakeRevisionRecordedBy", fields: [recordedByUserId], references: [id], onDelete: SetNull)
+  completedConsentRecord PatientConsentRecord? @relation(fields: [completedConsentRecordId], references: [id], onDelete: Restrict)
+  @@unique([intakeId, revisionNumber], map: "patient_medical_intake_revisions_intake_revision_key")
+  @@unique([intakeId, mutationOperation, mutationKey], map: "patient_medical_intake_revisions_mutation_key")
+  @@map("patient_medical_intake_revisions")
+}
+
+model ConsentPolicyVersion {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  policyKey String @map("policy_key") @db.VarChar(100)
+  versionNumber Int @map("version_number")
+  locale String @default("fa-IR") @db.VarChar(16)
+  title String @db.VarChar(255)
+  body String @db.Text
+  contentHash String @map("content_hash") @db.Char(64)
+  status ConsentPolicyStatus @default(DRAFT)
+  activatedAt DateTime? @map("activated_at") @db.Timestamptz(3)
+  retiredAt DateTime? @map("retired_at") @db.Timestamptz(3)
+  publishedByUserId String? @map("published_by_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  publishedByUser User? @relation("ConsentPolicyPublishedBy", fields: [publishedByUserId], references: [id], onDelete: SetNull)
+  consentRecords PatientConsentRecord[]
+  @@unique([clinicId, policyKey, locale, versionNumber], map: "consent_policy_versions_version_key")
+  @@map("consent_policy_versions")
+}
+
+model PatientConsentRecord {
+  id String @id @default(uuid()) @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  policyVersionId String @map("policy_version_id") @db.Uuid
+  contentHash String @map("content_hash") @db.Char(64)
+  acceptedAt DateTime @default(now()) @map("accepted_at") @db.Timestamptz(3)
+  acceptedByUserId String? @map("accepted_by_user_id") @db.Uuid
+  acceptedBySessionId String? @map("accepted_by_session_id") @db.Uuid
+  source ConsentSource @default(PATIENT_APP)
+  withdrawnAt DateTime? @map("withdrawn_at") @db.Timestamptz(3)
+  withdrawnByUserId String? @map("withdrawn_by_user_id") @db.Uuid
+  withdrawnBySessionId String? @map("withdrawn_by_session_id") @db.Uuid
+  acceptanceIdempotencyKey String? @map("acceptance_idempotency_key") @db.VarChar(255)
+  withdrawalIdempotencyKey String? @map("withdrawal_idempotency_key") @db.VarChar(255)
+  acceptanceRequestId String? @map("acceptance_request_id") @db.VarChar(128)
+  withdrawalRequestId String? @map("withdrawal_request_id") @db.VarChar(128)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  policyVersion ConsentPolicyVersion @relation(fields: [policyVersionId], references: [id], onDelete: Restrict)
+  acceptedByUser User? @relation("ConsentAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  withdrawnByUser User? @relation("ConsentWithdrawnBy", fields: [withdrawnByUserId], references: [id], onDelete: SetNull)
+  acceptedBySession Session? @relation("ConsentAcceptedBySession", fields: [acceptedBySessionId], references: [id], onDelete: SetNull)
+  withdrawnBySession Session? @relation("ConsentWithdrawnBySession", fields: [withdrawnBySessionId], references: [id], onDelete: SetNull)
+  completedRevisions PatientMedicalIntakeRevision[]
+  @@map("patient_consent_records")
 }

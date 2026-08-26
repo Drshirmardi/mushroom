@@ -28,7 +28,7 @@ describe("web auth service", () => {
 
         await expect(
             service.login({ phone: "+989121234567", password: "safe-password-long", remember: true }),
-        ).resolves.toEqual({ ok: true });
+        ).resolves.toEqual({ ok: true, roles: ["PATIENT"] });
 
         const request = fetch.mock.calls[0]?.[0] as Request;
         expect(request.url).toBe("https://api.example.test/v1/auth/login");
@@ -56,7 +56,7 @@ describe("web auth service", () => {
 
         await expect(
             service.signup({ phone: "+989121234567", password: "safe-password-long" }),
-        ).resolves.toEqual({ ok: true });
+        ).resolves.toEqual({ ok: true, roles: ["PATIENT"] });
 
         const request = fetch.mock.calls[0]?.[0] as Request;
         expect(await request.clone().json()).toEqual({

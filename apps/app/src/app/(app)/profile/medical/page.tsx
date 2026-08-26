@@ -1,31 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
+import { loadPatientOnboarding, onboardingErrorMessage, type MedicalIntake } from "@/lib/onboarding/patient-onboarding";
 
-const SECTIONS = [
-  { title: "آلرژی‌ها", items: ["آلرژی به پنی‌سیلین"], color: "bg-red-50 border-red-200 text-red-800" },
-  { title: "بیماری‌های مزمن", items: ["سردرد میگرنی", "کمردرد مزمن"], color: "bg-amber-50 border-amber-200 text-amber-800" },
-  { title: "داروهای مصرفی", items: ["قرص آهن ۳۲۵ میلی‌گرم"], color: "bg-blue-50 border-blue-200 text-blue-800" },
-];
+const reportText = (value: unknown) => {
+  if (!value || typeof value !== "object") return "پاسخ داده نشده";
+  const report = value as { status?: unknown; items?: unknown };
+  if (report.status === "NONE") return "ندارم";
+  if (report.status === "UNKNOWN") return "نمی‌دانم";
+  return Array.isArray(report.items) && report.items.every((item) => typeof item === "string") ? report.items.join("، ") || "گزارش بدون جزئیات" : "پاسخ داده نشده";
+};
 
 export default function MedicalProfilePage() {
-  const router = useRouter();
-  return (
-    <div>
-      <PageHeader title="پروفایل پزشکی" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        {SECTIONS.map(section => (
-          <div key={section.title} className={`rounded-2xl border p-4 ${section.color}`}>
-            <div className="flex items-center justify-between mb-3"><p className="text-sm font-bold">{section.title}</p><button className="w-7 h-7 bg-white/60 rounded-lg flex items-center justify-center"><Plus size={14} /></button></div>
-            {section.items.map(item => <div key={item} className="flex items-center justify-between py-1.5 border-b border-current/10 last:border-0"><span className="text-sm">{item}</span><button><Trash2 size={13} className="opacity-60" /></button></div>)}
-          </div>
-        ))}
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
-          {[["گروه خونی", "A+"], ["قد", "۱۶۵ سانتی‌متر"], ["وزن", "۵۸ کیلوگرم"], ["BMI", "۲۱.۳ (نرمال)"]].map(([k, v]) => <div key={k} className="flex justify-between py-2 border-b border-border last:border-0"><span className="text-sm text-muted-foreground">{k}</span><span className="text-sm font-bold text-foreground">{v}</span></div>)}
-        </div>
-      </div>
-    </div>
-  );
+  const router = useRouter(); const { authentication } = useAuthSession(); const [intake, setIntake] = useState<MedicalIntake | null>(null); const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(true);
+  useEffect(() => { void (async () => { try { setIntake((await loadPatientOnboarding(authentication.accessToken)).intake); } catch (cause) { setError(onboardingErrorMessage(cause)); } finally { setLoading(false); } })(); }, [authentication.accessToken]);
+  const snapshot = intake?.snapshot;
+  return <div><PageHeader title="پروفایل پزشکی" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{loading ? <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">در حال دریافت اطلاعات خوداظهاری…</p> : error ? <p role="alert" className="rounded-2xl bg-red-50 p-4 text-sm text-red-700">{error}</p> : <><section className="rounded-2xl border border-border bg-white p-5"><FileText className="mb-3 text-primary" size={24} /><h1 className="text-base font-bold text-foreground">اطلاعات خوداظهاری</h1><p className="mt-2 text-sm leading-7 text-muted-foreground">این موارد گزارش بیمار هستند و تشخیص، هشدار یا واقعیت بالینی تأییدشده نیستند.</p>{intake?.submissionState && <p className="mt-2 text-xs text-muted-foreground">نسخه فعلی: {intake.currentRevision} · {intake.submissionState === "COMPLETE" ? "تکمیل‌شده" : "پیش‌نویس"}</p>}</section>{snapshot && <section className="space-y-3 rounded-2xl border border-border bg-white p-5 text-sm"><p><strong>آلرژی‌ها:</strong> {reportText(snapshot.allergyReport)}</p><p><strong>بیماری‌های مزمن:</strong> {reportText(snapshot.chronicConditionReport)}</p><p><strong>داروهای مصرفی:</strong> {reportText(snapshot.currentMedicationReport)}</p></section>}<button type="button" onClick={() => router.push("/onboarding")} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-white">{snapshot ? "ویرایش اطلاعات خوداظهاری" : "تکمیل اطلاعات خوداظهاری"} <ArrowLeft size={16} /></button></>}</div></div>;
 }

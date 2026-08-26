@@ -1,137 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Edit, Eye, FileText, Lock, Play, Plus, Save } from "lucide-react";
-import { APPTS } from "@/data/appointments";
-import type { Patient } from "@/data/patients";
-import { Avatar, SectionCard, StatusBadge, TypeBadge } from "@/components/shared";
-import { fm, p } from "@/lib/utils";
-import { HealthCharts } from "./health-charts";
-import { MedicalTimeline } from "./medical-timeline";
-import { TraditionalMedicineTab } from "./traditional-medicine-tab";
-import { WalletTab } from "./wallet-tab";
+import { ChevronLeft, FileText } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { Avatar, SectionCard, StatusBadge } from "@/components/shared";
+import { getAdminPatient, PatientApiError, type AdminPatientDetail } from "@/lib/patient-api";
 
-const TABS = [
-  { id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "پزشکی" }, { id: "history", label: "تاریخچه" },
-  { id: "appointments", label: "نوبت‌ها" }, { id: "assessments", label: "ارزیابی‌ها" }, { id: "traditional", label: "طب سنتی" },
-  { id: "prescriptions", label: "نسخه‌ها" }, { id: "treatment", label: "درمان" }, { id: "diet", label: "رژیم" },
-  { id: "exercise", label: "ورزش" }, { id: "tracking", label: "سلامت" }, { id: "timeline", label: "تایم‌لاین" },
-  { id: "orders", label: "سفارش‌ها" }, { id: "wallet", label: "کیف پول" }, { id: "messages", label: "پیام‌ها" },
-  { id: "files", label: "فایل‌ها" }, { id: "notes", label: "یادداشت" }, { id: "analytics", label: "تحلیل" },
-];
+const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات خوداظهاری" }] as const;
+const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-", AB_POSITIVE: "AB+", AB_NEGATIVE: "AB-", O_POSITIVE: "O+", O_NEGATIVE: "O-", UNKNOWN: "نامشخص" };
+const SEXES: Record<string, string> = { FEMALE: "زن", MALE: "مرد", INTERSEX: "اینترسکس", UNKNOWN: "نامشخص", PREFER_NOT_TO_SAY: "ترجیح می‌دهم نگویم" };
 
-export function PatientWorkspace({ patient: pt }: { patient: Patient }) {
-  const router = useRouter();
-  const [tab, setTab] = useState("overview");
-  return (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <div className="px-7 pt-5 pb-4 border-b border-border bg-card flex-shrink-0">
-        <button onClick={() => router.push("/patients")} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary mb-4"><ChevronLeft size={14} />بازگشت به لیست</button>
-        <div className="flex items-start gap-5">
-          <Avatar letter={pt.avatar} size="lg" />
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-bold">{pt.name}</h2><StatusBadge status={pt.status} /></div>
-            <p className="text-sm text-muted-foreground mb-2">{pt.diagnosis}</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
-              {[["📱", pt.phone], ["سن:", pt.age + " سال"], ["وزن:", pt.weight + " کگ"], ["قد:", pt.height + " سم"], ["ویزیت:", pt.visits + " جلسه"], ["مزاج:", pt.constitution], ["گروه خونی:", pt.bloodType], ["آخرین ویزیت:", pt.lastVisit]].map(([l, v], i) => (
-                <span key={i}>{l} <span className="font-semibold text-foreground">{v}</span></span>
-              ))}
-            </div>
-          </div>
-          <div className="flex gap-2 flex-shrink-0">
-            <button className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold"><Plus size={13} />نوبت</button>
-            <button className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-secondary"><Edit size={13} />ویرایش</button>
-            <button className="flex items-center gap-1.5 px-3 py-2 border border-red-200 text-red-600 rounded-xl text-xs font-semibold hover:bg-red-50"><Lock size={13} />مسدود</button>
-          </div>
-        </div>
-        <div className="grid grid-cols-4 gap-3 mt-4">
-          {[[fm(pt.revenue), "کل درآمد", "text-primary"], [pt.visits + " جلسه", "ویزیت", "text-blue-600"], ["۳ سفارش", "فروشگاه", "text-orange-600"], ["۸ نسخه", "نسخه‌ها", "text-violet-600"]].map(([v, l, c], i) => (
-            <div key={i} className="bg-secondary/60 rounded-xl p-3"><p className={`text-sm font-bold ${c}`}>{v}</p><p className="text-xs text-muted-foreground">{l}</p></div>
-          ))}
-        </div>
-      </div>
-      <div className="border-b border-border bg-card flex-shrink-0 overflow-x-auto">
-        <div className="flex px-7">
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              className={`px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 ${tab === t.id ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto p-7">
-        {tab === "overview" && (
-          <div className="grid grid-cols-2 gap-6">
-            <SectionCard title="اطلاعات پزشکی">
-              <div className="space-y-3">
-                {[["تشخیص اصلی", pt.diagnosis], ["آلرژی‌ها", "پنی‌سیلین، گرده گل"], ["بیماری زمینه‌ای", "فشار خون (کنترل‌شده)"], ["داروهای جاری", "لیزینوپریل ۱۰mg روزانه"], ["گروه خونی", pt.bloodType]].map(([l, v]) => (
-                  <div key={l} className="flex gap-3"><span className="text-xs text-muted-foreground w-32 flex-shrink-0 pt-0.5">{l}:</span><span className="text-sm">{v}</span></div>
-                ))}
-              </div>
-            </SectionCard>
-            <SectionCard title="آخرین یادداشت پزشک">
-              <p className="text-sm leading-7">پروتکل درمانی با طب سوزنی در نقاط BL23، BL25، GV4 و KD3 ادامه دارد. پیشرفت خوبی مشاهده می‌شود.</p>
-              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3"><p className="text-xs font-bold text-amber-700 mb-1">⚠️ هشدار آلرژی</p><p className="text-xs text-amber-800">حساسیت به پنی‌سیلین — در تجویز دارو دقت شود</p></div>
-            </SectionCard>
-          </div>
-        )}
-        {tab === "timeline" && <MedicalTimeline />}
-        {tab === "tracking" && <HealthCharts />}
-        {tab === "traditional" && <TraditionalMedicineTab pt={pt} />}
-        {tab === "wallet" && <WalletTab />}
-        {tab === "history" && (
-          <div className="space-y-3">
-            {APPTS.slice(0, 6).map((a, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 bg-secondary/50 rounded-xl">
-                <div className={`w-1.5 rounded-full self-stretch ${a.type === "حضوری" ? "bg-teal-500" : "bg-violet-500"}`} />
-                <div className="flex-1"><div className="flex items-center justify-between mb-0.5"><p className="text-sm font-semibold">جلسه {p(i + 1)} — طب سوزنی</p><span className="text-xs text-muted-foreground">۱۴۰۳/۰{p(4 - Math.floor(i / 2))}/{p(17 - i * 4)}</span></div><p className="text-xs text-muted-foreground">نقاط: BL23، KD3، GV4</p></div>
-                <TypeBadge type={a.type} /><StatusBadge status="پایان یافته" />
-              </div>
-            ))}
-          </div>
-        )}
-        {tab === "appointments" && (
-          <div className="space-y-3">
-            {APPTS.slice(0, 5).map((a, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:shadow-sm transition-shadow">
-                <span className="text-sm font-bold w-12">{a.time}</span><Avatar letter={a.avatar} size="sm" />
-                <div className="flex-1"><p className="text-sm font-semibold">{a.patient}</p><p className="text-xs text-muted-foreground">۱۴۰۳/۰۴/۱۷</p></div>
-                <TypeBadge type={a.type} /><StatusBadge status={a.status} />
-                <div className="flex gap-1"><button className="p-1.5 hover:bg-secondary rounded-lg"><Play size={13} className="text-primary" /></button><button className="p-1.5 hover:bg-secondary rounded-lg"><Eye size={13} className="text-muted-foreground" /></button></div>
-              </div>
-            ))}
-          </div>
-        )}
-        {tab === "notes" && (
-          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-3"><Lock size={15} className="text-muted-foreground" /><h3 className="text-sm font-bold">یادداشت خصوصی پزشک</h3></div>
-            <textarea rows={8} placeholder="این یادداشت فقط برای شما قابل مشاهده است..." className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
-            <button className="mt-3 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold"><Save size={14} />ذخیره</button>
-          </div>
-        )}
-        {tab === "medical" && (
-          <div className="grid grid-cols-2 gap-5">
-            {[["اطلاعات پایه", [["نام کامل", pt.name], ["سن", pt.age + " سال"], ["جنسیت", "زن"], ["گروه خونی", pt.bloodType], ["قد", pt.height + " سم"], ["وزن", pt.weight + " کگ"]]], ["سابقه پزشکی", [["تشخیص", pt.diagnosis], ["آلرژی", "پنی‌سیلین"], ["بیماری زمینه‌ای", "فشار خون"], ["جراحی قبلی", "—"], ["داروهای جاری", "لیزینوپریل"], ["مصرف دخانیات", "خیر"]]]].map(([title, rows]) => (
-              <SectionCard key={title as string} title={title as string}>
-                <div className="space-y-2.5">
-                  {(rows as [string, string][]).map(([l, v]) => (
-                    <div key={l} className="flex gap-3 text-sm"><span className="text-muted-foreground w-28 flex-shrink-0">{l}:</span><span className="font-semibold">{v}</span></div>
-                  ))}
-                </div>
-              </SectionCard>
-            ))}
-          </div>
-        )}
-        {["prescriptions", "treatment", "diet", "exercise", "assessments", "orders", "messages", "files", "analytics"].includes(tab) && (
-          <div className="text-center py-16 text-muted-foreground">
-            <FileText size={40} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm font-medium">بخش {TABS.find(t => t.id === tab)?.label}</p>
-            <p className="text-xs mt-1">اطلاعات در حال بارگذاری است</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function display(value: unknown, fallback = "ثبت نشده") { return value == null || value === "" ? fallback : String(value); }
+function initial(name: unknown) { const value = typeof name === "string" ? name.trim() : ""; return value ? value.slice(0, 1) : "ب"; }
+function declaration(report: { status: "NONE" | "UNKNOWN" | "PRESENT"; items: string[] } | null | undefined) {
+  if (!report) return "ثبت نشده";
+  if (report.status === "NONE") return "ندارد";
+  if (report.status === "UNKNOWN") return "نمی‌دانم";
+  return report.items.length ? report.items.join("، ") : "گزارش شده";
 }
+
+export function PatientWorkspace({ patientId }: { patientId: string }) {
+  const router = useRouter();
+  const { authentication } = useDashboardSession();
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("overview");
+  const [patient, setPatient] = useState<AdminPatientDetail | null>(null);
+  const [error, setError] = useState<PatientApiError | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getAdminPatient(authentication.accessToken, patientId).then(
+      (data) => { if (!cancelled) setPatient(data); },
+      (reason: unknown) => { if (!cancelled) setError(reason instanceof PatientApiError ? reason : new PatientApiError(0)); },
+    );
+    return () => { cancelled = true; };
+  }, [authentication.accessToken, patientId]);
+
+  if (!patient && !error) return <div className="p-7 text-sm text-muted-foreground">در حال دریافت پرونده بیمار…</div>;
+  if (error?.status === 401 || error?.status === 403) return <Notice tone="amber">اجازهٔ مشاهدهٔ این پرونده را ندارید.</Notice>;
+  if (error?.status === 404) return <Notice>پروندهٔ بیمار پیدا نشد.</Notice>;
+  if (!patient) return <Notice tone="red">دریافت پرونده بیمار ممکن نشد. صفحه را دوباره بارگذاری کنید.</Notice>;
+
+  const intake = patient.intake.value;
+  const medicalAvailable = patient.intake.status === "AVAILABLE" && intake;
+  const profile = patient.profile;
+  const name = display(profile.displayName, "بدون نام");
+  const basicRows = [["نام کامل", name], ["شماره همراه", profile.phone], ["ایمیل", display(profile.email)], ["شهر", display(profile.cityName)], ["وضعیت حساب", profile.accountStatus === "ACTIVE" ? "فعال" : "غیرفعال"]];
+  const intakeRows = medicalAvailable ? [["تاریخ تولد", display(intake.birthDate)], ["جنسیت", intake.sexAtBirth ? SEXES[intake.sexAtBirth] : "ثبت نشده"], ["قد", intake.heightCm == null ? "ثبت نشده" : `${String(intake.heightCm)} سانتی‌متر`], ["وزن", intake.weightKg == null ? "ثبت نشده" : `${String(intake.weightKg)} کیلوگرم`], ["گروه خونی", intake.bloodType ? BLOOD_TYPES[intake.bloodType] : "ثبت نشده"]] : [];
+  const reportRows = medicalAvailable ? [["آلرژی‌ها", declaration(intake.allergyReport)], ["بیماری‌های مزمن", declaration(intake.chronicConditionReport)], ["داروهای جاری", declaration(intake.currentMedicationReport)]] : [];
+
+  return <div className="flex-1 min-h-0 flex flex-col">
+    <div className="px-7 pt-5 pb-4 border-b border-border bg-card flex-shrink-0">
+      <button onClick={() => router.push("/patients")} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary mb-4"><ChevronLeft size={14} />بازگشت به لیست</button>
+      <div className="flex items-start gap-5"><Avatar letter={initial(profile.displayName)} size="lg" /><div className="flex-1"><div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-bold">{name}</h2><StatusBadge status={profile.accountStatus === "ACTIVE" ? "فعال" : "غیرفعال"} /></div><p className="text-sm text-muted-foreground">{profile.phone}</p><p className="mt-2 text-xs text-muted-foreground">پروندهٔ پزشکی اولیه: {patient.intake.status === "AVAILABLE" ? "دادهٔ خوداظهاری ثبت شده" : patient.intake.status === "CONSENT_REQUIRED" ? "دسترسی منوط به رضایت فعال است" : "هنوز ثبت نشده"}</p></div></div>
+    </div>
+    <div className="border-b border-border bg-card flex-shrink-0"><div className="flex px-7">{TABS.map((item) => <button key={item.id} onClick={() => setTab(item.id)} className={`px-4 py-3 text-xs font-semibold border-b-2 ${tab === item.id ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{item.label}</button>)}</div></div>
+    <div className="flex-1 overflow-y-auto p-7">
+      {tab === "overview" && <div className="grid max-w-3xl grid-cols-1 gap-6 lg:grid-cols-2"><SectionCard title="اطلاعات تماس و حساب"><Rows rows={basicRows} /></SectionCard><SectionCard title="وضعیت onboarding"><div className="space-y-3 text-sm"><p>رضایت فعال: <span className="font-semibold">{patient.consent.active ? "دارد" : "ندارد"}</span></p><p>وضعیت intake: <span className="font-semibold">{patient.intake.status === "AVAILABLE" ? "قابل مشاهده" : patient.intake.status === "CONSENT_REQUIRED" ? "نیازمند رضایت" : "ثبت نشده"}</span></p><p className="text-xs leading-6 text-muted-foreground">هر اطلاعات پزشکی موجود در این صفحه توسط خود بیمار گزارش شده است و تشخیص یا واقعیت بالینی تأییدشده محسوب نمی‌شود.</p></div></SectionCard></div>}
+      {tab === "medical" && (medicalAvailable ? <div className="space-y-5"><div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>دادهٔ خوداظهاری بیمار</strong><p className="mt-1 text-xs leading-6">این اطلاعات به‌صورت خوداظهاری ثبت شده‌اند و نباید به‌عنوان تشخیص، تأیید پزشکی یا ادعای بالینی تفسیر شوند.</p></div><div className="grid max-w-3xl grid-cols-1 gap-5 lg:grid-cols-2"><SectionCard title="اطلاعات پایه"><Rows rows={intakeRows} /></SectionCard><SectionCard title="گزارش‌های خوداظهاری"><Rows rows={reportRows} /></SectionCard></div></div> : <EmptyMedical status={patient.intake.status} />)}
+    </div>
+  </div>;
+}
+
+function Rows({ rows }: { rows: string[][] }) { return <div className="space-y-3">{rows.map(([label, value]) => <div key={label} className="flex gap-3 text-sm"><span className="w-32 flex-shrink-0 text-muted-foreground">{label}:</span><span className="font-medium">{value}</span></div>)}</div>; }
+function Notice({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "neutral" | "amber" | "red" }) { const color = tone === "red" ? "border-red-200 bg-red-50 text-red-700" : tone === "amber" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-border bg-card text-muted-foreground"; return <div className={`m-7 rounded-xl border p-4 text-sm ${color}`}>{children}</div>; }
+function EmptyMedical({ status }: { status: AdminPatientDetail["intake"]["status"] }) { const message = status === "CONSENT_REQUIRED" ? "برای مشاهدهٔ دادهٔ خوداظهاری، رضایت فعال بیمار لازم است." : "هنوز دادهٔ پزشکی اولیه برای این بیمار ثبت نشده است."; return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center"><FileText size={36} className="mx-auto mb-3 text-muted-foreground/40" /><p className="text-sm font-medium">{message}</p><p className="mt-2 text-xs text-muted-foreground">در این بخش هیچ دادهٔ ساختگی یا ادعای بالینی نمایش داده نمی‌شود.</p></div>; }

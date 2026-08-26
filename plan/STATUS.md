@@ -6,13 +6,14 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-24 17:17 +03:30`
+- آخرین به‌رورسانی: `2026-08-25 17:00 +03:30`
 - Milestone فعال: `Milestone A — بیمار آماده رزرو`
 - فاز فعال: `Phase 02 — Patient Onboarding & Consent`
-- وضعیت فاز فعال: `NOT_STARTED`
-- task فعال: `ندارد`
-- مسئول/Agent: `ندارد`
-- blocker فعال: `ندارد`
+- وضعیت فاز فعال: `IN_PROGRESS`
+- batch فعال: `F02-B05`
+- task فعال: `F02-T13`
+- مسئول/Agent: `Codex /root (coordinator)`
+- blocker فعال: `Browser E2E Phase 02 توسط URL policy مرورگر محلی متوقف شد؛ سرویس‌های محلی بالا آمدند اما تعامل ادامه پیدا نکرد.`
 
 ## پیشرفت کلان
 
@@ -35,7 +36,7 @@
 
 - [x] `Phase 00` — Foundation — `DONE` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
-- [ ] `Phase 02` — Patient Onboarding & Consent — `NOT_STARTED`
+- [ ] `Phase 02` — Patient Onboarding & Consent — `IN_PROGRESS`
 - [ ] `Phase 03` — Assessment Engine & Booking Eligibility — `NOT_STARTED`
 - [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `NOT_STARTED`
 - [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
@@ -61,20 +62,55 @@
 - roadmap از Phase 02 به بعد بر اساس app + dashboard + API بازطراحی شد؛ تصمیم: [`ADR-0002`](decisions/ADR-0002-feature-first-roadmap.md).
 - آزمون اصلی و booking eligibility به پیش از scheduling منتقل شدند؛ الزام آزمون از dashboard قابل خاموش/روشن‌کردن است.
 - Dashboard Home تدریجی است و widget فاقد منبع داده واقعی پنهان می‌شود؛ عدد mock/صفر ساختگی مجاز نیست.
-- Task بعدی واجد شرایط: `F02-T01` — قرارداد فیلدهای canonical، required fields، consent و مرز self-reported/clinical؛ هنوز شروع نشده است.
+- قرارداد onboarding v1 در `F02-T01` پس از سه review مستقل freeze شد؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
+- workflow از این نقطه batch-based است: حداکثر سه task مستقل توسط subagentها اجرا و فقط پس از review یکپارچه Agent اصلی تیک می‌خورند.
+- `F02-B01` با تکمیل و review مستقل `F02-T02` بسته شد؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
+- `F02-B02` با review و verification یکپارچه بسته شد؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
+- `F02-B03` با review مستقل و verification یکپارچه بسته شد؛ endpointهای self-profile، consent/intake و admin patient همراه OpenAPI freeze شدند؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
+- `F02-B04` با review مستقل و verification کامل app/dashboard/API بسته شد؛ UIها فقط از generated client استفاده می‌کنند و mockهای همان scope حذف شده‌اند؛ شواهد: [`logs/phase-02.md`](logs/phase-02.md).
+- `F02-B05` claim شد: verification دیتابیس، security/API و browser E2E/mock audit در سه lane read-first و بدون overlap اجرا می‌شود.
 - dependency: `Phase 01` → DONE.
 
-## task در حال اجرا
-
-قبل از شروع، Agent فقط این بخش را تکمیل می‌کند:
+## batch در حال اجرا
 
 ```text
-ندارد
+Batch ID: F02-B05
+Coordinator/Thread: Codex /root (main agent)
+Started at: 2026-08-25 00:02 +03:30
+Phase: Phase 02
+Batch status: BLOCKED
+Contract baseline: plan/contracts/patient-onboarding-v1.md + F02-B03/B04 accepted OpenAPI
+Coordinator-only files: plan/STATUS.md، plan/phases/02-PATIENT-ONBOARDING.md، plan/logs/phase-02.md، Prisma/OpenAPI/client and production code fixes
+Tasks:
+  - Task ID: F02-T11
+    Agent/Thread: /root/phase02_migration_verification
+    Status: ACCEPTED
+    Depends on: F02-T02
+    Scope: fresh migration, Phase 01 upgrade, database constraints and seed idempotency verification
+    Owned paths: apps/api/test/migrations.integration.spec.ts, apps/api/test/phase02-migration*.spec.ts
+    Shared/exclusive resource: test DB
+    Expected verification: isolated PostgreSQL migration/upgrade smoke
+  - Task ID: F02-T12
+    Agent/Thread: /root/phase02_security_verification
+    Status: ACCEPTED
+    Depends on: F02-T05, F02-T06, F02-T07
+    Scope: ownership, ADMIN-only, medical audit, race/idempotency and OpenAPI contract regression verification
+    Owned paths: apps/api/test/phase02-security*.spec.ts, apps/api/test/phase02-contract*.spec.ts
+    Shared/exclusive resource: none
+    Expected verification: isolated API security/contract suite
+  - Task ID: F02-T13
+    Agent/Thread: /root/phase02_e2e_mock_audit
+    Status: BLOCKED
+    Depends on: F02-T08, F02-T09, F02-T10
+    Scope: browser E2E register/onboarding/complete, scope mock audit and full frontend evidence
+    Owned paths: apps/app/e2e/**, apps/dashboard/e2e/**, apps/**/phase02-e2e*.spec.ts
+    Shared/exclusive resource: browser/dev servers
+    Expected verification: browser E2E or reproducible documented environment blocker plus mock audit
+Do not change: apps/app/src/components/home/slider-data.ts و justforcheck.md.
 ```
 
-پس از تکمیل، Agent باید claim را پاک کند، `Task بعدی واجد شرایط` را به‌روز کند و شواهد کامل
-را با قالب [`logs/README.md`](logs/README.md) در فایل لاگ همان فاز ثبت کند. entry تکمیل‌شده
-نباید در این فایل باقی بماند.
+Accepted rework: completion idempotency now rejects a changed operation payload, and Phase 02 protected OpenAPI operations document guard outcomes.
+Blocker: Browser E2E cannot proceed after local onboarding navigation because the browser URL policy blocks the next interaction. Do not substitute another browser/control surface; safe next action is to enable the browser interaction policy for localhost and rerun T13.
 
 ## Blockerها و تصمیم‌های باز
 

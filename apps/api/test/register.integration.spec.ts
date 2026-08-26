@@ -26,6 +26,9 @@ describe('POST /v1/auth/register (PostgreSQL integration)', () => {
     await prisma.authRateLimitBucket.deleteMany();
     if (createdPhones.size === 0) return;
 
+    await prisma.patientProfile.deleteMany({
+      where: { user: { phone: { in: [...createdPhones] } } },
+    });
     await prisma.user.deleteMany({
       where: { phone: { in: [...createdPhones] } },
     });
@@ -72,17 +75,25 @@ describe('POST /v1/auth/register (PostgreSQL integration)', () => {
       include: {
         credential: true,
         roles: { include: { role: true } },
+        patientProfile: true,
       },
     });
 
-    expect(persistedUser?.credential?.passwordHash).toMatch(/^\$argon2id\$/);
+    if (!persistedUser) {
+      throw new Error('Registered user was not persisted.');
+    }
+
+    expect(persistedUser.credential?.passwordHash).toMatch(/^\$argon2id\$/);
     await expect(verifyPassword(
-      persistedUser?.credential?.passwordHash ?? '',
+      persistedUser.credential?.passwordHash ?? '',
       password,
     )).resolves.toBe(true);
-    expect(persistedUser?.roles.map(({ role }) => role.code)).toEqual([
+    expect(persistedUser.roles.map(({ role }) => role.code)).toEqual([
       'PATIENT',
     ]);
+    expect(persistedUser.patientProfile).toMatchObject({
+      userId: persistedUser.id,
+    });
   });
 
   it('returns a stable conflict for an equivalent duplicate phone', async () => {

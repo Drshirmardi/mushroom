@@ -51,6 +51,9 @@ describe('login and refresh sessions (PostgreSQL API integration)', () => {
     await prisma.loginAttempt.deleteMany({
       where: { phone: { in: [...createdPhones] } },
     });
+    await prisma.patientProfile.deleteMany({
+      where: { user: { phone: { in: [...createdPhones] } } },
+    });
     await prisma.user.deleteMany({
       where: { phone: { in: [...createdPhones] } },
     });

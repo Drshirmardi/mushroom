@@ -42,6 +42,9 @@ describe('Login core (PostgreSQL integration)', () => {
       });
     }
     if (createdPhones.size > 0) {
+      await prisma.patientProfile.deleteMany({
+        where: { user: { phone: { in: [...createdPhones] } } },
+      });
       await prisma.user.deleteMany({
         where: { phone: { in: [...createdPhones] } },
       });

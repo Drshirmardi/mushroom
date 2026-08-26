@@ -1,35 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { ProfileFields, type ProfileDraft } from "@/components/onboarding/profile-fields";
 import { PageHeader } from "@/components/shared/page-header";
-
-const FIELDS = [
-  { label: "نام کامل", key: "name" },
-  { label: "سن", key: "age" },
-  { label: "شهر", key: "city" },
-  { label: "موبایل", key: "phone" },
-  { label: "ایمیل", key: "email" },
-] as const;
+import { loadPatientOnboarding, onboardingErrorMessage, updateSelfProfile } from "@/lib/onboarding/patient-onboarding";
 
 export default function EditProfilePage() {
-  const router = useRouter();
-  const [form, setForm] = useState({ name: "مریم احمدی", age: "۳۵", city: "تهران", phone: "۰۹۱۲۳۴۵۶۷۸۹", email: "maryam@example.com" });
-  return (
-    <div>
-      <PageHeader title="ویرایش پروفایل" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        <div className="flex justify-center py-4">
-          <div className="relative"><div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-primary/20"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=192&h=192&fit=crop" alt="پروفایل" className="w-full h-full object-cover" /></div><button className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md"><Camera size={11} />تغییر</button></div>
-        </div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4 space-y-3">
-          {FIELDS.map(f => (
-            <div key={f.key}><label className="text-xs font-bold text-muted-foreground block mb-1">{f.label}</label><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} className="w-full bg-muted rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 text-right" dir="rtl" /></div>
-          ))}
-        </div>
-        <button onClick={() => router.back()} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20">ذخیره تغییرات</button>
-      </div>
-    </div>
-  );
+  const router = useRouter(); const { authentication } = useAuthSession();
+  const [profile, setProfile] = useState<ProfileDraft>({ firstName: "", lastName: "", email: "", cityName: "" }); const [phone, setPhone] = useState<string>(); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null);
+  useEffect(() => { void (async () => { try { const result = await loadPatientOnboarding(authentication.accessToken); setProfile({ firstName: typeof result.profile.firstName === "string" ? result.profile.firstName : "", lastName: typeof result.profile.lastName === "string" ? result.profile.lastName : "", email: typeof result.profile.email === "string" ? result.profile.email : "", cityName: typeof result.profile.cityName === "string" ? result.profile.cityName : "" }); setPhone(result.profile.phone); } catch (cause) { setError(onboardingErrorMessage(cause)); } finally { setLoading(false); } })(); }, [authentication.accessToken]);
+  const save = async () => { setSaving(true); setError(null); try { await updateSelfProfile(authentication.accessToken, profile); router.push("/profile"); } catch (cause) { setError(onboardingErrorMessage(cause)); } finally { setSaving(false); } };
+  return <div><PageHeader title="ویرایش پروفایل" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{loading ? <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">در حال دریافت پروفایل…</p> : <><p className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm leading-6 text-foreground">نام، ایمیل و شهر در پرونده شما ذخیره می‌شوند. شماره موبایل از بخش امنیت حساب تغییر می‌کند.</p>{error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}<div className="rounded-2xl border border-border bg-white p-4"><ProfileFields value={profile} onChange={setProfile} phone={phone} /></div><button type="button" disabled={saving} onClick={() => void save()} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره تغییرات"}</button></>}</div></div>;
 }

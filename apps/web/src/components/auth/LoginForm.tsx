@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { resolvePostLoginUrl } from "@/lib/api";
+import { dashboardUrl, resolvePostLoginUrl } from "@/lib/api";
 import { loginPasswordSchema, normalizePhone, phoneSchema } from "@/lib/validation";
 import { loginWithPhone } from "@/services/auth";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -52,7 +52,16 @@ export function LoginForm() {
         if (result.ok) {
             toast.success("خوش آمدید!", { description: "ورود شما با موفقیت انجام شد." });
             const requestedDestination = new URLSearchParams(window.location.search).get("next");
-            window.location.assign(resolvePostLoginUrl(requestedDestination));
+            const hasDashboardRole = result.roles.some((role) =>
+                ["ADMIN", "DOCTOR", "STAFF"].includes(role),
+            );
+            window.location.assign(
+                requestedDestination
+                    ? resolvePostLoginUrl(requestedDestination)
+                    : hasDashboardRole
+                        ? dashboardUrl
+                        : resolvePostLoginUrl(null),
+            );
         } else {
             setAuthError(result.message);
         }
@@ -68,7 +77,11 @@ export function LoginForm() {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <form
+                    method="post"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-5"
+                >
                     {authError && <AuthErrorAlert message={authError} />}
 
                     <PhoneField control={form.control} name="phone" />

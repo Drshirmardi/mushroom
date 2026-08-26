@@ -795,6 +795,1080 @@
           "Current Account"
         ]
       }
+    },
+    "/v1/patients/me": {
+      "get": {
+        "operationId": "patientGetSelfProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get self profile",
+        "tags": [
+          "Patient self profile"
+        ]
+      },
+      "patch": {
+        "operationId": "patientUpdateSelfProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSelfProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Profile fields are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update self profile",
+        "tags": [
+          "Patient self profile"
+        ]
+      }
+    },
+    "/v1/patients/me/onboarding-status": {
+      "get": {
+        "operationId": "patientGetOnboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingStatusResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get onboarding status",
+        "tags": [
+          "Patient self profile"
+        ]
+      }
+    },
+    "/v1/patients/me/consent-policy": {
+      "get": {
+        "operationId": "patientGetConsentPolicy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The current versioned policy and the patient acceptance state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentPolicyResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Current consent policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the current medical-intake consent policy",
+        "tags": [
+          "Patient intake and consent"
+        ]
+      }
+    },
+    "/v1/patients/me/consents": {
+      "post": {
+        "operationId": "patientAcceptConsent",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Stable key for this acceptance attempt.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The current or replayed consent acceptance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentRecordResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy is stale or the idempotency key was reused.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Consent acceptance input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Current consent policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Accept the exact current consent policy",
+        "tags": [
+          "Patient intake and consent"
+        ]
+      }
+    },
+    "/v1/patients/me/consents/{consentRecordId}/withdraw": {
+      "post": {
+        "operationId": "patientWithdrawConsent",
+        "parameters": [
+          {
+            "name": "consentRecordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Stable key for this withdrawal attempt.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The withdrawn or replayed consent acceptance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentRecordResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Consent record id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Consent is not active or the idempotency key was reused.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Withdraw an owned current consent acceptance",
+        "tags": [
+          "Patient intake and consent"
+        ]
+      }
+    },
+    "/v1/patients/me/medical-intake": {
+      "get": {
+        "operationId": "patientGetMedicalIntake",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The current immutable revision snapshot, if one exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalIntakeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Resume the current self-reported medical intake",
+        "tags": [
+          "Patient intake and consent"
+        ]
+      },
+      "put": {
+        "operationId": "patientSaveMedicalIntakeDraft",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveIntakeDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The persisted or canonical no-op draft revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalIntakeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current consent is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The supplied revision is stale.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Medical-intake draft input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save a medical-intake draft revision",
+        "tags": [
+          "Patient intake and consent"
+        ]
+      }
+    },
+    "/v1/patients/me/medical-intake/complete": {
+      "post": {
+        "operationId": "patientCompleteMedicalIntake",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Stable key for this completion attempt.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteIntakeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The persisted or replayed completed revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalIntakeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current consent is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The supplied revision is stale or the idempotency key was reused.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Required medical declarations are incomplete.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an immutable completed intake revision",
+        "tags": [
+          "Patient intake and consent"
+        ]
+      }
+    },
+    "/v1/admin/patients": {
+      "get": {
+        "operationId": "adminPatientsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPatientListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "List query is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List and search patients",
+        "tags": [
+          "Admin Patients"
+        ]
+      },
+      "post": {
+        "operationId": "adminPatientsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminPatientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPatientCreateResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Phone number is already registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Patient profile input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a patient profile on behalf of a patient",
+        "tags": [
+          "Admin Patients"
+        ]
+      }
+    },
+    "/v1/admin/patients/onboarding-summary": {
+      "get": {
+        "operationId": "adminPatientsOnboardingSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOnboardingSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get patient onboarding summary",
+        "tags": [
+          "Admin Patients"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}": {
+      "get": {
+        "operationId": "adminPatientsGet",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPatientDetailResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Patient id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an admin patient detail view",
+        "tags": [
+          "Admin Patients"
+        ]
+      },
+      "patch": {
+        "operationId": "adminPatientsUpdate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAdminPatientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPatientProfileUpdateResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Patient id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Patient profile input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a patient non-medical profile",
+        "tags": [
+          "Admin Patients"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/medical-intake": {
+      "patch": {
+        "operationId": "adminPatientsCorrectIntake",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMedicalIntakeCorrectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMedicalIntakeRevisionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Patient id is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current consent or permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision conflict or an idempotency key reuse conflict occurred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Medical correction input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Correct a self-reported medical intake revision",
+        "tags": [
+          "Admin Patients"
+        ]
+      }
     }
   },
   "info": {
@@ -909,6 +1983,16 @@
               "INVALID_CURRENT_PASSWORD",
               "PASSWORD_UNCHANGED",
               "ORIGIN_NOT_ALLOWED",
+              "PATIENT_PROFILE_NOT_FOUND",
+              "PROFILE_FIELDS_INCOMPLETE",
+              "MEDICAL_INTAKE_INCOMPLETE",
+              "INVALID_MEDICAL_DECLARATION",
+              "CONSENT_POLICY_NOT_AVAILABLE",
+              "CONSENT_POLICY_STALE",
+              "CONSENT_REQUIRED",
+              "CONSENT_RECORD_NOT_ACTIVE",
+              "MEDICAL_INTAKE_REVISION_CONFLICT",
+              "IDEMPOTENCY_KEY_REUSED",
               "HTTP_ERROR",
               "INTERNAL_SERVER_ERROR"
             ],
@@ -1174,6 +2258,963 @@
           "currentPassword",
           "newPassword"
         ]
+      },
+      "SelfProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+989123456789"
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email"
+          },
+          "cityName": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "patientId",
+          "phone",
+          "accountStatus"
+        ]
+      },
+      "UpdateSelfProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "nullable": true
+          },
+          "cityName": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          }
+        }
+      },
+      "OnboardingStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "onboardingState": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "submissionState": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "COMPLETE"
+            ],
+            "nullable": true
+          },
+          "isComplete": {
+            "type": "boolean"
+          },
+          "requiredCount": {
+            "type": "number"
+          },
+          "answeredRequiredCount": {
+            "type": "number"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blockerCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextAction": {
+            "type": "string"
+          },
+          "assignedSchemaVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "evaluatedSchemaVersion": {
+            "type": "number"
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "completedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "currentPolicyVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "activeConsentRecordId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "onboardingState",
+          "isComplete",
+          "requiredCount",
+          "answeredRequiredCount",
+          "missingFields",
+          "blockerCodes",
+          "nextAction",
+          "evaluatedSchemaVersion",
+          "currentRevision"
+        ]
+      },
+      "ConsentPolicyResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "acceptedConsentRecordId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "policyKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "body",
+          "contentHash"
+        ]
+      },
+      "AcceptConsentDto": {
+        "type": "object",
+        "properties": {
+          "policyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contentHash": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "policyVersionId",
+          "contentHash"
+        ]
+      },
+      "ConsentRecordResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "withdrawnAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "policyVersionId",
+          "contentHash",
+          "acceptedAt"
+        ]
+      },
+      "MedicalDeclarationDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "UNKNOWN",
+              "PRESENT"
+            ]
+          },
+          "items": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "items"
+        ]
+      },
+      "IntakeSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "birthDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "sexAtBirth": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE",
+              "INTERSEX",
+              "UNKNOWN",
+              "PREFER_NOT_TO_SAY"
+            ],
+            "nullable": true
+          },
+          "heightCm": {
+            "type": "number",
+            "minimum": 30,
+            "maximum": 300,
+            "nullable": true
+          },
+          "weightKg": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 500,
+            "nullable": true
+          },
+          "bloodType": {
+            "type": "string",
+            "enum": [
+              "A_POSITIVE",
+              "A_NEGATIVE",
+              "B_POSITIVE",
+              "B_NEGATIVE",
+              "AB_POSITIVE",
+              "AB_NEGATIVE",
+              "O_POSITIVE",
+              "O_NEGATIVE",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "allergyReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "chronicConditionReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "currentMedicationReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "sleepDurationBand": {
+            "type": "string",
+            "enum": [
+              "LESS_THAN_5_HOURS",
+              "FROM_5_TO_LESS_THAN_7_HOURS",
+              "FROM_7_TO_9_HOURS",
+              "MORE_THAN_9_HOURS",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "exerciseFrequency": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "ONCE_OR_TWICE_WEEKLY",
+              "THREE_OR_FOUR_TIMES_WEEKLY",
+              "DAILY",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "stressLevel": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MODERATE",
+              "HIGH",
+              "VERY_HIGH",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "tobaccoUse": {
+            "type": "string",
+            "enum": [
+              "NEVER",
+              "FORMER",
+              "CURRENT",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "MedicalIntakeResponseDto": {
+        "type": "object",
+        "properties": {
+          "submissionState": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "COMPLETE"
+            ],
+            "nullable": true
+          },
+          "currentRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "completedRevision": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "snapshot": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntakeSnapshotDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "currentRevision"
+        ]
+      },
+      "SaveIntakeDraftDto": {
+        "type": "object",
+        "properties": {
+          "birthDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "sexAtBirth": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE",
+              "INTERSEX",
+              "UNKNOWN",
+              "PREFER_NOT_TO_SAY"
+            ],
+            "nullable": true
+          },
+          "heightCm": {
+            "type": "number",
+            "minimum": 30,
+            "maximum": 300,
+            "nullable": true
+          },
+          "weightKg": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 500,
+            "nullable": true
+          },
+          "bloodType": {
+            "type": "string",
+            "enum": [
+              "A_POSITIVE",
+              "A_NEGATIVE",
+              "B_POSITIVE",
+              "B_NEGATIVE",
+              "AB_POSITIVE",
+              "AB_NEGATIVE",
+              "O_POSITIVE",
+              "O_NEGATIVE",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "allergyReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "chronicConditionReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "currentMedicationReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "sleepDurationBand": {
+            "type": "string",
+            "enum": [
+              "LESS_THAN_5_HOURS",
+              "FROM_5_TO_LESS_THAN_7_HOURS",
+              "FROM_7_TO_9_HOURS",
+              "MORE_THAN_9_HOURS",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "exerciseFrequency": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "ONCE_OR_TWICE_WEEKLY",
+              "THREE_OR_FOUR_TIMES_WEEKLY",
+              "DAILY",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "stressLevel": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MODERATE",
+              "HIGH",
+              "VERY_HIGH",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "tobaccoUse": {
+            "type": "string",
+            "enum": [
+              "NEVER",
+              "FORMER",
+              "CURRENT",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "expectedRevision"
+        ]
+      },
+      "CompleteIntakeDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expectedRevision"
+        ]
+      },
+      "AdminPatientListItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string"
+          },
+          "ageYears": {
+            "type": "number",
+            "nullable": true
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "onboardingState": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patientId",
+          "phone",
+          "accountStatus",
+          "onboardingState",
+          "createdAt"
+        ]
+      },
+      "AdminPatientListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPatientListItemResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "AdminOnboardingSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string",
+            "example": "Asia/Tehran"
+          },
+          "newPatientsToday": {
+            "type": "number"
+          },
+          "onboardingCompletePatients": {
+            "type": "number"
+          },
+          "onboardingIncompletePatients": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "asOf",
+          "timeZone",
+          "newPatientsToday",
+          "onboardingCompletePatients",
+          "onboardingIncompletePatients"
+        ]
+      },
+      "CreateAdminPatientDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminPatientCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string"
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patientId",
+          "phone",
+          "accountStatus",
+          "createdAt"
+        ]
+      },
+      "AdminPatientProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string"
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "cityName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "phone",
+          "accountStatus"
+        ]
+      },
+      "AdminPatientConsentResponseDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "policyVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "consentRecordId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "active"
+        ]
+      },
+      "AdminMedicalIntakeRevisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "revisionNumber": {
+            "type": "number"
+          },
+          "revisionState": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "COMPLETE"
+            ]
+          },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date"
+          },
+          "sexAtBirth": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "FEMALE",
+              "MALE",
+              "INTERSEX",
+              "UNKNOWN",
+              "PREFER_NOT_TO_SAY"
+            ]
+          },
+          "heightCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "weightKg": {
+            "type": "string",
+            "nullable": true,
+            "description": "Decimal value serialized as a string."
+          },
+          "bloodType": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "A_POSITIVE",
+              "A_NEGATIVE",
+              "B_POSITIVE",
+              "B_NEGATIVE",
+              "AB_POSITIVE",
+              "AB_NEGATIVE",
+              "O_POSITIVE",
+              "O_NEGATIVE",
+              "UNKNOWN"
+            ]
+          },
+          "allergyReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "chronicConditionReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "currentMedicationReport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MedicalDeclarationDto"
+              }
+            ]
+          },
+          "provenance": {
+            "type": "string",
+            "enum": [
+              "PATIENT_SELF_REPORTED"
+            ]
+          }
+        },
+        "required": [
+          "revisionNumber",
+          "revisionState",
+          "provenance"
+        ]
+      },
+      "AdminPatientIntakeResponseDto": {
+        "type": "object",
+        "properties": {
+          "assignedSchemaVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "provenance": {
+            "type": "string",
+            "enum": [
+              "PATIENT_SELF_REPORTED"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "CONSENT_REQUIRED",
+              "NOT_STARTED"
+            ]
+          },
+          "value": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminMedicalIntakeRevisionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "currentRevision",
+          "provenance",
+          "status"
+        ]
+      },
+      "AdminPatientDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/AdminPatientProfileResponseDto"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/AdminPatientConsentResponseDto"
+          },
+          "intake": {
+            "$ref": "#/components/schemas/AdminPatientIntakeResponseDto"
+          }
+        },
+        "required": [
+          "patientId",
+          "profile",
+          "consent",
+          "intake"
+        ]
+      },
+      "UpdateAdminPatientDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminPatientProfileUpdateResponseDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "cityName": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "updatedAt"
+        ]
+      },
+      "AdminMedicalIntakeCorrectionDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

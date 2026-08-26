@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../database/prisma/prisma.service';
-import { Prisma, RoleCode } from '../../../generated/prisma/client';
+import { ClinicStatus, Prisma, RoleCode } from '../../../generated/prisma/client';
 import {
   PhoneAlreadyRegisteredError,
   RegistrationConfigurationError,
@@ -35,6 +35,15 @@ export class PrismaRegistrationRepository extends RegistrationRepository {
           throw new RegistrationConfigurationError();
         }
 
+        const activeClinic = await transaction.clinic.findFirst({
+          where: { status: ClinicStatus.ACTIVE },
+          select: { id: true },
+        });
+
+        if (!activeClinic) {
+          throw new RegistrationConfigurationError();
+        }
+
         const user = await transaction.user.create({
           data: {
             phone: registration.phone,
@@ -54,6 +63,15 @@ export class PrismaRegistrationRepository extends RegistrationRepository {
                 role: { select: { code: true } },
               },
             },
+          },
+        });
+
+        await transaction.patientProfile.create({
+          data: {
+            userId: user.id,
+            clinicId: activeClinic.id,
+            createdAt: user.createdAt,
+            updatedAt: user.createdAt,
           },
         });
 

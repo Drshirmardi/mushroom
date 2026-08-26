@@ -190,6 +190,197 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get self profile */
+        get: operations["patientGetSelfProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update self profile */
+        patch: operations["patientUpdateSelfProfile"];
+        trace?: never;
+    };
+    "/v1/patients/me/onboarding-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get onboarding status */
+        get: operations["patientGetOnboardingStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/consent-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current medical-intake consent policy */
+        get: operations["patientGetConsentPolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept the exact current consent policy */
+        post: operations["patientAcceptConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/consents/{consentRecordId}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw an owned current consent acceptance */
+        post: operations["patientWithdrawConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/medical-intake": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resume the current self-reported medical intake */
+        get: operations["patientGetMedicalIntake"];
+        /** Save a medical-intake draft revision */
+        put: operations["patientSaveMedicalIntakeDraft"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/medical-intake/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an immutable completed intake revision */
+        post: operations["patientCompleteMedicalIntake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List and search patients */
+        get: operations["adminPatientsList"];
+        put?: never;
+        /** Create a patient profile on behalf of a patient */
+        post: operations["adminPatientsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/onboarding-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get patient onboarding summary */
+        get: operations["adminPatientsOnboardingSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an admin patient detail view */
+        get: operations["adminPatientsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a patient non-medical profile */
+        patch: operations["adminPatientsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/medical-intake": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Correct a self-reported medical intake revision */
+        patch: operations["adminPatientsCorrectIntake"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -219,7 +410,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -310,6 +501,239 @@ export interface components {
             currentPassword: string;
             newPassword: string;
         };
+        SelfProfileResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            /** @example +989123456789 */
+            phone: string;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            firstName?: string | null;
+            lastName?: string | null;
+            /** Format: email */
+            email?: string | null;
+            cityName?: string | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
+        UpdateSelfProfileDto: {
+            firstName?: string | null;
+            lastName?: string | null;
+            /** Format: email */
+            email?: string | null;
+            cityName?: string | null;
+        };
+        OnboardingStatusResponseDto: {
+            /** @enum {string} */
+            onboardingState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
+            /** @enum {string|null} */
+            submissionState?: "DRAFT" | "COMPLETE" | null;
+            isComplete: boolean;
+            requiredCount: number;
+            answeredRequiredCount: number;
+            missingFields: string[];
+            blockerCodes: string[];
+            nextAction: string;
+            assignedSchemaVersion?: number | null;
+            evaluatedSchemaVersion: number;
+            currentRevision: number;
+            completedRevision?: number | null;
+            /** Format: uuid */
+            currentPolicyVersionId?: string | null;
+            /** Format: uuid */
+            activeConsentRecordId?: string | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
+        ConsentPolicyResponseDto: {
+            /** Format: uuid */
+            id: string;
+            policyKey: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            body: string;
+            contentHash: string;
+            /** Format: uuid */
+            acceptedConsentRecordId?: string | null;
+            /** Format: date-time */
+            acceptedAt?: string | null;
+        };
+        AcceptConsentDto: {
+            /** Format: uuid */
+            policyVersionId: string;
+            contentHash: string;
+        };
+        ConsentRecordResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            policyVersionId: string;
+            contentHash: string;
+            /** Format: date-time */
+            acceptedAt: string;
+            /** Format: date-time */
+            withdrawnAt?: string | null;
+        };
+        MedicalDeclarationDto: {
+            /** @enum {string} */
+            status: "NONE" | "UNKNOWN" | "PRESENT";
+            items: string[];
+        };
+        IntakeSnapshotDto: {
+            /** Format: date */
+            birthDate?: string | null;
+            /** @enum {string|null} */
+            sexAtBirth?: "FEMALE" | "MALE" | "INTERSEX" | "UNKNOWN" | "PREFER_NOT_TO_SAY" | null;
+            heightCm?: number | null;
+            weightKg?: number | null;
+            /** @enum {string|null} */
+            bloodType?: "A_POSITIVE" | "A_NEGATIVE" | "B_POSITIVE" | "B_NEGATIVE" | "AB_POSITIVE" | "AB_NEGATIVE" | "O_POSITIVE" | "O_NEGATIVE" | "UNKNOWN" | null;
+            allergyReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            chronicConditionReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            currentMedicationReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            /** @enum {string|null} */
+            sleepDurationBand?: "LESS_THAN_5_HOURS" | "FROM_5_TO_LESS_THAN_7_HOURS" | "FROM_7_TO_9_HOURS" | "MORE_THAN_9_HOURS" | "UNKNOWN" | null;
+            /** @enum {string|null} */
+            exerciseFrequency?: "NONE" | "ONCE_OR_TWICE_WEEKLY" | "THREE_OR_FOUR_TIMES_WEEKLY" | "DAILY" | "UNKNOWN" | null;
+            /** @enum {string|null} */
+            stressLevel?: "LOW" | "MODERATE" | "HIGH" | "VERY_HIGH" | "UNKNOWN" | null;
+            /** @enum {string|null} */
+            tobaccoUse?: "NEVER" | "FORMER" | "CURRENT" | "UNKNOWN" | null;
+        };
+        MedicalIntakeResponseDto: {
+            /** @enum {string|null} */
+            submissionState?: "DRAFT" | "COMPLETE" | null;
+            currentRevision: number;
+            completedRevision?: number | null;
+            snapshot?: components["schemas"]["IntakeSnapshotDto"] | null;
+        };
+        SaveIntakeDraftDto: {
+            /** Format: date */
+            birthDate?: string | null;
+            /** @enum {string|null} */
+            sexAtBirth?: "FEMALE" | "MALE" | "INTERSEX" | "UNKNOWN" | "PREFER_NOT_TO_SAY" | null;
+            heightCm?: number | null;
+            weightKg?: number | null;
+            /** @enum {string|null} */
+            bloodType?: "A_POSITIVE" | "A_NEGATIVE" | "B_POSITIVE" | "B_NEGATIVE" | "AB_POSITIVE" | "AB_NEGATIVE" | "O_POSITIVE" | "O_NEGATIVE" | "UNKNOWN" | null;
+            allergyReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            chronicConditionReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            currentMedicationReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            /** @enum {string|null} */
+            sleepDurationBand?: "LESS_THAN_5_HOURS" | "FROM_5_TO_LESS_THAN_7_HOURS" | "FROM_7_TO_9_HOURS" | "MORE_THAN_9_HOURS" | "UNKNOWN" | null;
+            /** @enum {string|null} */
+            exerciseFrequency?: "NONE" | "ONCE_OR_TWICE_WEEKLY" | "THREE_OR_FOUR_TIMES_WEEKLY" | "DAILY" | "UNKNOWN" | null;
+            /** @enum {string|null} */
+            stressLevel?: "LOW" | "MODERATE" | "HIGH" | "VERY_HIGH" | "UNKNOWN" | null;
+            /** @enum {string|null} */
+            tobaccoUse?: "NEVER" | "FORMER" | "CURRENT" | "UNKNOWN" | null;
+            expectedRevision: number;
+        };
+        CompleteIntakeDto: {
+            expectedRevision: number;
+        };
+        AdminPatientListItemResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            displayName?: string | null;
+            phone: string;
+            ageYears?: number | null;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            /** @enum {string} */
+            onboardingState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminPatientListResponseDto: {
+            items: components["schemas"]["AdminPatientListItemResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AdminOnboardingSummaryResponseDto: {
+            /** Format: date-time */
+            asOf: string;
+            /** @example Asia/Tehran */
+            timeZone: string;
+            newPatientsToday: number;
+            onboardingCompletePatients: number;
+            onboardingIncompletePatients: number;
+        };
+        CreateAdminPatientDto: Record<string, never>;
+        AdminPatientCreateResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            displayName?: string | null;
+            phone: string;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminPatientProfileResponseDto: {
+            displayName?: string | null;
+            phone: string;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            firstName?: string | null;
+            lastName?: string | null;
+            email?: string | null;
+            cityName?: string | null;
+        };
+        AdminPatientConsentResponseDto: {
+            active: boolean;
+            /** Format: uuid */
+            policyVersionId?: string | null;
+            /** Format: uuid */
+            consentRecordId?: string | null;
+        };
+        AdminMedicalIntakeRevisionResponseDto: {
+            revisionNumber: number;
+            /** @enum {string} */
+            revisionState: "DRAFT" | "COMPLETE";
+            /** Format: date */
+            birthDate?: string | null;
+            /** @enum {string|null} */
+            sexAtBirth?: "FEMALE" | "MALE" | "INTERSEX" | "UNKNOWN" | "PREFER_NOT_TO_SAY" | null;
+            heightCm?: number | null;
+            /** @description Decimal value serialized as a string. */
+            weightKg?: string | null;
+            /** @enum {string|null} */
+            bloodType?: "A_POSITIVE" | "A_NEGATIVE" | "B_POSITIVE" | "B_NEGATIVE" | "AB_POSITIVE" | "AB_NEGATIVE" | "O_POSITIVE" | "O_NEGATIVE" | "UNKNOWN" | null;
+            allergyReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            chronicConditionReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            currentMedicationReport?: components["schemas"]["MedicalDeclarationDto"] | null;
+            /** @enum {string} */
+            provenance: "PATIENT_SELF_REPORTED";
+        };
+        AdminPatientIntakeResponseDto: {
+            assignedSchemaVersion?: number | null;
+            currentRevision: number;
+            /** @enum {string} */
+            provenance: "PATIENT_SELF_REPORTED";
+            /** @enum {string} */
+            status: "AVAILABLE" | "CONSENT_REQUIRED" | "NOT_STARTED";
+            value?: components["schemas"]["AdminMedicalIntakeRevisionResponseDto"] | null;
+        };
+        AdminPatientDetailResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            profile: components["schemas"]["AdminPatientProfileResponseDto"];
+            consent: components["schemas"]["AdminPatientConsentResponseDto"];
+            intake: components["schemas"]["AdminPatientIntakeResponseDto"];
+        };
+        UpdateAdminPatientDto: Record<string, never>;
+        AdminPatientProfileUpdateResponseDto: {
+            firstName?: string | null;
+            lastName?: string | null;
+            email?: string | null;
+            cityName?: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminMedicalIntakeCorrectionDto: Record<string, never>;
     };
     responses: never;
     parameters: never;
@@ -883,6 +1307,821 @@ export interface operations {
                 };
             };
             /** @description New password is invalid or unchanged. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientGetSelfProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SelfProfileResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientUpdateSelfProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSelfProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SelfProfileResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Profile fields are invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientGetOnboardingStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStatusResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientGetConsentPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current versioned policy and the patient acceptance state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentPolicyResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current consent policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAcceptConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Stable key for this acceptance attempt. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptConsentDto"];
+            };
+        };
+        responses: {
+            /** @description The current or replayed consent acceptance. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentRecordResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Policy is stale or the idempotency key was reused. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Consent acceptance input is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current consent policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientWithdrawConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Stable key for this withdrawal attempt. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                consentRecordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The withdrawn or replayed consent acceptance. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentRecordResponseDto"];
+                };
+            };
+            /** @description Consent record id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Consent is not active or the idempotency key was reused. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientGetMedicalIntake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current immutable revision snapshot, if one exists. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalIntakeResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientSaveMedicalIntakeDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveIntakeDraftDto"];
+            };
+        };
+        responses: {
+            /** @description The persisted or canonical no-op draft revision. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalIntakeResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current consent is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description The supplied revision is stale. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Medical-intake draft input is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCompleteMedicalIntake: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Stable key for this completion attempt. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteIntakeDto"];
+            };
+        };
+        responses: {
+            /** @description The persisted or replayed completed revision. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalIntakeResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current consent is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description The supplied revision is stale or the idempotency key was reused. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required medical declarations are incomplete. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminPatientsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPatientListResponseDto"];
+                };
+            };
+            /** @description List query is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminPatientsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAdminPatientDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPatientCreateResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Phone number is already registered. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile input is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminPatientsOnboardingSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOnboardingSummaryResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminPatientsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPatientDetailResponseDto"];
+                };
+            };
+            /** @description Patient id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminPatientsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAdminPatientDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPatientProfileUpdateResponseDto"];
+                };
+            };
+            /** @description Patient id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile input is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminPatientsCorrectIntake: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMedicalIntakeCorrectionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMedicalIntakeRevisionResponseDto"];
+                };
+            };
+            /** @description Patient id is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current consent or permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Revision conflict or an idempotency key reuse conflict occurred. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Medical correction input is invalid. */
             422: {
                 headers: {
                     [name: string]: unknown;
