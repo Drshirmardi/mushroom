@@ -4150,11 +4150,46 @@
       },
       "CreateAssessmentDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "assessmentKey": {
+            "type": "string",
+            "default": "MAIN",
+            "maxLength": 100
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "fa-IR",
+              "en-US"
+            ],
+            "default": "fa-IR"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "title",
+          "structure"
+        ]
       },
       "UpdateAssessmentDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
       },
       "BookingAssessmentPolicyResponseDto": {
         "type": "object",
@@ -4192,7 +4227,30 @@
       },
       "UpdateBookingAssessmentPolicyDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "assessmentRequirement": {
+            "type": "string",
+            "enum": [
+              "NOT_REQUIRED",
+              "REQUIRED"
+            ]
+          },
+          "requiredAssessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "validityDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "requireLatestPublishedVersion": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assessmentRequirement"
+        ]
       },
       "AdminAssessmentSubmissionResponseDto": {
         "type": "object",

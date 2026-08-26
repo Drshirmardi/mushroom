@@ -36,7 +36,7 @@
 - [x] `F03-T06` — scoring deterministic، result snapshot و risk/review flag
 - [x] `F03-T07` — booking eligibility service و endpoint دارای blocker code/nextAction
 - [x] `F03-T08` — admin submissions/results/filter و اتصال به patient workspace
-- [ ] `F03-T09` — اتصال کامل builder/list/results در dashboard
+- [x] `F03-T09` — اتصال کامل builder/list/results در dashboard
 - [ ] `F03-T10` — اتصال assessment flow و route gate در app
 - [ ] `F03-T11` — widget/activity آزمون در Dashboard Home
 - [ ] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E

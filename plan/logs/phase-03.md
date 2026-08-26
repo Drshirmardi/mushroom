@@ -232,3 +232,37 @@ Known limitations:
   - ندارد
 Next batch:
   - F03-B09
+
+## F03-T09 — dashboard assessment builder, lifecycle, policy and results
+
+Task ID: F03-T09
+Completed at: 2026-08-26 21:43 +03:30
+Agent/Thread: Codex /root
+Batch ID: F03-B09
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/assessments/admin/admin-assessments.dto.ts`
+  - `apps/api/src/modules/assessments/admin/admin-booking-policy.dto.ts`
+  - `apps/dashboard/src/features/assessments/assessments-page.tsx`
+  - `apps/dashboard/src/lib/assessment-api.ts`
+  - `apps/dashboard/src/lib/assessment-api.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - `corepack pnpm --filter @sabz/dashboard exec vitest run assessment` → PASS (`1 file / 4 tests`)
+  - `corepack pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/admin-assessments.authorization.spec.ts test/admin-assessment-submissions.authorization.spec.ts test/patient-assessments.authorization.spec.ts test/patient-booking-eligibility.spec.ts test/assessment-booking-contract.spec.ts --no-file-parallelism` → PASS (`5 files / 28 tests`)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api-client typecheck` → PASS (generated-client drift check included)
+  - `git diff --check` → PASS
+Result:
+  - assessment list، create/update draft، duplicate، publish/archive و booking policy از generated client واقعی استفاده می‌کنند → PASS
+  - submission result list با filter نسخه، result snapshot و پیوند patient workspace از API واقعی نمایش داده می‌شود → PASS
+  - loading، empty، forbidden، unavailable و error state بدون مقدار mock حفظ شدند → PASS
+  - metadata ناقص request DTOها در منبع OpenAPI اصلاح و client یک‌بار regenerate شد → PASS
+Known limitations:
+  - سازندهٔ مینیمال از صفر سوال تک‌انتخابی می‌سازد؛ draft دارای نوع سوال دیگر برای جلوگیری از حذف داده به‌صورت read-only رد می‌شود. توسعهٔ editor انواع دیگر فقط با requirement مستقل لازم است.
+Next task:
+  - `F03-T10` واجد شرایط است، اما شروع نشده است.

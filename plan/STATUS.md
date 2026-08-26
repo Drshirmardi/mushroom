@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-26 21:24 +03:30`
+- آخرین به‌رورسانی: `2026-08-26 21:43 +03:30`
 - Milestone فعال: `Milestone A — بیمار آماده رزرو`
 - فاز فعال: `Phase 03 — Assessment Engine & Booking Eligibility`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `F03-B09`
-- task فعال: `F03-T09`
-- مسئول/Agent: `Codex /root (coordinator)`
+- batch فعال: `ندارد`
+- task فعال: `ندارد`
+- مسئول/Agent: `ندارد`
 - blocker فعال: `ندارد`
 
 ## پیشرفت کلان
@@ -75,30 +75,18 @@
 ## وضعیت taskهای فاز فعال
 
 - `F03-T01` تا `F03-T08` — `DONE`
-- `F03-T09` — `CLAIMED` در `F03-B09`
+- `F03-T09` — `DONE`
 - `F03-T10` تا `F03-T13` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
-```text
-Batch ID: F03-B09
-Coordinator/Thread: Codex /root (main agent)
-Started at: 2026-08-26 21:24 +03:30
-Phase: Phase 03
-Batch status: IN_PROGRESS
-Contract baseline: plan/phases/03-ASSESSMENT-ELIGIBILITY.md + plan/contracts/assessment-booking-v1.md
-Coordinator-only files: plan/STATUS.md، plan/phases/03-ASSESSMENT-ELIGIBILITY.md، plan/logs/phase-03.md، packages/api-client/openapi.json، packages/api-client/src/schema.generated.ts
-Tasks:
-  - Task ID: F03-T09
-    Agent/Thread: /root
-    Status: CLAIMED
-    Depends on: F03-T08 ACCEPTED
-    Scope: اتصال builder، list، lifecycle actions و results داشبورد به API واقعی
-    Owned paths: apps/dashboard/src/features/assessments/**، apps/dashboard/src/lib/assessment-api*، admin assessment DTO metadata در صورت اثبات نیاز، تست‌های مستقیم
-    Shared/exclusive resource: OpenAPI/generated client — فقط coordinator؛ F03-T10 تا آزادشدن این resource وارد batch نمی‌شود
-    Expected verification: focused dashboard assessment tests، dashboard typecheck، و در صورت تغییر contract تست/typecheck API و generated-client drift check
-Do not change: apps/app/src/components/home/slider-data.ts و justforcheck.md.
-```
+- batch فعالی وجود ندارد.
+- batch `F03-B09` پس از پذیرش `F03-T09` بسته شد؛ شواهد: [`logs/phase-03.md`](logs/phase-03.md).
+
+## batch بعدی واجد شرایط
+
+- `F03-T10` واجد شرایط است، اما در این run شروع یا claim نشد.
+- generated OpenAPI/client پس از بسته‌شدن `F03-B09` آزاد است و batch بعدی باید پیش از اجرا ownership تازه ثبت کند.
 
 Phase 02 final gate accepted: manual browser verification, restored browser inspection, mock audit, full API suite and frontend build/typecheck evidence passed.
 

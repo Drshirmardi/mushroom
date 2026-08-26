@@ -1,32 +1,18 @@
-# Active Task Batch
+# Next Eligible Task Batch
 
-- Updated: `2026-08-26 21:24 +03:30`
-- Batch: `F03-B09`
-- Status: `IN_PROGRESS`
-- Goal: complete the dashboard assessment builder/list/results integration with exclusive generated-contract ownership.
-
-## Tasks
-
-### F03-T09 — `CLAIMED`
-
-- Dependencies: F03-T08 is complete.
-- Scope: connect the assessment builder, assessment list, and result views throughout the dashboard to real API data.
-- Owned paths: dashboard assessment features، `apps/dashboard/src/lib/assessment-api*`، admin assessment DTO metadata only if a write-flow proves it necessary، focused tests.
-- Shared/exclusive resource: `packages/api-client/openapi.json` and `packages/api-client/src/schema.generated.ts` are coordinator-only for this batch.
-- Acceptance:
-  - Builder, list, and result views use generated client data rather than mock values.
-  - Loading, error, and unavailable states remain truthful.
-- Required checks: focused dashboard tests and dashboard typecheck; if contract files change, focused API tests/typecheck and generated-client drift/typecheck.
-
-## Batch review gate
-
-- Main agent reviews the final diff, persisted snapshot immutability, authorization/audit boundaries, generated contract drift, tests, and unrelated files.
-- Set `F03-T09` to `DONE` only after its acceptance checks pass.
-- After acceptance, replace this file with the next eligible batch of up to three dependency-safe tasks; do not start that batch in the same turn.
+- Updated: `2026-08-26 21:43 +03:30`
+- Active batch: none
+- Last completed batch: `F03-B09`
+- Last completed task: `F03-T09`
 
 ## Next eligible task
 
-- `F03-T10` remains unchecked and may be claimed only after `F03-B09` releases the generated OpenAPI/client paths.
+### F03-T10 — `NOT_STARTED`
+
+- Dependencies: F03-T09 is complete.
+- Scope: connect the patient assessment flow and booking route gate to the existing API contract.
+- Status: eligible only; not claimed or started in this run.
+- Before implementation: create a new batch claim in `plan/STATUS.md` and assign exclusive generated-contract ownership.
 
 ## Protected
 

@@ -5,23 +5,29 @@ import { IsIn, IsInt, IsObject, IsOptional, IsString, Max, MaxLength, Min } from
 const locales = ['fa-IR', 'en-US'] as const;
 
 export class CreateAssessmentDto {
+  @ApiPropertyOptional({ type: String, default: 'MAIN', maxLength: 100 })
   @IsOptional() @IsString() @MaxLength(100)
   assessmentKey = 'MAIN';
 
+  @ApiPropertyOptional({ enum: locales, default: 'fa-IR' })
   @IsOptional() @IsIn(locales)
   locale: (typeof locales)[number] = 'fa-IR';
 
+  @ApiProperty({ maxLength: 255 })
   @IsString() @MaxLength(255)
   title!: string;
 
+  @ApiProperty({ type: 'object', additionalProperties: true })
   @IsObject()
   structure!: Record<string, unknown>;
 }
 
 export class UpdateAssessmentDto {
+  @ApiPropertyOptional({ maxLength: 255 })
   @IsOptional() @IsString() @MaxLength(255)
   title?: string;
 
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true })
   @IsOptional() @IsObject()
   structure?: Record<string, unknown>;
 }

@@ -1023,8 +1023,25 @@ export interface components {
             pageSize: number;
             total: number;
         };
-        CreateAssessmentDto: Record<string, never>;
-        UpdateAssessmentDto: Record<string, never>;
+        CreateAssessmentDto: {
+            /** @default MAIN */
+            assessmentKey?: string;
+            /**
+             * @default fa-IR
+             * @enum {string}
+             */
+            locale?: "fa-IR" | "en-US";
+            title: string;
+            structure: {
+                [key: string]: unknown;
+            };
+        };
+        UpdateAssessmentDto: {
+            title?: string;
+            structure?: {
+                [key: string]: unknown;
+            };
+        };
         BookingAssessmentPolicyResponseDto: {
             /** @enum {string} */
             assessmentRequirement: "NOT_REQUIRED" | "REQUIRED";
@@ -1035,7 +1052,14 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string | null;
         };
-        UpdateBookingAssessmentPolicyDto: Record<string, never>;
+        UpdateBookingAssessmentPolicyDto: {
+            /** @enum {string} */
+            assessmentRequirement: "NOT_REQUIRED" | "REQUIRED";
+            /** Format: uuid */
+            requiredAssessmentVersionId?: string;
+            validityDays?: number | null;
+            requireLatestPublishedVersion?: boolean;
+        };
         AdminAssessmentSubmissionResponseDto: {
             /** Format: uuid */
             id: string;
