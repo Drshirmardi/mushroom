@@ -1,6 +1,6 @@
 # Active Task Batch
 
-- Updated: `2026-08-26 16:08 +03:30`
+- Updated: `2026-08-26 16:10 +03:30`
 - Batch: `F03-B07`
 - Status: `READY`
 - Goal: verify and complete the booking eligibility endpoint with its full blocker matrix.
@@ -10,7 +10,7 @@
 ### F03-T07 — `READY`
 
 - Dependencies: deterministic assessment scoring and result-band behavior are complete.
-- Scope: verify the booking eligibility service/endpoint against every documented blocker and fix missing cases.
+- Scope: complete the booking eligibility test matrix. `PROFILE_INCOMPLETE`, disabled policy and expiry are verified; add required/latest-version completion paths and authorization/API coverage.
 - Owned paths: booking eligibility domain/application/API and focused tests only.
 - Acceptance:
   - All blocker codes and next actions are stable.
