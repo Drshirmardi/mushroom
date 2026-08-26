@@ -1,12 +1,12 @@
 # Live Handoff
 
-- Updated: `2026-08-26 15:49 +03:30`
+- Updated: `2026-08-26 15:54 +03:30`
 - Status: `READY`
 - Active slice: complete `F03-T09`, dashboard assessment builder/list/results integration.
 
 ## Next action
 
-Implement the dashboard `/assessments` interface using the generated client: list versions, draft builder, preview, duplicate, publish/archive, policy configuration and real result list. Do not show fabricated result counts or status.
+Continue `F03-T09`: assessment version list now reads persisted API data. Replace the remaining mock builder/result controls with generated-client operations for draft creation, preview, duplicate, publish/archive, policy and real submission results.
 
 ## Acceptance
 

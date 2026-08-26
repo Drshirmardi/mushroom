@@ -1,36 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckSquare, Copy, Download, Edit, Filter, Hash, List, Plus, Trash2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { PATIENTS } from "@/data/patients";
 import { Avatar, StatusBadge } from "@/components/shared";
+import { PATIENTS } from "@/data/patients";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { apiClient } from "@/lib/api";
 import { p } from "@/lib/utils";
 
-interface Assessment {
-  id: number;
-  name: string;
-  type: string;
-  questions: string;
-  submissions: string;
-  status: string;
-}
+interface Assessment { id: string; name: string; questions: number; status: string; }
 
 export function AssessmentsPage() {
+  const { authentication } = useDashboardSession();
   const [view, setView] = useState<"list" | "builder" | "results">("list");
-  const [typeFilter, setTypeFilter] = useState("همه");
-  const types = ["همه", "فردی", "زوجی", "سبک زندگی", "پیگیری", "درد", "خواب", "استرس", "طب سنتی"];
-  const assessments: Assessment[] = [
-    { id: 1, name: "ارزیابی درد مزمن", type: "درد", questions: p(12), submissions: p(34), status: "منتشرشده" },
-    { id: 2, name: "پرسشنامه کیفیت خواب", type: "خواب", questions: p(9), submissions: p(18), status: "منتشرشده" },
-    { id: 3, name: "ارزیابی سطح اضطراب", type: "استرس", questions: p(15), submissions: p(7), status: "پیش‌نویس" },
-    { id: 4, name: "ارزیابی زوجی سلامت", type: "زوجی", questions: p(20), submissions: p(5), status: "منتشرشده" },
-    { id: 5, name: "سنجش مزاج طب سنتی", type: "طب سنتی", questions: p(18), submissions: p(12), status: "منتشرشده" },
-    { id: 6, name: "ارزیابی سبک زندگی", type: "سبک زندگی", questions: p(10), submissions: p(9), status: "منتشرشده" },
-  ];
-  const filtered = typeFilter === "همه" ? assessments : assessments.filter(a => a.type === typeFilter);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [loadError, setLoadError] = useState(false);
+  const types = ["فردی", "زوجی", "سبک زندگی", "پیگیری", "درد", "خواب", "استرس", "طب سنتی"];
+  useEffect(() => { let cancelled = false; const client = apiClient as any; void client.GET("/v1/admin/assessments", { headers: { authorization: `Bearer ${authentication.accessToken}` } }).then(({ data }: { data?: { items: Array<{ id: string; title: string; structure: { sections?: Array<{ questions?: unknown[] }> }; status: string }> } }) => { if (!cancelled) { if (data) setAssessments(data.items.map((item) => ({ id: item.id, name: item.title, questions: item.structure.sections?.reduce((count: number, section) => count + (section.questions?.length ?? 0), 0) ?? 0, status: item.status === "PUBLISHED" ? "منتشرشده" : item.status === "DRAFT" ? "پیش‌نویس" : "بایگانی" }))); else setLoadError(true); } }); return () => { cancelled = true; }; }, [authentication.accessToken]);
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
       <div className="flex items-center gap-2 bg-card border border-border rounded-2xl p-1.5 w-fit shadow-sm">
@@ -43,17 +32,17 @@ export function AssessmentsPage() {
       {view === "list" && (
         <div className="space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
-            {types.map(t => <button key={t} onClick={() => setTypeFilter(t)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${typeFilter === t ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground"}`}>{t}</button>)}
             <button onClick={() => setView("builder")} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold mr-auto"><Plus size={16} />ارزیابی جدید</button>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {filtered.map(a => (
+            {loadError && <p className="text-sm text-red-600">دریافت ارزیابی‌ها انجام نشد.</p>}
+            {assessments.map(a => (
               <div key={a.id} className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
-                  <div><h3 className="font-bold text-sm">{a.name}</h3><span className="text-[0.65rem] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md mt-1 inline-block">{a.type}</span></div>
+                  <div><h3 className="font-bold text-sm">{a.name}</h3></div>
                   <StatusBadge status={a.status} />
                 </div>
-                <div className="flex items-center gap-5 text-xs text-muted-foreground mb-4"><span>{a.questions} سوال</span><span>{a.submissions} پاسخ</span></div>
+                <div className="flex items-center gap-5 text-xs text-muted-foreground mb-4"><span>{p(a.questions)} سوال</span></div>
                 <div className="flex gap-2">
                   <button onClick={() => setView("results")} className="flex-1 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-secondary">نتایج</button>
                   <button className="flex-1 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-secondary">ویرایش</button>
