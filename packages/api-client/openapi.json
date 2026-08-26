@@ -3883,6 +3883,50 @@
           "status"
         ]
       },
+      "AdminPatientAssessmentResultDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentTitle": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "submissionId",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "state"
+        ]
+      },
       "AdminPatientDetailResponseDto": {
         "type": "object",
         "properties": {
@@ -3898,13 +3942,20 @@
           },
           "intake": {
             "$ref": "#/components/schemas/AdminPatientIntakeResponseDto"
+          },
+          "assessments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPatientAssessmentResultDto"
+            }
           }
         },
         "required": [
           "patientId",
           "profile",
           "consent",
-          "intake"
+          "intake",
+          "assessments"
         ]
       },
       "UpdateAdminPatientDto": {

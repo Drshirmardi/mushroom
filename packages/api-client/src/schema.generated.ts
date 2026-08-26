@@ -959,12 +959,28 @@ export interface components {
             status: "AVAILABLE" | "CONSENT_REQUIRED" | "NOT_STARTED";
             value?: components["schemas"]["AdminMedicalIntakeRevisionResponseDto"] | null;
         };
+        AdminPatientAssessmentResultDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentTitle: string;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            score?: string | null;
+            resultSnapshot?: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            completedAt?: string | null;
+        };
         AdminPatientDetailResponseDto: {
             /** Format: uuid */
             patientId: string;
             profile: components["schemas"]["AdminPatientProfileResponseDto"];
             consent: components["schemas"]["AdminPatientConsentResponseDto"];
             intake: components["schemas"]["AdminPatientIntakeResponseDto"];
+            assessments: components["schemas"]["AdminPatientAssessmentResultDto"][];
         };
         UpdateAdminPatientDto: Record<string, never>;
         AdminPatientProfileUpdateResponseDto: {

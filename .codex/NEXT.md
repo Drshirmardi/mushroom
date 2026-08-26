@@ -1,18 +1,18 @@
 # Live Handoff
 
-- Updated: `2026-08-26 15:42 +03:30`
+- Updated: `2026-08-26 15:49 +03:30`
 - Status: `READY`
-- Active slice: complete `F03-T08`, admin assessment submissions/results API and patient workspace view.
+- Active slice: complete `F03-T09`, dashboard assessment builder/list/results integration.
 
 ## Next action
 
-Finish `F03-T08`: connect the new authorized/audited clinic-scoped admin submission list/detail APIs to the admin patient workspace response, then add authorization and cross-clinic integration coverage.
+Implement the dashboard `/assessments` interface using the generated client: list versions, draft builder, preview, duplicate, publish/archive, policy configuration and real result list. Do not show fabricated result counts or status.
 
 ## Acceptance
 
-- Only admins read submissions/results and only from their clinic.
-- Filters use real persisted state/version data, never mocks.
-- Admin patient detail exposes a patient's immutable assessment results with audit evidence.
+- Dashboard uses generated client operations only.
+- Builder states surface API validation/errors and immutable version behavior.
+- Result list and policy controls show real persisted data.
 - OpenAPI, generated client, authorization and integration tests pass.
 
 ## Do not touch
