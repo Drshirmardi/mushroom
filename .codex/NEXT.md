@@ -1,21 +1,29 @@
-# Live Handoff
+# Active Task Batch
 
-- Updated: `2026-08-26 16:02 +03:30`
+- Updated: `2026-08-26 16:08 +03:30`
+- Batch: `F03-B07`
 - Status: `READY`
-- Active slice: complete `F03-T06`, add risk/review flags to deterministic assessment results.
+- Goal: verify and complete the booking eligibility endpoint with its full blocker matrix.
 
-## Next action
+## Tasks
 
-Finish `F03-T06`: classify deterministic assessment results with explicit risk/review flags and persist them in the immutable result snapshot. Keep booking eligibility score-independent.
+### F03-T07 — `READY`
 
-## Acceptance
+- Dependencies: deterministic assessment scoring and result-band behavior are complete.
+- Scope: verify the booking eligibility service/endpoint against every documented blocker and fix missing cases.
+- Owned paths: booking eligibility domain/application/API and focused tests only.
+- Acceptance:
+  - All blocker codes and next actions are stable.
+  - Eligibility remains based on valid completion, never score or risk.
+- Required checks: focused assessment tests, eligibility tests, API authorization/integration tests, OpenAPI/client generation check, affected package typechecks.
 
-- Result snapshot includes a deterministic risk/review classification.
-- All question types and result-band behavior remain deterministic.
-- Eligibility tests prove score/risk do not affect booking access.
-- OpenAPI, generated client, authorization and integration tests pass.
+## Batch review gate
 
-## Do not touch
+- Main agent reviews the final diff, persisted snapshot immutability, authorization/audit boundaries, generated contract drift, tests, and unrelated files.
+- Set `F03-T07` to `DONE` only after all acceptance checks pass.
+- After acceptance, replace this file with the next eligible batch of up to three dependency-safe tasks; do not start that batch in the same turn.
+
+## Protected
 
 - Unrelated dirty files
 - `apps/app/src/components/home/slider-data.ts`

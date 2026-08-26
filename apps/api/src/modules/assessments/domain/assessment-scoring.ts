@@ -52,5 +52,8 @@ const selectBand = (value: unknown, score: number) => {
   if (!Array.isArray(value)) fail('Assessment result bands are invalid.');
   const matches = (value as unknown[]).map(object).filter((band) => { const min = band.minInclusive as unknown; const max = band.maxExclusive as unknown; return typeof band.id === 'string' && typeof band.title === 'string' && finite(min) && score >= min && (!finite(max) || score < max); });
   if (matches.length !== 1) fail('Assessment score has no unique result band.');
-  return { id: matches[0].id as string, title: matches[0].title as string };
+  const riskLevel = matches[0].riskLevel;
+  if (riskLevel !== undefined && riskLevel !== 'NONE' && riskLevel !== 'LOW' && riskLevel !== 'MODERATE' && riskLevel !== 'HIGH') fail('Assessment result band risk level is invalid.');
+  if (matches[0].requiresReview !== undefined && typeof matches[0].requiresReview !== 'boolean') fail('Assessment result band review flag is invalid.');
+  return { id: matches[0].id as string, title: matches[0].title as string, riskLevel: riskLevel ?? 'NONE', requiresReview: matches[0].requiresReview ?? false };
 };
