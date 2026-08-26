@@ -2495,6 +2495,33 @@
           "Patient Assessments"
         ]
       }
+    },
+    "/v1/patients/me/booking-eligibility": {
+      "get": {
+        "operationId": "patientBookingEligibilityGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get booking eligibility without using assessment score",
+        "tags": [
+          "Patient Booking"
+        ]
+      }
     }
   },
   "info": {
@@ -4094,6 +4121,32 @@
       "SaveAssessmentAnswersDto": {
         "type": "object",
         "properties": {}
+      },
+      "PatientBookingEligibilityResponseDto": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "ELIGIBLE",
+              "PROFILE_INCOMPLETE",
+              "MAIN_ASSESSMENT_REQUIRED",
+              "ASSESSMENT_EXPIRED",
+              "LATEST_VERSION_REQUIRED"
+            ]
+          },
+          "nextAction": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "eligible",
+          "reason"
+        ]
       }
     }
   }

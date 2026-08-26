@@ -1,18 +1,18 @@
 # Live Handoff
 
-- Updated: `2026-08-26 15:32 +03:30`
+- Updated: `2026-08-26 15:35 +03:30`
 - Status: `READY`
-- Active slice: complete `F03-T07`, patient booking-eligibility endpoint with stable blocker codes.
+- Active slice: complete `F03-T08`, admin assessment submissions/results API and patient workspace view.
 
 ## Next action
 
-Implement `/v1/patients/me/booking-eligibility`, combining onboarding completeness, clinic policy and valid assessment completion. Return stable blocker codes and next actions without using score for eligibility.
+Implement authorized admin assessment-submission list/detail operations with clinic scope, state/version filters and audited sensitive-result access. Expose the result in the existing admin patient workspace response.
 
 ## Acceptance
 
-- Incomplete onboarding returns `PROFILE_INCOMPLETE` before assessment evaluation.
-- Disabled policy returns eligible without reading score.
-- Required policy returns the documented assessment/expiry/latest-version blocker and next action.
+- Only admins read submissions/results and only from their clinic.
+- Filters use real persisted state/version data, never mocks.
+- Admin patient detail exposes a patient's immutable assessment results with audit evidence.
 - OpenAPI, generated client, authorization and integration tests pass.
 
 ## Do not touch
