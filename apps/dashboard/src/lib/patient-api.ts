@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api";
 
 export type AdminPatientList = components["schemas"]["AdminPatientListResponseDto"];
 export type AdminPatientDetail = components["schemas"]["AdminPatientDetailResponseDto"];
+export type AdminAssessmentSubmissionList = components["schemas"]["AdminAssessmentSubmissionListResponseDto"];
 
 export class PatientApiError extends Error {
   constructor(
@@ -37,6 +38,20 @@ export async function getAdminPatient(
     apiClient.GET("/v1/admin/patients/{patientId}", {
       headers: authorization(accessToken),
       params: { path: { patientId } },
+    }),
+  );
+  if (!data) throw new PatientApiError(response.status);
+  return data;
+}
+
+export async function getAdminPatientAssessmentSubmissions(
+  accessToken: string,
+  patientId: string,
+): Promise<AdminAssessmentSubmissionList> {
+  const { data, response } = await withRequestTimeout(
+    apiClient.GET("/v1/admin/assessment-submissions", {
+      headers: authorization(accessToken),
+      params: { query: { patientId, pageSize: 50 } },
     }),
   );
   if (!data) throw new PatientApiError(response.status);

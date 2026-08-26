@@ -2759,7 +2759,13 @@ export interface operations {
     };
     adminAssessmentSubmissionsList: {
         parameters: {
-            query?: never;
+            query?: {
+                pageSize?: number;
+                page?: number;
+                state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+                assessmentVersionId?: string;
+                patientId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

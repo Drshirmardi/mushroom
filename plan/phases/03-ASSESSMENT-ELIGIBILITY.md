@@ -34,7 +34,7 @@
 - [x] `F03-T04` — تعیین main assessment و toggle الزام قبل از رزرو در transaction
 - [x] `F03-T05` — patient list/start/save/resume/submit/result API
 - [x] `F03-T06` — scoring deterministic، result snapshot و risk/review flag
-- [ ] `F03-T07` — booking eligibility service و endpoint دارای blocker code/nextAction
+- [x] `F03-T07` — booking eligibility service و endpoint دارای blocker code/nextAction
 - [ ] `F03-T08` — admin submissions/results/filter و اتصال به patient workspace
 - [ ] `F03-T09` — اتصال کامل builder/list/results در dashboard
 - [ ] `F03-T10` — اتصال assessment flow و route gate در app

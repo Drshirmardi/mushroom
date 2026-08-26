@@ -37,3 +37,29 @@ Verification:
 Result:
   - F03-T02 → ACCEPTED
   - F03-T03 unblocked.
+
+## F03-T07 — booking eligibility blocker matrix
+
+Task ID: F03-T07
+Completed at: 2026-08-26 16:22 +03:30
+Agent/Thread: Codex /root/f03_t07
+Batch ID: F03-B07
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/assessments/patient/patient-booking-eligibility.service.ts`
+  - `apps/api/test/patient-booking-eligibility.spec.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api test` → PASS
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `pnpm generate:api-client` → PASS (no contract drift)
+  - `git diff --check` → PASS
+Result:
+  - blocker code و nextAction برای profile، policy، completion، latest version و expiry → PASS
+  - eligibility تنها بر اساس completion معتبر است؛ score/risk خوانده یا استفاده نمی‌شود → PASS
+  - authorization endpoint برای PATIENT → PASS
+Known limitations:
+  - ندارد
+Next batch:
+  - تعریف نشده در `.codex/NEXT.md`
