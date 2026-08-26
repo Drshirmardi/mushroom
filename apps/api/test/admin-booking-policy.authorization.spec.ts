@@ -34,8 +34,16 @@ describe('Admin booking assessment policy contract', () => {
   it('clears the required version and resets optional flags when disabled', async () => {
     let mutation: Record<string, unknown> | undefined;
     const policy = { id: '00000000-0000-4000-8000-000000000005', assessmentRequirement: 'NOT_REQUIRED', requiredAssessmentVersionId: null, validityDays: null, requireLatestPublishedVersion: false, updatedAt: new Date() };
-    const service = new AdminBookingPolicyService({ clinic: { findFirst: async () => ({ id: clinicId }) }, bookingEligibilityPolicy: { upsert: async (value: Record<string, unknown>) => { mutation = value; return policy; } }, auditEvent: { create: async () => undefined } } as never);
+    const tx = { bookingEligibilityPolicy: { upsert: async (value: Record<string, unknown>) => { mutation = value; return policy; } }, auditEvent: { create: async () => undefined } };
+    const service = new AdminBookingPolicyService({ clinic: { findFirst: async () => ({ id: clinicId }) }, $transaction: async (callback: (value: typeof tx) => unknown) => callback(tx) } as never);
     await expect(service.update({ assessmentRequirement: 'NOT_REQUIRED', validityDays: 14, requireLatestPublishedVersion: true }, auditContext)).resolves.toMatchObject({ assessmentRequirement: policy.assessmentRequirement, requiredAssessmentVersionId: null, validityDays: null, requireLatestPublishedVersion: false });
     expect(mutation).toMatchObject({ update: { requiredAssessmentVersionId: null, validityDays: null, requireLatestPublishedVersion: false } });
+  });
+
+  it('queries only the published MAIN assessment when enabling the requirement', async () => {
+    let where: Record<string, unknown> | undefined;
+    const service = new AdminBookingPolicyService({ clinic: { findFirst: async () => ({ id: clinicId }) }, assessmentVersion: { findFirst: async (value: { where: Record<string, unknown> }) => { where = value.where; return null; } } } as never);
+    await expect(service.update({ assessmentRequirement: 'REQUIRED', requiredAssessmentVersionId: '00000000-0000-4000-8000-000000000004' }, auditContext)).rejects.toMatchObject({ response: { code: 'REQUIRED_ASSESSMENT_VERSION_INVALID' } });
+    expect(where).toMatchObject({ clinicId, assessmentKey: 'MAIN', status: 'PUBLISHED' });
   });
 });

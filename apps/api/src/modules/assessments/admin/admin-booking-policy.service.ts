@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
-import { AssessmentVersionStatus, BookingAssessmentRequirement } from '../../../generated/prisma/client';
+import { AssessmentVersionStatus, BookingAssessmentRequirement, Prisma } from '../../../generated/prisma/client';
 
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS } from '../application/assessment-audit';
@@ -24,15 +24,18 @@ export class AdminBookingPolicyService {
     const required = body.assessmentRequirement === BookingAssessmentRequirement.REQUIRED;
     if (required && !body.requiredAssessmentVersionId) throw new UnprocessableEntityException({ code: 'REQUIRED_ASSESSMENT_VERSION_MISSING', message: 'A published assessment version is required when the booking prerequisite is enabled.', details: {} });
     if (required) {
-      const version = await this.prisma.assessmentVersion.findFirst({ where: { id: body.requiredAssessmentVersionId, clinicId: clinic.id, status: AssessmentVersionStatus.PUBLISHED }, select: { id: true } });
+      const version = await this.prisma.assessmentVersion.findFirst({ where: { id: body.requiredAssessmentVersionId, clinicId: clinic.id, assessmentKey: 'MAIN', status: AssessmentVersionStatus.PUBLISHED }, select: { id: true } });
       if (!version) throw new ConflictException({ code: 'REQUIRED_ASSESSMENT_VERSION_INVALID', message: 'The required assessment version must be published by this clinic.', details: {} });
     }
-    const policy = await this.prisma.bookingEligibilityPolicy.upsert({
-      where: { clinicId: clinic.id },
-      create: { clinicId: clinic.id, assessmentRequirement: body.assessmentRequirement, requiredAssessmentVersionId: required ? body.requiredAssessmentVersionId! : null, validityDays: required ? body.validityDays ?? null : null, requireLatestPublishedVersion: required ? body.requireLatestPublishedVersion ?? false : false },
-      update: { assessmentRequirement: body.assessmentRequirement, requiredAssessmentVersionId: required ? body.requiredAssessmentVersionId! : null, validityDays: required ? body.validityDays ?? null : null, requireLatestPublishedVersion: required ? body.requireLatestPublishedVersion ?? false : false },
+    const policy = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const next = await tx.bookingEligibilityPolicy.upsert({
+        where: { clinicId: clinic.id },
+        create: { clinicId: clinic.id, assessmentRequirement: body.assessmentRequirement, requiredAssessmentVersionId: required ? body.requiredAssessmentVersionId! : null, validityDays: required ? body.validityDays ?? null : null, requireLatestPublishedVersion: required ? body.requireLatestPublishedVersion ?? false : false },
+        update: { assessmentRequirement: body.assessmentRequirement, requiredAssessmentVersionId: required ? body.requiredAssessmentVersionId! : null, validityDays: required ? body.validityDays ?? null : null, requireLatestPublishedVersion: required ? body.requireLatestPublishedVersion ?? false : false },
+      });
+      await tx.auditEvent.create({ data: { action: ASSESSMENT_AUDIT_ACTIONS.BOOKING_POLICY_UPDATED, actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'BOOKING_ELIGIBILITY_POLICY', subjectId: next.id, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { assessmentRequirement: next.assessmentRequirement, requiredAssessmentVersionId: next.requiredAssessmentVersionId, validityDays: next.validityDays, requireLatestPublishedVersion: next.requireLatestPublishedVersion } } });
+      return next;
     });
-    await this.prisma.auditEvent.create({ data: { action: ASSESSMENT_AUDIT_ACTIONS.BOOKING_POLICY_UPDATED, actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'BOOKING_ELIGIBILITY_POLICY', subjectId: policy.id, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { assessmentRequirement: policy.assessmentRequirement, requiredAssessmentVersionId: policy.requiredAssessmentVersionId, validityDays: policy.validityDays, requireLatestPublishedVersion: policy.requireLatestPublishedVersion } } });
     return this.response(policy);
   }
 
