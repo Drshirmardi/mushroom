@@ -1,6 +1,6 @@
 # Phase 03 — Assessment Engine & Booking Eligibility
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت: `IN_PROGRESS`
 - Milestone: `A — بیمار آماده رزرو`
 - پیش‌نیاز: `Phase 02 DONE`
 - خروجی اصلی: آزمون اصلی versioned در داشبورد ساخته می‌شود و الزام آن پیش از رزرو قابل تنظیم است.
@@ -22,19 +22,14 @@
 
 ## مدل‌های داده
 
-- `AssessmentDefinition`
-- `AssessmentVersion`
-- `AssessmentQuestion`
-- `AssessmentOption`
-- `AssessmentSubmission`
-- `AssessmentAnswer`
-- `AssessmentResult`
-- `ClinicPatientPolicy`
+- `AssessmentVersion` با definition/question/option و result-band به‌صورت snapshot ساختاری immutable
+- `PatientAssessmentSubmission` با answer/result snapshot نسخه دقیق
+- `BookingEligibilityPolicy` برای الزام، اعتبار زمانی و latest-version
 
 ## Taskها
 
-- [ ] `F03-T01` — قرارداد lifecycle، question types، scoring و policy رزرو
-- [ ] `F03-T02` — migration definition/version/question/submission/result/policy
+- [x] `F03-T01` — قرارداد lifecycle، question types، scoring و policy رزرو؛ منبع: [`../contracts/assessment-booking-v1.md`](../contracts/assessment-booking-v1.md)
+- [x] `F03-T02` — migration definition/version/question/submission/result/policy
 - [ ] `F03-T03` — admin assessment CRUD draft، preview، duplicate، publish و archive
 - [ ] `F03-T04` — تعیین main assessment و toggle الزام قبل از رزرو در transaction
 - [ ] `F03-T05` — patient list/start/save/resume/submit/result API

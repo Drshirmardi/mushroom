@@ -1,18 +1,19 @@
 # Live Handoff
 
-- Updated: `2026-08-26 11:24 +03:30`
+- Updated: `2026-08-26 14:52 +03:30`
 - Status: `READY`
-- Active slice: freeze the main-assessment and configurable booking-eligibility contract.
+- Active slice: complete `F03-T03`, secured admin assessment draft/publish/archive operations.
 
 ## Next action
 
-Inspect only the assessment, booking-policy, generated-contract/schema, and directly relevant test files. Define and test a versioned immutable assessment structure plus a configurable booking prerequisite based on valid completion rather than score.
+Implement authorized and audited admin operations to list/create/update/duplicate/publish/archive assessment versions. Publish the OpenAPI contract and regenerate the API client from it.
 
 ## Acceptance
 
-- The assessment contract is versioned and immutable after publication.
-- Booking eligibility is configurable and depends on a valid completed assessment, never its score.
-- Contract/schema tests cover the agreed boundary before implementation expands.
+- Only admins can manage assessment versions.
+- Publish is idempotent; published or retired content cannot mutate.
+- Duplicate produces a new draft version with its own identity/content hash.
+- OpenAPI, generated client, authorization and integration tests pass.
 
 ## Do not touch
 
