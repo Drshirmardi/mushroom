@@ -31,8 +31,12 @@ export function DashboardPage() {
   }, [authentication.accessToken]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void loadDashboardOnboardingSummary(apiClient, authentication.accessToken).then(
+      (nextState) => { if (!cancelled) setState(nextState); },
+    );
+    return () => { cancelled = true; };
+  }, [authentication.accessToken]);
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-6">
