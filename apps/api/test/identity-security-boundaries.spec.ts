@@ -47,6 +47,27 @@ describe('identity security boundaries', () => {
     },
   );
 
+  it.each(['PATCH', 'PUT', 'DELETE'] as const)(
+    'allows browser preflight for the %s method',
+    async (method) => {
+      const response = await app.inject({
+        method: 'OPTIONS',
+        url: '/v1/patients/me',
+        headers: {
+          origin: 'http://localhost:3001',
+          'access-control-request-method': method,
+          'access-control-request-headers': 'authorization,content-type',
+        },
+      });
+
+      expect(response.statusCode).toBe(204);
+      expect(response.headers['access-control-allow-origin']).toBe(
+        'http://localhost:3001',
+      );
+      expect(response.headers['access-control-allow-methods']).toContain(method);
+    },
+  );
+
   it('does not grant CORS access to an unknown origin', async () => {
     const response = await app.inject({
       method: 'OPTIONS',

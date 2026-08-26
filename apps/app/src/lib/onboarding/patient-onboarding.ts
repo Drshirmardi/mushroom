@@ -53,12 +53,19 @@ export async function loadPatientOnboarding(accessToken: string, client: Client 
 
 export function updateSelfProfile(
   accessToken: string,
-  body: unknown,
+  body: components["schemas"]["UpdateSelfProfileDto"],
   client: Client = apiClient,
 ) {
+  const optionalText = (value: string | null | undefined) =>
+    typeof value === "string" && value.trim() === "" ? null : value;
+  const normalizedBody = {
+    ...body,
+    email: optionalText(body.email),
+    cityName: optionalText(body.cityName),
+  };
   return expectData(client.PATCH("/v1/patients/me", {
     headers: authorizationHeaders(accessToken),
-    body: body as components["schemas"]["UpdateSelfProfileDto"],
+    body: normalizedBody,
   }));
 }
 
@@ -112,12 +119,16 @@ export function onboardingErrorMessage(error: unknown) {
   if (!(error instanceof PatientOnboardingRequestError)) {
     return "ارتباط با سرویس برقرار نشد؛ دوباره تلاش کنید.";
   }
+  if (error.code === "CONSENT_REQUIRED") return "برای ذخیره اطلاعات پزشکی، رضایت فعال لازم است.";
   if (error.status === 401 || error.status === 403) {
     return "دسترسی به پرونده شما مجاز نیست. لطفاً دوباره وارد حساب شوید.";
   }
-  if (error.code === "CONSENT_REQUIRED") return "برای ذخیره اطلاعات پزشکی، رضایت فعال لازم است.";
+  if (error.code === "PROFILE_FIELDS_INCOMPLETE") return "نام و نام خانوادگی را کامل کنید.";
+  if (error.code === "INVALID_MEDICAL_DECLARATION") return "پاسخ‌های پزشکی را کامل و معتبر وارد کنید.";
+  if (error.code === "BAD_REQUEST" || error.code === "UNPROCESSABLE_ENTITY") return "مقدار یکی از فیلدها معتبر نیست؛ موارد مشخص‌شده را بررسی کنید.";
   if (error.code === "MEDICAL_INTAKE_REVISION_CONFLICT") return "اطلاعات در دستگاه دیگری تغییر کرده است؛ صفحه را تازه کنید.";
   if (error.code === "MEDICAL_INTAKE_INCOMPLETE") return "همه پاسخ‌های ضروری را تکمیل کنید.";
   if (error.code === "CONSENT_POLICY_STALE") return "نسخه رضایت تغییر کرده است؛ متن جدید را بررسی کنید.";
+  if (error.code === "CONSENT_POLICY_NOT_AVAILABLE" || error.code === "SERVICE_UNAVAILABLE") return "سرویس پرونده اولیه موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کنید.";
   return "ذخیره‌سازی انجام نشد؛ دوباره تلاش کنید.";
 }

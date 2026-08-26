@@ -13,6 +13,7 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
   let profiles: SelfProfileService;
   const userIds = new Set<string>();
   const policyIds = new Set<string>();
+  const clinicIds = new Set<string>();
 
   beforeAll(async () => {
     app = await createApiApplication();
@@ -42,6 +43,10 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
       await prisma.consentPolicyVersion.deleteMany({ where: { id: { in: [...policyIds] } } });
       policyIds.clear();
     }
+    if (clinicIds.size > 0) {
+      await prisma.clinic.deleteMany({ where: { id: { in: [...clinicIds] } } });
+      clinicIds.clear();
+    }
   });
 
   afterAll(async () => {
@@ -49,7 +54,10 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
   });
 
   const createPatient = async () => {
-    const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
+    const clinic = await prisma.clinic.create({
+      data: { name: `Test clinic ${randomUUID()}`, status: 'INACTIVE' },
+    });
+    clinicIds.add(clinic.id);
     const user = await prisma.user.create({
       data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` },
     });
