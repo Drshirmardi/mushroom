@@ -27,7 +27,6 @@ export function DashboardPage() {
   const [state, setState] = useState<SummaryViewState>({ status: "loading" });
 
   const refresh = useCallback(async () => {
-    setState({ status: "loading" });
     setState(await loadDashboardOnboardingSummary(apiClient, authentication.accessToken));
   }, [authentication.accessToken]);
 
