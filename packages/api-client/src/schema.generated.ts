@@ -538,6 +538,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/assessment-submissions/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit an assessment submission exactly once */
+        post: operations["patientAssessmentSubmissionSubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an immutable assessment result */
+        get: operations["patientAssessmentSubmissionResult"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -960,6 +994,10 @@ export interface components {
             answers: {
                 [key: string]: unknown;
             };
+            resultSnapshot?: {
+                [key: string]: unknown;
+            } | null;
+            score?: string | null;
             /** Format: date-time */
             startedAt: string;
             /** Format: date-time */
@@ -2704,6 +2742,50 @@ export interface operations {
                 "application/json": components["schemas"]["SaveAssessmentAnswersDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionSubmit: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

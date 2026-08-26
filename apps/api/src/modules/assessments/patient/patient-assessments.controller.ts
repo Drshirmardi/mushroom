@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Headers, HttpStatus, Param, ParseUUIDPipe, Post, Put, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
@@ -19,5 +19,9 @@ export class PatientAssessmentsController {
   get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.assessments.get(id, request.auth.userId); }
   @Put('assessment-submissions/:id') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId: 'patientAssessmentSubmissionSave', summary: 'Save answers for an in-progress assessment submission' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: PatientAssessmentSubmissionResponseDto })
   save(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: SaveAssessmentAnswersDto, @Req() request: AuthenticatedRequest) { return this.assessments.save(id, body.answers, request.auth.userId, this.context(request)); }
+  @Post('assessment-submissions/:id/submit') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId: 'patientAssessmentSubmissionSubmit', summary: 'Submit an assessment submission exactly once' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', maxLength: 255 } }) @ApiOkResponse({ type: PatientAssessmentSubmissionResponseDto })
+  submit(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Headers('idempotency-key') idempotencyKey: string | undefined, @Req() request: AuthenticatedRequest) { return this.assessments.submit(id, idempotencyKey, request.auth.userId, this.context(request)); }
+  @Get('assessment-submissions/:id/result') @RequirePermissions(PERMISSIONS.ASSESSMENTS_READ_SELF) @ApiOperation({ operationId: 'patientAssessmentSubmissionResult', summary: 'Get an immutable assessment result' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: PatientAssessmentSubmissionResponseDto })
+  result(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.assessments.result(id, request.auth.userId, this.context(request)); }
   private context(request: AuthenticatedRequest) { return { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip }; }
 }

@@ -2412,6 +2412,89 @@
           "Patient Assessments"
         ]
       }
+    },
+    "/v1/assessment-submissions/{id}/submit": {
+      "post": {
+        "operationId": "patientAssessmentSubmissionSubmit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Submit an assessment submission exactly once",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/result": {
+      "get": {
+        "operationId": "patientAssessmentSubmissionResult",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an immutable assessment result",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
     }
   },
   "info": {
@@ -3979,6 +4062,15 @@
           "answers": {
             "type": "object",
             "additionalProperties": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
           },
           "startedAt": {
             "format": "date-time",
