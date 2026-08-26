@@ -1,18 +1,18 @@
 # Live Handoff
 
-- Updated: `2026-08-26 15:04 +03:30`
+- Updated: `2026-08-26 15:08 +03:30`
 - Status: `READY`
-- Active slice: complete `F03-T04`, configure the clinic's main-assessment booking requirement.
+- Active slice: complete `F03-T05`, patient assessment list/start/save/resume/submit/result API.
 
 ## Next action
 
-Implement the authorized, audited clinic booking-eligibility policy read/update operation. It must select only a published same-clinic assessment version and preserve `validityDays=null` / `requireLatestPublishedVersion=false` defaults.
+Implement patient-facing assessment APIs for published versions: list, start/resume a draft submission, save answers, submit with an idempotency key, and return the immutable result snapshot. Keep every operation scoped to the authenticated patient and audit sensitive writes/reads.
 
 ## Acceptance
 
-- Only admins can read and update the policy.
-- A required policy rejects draft, retired, or other-clinic assessment versions.
-- Disabled policy clears its version without deleting historical submissions.
+- Patients can see only published versions for their clinic and only their own submissions.
+- Save/resume works only for `IN_PROGRESS`; completed results remain immutable.
+- Submit is idempotent and rejects a key reused with a different payload.
 - OpenAPI, generated client, authorization and integration tests pass.
 
 ## Do not touch

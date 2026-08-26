@@ -2154,6 +2154,108 @@
           "Admin Assessments"
         ]
       }
+    },
+    "/v1/admin/clinic/patient-policy": {
+      "get": {
+        "operationId": "adminBookingAssessmentPolicyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingAssessmentPolicyResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the clinic booking assessment policy",
+        "tags": [
+          "Admin Booking Policy"
+        ]
+      },
+      "patch": {
+        "operationId": "adminBookingAssessmentPolicyUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingAssessmentPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingAssessmentPolicyResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The required assessment version is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Booking policy input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update the clinic booking assessment policy",
+        "tags": [
+          "Admin Booking Policy"
+        ]
+      }
     }
   },
   "info": {
@@ -3608,6 +3710,44 @@
         "properties": {}
       },
       "UpdateAssessmentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "BookingAssessmentPolicyResponseDto": {
+        "type": "object",
+        "properties": {
+          "assessmentRequirement": {
+            "type": "string",
+            "enum": [
+              "NOT_REQUIRED",
+              "REQUIRED"
+            ]
+          },
+          "requiredAssessmentVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "validityDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "requireLatestPublishedVersion": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "assessmentRequirement",
+          "requireLatestPublishedVersion"
+        ]
+      },
+      "UpdateBookingAssessmentPolicyDto": {
         "type": "object",
         "properties": {}
       }
