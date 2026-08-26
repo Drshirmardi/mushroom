@@ -1,18 +1,18 @@
 # Live Handoff
 
-- Updated: `2026-08-26 14:52 +03:30`
+- Updated: `2026-08-26 15:04 +03:30`
 - Status: `READY`
-- Active slice: complete `F03-T03`, secured admin assessment draft/publish/archive operations.
+- Active slice: complete `F03-T04`, configure the clinic's main-assessment booking requirement.
 
 ## Next action
 
-Implement authorized and audited admin operations to list/create/update/duplicate/publish/archive assessment versions. Publish the OpenAPI contract and regenerate the API client from it.
+Implement the authorized, audited clinic booking-eligibility policy read/update operation. It must select only a published same-clinic assessment version and preserve `validityDays=null` / `requireLatestPublishedVersion=false` defaults.
 
 ## Acceptance
 
-- Only admins can manage assessment versions.
-- Publish is idempotent; published or retired content cannot mutate.
-- Duplicate produces a new draft version with its own identity/content hash.
+- Only admins can read and update the policy.
+- A required policy rejects draft, retired, or other-clinic assessment versions.
+- Disabled policy clears its version without deleting historical submissions.
 - OpenAPI, generated client, authorization and integration tests pass.
 
 ## Do not touch

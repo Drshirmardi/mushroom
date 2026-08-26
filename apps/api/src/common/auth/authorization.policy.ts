@@ -25,6 +25,7 @@ export const PERMISSIONS = {
   PATIENTS_CREATE: 'patients:create',
   PATIENTS_UPDATE: 'patients:update',
   PATIENTS_INTAKE_UPDATE: 'patients:intake:update',
+  ASSESSMENTS_MANAGE: 'assessments:manage',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -59,6 +60,7 @@ const ROLE_PERMISSIONS: Readonly<Record<RoleCode, readonly Permission[]>> = {
     PERMISSIONS.PATIENTS_CREATE,
     PERMISSIONS.PATIENTS_UPDATE,
     PERMISSIONS.PATIENTS_INTAKE_UPDATE,
+    PERMISSIONS.ASSESSMENTS_MANAGE,
   ],
 };
 
