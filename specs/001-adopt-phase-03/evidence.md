@@ -34,3 +34,15 @@
 
 - Focused five-file API suite → PASS (`5 files / 30 tests`).
 - API typecheck → PASS.
+
+## F03-T13 — Milestone A closure
+
+- Run: `2026-08-27 14:29 +03:30`.
+- Mock audit: `apps/app/src/lib/data/assessments.ts` was the only remaining Phase 03 assessment mock artifact. It had no importers and was deleted. The assessment mock records retained in Phase 06–08 UI scopes are not Phase 03 artifacts and were left unchanged.
+- Patient flow: published assessments, persisted drafts, immutable stored results, and the booking gate are supplied by the generated API contract.
+- Dashboard flow: assessment lifecycle, booking policy, dashboard activity, and patient-workspace results are supplied by real assessment endpoints.
+- Browser gate: both enabled and disabled requirement journeys passed under F03-T12; blocked, resumed, result, eligible, and dashboard-agreement states were captured in that run.
+- Migration gate: F03-T02 recorded a clean migration and upgrade smoke test from an empty database; no schema or migration changed after that verification.
+- Current focused verification: app tests (`2 files / 6 tests`), dashboard tests (`2 files / 9 tests`), API contract suite (`5 files / 30 tests`), app/dashboard/API/API-client typechecks, and `git diff --check` all passed.
+
+Milestone A result: registration/authentication, onboarding/consent, versioned main assessment, configurable server eligibility, and the Phase 03 browser gate have evidence. `Phase 03` and `Milestone A` are complete; `Phase 04` is not started.

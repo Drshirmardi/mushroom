@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-27 14:13 +03:30`
-- Milestone فعال: `Milestone A — بیمار آماده رزرو`
-- فاز فعال: `Phase 03 — Assessment Engine & Booking Eligibility`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- آخرین به‌رورسانی: `2026-08-27 14:31 +03:30`
+- Milestone فعال: `Milestone B — کلینیک قابل رزرو`
+- فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
+- وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
@@ -25,7 +25,7 @@
 - [x] PostgreSQL و migration پایه ایجاد شده‌اند.
 - [x] احراز هویت واقعی جایگزین mock شده است.
 - [x] onboarding پزشکی و consent واقعی شده‌اند.
-- [ ] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
+- [x] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
 - [ ] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [ ] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
@@ -37,7 +37,7 @@
 - [x] `Phase 00` — Foundation — `DONE` — checklist: [`phases/00-FOUNDATION.md`](phases/00-FOUNDATION.md)
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
-- [ ] `Phase 03` — Assessment Engine & Booking Eligibility — `IN_PROGRESS`
+- [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `NOT_STARTED`
 - [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
@@ -79,13 +79,13 @@
 - `F03-T10` — `DONE`
 - `F03-T11` — `DONE`
 - `F03-T12` — `DONE`
-- `F03-T13` — `NOT_STARTED`
+- `F03-T13` — `DONE`
 
 ## batch در حال اجرا
 
-`F03-B12` برای `F03-T12` پس از review و evidence کامل بسته شد؛ شواهد: [`logs/phase-03.md`](logs/phase-03.md) و [`../specs/001-adopt-phase-03/evidence.md`](../specs/001-adopt-phase-03/evidence.md).
+`F03-B13` برای `F03-T13` با حذف artifact بدون caller و evidence کامل Milestone A بسته شد؛ شواهد: [`logs/phase-03.md`](logs/phase-03.md) و [`../specs/001-adopt-phase-03/evidence.md`](../specs/001-adopt-phase-03/evidence.md).
 
-Batch بعدی واجد شرایط: `F03-T13` (هنوز claim نشده است).
+`Phase 03` و `Milestone A` DONE هستند. `F04-T01` نخستین task واجد شرایط Phase 04 است، اما claim نشده است.
 
 Phase 02 final gate accepted: manual browser verification, restored browser inspection, mock audit, full API suite and frontend build/typecheck evidence passed.
 

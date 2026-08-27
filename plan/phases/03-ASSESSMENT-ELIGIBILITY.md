@@ -1,6 +1,6 @@
 # Phase 03 — Assessment Engine & Booking Eligibility
 
-- وضعیت: `IN_PROGRESS`
+- وضعیت: `DONE`
 - Milestone: `A — بیمار آماده رزرو`
 - پیش‌نیاز: `Phase 02 DONE`
 - خروجی اصلی: آزمون اصلی versioned در داشبورد ساخته می‌شود و الزام آن پیش از رزرو قابل تنظیم است.
@@ -40,7 +40,7 @@
 - [x] `F03-T10` — اتصال assessment flow و route gate در app
 - [x] `F03-T11` — widget/activity آزمون در Dashboard Home
 - [x] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E
-- [ ] `F03-T13` — حذف mock assessment در scope و evidence Milestone A
+- [x] `F03-T13` — حذف mock assessment در scope و evidence Milestone A
 
 ## Endpointهای حداقلی
 

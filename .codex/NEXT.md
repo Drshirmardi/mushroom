@@ -1,29 +1,27 @@
 # Active Task Batch
 
-- Updated: `2026-08-27 14:13 +03:30`
-- Batch: `F03-B12`
+- Updated: `2026-08-27 14:31 +03:30`
+- Batch: `F03-B13`
 - Status: `DONE`
-- Goal: risk-based API verification and both booking browser journeys for Phase 03 are complete.
+- Goal: reachable Phase 03 assessment mocks are removed and Milestone A evidence is complete.
 
 ## Tasks
 
-### F03-T12 — `DONE`
+### F03-T13 — `DONE`
 
-- Dependencies: F03-T09, F03-T10, and F03-T11 are complete.
-- Scope: versioning, idempotency, authorization, policy matrix, and browser E2E.
-- Owned paths: focused assessment API specs and `specs/001-adopt-phase-03/evidence.md`.
-- Shared/exclusive resource: local E2E database and browser session.
-- Required checks: focused five-file API suite and API typecheck passed (`5 files / 30 tests`); required and optional browser journeys passed with recorded local evidence.
+- Dependencies: F03-T01 through F03-T12 are complete.
+- Scope: reachable Phase 03 assessment mock removal and Milestone A evidence.
+- Result: the unreferenced legacy assessment catalog was deleted; no reachable Phase 03 assessment mock remains.
+- Required checks: focused app/dashboard/API checks and API-client typecheck passed; browser and migration gates are documented in Phase 03 evidence.
 
 ## Batch review gate
 
-- Main-agent review passed: each contract matrix category has direct coverage and both browser journeys have durable evidence.
-- `F03-T12` is ready for its task-level commit.
-- F03-T13 must not start in this batch.
+- Main-agent review passed: no reachable Phase 03 assessment mock remains and Milestone A evidence is complete.
+- `F03-T13` is ready for its task-level commit.
 
 ## Next eligible task
 
-- `F03-T13` is the next eligible task and remains unclaimed.
+- `Phase 03` and `Milestone A` are complete. `F04-T01` is next eligible but must not be claimed in this run.
 
 ## Protected
 

@@ -362,3 +362,33 @@ Known limitations:
   - ندارد
 Next task:
   - `F03-T13` واجد شرایط است، اما claim نشده است.
+
+## F03-T13 — assessment mock removal and Milestone A evidence
+
+Task ID: F03-T13
+Completed at: 2026-08-27 14:31 +03:30
+Agent/Thread: Codex /root
+Batch ID: F03-B13
+Reviewed by: Codex /root
+Changed files:
+  - `apps/app/src/lib/data/assessments.ts` (deleted unreferenced legacy mock catalog)
+  - `specs/001-adopt-phase-03/evidence.md`
+Migrations:
+  - ندارد؛ clean migration and upgrade smoke already passed in F03-T02 and no later schema or migration changed.
+Tests run:
+  - `corepack pnpm --filter @sabz/app exec vitest run assessment booking-eligibility` → PASS (`2 files / 6 tests`)
+  - `corepack pnpm --filter @sabz/app typecheck` → PASS
+  - `corepack pnpm --filter @sabz/dashboard exec vitest run assessment dashboard-assessment-summary` → PASS (`2 files / 9 tests`)
+  - `corepack pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/admin-assessments.authorization.spec.ts test/admin-assessment-submissions.authorization.spec.ts test/patient-assessments.authorization.spec.ts test/patient-booking-eligibility.spec.ts test/assessment-booking-contract.spec.ts --no-file-parallelism` → PASS (`5 files / 30 tests`)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api-client typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - only the unreachable Phase 03 assessment catalog was removed; mock assessment records owned by later Phase 06–08 scopes remain untouched → PASS
+  - required Phase 03 browser evidence (F03-T12), current targeted verification, and F03-T02 clean migration evidence satisfy Phase 03 exit criteria → PASS
+  - `Phase 03` and `Milestone A` → DONE
+Known limitations:
+  - ندارد
+Next task:
+  - `F04-T01` واجد شرایط است، اما در این run claim نشده است.
