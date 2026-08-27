@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsObject } from 'class-validator';
 
-export class SaveAssessmentAnswersDto { @IsObject() answers!: Record<string, unknown>; }
+export class SaveAssessmentAnswersDto { @ApiProperty({ type: 'object', additionalProperties: true }) @IsObject() answers!: Record<string, unknown>; }
 export class PatientAssessmentListItemDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty() assessmentKey!: string; @ApiProperty() versionNumber!: number; @ApiProperty() locale!: string; @ApiProperty() title!: string; @ApiProperty({ type: 'object', additionalProperties: true }) structure!: Record<string, unknown>; }
 export class PatientAssessmentListResponseDto { @ApiProperty({ type: PatientAssessmentListItemDto, isArray: true }) items!: PatientAssessmentListItemDto[]; }
 export class PatientAssessmentSubmissionResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty({ format: 'uuid' }) assessmentVersionId!: string; @ApiProperty() attemptNumber!: number; @ApiProperty({ enum: ['IN_PROGRESS', 'COMPLETE', 'INVALIDATED'] }) state!: string; @ApiProperty({ type: 'object', additionalProperties: true }) answers!: Record<string, unknown>; @ApiPropertyOptional({ type: 'object', nullable: true, additionalProperties: true }) resultSnapshot!: Record<string, unknown> | null; @ApiPropertyOptional({ type: String, nullable: true }) score!: string | null; @ApiProperty({ format: 'date-time' }) startedAt!: Date; @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) completedAt!: Date | null; }

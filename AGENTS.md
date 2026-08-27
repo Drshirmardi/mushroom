@@ -42,3 +42,78 @@ Before editing files:
 ## Default user request
 
 When the user says "continue", "start", or asks to proceed according to the plan without naming a task, execute the automatic batch-selection workflow above.
+
+
+# Per-Task Commit Policy
+
+## Task isolation
+- Each roadmap task must be implemented, verified, reviewed, documented, and committed independently.
+- Do not mix changes from multiple roadmap task IDs in one commit unless the repository plan explicitly defines them as one inseparable shared-contract operation.
+- Preserve all unrelated, pre-existing, and user-owned worktree changes.
+- Never stage unrelated files merely to obtain a clean working tree.
+
+## Commit gate
+A task may be committed only when:
+1. Its required implementation is complete.
+2. Its acceptance criteria are satisfied.
+3. Required targeted tests, typechecks, contract checks, migrations, or other task-specific verification pass.
+4. Required evidence/status files are updated.
+5. Main-agent review finds no unresolved blocker requiring the task to remain `REWORK` or `BLOCKED`.
+
+Do not commit incomplete task work as a completed-task commit.
+
+## Commit contents
+The task commit should contain only:
+- implementation owned by that task
+- tests added or changed for that task
+- generated artifacts required by that task
+- evidence/log updates for that task
+- task/status synchronization required when marking that task `DONE`
+
+Do not include:
+- unrelated formatting
+- opportunistic refactors
+- future-task work
+- unrelated generated files
+- pre-existing user changes
+
+## Commit format
+Use one final task-level commit after the task passes its review gate.
+
+Preferred format:
+
+`<type>(<TASK-ID>): <concise outcome>`
+
+Examples:
+- `feat(F04-T03): connect clinic service management`
+- `fix(F05-T07): enforce booking ownership`
+- `test(F06-T04): cover encounter authorization boundary`
+- `refactor(F07-T02): simplify prescription mapping`
+
+Choose the commit type based on the actual change; do not default everything to `feat`.
+
+## Execution boundary
+- After completing and committing a task, stop before starting another task unless the active repository workflow explicitly authorizes continuing the current batch.
+- If multiple independent workers run in parallel, each worker must not create the final repository task commit unless explicitly assigned commit ownership.
+- The coordinator/main agent owns final review, task status synchronization, and task-level commit creation unless the active workflow states otherwise.
+
+## Shared-file ownership
+- Shared contracts, OpenAPI output, generated clients, Prisma schema/migrations, lockfiles, authentication infrastructure, and other designated single-writer paths must retain single-writer ownership.
+- If completing one task requires modifying a shared path also needed by another task, serialize that shared work rather than combining unrelated task implementations.
+
+## Failure handling
+- If required verification fails, do not mark the task `DONE` and do not create its final task commit.
+- Set or preserve the appropriate `REWORK` or `BLOCKED` state and record the exact reason and safe next action.
+- Once the issue is corrected and the complete task passes review, create the normal single task-level commit.
+
+## Final handoff
+After each committed task, report:
+- task ID and final status
+- commit hash
+- commit message
+- changed files
+- verification performed and results
+- remaining blockers, if any
+- next eligible task or batch
+
+The repository plan remains authoritative for task selection, dependencies, ownership, and completion state.

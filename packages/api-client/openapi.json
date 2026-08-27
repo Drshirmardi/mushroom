@@ -4439,7 +4439,15 @@
       },
       "SaveAssessmentAnswersDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "answers"
+        ]
       },
       "PatientBookingEligibilityResponseDto": {
         "type": "object",

@@ -1,18 +1,17 @@
-# Next Eligible Task Batch
+# Next Eligible Task
 
-- Updated: `2026-08-26 21:43 +03:30`
-- Active batch: none
-- Last completed batch: `F03-B09`
-- Last completed task: `F03-T09`
+- Updated: `2026-08-27 12:11 +03:30`
+- Active batch: `none`
+- Last closed batch: `F03-B10`
+- Last accepted task: `F03-T10`
+- Evidence: `plan/logs/phase-03.md`
 
-## Next eligible task
+## F03-T11 — `NOT_STARTED`
 
-### F03-T10 — `NOT_STARTED`
-
-- Dependencies: F03-T09 is complete.
-- Scope: connect the patient assessment flow and booking route gate to the existing API contract.
-- Status: eligible only; not claimed or started in this run.
-- Before implementation: create a new batch claim in `plan/STATUS.md` and assign exclusive generated-contract ownership.
+- Scope: assessment widget and activity on Dashboard Home.
+- Dependency: F03-T10 is complete.
+- Start rule: claim F03-T11 in a new batch before implementation.
+- F03-T11 and later tasks were not started as part of F03-B10.
 
 ## Protected
 

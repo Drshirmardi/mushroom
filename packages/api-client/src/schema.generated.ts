@@ -1120,7 +1120,11 @@ export interface components {
             /** Format: date-time */
             completedAt?: string | null;
         };
-        SaveAssessmentAnswersDto: Record<string, never>;
+        SaveAssessmentAnswersDto: {
+            answers: {
+                [key: string]: unknown;
+            };
+        };
         PatientBookingEligibilityResponseDto: {
             eligible: boolean;
             /** @enum {string} */

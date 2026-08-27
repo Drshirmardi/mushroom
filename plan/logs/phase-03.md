@@ -266,3 +266,43 @@ Known limitations:
   - سازندهٔ مینیمال از صفر سوال تک‌انتخابی می‌سازد؛ draft دارای نوع سوال دیگر برای جلوگیری از حذف داده به‌صورت read-only رد می‌شود. توسعهٔ editor انواع دیگر فقط با requirement مستقل لازم است.
 Next task:
   - `F03-T10` واجد شرایط است، اما شروع نشده است.
+
+## F03-T10 — patient assessment flow and booking route gate
+
+Task ID: F03-T10
+Completed at: 2026-08-27 12:11 +03:30
+Agent/Thread: Codex /root
+Batch ID: F03-B10
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/assessments/patient/patient-assessments.dto.ts`
+  - `apps/app/src/app/(app)/assessment/page.tsx`
+  - `apps/app/src/app/(app)/assessment/[type]/page.tsx`
+  - `apps/app/src/app/(app)/assessment/result/page.tsx`
+  - `apps/app/src/app/(app)/appointments/book/page.tsx`
+  - `apps/app/src/lib/assessment-api.ts`
+  - `apps/app/src/lib/assessment-api.spec.ts`
+  - `apps/app/src/lib/booking-eligibility.ts`
+  - `apps/app/src/lib/booking-eligibility.spec.ts`
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - `corepack pnpm --filter @sabz/app exec vitest run assessment booking-eligibility` → PASS (`2 files / 6 tests`)
+  - `corepack pnpm --filter @sabz/app typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/patient-assessments.authorization.spec.ts test/patient-booking-eligibility.spec.ts test/assessment-booking-contract.spec.ts --no-file-parallelism` → PASS (`3 files / 21 tests`)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api-client typecheck` → PASS (generated-client drift/typecheck)
+  - `corepack pnpm generate:api-client` → PASS
+  - `git diff --check` → PASS
+Result:
+  - list/start/resume/save/submit/result بیمار با generated client واقعی و پاسخ‌های ذخیره‌شده متصل شد → PASS
+  - هر پنج نوع سؤال قرارداد با ترتیب canonical، validation لازم و submit دارای idempotency key پایدار پشتیبانی شد → PASS
+  - نتیجه immutable ذخیره‌شده شامل version، score، result band و review flag بدون محاسبه محلی نمایش داده شد → PASS
+  - ورودی مستقیم رزرو فقط بر اساس eligibility سرور باز می‌شود و blocker/nextAction پایدار CTA مناسب دارد؛ score در gate استفاده نمی‌شود → PASS
+  - loading، empty، unavailable و error state بدون داده mock حفظ شدند → PASS
+Known limitations:
+  - فایل mock قدیمی خارج از مسیر مصرف باقی ماند؛ حذف repository-wide آن در scope صریح `F03-T13` است.
+Next task:
+  - `F03-T11` واجد شرایط است، اما شروع و claim نشده است.

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-26 21:43 +03:30`
+- آخرین به‌رورسانی: `2026-08-27 12:11 +03:30`
 - Milestone فعال: `Milestone A — بیمار آماده رزرو`
 - فاز فعال: `Phase 03 — Assessment Engine & Booking Eligibility`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -76,17 +76,20 @@
 
 - `F03-T01` تا `F03-T08` — `DONE`
 - `F03-T09` — `DONE`
-- `F03-T10` تا `F03-T13` — `NOT_STARTED`
+- `F03-T10` — `DONE`
+- `F03-T11` تا `F03-T13` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
-- batch فعالی وجود ندارد.
-- batch `F03-B09` پس از پذیرش `F03-T09` بسته شد؛ شواهد: [`logs/phase-03.md`](logs/phase-03.md).
-
-## batch بعدی واجد شرایط
-
-- `F03-T10` واجد شرایط است، اما در این run شروع یا claim نشد.
-- generated OpenAPI/client پس از بسته‌شدن `F03-B09` آزاد است و batch بعدی باید پیش از اجرا ownership تازه ثبت کند.
+```text
+Active batch: none
+Last closed batch: F03-B10
+Closed at: 2026-08-27 12:11 +03:30
+Accepted task: F03-T10
+Evidence: plan/logs/phase-03.md
+Next eligible task: F03-T11 — NOT_STARTED؛ برای شروع باید batch جداگانه claim شود.
+Do not change: apps/app/src/components/home/slider-data.ts و justforcheck.md.
+```
 
 Phase 02 final gate accepted: manual browser verification, restored browser inspection, mock audit, full API suite and frontend build/typecheck evidence passed.
 
