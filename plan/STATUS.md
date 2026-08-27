@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-27 12:11 +03:30`
+- آخرین به‌رورسانی: `2026-08-27 13:08 +03:30`
 - Milestone فعال: `Milestone A — بیمار آماده رزرو`
 - فاز فعال: `Phase 03 — Assessment Engine & Booking Eligibility`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -77,17 +77,18 @@
 - `F03-T01` تا `F03-T08` — `DONE`
 - `F03-T09` — `DONE`
 - `F03-T10` — `DONE`
-- `F03-T11` تا `F03-T13` — `NOT_STARTED`
+- `F03-T11` — `DONE`
+- `F03-T12` تا `F03-T13` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
 ```text
 Active batch: none
-Last closed batch: F03-B10
-Closed at: 2026-08-27 12:11 +03:30
-Accepted task: F03-T10
+Last closed batch: F03-B11
+Closed at: 2026-08-27 13:08 +03:30
+Accepted task: F03-T11
 Evidence: plan/logs/phase-03.md
-Next eligible task: F03-T11 — NOT_STARTED؛ برای شروع باید batch جداگانه claim شود.
+Next eligible task: F03-T12 — NOT_STARTED؛ برای شروع باید batch جداگانه claim شود.
 Do not change: apps/app/src/components/home/slider-data.ts و justforcheck.md.
 ```
 

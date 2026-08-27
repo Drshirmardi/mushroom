@@ -306,3 +306,29 @@ Known limitations:
   - فایل mock قدیمی خارج از مسیر مصرف باقی ماند؛ حذف repository-wide آن در scope صریح `F03-T13` است.
 Next task:
   - `F03-T11` واجد شرایط است، اما شروع و claim نشده است.
+
+## F03-T11 — dashboard assessment activity
+
+Task ID: F03-T11
+Completed at: 2026-08-27 13:08 +03:30
+Agent/Thread: Codex /root
+Batch ID: F03-B11
+Reviewed by: Codex /root
+Changed files:
+  - `apps/dashboard/src/features/dashboard/dashboard-page.tsx`
+  - `apps/dashboard/src/lib/dashboard-assessment-summary.ts`
+  - `apps/dashboard/src/lib/dashboard-assessment-summary.spec.ts`
+Migrations:
+  - ندارد
+Tests run:
+  - `corepack pnpm --filter @sabz/dashboard exec vitest run dashboard-assessment-summary` → PASS (`1 file / 5 tests`)
+  - `corepack pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - countهای completed و pending و فعالیت recent فقط از responseهای موجود submission مشتق می‌شوند → PASS
+  - activity خالی است و صفرها فقط وقتی نمایش داده می‌شوند که total واقعی API صفر باشد → PASS
+  - حالت‌های loading، forbidden و unavailable بدون widget یا activity ساختگی نمایش داده می‌شوند → PASS
+Known limitations:
+  - aggregate endpoint یا widgetهای بدون منبع داده اضافه نشدند.
+Next task:
+  - `F03-T12` واجد شرایط است، اما شروع و claim نشده است.

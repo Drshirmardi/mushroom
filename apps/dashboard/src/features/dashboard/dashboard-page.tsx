@@ -10,9 +10,14 @@ import {
   loadDashboardOnboardingSummary,
   type DashboardOnboardingSummaryState,
 } from "@/lib/dashboard-onboarding-summary";
+import {
+  loadDashboardAssessmentSummary,
+  type DashboardAssessmentSummaryState,
+} from "@/lib/dashboard-assessment-summary";
 import { p } from "@/lib/utils";
 
 type SummaryViewState = DashboardOnboardingSummaryState | { status: "loading" };
+type AssessmentViewState = DashboardAssessmentSummaryState | { status: "loading" };
 
 function formatAsOf(asOf: string, timeZone: string) {
   return new Intl.DateTimeFormat("fa-IR", {
@@ -25,15 +30,26 @@ function formatAsOf(asOf: string, timeZone: string) {
 export function DashboardPage() {
   const { authentication } = useDashboardSession();
   const [state, setState] = useState<SummaryViewState>({ status: "loading" });
+  const [assessmentState, setAssessmentState] = useState<AssessmentViewState>({ status: "loading" });
 
   const refresh = useCallback(async () => {
-    setState(await loadDashboardOnboardingSummary(apiClient, authentication.accessToken));
+    setState({ status: "loading" });
+    setAssessmentState({ status: "loading" });
+    const [onboarding, assessment] = await Promise.all([
+      loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
+      loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
+    ]);
+    setState(onboarding);
+    setAssessmentState(assessment);
   }, [authentication.accessToken]);
 
   useEffect(() => {
     let cancelled = false;
-    void loadDashboardOnboardingSummary(apiClient, authentication.accessToken).then(
-      (nextState) => { if (!cancelled) setState(nextState); },
+    void Promise.all([
+      loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
+      loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
+    ]).then(
+      ([nextState, nextAssessmentState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); } },
     );
     return () => { cancelled = true; };
   }, [authentication.accessToken]);
@@ -80,6 +96,56 @@ export function DashboardPage() {
             آخرین به‌روزرسانی: {formatAsOf(state.summary.asOf, state.summary.timeZone)}
           </p>
         </>
+      )}
+
+      {assessmentState.status === "loading" && (
+        <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground" role="status">
+          در حال دریافت وضعیت ارزیابی‌ها…
+        </div>
+      )}
+
+      {assessmentState.status === "unauthorized" && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900" role="alert">
+          دسترسی به وضعیت ارزیابی‌ها مجاز نیست.
+        </div>
+      )}
+
+      {assessmentState.status === "error" && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-900" role="alert">
+          <div className="flex items-center gap-2 font-bold"><AlertCircle size={18} /> وضعیت ارزیابی‌ها دریافت نشد.</div>
+          <button onClick={() => void refresh()} className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-bold shadow-sm hover:bg-red-100">
+            <RefreshCw size={15} /> تلاش دوباره
+          </button>
+        </div>
+      )}
+
+      {assessmentState.status === "ready" && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">وضعیت ارزیابی‌ها</h2>
+            <p className="mt-1 text-sm text-muted-foreground">مقادیر فقط از submissionهای ثبت‌شده محاسبه می‌شوند.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <KpiCard title="ارزیابی‌های تکمیل‌شده" value={p(assessmentState.summary.completed)} icon={CheckCircle2} iconBg="bg-violet-100 text-violet-700" />
+            <KpiCard title="ارزیابی‌های در انتظار" value={p(assessmentState.summary.pending)} icon={ClipboardList} iconBg="bg-amber-100 text-amber-700" />
+          </div>
+          {assessmentState.summary.recentActivity.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="font-bold text-foreground">فعالیت اخیر ارزیابی‌ها</h3>
+              <ul className="mt-3 space-y-3">
+                {assessmentState.summary.recentActivity.map((activity) => (
+                  <li key={activity.id} className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="mt-0.5 shrink-0 text-violet-600" size={17} />
+                    <div>
+                      <p className="text-foreground">ارزیابی «{activity.assessmentTitle}» تکمیل شد</p>
+                      <p className="text-xs text-muted-foreground">{formatAsOf(activity.completedAt!, "Asia/Tehran")}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
       )}
     </div>
   );

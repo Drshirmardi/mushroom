@@ -38,7 +38,7 @@
 - [x] `F03-T08` — admin submissions/results/filter و اتصال به patient workspace
 - [x] `F03-T09` — اتصال کامل builder/list/results در dashboard
 - [x] `F03-T10` — اتصال assessment flow و route gate در app
-- [ ] `F03-T11` — widget/activity آزمون در Dashboard Home
+- [x] `F03-T11` — widget/activity آزمون در Dashboard Home
 - [ ] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E
 - [ ] `F03-T13` — حذف mock assessment در scope و evidence Milestone A
 
