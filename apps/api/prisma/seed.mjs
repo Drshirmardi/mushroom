@@ -96,6 +96,7 @@ try {
       SELECT $1, id, CURRENT_TIMESTAMP FROM roles WHERE code = 'ADMIN'
       ON CONFLICT (user_id, role_id) DO NOTHING
     `, [adminUserId]);
+    await client.query('DELETE FROM login_attempts WHERE phone = $1', [developmentAdminPhone]);
   }
   console.log('Development seed completed: identity roles and the active clinic are available.');
 } finally {

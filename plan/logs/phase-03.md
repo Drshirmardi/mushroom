@@ -332,3 +332,33 @@ Known limitations:
   - aggregate endpoint یا widgetهای بدون منبع داده اضافه نشدند.
 Next task:
   - `F03-T12` واجد شرایط است، اما شروع و claim نشده است.
+
+## F03-T12 — assessment risk coverage and booking browser E2E
+
+Task ID: F03-T12
+Completed at: 2026-08-27 14:13 +03:30
+Agent/Thread: Codex /root
+Batch ID: F03-B12
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/prisma/seed.mjs`
+  - `apps/api/test/admin-assessments.authorization.spec.ts`
+  - `apps/api/test/patient-assessments.authorization.spec.ts`
+  - `specs/001-adopt-phase-03/evidence.md`
+Migrations:
+  - ندارد
+Tests run:
+  - `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/admin-assessments.authorization.spec.ts test/admin-assessment-submissions.authorization.spec.ts test/patient-assessments.authorization.spec.ts test/patient-booking-eligibility.spec.ts test/assessment-booking-contract.spec.ts --no-file-parallelism` → PASS (`5 files / 30 tests`)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Browser verification:
+  - prerequisite-enabled journey blocked direct booking, resumed the same saved attempt, completed one immutable result, opened doctor selection, and matched the dashboard workspace.
+  - prerequisite-disabled journey opened doctor selection immediately and retained the same patient/dashboard result.
+Result:
+  - published-version immutability and different-payload idempotency-key reuse → PASS
+  - local development seed clears only the seeded administrator's prior login attempts, making its documented E2E credential deterministic without changing application authentication behavior → PASS
+  - required and optional Phase 03 browser journeys → PASS; detail in `specs/001-adopt-phase-03/evidence.md`.
+Known limitations:
+  - ندارد
+Next task:
+  - `F03-T13` واجد شرایط است، اما claim نشده است.

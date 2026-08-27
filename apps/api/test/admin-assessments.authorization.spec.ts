@@ -52,4 +52,12 @@ describe('Admin assessment authorization and lifecycle contract', () => {
     await expect(service.publish(version.id, { actorUserId: version.publishedByUserId!, actorSessionId: '00000000-0000-4000-8000-000000000005', requestId: 'request', ipAddress: '127.0.0.1' })).resolves.toMatchObject({ status: 'PUBLISHED' });
     expect(writes).toBe(0);
   });
+
+  it('rejects changes to a published version before writing', async () => {
+    const version = { id: '00000000-0000-4000-8000-000000000001', clinicId: '00000000-0000-4000-8000-000000000002', assessmentKey: 'MAIN', locale: 'fa-IR', versionNumber: 1, title: 'فرم', structure: { schemaVersion: 1, sections: [] }, contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(), retiredAt: null, publishedByUserId: '00000000-0000-4000-8000-000000000003', createdAt: new Date(), updatedAt: new Date() };
+    let writes = 0;
+    const service = new AdminAssessmentsService({ clinic: { findFirst: async () => ({ id: version.clinicId }) }, assessmentVersion: { findFirst: async () => version, update: async () => { writes += 1; return version; } } } as never);
+    await expect(service.update(version.id, { title: 'نسخهٔ ویرایش‌شده' }, {} as never)).rejects.toMatchObject({ response: { code: 'ASSESSMENT_VERSION_IMMUTABLE' } });
+    expect(writes).toBe(0);
+  });
 });

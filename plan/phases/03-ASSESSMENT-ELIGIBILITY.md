@@ -39,7 +39,7 @@
 - [x] `F03-T09` — اتصال کامل builder/list/results در dashboard
 - [x] `F03-T10` — اتصال assessment flow و route gate در app
 - [x] `F03-T11` — widget/activity آزمون در Dashboard Home
-- [ ] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E
+- [x] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E
 - [ ] `F03-T13` — حذف mock assessment در scope و evidence Milestone A
 
 ## Endpointهای حداقلی
