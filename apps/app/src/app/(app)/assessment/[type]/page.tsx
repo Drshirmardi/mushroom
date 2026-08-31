@@ -1,88 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
+
+import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
-import { WIZARD_CONFIGS } from "@/lib/data/assessments";
+import { assessmentErrorMessage, listPublishedAssessments, saveAssessmentAnswers, startAssessment, submitAssessment, type AssessmentSubmission, type PublishedAssessment } from "@/lib/assessment-api";
 import { toP } from "@/lib/format";
-import { useScreenNavigation } from "@/lib/navigation";
+
+type JsonObject = Record<string, unknown>;
+type Question = JsonObject & { id: string; type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "BOOLEAN" | "NUMBER" | "TEXT"; text: string; required: boolean };
+const object = (value: unknown): JsonObject => value !== null && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : {};
+
+function questions(structure: JsonObject): Question[] {
+  if (!Array.isArray(structure.sections)) return [];
+  return structure.sections.map(object).sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)).flatMap((value) => {
+    if (!Array.isArray(value.questions)) return [];
+    return value.questions.map(object).sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)).flatMap((question) => {
+      const type = question.type;
+      if (typeof question.id !== "string" || !["SINGLE_CHOICE", "MULTIPLE_CHOICE", "BOOLEAN", "NUMBER", "TEXT"].includes(String(type))) return [];
+      const text = [question.text, question.title, question.label].find((item) => typeof item === "string") as string | undefined;
+      return [{ ...question, id: question.id, type: type as Question["type"], text: text ?? "سوال بدون عنوان", required: question.required !== false }];
+    });
+  });
+}
+
+const answered = (question: Question, answer: unknown) => answer !== undefined && answer !== null && (question.type !== "TEXT" || typeof answer === "string" && answer.trim() !== "") && (question.type !== "MULTIPLE_CHOICE" || Array.isArray(answer) && answer.length > 0);
 
 export default function AssessmentWizardPage() {
   const router = useRouter();
-  const params = useParams<{ type: string }>();
-  const navigateScreen = useScreenNavigation();
-  const type = params?.type || "individual";
+  const { type: assessmentVersionId } = useParams<{ type: string }>();
+  const { authentication } = useAuthSession();
+  const [assessment, setAssessment] = useState<PublishedAssessment | null>(null);
+  const [submission, setSubmission] = useState<AssessmentSubmission | null>(null);
+  const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [step, setStep] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const items = useMemo(() => assessment ? questions(assessment.structure) : [], [assessment]);
+  const current = items[step];
 
-  const config = WIZARD_CONFIGS[type] || WIZARD_CONFIGS.individual;
-  const totalSteps = config.steps.length;
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const list = await listPublishedAssessments(authentication.accessToken);
+        const found = list.items.find((item) => item.id === assessmentVersionId);
+        if (!found) throw new Error("ASSESSMENT_NOT_FOUND");
+        const attempt = await startAssessment(authentication.accessToken, found.id);
+        if (!cancelled) { setAssessment(found); setSubmission(attempt); setAnswers(attempt.answers); }
+      } catch (reason) { if (!cancelled) setError(assessmentErrorMessage(reason)); }
+    })();
+    return () => { cancelled = true; };
+  }, [assessmentVersionId, authentication.accessToken]);
 
-  const genericQuestions = [
-    <div key={0} className="space-y-3">
-      <p className="text-sm font-semibold text-foreground mb-2">اطلاعات پایه‌ای</p>
-      {[{ l: "نام", v: "مریم احمدی" }, { l: "سن", v: "۳۵" }].map(f => (
-        <div key={f.l}><label className="text-xs font-bold text-muted-foreground block mb-1">{f.l}</label>
-          <input defaultValue={f.v} className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 text-right" dir="rtl" /></div>
-      ))}
-    </div>,
-    <div key={1} className="space-y-2">
-      <p className="text-sm font-semibold text-foreground mb-2">علائم را انتخاب کنید</p>
-      {["درد مزمن", "سردرد", "بی‌خوابی", "اضطراب", "خستگی مزمن", "مشکلات گوارشی"].map(s => (
-        <button key={s} className="w-full flex items-center justify-between p-3.5 rounded-2xl border bg-white border-border text-right text-sm font-medium text-foreground">{s}<div className="w-5 h-5 rounded-full border-2 border-border" /></button>
-      ))}
-    </div>,
-    <div key={2} className="space-y-4">
-      <p className="text-sm font-semibold text-foreground">شدت درد خود را از ۱ تا ۱۰ ارزیابی کنید</p>
-      <div className="bg-white rounded-3xl border border-border p-5">
-        <div className="flex justify-between mb-3">{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <div key={n} className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center ${n <= 5 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>{toP(n)}</div>)}</div>
-        <p className="text-center text-sm font-bold text-primary">{toP(5)}/۱۰</p>
-      </div>
-    </div>,
-  ];
+  const persist = async () => {
+    if (!submission) return null;
+    const saved = await saveAssessmentAnswers(authentication.accessToken, submission.id, { answers });
+    setSubmission(saved); setAnswers(saved.answers); return saved;
+  };
 
-  const mezajQuestions = [
-    <div key={0} className="space-y-3">
-      <p className="text-sm font-semibold text-foreground">ظاهر جسمی شما به کدام گزینه نزدیک‌تر است؟</p>
-      {["قد بلند، لاغر، پوست خشک", "هیکل معمولی، پوست نرم و چرب", "هیکل تپل، پوست سرد و مرطوب", "قد کوتاه‌تر، هیکل محکم"].map(o => (
-        <button key={o} className="w-full p-3.5 rounded-2xl border bg-white border-border text-right text-sm font-medium text-foreground">{o}</button>
-      ))}
-    </div>,
-    <div key={1} className="space-y-3">
-      <p className="text-sm font-semibold text-foreground">خلق‌وخوی غالب شما چیست؟</p>
-      {["شاداب، پرانرژی و اجتماعی", "آرام، صبور و محافظه‌کار", "دقیق، فکری و تحلیل‌گر", "قاطع، رهبر و سریع‌تصمیم"].map(o => (
-        <button key={o} className="w-full p-3.5 rounded-2xl border bg-white border-border text-right text-sm font-medium text-foreground">{o}</button>
-      ))}
-    </div>,
-  ];
+  const continueFlow = async () => {
+    if (!current || current.required && !answered(current, answers[current.id])) { setError("پاسخ این سوال ضروری است."); return; }
+    setBusy(true); setError(null);
+    try {
+      const saved = await persist();
+      if (!saved) return;
+      if (step < items.length - 1) { setStep((value) => value + 1); return; }
+      const storageKey = `assessment-submit-key:${saved.id}`;
+      let idempotencyKey = sessionStorage.getItem(storageKey);
+      if (!idempotencyKey) { idempotencyKey = crypto.randomUUID(); sessionStorage.setItem(storageKey, idempotencyKey); }
+      const completed = await submitAssessment(authentication.accessToken, saved.id, idempotencyKey);
+      router.push(`/assessment/result?submissionId=${completed.id}`);
+    } catch (reason) { setError(assessmentErrorMessage(reason)); }
+    finally { setBusy(false); }
+  };
 
-  const questions = type === "tradmed" ? mezajQuestions : genericQuestions;
-  const currentQ = questions[Math.min(step, questions.length - 1)];
-  const isLast = step === totalSteps - 1;
+  const saveAndExit = async () => {
+    setBusy(true); setError(null);
+    try { await persist(); router.push("/assessment"); } catch (reason) { setError(assessmentErrorMessage(reason)); } finally { setBusy(false); }
+  };
 
-  return (
-    <div>
-      <PageHeader title={config.title} onBack={step === 0 ? () => router.back() : () => setStep(s => s - 1)} />
-      <div className="px-4 space-y-5 pb-4">
-        <div>
-          <div className="flex justify-between text-xs text-muted-foreground mb-2">
-            <span>مرحله {toP(step + 1)} از {toP(totalSteps)}</span>
-            <span>{config.steps[step]}</span>
-          </div>
-          <div className="bg-muted rounded-full h-2">
-            <motion.div className="bg-primary rounded-full h-2" animate={{ width: `${((step + 1) / totalSteps) * 100}%` }} transition={{ duration: 0.4 }} />
-          </div>
-        </div>
-        <AnimatePresence mode="wait">
-          <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.18 }}>
-            {currentQ}
-          </motion.div>
-        </AnimatePresence>
-        <button onClick={() => isLast ? navigateScreen(type === "tradmed" ? "MezajDetail" : "AssessmentResult") : setStep(s => s + 1)}
-          className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm active:scale-[0.98] transition-transform shadow-md shadow-primary/20">
-          {isLast ? (type === "tradmed" ? "مشاهده مزاج من" : "مشاهده نتیجه") : "ادامه"}
-        </button>
-      </div>
-    </div>
-  );
+  if (!assessment && !error) return <div><PageHeader title="ارزیابی" onBack={() => router.back()} /><p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;
+  if (!assessment || !submission || items.length === 0) return <div><PageHeader title="ارزیابی" onBack={() => router.back()} /><p role="alert" className="m-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error ?? "ساختار این ارزیابی قابل نمایش نیست."}</p></div>;
+
+  return <div><PageHeader title={assessment.title} onBack={step === 0 ? () => router.back() : () => setStep((value) => value - 1)} /><div className="px-4 space-y-5 pb-4"><div><div className="mb-2 flex justify-between text-xs text-muted-foreground"><span>سوال {toP(step + 1)} از {toP(items.length)}</span><span>تلاش {toP(submission.attemptNumber)}</span></div><div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / items.length) * 100}%` }} /></div></div><div className="rounded-3xl border border-border bg-white p-5"><p className="mb-4 text-sm font-bold text-foreground">{current.text}</p><AnswerInput question={current} value={answers[current.id]} onChange={(value) => { setAnswers((all) => ({ ...all, [current.id]: value })); setError(null); }} /></div>{error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}<button disabled={busy} onClick={() => void continueFlow()} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white disabled:opacity-50">{step === items.length - 1 ? "ثبت نهایی و مشاهده نتیجه" : "ذخیره و ادامه"}</button><button disabled={busy} onClick={() => void saveAndExit()} className="w-full rounded-2xl border border-border bg-white py-3 text-sm font-bold text-muted-foreground disabled:opacity-50">ذخیره و خروج</button></div></div>;
+}
+
+function AnswerInput({ question, value, onChange }: { question: Question; value: unknown; onChange: (value: unknown) => void }) {
+  const options = Array.isArray(question.options) ? question.options.map(object).sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)) : [];
+  if (question.type === "SINGLE_CHOICE") return <div className="space-y-2">{options.map((option) => <button key={String(option.id)} onClick={() => onChange(option.id)} className={`w-full rounded-2xl border p-3 text-right text-sm ${value === option.id ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{String(option.label ?? "گزینه")}</button>)}</div>;
+  if (question.type === "MULTIPLE_CHOICE") { const selected = Array.isArray(value) ? value : []; return <div className="space-y-2">{options.map((option) => { const active = selected.includes(option.id); return <button key={String(option.id)} onClick={() => onChange(active ? selected.filter((id) => id !== option.id) : [...selected, option.id])} className={`w-full rounded-2xl border p-3 text-right text-sm ${active ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{String(option.label ?? "گزینه")}</button>; })}</div>; }
+  if (question.type === "BOOLEAN") return <div className="grid grid-cols-2 gap-3">{[[true, "بله"], [false, "خیر"]].map(([answer, label]) => <button key={String(answer)} onClick={() => onChange(answer)} className={`rounded-2xl border p-4 text-sm font-bold ${value === answer ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{String(label)}</button>)}</div>;
+  if (question.type === "NUMBER") return <input type="number" min={typeof question.min === "number" ? question.min : undefined} max={typeof question.max === "number" ? question.max : undefined} value={typeof value === "number" ? value : ""} onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30" />;
+  return <textarea maxLength={typeof question.maxLength === "number" ? question.maxLength : undefined} value={typeof value === "string" ? value : ""} onChange={(event) => onChange(event.target.value)} rows={5} className="w-full resize-none rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30" />;
 }

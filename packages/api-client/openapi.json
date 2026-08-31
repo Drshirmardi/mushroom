@@ -1869,6 +1869,785 @@
           "Admin Patients"
         ]
       }
+    },
+    "/v1/admin/assessments": {
+      "get": {
+        "operationId": "adminAssessmentsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentListResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List assessment versions",
+        "tags": [
+          "Admin Assessments"
+        ]
+      },
+      "post": {
+        "operationId": "adminAssessmentsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssessmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Assessment structure is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an assessment draft",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
+    "/v1/admin/assessments/{id}": {
+      "get": {
+        "operationId": "adminAssessmentsGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Preview an assessment version",
+        "tags": [
+          "Admin Assessments"
+        ]
+      },
+      "patch": {
+        "operationId": "adminAssessmentsUpdate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssessmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update an assessment draft",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
+    "/v1/admin/assessments/{id}/duplicate": {
+      "post": {
+        "operationId": "adminAssessmentsDuplicate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Duplicate an assessment version as a new draft",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
+    "/v1/admin/assessments/{id}/publish": {
+      "post": {
+        "operationId": "adminAssessmentsPublish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Publish an assessment draft",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
+    "/v1/admin/assessments/{id}/archive": {
+      "post": {
+        "operationId": "adminAssessmentsArchive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Archive a published assessment version",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
+    "/v1/admin/clinic/patient-policy": {
+      "get": {
+        "operationId": "adminBookingAssessmentPolicyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingAssessmentPolicyResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the clinic booking assessment policy",
+        "tags": [
+          "Admin Booking Policy"
+        ]
+      },
+      "patch": {
+        "operationId": "adminBookingAssessmentPolicyUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingAssessmentPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingAssessmentPolicyResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The required assessment version is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Booking policy input is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update the clinic booking assessment policy",
+        "tags": [
+          "Admin Booking Policy"
+        ]
+      }
+    },
+    "/v1/admin/assessment-submissions": {
+      "get": {
+        "operationId": "adminAssessmentSubmissionsList",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "IN_PROGRESS",
+                "COMPLETE",
+                "INVALIDATED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "assessmentVersionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAssessmentSubmissionListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic assessment submissions",
+        "tags": [
+          "Admin Assessment Submissions"
+        ]
+      }
+    },
+    "/v1/admin/assessment-submissions/{id}": {
+      "get": {
+        "operationId": "adminAssessmentSubmissionsGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a clinic assessment result",
+        "tags": [
+          "Admin Assessment Submissions"
+        ]
+      }
+    },
+    "/v1/assessments": {
+      "get": {
+        "operationId": "patientAssessmentsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List published assessments for the patient clinic",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessments/{assessmentVersionId}/submissions": {
+      "post": {
+        "operationId": "patientAssessmentSubmissionStart",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assessment was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start or resume an assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}": {
+      "get": {
+        "operationId": "patientAssessmentSubmissionGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the patient assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      },
+      "put": {
+        "operationId": "patientAssessmentSubmissionSave",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAssessmentAnswersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save answers for an in-progress assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/submit": {
+      "post": {
+        "operationId": "patientAssessmentSubmissionSubmit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Submit an assessment submission exactly once",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/result": {
+      "get": {
+        "operationId": "patientAssessmentSubmissionResult",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an immutable assessment result",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/booking-eligibility": {
+      "get": {
+        "operationId": "patientBookingEligibilityGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get booking eligibility without using assessment score",
+        "tags": [
+          "Patient Booking"
+        ]
+      }
     }
   },
   "info": {
@@ -3156,6 +3935,50 @@
           "status"
         ]
       },
+      "AdminPatientAssessmentResultDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentTitle": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "submissionId",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "state"
+        ]
+      },
       "AdminPatientDetailResponseDto": {
         "type": "object",
         "properties": {
@@ -3171,13 +3994,20 @@
           },
           "intake": {
             "$ref": "#/components/schemas/AdminPatientIntakeResponseDto"
+          },
+          "assessments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPatientAssessmentResultDto"
+            }
           }
         },
         "required": [
           "patientId",
           "profile",
           "consent",
-          "intake"
+          "intake",
+          "assessments"
         ]
       },
       "UpdateAdminPatientDto": {
@@ -3215,6 +4045,435 @@
       "AdminMedicalIntakeCorrectionDto": {
         "type": "object",
         "properties": {}
+      },
+      "AssessmentVersionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "fa-IR",
+              "en-US"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "RETIRED"
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "retiredAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "publishedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "structure",
+          "contentHash",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AssessmentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentVersionResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "CreateAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "assessmentKey": {
+            "type": "string",
+            "default": "MAIN",
+            "maxLength": 100
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "fa-IR",
+              "en-US"
+            ],
+            "default": "fa-IR"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "title",
+          "structure"
+        ]
+      },
+      "UpdateAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "BookingAssessmentPolicyResponseDto": {
+        "type": "object",
+        "properties": {
+          "assessmentRequirement": {
+            "type": "string",
+            "enum": [
+              "NOT_REQUIRED",
+              "REQUIRED"
+            ]
+          },
+          "requiredAssessmentVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "validityDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "requireLatestPublishedVersion": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "assessmentRequirement",
+          "requireLatestPublishedVersion"
+        ]
+      },
+      "UpdateBookingAssessmentPolicyDto": {
+        "type": "object",
+        "properties": {
+          "assessmentRequirement": {
+            "type": "string",
+            "enum": [
+              "NOT_REQUIRED",
+              "REQUIRED"
+            ]
+          },
+          "requiredAssessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "validityDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "requireLatestPublishedVersion": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assessmentRequirement"
+        ]
+      },
+      "AdminAssessmentSubmissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentTitle": {
+            "type": "string"
+          },
+          "attemptNumber": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "attemptNumber",
+          "state",
+          "startedAt"
+        ]
+      },
+      "AdminAssessmentSubmissionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAssessmentSubmissionResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "PatientAssessmentListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "structure"
+        ]
+      },
+      "PatientAssessmentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAssessmentListItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PatientAssessmentSubmissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attemptNumber": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "attemptNumber",
+          "state",
+          "answers",
+          "startedAt"
+        ]
+      },
+      "SaveAssessmentAnswersDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "PatientBookingEligibilityResponseDto": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "ELIGIBLE",
+              "PROFILE_INCOMPLETE",
+              "MAIN_ASSESSMENT_REQUIRED",
+              "ASSESSMENT_EXPIRED",
+              "LATEST_VERSION_REQUIRED"
+            ]
+          },
+          "nextAction": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "eligible",
+          "reason"
+        ]
       }
     }
   }

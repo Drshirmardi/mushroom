@@ -8,6 +8,8 @@ import { environmentValidationSchema } from './config/environment.validation';
 import { DatabaseModule } from './database/database.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { AdminPatientsModule } from './modules/patients/admin/admin-patients.module';
+import { AdminAssessmentsModule } from './modules/assessments/admin/admin-assessments.module';
+import { PatientAssessmentsModule } from './modules/assessments/patient/patient-assessments.module';
 import { IntakeModule } from './modules/patients/intake/intake.module';
 import { SelfProfileModule } from './modules/patients/self-profile/self-profile.module';
 
@@ -33,6 +35,8 @@ import { SelfProfileModule } from './modules/patients/self-profile/self-profile.
     SelfProfileModule,
     IntakeModule,
     AdminPatientsModule,
+    AdminAssessmentsModule,
+    PatientAssessmentsModule,
   ],
 })
 export class AppModule {}

@@ -1,0 +1,64 @@
+import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
+
+import { apiClient } from "@/lib/api";
+
+export type PublishedAssessment = components["schemas"]["PatientAssessmentListItemDto"];
+export type AssessmentSubmission = components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+export type BookingEligibility = components["schemas"]["PatientBookingEligibilityResponseDto"];
+export type SaveAssessmentAnswers = components["schemas"]["SaveAssessmentAnswersDto"];
+
+export class AssessmentRequestError extends Error {
+  constructor(public readonly status: number, public readonly code: string | null = null) {
+    super(code ?? "ASSESSMENT_REQUEST_FAILED");
+  }
+}
+
+const authorization = (accessToken: string) => ({ authorization: `Bearer ${accessToken}` });
+
+async function expectData<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
+  try {
+    const { data, error, response } = await withRequestTimeout(request);
+    if (response.ok && data) return data;
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
+    throw new AssessmentRequestError(response.status, code);
+  } catch (error) {
+    if (error instanceof AssessmentRequestError) throw error;
+    throw new AssessmentRequestError(0);
+  }
+}
+
+export const listPublishedAssessments = (accessToken: string) => expectData<components["schemas"]["PatientAssessmentListResponseDto"]>(
+  apiClient.GET("/v1/assessments", { headers: authorization(accessToken) }),
+);
+
+export const startAssessment = (accessToken: string, assessmentVersionId: string) => expectData<AssessmentSubmission>(
+  apiClient.POST("/v1/assessments/{assessmentVersionId}/submissions", { headers: authorization(accessToken), params: { path: { assessmentVersionId } } }),
+);
+
+export const getAssessmentSubmission = (accessToken: string, id: string) => expectData<AssessmentSubmission>(
+  apiClient.GET("/v1/assessment-submissions/{id}", { headers: authorization(accessToken), params: { path: { id } } }),
+);
+
+export const saveAssessmentAnswers = (accessToken: string, id: string, body: SaveAssessmentAnswers) => expectData<AssessmentSubmission>(
+  apiClient.PUT("/v1/assessment-submissions/{id}", { headers: authorization(accessToken), params: { path: { id } }, body }),
+);
+
+export const submitAssessment = (accessToken: string, id: string, idempotencyKey: string) => expectData<AssessmentSubmission>(
+  apiClient.POST("/v1/assessment-submissions/{id}/submit", { headers: authorization(accessToken), params: { path: { id }, header: { "Idempotency-Key": idempotencyKey } } }),
+);
+
+export const getAssessmentResult = (accessToken: string, id: string) => expectData<AssessmentSubmission>(
+  apiClient.GET("/v1/assessment-submissions/{id}/result", { headers: authorization(accessToken), params: { path: { id } } }),
+);
+
+export const getBookingEligibility = (accessToken: string) => expectData<BookingEligibility>(
+  apiClient.GET("/v1/patients/me/booking-eligibility", { headers: authorization(accessToken) }),
+);
+
+export function assessmentErrorMessage(error: unknown) {
+  if (!(error instanceof AssessmentRequestError) || error.status === 0) return "سرویس ارزیابی در دسترس نیست؛ دوباره تلاش کنید.";
+  if (error.status === 401 || error.status === 403) return "اجازهٔ دسترسی به این ارزیابی را ندارید.";
+  if (error.code === "ASSESSMENT_ANSWERS_INVALID") return "پاسخ‌های ضروری را کامل و معتبر وارد کنید.";
+  if (error.code === "ASSESSMENT_SUBMISSION_IMMUTABLE") return "این ارزیابی قبلاً تکمیل شده و قابل تغییر نیست.";
+  return "درخواست ارزیابی انجام نشد؛ دوباره تلاش کنید.";
+}

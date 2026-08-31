@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api";
 
 export type AdminPatientList = components["schemas"]["AdminPatientListResponseDto"];
 export type AdminPatientDetail = components["schemas"]["AdminPatientDetailResponseDto"];
+export type AdminAssessmentSubmissionList = components["schemas"]["AdminAssessmentSubmissionListResponseDto"];
 
 export class PatientApiError extends Error {
   constructor(
@@ -15,6 +16,13 @@ export class PatientApiError extends Error {
   ) {
     super(message);
   }
+}
+
+export function getAssessmentResultBandTitle(snapshot: Record<string, unknown> | null | undefined) {
+  const band = snapshot?.resultBand;
+  return band && typeof band === "object" && "title" in band && typeof band.title === "string"
+    ? band.title
+    : null;
 }
 
 function authorization(accessToken: string) {
@@ -37,6 +45,20 @@ export async function getAdminPatient(
     apiClient.GET("/v1/admin/patients/{patientId}", {
       headers: authorization(accessToken),
       params: { path: { patientId } },
+    }),
+  );
+  if (!data) throw new PatientApiError(response.status);
+  return data;
+}
+
+export async function getAdminPatientAssessmentSubmissions(
+  accessToken: string,
+  patientId: string,
+): Promise<AdminAssessmentSubmissionList> {
+  const { data, response } = await withRequestTimeout(
+    apiClient.GET("/v1/admin/assessment-submissions", {
+      headers: authorization(accessToken),
+      params: { query: { patientId, pageSize: 50 } },
     }),
   );
   if (!data) throw new PatientApiError(response.status);

@@ -188,9 +188,20 @@ export class AdminPatientIntakeResponseDto {
   @ApiPropertyOptional({ nullable: true, type: AdminMedicalIntakeRevisionResponseDto }) value!: AdminMedicalIntakeRevisionResponseDto | null;
 }
 
+export class AdminPatientAssessmentResultDto {
+  @ApiProperty({ format: 'uuid' }) submissionId!: string;
+  @ApiProperty({ format: 'uuid' }) assessmentVersionId!: string;
+  @ApiProperty() assessmentTitle!: string;
+  @ApiProperty({ enum: ['IN_PROGRESS', 'COMPLETE', 'INVALIDATED'] }) state!: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) score!: string | null;
+  @ApiPropertyOptional({ type: 'object', nullable: true, additionalProperties: true }) resultSnapshot!: Record<string, unknown> | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' }) completedAt!: Date | null;
+}
+
 export class AdminPatientDetailResponseDto {
   @ApiProperty({ format: 'uuid' }) patientId!: string;
   @ApiProperty({ type: () => AdminPatientProfileResponseDto }) profile!: AdminPatientProfileResponseDto;
   @ApiProperty({ type: () => AdminPatientConsentResponseDto }) consent!: AdminPatientConsentResponseDto;
   @ApiProperty({ type: () => AdminPatientIntakeResponseDto }) intake!: AdminPatientIntakeResponseDto;
+  @ApiProperty({ type: AdminPatientAssessmentResultDto, isArray: true }) assessments!: AdminPatientAssessmentResultDto[];
 }

@@ -131,14 +131,20 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'patient_medical_intake_revisions',
         'consent_policy_versions',
         'patient_consent_records',
+        'assessment_versions',
+        'patient_assessment_submissions',
+        'booking_eligibility_policies',
       ]]);
 
       expect(tables.rows.map(({ table_name }) => table_name)).toEqual([
+        'assessment_versions',
         'audit_events',
+        'booking_eligibility_policies',
         'clinics',
         'consent_policy_versions',
         'credentials',
         'login_attempts',
+        'patient_assessment_submissions',
         'patient_consent_records',
         'patient_medical_intake_revisions',
         'patient_medical_intakes',
@@ -259,6 +265,101 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         { typname: 'tobacco_use', value: 'UNKNOWN' },
       ]);
 
+      const assessmentEnums = await smokeClient.query<{ typname: string }>(`
+        SELECT typname
+        FROM pg_type
+        WHERE typname = ANY($1::text[])
+        ORDER BY typname
+      `, [[
+        'assessment_version_status',
+        'patient_assessment_state',
+        'booking_assessment_requirement',
+      ]]);
+      expect(assessmentEnums.rows.map(({ typname }) => typname)).toEqual([
+        'assessment_version_status',
+        'booking_assessment_requirement',
+        'patient_assessment_state',
+      ]);
+
+      const assessment = await smokeClient.query<{ id: string }>(`
+        INSERT INTO assessment_versions (
+          id, clinic_id, assessment_key, version_number, title, structure,
+          content_hash, updated_at
+        )
+        SELECT gen_random_uuid(), id, 'MAIN', 1, 'ارزیابی اصلی',
+          '{"sections":[]}'::jsonb, repeat('a', 64), CURRENT_TIMESTAMP
+        FROM clinics WHERE status = 'ACTIVE'
+        RETURNING id
+      `);
+      const assessmentVersionId = assessment.rows[0]?.id;
+      expect(assessmentVersionId).toBeDefined();
+
+      await smokeClient.query(`
+        UPDATE assessment_versions
+        SET status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [assessmentVersionId]);
+
+      await expect(smokeClient.query(`
+        UPDATE assessment_versions
+        SET structure = '{"sections":[{"id":"changed"}]}'::jsonb,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [assessmentVersionId])).rejects.toMatchObject({ code: 'P0001' });
+
+      await expect(smokeClient.query(`
+        INSERT INTO booking_eligibility_policies (
+          id, clinic_id, assessment_requirement, updated_at
+        )
+        SELECT gen_random_uuid(), id, 'REQUIRED', CURRENT_TIMESTAMP
+        FROM clinics WHERE status = 'ACTIVE'
+      `)).rejects.toMatchObject({ code: 'P0001' });
+
+      await smokeClient.query(`
+        INSERT INTO booking_eligibility_policies (
+          id, clinic_id, assessment_requirement,
+          required_assessment_version_id, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, 'REQUIRED', id, CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $1
+      `, [assessmentVersionId]);
+
+      const policyDefaults = await smokeClient.query<{
+        validity_days: number | null;
+        require_latest_published_version: boolean;
+      }>(`
+        SELECT validity_days, require_latest_published_version
+        FROM booking_eligibility_policies
+      `);
+      expect(policyDefaults.rows).toEqual([{
+        validity_days: null,
+        require_latest_published_version: false,
+      }]);
+
+      const draftAssessment = await smokeClient.query<{ id: string }>(`
+        INSERT INTO assessment_versions (
+          id, clinic_id, assessment_key, version_number, title, structure,
+          content_hash, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, 'MAIN', 2, 'ارزیابی اصلی جدید',
+          '{"sections":[]}'::jsonb, repeat('b', 64), CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $1
+        RETURNING id
+      `, [assessmentVersionId]);
+
+      await expect(smokeClient.query(`
+        UPDATE booking_eligibility_policies
+        SET required_assessment_version_id = $1, updated_at = CURRENT_TIMESTAMP
+      `, [draftAssessment.rows[0]?.id])).rejects.toMatchObject({ code: 'P0001' });
+
+      await expect(smokeClient.query(`
+        UPDATE assessment_versions
+        SET status = 'RETIRED', retired_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [assessmentVersionId])).rejects.toMatchObject({ code: 'P0001' });
+
       const user = await smokeClient.query<{ id: string }>(`
         INSERT INTO users (id, phone, updated_at)
         VALUES (gen_random_uuid(), '+989120000000', CURRENT_TIMESTAMP)
@@ -266,6 +367,45 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       `);
       const userId = user.rows[0]?.id;
       expect(userId).toBeDefined();
+
+      const patient = await smokeClient.query<{ id: string }>(`
+        INSERT INTO patient_profiles (id, user_id, clinic_id, updated_at)
+        SELECT gen_random_uuid(), $1, clinic_id, CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $2
+        RETURNING id
+      `, [userId, assessmentVersionId]);
+      const patientId = patient.rows[0]?.id;
+      expect(patientId).toBeDefined();
+
+      const submission = await smokeClient.query<{ id: string }>(`
+        INSERT INTO patient_assessment_submissions (
+          id, patient_id, assessment_version_id, answers, updated_at
+        ) VALUES (gen_random_uuid(), $1, $2, '{"q1":"a"}'::jsonb, CURRENT_TIMESTAMP)
+        RETURNING id
+      `, [patientId, assessmentVersionId]);
+      const submissionId = submission.rows[0]?.id;
+
+      await expect(smokeClient.query(`
+        UPDATE patient_assessment_submissions
+        SET state = 'COMPLETE', completed_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [submissionId])).rejects.toMatchObject({ code: '23514' });
+
+      await smokeClient.query(`
+        UPDATE patient_assessment_submissions
+        SET state = 'COMPLETE', completed_at = CURRENT_TIMESTAMP,
+          result_snapshot = '{"band":"neutral"}'::jsonb,
+          completion_idempotency_key = 'complete-attempt-1',
+          completion_payload_hash = repeat('c', 64), updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [submissionId]);
+
+      await expect(smokeClient.query(`
+        UPDATE patient_assessment_submissions
+        SET answers = '{"q1":"changed"}'::jsonb, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [submissionId])).rejects.toMatchObject({ code: 'P0001' });
 
       await expect(smokeClient.query(`
         INSERT INTO users (id, phone, updated_at)

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, FileText } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { Avatar, SectionCard, StatusBadge } from "@/components/shared";
-import { getAdminPatient, PatientApiError, type AdminPatientDetail } from "@/lib/patient-api";
+import { getAdminPatient, getAdminPatientAssessmentSubmissions, getAssessmentResultBandTitle, PatientApiError, type AdminAssessmentSubmissionList, type AdminPatientDetail } from "@/lib/patient-api";
 
-const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات خوداظهاری" }] as const;
+const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات خوداظهاری" }, { id: "assessments", label: "ارزیابی‌ها" }] as const;
 const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-", AB_POSITIVE: "AB+", AB_NEGATIVE: "AB-", O_POSITIVE: "O+", O_NEGATIVE: "O-", UNKNOWN: "نامشخص" };
 const SEXES: Record<string, string> = { FEMALE: "زن", MALE: "مرد", INTERSEX: "اینترسکس", UNKNOWN: "نامشخص", PREFER_NOT_TO_SAY: "ترجیح می‌دهم نگویم" };
 
@@ -26,12 +26,23 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("overview");
   const [patient, setPatient] = useState<AdminPatientDetail | null>(null);
   const [error, setError] = useState<PatientApiError | null>(null);
+  const [assessments, setAssessments] = useState<AdminAssessmentSubmissionList | null>(null);
+  const [assessmentError, setAssessmentError] = useState<PatientApiError | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void getAdminPatient(authentication.accessToken, patientId).then(
       (data) => { if (!cancelled) setPatient(data); },
       (reason: unknown) => { if (!cancelled) setError(reason instanceof PatientApiError ? reason : new PatientApiError(0)); },
+    );
+    return () => { cancelled = true; };
+  }, [authentication.accessToken, patientId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getAdminPatientAssessmentSubmissions(authentication.accessToken, patientId).then(
+      (data) => { if (!cancelled) setAssessments(data); },
+      (reason: unknown) => { if (!cancelled) setAssessmentError(reason instanceof PatientApiError ? reason : new PatientApiError(0)); },
     );
     return () => { cancelled = true; };
   }, [authentication.accessToken, patientId]);
@@ -58,6 +69,7 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
     <div className="flex-1 overflow-y-auto p-7">
       {tab === "overview" && <div className="grid max-w-3xl grid-cols-1 gap-6 lg:grid-cols-2"><SectionCard title="اطلاعات تماس و حساب"><Rows rows={basicRows} /></SectionCard><SectionCard title="وضعیت onboarding"><div className="space-y-3 text-sm"><p>رضایت فعال: <span className="font-semibold">{patient.consent.active ? "دارد" : "ندارد"}</span></p><p>وضعیت intake: <span className="font-semibold">{patient.intake.status === "AVAILABLE" ? "قابل مشاهده" : patient.intake.status === "CONSENT_REQUIRED" ? "نیازمند رضایت" : "ثبت نشده"}</span></p><p className="text-xs leading-6 text-muted-foreground">هر اطلاعات پزشکی موجود در این صفحه توسط خود بیمار گزارش شده است و تشخیص یا واقعیت بالینی تأییدشده محسوب نمی‌شود.</p></div></SectionCard></div>}
       {tab === "medical" && (medicalAvailable ? <div className="space-y-5"><div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>دادهٔ خوداظهاری بیمار</strong><p className="mt-1 text-xs leading-6">این اطلاعات به‌صورت خوداظهاری ثبت شده‌اند و نباید به‌عنوان تشخیص، تأیید پزشکی یا ادعای بالینی تفسیر شوند.</p></div><div className="grid max-w-3xl grid-cols-1 gap-5 lg:grid-cols-2"><SectionCard title="اطلاعات پایه"><Rows rows={intakeRows} /></SectionCard><SectionCard title="گزارش‌های خوداظهاری"><Rows rows={reportRows} /></SectionCard></div></div> : <EmptyMedical status={patient.intake.status} />)}
+      {tab === "assessments" && <PatientAssessments assessments={assessments} error={assessmentError} />}
     </div>
   </div>;
 }
@@ -65,3 +77,11 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
 function Rows({ rows }: { rows: string[][] }) { return <div className="space-y-3">{rows.map(([label, value]) => <div key={label} className="flex gap-3 text-sm"><span className="w-32 flex-shrink-0 text-muted-foreground">{label}:</span><span className="font-medium">{value}</span></div>)}</div>; }
 function Notice({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "neutral" | "amber" | "red" }) { const color = tone === "red" ? "border-red-200 bg-red-50 text-red-700" : tone === "amber" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-border bg-card text-muted-foreground"; return <div className={`m-7 rounded-xl border p-4 text-sm ${color}`}>{children}</div>; }
 function EmptyMedical({ status }: { status: AdminPatientDetail["intake"]["status"] }) { const message = status === "CONSENT_REQUIRED" ? "برای مشاهدهٔ دادهٔ خوداظهاری، رضایت فعال بیمار لازم است." : "هنوز دادهٔ پزشکی اولیه برای این بیمار ثبت نشده است."; return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center"><FileText size={36} className="mx-auto mb-3 text-muted-foreground/40" /><p className="text-sm font-medium">{message}</p><p className="mt-2 text-xs text-muted-foreground">در این بخش هیچ دادهٔ ساختگی یا ادعای بالینی نمایش داده نمی‌شود.</p></div>; }
+function PatientAssessments({ assessments, error }: { assessments: AdminAssessmentSubmissionList | null; error: PatientApiError | null }) {
+  if (!assessments && !error) return <p className="text-sm text-muted-foreground">در حال دریافت ارزیابی‌های بیمار…</p>;
+  if (error?.status === 401 || error?.status === 403) return <Notice tone="amber">اجازهٔ مشاهدهٔ ارزیابی‌های این بیمار را ندارید.</Notice>;
+  if (error) return <Notice tone="red">دریافت ارزیابی‌های بیمار ممکن نشد. صفحه را دوباره بارگذاری کنید.</Notice>;
+  if (!assessments || assessments.items.length === 0) return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center"><FileText size={36} className="mx-auto mb-3 text-muted-foreground/40" /><p className="text-sm font-medium">هنوز هیچ ارزیابی‌ای برای این بیمار ارسال نشده است.</p></div>;
+  return <div className="max-w-3xl space-y-4">{assessments.items.map((assessment) => { const band = getAssessmentResultBandTitle(assessment.resultSnapshot); return <SectionCard key={assessment.id} title={assessment.assessmentTitle}><Rows rows={[["وضعیت", assessmentState(assessment.state)], ["تلاش", String(assessment.attemptNumber)], ["امتیاز", assessment.score ?? "ثبت نشده"], ["نتیجه", band ?? "ثبت نشده"], ["تاریخ تکمیل", assessment.completedAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(assessment.completedAt)) : "ثبت نشده"]]} /></SectionCard>; })}</div>;
+}
+function assessmentState(state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED") { return state === "COMPLETE" ? "تکمیل‌شده" : state === "IN_PROGRESS" ? "در حال تکمیل" : "نامعتبر"; }

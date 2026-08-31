@@ -1,6 +1,6 @@
 # Phase 03 — Assessment Engine & Booking Eligibility
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت: `DONE`
 - Milestone: `A — بیمار آماده رزرو`
 - پیش‌نیاز: `Phase 02 DONE`
 - خروجی اصلی: آزمون اصلی versioned در داشبورد ساخته می‌شود و الزام آن پیش از رزرو قابل تنظیم است.
@@ -22,30 +22,25 @@
 
 ## مدل‌های داده
 
-- `AssessmentDefinition`
-- `AssessmentVersion`
-- `AssessmentQuestion`
-- `AssessmentOption`
-- `AssessmentSubmission`
-- `AssessmentAnswer`
-- `AssessmentResult`
-- `ClinicPatientPolicy`
+- `AssessmentVersion` با definition/question/option و result-band به‌صورت snapshot ساختاری immutable
+- `PatientAssessmentSubmission` با answer/result snapshot نسخه دقیق
+- `BookingEligibilityPolicy` برای الزام، اعتبار زمانی و latest-version
 
 ## Taskها
 
-- [ ] `F03-T01` — قرارداد lifecycle، question types، scoring و policy رزرو
-- [ ] `F03-T02` — migration definition/version/question/submission/result/policy
-- [ ] `F03-T03` — admin assessment CRUD draft، preview، duplicate، publish و archive
-- [ ] `F03-T04` — تعیین main assessment و toggle الزام قبل از رزرو در transaction
-- [ ] `F03-T05` — patient list/start/save/resume/submit/result API
-- [ ] `F03-T06` — scoring deterministic، result snapshot و risk/review flag
-- [ ] `F03-T07` — booking eligibility service و endpoint دارای blocker code/nextAction
-- [ ] `F03-T08` — admin submissions/results/filter و اتصال به patient workspace
-- [ ] `F03-T09` — اتصال کامل builder/list/results در dashboard
-- [ ] `F03-T10` — اتصال assessment flow و route gate در app
-- [ ] `F03-T11` — widget/activity آزمون در Dashboard Home
-- [ ] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E
-- [ ] `F03-T13` — حذف mock assessment در scope و evidence Milestone A
+- [x] `F03-T01` — قرارداد lifecycle، question types، scoring و policy رزرو؛ منبع: [`../contracts/assessment-booking-v1.md`](../contracts/assessment-booking-v1.md)
+- [x] `F03-T02` — migration definition/version/question/submission/result/policy
+- [x] `F03-T03` — admin assessment CRUD draft، preview، duplicate، publish و archive
+- [x] `F03-T04` — تعیین main assessment و toggle الزام قبل از رزرو در transaction
+- [x] `F03-T05` — patient list/start/save/resume/submit/result API
+- [x] `F03-T06` — scoring deterministic، result snapshot و risk/review flag
+- [x] `F03-T07` — booking eligibility service و endpoint دارای blocker code/nextAction
+- [x] `F03-T08` — admin submissions/results/filter و اتصال به patient workspace
+- [x] `F03-T09` — اتصال کامل builder/list/results در dashboard
+- [x] `F03-T10` — اتصال assessment flow و route gate در app
+- [x] `F03-T11` — widget/activity آزمون در Dashboard Home
+- [x] `F03-T12` — versioning، idempotency، authorization، toggle matrix و browser E2E
+- [x] `F03-T13` — حذف mock assessment در scope و evidence Milestone A
 
 ## Endpointهای حداقلی
 

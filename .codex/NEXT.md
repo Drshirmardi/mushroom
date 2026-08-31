@@ -1,20 +1,29 @@
-# Live Handoff
+# Active Task Batch
 
-- Updated: `2026-08-26 11:24 +03:30`
-- Status: `READY`
-- Active slice: freeze the main-assessment and configurable booking-eligibility contract.
+- Updated: `2026-08-27 14:31 +03:30`
+- Batch: `F03-B13`
+- Status: `DONE`
+- Goal: reachable Phase 03 assessment mocks are removed and Milestone A evidence is complete.
 
-## Next action
+## Tasks
 
-Inspect only the assessment, booking-policy, generated-contract/schema, and directly relevant test files. Define and test a versioned immutable assessment structure plus a configurable booking prerequisite based on valid completion rather than score.
+### F03-T13 — `DONE`
 
-## Acceptance
+- Dependencies: F03-T01 through F03-T12 are complete.
+- Scope: reachable Phase 03 assessment mock removal and Milestone A evidence.
+- Result: the unreferenced legacy assessment catalog was deleted; no reachable Phase 03 assessment mock remains.
+- Required checks: focused app/dashboard/API checks and API-client typecheck passed; browser and migration gates are documented in Phase 03 evidence.
 
-- The assessment contract is versioned and immutable after publication.
-- Booking eligibility is configurable and depends on a valid completed assessment, never its score.
-- Contract/schema tests cover the agreed boundary before implementation expands.
+## Batch review gate
 
-## Do not touch
+- Main-agent review passed: no reachable Phase 03 assessment mock remains and Milestone A evidence is complete.
+- `F03-T13` is ready for its task-level commit.
+
+## Next eligible task
+
+- `Phase 03` and `Milestone A` are complete. `F04-T01` is next eligible but must not be claimed in this run.
+
+## Protected
 
 - Unrelated dirty files
 - `apps/app/src/components/home/slider-data.ts`
