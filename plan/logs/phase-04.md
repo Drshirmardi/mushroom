@@ -34,3 +34,36 @@ Known limitations:
   - currency در v1 فقط `IRR` است و rating/review/session metric تا ایجاد source of truth نمایش داده نمی‌شود.
 Next batch:
   - `F04-T02` واجد شرایط است، اما claim نشده است.
+
+## F04-T02 — directory, doctor-service and availability persistence
+
+Task ID: F04-T02
+Completed at: 2026-09-01 02:54 +03:30
+Agent/Thread: Codex /root (coordinator review of `/root/f04_t02_persistence` handoff)
+Batch ID: F04-B02
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/prisma/schema.prisma`
+  - `apps/api/prisma/migrations/20260901023000_clinic_directory_availability/migration.sql`
+  - `apps/api/test/clinic-directory-availability.persistence.spec.ts`
+  - `apps/api/test/migrations.integration.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - `20260901023000_clinic_directory_availability` → PASS from an empty isolated PostgreSQL database
+Tests run:
+  - Prisma format, validate, generate, test TypeScript compilation, API typecheck, schema-engine migration diff and `git diff --check` → PASS
+  - `DATABASE_URL` from local API `.env`: `pnpm exec vitest run test/clinic-directory-availability.persistence.spec.ts test/migrations.integration.spec.ts --no-file-parallelism` → focused persistence suite PASS
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `pnpm exec vitest run test/migrations.integration.spec.ts --no-file-parallelism` → empty-database migration and idempotent seed smoke PASS
+Result:
+  - clinic-scoped DoctorProfile, Specialty, Service, DoctorService, AvailabilityRule, ClinicClosure and DoctorAvailabilityException persistence exists with restrictive deletion and composite same-clinic foreign keys → PASS
+  - activity/publication lifecycle, canonical specialty/service names, integer `IRR` pricing, minute duration/buffer, bounded doctor profile arrays and exception mode semantics are database-constrained → PASS
+  - active half-open overlap exclusions reject conflicting rules, closures and effective exception modes while allowing adjacent intervals → PASS
+  - focused constraint tests and empty-database migration coverage pass against real PostgreSQL → PASS
+  - review confirmed no Phase 03, slot/appointment, API endpoint or unrelated implementation changes → PASS
+Known limitations:
+  - none; CRUD, availability derivation, API and frontend work remain explicitly owned by later Phase 04 tasks.
+Next batch:
+  - `F04-T03` is eligible but unclaimed; do not start it without a new batch claim.

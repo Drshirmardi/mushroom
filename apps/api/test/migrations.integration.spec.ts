@@ -134,15 +134,29 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'assessment_versions',
         'patient_assessment_submissions',
         'booking_eligibility_policies',
+        'doctor_profiles',
+        'specialties',
+        'doctor_specialties',
+        'services',
+        'doctor_services',
+        'availability_rules',
+        'clinic_closures',
+        'doctor_availability_exceptions',
       ]]);
 
       expect(tables.rows.map(({ table_name }) => table_name)).toEqual([
         'assessment_versions',
         'audit_events',
+        'availability_rules',
         'booking_eligibility_policies',
+        'clinic_closures',
         'clinics',
         'consent_policy_versions',
         'credentials',
+        'doctor_availability_exceptions',
+        'doctor_profiles',
+        'doctor_services',
+        'doctor_specialties',
         'login_attempts',
         'patient_assessment_submissions',
         'patient_consent_records',
@@ -150,7 +164,9 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'patient_medical_intakes',
         'patient_profiles',
         'roles',
+        'services',
         'sessions',
+        'specialties',
         'user_profiles',
         'user_roles',
         'users',
@@ -279,6 +295,63 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'assessment_version_status',
         'booking_assessment_requirement',
         'patient_assessment_state',
+      ]);
+
+      const phaseFourEnums = await smokeClient.query<{
+        typname: string;
+        value: string;
+      }>(`
+        SELECT pg_type.typname, pg_enum.enumlabel AS value
+        FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+        WHERE pg_type.typname = ANY($1::text[])
+        ORDER BY pg_type.typname, pg_enum.enumsortorder
+      `, [[
+        'directory_publication_status',
+        'doctor_availability_exception_kind',
+        'visit_mode',
+      ]]);
+      expect(phaseFourEnums.rows).toEqual([
+        { typname: 'directory_publication_status', value: 'UNPUBLISHED' },
+        { typname: 'directory_publication_status', value: 'PUBLISHED' },
+        { typname: 'doctor_availability_exception_kind', value: 'AVAILABLE' },
+        { typname: 'doctor_availability_exception_kind', value: 'UNAVAILABLE' },
+        { typname: 'visit_mode', value: 'IN_PERSON' },
+        { typname: 'visit_mode', value: 'ONLINE' },
+      ]);
+
+      const phaseFourTimestamps = await smokeClient.query<{ data_type: string }>(`
+        SELECT data_type
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name IN (
+            'doctor_profiles', 'specialties', 'services', 'doctor_services',
+            'availability_rules', 'clinic_closures', 'doctor_availability_exceptions'
+          )
+          AND column_name IN ('created_at', 'updated_at', 'published_at', 'starts_at', 'ends_at')
+      `);
+      expect(phaseFourTimestamps.rows.length).toBeGreaterThan(0);
+      expect(phaseFourTimestamps.rows.every(
+        ({ data_type }) => data_type === 'timestamp with time zone',
+      )).toBe(true);
+
+      const overlapConstraints = await smokeClient.query<{
+        conname: string;
+        contype: string;
+      }>(`
+        SELECT conname, contype
+        FROM pg_constraint
+        WHERE conname = ANY($1::text[])
+        ORDER BY conname
+      `, [[
+        'availability_rules_no_active_overlap',
+        'clinic_closures_no_active_overlap',
+        'doctor_availability_exceptions_no_active_overlap',
+      ]]);
+      expect(overlapConstraints.rows).toEqual([
+        { conname: 'availability_rules_no_active_overlap', contype: 'x' },
+        { conname: 'clinic_closures_no_active_overlap', contype: 'x' },
+        { conname: 'doctor_availability_exceptions_no_active_overlap', contype: 'x' },
       ]);
 
       const assessment = await smokeClient.query<{ id: string }>(`

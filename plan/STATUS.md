@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 01:52 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 02:54 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -38,7 +38,7 @@
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
-- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `NOT_STARTED`
+- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `IN_PROGRESS`
 - [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
@@ -75,16 +75,17 @@
 ## وضعیت taskهای فاز فعال
 
 - `F04-T01` — `DONE`
-- `F04-T02` — `NOT_STARTED`؛ واجد شرایط بعدی
-- `F04-T03` تا `F04-T12` — `NOT_STARTED`
+- `F04-T02` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T03` — `NOT_STARTED`؛ واجد شرایط بعدی، اما claim نشده است
+- `F04-T04` تا `F04-T12` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
-batch فعالی وجود ندارد. `F04-B01` برای `F04-T01` پس از review و ثبت قرارداد v1 بسته شد؛ شواهد:
-[`logs/phase-04.md`](logs/phase-04.md) و قرارداد:
-[`contracts/clinic-directory-availability-v1.md`](contracts/clinic-directory-availability-v1.md).
+batch فعالی وجود ندارد. `F04-B02` برای `F04-T02` پس از migration smoke واقعی، focused
+persistence verification و review coordinator بسته شد؛ شواهد:
+[`logs/phase-04.md`](logs/phase-04.md).
 
-`F04-T02` task بعدی واجد شرایط است، اما در این run claim یا شروع نشده است.
+`F04-T03` task بعدی واجد شرایط است، اما در این run claim یا شروع نشده است.
 
 ## Blockerها و تصمیم‌های باز
 

@@ -186,6 +186,27 @@ enum BookingAssessmentRequirement {
   @@map("booking_assessment_requirement")
 }
 
+enum DirectoryPublicationStatus {
+  UNPUBLISHED
+  PUBLISHED
+
+  @@map("directory_publication_status")
+}
+
+enum VisitMode {
+  IN_PERSON
+  ONLINE
+
+  @@map("visit_mode")
+}
+
+enum DoctorAvailabilityExceptionKind {
+  AVAILABLE
+  UNAVAILABLE
+
+  @@map("doctor_availability_exception_kind")
+}
+
 model User {
   id                          String                         @id @default(uuid()) @db.Uuid
   phone                       String                         @unique(map: "users_phone_key") @db.VarChar(13)
@@ -200,6 +221,7 @@ model User {
   auditEvents                 AuditEvent[]                   @relation("AuditEventActor")
   userProfile                 UserProfile?
   patientProfile              PatientProfile?
+  doctorProfile               DoctorProfile?
   recordedIntakeRevisions     PatientMedicalIntakeRevision[] @relation("IntakeRevisionRecordedBy")
   acceptedConsentRecords      PatientConsentRecord[]         @relation("ConsentAcceptedBy")
   withdrawnConsentRecords     PatientConsentRecord[]         @relation("ConsentWithdrawnBy")
@@ -316,17 +338,24 @@ model AuditEvent {
 }
 
 model Clinic {
-  id                       String                    @id @default(uuid()) @db.Uuid
-  name                     String                    @db.VarChar(160)
-  timeZone                 String                    @default("Asia/Tehran") @map("time_zone") @db.VarChar(64)
-  status                   ClinicStatus              @default(ACTIVE)
-  createdAt                DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                       String                        @id @default(uuid()) @db.Uuid
+  name                     String                        @db.VarChar(160)
+  timeZone                 String                        @default("Asia/Tehran") @map("time_zone") @db.VarChar(64)
+  status                   ClinicStatus                  @default(ACTIVE)
+  createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
   patientProfiles          PatientProfile[]
   medicalIntakes           PatientMedicalIntake[]
   consentPolicies          ConsentPolicyVersion[]
   assessmentVersions       AssessmentVersion[]
   bookingEligibilityPolicy BookingEligibilityPolicy?
+  doctorProfiles           DoctorProfile[]
+  specialties              Specialty[]
+  services                 Service[]
+  doctorServices           DoctorService[]
+  availabilityRules        AvailabilityRule[]
+  closures                 ClinicClosure[]
+  doctorExceptions         DoctorAvailabilityException[]
 
   @@map("clinics")
 }
@@ -532,4 +561,162 @@ model BookingEligibilityPolicy {
   requiredAssessmentVersion     AssessmentVersion?           @relation("BookingPolicyRequiredVersion", fields: [requiredAssessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
 
   @@map("booking_eligibility_policies")
+}
+
+model DoctorProfile {
+  id                String                        @id @default(uuid()) @db.Uuid
+  clinicId          String                        @map("clinic_id") @db.Uuid
+  userId            String?                       @unique(map: "doctor_profiles_user_id_key") @map("user_id") @db.Uuid
+  displayName       String                        @map("display_name") @db.VarChar(160)
+  biography         String?                       @db.Text
+  yearsExperience   Int?                          @map("years_experience")
+  profileImageUrl   String?                       @map("profile_image_url") @db.VarChar(2048)
+  languages         String[]                      @default([])
+  education         String[]                      @default([])
+  certifications    String[]                      @default([])
+  isActive          Boolean                       @default(false) @map("is_active")
+  publicationStatus DirectoryPublicationStatus    @default(UNPUBLISHED) @map("publication_status")
+  publishedAt       DateTime?                     @map("published_at") @db.Timestamptz(3)
+  createdAt         DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  user              User?                         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  specialties       DoctorSpecialty[]
+  doctorServices    DoctorService[]
+  availabilityRules AvailabilityRule[]
+  exceptions        DoctorAvailabilityException[]
+
+  @@unique([id, clinicId], map: "doctor_profiles_id_clinic_key")
+  @@index([clinicId, isActive, publicationStatus, displayName, id], map: "doctor_profiles_directory_idx")
+  @@map("doctor_profiles")
+}
+
+model Specialty {
+  id                String                     @id @default(uuid()) @db.Uuid
+  clinicId          String                     @map("clinic_id") @db.Uuid
+  name              String                     @db.VarChar(160)
+  canonicalName     String                     @map("canonical_name") @db.VarChar(320)
+  description       String?                    @db.VarChar(1000)
+  isActive          Boolean                    @default(false) @map("is_active")
+  publicationStatus DirectoryPublicationStatus @default(UNPUBLISHED) @map("publication_status")
+  publishedAt       DateTime?                  @map("published_at") @db.Timestamptz(3)
+  createdAt         DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic                     @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  doctors           DoctorSpecialty[]
+
+  @@unique([clinicId, canonicalName], map: "specialties_clinic_canonical_name_key")
+  @@unique([id, clinicId], map: "specialties_id_clinic_key")
+  @@index([clinicId, isActive, publicationStatus, canonicalName, id], map: "specialties_directory_idx")
+  @@map("specialties")
+}
+
+model DoctorSpecialty {
+  clinicId    String        @map("clinic_id") @db.Uuid
+  doctorId    String        @map("doctor_id") @db.Uuid
+  specialtyId String        @map("specialty_id") @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  doctor      DoctorProfile @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  specialty   Specialty     @relation(fields: [specialtyId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@id([doctorId, specialtyId])
+  @@index([clinicId, specialtyId, doctorId], map: "doctor_specialties_specialty_idx")
+  @@map("doctor_specialties")
+}
+
+model Service {
+  id                String                     @id @default(uuid()) @db.Uuid
+  clinicId          String                     @map("clinic_id") @db.Uuid
+  name              String                     @db.VarChar(160)
+  canonicalName     String                     @map("canonical_name") @db.VarChar(320)
+  description       String?                    @db.VarChar(1000)
+  isActive          Boolean                    @default(false) @map("is_active")
+  publicationStatus DirectoryPublicationStatus @default(UNPUBLISHED) @map("publication_status")
+  publishedAt       DateTime?                  @map("published_at") @db.Timestamptz(3)
+  createdAt         DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic                     @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  doctorServices    DoctorService[]
+
+  @@unique([clinicId, canonicalName], map: "services_clinic_canonical_name_key")
+  @@unique([id, clinicId], map: "services_id_clinic_key")
+  @@index([clinicId, isActive, publicationStatus, canonicalName, id], map: "services_directory_idx")
+  @@map("services")
+}
+
+model DoctorService {
+  id                String                     @id @default(uuid()) @db.Uuid
+  clinicId          String                     @map("clinic_id") @db.Uuid
+  doctorId          String                     @map("doctor_id") @db.Uuid
+  serviceId         String                     @map("service_id") @db.Uuid
+  visitMode         VisitMode                  @map("visit_mode")
+  durationMinutes   Int                        @map("duration_minutes")
+  bufferMinutes     Int                        @default(0) @map("buffer_minutes")
+  priceAmount       Int                        @map("price_amount")
+  currency          String                     @default("IRR") @db.Char(3)
+  isActive          Boolean                    @default(false) @map("is_active")
+  publicationStatus DirectoryPublicationStatus @default(UNPUBLISHED) @map("publication_status")
+  publishedAt       DateTime?                  @map("published_at") @db.Timestamptz(3)
+  createdAt         DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic                     @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  doctor            DoctorProfile              @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  service           Service                    @relation(fields: [serviceId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@unique([clinicId, doctorId, serviceId, visitMode], map: "doctor_services_offering_key")
+  @@index([clinicId, doctorId, visitMode, isActive, publicationStatus], map: "doctor_services_doctor_mode_idx")
+  @@index([clinicId, serviceId, visitMode, isActive, publicationStatus], map: "doctor_services_service_mode_idx")
+  @@map("doctor_services")
+}
+
+model AvailabilityRule {
+  id             String        @id @default(uuid()) @db.Uuid
+  clinicId       String        @map("clinic_id") @db.Uuid
+  doctorId       String        @map("doctor_id") @db.Uuid
+  visitMode      VisitMode     @map("visit_mode")
+  isoWeekday     Int           @map("iso_weekday")
+  startLocalTime DateTime      @map("start_local_time") @db.Time(0)
+  endLocalTime   DateTime      @map("end_local_time") @db.Time(0)
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic         Clinic        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  doctor         DoctorProfile @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@index([clinicId, doctorId, visitMode, isoWeekday, isActive, startLocalTime], map: "availability_rules_lookup_idx")
+  @@map("availability_rules")
+}
+
+model ClinicClosure {
+  id        String   @id @default(uuid()) @db.Uuid
+  clinicId  String   @map("clinic_id") @db.Uuid
+  startsAt  DateTime @map("starts_at") @db.Timestamptz(3)
+  endsAt    DateTime @map("ends_at") @db.Timestamptz(3)
+  label     String   @db.VarChar(160)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, isActive, startsAt, endsAt], map: "clinic_closures_lookup_idx")
+  @@map("clinic_closures")
+}
+
+model DoctorAvailabilityException {
+  id        String                          @id @default(uuid()) @db.Uuid
+  clinicId  String                          @map("clinic_id") @db.Uuid
+  doctorId  String                          @map("doctor_id") @db.Uuid
+  kind      DoctorAvailabilityExceptionKind
+  visitMode VisitMode?                      @map("visit_mode")
+  startsAt  DateTime                        @map("starts_at") @db.Timestamptz(3)
+  endsAt    DateTime                        @map("ends_at") @db.Timestamptz(3)
+  label     String?                         @db.VarChar(160)
+  isActive  Boolean                         @default(true) @map("is_active")
+  createdAt DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime                        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic                          @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  doctor    DoctorProfile                   @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@index([clinicId, doctorId, kind, visitMode, isActive, startsAt, endsAt], map: "doctor_availability_exceptions_lookup_idx")
+  @@map("doctor_availability_exceptions")
 }
