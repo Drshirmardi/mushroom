@@ -16,10 +16,11 @@ only the focused coverage needed for its acceptance risk, then runs the owning p
 
 **Roadmap boundary**: Every checklist entry below maps one-to-one to one existing roadmap task.
 `T001`–`T012` are Spec Kit ordering labels only; `F04-T01`–`F04-T12` remain the authoritative task
-IDs. No roadmap task is split, renamed, reordered, claimed, started, or marked complete here.
+IDs. No roadmap task is split, renamed, or reordered; completion state is synchronized only after
+the repository review gate passes.
 
-**Activation boundary**: Phase 04 remains `NOT_STARTED`, no batch is active, and `F04-T01` remains
-unclaimed. These entries are future execution instructions, not active work.
+**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` is complete, no batch is active, and
+`F04-T02` is next eligible but unclaimed.
 
 ## Format: `[Spec Kit ID] [Story?] [Authoritative roadmap ID] Description`
 
@@ -44,7 +45,7 @@ constitution and roadmap.
 **Purpose**: Preserve the two opening roadmap tasks that establish the contract and persisted
 integrity required by all later Phase 04 work.
 
-- [ ] T001 F04-T01: freeze the existing Phase 04 doctor/service fields, visit modes, duration and buffer in minutes, integer price and currency, clinic ownership, publication/activity semantics, timezone representation, validation errors, and administrator/patient capability shapes in `plan/contracts/clinic-directory-availability-v1.md`; review against `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`, `plan/02-TARGET-ARCHITECTURE.md`, and `plan/04-ENGINEERING-STANDARDS.md` without changing implementation code
+- [x] T001 F04-T01: freeze the existing Phase 04 doctor/service fields, visit modes, duration and buffer in minutes, integer price and currency, clinic ownership, publication/activity semantics, timezone representation, validation errors, and administrator/patient capability shapes in `plan/contracts/clinic-directory-availability-v1.md`; review against `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`, `plan/02-TARGET-ARCHITECTURE.md`, and `plan/04-ENGINEERING-STANDARDS.md` without changing implementation code
 - [ ] T002 F04-T02: implement the versioned directory, doctor-service, availability-rule, clinic-closure, and doctor-exception persistence defined by the accepted F04-T01 contract in `apps/api/prisma/schema.prisma` and one new file under `apps/api/prisma/migrations/`; add focused constraint and empty-database migration coverage under `apps/api/test/`
 
 **Checkpoint**: The contract is accepted and the Phase 04 persistence model applies cleanly from
@@ -124,7 +125,7 @@ This is the exact order in the authoritative phase file. That file does not defi
 `Depends on` fields or a batch map, so this adoption does not manufacture a hard dependency graph
 or parallel batch. Before any future execution, the coordinator must validate prerequisites,
 freeze contracts, assign non-overlapping write sets, and claim a batch in `plan/STATUS.md` under
-`plan/05-AGENT-WORKFLOW.md`. The current status identifies only `F04-T01` as next eligible.
+`plan/05-AGENT-WORKFLOW.md`. The current status identifies only `F04-T02` as next eligible.
 
 ### Practical Readiness Gates Already Implied by the Roadmap
 
@@ -147,8 +148,8 @@ workflow, without changing roadmap IDs.
 
 ### First Executable Unit
 
-When the user separately authorizes implementation, claim only the batch permitted by
-`plan/STATUS.md`. At the current state that begins with the single contract task `F04-T01`.
+When the user separately authorizes the next implementation batch, claim only the work permitted
+by `plan/STATUS.md`. At the current state that begins with `F04-T02`.
 
 ### Incremental Delivery
 

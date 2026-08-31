@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-27 14:31 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 01:52 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
-- وضعیت فاز فعال: `NOT_STARTED`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
@@ -74,20 +74,17 @@
 
 ## وضعیت taskهای فاز فعال
 
-- `F03-T01` تا `F03-T08` — `DONE`
-- `F03-T09` — `DONE`
-- `F03-T10` — `DONE`
-- `F03-T11` — `DONE`
-- `F03-T12` — `DONE`
-- `F03-T13` — `DONE`
+- `F04-T01` — `DONE`
+- `F04-T02` — `NOT_STARTED`؛ واجد شرایط بعدی
+- `F04-T03` تا `F04-T12` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
-`F03-B13` برای `F03-T13` با حذف artifact بدون caller و evidence کامل Milestone A بسته شد؛ شواهد: [`logs/phase-03.md`](logs/phase-03.md) و [`../specs/001-adopt-phase-03/evidence.md`](../specs/001-adopt-phase-03/evidence.md).
+batch فعالی وجود ندارد. `F04-B01` برای `F04-T01` پس از review و ثبت قرارداد v1 بسته شد؛ شواهد:
+[`logs/phase-04.md`](logs/phase-04.md) و قرارداد:
+[`contracts/clinic-directory-availability-v1.md`](contracts/clinic-directory-availability-v1.md).
 
-`Phase 03` و `Milestone A` DONE هستند. `F04-T01` نخستین task واجد شرایط Phase 04 است، اما claim نشده است.
-
-Phase 02 final gate accepted: manual browser verification, restored browser inspection, mock audit, full API suite and frontend build/typecheck evidence passed.
+`F04-T02` task بعدی واجد شرایط است، اما در این run claim یا شروع نشده است.
 
 ## Blockerها و تصمیم‌های باز
 
