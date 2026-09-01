@@ -317,3 +317,40 @@ Known limitations:
   - F04-T10 remains `IN_PROGRESS/PARTIAL`; deterministic seed and mock-removal work must resume only after F04-T09.
 Next batch:
   - `F04-T09` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T09 — Patient directory, service selection and derived availability
+
+Task ID: F04-T09
+Completed at: 2026-09-01 20:00 +03:30
+Agent/Thread: Codex /root
+Batch ID: F04-B09
+Reviewed by: Codex /root
+Changed files:
+  - `apps/app/src/app/(app)/doctors/[id]/page.tsx`
+  - `apps/app/src/app/(app)/appointments/book/page.tsx`
+  - `apps/app/src/app/(app)/appointments/book/schedule/page.tsx`
+  - `apps/app/src/lib/directory-api.ts`
+  - `apps/app/src/lib/directory-api.spec.ts`
+  - `apps/app/src/lib/availability.ts`
+  - `apps/app/src/lib/availability.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none; the committed F04-T06 patient directory and derived-availability endpoints are consumed through the generated client
+Tests run:
+  - `corepack pnpm --filter @sabz-zendegi/api-client build` → PASS (generated source drift check)
+  - `corepack pnpm --filter @sabz/app test` → PASS (6 files, 22 tests)
+  - `corepack pnpm --filter @sabz/app typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - doctor detail displays only published directory fields returned by the server; fabricated ratings, reviews, sessions, hours and image sources were removed from this route → PASS
+  - booking entry preserves the Phase 03 server eligibility decision, then selects a published doctor and its published offering before navigation → PASS
+  - schedule selection requests the selected offering’s on-demand availability and renders only returned local dates and times; it has loading, empty, invalid-selection and error states → PASS
+  - focused client/helper tests verify generated paths, bearer authentication, request error mapping, bounded dates and grouping of server-derived slots → PASS
+  - review confirmed no API/client generation source, seed data, catalog mock-export removal, dashboard, appointment creation or Phase 05 code was introduced → PASS
+Known limitations:
+  - F04-T10 remains incomplete; its deterministic development seed and Phase 04 mock-export/caller removal are intentionally deferred to its separately claimed resume.
+Next batch:
+  - F04-T10 remaining deliverables are fully unblocked but unclaimed; do not resume it without a new batch claim.

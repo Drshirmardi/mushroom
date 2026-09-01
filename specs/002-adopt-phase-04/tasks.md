@@ -19,7 +19,7 @@ only the focused coverage needed for its acceptance risk, then runs the owning p
 IDs. No roadmap task is split, renamed, or reordered; completion state is synchronized only after
 the repository review gate passes.
 
-**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T07` are complete.
+**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T09` are complete.
 The explicitly authorized OpenAPI/client synchronization prerequisite slice of `F04-T10` has
 passed review, and `F04-T08` is complete. `F04-T10` remains unchecked and
 `IN_PROGRESS/PARTIAL` until its seed and mock-removal deliverables run after `F04-T09`.
@@ -81,7 +81,7 @@ before the permission/audit and frontend tasks. Grouping them by story would reo
 - [x] T006 [US2] F04-T06: implement patient-visible clinic-scoped doctor, service, offering, and on-demand availability queries in `apps/api/src/modules/directory/` and `apps/api/src/modules/scheduling/`; derive transient candidates from current rules, closures, leave, exceptions, duration, buffer, timezone, activity, and publication state, with focused API/integration coverage under `apps/api/test/`
 - [x] T007 [US1] F04-T07: enforce the established permission boundary and audit schedule, price, and publication changes through `apps/api/src/common/auth/`, Phase 04 audit adapters under `apps/api/src/modules/directory/` and `apps/api/src/modules/scheduling/`, and focused authorization/audit tests under `apps/api/test/`
 - [x] T008 [US1] F04-T08: replace the actionless Phase 04 settings cards with real generated-client forms and truthful loading, empty, forbidden, validation, unavailable, and error states in `apps/dashboard/src/features/settings/settings-page.tsx`; add schedule-readiness and next-day projections to `apps/dashboard/src/features/dashboard/dashboard-page.tsx` only where supported by real data, with focused helpers/specs under `apps/dashboard/src/lib/`
-- [ ] T009 [US2] F04-T09: replace Phase 04 mock doctor and schedule consumption with generated-client doctor detail, doctor/service selection, and derived availability in `apps/app/src/app/(app)/doctors/[id]/page.tsx`, `apps/app/src/app/(app)/appointments/book/page.tsx`, and `apps/app/src/app/(app)/appointments/book/schedule/page.tsx`; preserve the existing eligibility decision and add focused helpers/specs under `apps/app/src/lib/`
+- [x] T009 [US2] F04-T09: replace Phase 04 mock doctor and schedule consumption with generated-client doctor detail, doctor/service selection, and derived availability in `apps/app/src/app/(app)/doctors/[id]/page.tsx`, `apps/app/src/app/(app)/appointments/book/page.tsx`, and `apps/app/src/app/(app)/appointments/book/schedule/page.tsx`; preserve the existing eligibility decision and add focused helpers/specs under `apps/app/src/lib/`
 
 **Checkpoint**: Every Phase 04 administrator settings card performs a real action; schedule
 readiness contains no fabricated values; patient-visible directory and availability match current

@@ -1,105 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Award,
-  Building2,
-  Check,
-  ChevronLeft,
-  Clock,
-  Globe,
-  GraduationCap,
-  Star,
-} from "lucide-react";
-import { DOCTORS } from "@/lib/data/catalog";
-import { toP } from "@/lib/format";
+import { Award, Building2, Check, ChevronLeft, Clock, Globe, GraduationCap } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { directoryErrorMessage, getPatientDoctor, type PatientDoctorDetail } from "@/lib/directory-api";
+import { formatPrice, toP } from "@/lib/format";
 import { useScreenNavigation } from "@/lib/navigation";
 
-const REVIEWS = [
-  { name: "سارا م.", rating: 5, text: "دکتر شیرمردی بسیار دقیق و مهربان هستند. پس از ۵ جلسه درد کمرم به طور چشمگیری کاهش یافت.", date: "۸ مرداد", verified: true },
-  { name: "علی ر.", rating: 5, text: "بهترین پزشک طب سنتی که تاکنون به او مراجعه کرده‌ام. توضیحات کامل و حوصله زیاد دارند.", date: "۲ مرداد", verified: true },
-  { name: "نرگس ک.", rating: 4, text: "خوب بود ولی وقت انتظار زیاد بود. درمان خودش عالی بود.", date: "۲۵ تیر", verified: false },
-];
+const displayExperience = (value: PatientDoctorDetail["yearsExperience"]) => typeof value === "number" ? `${toP(value)} سال تجربه` : "ثبت نشده";
+const displayText = (value: unknown) => typeof value === "string" && value.trim() ? value : "ثبت نشده";
+const visitMode = (value: "IN_PERSON" | "ONLINE") => value === "IN_PERSON" ? "حضوری" : "آنلاین";
 
 export default function DoctorProfilePage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const navigateScreen = useScreenNavigation();
-  const doctorId = params?.id || "d1";
-  const doctor = DOCTORS.find(d => d.id === doctorId) || DOCTORS[0];
-  const [tab, setTab] = useState<"about" | "reviews">("about");
-  return (
-    <div>
-      <div className="relative">
-        <div className="h-32 bg-gradient-to-b from-primary/30 to-accent" />
-        <div className="px-4">
-          <div className="flex items-end gap-4 -mt-12 mb-3">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-white shadow-lg flex-shrink-0">
-              <img src={`https://images.unsplash.com/${doctor.img}?w=192&h=192&fit=crop&auto=format`} alt={doctor.name} className="w-full h-full object-cover" />
-            </div>
-            <div className="pb-2 flex-1">
-              <div className="flex items-start justify-between">
-                <div><h2 className="text-lg font-bold text-foreground">{doctor.name}</h2><p className="text-sm text-muted-foreground">{doctor.specialty}</p></div>
-                <button onClick={() => router.back()} className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center mt-1"><ChevronLeft size={20} style={{ transform: "rotate(180deg)" }} /></button>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[{ label: "تجربه", val: doctor.exp }, { label: "امتیاز", val: `${doctor.rating} ⭐` }, { label: "بیمار", val: toP(doctor.sessions) }].map(s => (
-              <div key={s.label} className="bg-white rounded-2xl border border-border p-3 text-center shadow-sm"><p className="text-sm font-black text-primary">{s.val}</p><p className="text-[10px] text-muted-foreground">{s.label}</p></div>
-            ))}
-          </div>
-          <div className="flex gap-2 mb-4">
-            {[{ id: "about", label: "درباره" }, { id: "reviews", label: `نظرات (${toP(REVIEWS.length)})` }].map(t => (
-              <button key={t.id} onClick={() => setTab(t.id as "about" | "reviews")} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === t.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>{t.label}</button>
-            ))}
-          </div>
-
-          {tab === "about" && (
-            <div className="space-y-4 pb-4">
-              <div className="bg-white rounded-2xl border border-border p-4 shadow-sm"><p className="text-sm font-bold text-foreground mb-2">بیوگرافی</p><p className="text-sm text-foreground/70 leading-7">{doctor.bio}</p></div>
-              <div className="bg-white rounded-2xl border border-border p-4 shadow-sm">
-                <p className="text-sm font-bold text-foreground mb-3 flex items-center gap-2"><GraduationCap size={16} className="text-primary" />تحصیلات</p>
-                {doctor.education.map((e, i) => <div key={i} className="flex items-start gap-2 py-2 border-b border-border last:border-0"><div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0" /><p className="text-sm text-foreground">{e}</p></div>)}
-              </div>
-              <div className="bg-white rounded-2xl border border-border p-4 shadow-sm">
-                <p className="text-sm font-bold text-foreground mb-3 flex items-center gap-2"><Award size={16} className="text-primary" />گواهینامه‌ها</p>
-                {doctor.certs.map((c, i) => <div key={i} className="flex items-start gap-2 py-2 border-b border-border last:border-0"><Check size={14} className="text-green-600 mt-0.5 flex-shrink-0" /><p className="text-sm text-foreground">{c}</p></div>)}
-              </div>
-              <div className="bg-white rounded-2xl border border-border p-4 shadow-sm space-y-2">
-                {[{ icon: Building2, label: "کلینیک", val: doctor.clinic }, { icon: Clock, label: "ساعت کاری", val: doctor.hours }, { icon: Globe, label: "زبان‌ها", val: doctor.languages.join("، ") }].map(r => {
-                  const Icon = r.icon;
-                  return <div key={r.label} className="flex items-start gap-3"><Icon size={15} className="text-primary mt-0.5 flex-shrink-0" /><div><p className="text-xs text-muted-foreground">{r.label}</p><p className="text-sm font-semibold text-foreground">{r.val}</p></div></div>;
-                })}
-              </div>
-            </div>
-          )}
-
-          {tab === "reviews" && (
-            <div className="space-y-3 pb-4">
-              <div className="bg-primary/5 rounded-2xl p-4 flex items-center gap-4 border border-primary/10">
-                <div className="text-center"><p className="text-3xl font-black text-primary">{doctor.rating}</p><div className="flex gap-0.5 mt-1">{[1, 2, 3, 4, 5].map(s => <Star key={s} size={11} className="text-amber-400 fill-amber-400" />)}</div></div>
-                <div className="flex-1"><p className="text-sm font-bold text-foreground">{toP(REVIEWS.length)} نظر ثبت شده</p><p className="text-xs text-muted-foreground">از بیماران تأیید شده</p></div>
-              </div>
-              {REVIEWS.map((r, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-border p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center"><span className="text-xs font-bold text-primary">{r.name[0]}</span></div>
-                    <div className="flex-1"><div className="flex items-center gap-1.5"><p className="text-sm font-bold text-foreground">{r.name}</p>{r.verified && <span className="text-[9px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded-full font-bold border border-green-100">تأیید شده</span>}</div></div>
-                    <div className="flex gap-0.5">{[1, 2, 3, 4, 5].map(s => <Star key={s} size={11} className={s <= r.rating ? "text-amber-400 fill-amber-400" : "text-muted"} />)}</div>
-                  </div>
-                  <p className="text-sm text-foreground/80 leading-7">{r.text}</p>
-                  <p className="text-[10px] text-muted-foreground mt-2">{r.date}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="px-4 pb-4">
-        <button onClick={() => navigateScreen("BookStep1", { preselectedDoctor: doctorId })} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20">رزرو نوبت با این دکتر</button>
-      </div>
-    </div>
-  );
+  const router = useRouter(); const params = useParams<{ id: string }>(); const navigateScreen = useScreenNavigation(); const { authentication } = useAuthSession(); const doctorId = params?.id;
+  const [doctor, setDoctor] = useState<PatientDoctorDetail | null>(null); const [error, setError] = useState<string | null>(null);
+  useEffect(() => { let cancelled = false; if (!doctorId) { setError("شناسهٔ پزشک معتبر نیست."); return () => { cancelled = true; }; } setDoctor(null); setError(null); void getPatientDoctor(authentication.accessToken, doctorId).then((value) => { if (!cancelled) setDoctor(value); }, (reason: unknown) => { if (!cancelled) setError(directoryErrorMessage(reason)); }); return () => { cancelled = true; }; }, [authentication.accessToken, doctorId]);
+  return <div><div className="relative"><div className="h-32 bg-gradient-to-b from-primary/30 to-accent" /><div className="px-4"><div className="flex items-end gap-4 -mt-12 mb-3"><div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-primary/10 text-3xl font-bold text-primary shadow-lg">{doctor?.displayName.slice(0, 1) ?? "—"}</div><div className="flex-1 pb-2"><div className="flex items-start justify-between"><div><h2 className="text-lg font-bold text-foreground">{doctor?.displayName ?? "پزشک"}</h2><p className="text-sm text-muted-foreground">{doctor?.specialties.map((specialty) => specialty.name).join("، ") || "تخصص ثبت نشده"}</p></div><button onClick={() => router.back()} className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-muted"><ChevronLeft size={20} style={{ transform: "rotate(180deg)" }} /></button></div></div></div>{!doctor && !error && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت اطلاعات پزشک…</p>}{error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}</p>}{doctor && <div className="space-y-4 pb-4"><div className="grid grid-cols-2 gap-2"><div className="rounded-2xl border border-border bg-white p-3 text-center shadow-sm"><p className="text-sm font-black text-primary">{displayExperience(doctor.yearsExperience)}</p><p className="text-[10px] text-muted-foreground">سابقهٔ ثبت‌شده</p></div><div className="rounded-2xl border border-border bg-white p-3 text-center shadow-sm"><p className="text-sm font-black text-primary">{toP(doctor.offerings.length)}</p><p className="text-[10px] text-muted-foreground">خدمت فعال</p></div></div><div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="mb-2 text-sm font-bold text-foreground">بیوگرافی</p><p className="text-sm leading-7 text-foreground/70">{displayText(doctor.biography)}</p></div><InfoList title="تحصیلات" icon={GraduationCap} values={doctor.education} /><InfoList title="گواهینامه‌ها" icon={Award} values={doctor.certifications} check /><div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="mb-3 text-sm font-bold text-foreground">خدمات قابل رزرو</p>{doctor.offerings.length ? <div className="space-y-3">{doctor.offerings.map((offering) => <div key={offering.id} className="rounded-xl bg-muted/50 p-3"><p className="font-semibold text-foreground">{offering.service.name}</p><p className="mt-1 text-xs text-muted-foreground">{visitMode(offering.visitMode)} · {toP(offering.durationMinutes)} دقیقه · {formatPrice(offering.priceAmount)} {offering.currency}</p></div>)}</div> : <p className="text-sm text-muted-foreground">خدمت قابل رزروی برای این پزشک منتشر نشده است.</p>}</div><div className="space-y-3 rounded-2xl border border-border bg-white p-4 shadow-sm"><Detail icon={Building2} label="کلینیک" value={doctor.clinic.name} /><Detail icon={Clock} label="منطقهٔ زمانی کلینیک" value={doctor.clinic.timeZone} /><Detail icon={Globe} label="زبان‌ها" value={doctor.languages.join("، ") || "ثبت نشده"} /></div></div>}</div></div>{doctor && <div className="px-4 pb-4"><button onClick={() => navigateScreen("BookStep1", { preselectedDoctor: doctor.id })} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white shadow-md shadow-primary/20">انتخاب پزشک و خدمت</button></div>}</div>;
 }
+
+function InfoList({ title, icon: Icon, values, check = false }: { title: string; icon: typeof Award; values: string[]; check?: boolean }) { return <div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground"><Icon size={16} className="text-primary" />{title}</p>{values.length ? values.map((value) => <div key={value} className="flex items-start gap-2 border-b border-border py-2 last:border-0">{check ? <Check size={14} className="mt-0.5 flex-shrink-0 text-green-600" /> : <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />}<p className="text-sm text-foreground">{value}</p></div>) : <p className="text-sm text-muted-foreground">ثبت نشده</p>}</div>; }
+function Detail({ icon: Icon, label, value }: { icon: typeof Award; label: string; value: string }) { return <div className="flex items-start gap-3"><Icon size={15} className="mt-0.5 flex-shrink-0 text-primary" /><div><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm font-semibold text-foreground">{value}</p></div></div>; }
