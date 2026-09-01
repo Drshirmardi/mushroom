@@ -29,7 +29,7 @@
 - [x] `F04-T04` — admin doctor-service assignment با mode/duration/price
 - [x] `F04-T05` — admin working-hours، closures، leave و exceptions CRUD
 - [x] `F04-T06` — slot generation on demand و public doctor/service/availability query
-- [ ] `F04-T07` — permission/audit تغییر برنامه، تعرفه و publication
+- [x] `F04-T07` — permission/audit تغییر برنامه، تعرفه و publication
 - [ ] `F04-T08` — فرم‌های واقعی تنظیمات dashboard
 - [ ] `F04-T09` — doctor detail و انتخاب پزشک/خدمت در app
 - [ ] `F04-T10` — OpenAPI/client، seed development و حذف mock scope

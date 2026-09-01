@@ -217,3 +217,38 @@ Known limitations:
   - schedule-change audit writes remain owned by F04-T07; generated OpenAPI/client and patient frontend integration remain owned by later Phase 04 tasks.
 Next batch:
   - `F04-T07` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T07 — Phase 04 authorization and audit
+
+Task ID: F04-T07
+Completed at: 2026-09-01 18:36 +03:30
+Agent/Thread: Codex /root (coordinator review of `/root/f04_t07_audit_permissions` handoff)
+Batch ID: F04-B07
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/directory/admin-directory.controller.ts`
+  - `apps/api/src/modules/directory/admin-directory.service.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.controller.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.service.ts`
+  - `apps/api/test/phase-04-audit.integration.spec.ts`
+  - `apps/api/test/phase-04-authorization.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none; the existing append-only `AuditEvent` persistence is used transactionally
+Tests run:
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `pnpm exec vitest run test/phase-04-audit.integration.spec.ts test/phase-04-authorization.spec.ts --no-file-parallelism` → PASS (5 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - directory and scheduling creates, updates and deletes append the required action/subject audit event in their write transaction → PASS
+  - audit context retains actor, session, request and IP references; rejected writes do not leave an audit event → PASS
+  - price and publication/activity transitions are auditable while private profile fields and closure/exception labels remain absent from audit metadata → PASS
+  - ADMIN-only directory/scheduling mutations and PATIENT-only directory/availability reads are matrix-verified → PASS
+  - review confirmed no schema, migration, frontend, booking or Phase 05 implementation was introduced → PASS
+Known limitations:
+  - dashboard forms and schedule-readiness projection remain owned by F04-T08; OpenAPI/client synchronization remains owned by F04-T10.
+Next batch:
+  - `F04-T08` is eligible but unclaimed; do not start it without a new batch claim.
