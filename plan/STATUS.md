@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 20:00 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 20:01 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -83,7 +83,7 @@
 - `F04-T07` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T08` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T09` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
-- `F04-T10` — `IN_PROGRESS/PARTIAL`؛ OpenAPI/client synchronization در `F04-B10` پذیرفته شد؛ اکنون seed و mock-removal آن برای resume جداگانه کاملاً unblocked است
+- `F04-T10` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T11` تا `F04-T12` — `NOT_STARTED`
 
 ## batch در حال اجرا
@@ -94,7 +94,9 @@
 
 `F04-B09` برای patient doctor detail، انتخاب doctor/service و availability مشتق‌شده پس از review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
-`F04-T10` همچنان `IN_PROGRESS/PARTIAL` و unchecked است. پس از تکمیل `F04-T09`، dependency آن برای seed deterministic و حذف export/callerهای mock Phase 04 به‌طور کامل رفع شده است؛ فقط با claim مستقل می‌تواند resume شود.
+`F04-B10-R1` برای completion نهایی `F04-T10` پس از migration/seed smoke، contract drift و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
+
+`F04-T11` task بعدی واجد شرایط است، اما در این run claim یا start نشده است.
 
 ## Blockerها و تصمیم‌های باز
 

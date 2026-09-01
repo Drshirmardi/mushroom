@@ -354,3 +354,45 @@ Known limitations:
   - F04-T10 remains incomplete; its deterministic development seed and Phase 04 mock-export/caller removal are intentionally deferred to its separately claimed resume.
 Next batch:
   - F04-T10 remaining deliverables are fully unblocked but unclaimed; do not resume it without a new batch claim.
+
+## F04-T10 — Final deterministic seed and Phase 04 mock removal
+
+Task ID: F04-T10
+Completed at: 2026-09-01 19:54 +03:30
+Agent/Thread: Codex /root
+Batch ID: F04-B10-R1
+Reviewed by: Codex /root
+Prior accepted slice:
+  - `0f204ee170e021135175b9077d0b4455a6891722` synchronized the generated client under the controlled partial F04-T10 authorization.
+Changed files:
+  - `apps/api/prisma/seed.mjs`
+  - `apps/app/src/lib/data/catalog.ts`
+  - `apps/app/src/lib/types.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - `corepack pnpm --filter @sabz-zendegi/api prisma:migrate:deploy` against local PostgreSQL → PASS; 12 migrations present and no pending migration
+Tests run:
+  - `corepack pnpm --filter @sabz-zendegi/api prisma:seed` twice with `NODE_ENV=development` → PASS; idempotent local seed smoke
+  - local PostgreSQL count query → PASS (`2` doctors, `2` services, `2` offerings, `10` recurring rules, `2` visible doctors)
+  - `corepack pnpm --filter @sabz-zendegi/api-client build` → PASS (generated-source drift check)
+  - `corepack pnpm --filter @sabz-zendegi/api-client typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/openapi-contract.spec.ts test/patient-directory-availability.authorization.spec.ts test/patient-directory-availability.integration.spec.ts --no-file-parallelism` → PASS (3 files, 8 tests)
+  - `corepack pnpm --filter @sabz/app test` → PASS (6 files, 22 tests)
+  - `corepack pnpm --filter @sabz/app typecheck` → PASS
+  - `corepack pnpm --filter @sabz/dashboard test` → PASS (7 files, 30 tests)
+  - `corepack pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - deterministic, non-secret, idempotent directory data creates two active/published specialties, services, doctors and offerings plus ten active recurring schedule rules in the active clinic → PASS
+  - seed order creates doctor-specialty links before publishing doctors, satisfying the database publication dependency; an existing consent seed ordering issue is corrected by resolving the active clinic first → PASS
+  - the checked-in Phase 04 client still matches `openapi.json`; it was verified but not regenerated in this final slice → PASS
+  - obsolete `DOCTORS` catalog export, its dedicated mock type and all remaining callers are absent; unrelated product, medication, notification, appointment and future-scope mock data remain untouched → PASS
+  - review confirmed no dashboard/app implementation beyond mock cleanup, no contract-source regeneration, no Phase 05 booking, and no F04-T11 work was introduced → PASS
+Known limitations:
+  - Phase-level overlap/timezone/query-plan/browser verification remains solely owned by F04-T11.
+Next batch:
+  - `F04-T11` is eligible but unclaimed; do not start it without a new batch claim.

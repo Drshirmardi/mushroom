@@ -31,22 +31,6 @@ export type CartItem = {
 
 export type Task = { id: number; text: string; done: boolean };
 
-export type Doctor = {
-  id: string;
-  name: string;
-  specialty: string;
-  exp: string;
-  rating: number;
-  sessions: number;
-  img: string;
-  bio: string;
-  education: string[];
-  languages: string[];
-  hours: string;
-  clinic: string;
-  certs: string[];
-};
-
 export type Med = {
   id: string;
   name: string;
