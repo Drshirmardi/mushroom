@@ -431,3 +431,37 @@ Known limitations:
   - final Phase 04 evidence and appointment-readiness declaration remain exclusively owned by F04-T12.
 Next batch:
   - `F04-T12` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T12 — Phase evidence and appointment readiness
+
+Task ID: F04-T12
+Completed at: 2026-09-01 20:27 +03:30
+Agent/Thread: Codex /root
+Batch ID: F04-B12
+Reviewed by: Codex /root
+Changed files:
+  - `plan/STATUS.md`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/evidence.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - `corepack pnpm --filter @sabz-zendegi/api prisma:migrate:deploy` against local PostgreSQL → PASS; 12 migrations and no pending migration
+  - `corepack pnpm --filter @sabz-zendegi/api prisma:seed` with `NODE_ENV=development` → PASS; deterministic Phase 04 data available
+Tests run:
+  - `corepack pnpm --filter @sabz-zendegi/api test` → PASS (48 files, 260 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api-client build` and `typecheck` → PASS; generated-client drift check included
+  - `corepack pnpm --filter @sabz/app test` and `typecheck` → PASS (6 files, 22 tests)
+  - `corepack pnpm --filter @sabz/dashboard test` and `typecheck` → PASS (7 files, 30 tests)
+  - F04-T11 real-PostgreSQL overlap/timezone/query-plan and administrator-to-patient browser gate → accepted PASS
+  - Spec Kit requirements checklist → PASS (16/16); read-only analyze and converge review found no actionable Phase 04 gap and appended no task
+  - `git diff --check` → PASS
+Result:
+  - all four authoritative Phase 04 exit criteria are evidenced in `specs/002-adopt-phase-04/evidence.md` → PASS
+  - status, roadmap checklist, Spec Kit activation/task state, and immutable task evidence are synchronized after the review gate → PASS
+  - Phase 04 has no open implementation task and is `READY_FOR_REVIEW`; its independent phase review remains the only closure step → PASS
+  - Phase 05 appointment operations are ready to be considered after Phase 04 review, but were not claimed or started → PASS
+Known limitations:
+  - none within Phase 04; appointment creation, holds, calendars, queues, payments, and operations remain Phase 05 scope.
+Next batch:
+  - none; do not start Phase 05 until the Phase 04 independent review is accepted.

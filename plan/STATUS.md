@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 20:20 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 20:27 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
@@ -38,7 +38,7 @@
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
-- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `IN_PROGRESS`
+- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `READY_FOR_REVIEW`
 - [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
@@ -85,7 +85,7 @@
 - `F04-T09` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T10` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T11` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
-- `F04-T12` — `NOT_STARTED` و تنها task بعدی واجد شرایط
+- `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## batch در حال اجرا
 
@@ -99,7 +99,9 @@
 
 `F04-B11` پس از review coordinator و گیت واقعی PostgreSQL/API/browser بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
-`F04-T12` تنها task بعدی واجد شرایط است، اما در این run claim یا start نشده است.
+`F04-B12` پس از migration/seed smoke، full API suite، frontend/client verification، evidence reconciliation و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
+
+تمام taskهای Phase 04 پذیرفته شده‌اند و فاز `READY_FOR_REVIEW` است. `Phase 05` هنوز `NOT_STARTED` است؛ تا review مستقل Phase 04، هیچ batch یا task جدید claim نمی‌شود.
 
 ## Blockerها و تصمیم‌های باز
 
