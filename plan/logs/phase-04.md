@@ -67,3 +67,40 @@ Known limitations:
   - none; CRUD, availability derivation, API and frontend work remain explicitly owned by later Phase 04 tasks.
 Next batch:
   - `F04-T03` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T03 — administrator clinic and directory CRUD
+
+Task ID: F04-T03
+Completed at: 2026-09-01 15:00 +03:30
+Agent/Thread: Codex /root (coordinator review of `/root/f04_t03_directory_crud` handoff)
+Batch ID: F04-B03
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/common/auth/authorization.policy.ts`
+  - `apps/api/src/modules/directory/admin-directory.controller.ts`
+  - `apps/api/src/modules/directory/admin-directory.dto.ts`
+  - `apps/api/src/modules/directory/admin-directory.service.ts`
+  - `apps/api/src/modules/directory/admin-directory.module.ts`
+  - `apps/api/src/app.module.ts`
+  - `apps/api/test/admin-directory.authorization.spec.ts`
+  - `apps/api/test/admin-directory.integration.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none; the committed F04-T02 migration was applied to the local verification database before integration testing
+Tests run:
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `pnpm exec vitest run test/admin-directory.authorization.spec.ts test/admin-directory.integration.spec.ts --no-file-parallelism` → PASS (3 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - active-clinic `GET/PATCH /admin/clinic` and clinic-scoped CRUD for doctors, specialties and services are available through the existing API module architecture → PASS
+  - all 17 administrator routes require the new ADMIN-only `DIRECTORY_MANAGE` capability → PASS
+  - input validation, deterministic pagination/order, same-clinic specialty assignment, canonical name uniqueness, publication prerequisites, empty PATCH rejection and dependency-safe deletion follow the accepted contract → PASS
+  - doctor account linkage remains read-only, foreign-clinic records return `404`, and specialty replacement occurs atomically → PASS
+  - review confirmed no doctor-service, scheduling, patient query, audit-write, Phase 03 or Phase 05 work was introduced → PASS
+Known limitations:
+  - audit writes for directory changes, doctor-service CRUD, scheduling CRUD, patient directory/availability reads, OpenAPI/client synchronization and frontend integration remain owned by later Phase 04 tasks.
+Next batch:
+  - `F04-T04` is eligible but unclaimed; do not start it without a new batch claim.

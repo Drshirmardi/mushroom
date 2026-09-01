@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 02:54 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 15:00 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -76,16 +76,16 @@
 
 - `F04-T01` — `DONE`
 - `F04-T02` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
-- `F04-T03` — `NOT_STARTED`؛ واجد شرایط بعدی، اما claim نشده است
-- `F04-T04` تا `F04-T12` — `NOT_STARTED`
+- `F04-T03` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T04` — `NOT_STARTED`؛ واجد شرایط بعدی، اما claim نشده است
+- `F04-T05` تا `F04-T12` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
-batch فعالی وجود ندارد. `F04-B02` برای `F04-T02` پس از migration smoke واقعی، focused
-persistence verification و review coordinator بسته شد؛ شواهد:
-[`logs/phase-04.md`](logs/phase-04.md).
+batch فعالی وجود ندارد. `F04-B03` برای `F04-T03` پس از verification واقعی PostgreSQL و review
+coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
-`F04-T03` task بعدی واجد شرایط است، اما در این run claim یا شروع نشده است.
+`F04-T04` task بعدی واجد شرایط است، اما در این run claim یا شروع نشده است.
 
 ## Blockerها و تصمیم‌های باز
 

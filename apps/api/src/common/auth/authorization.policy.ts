@@ -28,6 +28,7 @@ export const PERMISSIONS = {
   ASSESSMENTS_MANAGE: 'assessments:manage',
   ASSESSMENTS_READ_SELF: 'assessments:read:self',
   ASSESSMENTS_WRITE_SELF: 'assessments:write:self',
+  DIRECTORY_MANAGE: 'directory:manage',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -63,6 +64,7 @@ const ROLE_PERMISSIONS: Readonly<Record<RoleCode, readonly Permission[]>> = {
     PERMISSIONS.PATIENTS_UPDATE,
     PERMISSIONS.PATIENTS_INTAKE_UPDATE,
     PERMISSIONS.ASSESSMENTS_MANAGE,
+    PERMISSIONS.DIRECTORY_MANAGE,
   ],
 };
 
