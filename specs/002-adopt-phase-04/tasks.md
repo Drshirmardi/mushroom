@@ -19,8 +19,8 @@ only the focused coverage needed for its acceptance risk, then runs the owning p
 IDs. No roadmap task is split, renamed, or reordered; completion state is synchronized only after
 the repository review gate passes.
 
-**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T04` are complete,
-no batch is active, and `F04-T05` is next eligible but unclaimed.
+**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T05` are complete,
+no batch is active, and `F04-T06` is next eligible but unclaimed.
 
 ## Format: `[Spec Kit ID] [Story?] [Authoritative roadmap ID] Description`
 
@@ -75,7 +75,7 @@ before the permission/audit and frontend tasks. Grouping them by story would reo
 
 - [x] T003 [US1] F04-T03: implement clinic-scoped administrator clinic, doctor, specialty, and service CRUD in `apps/api/src/modules/directory/`, register only the required module wiring in `apps/api/src/app.module.ts`, and add focused validation/authorization/integration coverage under `apps/api/test/`
 - [x] T004 [US1] F04-T04: implement administrator doctor-service assignment with the frozen mode, duration, buffer, integer price, currency, activity, and publication contract in `apps/api/src/modules/directory/`; add focused persistence and validation coverage under `apps/api/test/`
-- [ ] T005 [US1] F04-T05: implement administrator recurring working-hours, clinic-closure, doctor-leave, and doctor-exception management in `apps/api/src/modules/scheduling/`, wire the module in `apps/api/src/app.module.ts`, and add focused interval/overlap/timezone coverage under `apps/api/test/`
+- [x] T005 [US1] F04-T05: implement administrator recurring working-hours, clinic-closure, doctor-leave, and doctor-exception management in `apps/api/src/modules/scheduling/`, wire the module in `apps/api/src/app.module.ts`, and add focused interval/overlap/timezone coverage under `apps/api/test/`
 - [ ] T006 [US2] F04-T06: implement patient-visible clinic-scoped doctor, service, offering, and on-demand availability queries in `apps/api/src/modules/directory/` and `apps/api/src/modules/scheduling/`; derive transient candidates from current rules, closures, leave, exceptions, duration, buffer, timezone, activity, and publication state, with focused API/integration coverage under `apps/api/test/`
 - [ ] T007 [US1] F04-T07: enforce the established permission boundary and audit schedule, price, and publication changes through `apps/api/src/common/auth/`, Phase 04 audit adapters under `apps/api/src/modules/directory/` and `apps/api/src/modules/scheduling/`, and focused authorization/audit tests under `apps/api/test/`
 - [ ] T008 [US1] F04-T08: replace the actionless Phase 04 settings cards with real generated-client forms and truthful loading, empty, forbidden, validation, unavailable, and error states in `apps/dashboard/src/features/settings/settings-page.tsx`; add schedule-readiness and next-day projections to `apps/dashboard/src/features/dashboard/dashboard-page.tsx` only where supported by real data, with focused helpers/specs under `apps/dashboard/src/lib/`
@@ -125,7 +125,7 @@ This is the exact order in the authoritative phase file. That file does not defi
 `Depends on` fields or a batch map, so this adoption does not manufacture a hard dependency graph
 or parallel batch. Before any future execution, the coordinator must validate prerequisites,
 freeze contracts, assign non-overlapping write sets, and claim a batch in `plan/STATUS.md` under
-`plan/05-AGENT-WORKFLOW.md`. The current status identifies only `F04-T05` as next eligible.
+`plan/05-AGENT-WORKFLOW.md`. The current status identifies only `F04-T06` as next eligible.
 
 ### Practical Readiness Gates Already Implied by the Roadmap
 
@@ -149,7 +149,7 @@ workflow, without changing roadmap IDs.
 ### First Executable Unit
 
 When the user separately authorizes the next implementation batch, claim only the work permitted
-by `plan/STATUS.md`. At the current state that begins with `F04-T05`.
+by `plan/STATUS.md`. At the current state that begins with `F04-T06`.
 
 ### Incremental Delivery
 

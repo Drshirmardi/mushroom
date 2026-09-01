@@ -138,3 +138,41 @@ Known limitations:
   - schedule CRUD, patient-visible directory/availability, audit writes, OpenAPI/client synchronization and frontend integration remain owned by later Phase 04 tasks.
 Next batch:
   - `F04-T05` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T05 — administrator working hours, closures, leave and exceptions
+
+Task ID: F04-T05
+Completed at: 2026-09-01 16:08 +03:30
+Agent/Thread: Codex /root (coordinator review of `/root/f04_t05_schedule_crud` handoff)
+Batch ID: F04-B05
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/app.module.ts`
+  - `apps/api/src/common/auth/authorization.policy.ts`
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.controller.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.dto.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.module.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.service.ts`
+  - `apps/api/test/admin-scheduling.authorization.spec.ts`
+  - `apps/api/test/admin-scheduling.integration.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none; the committed F04-T02 migration and its PostgreSQL exclusion constraints were used for verification
+Tests run:
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `pnpm exec vitest run test/admin-scheduling.authorization.spec.ts test/admin-scheduling.integration.spec.ts --no-file-parallelism` → PASS (5 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - ADMIN-only `SCHEDULING_MANAGE` protects all rule, closure and doctor-exception mutation routes → PASS
+  - clinic-scoped CRUD, pagination/filtering and deterministic order cover recurring working hours, closures, leave and bounded exceptions → PASS
+  - local rule times, finite offset-aware UTC instants, exception mode semantics, active interval overlap and adjacent-interval behavior follow the frozen contract → PASS
+  - both application checks and actual PostgreSQL exclusion-constraint races return `AVAILABILITY_INTERVAL_OVERLAP` → PASS
+  - review confirmed no audit writes, patient availability queries, slot generation, migration, Phase 03 or Phase 05 implementation was introduced → PASS
+Known limitations:
+  - patient availability derivation remains owned by F04-T06; schedule-change audit events remain owned by F04-T07.
+Next batch:
+  - `F04-T06` is eligible but unclaimed; do not start it without a new batch claim.
