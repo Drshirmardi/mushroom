@@ -19,7 +19,7 @@ only the focused coverage needed for its acceptance risk, then runs the owning p
 IDs. No roadmap task is split, renamed, or reordered; completion state is synchronized only after
 the repository review gate passes.
 
-**Activation boundary**: Phase 04 is `READY_FOR_REVIEW`; `F04-T01` through `F04-T12` are complete.
+**Activation boundary**: Phase 04 is `DONE (CLOSED)`; `F04-T01` through `F04-T12` are complete.
 The explicitly authorized OpenAPI/client synchronization prerequisite slice of `F04-T10` and its
 later deterministic seed/mock-removal completion have both passed review.
 
@@ -126,7 +126,7 @@ This is the exact order in the authoritative phase file. That file does not defi
 `Depends on` fields or a batch map, so this adoption does not manufacture a hard dependency graph
 or parallel batch. Before any future execution, the coordinator must validate prerequisites,
 freeze contracts, assign non-overlapping write sets, and claim a batch in `plan/STATUS.md` under
-`plan/05-AGENT-WORKFLOW.md`. The current status identifies only `F04-T08` as next eligible.
+`plan/05-AGENT-WORKFLOW.md`. Phase 04 is closed; no further Phase 04 task is eligible.
 
 ### Practical Readiness Gates Already Implied by the Roadmap
 
@@ -150,7 +150,7 @@ workflow, without changing roadmap IDs.
 ### First Executable Unit
 
 When the user separately authorizes the next implementation batch, claim only the work permitted
-by `plan/STATUS.md`. At the current state that begins with `F04-T08`.
+by `plan/STATUS.md`. Phase 04 is complete and does not authorize further implementation.
 
 ### Incremental Delivery
 

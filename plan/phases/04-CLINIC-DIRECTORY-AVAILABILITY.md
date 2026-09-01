@@ -1,6 +1,6 @@
 # Phase 04 — Clinic, Doctors, Services & Availability
 
-- وضعیت نهایی: `READY_FOR_REVIEW`
+- وضعیت نهایی: `DONE (CLOSED)`
 - Milestone: `B — کلینیک قابل رزرو`
 - پیش‌نیاز: `Phase 02 DONE`؛ قرارداد eligibility از `Phase 03`
 - خروجی اصلی: ادمین بدون seed یا تغییر DB پزشک، خدمت، تعرفه و ظرفیت رزرو را مدیریت می‌کند.

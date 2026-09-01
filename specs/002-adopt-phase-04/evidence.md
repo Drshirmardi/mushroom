@@ -2,8 +2,9 @@
 
 **Recorded**: 2026-09-01 20:27 +03:30
 **Authoritative source**: `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
-**Phase state**: `READY_FOR_REVIEW` — all twelve Phase 04 tasks are accepted; Phase 05 remains
-`NOT_STARTED` and no appointment was created during Phase 04 verification.
+**Phase state**: `DONE (CLOSED)` — all twelve Phase 04 tasks and the independent closure review
+are accepted. Phase 05 remains `NOT_STARTED`, and no appointment was created during Phase 04
+verification.
 
 ## Roadmap exit criteria
 
@@ -34,3 +35,12 @@ Phase 04 supplies the truthful prerequisites for Phase 05: active/published dire
 commercial settings, current derived availability, generated client contracts, audit/authorization,
 and deterministic local data. Phase 04 does **not** create an appointment, a hold, a queue item,
 or a payment. Those capabilities remain exclusively owned by Phase 05.
+
+## Independent closure review
+
+The independent review rechecked the authoritative roadmap, all twelve task entries, Phase 04
+log/evidence, Spec Kit state, current source paths, local migration/seed state, generated-client
+drift, typechecks, mock/appointment-boundary searches, and final verification records. No unresolved
+blocker, partial task state, stale Phase 04 state, missing evidence, contract/client drift,
+migration/seed issue, or reachable Phase 04 mock remained. Phase 04 is closed without starting or
+claiming Phase 05.

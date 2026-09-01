@@ -4,7 +4,8 @@
 
 **Created**: 2026-09-01
 
-**Status**: Adopted from authoritative roadmap; implementation not started
+**Status**: Phase 04 closed after independent review on 2026-09-01; the authoritative
+roadmap remains the source of truth.
 
 **Input**: User description: "Adopt the existing Phase 04 from plan/ into Spec Kit without
 regenerating the roadmap, changing implementation code, or claiming F04-T01."

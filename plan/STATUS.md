@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 20:27 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 20:32 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
-- فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
+- وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
@@ -38,7 +38,7 @@
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
-- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `READY_FOR_REVIEW`
+- [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
@@ -101,7 +101,9 @@
 
 `F04-B12` پس از migration/seed smoke، full API suite، frontend/client verification، evidence reconciliation و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
 
-تمام taskهای Phase 04 پذیرفته شده‌اند و فاز `READY_FOR_REVIEW` است. `Phase 05` هنوز `NOT_STARTED` است؛ تا review مستقل Phase 04، هیچ batch یا task جدید claim نمی‌شود.
+`F04-CLOSE` با independent review بسته شد: تمام taskها، migration/seed، OpenAPI/generated client، تست‌های نهایی، browser evidence، mock boundary و Spec Kit consistency پذیرفته شدند؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
+
+`Phase 04` اکنون `DONE (CLOSED)` است. `Phase 05` phase فعال بعدی است اما `NOT_STARTED` می‌ماند؛ هیچ batch یا task از آن در این run claim یا start نشده است.
 
 ## Blockerها و تصمیم‌های باز
 

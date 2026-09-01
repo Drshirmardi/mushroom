@@ -465,3 +465,24 @@ Known limitations:
   - none within Phase 04; appointment creation, holds, calendars, queues, payments, and operations remain Phase 05 scope.
 Next batch:
   - none; do not start Phase 05 until the Phase 04 independent review is accepted.
+
+## F04-CLOSE — Independent Phase 04 closure review
+
+Completed at: 2026-09-01 20:32 +03:30
+Reviewed by: Codex /root
+Scope:
+  - independent review of the authoritative roadmap, F04-T01 through F04-T12 acceptance/evidence,
+    Spec Kit artifacts, current implementation paths, migration/seed state, generated-client
+    contract drift, mock boundary, final verification, and Phase 05 boundary
+Checks:
+  - all twelve roadmap checkboxes and all twelve Spec Kit task checkboxes → PASS
+  - F04 task evidence entries, final phase evidence, and `plan/STATUS.md` state → PASS
+  - local PostgreSQL migration deploy and deterministic seed → PASS; 12 migrations, none pending
+  - API, generated-client, app, and dashboard typechecks; generated-client drift build → PASS
+  - accepted full API suite (48 files, 260 tests), focused frontend suites, and F04-T11 browser/
+    PostgreSQL/query-plan evidence → PASS
+  - no reachable Phase 04 mock export/caller, no stale Phase 04 readiness state, and no Phase 05
+    appointment create/hold/payment implementation introduced by this phase → PASS
+Result:
+  - no blocker or incomplete F04 deliverable found; Phase 04 is `DONE (CLOSED)` → PASS
+  - Phase 05 is the next roadmap phase but remains `NOT_STARTED` and unclaimed → PASS

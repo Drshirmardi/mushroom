@@ -11,7 +11,9 @@ it. Delivery, when separately claimed under `plan/`, will follow the twelve exis
 their original order: freeze the contract, add versioned persistence, expose administrator and
 patient capabilities through the existing modular-monolith and generated-client architecture,
 replace only Phase 04 mocks, and close with risk-based verification and evidence. This planning
-run changes documentation only and leaves `F04-T01` unclaimed.
+run originally changed documentation only and left `F04-T01` unclaimed. The subsequent Phase 04
+delivery is closed; its acceptance evidence is recorded in `plan/logs/phase-04.md` and
+`specs/002-adopt-phase-04/evidence.md`.
 
 ## Technical Context
 
@@ -149,7 +151,7 @@ paths shown for missing modules are planned roadmap destinations, not files crea
 12. **`F04-T12`** records evidence and assesses readiness for appointment operations.
 
 The source roadmap supplies no per-task `Depends on` declarations or Phase 04 batch map. This plan
-therefore preserves the listed sequence without inventing parallel eligibility. At the current
-repository state, only `F04-T01` is identified as next eligible, and it remains unclaimed.
+therefore preserves the listed sequence without inventing parallel eligibility. All twelve Phase 04
+tasks are complete; their final execution state is controlled by `plan/STATUS.md`.
 
 No complexity exceptions are required.
