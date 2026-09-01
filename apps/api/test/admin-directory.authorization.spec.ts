@@ -32,6 +32,11 @@ describe('Admin directory authorization contract', () => {
     AdminDirectoryController.prototype.getService,
     AdminDirectoryController.prototype.updateService,
     AdminDirectoryController.prototype.deleteService,
+    AdminDirectoryController.prototype.listDoctorServices,
+    AdminDirectoryController.prototype.createDoctorService,
+    AdminDirectoryController.prototype.getDoctorService,
+    AdminDirectoryController.prototype.updateDoctorService,
+    AdminDirectoryController.prototype.deleteDoctorService,
   ];
 
   it('maps DIRECTORY_MANAGE only to ADMIN and protects every route', () => {

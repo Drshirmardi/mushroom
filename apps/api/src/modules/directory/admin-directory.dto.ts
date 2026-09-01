@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ArrayMaxSize, IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUrl, IsUUID, Max, MaxLength, Min } from 'class-validator';
 
 const publicationStatuses = ['UNPUBLISHED', 'PUBLISHED'] as const;
+const visitModes = ['IN_PERSON', 'ONLINE'] as const;
 
 export class DirectoryListQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(160)
@@ -20,6 +21,12 @@ export class DirectoryListQueryDto {
 export class DoctorListQueryDto extends DirectoryListQueryDto {
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4')
   specialtyId?: string;
+}
+
+export class DoctorServiceListQueryDto extends DirectoryListQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') doctorId?: string;
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') serviceId?: string;
+  @ApiPropertyOptional({ enum: visitModes }) @IsOptional() @IsIn(visitModes) visitMode?: (typeof visitModes)[number];
 }
 
 export class UpdateClinicDto {
@@ -87,10 +94,37 @@ export class UpdateDoctorDto {
   @ApiPropertyOptional({ enum: publicationStatuses }) @IsOptional() @IsIn(publicationStatuses) publicationStatus?: (typeof publicationStatuses)[number];
 }
 
+export class CreateDoctorServiceDto {
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') doctorId!: string;
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') serviceId!: string;
+  @ApiProperty({ enum: visitModes }) @IsOptional() visitMode!: (typeof visitModes)[number];
+  @ApiProperty({ minimum: 5, maximum: 480 }) @IsOptional() @Type(() => Number) durationMinutes!: number;
+  @ApiPropertyOptional({ minimum: 0, maximum: 240, default: 0 }) @IsOptional() @Type(() => Number) bufferMinutes?: number;
+  @ApiProperty({ minimum: 0, maximum: 2_147_483_647 }) @IsOptional() @Type(() => Number) priceAmount!: number;
+  @ApiPropertyOptional({ enum: ['IRR'], default: 'IRR' }) @IsOptional() currency?: 'IRR';
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
+  @ApiPropertyOptional({ enum: publicationStatuses }) @IsOptional() @IsIn(publicationStatuses) publicationStatus?: (typeof publicationStatuses)[number];
+}
+
+export class UpdateDoctorServiceDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') doctorId?: string;
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') serviceId?: string;
+  @ApiPropertyOptional({ enum: visitModes }) @IsOptional() visitMode?: (typeof visitModes)[number];
+  @ApiPropertyOptional({ minimum: 5, maximum: 480 }) @IsOptional() @Type(() => Number) durationMinutes?: number;
+  @ApiPropertyOptional({ minimum: 0, maximum: 240 }) @IsOptional() @Type(() => Number) bufferMinutes?: number;
+  @ApiPropertyOptional({ minimum: 0, maximum: 2_147_483_647 }) @IsOptional() @Type(() => Number) priceAmount?: number;
+  @ApiPropertyOptional({ enum: ['IRR'] }) @IsOptional() currency?: 'IRR';
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
+  @ApiPropertyOptional({ enum: publicationStatuses }) @IsOptional() @IsIn(publicationStatuses) publicationStatus?: (typeof publicationStatuses)[number];
+}
+
 export class ClinicResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty() name!: string; @ApiProperty() timeZone!: string; @ApiProperty({ enum: ['ACTIVE', 'INACTIVE'] }) status!: string; @ApiProperty({ format: 'date-time' }) createdAt!: Date; @ApiProperty({ format: 'date-time' }) updatedAt!: Date; }
 export class SpecialtyResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty() name!: string; @ApiPropertyOptional({ nullable: true }) description!: string | null; @ApiProperty() isActive!: boolean; @ApiProperty({ enum: publicationStatuses }) publicationStatus!: string; @ApiPropertyOptional({ nullable: true, format: 'date-time' }) publishedAt!: Date | null; @ApiProperty({ format: 'date-time' }) createdAt!: Date; @ApiProperty({ format: 'date-time' }) updatedAt!: Date; }
 export class ServiceResponseDto extends SpecialtyResponseDto {}
 export class DoctorSpecialtyResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty() name!: string; }
 export class DoctorResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiPropertyOptional({ nullable: true, format: 'uuid' }) userId!: string | null; @ApiProperty() displayName!: string; @ApiPropertyOptional({ nullable: true }) biography!: string | null; @ApiPropertyOptional({ nullable: true }) yearsExperience!: number | null; @ApiPropertyOptional({ nullable: true }) profileImageUrl!: string | null; @ApiProperty({ type: [String] }) languages!: string[]; @ApiProperty({ type: [String] }) education!: string[]; @ApiProperty({ type: [String] }) certifications!: string[]; @ApiProperty({ type: DoctorSpecialtyResponseDto, isArray: true }) specialties!: DoctorSpecialtyResponseDto[]; @ApiProperty() isActive!: boolean; @ApiProperty({ enum: publicationStatuses }) publicationStatus!: string; @ApiPropertyOptional({ nullable: true, format: 'date-time' }) publishedAt!: Date | null; @ApiProperty({ format: 'date-time' }) createdAt!: Date; @ApiProperty({ format: 'date-time' }) updatedAt!: Date; }
+export class DoctorServiceParentResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty() name!: string; }
+export class DoctorServiceResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty({ type: DoctorServiceParentResponseDto }) doctor!: DoctorServiceParentResponseDto; @ApiProperty({ type: DoctorServiceParentResponseDto }) service!: DoctorServiceParentResponseDto; @ApiProperty({ enum: visitModes }) visitMode!: string; @ApiProperty() durationMinutes!: number; @ApiProperty() bufferMinutes!: number; @ApiProperty() priceAmount!: number; @ApiProperty({ enum: ['IRR'] }) currency!: string; @ApiProperty() isActive!: boolean; @ApiProperty({ enum: publicationStatuses }) publicationStatus!: string; @ApiPropertyOptional({ nullable: true, format: 'date-time' }) publishedAt!: Date | null; @ApiProperty({ format: 'date-time' }) createdAt!: Date; @ApiProperty({ format: 'date-time' }) updatedAt!: Date; }
 export class DirectoryPageResponseDto { @ApiProperty({ type: SpecialtyResponseDto, isArray: true }) items!: SpecialtyResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }
 export class DoctorPageResponseDto { @ApiProperty({ type: DoctorResponseDto, isArray: true }) items!: DoctorResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }
+export class DoctorServicePageResponseDto { @ApiProperty({ type: DoctorServiceResponseDto, isArray: true }) items!: DoctorServiceResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }

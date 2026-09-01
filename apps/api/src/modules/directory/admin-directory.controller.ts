@@ -5,7 +5,7 @@ import { RequirePermissions } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../common/errors/api-error-response.decorator';
 import { AdminDirectoryService } from './admin-directory.service';
-import { ClinicResponseDto, CreateDoctorDto, CreateServiceDto, CreateSpecialtyDto, DirectoryListQueryDto, DirectoryPageResponseDto, DoctorListQueryDto, DoctorPageResponseDto, DoctorResponseDto, ServiceResponseDto, SpecialtyResponseDto, UpdateClinicDto, UpdateDoctorDto, UpdateServiceDto, UpdateSpecialtyDto } from './admin-directory.dto';
+import { ClinicResponseDto, CreateDoctorDto, CreateDoctorServiceDto, CreateServiceDto, CreateSpecialtyDto, DirectoryListQueryDto, DirectoryPageResponseDto, DoctorListQueryDto, DoctorPageResponseDto, DoctorResponseDto, DoctorServiceListQueryDto, DoctorServicePageResponseDto, DoctorServiceResponseDto, ServiceResponseDto, SpecialtyResponseDto, UpdateClinicDto, UpdateDoctorDto, UpdateDoctorServiceDto, UpdateServiceDto, UpdateSpecialtyDto } from './admin-directory.dto';
 
 @ApiTags('Admin Directory')
 @ApiBearerAuth('bearerAuth')
@@ -51,4 +51,15 @@ export class AdminDirectoryController {
   updateService(@Param('serviceId', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateServiceDto) { return this.directory.updateService(id, body); }
   @Delete('services/:serviceId') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ operationId: 'adminServicesDelete', summary: 'Delete an unused clinic service' }) @ApiParam({ name: 'serviceId', format: 'uuid' }) @ApiNoContentResponse()
   deleteService(@Param('serviceId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.directory.deleteService(id); }
+
+  @Get('doctor-services') @ApiOperation({ operationId: 'adminDoctorServicesList', summary: 'List clinic doctor services' }) @ApiOkResponse({ type: DoctorServicePageResponseDto })
+  listDoctorServices(@Query() query: DoctorServiceListQueryDto) { return this.directory.listDoctorServices(query); }
+  @Post('doctor-services') @ApiOperation({ operationId: 'adminDoctorServicesCreate', summary: 'Create a doctor service' }) @ApiCreatedResponse({ type: DoctorServiceResponseDto })
+  createDoctorService(@Body() body: CreateDoctorServiceDto) { return this.directory.createDoctorService(body); }
+  @Get('doctor-services/:doctorServiceId') @ApiOperation({ operationId: 'adminDoctorServicesGet', summary: 'Get a doctor service' }) @ApiParam({ name: 'doctorServiceId', format: 'uuid' }) @ApiOkResponse({ type: DoctorServiceResponseDto })
+  getDoctorService(@Param('doctorServiceId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.directory.getDoctorService(id); }
+  @Patch('doctor-services/:doctorServiceId') @ApiOperation({ operationId: 'adminDoctorServicesUpdate', summary: 'Update a doctor service' }) @ApiParam({ name: 'doctorServiceId', format: 'uuid' }) @ApiOkResponse({ type: DoctorServiceResponseDto })
+  updateDoctorService(@Param('doctorServiceId', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateDoctorServiceDto) { return this.directory.updateDoctorService(id, body); }
+  @Delete('doctor-services/:doctorServiceId') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ operationId: 'adminDoctorServicesDelete', summary: 'Delete an unused doctor service' }) @ApiParam({ name: 'doctorServiceId', format: 'uuid' }) @ApiNoContentResponse()
+  deleteDoctorService(@Param('doctorServiceId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.directory.deleteDoctorService(id); }
 }

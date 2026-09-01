@@ -104,3 +104,37 @@ Known limitations:
   - audit writes for directory changes, doctor-service CRUD, scheduling CRUD, patient directory/availability reads, OpenAPI/client synchronization and frontend integration remain owned by later Phase 04 tasks.
 Next batch:
   - `F04-T04` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T04 — administrator doctor-service assignment
+
+Task ID: F04-T04
+Completed at: 2026-09-01 15:28 +03:30
+Agent/Thread: Codex /root (coordinator review of `/root/f04_t04_doctor_services` handoff)
+Batch ID: F04-B04
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/modules/directory/admin-directory.controller.ts`
+  - `apps/api/src/modules/directory/admin-directory.dto.ts`
+  - `apps/api/src/modules/directory/admin-directory.service.ts`
+  - `apps/api/test/admin-directory.authorization.spec.ts`
+  - `apps/api/test/admin-doctor-services.integration.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none; the committed F04-T02 migration was used by the local PostgreSQL verification database
+Tests run:
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `pnpm exec vitest run test/admin-directory.authorization.spec.ts test/admin-doctor-services.integration.spec.ts --no-file-parallelism` → PASS (3 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - clinic-scoped `GET/POST /admin/doctor-services` and `GET/PATCH/DELETE /admin/doctor-services/{doctorServiceId}` provide offering administration with deterministic listing and pagination → PASS
+  - the existing ADMIN-only `DIRECTORY_MANAGE` capability protects all doctor-service routes → PASS
+  - mode, duration, buffer, integer IRR price, same-clinic parent references, tuple uniqueness, publication prerequisites, lifecycle timestamps and stable contract errors are enforced → PASS
+  - review confirmed no scheduling, patient directory, audit-write, Phase 03 or Phase 05 implementation was introduced → PASS
+Known limitations:
+  - schedule CRUD, patient-visible directory/availability, audit writes, OpenAPI/client synchronization and frontend integration remain owned by later Phase 04 tasks.
+Next batch:
+  - `F04-T05` is eligible but unclaimed; do not start it without a new batch claim.

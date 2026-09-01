@@ -26,7 +26,7 @@
 - [x] `F04-T01` — قرارداد فیلد پزشک/خدمت، نوع ویزیت، مدت، فاصله و تعرفه
 - [x] `F04-T02` — migration directory، doctor-service و availability
 - [x] `F04-T03` — admin clinic/doctor/specialty/service CRUD
-- [ ] `F04-T04` — admin doctor-service assignment با mode/duration/price
+- [x] `F04-T04` — admin doctor-service assignment با mode/duration/price
 - [ ] `F04-T05` — admin working-hours، closures، leave و exceptions CRUD
 - [ ] `F04-T06` — slot generation on demand و public doctor/service/availability query
 - [ ] `F04-T07` — permission/audit تغییر برنامه، تعرفه و publication
