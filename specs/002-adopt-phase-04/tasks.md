@@ -19,8 +19,10 @@ only the focused coverage needed for its acceptance risk, then runs the owning p
 IDs. No roadmap task is split, renamed, or reordered; completion state is synchronized only after
 the repository review gate passes.
 
-**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T07` are complete,
-no batch is active, and `F04-T08` is next eligible but unclaimed.
+**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T07` are complete.
+The explicitly authorized OpenAPI/client synchronization prerequisite slice of `F04-T10` has
+passed review, unblocking `F04-T08` without starting it. `F04-T10` remains unchecked and
+`IN_PROGRESS/PARTIAL` until its seed and mock-removal deliverables run after `F04-T09`.
 
 ## Format: `[Spec Kit ID] [Story?] [Authoritative roadmap ID] Description`
 

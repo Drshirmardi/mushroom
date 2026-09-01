@@ -252,3 +252,33 @@ Known limitations:
   - dashboard forms and schedule-readiness projection remain owned by F04-T08; OpenAPI/client synchronization remains owned by F04-T10.
 Next batch:
   - `F04-T08` is eligible but unclaimed; do not start it without a new batch claim.
+## F04-T10 — Controlled partial generated-client prerequisite
+
+Task ID: F04-T10 (partial; not DONE)
+Completed at: 2026-09-01 19:17 +03:30
+Agent/Thread: Codex /root
+Batch ID: F04-B10
+Reviewed by: Codex /root
+Changed files:
+  - `packages/api-client/openapi.json`
+  - `packages/api-client/src/schema.generated.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none
+Tests run:
+  - `corepack pnpm generate:api-client` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/openapi-contract.spec.ts --no-file-parallelism` → PASS (5 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api-client typecheck` → PASS (generated-source drift check included)
+  - `git diff --check` → PASS
+Result:
+  - runtime Phase 04 directory and scheduling routes are exported into the checked-in OpenAPI contract and typed client → PASS
+  - the prerequisite was necessary because F04-T08/F04-T09 must consume generated client paths and may not hand-write those contract types → PASS
+  - F04-T08 is unblocked but unclaimed; no dashboard or app implementation was started → PASS
+Remaining F04-T10 deliverables:
+  - add deterministic non-secret directory/schedule development seed data after F04-T09
+  - remove only Phase 04 doctor/service/availability mock exports and callers after F04-T09
+  - keep F04-T10 unchecked and resume it only after F04-T09; this prerequisite commit is not its final completion commit

@@ -36,6 +36,13 @@
 - [ ] `F04-T11` — overlap، timezone، query plan و browser E2E
 - [ ] `F04-T12` — evidence و readiness برای appointment
 
+> **Execution adjustment (2026-09-01):** `F04-T08` and `F04-T09` require the generated Phase 04
+> client but cannot create it themselves. With explicit owner approval, the OpenAPI/client
+> synchronization portion of `F04-T10` may execute first as a controlled prerequisite slice.
+> `F04-T10` remains incomplete until its later deterministic seed-data and Phase 04 mock-removal
+> deliverables are completed after `F04-T09`; this adjustment does not move dashboard or app
+> implementation into another task.
+
 ## قواعد دامنه
 
 - MVP یک clinic فعال دارد، اما رکوردهای دامنه `clinicId` صریح دارند.

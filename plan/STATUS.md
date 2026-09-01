@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 18:36 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 19:17 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -81,14 +81,16 @@
 - `F04-T05` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T06` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T07` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
-- `F04-T08` — `NOT_STARTED` و next eligible (unclaimed)
-- `F04-T09` تا `F04-T12` — `NOT_STARTED`
+- `F04-T08` — `NOT_STARTED` و next eligible (unclaimed)؛ generated-client prerequisite review شد اما dashboard work شروع نشده است
+- `F04-T09` — `NOT_STARTED`؛ پس از `F04-T08` در roadmap
+- `F04-T10` — `IN_PROGRESS/PARTIAL`؛ OpenAPI/client synchronization در `F04-B10` پذیرفته شد، seed و mock-removal پس از `F04-T09` باقی مانده است
+- `F04-T11` تا `F04-T12` — `NOT_STARTED`
 
 ## batch در حال اجرا
 
-batch فعالی وجود ندارد. `F04-B07` برای `F04-T07` پس از verification واقعی PostgreSQL و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
+`F04-B08` بدون تغییر implementation بسته شد: generated client مانع `F04-T08` و `F04-T09` بود. با authorization صریح مالک، `F04-B10` فقط prerequisite slice از `F04-T10` را اجرا و review کرد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
-`F04-T08` task بعدی واجد شرایط است، اما در این run claim یا start نشده است.
+`F04-T08` اکنون next eligible و unclaimed است، اما در این run شروع نشده است. `F04-T10` همچنان `IN_PROGRESS/PARTIAL` است و فقط پس از `F04-T09` برای seed deterministic و حذف mockهای Phase 04 resume می‌شود.
 
 ## Blockerها و تصمیم‌های باز
 
