@@ -176,3 +176,44 @@ Known limitations:
   - patient availability derivation remains owned by F04-T06; schedule-change audit events remain owned by F04-T07.
 Next batch:
   - `F04-T06` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T06 — patient directory and on-demand availability
+
+Task ID: F04-T06
+Completed at: 2026-09-01 18:22 +03:30
+Agent/Thread: Codex /root (coordinator review of `/root/f04_t06_patient_availability` handoff)
+Batch ID: F04-B06
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/common/auth/authorization.policy.ts`
+  - `apps/api/src/common/errors/api-error.ts`
+  - `apps/api/src/modules/directory/admin-directory.module.ts`
+  - `apps/api/src/modules/directory/patient-directory.controller.ts`
+  - `apps/api/src/modules/directory/patient-directory.dto.ts`
+  - `apps/api/src/modules/directory/patient-directory.service.ts`
+  - `apps/api/src/modules/scheduling/admin-scheduling.module.ts`
+  - `apps/api/src/modules/scheduling/patient-availability.controller.ts`
+  - `apps/api/src/modules/scheduling/patient-availability.dto.ts`
+  - `apps/api/src/modules/scheduling/patient-availability.service.ts`
+  - `apps/api/test/patient-directory-availability.authorization.spec.ts`
+  - `apps/api/test/patient-directory-availability.integration.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none; the committed F04-T02 schema and F04-T05 schedule data were used by the local PostgreSQL verification database
+Tests run:
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `pnpm exec vitest run test/patient-directory-availability.authorization.spec.ts test/patient-directory-availability.integration.spec.ts --no-file-parallelism` → PASS (3 tests)
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - PATIENT-only clinic-derived directory reads expose only visible doctors, services and offerings without user or administrator fields → PASS
+  - transient availability respects active/published parents, recurring rules, AVAILABLE/UNAVAILABLE exceptions, closures, duration, buffer, clinic timezone, deterministic ordering and pagination → PASS
+  - invalid date ranges return `AVAILABILITY_QUERY_INVALID`; foreign or hidden offerings return the stable not-found response → PASS
+  - review added and verified a multi-day AVAILABLE-exception regression so each candidate is emitted exactly once → PASS
+  - review confirmed no audit writes, booking/hold logic, persisted slot model, migration, frontend or Phase 05 implementation was introduced → PASS
+Known limitations:
+  - schedule-change audit writes remain owned by F04-T07; generated OpenAPI/client and patient frontend integration remain owned by later Phase 04 tasks.
+Next batch:
+  - `F04-T07` is eligible but unclaimed; do not start it without a new batch claim.
