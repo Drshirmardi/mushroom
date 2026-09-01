@@ -282,3 +282,38 @@ Remaining F04-T10 deliverables:
   - add deterministic non-secret directory/schedule development seed data after F04-T09
   - remove only Phase 04 doctor/service/availability mock exports and callers after F04-T09
   - keep F04-T10 unchecked and resume it only after F04-T09; this prerequisite commit is not its final completion commit
+## F04-T08 — Real dashboard settings and schedule readiness
+
+Task ID: F04-T08
+Completed at: 2026-09-01 19:36 +03:30
+Agent/Thread: Codex /root
+Batch ID: F04-B08-R1
+Reviewed by: Codex /root
+Changed files:
+  - `apps/dashboard/src/features/settings/settings-page.tsx`
+  - `apps/dashboard/src/features/dashboard/dashboard-page.tsx`
+  - `apps/dashboard/src/lib/directory-settings-api.ts`
+  - `apps/dashboard/src/lib/directory-settings-api.spec.ts`
+  - `apps/dashboard/src/lib/dashboard-schedule-readiness.ts`
+  - `apps/dashboard/src/lib/dashboard-schedule-readiness.spec.ts`
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - none
+Tests run:
+  - `corepack pnpm --filter @sabz-zendegi/api-client build` → PASS (local generated declarations refreshed for dashboard compilation)
+  - `corepack pnpm --filter @sabz/dashboard test` → PASS (7 files, 30 tests)
+  - `corepack pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - dashboard settings loads the clinic, directory, commercial and scheduling records through the generated client; empty, forbidden, unavailable and error states are distinct → PASS
+  - real forms update clinic data and create doctor, specialty, service, offering/price, working-hours, closure and doctor-unavailability records; API validation and permission failures are surfaced truthfully → PASS
+  - Dashboard Home projects published offerings, active working rules and next-day rule count from persisted records only; it does not invent slots, appointments or capacity → PASS
+  - review confirmed no API/client generation, app mock removal, seed work, Phase 04-T09, or final F04-T10 completion was introduced → PASS
+Known limitations:
+  - offering publication/activity edits are available through the established API but richer edit/delete controls are not required for this initial settings form slice.
+  - F04-T10 remains `IN_PROGRESS/PARTIAL`; deterministic seed and mock-removal work must resume only after F04-T09.
+Next batch:
+  - `F04-T09` is eligible but unclaimed; do not start it without a new batch claim.

@@ -14,10 +14,13 @@ import {
   loadDashboardAssessmentSummary,
   type DashboardAssessmentSummaryState,
 } from "@/lib/dashboard-assessment-summary";
+import { loadDirectorySettings, type DirectorySettingsState } from "@/lib/directory-settings-api";
+import { projectDashboardScheduleReadiness } from "@/lib/dashboard-schedule-readiness";
 import { p } from "@/lib/utils";
 
 type SummaryViewState = DashboardOnboardingSummaryState | { status: "loading" };
 type AssessmentViewState = DashboardAssessmentSummaryState | { status: "loading" };
+type ScheduleViewState = DirectorySettingsState | { status: "loading" };
 
 function formatAsOf(asOf: string, timeZone: string) {
   return new Intl.DateTimeFormat("fa-IR", {
@@ -31,16 +34,20 @@ export function DashboardPage() {
   const { authentication } = useDashboardSession();
   const [state, setState] = useState<SummaryViewState>({ status: "loading" });
   const [assessmentState, setAssessmentState] = useState<AssessmentViewState>({ status: "loading" });
+  const [scheduleState, setScheduleState] = useState<ScheduleViewState>({ status: "loading" });
 
   const refresh = useCallback(async () => {
     setState({ status: "loading" });
     setAssessmentState({ status: "loading" });
-    const [onboarding, assessment] = await Promise.all([
+    setScheduleState({ status: "loading" });
+    const [onboarding, assessment, schedule] = await Promise.all([
       loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
       loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
+      loadDirectorySettings(apiClient, authentication.accessToken),
     ]);
     setState(onboarding);
     setAssessmentState(assessment);
+    setScheduleState(schedule);
   }, [authentication.accessToken]);
 
   useEffect(() => {
@@ -48,8 +55,9 @@ export function DashboardPage() {
     void Promise.all([
       loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
       loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
+      loadDirectorySettings(apiClient, authentication.accessToken),
     ]).then(
-      ([nextState, nextAssessmentState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); } },
+      ([nextState, nextAssessmentState, nextScheduleState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); setScheduleState(nextScheduleState); } },
     );
     return () => { cancelled = true; };
   }, [authentication.accessToken]);
@@ -147,6 +155,15 @@ export function DashboardPage() {
           )}
         </section>
       )}
+
+      <section className="space-y-4">
+        <div><h2 className="text-lg font-bold text-foreground">آمادگی برنامهٔ کاری</h2><p className="mt-1 text-sm text-muted-foreground">فقط offeringها و قواعد کاری ذخیره‌شده نمایش داده می‌شوند؛ ظرفیت یا نوبت ساختگی نیست.</p></div>
+        {scheduleState.status === "loading" && <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground" role="status">در حال دریافت برنامهٔ کاری…</div>}
+        {scheduleState.status === "unauthorized" && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900" role="alert">دسترسی به برنامهٔ کاری مجاز نیست.</div>}
+        {scheduleState.status === "unavailable" && <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900" role="alert">برنامهٔ کاری در دسترس نیست؛ مقداری جایگزین نمایش داده نمی‌شود.</div>}
+        {scheduleState.status === "error" && <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900" role="alert">دریافت برنامهٔ کاری ناموفق بود.<button onClick={() => void refresh()} className="mr-3 text-sm font-bold underline">تلاش دوباره</button></div>}
+        {scheduleState.status === "ready" && (() => { const readiness = projectDashboardScheduleReadiness(scheduleState.data); return <div className="grid gap-4 md:grid-cols-3"><KpiCard title="ارائه‌های منتشرشده" value={p(readiness.activeOfferings)} icon={CheckCircle2} iconBg="bg-emerald-100 text-emerald-700" /><KpiCard title="قواعد کاری فعال" value={p(readiness.activeRules)} icon={ClipboardList} iconBg="bg-blue-100 text-blue-700" /><div className="rounded-2xl border border-border bg-card p-5"><p className="text-sm font-bold">برنامهٔ روز بعد</p><p className="mt-2 text-2xl font-bold">{p(readiness.nextDayRuleCount)}</p><p className="mt-1 text-xs text-muted-foreground">قاعدهٔ فعال برای روز {p(readiness.nextDayIsoWeekday)} در {readiness.timeZone}</p></div></div>; })()}
+      </section>
     </div>
   );
 }
