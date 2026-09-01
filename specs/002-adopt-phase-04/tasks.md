@@ -19,7 +19,7 @@ only the focused coverage needed for its acceptance risk, then runs the owning p
 IDs. No roadmap task is split, renamed, or reordered; completion state is synchronized only after
 the repository review gate passes.
 
-**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T10` are complete.
+**Activation boundary**: Phase 04 is `IN_PROGRESS`; `F04-T01` through `F04-T11` are complete.
 The explicitly authorized OpenAPI/client synchronization prerequisite slice of `F04-T10` and its
 later deterministic seed/mock-removal completion have both passed review.
 
@@ -98,7 +98,7 @@ roles, no reachable Phase 04 mock remains, required risk checks and browser jour
 every phase exit criterion has evidence.
 
 - [x] T010 [US3] F04-T10: export the implemented Phase 04 OpenAPI contract to `packages/api-client/openapi.json`, regenerate `packages/api-client/src/schema.generated.ts`, add deterministic non-secret directory/schedule data to `apps/api/prisma/seed.mjs`, and remove only Phase 04 doctor/service/availability mock exports and callers from `apps/app/src/lib/data/catalog.ts` and the touched dashboard/app Phase 04 surfaces
-- [ ] T011 [US3] F04-T11: complete focused overlap, invalid-exception, clinic-timezone, active/publication filtering, authorization/audit, and representative query-plan verification under `apps/api/test/`; run the administrator-to-patient browser journeys in `specs/002-adopt-phase-04/quickstart.md` and record the exact outcomes without expanding into Phase 05
+- [x] T011 [US3] F04-T11: complete focused overlap, invalid-exception, clinic-timezone, active/publication filtering, authorization/audit, and representative query-plan verification under `apps/api/test/`; run the administrator-to-patient browser journeys in `specs/002-adopt-phase-04/quickstart.md` and record the exact outcomes without expanding into Phase 05
 - [ ] T012 [US3] F04-T12: record accepted task and phase evidence in `plan/logs/phase-04.md` following `plan/logs/README.md`, capture phase-gate details in `specs/002-adopt-phase-04/evidence.md`, synchronize `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md` and `plan/STATUS.md` only after the repository review gate passes, and declare Phase 05 readiness only when all four original Phase 04 exit criteria are evidenced
 
 **Checkpoint**: Phase 04 is evidence-complete and the appointment phase has a truthful directory

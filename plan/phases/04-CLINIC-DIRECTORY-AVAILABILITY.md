@@ -33,7 +33,7 @@
 - [x] `F04-T08` — فرم‌های واقعی تنظیمات dashboard
 - [x] `F04-T09` — doctor detail و انتخاب پزشک/خدمت در app
 - [x] `F04-T10` — OpenAPI/client، seed development و حذف mock scope
-- [ ] `F04-T11` — overlap، timezone، query plan و browser E2E
+- [x] `F04-T11` — overlap، timezone، query plan و browser E2E
 - [ ] `F04-T12` — evidence و readiness برای appointment
 
 > **Execution adjustment (2026-09-01):** `F04-T08` and `F04-T09` require the generated Phase 04

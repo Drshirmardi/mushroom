@@ -396,3 +396,38 @@ Known limitations:
   - Phase-level overlap/timezone/query-plan/browser verification remains solely owned by F04-T11.
 Next batch:
   - `F04-T11` is eligible but unclaimed; do not start it without a new batch claim.
+
+## F04-T11 — Scheduling readiness verification
+
+Task ID: F04-T11
+Completed at: 2026-09-01 20:20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F04-B11
+Reviewed by: Codex /root
+Changed files:
+  - `plan/phases/04-CLINIC-DIRECTORY-AVAILABILITY.md`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-04.md`
+  - `specs/002-adopt-phase-04/tasks.md`
+Migrations:
+  - isolated real-PostgreSQL migration/persistence verification → PASS (no migration added)
+Tests run:
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/migrations.integration.spec.ts test/clinic-directory-availability.persistence.spec.ts --no-file-parallelism` → PASS (2 files, 4 tests)
+  - `DATABASE_URL` from local API `.env` with `NODE_ENV=development`: `corepack pnpm --filter @sabz-zendegi/api exec vitest run test/admin-scheduling.integration.spec.ts test/patient-directory-availability.integration.spec.ts test/patient-directory-availability.authorization.spec.ts test/phase-04-audit.integration.spec.ts test/phase-04-authorization.spec.ts test/openapi-contract.spec.ts --no-file-parallelism` → PASS (6 files, 17 tests)
+  - local PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, COSTS OFF)` for the published directory and active-rule lookup queries → PASS; `clinics_one_active_idx` selected, and the tiny deterministic dataset correctly favored sequential scans for 3 doctor profiles and 10 rules
+  - local administrator-to-patient browser journey at `localhost:3002/settings` and `localhost:3001/appointments/book` → PASS; no credentials, tokens, or personal data recorded
+  - `corepack pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `corepack pnpm --filter @sabz-zendegi/api-client typecheck` → PASS (includes generated-client drift check)
+  - `corepack pnpm --filter @sabz/app typecheck` → PASS
+  - `corepack pnpm --filter @sabz/dashboard typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - real PostgreSQL rejects overlapping active availability rules and invalid exception/range input; timezone-aware persistence and closure/exception constraints are verified → PASS
+  - patient directory and availability queries expose only active/published records; authorization and transactional audit rules are covered by focused integration tests → PASS
+  - administrator journey: local settings persisted a valid working-hours change after reload, surfaced a truthful overlap error, and prevented submission of an invalid closure range → PASS
+  - patient journey: an eligible local test patient saw the published doctor, mode, duration, price, and server-derived candidates; temporarily unpublishing the offering through the established administrator API removed that doctor from the selection view immediately, then the deterministic published state was restored → PASS
+  - no appointment was created and no Phase 05 implementation or other product code was introduced → PASS
+Known limitations:
+  - final Phase 04 evidence and appointment-readiness declaration remain exclusively owned by F04-T12.
+Next batch:
+  - `F04-T12` is eligible but unclaimed; do not start it without a new batch claim.
