@@ -377,3 +377,35 @@ Known limitations:
   - Dashboard production build has an unrelated pre-existing session-gate prerender failure and is not treated as F05-T10 completion work.
 Next task:
   - F05-T11, eligible but not claimed.
+
+## F05-T11 — OpenAPI/client and mock removal
+
+Task ID: F05-T11
+Completed at: 2026-09-02
+Agent/Thread: Codex /root
+Batch ID: F05-B11
+Reviewed by: Codex /root
+Changed files:
+  - packages/api-client/openapi.json
+  - packages/api-client/src/schema.generated.ts
+  - apps/dashboard/src/data/appointments.ts (removed)
+  - apps/dashboard/src/lib/nav.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+Migrations:
+  - None.
+Tests run:
+  - pnpm generate:api-client → PASS.
+  - pnpm --filter @sabz-zendegi/api-client typecheck → PASS.
+  - pnpm --filter @sabz-zendegi/api-client test → PASS.
+  - pnpm --filter @sabz-zendegi/api test -- --run test/openapi-contract.spec.ts → PASS (5 tests).
+  - pnpm --dir apps/dashboard test -- --run src/lib/appointment-api.spec.ts → PASS.
+  - pnpm --dir apps/dashboard typecheck → PASS.
+Result:
+  - checked-in OpenAPI document equals the runtime Nest document and generated TypeScript includes all Phase 05 appointment/operations endpoints → PASS.
+  - obsolete dashboard appointment fixture and static appointment/queue counters were removed; live appointment screens continue using the Phase 05 routes → PASS.
+Known limitations:
+  - None for this task.
+Next task:
+  - F05-T12, eligible but not claimed.

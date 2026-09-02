@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 19:20 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 19:21 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -99,6 +99,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F05-B11` — `DONE`
+
+- `F05-T11` پذیرفته شد: runtime OpenAPI و generated client تمام endpointهای Phase 05 را پوشش
+  می‌دهند و fixture appointment و badgeهای عملیاتی ساختگی حذف شدند؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T12`؛ هنوز claim نشده است.
 
 `F05-B10` — `DONE`
 

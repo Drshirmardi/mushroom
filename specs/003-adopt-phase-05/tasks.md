@@ -42,7 +42,7 @@ test infrastructure. No extra setup task is added.
 - [x] T008 [US3] F05-T08: all app appointment flow and removal of MVP payment/wallet dependency
 - [x] T009 [US3] F05-T09: dashboard appointments/calendar/queue
 - [x] T010 [US3] F05-T10: Dashboard Home V1 with KPI/today plan/real activity
-- [ ] T011 [US3] F05-T11: OpenAPI/client and appointment/operations mock removal
+- [x] T011 [US3] F05-T11: OpenAPI/client and appointment/operations mock removal
 - [ ] T012 [US3] F05-T12: concurrency/idempotency/authorization/state-machine tests
 - [ ] T013 [US3] F05-T13: cross-app browser E2E and query/load baseline
 - [ ] T014 [US3] F05-T14: evidence and Milestone B review
