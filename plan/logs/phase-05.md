@@ -296,3 +296,47 @@ Known limitations:
   - Cross-app browser E2E remains owned by F05-T13.
 Next task:
   - F05-T09, eligible but not claimed.
+
+## F05-T09 — Dashboard appointments, calendar, and queue
+
+Task ID: F05-T09
+Completed at: 2026-09-02 19:11 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B09
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/admin-appointments.controller.ts
+  - apps/api/src/modules/appointments/admin-appointments.dto.ts
+  - apps/api/src/modules/appointments/admin-appointments.service.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - apps/dashboard/src/features/appointments/appointments-page.tsx
+  - apps/dashboard/src/features/calendar/calendar-page.tsx
+  - apps/dashboard/src/features/queue/queue-page.tsx
+  - apps/dashboard/src/lib/api.ts
+  - apps/dashboard/src/lib/appointment-api.ts
+  - apps/dashboard/src/lib/appointment-api.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None.
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm exec tsc -p tsconfig.test.json --noEmit → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (8 tests)
+  - corepack pnpm --filter @sabz/dashboard typecheck → PASS
+  - corepack pnpm --filter @sabz/dashboard test -- appointment-api.spec.ts → PASS (31 tests)
+  - corepack pnpm --filter @sabz/dashboard build → PASS
+  - git diff --check → PASS
+Result:
+  - Dashboard appointment list and calendar use authenticated, paginated clinic appointment data; no appointment fixture is consumed in these views → PASS
+  - Dashboard exposes only state-machine operations already authorized by the API and refreshes from the persisted response → PASS
+  - Read-only `/v1/admin/appointments/queue` derives from QueueEntry and orders by queuedAt/id, so the dashboard queue preserves the same source/order as call-next → PASS
+  - Queue view displays only persisted queued/in-progress appointments and invokes the existing guarded start command → PASS
+Known limitations:
+  - Generated OpenAPI client synchronization remains F05-T11 ownership; dashboard uses a narrow local transport wrapper until then.
+  - Dashboard Home V1 aggregation and activity widgets remain F05-T10 ownership.
+Next task:
+  - F05-T10, eligible but not claimed.

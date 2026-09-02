@@ -1,37 +1,13 @@
 "use client";
 
-import { APPTS } from "@/data/appointments";
-import { Avatar, TypeBadge } from "@/components/shared";
-import { p } from "@/lib/utils";
+import { useCallback, useEffect, useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { dashboardAppointmentError, listAdminQueue, transitionAppointment, type AdminAppointment } from "@/lib/appointment-api";
 
 export function QueuePage() {
-  const active = APPTS.filter(a => ["در حال انجام", "تایید شده"].includes(a.status));
-  const current = active[0], next = active[1], remaining = active.slice(2);
-  return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        {[{ label: "در حال ویزیت", value: "۱ بیمار", cls: "border-emerald-200 bg-emerald-50 text-emerald-800" }, { label: "در صف انتظار", value: p(remaining.length) + " بیمار", cls: "border-amber-200 bg-amber-50 text-amber-800" }, { label: "میانگین انتظار", value: "۱۲ دقیقه", cls: "border-blue-200 bg-blue-50 text-blue-800" }, { label: "تکمیل‌شده", value: p(3) + " ویزیت", cls: "border-gray-200 bg-gray-50 text-gray-700" }].map((s, i) => (
-          <div key={i} className={`rounded-2xl p-5 border-2 ${s.cls}`}><p className="text-2xl font-bold mb-1">{s.value}</p><p className="text-sm font-medium">{s.label}</p></div>
-        ))}
-      </div>
-      <div className="grid grid-cols-3 gap-6">
-        <div className="bg-card border-2 border-primary/25 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" /><span className="text-sm font-bold text-emerald-700">در حال ویزیت</span></div>
-          {current && <><Avatar letter={current.avatar} size="lg" /><h3 className="text-lg font-bold mt-4">{current.patient}</h3><p className="text-sm text-muted-foreground mt-0.5 mb-2">{current.phone}</p><TypeBadge type={current.type} /><div className="mt-2 text-xs text-muted-foreground">ساعت: {current.time}</div><div className="mt-5 space-y-2"><button className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold">پایان ویزیت</button><button className="w-full py-2 border border-border rounded-xl text-sm font-semibold hover:bg-secondary">نوشتن نسخه</button></div></>}
-        </div>
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <p className="text-sm font-bold text-muted-foreground mb-5">بیمار بعدی</p>
-          {next && <><Avatar letter={next.avatar} size="lg" color="bg-blue-100 text-blue-700" /><h3 className="text-base font-bold mt-4">{next.patient}</h3><p className="text-sm text-muted-foreground mt-0.5 mb-2">{next.phone}</p><TypeBadge type={next.type} /><div className="mt-2 text-xs text-muted-foreground">ساعت: {next.time}</div><div className="mt-5"><button className="w-full py-2 border border-border rounded-xl text-sm font-semibold hover:bg-secondary">مشاهده پرونده</button></div></>}
-        </div>
-        <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-4 border-b border-border"><h3 className="font-bold">صف انتظار</h3><p className="text-xs text-muted-foreground mt-0.5">{p(remaining.length)} بیمار</p></div>
-          <div className="flex-1 divide-y divide-border overflow-y-auto">
-            {remaining.map((a, i) => (
-              <div key={a.id} className="flex items-center gap-3 px-5 py-4"><span className="text-sm font-bold text-muted-foreground w-5">{p(i + 3)}</span><Avatar letter={a.avatar} size="sm" /><div className="flex-1 min-w-0"><p className="text-sm font-semibold">{a.patient}</p><p className="text-xs text-muted-foreground">{a.time}</p></div><TypeBadge type={a.type} /></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const { authentication } = useDashboardSession(); const [current, setCurrent] = useState<AdminAppointment[]>([]); const [queued, setQueued] = useState<AdminAppointment[]>([]); const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(true);
+  const load = useCallback(() => { setLoading(true); setError(null); void listAdminQueue(authentication.accessToken).then((value) => { setCurrent(value.items.filter((entry) => entry.appointment.status === "IN_PROGRESS").map((entry) => entry.appointment)); setQueued(value.items.filter((entry) => entry.appointment.status === "QUEUED").map((entry) => entry.appointment)); }, (reason: unknown) => setError(dashboardAppointmentError(reason))).finally(() => setLoading(false)); }, [authentication.accessToken]);
+  useEffect(load, [load]); const start = async (appointment: AdminAppointment) => { try { await transitionAppointment(authentication.accessToken, appointment.id, "start"); load(); } catch (reason) { setError(dashboardAppointmentError(reason)); } };
+  return <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-7"><div className="flex items-center justify-between"><div><h1 className="text-xl font-bold">صف انتظار</h1><p className="mt-1 text-sm text-muted-foreground">ویزیت در حال انجام و صف واقعی کلینیک</p></div><button onClick={load} className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-bold"><RefreshCw size={15} />به‌روزرسانی</button></div>{loading && <p role="status" className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">در حال دریافت صف…</p>}{error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-900">{error}</p>}{!loading && !error && <div className="grid gap-6 md:grid-cols-2"><section className="rounded-2xl border border-primary/25 bg-card p-6"><h2 className="font-bold">در حال ویزیت</h2>{current.length ? current.map((appointment) => <div key={appointment.id} className="mt-4 rounded-xl bg-primary/5 p-4 text-sm">بیمار {appointment.patientId.slice(0, 8)} · {new Intl.DateTimeFormat("fa-IR", { timeStyle: "short" }).format(new Date(appointment.startsAt))}</div>) : <p className="mt-4 text-sm text-muted-foreground">ویزیت فعالی وجود ندارد.</p>}</section><section className="rounded-2xl border border-border bg-card p-6"><h2 className="font-bold">در صف</h2>{queued.length ? <ol className="mt-4 space-y-3">{queued.map((appointment, index) => <li key={appointment.id} className="flex items-center justify-between rounded-xl bg-secondary p-3 text-sm"><span>{index + 1}. بیمار {appointment.patientId.slice(0, 8)}</span><button onClick={() => void start(appointment)} disabled={current.length > 0} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground disabled:opacity-50">شروع</button></li>)}</ol> : <p className="mt-4 text-sm text-muted-foreground">بیماری در صف نیست.</p>}</section></div>}</div>;
 }

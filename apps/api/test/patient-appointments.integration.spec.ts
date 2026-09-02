@@ -176,6 +176,8 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(repeatQueue.statusCode).toBe(200); expect(await prisma.queueEntry.count({ where: { appointmentId: current.id } })).toBe(1);
     const started = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });
     expect(started.statusCode).toBe(200); expect(started.json()).toMatchObject({ id: current.id, status: 'IN_PROGRESS' });
+    const queue = await app.inject({ method: 'GET', url: '/v1/admin/appointments/queue', headers: headersForAdmin() });
+    expect(queue.statusCode).toBe(200); expect(queue.json()).toMatchObject({ items: [{ appointment: { id: current.id, status: 'IN_PROGRESS' } }] });
     const repeatCallNext = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });
     expect(repeatCallNext.statusCode).toBe(200); expect(repeatCallNext.json().id).toBe(current.id);
     const another = await appointment('CHECKED_IN', new Date(now + 2 * 86_400_000), new Date(now + 2 * 86_400_000 + 30 * 60_000));
