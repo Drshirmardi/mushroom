@@ -44,7 +44,7 @@ test infrastructure. No extra setup task is added.
 - [x] T010 [US3] F05-T10: Dashboard Home V1 with KPI/today plan/real activity
 - [x] T011 [US3] F05-T11: OpenAPI/client and appointment/operations mock removal
 - [x] T012 [US3] F05-T12: concurrency/idempotency/authorization/state-machine tests
-- [ ] T013 [US3] F05-T13: cross-app browser E2E and query/load baseline
+- [x] T013 [US3] F05-T13: cross-app browser E2E and query/load baseline
 - [ ] T014 [US3] F05-T14: evidence and Milestone B review
 
 ## Dependencies & Execution Order

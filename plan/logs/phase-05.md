@@ -440,3 +440,32 @@ Known limitations:
   - None for this task.
 Next task:
   - F05-T13, eligible but not claimed.
+
+## F05-T13 — cross-app browser E2E and query/load baseline
+
+Task ID: F05-T13
+Completed at: 2026-09-02 19:56 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B13
+Reviewed by: Codex /root
+Changed files:
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - plan/logs/phase-05.md
+  - specs/003-adopt-phase-05/tasks.md
+Migrations:
+  - None.
+Tests run:
+  - Local-only browser E2E on localhost with dedicated synthetic patient and administrator accounts → PASS.
+  - Browser journey: register/authenticate → profile/consent → conditional assessment → Phase 04-derived slot → booking without payment/wallet → dashboard confirmation, check-in, queue, start, completion, calendar, and Home V1 → PASS.
+  - Existing F05-T12 real-PostgreSQL verification: 100 concurrent creates (exactly one success), idempotency, authorization, and repeat-safe operations → PASS.
+  - Representative local PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, COSTS OFF)` baseline → PASS: patient list 0.123 ms, operations list 0.081 ms, and queue-next 0.047 ms; the tiny deterministic local dataset selected sequential scans for the two small appointment lists, while queue-next used `queue_entries_next_idx` as an index-only scan.
+  - git diff --check → PASS.
+Result:
+  - A synthetic locally created appointment was visible once in the patient flow before operations, then appeared in administrator appointments, calendar, and queue; the authorized administrator advanced it through confirmed, checked-in, queued, started, and completed states → PASS.
+  - Dashboard Home V1 reported four clinic-local appointments for the day and two completed visits, matching its today plan and the calendar; the synthetic appointment's complete activity sequence was present. No unsupported financial, order, treatment-completion, or common-disease/mezaj Home widget was rendered → PASS.
+  - The synthetic appointment was adjusted only within the local test database to a same-day slot so that the authorized queue actions could be exercised; no repository configuration, code, external service, production account, or production data was used.
+Known limitations:
+  - None for this task. Completed appointments are intentionally absent from the patient app's active-appointments view; the required browser gate verifies the patient booking and administrator operational journey.
+Next task:
+  - F05-T14, eligible but not claimed.
