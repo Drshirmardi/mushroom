@@ -181,3 +181,39 @@ Known limitations:
   - Generated OpenAPI client synchronization and appointment mock removal remain owned by F05-T11; no generated client artifact was changed here.
 Next task:
   - F05-T06, eligible but not claimed.
+
+## F05-T06 — Daily clinic operations and queue
+
+Task ID: F05-T06
+Completed at: 2026-09-02 18:49 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B06
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/admin-appointments.controller.ts
+  - apps/api/src/modules/appointments/admin-appointments.service.ts
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None; F05-T02 already owns the QueueEntry persistence and indexes used here.
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm exec tsc -p tsconfig.test.json --noEmit → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (8 tests)
+  - git diff --check → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/openapi-contract.spec.ts → expected deferred failure: runtime document includes Phase 05 appointment routes while checked-in generated client remains owned by F05-T11.
+Result:
+  - Admin check-in and queue transitions enforce the scheduled clinic-local date, persist timestamps/history, and safely return the current resource on repeat → PASS
+  - Queue persistence is one entry per appointment; call-next starts the earliest queued appointment and returns QUEUE_EMPTY when no eligible queue entry exists → PASS
+  - Start and call-next acquire a transaction-scoped PostgreSQL advisory lock per clinic/doctor and reject a competing in-progress visit with APPOINTMENT_DOCTOR_BUSY → PASS
+  - Complete verifies the doctor's current appointment; no-show requires a past scheduled start; both preserve repeat-operation semantics and immutable history → PASS
+  - All operations remain fixed-permission ADMIN routes with active-clinic resource scoping → PASS
+Known limitations:
+  - Generated OpenAPI client synchronization and appointment mock removal remain owned by F05-T11; no generated client artifact was changed here.
+Next task:
+  - F05-T07, eligible but not claimed.
