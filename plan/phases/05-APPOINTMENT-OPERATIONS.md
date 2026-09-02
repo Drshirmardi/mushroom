@@ -42,7 +42,7 @@
 - [x] `F05-T11` — OpenAPI/client و حذف mock appointment/operations
 - [x] `F05-T12` — concurrency، idempotency، authorization و state machine tests
 - [x] `F05-T13` — cross-app browser E2E و query/load baseline
-- [ ] `F05-T14` — evidence و review Milestone B
+- [x] `F05-T14` — evidence و review Milestone B
 
 ## Dashboard Home V1
 

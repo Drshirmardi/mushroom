@@ -3,7 +3,8 @@
 ## Decision: Preserve the Phase 05 roadmap verbatim
 
 **Rationale**: The authoritative phase defines fourteen stable IDs, UI scope, models, Home V1,
-and exit criteria. `plan/STATUS.md` confirms `NOT_STARTED`, no active batch/task/owner/blocker.
+and exit criteria. At adoption time, `plan/STATUS.md` confirmed `NOT_STARTED`, no active
+batch/task/owner/blocker; live execution status remains authoritative in `plan/STATUS.md`.
 
 **Alternatives considered**: Regeneration, decomposition, reordering, pre-claiming, or counting
 this adoption as progress are rejected.

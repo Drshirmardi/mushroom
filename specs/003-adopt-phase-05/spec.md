@@ -3,7 +3,8 @@
 **Feature Branch**: `codex/phase-05-appointment-booking-dashboard-operations`
 
 **Created**: 2026-09-02
-**Status**: Planning adoption only. Phase 05 remains `NOT_STARTED`; `F05-T01` is unclaimed.
+**Status**: Phase 05 execution is complete and `READY_FOR_REVIEW`. The authoritative live state
+remains [`plan/STATUS.md`](../../plan/STATUS.md).
 
 **Input**: Adopt the authoritative Phase 05 roadmap without changing its scope, IDs, ordering,
 dependencies, acceptance criteria, status, or implementation.
@@ -76,7 +77,7 @@ browser journey passes, and Home V1 figures agree with the operations views.
 
 ### Roadmap Adoption Boundary
 
-The following fourteen unchecked roadmap tasks are adopted one-to-one, with no renaming,
+The following fourteen roadmap tasks are adopted one-to-one, with no renaming,
 splitting, merging, reordering, claiming, or completion-state change:
 
 - **`F05-T01`** — state machine, cancellation/reschedule policy and price snapshot
@@ -94,8 +95,9 @@ splitting, merging, reordering, claiming, or completion-state change:
 - **`F05-T13`** — cross-app browser E2E and query/load baseline
 - **`F05-T14`** — evidence and Milestone B review
 
-Phase 03 and Phase 04 are `DONE`. This adoption does not claim a batch or `F05-T01`, change
-`plan/STATUS.md`, change a roadmap checkbox, or alter implementation.
+Phase 03 and Phase 04 are `DONE`. The adoption itself did not claim a batch or `F05-T01`, change
+`plan/STATUS.md`, change a roadmap checkbox, or alter implementation; subsequent execution is
+recorded only in the authoritative roadmap and task evidence.
 
 ### Functional Requirements
 

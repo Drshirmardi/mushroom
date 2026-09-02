@@ -5,7 +5,7 @@
 ## Summary
 
 Prepare one-to-one Spec Kit artifacts for the existing fourteen Phase 05 booking/operations
-tasks. `plan/` remains the execution source of truth; no task is activated.
+tasks. `plan/` remains the execution source of truth; the adoption itself activated no task.
 
 ## Technical Context
 
@@ -24,7 +24,8 @@ tasks. `plan/` remains the execution source of truth; no task is activated.
 **Performance Goals**: No adoption-added target; source requires one success of 100 concurrent requests and assigns query/load baseline to `F05-T13`.
 
 **Constraints**: Preserve Phase 03 eligibility, Phase 04 availability, no mandatory MVP payment, shared-path single-writer ownership, truthful widgets, and task boundaries.
-**Scale/Scope**: Fourteen stable tasks, `F05-T01`–`F05-T14`; Phase 05 is `NOT_STARTED`.
+**Scale/Scope**: Fourteen stable tasks, `F05-T01`–`F05-T14`; Phase 05 is
+`READY_FOR_REVIEW` after recorded execution.
 
 ## Constitution Check
 

@@ -1,6 +1,7 @@
 # Phase 05 Validation Quickstart
 
-This is a future-task validation guide only; it does not claim or start `F05-T01`.
+This validation guide preserves the Phase 05 gates. Live execution state is authoritative in
+[`plan/STATUS.md`](../../plan/STATUS.md); the adoption itself did not claim or start `F05-T01`.
 
 ## Prerequisites
 

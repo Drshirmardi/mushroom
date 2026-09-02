@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 19:56 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 20:06 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -25,7 +25,7 @@
 - [x] احراز هویت واقعی جایگزین mock شده است.
 - [x] onboarding پزشکی و consent واقعی شده‌اند.
 - [x] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
-- [ ] اولین جریان end-to-end رزرو نوبت کامل شده است.
+- [x] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [ ] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
 - [ ] چت واقعی شده است.
@@ -38,7 +38,7 @@
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
-- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `IN_PROGRESS`
+- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `READY_FOR_REVIEW`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
@@ -86,6 +86,7 @@
 - `F05-T11` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T12` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T13` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T14` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 
 ### وضعیت تاریخی Phase 04
 
@@ -103,6 +104,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F05-B14` — `DONE`
+
+- `F05-T14` پذیرفته شد: تمام taskهای Phase 05، exit criteria، migration/seed smoke، suiteهای
+  مرتبط، browser evidence و Spec Kit consistency/convergence review پاس شده‌اند؛ Phase 05
+  اکنون `READY_FOR_REVIEW` است؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
+- task جدیدی claim نشده است. review مستقل فاز باید پیش از `DONE` شدن و فعال‌سازی Phase 06 انجام شود.
 
 `F05-B13` — `DONE`
 

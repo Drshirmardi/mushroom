@@ -22,10 +22,17 @@
 ## Readiness
 
 - [x] Source lack of per-task dependency declarations/batch map is preserved, not invented
-- [x] No task was claimed, started, or marked complete
+- [x] The adoption itself did not claim, start, or mark a roadmap task complete
+
+## Final Phase-05 Reconciliation
+
+- [x] All fourteen authoritative roadmap tasks are checked and map one-to-one to T001–T014
+- [x] Phase 05 exit criteria, fresh migration/seed smoke, phase browser evidence, relevant
+  PostgreSQL/API/client/frontend checks, and query/load baseline are recorded in the phase log
+- [x] Cross-artifact consistency and convergence review found no remaining Phase 05 work
 
 ## Notes
 
 - Validated against the active phase roadmap, status, engineering standards, workflow, and
-  constitution on 2026-09-02.
+  constitution on 2026-09-02; final reconciliation is recorded under `F05-T14`.
 - `[x]` means requirements-quality review passed, not implementation progress.

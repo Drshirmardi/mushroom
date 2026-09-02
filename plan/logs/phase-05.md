@@ -469,3 +469,43 @@ Known limitations:
   - None for this task. Completed appointments are intentionally absent from the patient app's active-appointments view; the required browser gate verifies the patient booking and administrator operational journey.
 Next task:
   - F05-T14, eligible but not claimed.
+
+## F05-T14 — evidence and Milestone B review
+
+Task ID: F05-T14
+Completed at: 2026-09-02 20:06 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B14
+Reviewed by: Codex /root
+Changed files:
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - plan/logs/phase-05.md
+  - specs/003-adopt-phase-05/{spec.md,plan.md,tasks.md,research.md,quickstart.md,checklists/requirements.md}
+Migrations:
+  - None; every migration was applied and seeded twice against a newly created local PostgreSQL database.
+Tests run:
+  - `NODE_ENV=development` with the repository-defined local `DATABASE_URL` `pnpm --filter @sabz-zendegi/api test -- --run test/migrations.integration.spec.ts` → PASS (2 tests; isolated create/drop database migration and idempotent seed smoke).
+  - `NODE_ENV=development` with the repository-defined local `DATABASE_URL` `pnpm --filter @sabz-zendegi/api test` → PASS (complete API suite).
+  - `NODE_ENV=development` with the repository-defined local `DATABASE_URL` `pnpm --filter @sabz-zendegi/api test -- --run test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts test/openapi-contract.spec.ts` → PASS (14 tests; real PostgreSQL appointment, authorization, and OpenAPI checks).
+  - `pnpm typecheck` → PASS (API, generated client, app, dashboard, and web).
+  - `pnpm --dir apps/app test` → PASS (7 files, 24 tests); `pnpm --dir apps/dashboard test` → PASS (8 files, 31 tests); `pnpm --filter @sabz-zendegi/api-client test` → PASS (1 file, 1 test).
+  - F05-T13 local-only browser E2E and PostgreSQL query/load baseline → PASS; it covers register/profile/assessment/booking, dashboard/calendar/queue operations, Home V1 agreement, and hidden future-source widgets without recording credentials or patient data.
+  - Spec Kit prerequisites → PASS; final cross-artifact analysis and code/spec/tasks convergence → PASS (FR-001–FR-018 and SC-001–SC-005 covered; no constitution conflict, unmapped task, or remaining implementation gap).
+  - git diff --check → PASS.
+Result:
+  - All fourteen authoritative Phase 05 tasks are complete in source order; the phase checklist,
+    live status, phase evidence, and one-to-one Spec Kit task mapping are synchronized → PASS.
+  - Phase 05 meets its stated exit criteria: authoritative eligibility on create/reschedule,
+    PostgreSQL-backed conflict safety, idempotency, repeat-safe operations, sourced operational
+    views/Home V1, and the required browser journey → PASS.
+  - Planning-era Spec Kit execution-status wording was reconciled without changing roadmap scope,
+    IDs, ordering, dependencies, acceptance criteria, implementation, migrations, generated client,
+    Phase 04, or Phase 06 → PASS.
+Known limitations:
+  - The isolated migration smoke must run in the repository's local development seed context
+    (`NODE_ENV=development`) because the local environment intentionally supplies development-only
+    dashboard credentials; the same seed has passed in that context and no credential is recorded.
+Next task:
+  - None. Phase 05 is `READY_FOR_REVIEW`; an independent phase review is required before it is
+    marked `DONE` and before Phase 06 is activated.
