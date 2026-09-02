@@ -256,3 +256,43 @@ Known limitations:
   - Generated OpenAPI client synchronization and mock removal remain owned by F05-T11.
 Next task:
   - F05-T08, eligible but not claimed.
+
+## F05-T08 — App appointment flow and MVP payment/wallet removal
+
+Task ID: F05-T08
+Completed at: 2026-09-02 19:05 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B08
+Reviewed by: Codex /root
+Changed files:
+  - apps/app/src/app/(app)/appointments/page.tsx
+  - apps/app/src/app/(app)/appointments/[id]/page.tsx
+  - apps/app/src/app/(app)/appointments/book/confirm/page.tsx
+  - apps/app/src/app/(app)/appointments/book/schedule/page.tsx
+  - apps/app/src/app/(app)/appointments/book/success/page.tsx
+  - apps/app/src/app/(app)/appointments/waiting-room/page.tsx
+  - apps/app/src/app/(app)/appointments/summary/page.tsx
+  - apps/app/src/lib/api.ts
+  - apps/app/src/lib/appointment-api.ts
+  - apps/app/src/lib/appointment-api.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None.
+Tests run:
+  - corepack pnpm --filter @sabz/app typecheck → PASS
+  - corepack pnpm --filter @sabz/app test -- appointment-api.spec.ts → PASS (24 tests)
+  - corepack pnpm --filter @sabz/app build → PASS
+  - git diff --check → PASS
+Result:
+  - Patient appointment list/detail, create, cancellation, and reschedule use authenticated live `/v1/appointments` endpoints with explicit loading/error/retry states → PASS
+  - Booking confirmation submits one idempotent create request or the authorized reschedule request; successful resource IDs are displayed without fixture identifiers → PASS
+  - No wallet/card choice, payment simulation, price claim, or payment prerequisite remains in the patient booking flow → PASS
+  - Legacy online waiting-room and consultation-summary fixtures are explicitly unavailable until their later-phase scope, rather than presenting false operational data → PASS
+Known limitations:
+  - Generated appointment endpoint types remain owned by F05-T11. The task uses a narrow local transport wrapper until that client synchronization occurs.
+  - Cross-app browser E2E remains owned by F05-T13.
+Next task:
+  - F05-T09, eligible but not claimed.

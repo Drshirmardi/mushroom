@@ -36,7 +36,7 @@
 - [x] `F05-T05` — admin create-on-behalf/list/filter/confirm/cancel/reschedule
 - [x] `F05-T06` — check-in، queue، call-next، start، complete و no-show
 - [x] `F05-T07` — status history، reason و operational activity
-- [ ] `F05-T08` — اتصال تمام appointment flow در app و حذف payment/wallet dependency MVP
+- [x] `F05-T08` — اتصال تمام appointment flow در app و حذف payment/wallet dependency MVP
 - [ ] `F05-T09` — اتصال appointments/calendar/queue در dashboard
 - [ ] `F05-T10` — Dashboard Home V1 با KPI، برنامه امروز و activity واقعی
 - [ ] `F05-T11` — OpenAPI/client و حذف mock appointment/operations

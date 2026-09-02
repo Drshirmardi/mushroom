@@ -3,44 +3,16 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { Check, CreditCard, RotateCcw, Wallet } from "lucide-react";
+import { RotateCcw } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
-import { formatPrice, toP } from "@/lib/format";
-import { useScreenNavigation } from "@/lib/navigation";
+import { appointmentErrorMessage, createPatientAppointment, reschedulePatientAppointment } from "@/lib/appointment-api";
 
 function BookStep3() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const navigateScreen = useScreenNavigation();
-  const [payMethod, setPayMethod] = useState("wallet");
-  const [loading, setLoading] = useState(false);
-  const handlePay = () => { setLoading(true); setTimeout(() => { setLoading(false); navigateScreen("BookSuccess"); }, 1800); };
-  return (
-    <div>
-      <PageHeader title="تأیید و پرداخت" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        <div className="bg-muted/60 rounded-2xl p-3 flex items-center gap-2"><div className="flex gap-1">{[1, 2, 3].map(s => <div key={s} className="w-6 h-1.5 rounded-full bg-primary" />)}</div><span className="text-xs text-muted-foreground">مرحله ۳ از ۳: پرداخت</span></div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4 space-y-2">
-          <p className="text-sm font-bold text-foreground">خلاصه نوبت</p>
-          {[["پزشک", "دکتر سید ابوالفتح شیرمردی"], ["تاریخ", "یکشنبه ۱۳ مرداد"], ["ساعت", toP(searchParams.get("time") || "۱۰:۰۰")], ["نوع", "حضوری"]].map(([k, v]) => <div key={k} className="flex justify-between text-sm"><span className="text-muted-foreground">{k}</span><span className="font-semibold text-foreground">{v}</span></div>)}
-        </div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
-          <p className="text-sm font-bold text-foreground mb-3">روش پرداخت</p>
-          {[{ id: "wallet", label: "کیف پول", sub: "موجودی: ۵۰۰,۰۰۰ تومان", icon: Wallet }, { id: "card", label: "کارت بانکی", sub: "درگاه شاپرک", icon: CreditCard }].map(m => <button key={m.id} onClick={() => setPayMethod(m.id)} className={`w-full flex items-center gap-3 p-3 rounded-xl border mb-2 last:mb-0 transition-all ${payMethod === m.id ? "bg-accent border-primary/30" : "border-border"}`}><div className={`w-9 h-9 rounded-xl flex items-center justify-center ${payMethod === m.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}><m.icon size={17} /></div><div className="flex-1 text-right"><p className="text-sm font-bold text-foreground">{m.label}</p><p className="text-xs text-muted-foreground">{m.sub}</p></div>{payMethod === m.id && <Check size={16} className="text-primary" strokeWidth={2.5} />}</button>)}
-        </div>
-        <div className="bg-primary/5 rounded-2xl p-4 flex items-center justify-between"><span className="text-sm font-bold text-foreground">مبلغ قابل پرداخت</span><span className="text-lg font-black text-primary">{formatPrice(250000)} تومان</span></div>
-        <button onClick={handlePay} disabled={loading} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-          {loading ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><RotateCcw size={18} /></motion.div> : "پرداخت و ثبت نوبت"}
-        </button>
-      </div>
-    </div>
-  );
+  const router = useRouter(); const searchParams = useSearchParams(); const { authentication } = useAuthSession(); const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null);
+  const doctorServiceId = searchParams.get("doctorServiceId") ?? ""; const startsAt = searchParams.get("startsAt") ?? ""; const appointmentId = searchParams.get("appointmentId") ?? "";
+  const submit = async () => { if (!doctorServiceId || !startsAt) { setError("اطلاعات زمان رزرو کامل نیست. لطفاً دوباره انتخاب کنید."); return; } setLoading(true); setError(null); try { const appointment = appointmentId ? await reschedulePatientAppointment(authentication.accessToken, appointmentId, { doctorServiceId, startsAt }) : await createPatientAppointment(authentication.accessToken, { doctorServiceId, startsAt }, crypto.randomUUID()); router.replace(`/appointments/book/success?appointmentId=${encodeURIComponent(appointment.id)}&changed=${appointmentId ? "1" : ""}`); } catch (reason) { setError(appointmentErrorMessage(reason)); } finally { setLoading(false); } };
+  return <div><PageHeader title={appointmentId ? "تأیید تغییر زمان" : "تأیید رزرو"} onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4"><div className="flex items-center gap-2 rounded-2xl bg-muted/60 p-3"><div className="flex gap-1">{[1, 2, 3].map((step) => <div key={step} className="h-1.5 w-6 rounded-full bg-primary" />)}</div><span className="text-xs text-muted-foreground">مرحله ۳ از ۳: تأیید نوبت</span></div><div className="rounded-2xl border border-border bg-white p-4"><p className="text-sm font-bold text-foreground">خلاصه نوبت</p><div className="mt-3 flex justify-between text-sm"><span className="text-muted-foreground">زمان انتخاب‌شده</span><span className="font-semibold text-foreground">{startsAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(startsAt)) : "—"}</span></div></div><div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm leading-6 text-foreground"><p className="font-bold">پرداخت در این مرحله لازم نیست.</p><p className="mt-1 text-muted-foreground">نوبت پس از ثبت در وضعیت در انتظار تأیید قرار می‌گیرد.</p></div>{error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}<button onClick={submit} disabled={loading || !doctorServiceId || !startsAt} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-white shadow-md shadow-primary/20 disabled:opacity-50">{loading ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><RotateCcw size={18} /></motion.div> : appointmentId ? "ثبت تغییر زمان" : "ثبت نوبت"}</button></div></div>;
 }
 
-export default function BookStep3Page() {
-  return (
-    <Suspense fallback={null}>
-      <BookStep3 />
-    </Suspense>
-  );
-}
+export default function BookStep3Page() { return <Suspense fallback={null}><BookStep3 /></Suspense>; }

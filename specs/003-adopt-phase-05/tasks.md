@@ -39,7 +39,7 @@ test infrastructure. No extra setup task is added.
 
 ## Phase 4: User Story 3 — Truthful Cross-App Operations (P2)
 
-- [ ] T008 [US3] F05-T08: all app appointment flow and removal of MVP payment/wallet dependency
+- [x] T008 [US3] F05-T08: all app appointment flow and removal of MVP payment/wallet dependency
 - [ ] T009 [US3] F05-T09: dashboard appointments/calendar/queue
 - [ ] T010 [US3] F05-T10: Dashboard Home V1 with KPI/today plan/real activity
 - [ ] T011 [US3] F05-T11: OpenAPI/client and appointment/operations mock removal
