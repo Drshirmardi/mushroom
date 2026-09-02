@@ -21,7 +21,7 @@ describe('patient appointment create authorization', () => {
     const guard = new AuthorizationGuard(new Reflector());
     expect(permissionsFor(['PATIENT'])).toContain(PERMISSIONS.APPOINTMENTS_READ_SELF);
     expect(permissionsFor(['PATIENT'])).toContain(PERMISSIONS.APPOINTMENTS_CHANGE_SELF);
-    for (const handler of [PatientAppointmentsController.prototype.list, PatientAppointmentsController.prototype.get, PatientAppointmentsController.prototype.cancel, PatientAppointmentsController.prototype.reschedule]) {
+    for (const handler of [PatientAppointmentsController.prototype.list, PatientAppointmentsController.prototype.get, PatientAppointmentsController.prototype.history, PatientAppointmentsController.prototype.cancel, PatientAppointmentsController.prototype.reschedule]) {
       expect(guard.canActivate(context(handler, ['PATIENT']))).toBe(true);
       for (const role of ['ADMIN', 'DOCTOR', 'STAFF']) expect(() => guard.canActivate(context(handler, [role]))).toThrow(/Insufficient permissions/);
     }
@@ -31,7 +31,7 @@ describe('patient appointment create authorization', () => {
     const guard = new AuthorizationGuard(new Reflector());
     const adminContext = (handler: Function, roles: string[]): ExecutionContext => ({ getHandler: () => handler, getClass: () => AdminAppointmentsController, switchToHttp: () => ({ getRequest: () => ({ auth: { roles } }) }) } as unknown as ExecutionContext);
     expect(permissionsFor(['ADMIN'])).toContain(PERMISSIONS.APPOINTMENTS_MANAGE);
-    for (const handler of [AdminAppointmentsController.prototype.create, AdminAppointmentsController.prototype.list, AdminAppointmentsController.prototype.confirm, AdminAppointmentsController.prototype.cancel, AdminAppointmentsController.prototype.reschedule, AdminAppointmentsController.prototype.checkIn, AdminAppointmentsController.prototype.queue, AdminAppointmentsController.prototype.start, AdminAppointmentsController.prototype.complete, AdminAppointmentsController.prototype.noShow, AdminAppointmentsController.prototype.callNext]) {
+    for (const handler of [AdminAppointmentsController.prototype.create, AdminAppointmentsController.prototype.list, AdminAppointmentsController.prototype.activities, AdminAppointmentsController.prototype.history, AdminAppointmentsController.prototype.confirm, AdminAppointmentsController.prototype.cancel, AdminAppointmentsController.prototype.reschedule, AdminAppointmentsController.prototype.checkIn, AdminAppointmentsController.prototype.queue, AdminAppointmentsController.prototype.start, AdminAppointmentsController.prototype.complete, AdminAppointmentsController.prototype.noShow, AdminAppointmentsController.prototype.callNext]) {
       expect(guard.canActivate(adminContext(handler, ['ADMIN']))).toBe(true);
       for (const role of ['PATIENT', 'DOCTOR', 'STAFF']) expect(() => guard.canActivate(adminContext(handler, [role]))).toThrow(/Insufficient permissions/);
     }

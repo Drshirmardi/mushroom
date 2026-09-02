@@ -5,7 +5,7 @@ import { AppointmentStatus, AppointmentStatusHistoryAction, Prisma } from '../..
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { PatientBookingEligibilityService } from '../assessments/patient/patient-booking-eligibility.service';
 import { PatientAvailabilityService } from '../scheduling/patient-availability.service';
-import type { CreatePatientAppointmentDto, PatientAppointmentListQueryDto } from './patient-appointments.dto';
+import type { AppointmentTimelineQueryDto, CreatePatientAppointmentDto, PatientAppointmentListQueryDto } from './patient-appointments.dto';
 
 const invalidKey = () => new UnprocessableEntityException({ code: 'IDEMPOTENCY_KEY_REQUIRED', message: 'An Idempotency-Key header is required.', details: {} });
 const keyReused = () => new ConflictException({ code: 'IDEMPOTENCY_KEY_REUSED', message: 'The Idempotency-Key was already used for a different request.', details: {} });
@@ -66,6 +66,7 @@ export class PatientAppointmentsService {
             statusHistory: { create: { fromStatus: null, toStatus: AppointmentStatus.PENDING, action: AppointmentStatusHistoryAction.CREATED, actorUserId: userId, metadata: {} } },
           },
         });
+        await this.activity(tx, created, 'APPOINTMENT_CREATED', { action: AppointmentStatusHistoryAction.CREATED });
         await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         return created;
       });
@@ -90,12 +91,23 @@ export class PatientAppointmentsService {
 
   async get(userId: string, id: string) { return this.response(await this.owned(userId, id)); }
 
+  async history(userId: string, id: string, query: AppointmentTimelineQueryDto) {
+    const appointment = await this.owned(userId, id);
+    const where = { appointmentId: appointment.id };
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.appointmentStatusHistory.count({ where }),
+      this.prisma.appointmentStatusHistory.findMany({ where, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
+    ]);
+    return { items: items.map((item) => ({ id: item.id, fromStatus: item.fromStatus, toStatus: item.toStatus, action: item.action, reason: item.reason, metadata: item.metadata as Record<string, unknown>, createdAt: item.createdAt })), page: query.page, pageSize: query.pageSize, total };
+  }
+
   async cancel(userId: string, id: string, rawReason?: string) {
     const reason = rawReason?.trim() || null;
     return this.prisma.$transaction(async (tx) => {
       const appointment = await this.owned(userId, id, tx);
       if ((appointment.status !== AppointmentStatus.PENDING && appointment.status !== AppointmentStatus.CONFIRMED) || appointment.startsAt <= new Date()) throw changeNotAllowed();
       const cancelled = await tx.appointment.update({ where: { id }, data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date(), cancelReason: reason, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.CANCELLED, action: AppointmentStatusHistoryAction.CANCELLED, actorUserId: userId, reason, metadata: {} } } } });
+      await this.activity(tx, cancelled, 'APPOINTMENT_CANCELLED', { action: AppointmentStatusHistoryAction.CANCELLED });
       return this.response(cancelled);
     });
   }
@@ -115,6 +127,7 @@ export class PatientAppointmentsService {
         const now = new Date();
         const hold = await tx.appointmentHold.create({ data: { clinicId: appointment.clinicId, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, expiresAt: new Date(now.getTime() + 60_000) } });
         const updated = await tx.appointment.update({ where: { id }, data: { doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, status: AppointmentStatus.PENDING, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: now, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.PENDING, action: AppointmentStatusHistoryAction.RESCHEDULED, actorUserId: userId, metadata: { previous: { startsAt: appointment.startsAt.toISOString(), endsAt: appointment.endsAt.toISOString(), priceAmount: appointment.priceAmount, currency: appointment.currency }, current: { startsAt: startsAt.toISOString(), endsAt: candidate.endsAt.toISOString(), priceAmount: offering.priceAmount, currency: offering.currency } } } } } });
+        await this.activity(tx, updated, 'APPOINTMENT_RESCHEDULED', { action: AppointmentStatusHistoryAction.RESCHEDULED });
         await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         return this.response(updated);
       });
@@ -152,6 +165,10 @@ export class PatientAppointmentsService {
     const appointment = await tx.appointment.findUnique({ where: { id } });
     if (!patient || !appointment || appointment.patientId !== patient.id || appointment.clinicId !== patient.clinicId) throw forbidden();
     return appointment;
+  }
+
+  private activity(tx: Prisma.TransactionClient, appointment: { id: string; clinicId: string; patientId: string }, type: string, metadata: Record<string, unknown>) {
+    return tx.operationalActivity.create({ data: { clinicId: appointment.clinicId, appointmentId: appointment.id, patientId: appointment.patientId, type, metadata: metadata as Prisma.InputJsonValue } });
   }
 
   private response(appointment: { id: string; clinicId: string; patientId: string; doctorServiceId: string; doctorId: string; startsAt: Date; endsAt: Date; status: AppointmentStatus; priceAmount: number; currency: string; priceCapturedAt: Date; createdAt: Date }) {

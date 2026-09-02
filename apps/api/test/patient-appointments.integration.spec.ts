@@ -18,6 +18,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     if (!userIds.size) return;
     const users = [...userIds];
     await prisma.queueEntry.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
+    await prisma.operationalActivity.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.appointmentStatusHistory.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.appointment.deleteMany({ where: { idempotencyActorUserId: { in: users } } });
     if (holdIds.size) await prisma.appointmentHold.deleteMany({ where: { id: { in: [...holdIds] } } });
@@ -143,6 +144,12 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(cancelled.statusCode).toBe(200); expect(cancelled.json()).toMatchObject({ status: 'CANCELLED' });
     const history = await prisma.appointmentStatusHistory.findMany({ where: { appointmentId: create.json().id }, orderBy: { createdAt: 'asc' } });
     expect(history.map((item) => item.action)).toEqual(['CREATED', 'CONFIRMED', 'RESCHEDULED', 'CANCELLED']);
+    const patientTimeline = await app.inject({ method: 'GET', url: `/v1/appointments/${create.json().id}/history?page=1&pageSize=20`, headers: headers(token) });
+    expect(patientTimeline.statusCode).toBe(200); expect(patientTimeline.json()).toMatchObject({ total: 4, items: [{ action: 'CREATED' }, { action: 'CONFIRMED' }, { action: 'RESCHEDULED' }, { action: 'CANCELLED', reason: 'Clinic scheduling change' }] });
+    const adminTimeline = await app.inject({ method: 'GET', url: `/v1/admin/appointments/${create.json().id}/history?page=1&pageSize=20`, headers: adminHeaders() });
+    expect(adminTimeline.statusCode).toBe(200); expect(adminTimeline.json()).toMatchObject({ total: 4, items: [{ action: 'CREATED' }, { action: 'CONFIRMED' }, { action: 'RESCHEDULED' }, { action: 'CANCELLED', reason: 'Clinic scheduling change' }] });
+    const activities = await app.inject({ method: 'GET', url: `/v1/admin/appointments/operational-activities?appointmentId=${create.json().id}&page=1&pageSize=20`, headers: adminHeaders() });
+    expect(activities.statusCode).toBe(200); expect(activities.json()).toMatchObject({ total: 4, items: [{ type: 'APPOINTMENT_CANCELLED' }, { type: 'APPOINTMENT_RESCHEDULED' }, { type: 'APPOINTMENT_CONFIRMED' }, { type: 'APPOINTMENT_CREATED' }] });
     const past = await prisma.appointment.create({ data: { clinicId: profile.clinicId, patientId: profile.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt: new Date(Date.now() - 3_600_000), endsAt: new Date(Date.now() - 1_800_000), status: 'CONFIRMED', priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: adminId, idempotencyKey: 'admin-past-policy', idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
     const rejectedPastCancel = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${past.id}/cancel`, headers: adminHeaders(), payload: {} });
     expect(rejectedPastCancel.statusCode).toBe(409); expect(rejectedPastCancel.json().code).toBe('APPOINTMENT_CHANGE_NOT_ALLOWED');
@@ -187,5 +194,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(repeatNoShow.statusCode).toBe(200); expect(repeatNoShow.json().id).toBe(absent.id);
     const history = await prisma.appointmentStatusHistory.findMany({ where: { appointmentId: current.id }, orderBy: { createdAt: 'asc' } });
     expect(history.map((item) => item.action)).toEqual(['CHECKED_IN', 'QUEUED', 'STARTED', 'COMPLETED']);
+    const activities = await prisma.operationalActivity.findMany({ where: { appointmentId: current.id }, orderBy: { createdAt: 'asc' } });
+    expect(activities.map((item) => item.type)).toEqual(['APPOINTMENT_CHECKED_IN', 'APPOINTMENT_QUEUED', 'APPOINTMENT_STARTED', 'APPOINTMENT_COMPLETED']);
   });
 });

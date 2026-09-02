@@ -11,8 +11,8 @@ description: "One-to-one Spec Kit adoption of existing Phase 05 roadmap tasks"
 the checklist entries below remain the execution, claim, evidence, and commit identities. No task
 is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Activation boundary**: Phase 05 remains `NOT_STARTED`; `F05-T01` remains unclaimed. This file
-does not authorize implementation.
+**Execution status**: Consult `plan/STATUS.md` and the authoritative phase checklist for the live
+Phase 05 state. This file does not authorize implementation.
 
 ## Format
 
@@ -35,7 +35,7 @@ test infrastructure. No extra setup task is added.
 - [x] T004 [US1] F05-T04: patient list/detail/cancel/reschedule
 - [x] T005 [US1] F05-T05: admin create-on-behalf/list/filter/confirm/cancel/reschedule
 - [x] T006 [US2] F05-T06: check-in/queue/call-next/start/complete/no-show
-- [ ] T007 [US2] F05-T07: status history/reason/operational activity
+- [x] T007 [US2] F05-T07: status history/reason/operational activity
 
 ## Phase 4: User Story 3 — Truthful Cross-App Operations (P2)
 

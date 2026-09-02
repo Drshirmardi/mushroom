@@ -217,3 +217,42 @@ Known limitations:
   - Generated OpenAPI client synchronization and appointment mock removal remain owned by F05-T11; no generated client artifact was changed here.
 Next task:
   - F05-T07, eligible but not claimed.
+
+## F05-T07 — Status history, reason, and operational activity
+
+Task ID: F05-T07
+Completed at: 2026-09-02 18:57 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B07
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/admin-appointments.controller.ts
+  - apps/api/src/modules/appointments/admin-appointments.dto.ts
+  - apps/api/src/modules/appointments/admin-appointments.service.ts
+  - apps/api/src/modules/appointments/patient-appointments.controller.ts
+  - apps/api/src/modules/appointments/patient-appointments.dto.ts
+  - apps/api/src/modules/appointments/patient-appointments.service.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None; F05-T02 already owns AppointmentStatusHistory and OperationalActivity persistence.
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm exec tsc -p tsconfig.test.json --noEmit → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (8 tests)
+  - git diff --check → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/openapi-contract.spec.ts → expected deferred failure: runtime document now includes F05-T07 endpoints while checked-in generated client remains owned by F05-T11.
+Result:
+  - Patient and administrator status-history timelines are paginated, deterministically ordered, and constrained to the authorized appointment resource → PASS
+  - Cancellation reason is visible only through the owning patient history or the active-clinic administrator history; actor identifiers are not exposed → PASS
+  - Accepted appointment operations atomically create a clinic-scoped operational activity without reason or other patient-sensitive metadata; repeated commands create none → PASS
+  - Administrator operational activity feed supports clinic-scoped appointment/patient filters, deterministic pagination, and fixed ADMIN authorization → PASS
+Known limitations:
+  - Existing historical appointment transitions are not backfilled into OperationalActivity; this task writes the audit projection for accepted operations going forward.
+  - Generated OpenAPI client synchronization and mock removal remain owned by F05-T11.
+Next task:
+  - F05-T08, eligible but not claimed.

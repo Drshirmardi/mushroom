@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResp
 import type { AuthenticatedRequest } from '../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
-import { CancelPatientAppointmentDto, CreatePatientAppointmentDto, PatientAppointmentListQueryDto, PatientAppointmentPageResponseDto, PatientAppointmentResponseDto, ReschedulePatientAppointmentDto } from './patient-appointments.dto';
+import { AppointmentStatusHistoryPageResponseDto, AppointmentTimelineQueryDto, CancelPatientAppointmentDto, CreatePatientAppointmentDto, PatientAppointmentListQueryDto, PatientAppointmentPageResponseDto, PatientAppointmentResponseDto, ReschedulePatientAppointmentDto } from './patient-appointments.dto';
 import { PatientAppointmentsService } from './patient-appointments.service';
 
 @ApiTags('Patient appointments')
@@ -34,6 +34,12 @@ export class PatientAppointmentsController {
   @ApiOperation({ operationId: 'patientAppointmentsGet', summary: 'Get an authenticated patient appointment' })
   @ApiOkResponse({ type: PatientAppointmentResponseDto })
   get(@Param('appointmentId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.appointments.get(request.auth.userId, id); }
+
+  @Get(':appointmentId/history')
+  @RequirePermissions(PERMISSIONS.APPOINTMENTS_READ_SELF)
+  @ApiOperation({ operationId: 'patientAppointmentsHistory', summary: 'List the authenticated patient appointment status timeline' })
+  @ApiOkResponse({ type: AppointmentStatusHistoryPageResponseDto })
+  history(@Param('appointmentId', new ParseUUIDPipe({ version: '4' })) id: string, @Query() query: AppointmentTimelineQueryDto, @Req() request: AuthenticatedRequest) { return this.appointments.history(request.auth.userId, id, query); }
 
   @Post(':appointmentId/cancel')
   @HttpCode(HttpStatus.OK)

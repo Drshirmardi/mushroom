@@ -39,3 +39,15 @@ export class PatientAppointmentResponseDto {
 }
 
 export class PatientAppointmentPageResponseDto { @ApiProperty({ type: PatientAppointmentResponseDto, isArray: true }) items!: PatientAppointmentResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }
+
+export class AppointmentTimelineQueryDto extends PatientAppointmentListQueryDto {}
+export class AppointmentStatusHistoryResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiPropertyOptional({ enum: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW', 'CANCELLED'], nullable: true }) fromStatus!: string | null;
+  @ApiProperty({ enum: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW', 'CANCELLED'] }) toStatus!: string;
+  @ApiProperty() action!: string;
+  @ApiPropertyOptional({ maxLength: 500, nullable: true }) reason!: string | null;
+  @ApiProperty({ type: Object }) metadata!: Record<string, unknown>;
+  @ApiProperty({ format: 'date-time' }) createdAt!: Date;
+}
+export class AppointmentStatusHistoryPageResponseDto { @ApiProperty({ type: AppointmentStatusHistoryResponseDto, isArray: true }) items!: AppointmentStatusHistoryResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }
