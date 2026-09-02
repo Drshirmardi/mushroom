@@ -31,7 +31,7 @@ test infrastructure. No extra setup task is added.
 
 ## Phase 3: Preserved Delivery Sequence — User Stories 1 and 2 (P1)
 
-- [ ] T003 [US1] F05-T03: create appointment with eligibility authoritative and idempotency
+- [x] T003 [US1] F05-T03: create appointment with eligibility authoritative and idempotency
 - [ ] T004 [US1] F05-T04: patient list/detail/cancel/reschedule
 - [ ] T005 [US1] F05-T05: admin create-on-behalf/list/filter/confirm/cancel/reschedule
 - [ ] T006 [US2] F05-T06: check-in/queue/call-next/start/complete/no-show

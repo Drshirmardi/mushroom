@@ -63,3 +63,46 @@ Known limitations:
   - F05-T03 owns appointment create eligibility and idempotency behavior; no API or UI behavior was added here.
 Next task:
   - F05-T03, eligible but not claimed.
+
+## F05-T03 — Create appointment with authoritative eligibility and idempotency
+
+Task ID: F05-T03
+Completed at: 2026-09-02 18:32 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B03
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/patient-appointments.controller.ts
+  - apps/api/src/modules/appointments/patient-appointments.dto.ts
+  - apps/api/src/modules/appointments/patient-appointments.module.ts
+  - apps/api/src/modules/appointments/patient-appointments.service.ts
+  - apps/api/src/modules/scheduling/patient-availability.service.ts
+  - apps/api/src/modules/scheduling/admin-scheduling.module.ts
+  - apps/api/src/modules/assessments/patient/patient-assessments.module.ts
+  - apps/api/src/common/auth/authorization.policy.ts
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/src/app.module.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None; the previously committed F05-T02 migration was deployed to the local development database before integration verification.
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm exec tsc -p tsconfig.test.json --noEmit → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (4 tests)
+  - git diff --check → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/openapi-contract.spec.ts → expected deferred failure: runtime document includes F05-T03 endpoint while checked-in generated client remains owned by F05-T11.
+Result:
+  - Patient-only POST /v1/appointments requires an idempotency key and validates the normalized request binding → PASS
+  - The use case rechecks Phase 03 eligibility and Phase 04 patient-visible availability at its commit boundary → PASS
+  - A successful create atomically persists PENDING state, immutable price snapshot, CREATED history, and a released short-lived hold → PASS
+  - Same key/same request returns the original resource; changed request returns IDEMPOTENCY_KEY_REUSED → PASS
+  - The active-doctor PostgreSQL exclusion violation maps to APPOINTMENT_SLOT_CONFLICT → PASS
+Known limitations:
+  - Generated OpenAPI client synchronization is intentionally deferred to F05-T11; this task did not alter generated client files or mock-removal scope.
+Next task:
+  - F05-T04, eligible but not claimed.

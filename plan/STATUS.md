@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 16:31 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 18:32 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -75,6 +75,7 @@
 
 - `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T03` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 
 ### وضعیت تاریخی Phase 04
 
@@ -93,11 +94,14 @@
 
 ## آخرین batch بسته‌شده
 
-`F05-B02` — `DONE`
+`F05-B03` — `DONE`
 
-- `F05-T02` پس از Prisma generate/typecheck و migration smoke واقعی PostgreSQL با ساخت/حذف
-  database ایزوله پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
-- task واجد شرایط بعدی: `F05-T03`؛ هنوز claim نشده است.
+- `F05-T03` پس از typecheck و integration واقعی PostgreSQL برای eligibility authoritative، availability
+  recheck، hold/release، price snapshot، idempotency و exclusion conflict پذیرفته شد؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T04`؛ هنوز claim نشده است.
+- هماهنگ‌سازی generated OpenAPI client عمداً در مالک آن، `F05-T11`، باقی مانده است؛ بنابراین
+  `test/openapi-contract.spec.ts` تا آن task runtime document را با client checked-in ناسازگار گزارش می‌کند.
 
 `F05-B01` بسته شد: `F05-T01` پس از review قرارداد lifecycle، cancellation/reschedule و price
 snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
