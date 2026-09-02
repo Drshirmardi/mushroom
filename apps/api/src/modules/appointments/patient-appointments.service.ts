@@ -31,21 +31,25 @@ export class PatientAppointmentsService {
     const requestHash = this.requestHash(body.doctorServiceId, startsAt);
     const existing = await this.prisma.appointment.findUnique({ where: { idempotencyActorUserId_idempotencyKey: { idempotencyActorUserId: userId, idempotencyKey: key } } });
     if (existing) return this.idempotentResult(existing, requestHash);
+    // These checks use the shared client. Running them from an interactive transaction would
+    // pin every pool connection during a concurrent booking burst, preventing the checks from
+    // acquiring a connection at all. Capacity itself is rechecked after the transaction lock.
+    const decision = await this.eligibility.get(userId);
+    if (!decision.eligible) throw ineligible();
+    const candidate = await this.availability.candidate(userId, body.doctorServiceId, startsAt);
+    if (!candidate) throw unavailable();
 
     try {
       const appointment = await this.prisma.$transaction(async (tx) => {
-        // The public slot is only a hint. Recheck the mutable Phase 03 and Phase 04 inputs at
-        // the commit boundary; the database exclusion constraint is the final capacity authority.
-        const decision = await this.eligibility.get(userId);
-        if (!decision.eligible) throw ineligible();
-        const candidate = await this.availability.candidate(userId, body.doctorServiceId, startsAt);
-        if (!candidate) throw unavailable();
         const patient = await tx.patientProfile.findUnique({ where: { userId }, select: { id: true, clinicId: true } });
         const offering = await tx.doctorService.findFirst({
           where: { id: body.doctorServiceId, clinicId: patient?.clinicId, isActive: true, publicationStatus: 'PUBLISHED', doctor: { isActive: true, publicationStatus: 'PUBLISHED' }, service: { isActive: true, publicationStatus: 'PUBLISHED' } },
           select: { id: true, clinicId: true, doctorId: true, durationMinutes: true, priceAmount: true, currency: true },
         });
         if (!patient || !offering || candidate.endsAt.getTime() !== startsAt.getTime() + offering.durationMinutes * 60_000) throw unavailable();
+        await this.lockCapacity(tx, patient.clinicId, offering.doctorId, startsAt);
+        const active = await tx.appointment.findFirst({ where: { clinicId: patient.clinicId, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, status: { in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.CHECKED_IN, AppointmentStatus.QUEUED, AppointmentStatus.IN_PROGRESS] } }, select: { id: true } });
+        if (active) throw conflict();
         const now = new Date();
         const hold = await tx.appointmentHold.create({ data: { clinicId: patient.clinicId, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, expiresAt: new Date(now.getTime() + 60_000) } });
         const created = await tx.appointment.create({
@@ -69,7 +73,7 @@ export class PatientAppointmentsService {
         await this.activity(tx, created, 'APPOINTMENT_CREATED', { action: AppointmentStatusHistoryAction.CREATED });
         await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         return created;
-      });
+      }, { maxWait: 30_000, timeout: 30_000 });
       return this.response(appointment);
     } catch (error) {
       const raced = await this.prisma.appointment.findUnique({ where: { idempotencyActorUserId_idempotencyKey: { idempotencyActorUserId: userId, idempotencyKey: key } } });
@@ -152,6 +156,10 @@ export class PatientAppointmentsService {
   private isExclusion(error: unknown) {
     const text = `${JSON.stringify(error)} ${error instanceof Error ? error.message : ''}`;
     return text.includes('23P01') || text.includes('appointments_no_active_doctor_overlap');
+  }
+
+  private async lockCapacity(tx: Prisma.TransactionClient, clinicId: string, doctorId: string, startsAt: Date) {
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`appointment:capacity:${clinicId}:${doctorId}:${startsAt.toISOString()}`}, 0))::text AS locked`;
   }
 
   private async patient(userId: string) {

@@ -409,3 +409,34 @@ Known limitations:
   - None for this task.
 Next task:
   - F05-T12, eligible but not claimed.
+
+## F05-T12 — concurrency, idempotency, authorization and state-machine tests
+
+Task ID: F05-T12
+Completed at: 2026-09-02 19:29 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B12
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/patient-appointments.service.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None.
+Tests run:
+  - LOG_LEVEL=fatal pnpm --filter @sabz-zendegi/api test -- --run test/patient-appointments.integration.spec.ts --testNamePattern='100 concurrent' → PASS (1 test; real PostgreSQL).
+  - LOG_LEVEL=fatal pnpm --filter @sabz-zendegi/api test -- --run test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (9 tests; real PostgreSQL).
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS.
+  - git diff --check → PASS.
+Result:
+  - 100 concurrent requests for one available slot yield exactly one 201 response, 99 APPOINTMENT_SLOT_CONFLICT responses, and one persisted appointment → PASS.
+  - same-key replay/different-payload rejection, patient ownership authorization, and repeat-safe check-in/queue/call-next/complete/no-show transitions remain covered by the PostgreSQL/API suite → PASS.
+  - booking preflight no longer pins interactive-transaction connections while querying authoritative eligibility and availability; the transaction serializes capacity with a transaction-scoped advisory lock and retains the exclusion constraint as final enforcement → PASS.
+  - state-machine fixture selects a doctor without conflicting local seeded appointments at its exercised intervals → PASS.
+Known limitations:
+  - None for this task.
+Next task:
+  - F05-T13, eligible but not claimed.

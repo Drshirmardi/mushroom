@@ -40,7 +40,7 @@
 - [x] `F05-T09` — اتصال appointments/calendar/queue در dashboard
 - [x] `F05-T10` — Dashboard Home V1 با KPI، برنامه امروز و activity واقعی
 - [x] `F05-T11` — OpenAPI/client و حذف mock appointment/operations
-- [ ] `F05-T12` — concurrency، idempotency، authorization و state machine tests
+- [x] `F05-T12` — concurrency، idempotency، authorization و state machine tests
 - [ ] `F05-T13` — cross-app browser E2E و query/load baseline
 - [ ] `F05-T14` — evidence و review Milestone B
 

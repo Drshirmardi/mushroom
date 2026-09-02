@@ -120,6 +120,20 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     if (hold) holdIds.add(hold.id);
   });
 
+  it('commits exactly one appointment for 100 concurrent requests for one slot', async () => {
+    const { token, profile } = await patient();
+    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
+    const day = nextWeekday(rule.isoWeekday);
+    const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });
+    expect(available.statusCode).toBe(200);
+    const payload = { doctorServiceId: offering.id, startsAt: available.json().items[0].startsAt };
+    const results = await Promise.all(Array.from({ length: 100 }, (_, index) => app.inject({ method: 'POST', url: '/v1/appointments', headers: headers(token, `concurrent-slot-${index}`), payload })));
+    expect(results.filter((result) => result.statusCode === 201)).toHaveLength(1);
+    expect(results.filter((result) => result.statusCode === 409 && result.json().code === 'APPOINTMENT_SLOT_CONFLICT')).toHaveLength(99);
+    expect(await prisma.appointment.count({ where: { patientId: profile.id, doctorId: offering.doctorId, startsAt: new Date(payload.startsAt) } })).toBe(1);
+  }, 30_000);
+
   it('lets an administrator create, filter, confirm, reschedule, and cancel clinic appointments under lifecycle policy', async () => {
     const { profile, token } = await patient();
     const adminId = randomUUID(); userIds.add(adminId);
@@ -161,11 +175,17 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const { profile } = await patient();
     const adminId = randomUUID(); userIds.add(adminId);
     const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: randomUUID(), roles: ['ADMIN'] });
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const now = Date.now();
+    const currentStartsAt = new Date(now - 5 * 60_000);
+    const currentEndsAt = new Date(now + 25 * 60_000);
+    const anotherStartsAt = new Date(now + 2 * 86_400_000);
+    const anotherEndsAt = new Date(now + 2 * 86_400_000 + 30 * 60_000);
+    const absentStartsAt = new Date(now - 3 * 60 * 60_000);
+    const absentEndsAt = new Date(now - 2 * 60 * 60_000);
+    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED', doctor: { appointments: { none: { status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, OR: [{ startsAt: { lt: currentEndsAt }, endsAt: { gt: currentStartsAt } }, { startsAt: { lt: anotherEndsAt }, endsAt: { gt: anotherStartsAt } }, { startsAt: { lt: absentEndsAt }, endsAt: { gt: absentStartsAt } }] } } } } });
     const headersForAdmin = () => headers(adminToken);
     const appointment = async (status: 'CONFIRMED' | 'CHECKED_IN', startsAt: Date, endsAt: Date) => prisma.appointment.create({ data: { clinicId: profile.clinicId, patientId: profile.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt, status, confirmedAt: status === 'CONFIRMED' ? new Date() : new Date(), checkedInAt: status === 'CHECKED_IN' ? new Date() : null, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: adminId, idempotencyKey: randomUUID(), idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
-    const now = Date.now();
-    const current = await appointment('CONFIRMED', new Date(now - 5 * 60_000), new Date(now + 25 * 60_000));
+    const current = await appointment('CONFIRMED', currentStartsAt, currentEndsAt);
     const checkIn = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/check-in`, headers: headersForAdmin() });
     expect(checkIn.statusCode).toBe(200); expect(checkIn.json()).toMatchObject({ status: 'CHECKED_IN' });
     const repeatCheckIn = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/check-in`, headers: headersForAdmin() });
@@ -183,7 +203,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const dashboardSummary = await app.inject({ method: 'GET', url: '/v1/admin/appointments/dashboard-summary', headers: headersForAdmin() });
     expect(dashboardSummary.statusCode).toBe(200); expect(dashboardSummary.json()).toMatchObject({ timeZone: 'Asia/Tehran', inProgress: 1 }); expect(dashboardSummary.json().todayPlan).toEqual(expect.arrayContaining([expect.objectContaining({ id: current.id, status: 'IN_PROGRESS', visitMode: offering.visitMode })])); expect(dashboardSummary.json().recentAppointmentActivity).toEqual(expect.arrayContaining([expect.objectContaining({ appointmentId: current.id, type: 'APPOINTMENT_STARTED' })]));
     expect(dashboardSummary.json().averageWaitMinutes).toEqual(expect.any(Number));
-    const another = await appointment('CHECKED_IN', new Date(now + 2 * 86_400_000), new Date(now + 2 * 86_400_000 + 30 * 60_000));
+    const another = await appointment('CHECKED_IN', anotherStartsAt, anotherEndsAt);
     const busy = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${another.id}/start`, headers: headersForAdmin() });
     expect(busy.statusCode).toBe(409); expect(busy.json().code).toBe('APPOINTMENT_DOCTOR_BUSY');
     const complete = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/complete`, headers: headersForAdmin() });
@@ -192,7 +212,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(repeatComplete.statusCode).toBe(200); expect(repeatComplete.json().id).toBe(current.id);
     const empty = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });
     expect(empty.statusCode).toBe(409); expect(empty.json().code).toBe('QUEUE_EMPTY');
-    const absent = await appointment('CONFIRMED', new Date(now - 3 * 60 * 60_000), new Date(now - 2 * 60 * 60_000));
+    const absent = await appointment('CONFIRMED', absentStartsAt, absentEndsAt);
     const noShow = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${absent.id}/no-show`, headers: headersForAdmin() });
     expect(noShow.statusCode).toBe(200); expect(noShow.json()).toMatchObject({ status: 'NO_SHOW' });
     const repeatNoShow = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${absent.id}/no-show`, headers: headersForAdmin() });

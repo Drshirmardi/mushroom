@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 19:21 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 19:29 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -82,6 +82,9 @@
 - `F05-T07` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T08` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T09` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T10` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T11` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T12` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 
 ### وضعیت تاریخی Phase 04
 
@@ -99,6 +102,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F05-B12` — `DONE`
+
+- `F05-T12` پذیرفته شد: PostgreSQL واقعی ۱۰۰ درخواست هم‌زمان را با دقیقاً یک رزرو موفق و
+  ۹۹ conflict پایدار کنترل می‌کند؛ idempotency، authorization و transitionهای تکراری نیز
+  regression-tested هستند؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T13`؛ هنوز claim نشده است.
 
 `F05-B11` — `DONE`
 
