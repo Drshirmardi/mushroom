@@ -26,7 +26,7 @@ test infrastructure. No extra setup task is added.
 
 ## Phase 2: Contract and Persistence Foundation
 
-- [ ] T001 F05-T01: state machine, cancellation/reschedule policy and price snapshot
+- [x] T001 F05-T01: state machine, cancellation/reschedule policy and price snapshot
 - [ ] T002 F05-T02: migration, index and exclusion constraint overlap active doctor
 
 ## Phase 3: Preserved Delivery Sequence — User Stories 1 and 2 (P1)

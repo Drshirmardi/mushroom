@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 20:32 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 16:27 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
-- وضعیت فاز فعال: `NOT_STARTED`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - مسئول/Agent: `ندارد`
@@ -74,6 +74,11 @@
 
 ## وضعیت taskهای فاز فعال
 
+- `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T02` — `NOT_STARTED`؛ task بعدی واجد شرایط، نیازمند claim مستقل migration/shared-path
+
+### وضعیت تاریخی Phase 04
+
 - `F04-T01` — `DONE`
 - `F04-T02` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T03` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
@@ -89,6 +94,10 @@
 
 ## batch در حال اجرا
 
+`F05-B01` بسته شد: `F05-T01` پس از review قرارداد lifecycle، cancellation/reschedule و price
+snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md). batch فعال وجود ندارد؛
+`F05-T02` فقط با claim مستقل migration/shared-path می‌تواند شروع شود.
+
 `F04-B08` بدون تغییر implementation بسته شد: generated client مانع `F04-T08` و `F04-T09` بود. با authorization صریح مالک، `F04-B10` فقط prerequisite slice از `F04-T10` را اجرا و review کرد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
 `F04-B08-R1` برای `F04-T08` پس از dashboard verification و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
@@ -103,7 +112,7 @@
 
 `F04-CLOSE` با independent review بسته شد: تمام taskها، migration/seed، OpenAPI/generated client، تست‌های نهایی، browser evidence، mock boundary و Spec Kit consistency پذیرفته شدند؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
 
-`Phase 04` اکنون `DONE (CLOSED)` است. `Phase 05` phase فعال بعدی است اما `NOT_STARTED` می‌ماند؛ هیچ batch یا task از آن در این run claim یا start نشده است.
+`Phase 04` اکنون `DONE (CLOSED)` است. `F05-B01` برای `F05-T01` پس از review قرارداد lifecycle، cancellation/reschedule و price snapshot بسته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md). `F05-T02` فقط پس از claim مستقل migration/shared-path واجد شرایط است.
 
 ## Blockerها و تصمیم‌های باز
 
