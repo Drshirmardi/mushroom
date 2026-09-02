@@ -6,9 +6,9 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-08-27 14:31 +03:30`
+- آخرین به‌رورسانی: `2026-09-01 20:32 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
-- فاز فعال: `Phase 04 — Clinic, Doctors, Services & Availability`
+- فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
@@ -38,7 +38,7 @@
 - [x] `Phase 01` — Identity & Access — `DONE` — checklist: [`phases/01-IDENTITY-ACCESS.md`](phases/01-IDENTITY-ACCESS.md)
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
-- [ ] `Phase 04` — Clinic, Doctors, Services & Availability — `NOT_STARTED`
+- [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
@@ -74,20 +74,36 @@
 
 ## وضعیت taskهای فاز فعال
 
-- `F03-T01` تا `F03-T08` — `DONE`
-- `F03-T09` — `DONE`
-- `F03-T10` — `DONE`
-- `F03-T11` — `DONE`
-- `F03-T12` — `DONE`
-- `F03-T13` — `DONE`
+- `F04-T01` — `DONE`
+- `F04-T02` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T03` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T04` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T05` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T06` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T07` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T08` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T09` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T10` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T11` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
+- `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## batch در حال اجرا
 
-`F03-B13` برای `F03-T13` با حذف artifact بدون caller و evidence کامل Milestone A بسته شد؛ شواهد: [`logs/phase-03.md`](logs/phase-03.md) و [`../specs/001-adopt-phase-03/evidence.md`](../specs/001-adopt-phase-03/evidence.md).
+`F04-B08` بدون تغییر implementation بسته شد: generated client مانع `F04-T08` و `F04-T09` بود. با authorization صریح مالک، `F04-B10` فقط prerequisite slice از `F04-T10` را اجرا و review کرد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
-`Phase 03` و `Milestone A` DONE هستند. `F04-T01` نخستین task واجد شرایط Phase 04 است، اما claim نشده است.
+`F04-B08-R1` برای `F04-T08` پس از dashboard verification و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
-Phase 02 final gate accepted: manual browser verification, restored browser inspection, mock audit, full API suite and frontend build/typecheck evidence passed.
+`F04-B09` برای patient doctor detail، انتخاب doctor/service و availability مشتق‌شده پس از review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
+
+`F04-B10-R1` برای completion نهایی `F04-T10` پس از migration/seed smoke، contract drift و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
+
+`F04-B11` پس از review coordinator و گیت واقعی PostgreSQL/API/browser بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
+
+`F04-B12` پس از migration/seed smoke، full API suite، frontend/client verification، evidence reconciliation و review coordinator بسته شد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
+
+`F04-CLOSE` با independent review بسته شد: تمام taskها، migration/seed، OpenAPI/generated client، تست‌های نهایی، browser evidence، mock boundary و Spec Kit consistency پذیرفته شدند؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
+
+`Phase 04` اکنون `DONE (CLOSED)` است. `Phase 05` phase فعال بعدی است اما `NOT_STARTED` می‌ماند؛ هیچ batch یا task از آن در این run claim یا start نشده است.
 
 ## Blockerها و تصمیم‌های باز
 

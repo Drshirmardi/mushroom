@@ -1,6 +1,6 @@
 # Phase 04 — Clinic, Doctors, Services & Availability
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)`
 - Milestone: `B — کلینیک قابل رزرو`
 - پیش‌نیاز: `Phase 02 DONE`؛ قرارداد eligibility از `Phase 03`
 - خروجی اصلی: ادمین بدون seed یا تغییر DB پزشک، خدمت، تعرفه و ظرفیت رزرو را مدیریت می‌کند.
@@ -23,18 +23,25 @@
 
 ## Taskها
 
-- [ ] `F04-T01` — قرارداد فیلد پزشک/خدمت، نوع ویزیت، مدت، فاصله و تعرفه
-- [ ] `F04-T02` — migration directory، doctor-service و availability
-- [ ] `F04-T03` — admin clinic/doctor/specialty/service CRUD
-- [ ] `F04-T04` — admin doctor-service assignment با mode/duration/price
-- [ ] `F04-T05` — admin working-hours، closures، leave و exceptions CRUD
-- [ ] `F04-T06` — slot generation on demand و public doctor/service/availability query
-- [ ] `F04-T07` — permission/audit تغییر برنامه، تعرفه و publication
-- [ ] `F04-T08` — فرم‌های واقعی تنظیمات dashboard
-- [ ] `F04-T09` — doctor detail و انتخاب پزشک/خدمت در app
-- [ ] `F04-T10` — OpenAPI/client، seed development و حذف mock scope
-- [ ] `F04-T11` — overlap، timezone، query plan و browser E2E
-- [ ] `F04-T12` — evidence و readiness برای appointment
+- [x] `F04-T01` — قرارداد فیلد پزشک/خدمت، نوع ویزیت، مدت، فاصله و تعرفه
+- [x] `F04-T02` — migration directory، doctor-service و availability
+- [x] `F04-T03` — admin clinic/doctor/specialty/service CRUD
+- [x] `F04-T04` — admin doctor-service assignment با mode/duration/price
+- [x] `F04-T05` — admin working-hours، closures، leave و exceptions CRUD
+- [x] `F04-T06` — slot generation on demand و public doctor/service/availability query
+- [x] `F04-T07` — permission/audit تغییر برنامه، تعرفه و publication
+- [x] `F04-T08` — فرم‌های واقعی تنظیمات dashboard
+- [x] `F04-T09` — doctor detail و انتخاب پزشک/خدمت در app
+- [x] `F04-T10` — OpenAPI/client، seed development و حذف mock scope
+- [x] `F04-T11` — overlap، timezone، query plan و browser E2E
+- [x] `F04-T12` — evidence و readiness برای appointment
+
+> **Execution adjustment (2026-09-01):** `F04-T08` and `F04-T09` require the generated Phase 04
+> client but cannot create it themselves. With explicit owner approval, the OpenAPI/client
+> synchronization portion of `F04-T10` may execute first as a controlled prerequisite slice.
+> `F04-T10` remains incomplete until its later deterministic seed-data and Phase 04 mock-removal
+> deliverables are completed after `F04-T09`; this adjustment does not move dashboard or app
+> implementation into another task.
 
 ## قواعد دامنه
 

@@ -1,41 +1,71 @@
 "use client";
 
-import {
-  Bell, BellOff, CalendarDays, ChevronLeft, Clock, Cpu,
-  CreditCard, Edit, Globe, Lock, User, Wallet,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
+import { CalendarDays, Clock, RefreshCw, Save, ShieldAlert, Stethoscope, Wallet } from "lucide-react";
 
-interface SettingsSection {
-  icon: LucideIcon;
-  label: string;
-  desc: string;
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { apiClient } from "@/lib/api";
+import { createAvailabilityRule, createClinicClosure, createDoctor, createDoctorException, createDoctorService, createService, createSpecialty, DirectorySettingsApiError, loadDirectorySettings, type DirectorySettingsData, type DirectorySettingsState, updateClinic, updateDoctor, updateDoctorService, updateService } from "@/lib/directory-settings-api";
+
+type ViewState = DirectorySettingsState | { status: "loading" };
+type MutationState = { status: "idle" } | { status: "saving" } | { status: "success"; message: string } | { status: "validation"; message: string } | { status: "forbidden" } | { status: "unavailable" } | { status: "error" };
+
+const field = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
+const button = "inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50";
+
+function Notice({ state, onRetry }: { state: Exclude<ViewState["status"], "ready" | "loading">; onRetry: () => void }) {
+  const title = state === "unauthorized" ? "دسترسی مجاز نیست" : state === "unavailable" ? "سرویس در دسترس نیست" : "دریافت تنظیمات ناموفق بود";
+  const body = state === "unauthorized" ? "حساب شما اجازهٔ مدیریت تنظیمات کلینیک را ندارد." : state === "unavailable" ? "اتصال به API برقرار نشد؛ هیچ داده‌ای نمایش داده نمی‌شود." : "داده‌ای نمایش داده نشد؛ دوباره تلاش کنید.";
+  return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950" role="alert"><div className="flex items-center gap-2 font-bold"><ShieldAlert size={18} />{title}</div><p className="mt-2 text-sm">{body}</p>{state !== "unauthorized" && <button onClick={onRetry} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold"><RefreshCw size={15} />تلاش دوباره</button>}</div>;
 }
 
-export function SettingsPage() {
-  const sections: SettingsSection[] = [
-    { icon: User, label: "پروفایل پزشک", desc: "اطلاعات شخصی و تصویر" }, { icon: Clock, label: "ساعات کاری", desc: "روزها و بازه‌های زمانی" },
-    { icon: CalendarDays, label: "برنامه کلینیک", desc: "تعطیلات و مرخصی" }, { icon: Wallet, label: "تعرفه مشاوره", desc: "قیمت حضوری و آنلاین" },
-    { icon: CreditCard, label: "درگاه پرداخت", desc: "تنظیمات مالی" }, { icon: Bell, label: "اعلان‌ها", desc: "پیامک و نوتیفیکیشن" },
-    { icon: Globe, label: "تنظیمات فروشگاه", desc: "ارسال و انبار" }, { icon: Lock, label: "امنیت", desc: "رمز و احراز هویت" },
-    { icon: Cpu, label: "اتوماسیون", desc: "قوانین خودکار" }, { icon: BellOff, label: "مدیریت پیامک", desc: "الگوهای پیام" },
-  ];
-  return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
-      <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center gap-5">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">ا</div>
-        <div><h2 className="text-lg font-bold">دکتر سید ابوالفتح شیرمردی</h2><p className="text-sm text-muted-foreground">متخصص طب سوزنی — تهران</p></div>
-        <button className="mr-auto flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold hover:bg-secondary"><Edit size={15} />ویرایش</button>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        {sections.map(s => (
-          <div key={s.label} className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md cursor-pointer hover:border-primary/30 group transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors"><s.icon size={20} /></div>
-            <div className="flex-1"><p className="font-bold text-sm">{s.label}</p><p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p></div>
-            <ChevronLeft size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+function MutationNotice({ state }: { state: MutationState }) {
+  if (state.status === "idle" || state.status === "saving") return null;
+  const message = state.status === "success" ? state.message : state.status === "validation" ? state.message : state.status === "forbidden" ? "اجازهٔ انجام این تغییر را ندارید." : state.status === "unavailable" ? "سرویس در دسترس نیست؛ تغییر ذخیره نشد." : "ذخیره‌سازی ناموفق بود؛ دادهٔ نمایش‌داده‌شده تغییر نکرد.";
+  return <p className={`rounded-xl px-3 py-2 text-sm ${state.status === "success" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`} role={state.status === "success" ? "status" : "alert"}>{message}</p>;
 }
+
+function Section({ icon: Icon, title, description, children }: { icon: ComponentType<{ size?: number }>; title: string; description: string; children: React.ReactNode }) { return <section className="rounded-2xl border border-border bg-card p-5 shadow-sm"><div className="mb-4 flex items-start gap-3"><div className="rounded-xl bg-primary/10 p-2 text-primary"><Icon size={19} /></div><div><h2 className="font-bold">{title}</h2><p className="mt-1 text-sm text-muted-foreground">{description}</p></div></div>{children}</section>; }
+function List({ label, items, empty }: { label: string; items: string[]; empty: string }) { return <div className="mt-4"><h3 className="text-sm font-bold">{label}</h3>{items.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">{empty}</p> : <ul className="mt-2 space-y-1 text-sm text-muted-foreground">{items.map((item, index) => <li key={`${item}-${index}`}>• {item}</li>)}</ul>}</div>; }
+
+function SettingsForms({ data, accessToken, refresh }: { data: DirectorySettingsData; accessToken: string; refresh: () => Promise<void> }) {
+  const [mutation, setMutation] = useState<MutationState>({ status: "idle" });
+  const [clinicName, setClinicName] = useState(data.clinic.name); const [clinicTimeZone, setClinicTimeZone] = useState(data.clinic.timeZone);
+  const [doctorName, setDoctorName] = useState(""); const [specialtyName, setSpecialtyName] = useState(""); const [serviceName, setServiceName] = useState("");
+  const [doctorId, setDoctorId] = useState(""); const [serviceId, setServiceId] = useState(""); const [price, setPrice] = useState("0");
+  const [weekday, setWeekday] = useState("1"); const [start, setStart] = useState("09:00"); const [end, setEnd] = useState("17:00");
+  const [closureLabel, setClosureLabel] = useState(""); const [closureStart, setClosureStart] = useState(""); const [closureEnd, setClosureEnd] = useState("");
+  const submit = async (work: () => Promise<unknown>, success: string) => { setMutation({ status: "saving" }); try { await work(); await refresh(); setMutation({ status: "success", message: success }); } catch (error) { const status = error instanceof DirectorySettingsApiError ? error.status : 0; setMutation(status === 401 || status === 403 ? { status: "forbidden" } : status === 400 || status === 409 || status === 422 ? { status: "validation", message: "ورودی یا بازهٔ زمانی معتبر نیست یا با برنامهٔ موجود تداخل دارد." } : status === 0 || status === 503 || status === 504 ? { status: "unavailable" } : { status: "error" }); } };
+  const emptyDirectory = data.doctors.length === 0 || data.services.length === 0;
+  return <div className="space-y-5"><MutationNotice state={mutation} />
+    <Section icon={Stethoscope} title="پروفایل کلینیک و پزشک" description="اطلاعات واقعی کلینیک و ساخت پروفایل پزشک بدون نیاز به حساب کاربری.">
+      <form className="grid gap-3 md:grid-cols-3" onSubmit={(event) => { event.preventDefault(); void submit(() => updateClinic(accessToken, { name: clinicName, timeZone: clinicTimeZone }), "پروفایل کلینیک ذخیره شد."); }}><input className={field} value={clinicName} onChange={(event) => setClinicName(event.target.value)} aria-label="نام کلینیک" /><input className={field} value={clinicTimeZone} onChange={(event) => setClinicTimeZone(event.target.value)} aria-label="منطقه زمانی" /><button className={button} disabled={mutation.status === "saving"}><Save size={16} />ذخیره کلینیک</button></form>
+      <form className="mt-4 flex gap-3" onSubmit={(event) => { event.preventDefault(); if (doctorName.trim()) void submit(() => createDoctor(accessToken, { displayName: doctorName.trim(), isActive: true, publicationStatus: "UNPUBLISHED" }), "پروفایل پزشک ایجاد شد."); }}><input className={field} value={doctorName} onChange={(event) => setDoctorName(event.target.value)} placeholder="نام نمایشی پزشک" aria-label="نام پزشک" /><button className={button} disabled={!doctorName.trim() || mutation.status === "saving"}>افزودن پزشک</button></form>
+      <div className="mt-3 flex flex-wrap gap-2">{data.doctors.filter((item) => item.publicationStatus !== "PUBLISHED").map((item) => <button key={item.id} className="rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary" disabled={mutation.status === "saving"} onClick={() => void submit(() => updateDoctor(accessToken, item.id, { isActive: true, publicationStatus: "PUBLISHED" }), "پروفایل پزشک منتشر شد.")}>انتشار {item.displayName}</button>)}</div>
+      <List label="پزشکان ثبت‌شده" items={data.doctors.map((item) => [item.displayName, item.publicationStatus === "PUBLISHED" ? "منتشرشده" : "پیش‌نویس"].join(" · "))} empty="هنوز پزشک قابل‌مدیریتی ثبت نشده است." />
+    </Section>
+    <Section icon={Wallet} title="خدمت و تعرفه" description="تخصص، خدمت و ارائهٔ پزشک با مدت، mode و قیمت صحیح IRR.">
+      <div className="grid gap-3 md:grid-cols-2"><form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); if (specialtyName.trim()) void submit(() => createSpecialty(accessToken, { name: specialtyName.trim(), isActive: true, publicationStatus: "UNPUBLISHED" }), "تخصص ایجاد شد."); }}><input className={field} value={specialtyName} onChange={(event) => setSpecialtyName(event.target.value)} placeholder="تخصص" /><button className={button} disabled={!specialtyName.trim() || mutation.status === "saving"}>افزودن</button></form><form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); if (serviceName.trim()) void submit(() => createService(accessToken, { name: serviceName.trim(), isActive: true, publicationStatus: "UNPUBLISHED" }), "خدمت ایجاد شد."); }}><input className={field} value={serviceName} onChange={(event) => setServiceName(event.target.value)} placeholder="نام خدمت" /><button className={button} disabled={!serviceName.trim() || mutation.status === "saving"}>افزودن</button></form></div>
+      <form className="mt-3 grid gap-3 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); if (!emptyDirectory) void submit(() => createDoctorService(accessToken, { doctorId, serviceId, visitMode: "IN_PERSON", durationMinutes: 30, bufferMinutes: 0, priceAmount: Number(price), currency: "IRR", isActive: true, publicationStatus: "UNPUBLISHED" }), "تعرفه و ارائهٔ پزشک ذخیره شد."); }}><select className={field} value={doctorId} onChange={(event) => setDoctorId(event.target.value)} disabled={emptyDirectory}><option value="">پزشک</option>{data.doctors.map((item) => <option key={item.id} value={item.id}>{item.displayName}</option>)}</select><select className={field} value={serviceId} onChange={(event) => setServiceId(event.target.value)} disabled={emptyDirectory}><option value="">خدمت</option>{data.services.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input className={field} type="number" min="0" value={price} onChange={(event) => setPrice(event.target.value)} aria-label="قیمت IRR" /><span className="self-center text-sm text-muted-foreground">۳۰ دقیقه · حضوری</span><button className={button} disabled={emptyDirectory || !doctorId || !serviceId || mutation.status === "saving"}>ثبت تعرفه</button></form>
+      {emptyDirectory && <p className="mt-3 text-sm text-muted-foreground">برای ثبت تعرفه، ابتدا یک پزشک و یک خدمت ایجاد کنید.</p>}
+      <div className="mt-3 flex flex-wrap gap-2">{data.services.filter((item) => item.publicationStatus !== "PUBLISHED").map((item) => <button key={item.id} className="rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary" disabled={mutation.status === "saving"} onClick={() => void submit(() => updateService(accessToken, item.id, { isActive: true, publicationStatus: "PUBLISHED" }), "خدمت منتشر شد.")}>انتشار {item.name}</button>)}{data.doctorServices.filter((item) => item.publicationStatus !== "PUBLISHED").map((item) => <button key={item.id} className="rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary" disabled={mutation.status === "saving"} onClick={() => void submit(() => updateDoctorService(accessToken, item.id, { isActive: true, publicationStatus: "PUBLISHED" }), "تعرفهٔ پزشک منتشر شد.")}>انتشار {item.service.name}</button>)}</div>
+      <List
+        label="تعرفه‌های ثبت‌شده"
+        items={data.doctorServices.map((item) => [item.doctor.name, item.service.name, item.priceAmount.toLocaleString("fa-IR"), item.currency].join(" · "))}
+        empty="هنوز تعرفه‌ای ثبت نشده است."
+      />
+    </Section>
+    <Section icon={Clock} title="ساعات کاری" description="بازه‌های کاری هفتگی با اعتبارسنجی واقعی API و جلوگیری از تداخل.">
+      <form className="grid gap-3 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); if (doctorId) void submit(() => createAvailabilityRule(accessToken, { doctorId, visitMode: "IN_PERSON", isoWeekday: Number(weekday), startLocalTime: start, endLocalTime: end, isActive: true }), "ساعت کاری ذخیره شد."); }}><select className={field} value={doctorId} onChange={(event) => setDoctorId(event.target.value)}><option value="">پزشک</option>{data.doctors.map((item) => <option key={item.id} value={item.id}>{item.displayName}</option>)}</select><select className={field} value={weekday} onChange={(event) => setWeekday(event.target.value)}>{[1,2,3,4,5,6,7].map((value) => <option key={value} value={value}>روز {value}</option>)}</select><input className={field} type="time" value={start} onChange={(event) => setStart(event.target.value)} /><input className={field} type="time" value={end} onChange={(event) => setEnd(event.target.value)} /><button className={button} disabled={!doctorId || mutation.status === "saving"}>ثبت ساعت</button></form>
+      <List label="قواعد کاری" items={data.availabilityRules.map((item) => ["پزشک " + item.doctorId.slice(0, 8), "روز " + item.isoWeekday, item.startLocalTime + " تا " + item.endLocalTime].join(" · "))} empty="هنوز ساعت کاری ثبت نشده است." />
+    </Section>
+    <Section icon={CalendarDays} title="برنامه کلینیک" description="تعطیلی کلینیک فقط با بازهٔ UTC معتبر ذخیره می‌شود.">
+      <form className="grid gap-3 md:grid-cols-4" onSubmit={(event) => { event.preventDefault(); if (closureLabel.trim() && closureStart && closureEnd) void submit(() => createClinicClosure(accessToken, { label: closureLabel.trim(), startsAt: new Date(closureStart).toISOString(), endsAt: new Date(closureEnd).toISOString(), isActive: true }), "تعطیلی کلینیک ذخیره شد."); }}><input className={field} value={closureLabel} onChange={(event) => setClosureLabel(event.target.value)} placeholder="عنوان تعطیلی" /><input className={field} type="datetime-local" value={closureStart} onChange={(event) => setClosureStart(event.target.value)} /><input className={field} type="datetime-local" value={closureEnd} onChange={(event) => setClosureEnd(event.target.value)} /><button className={button} disabled={!closureLabel.trim() || !closureStart || !closureEnd || mutation.status === "saving"}>ثبت تعطیلی</button></form>
+      <form className="mt-3 grid gap-3 md:grid-cols-4" onSubmit={(event) => { event.preventDefault(); if (doctorId && closureStart && closureEnd) void submit(() => createDoctorException(accessToken, { doctorId, kind: "UNAVAILABLE", visitMode: null, startsAt: new Date(closureStart).toISOString(), endsAt: new Date(closureEnd).toISOString(), isActive: true }), "مرخصی پزشک ذخیره شد."); }}><select className={field} value={doctorId} onChange={(event) => setDoctorId(event.target.value)}><option value="">پزشک برای مرخصی</option>{data.doctors.map((item) => <option key={item.id} value={item.id}>{item.displayName}</option>)}</select><span className="self-center text-sm text-muted-foreground">از همان بازهٔ بالا استفاده می‌شود</span><span className="self-center text-sm text-muted-foreground">عدم دسترسی همهٔ modeها</span><button className={button} disabled={!doctorId || !closureStart || !closureEnd || mutation.status === "saving"}>ثبت مرخصی</button></form>
+      <List label="تعطیلی‌های ثبت‌شده" items={data.closures.map((item) => [item.label, new Date(item.startsAt).toLocaleString("fa-IR")].join(" · "))} empty="تعطیلی ثبت‌شده‌ای وجود ندارد." />
+      <List label="مرخصی‌ها و exceptionها" items={data.exceptions.map((item) => [item.kind, new Date(item.startsAt).toLocaleString("fa-IR")].join(" · "))} empty="مرخصی یا exception ثبت‌شده‌ای وجود ندارد." />
+    </Section>
+  </div>;
+}
+
+export function SettingsPage() { const { authentication } = useDashboardSession(); const [state, setState] = useState<ViewState>({ status: "loading" }); const refresh = useCallback(async () => setState(await loadDirectorySettings(apiClient, authentication.accessToken)), [authentication.accessToken]); useEffect(() => { let cancelled = false; async function load() { const nextState = await loadDirectorySettings(apiClient, authentication.accessToken); if (!cancelled) setState(nextState); } void load(); return () => { cancelled = true; }; }, [authentication.accessToken]); return <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5"><div><h1 className="text-xl font-bold">تنظیمات کلینیک و ظرفیت رزرو</h1><p className="mt-1 text-sm text-muted-foreground">داده‌ها و تغییرات این صفحه مستقیماً از API مدیریت کلینیک می‌آیند.</p></div>{state.status === "loading" ? <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground" role="status">در حال دریافت تنظیمات…</p> : state.status === "ready" ? <SettingsForms data={state.data} accessToken={authentication.accessToken} refresh={refresh} /> : <Notice state={state.status} onRetry={() => void refresh()} />}</div>; }

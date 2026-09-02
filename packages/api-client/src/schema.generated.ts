@@ -623,6 +623,336 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/clinic": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the active clinic */
+        get: operations["adminClinicGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the active clinic */
+        patch: operations["adminClinicUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/doctors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic doctors */
+        get: operations["adminDoctorsList"];
+        put?: never;
+        /** Create a clinic doctor */
+        post: operations["adminDoctorsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/doctors/{doctorId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a clinic doctor */
+        get: operations["adminDoctorsGet"];
+        put?: never;
+        post?: never;
+        /** Delete an unused clinic doctor */
+        delete: operations["adminDoctorsDelete"];
+        options?: never;
+        head?: never;
+        /** Update a clinic doctor */
+        patch: operations["adminDoctorsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/specialties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic specialties */
+        get: operations["adminSpecialtiesList"];
+        put?: never;
+        /** Create a clinic specialty */
+        post: operations["adminSpecialtiesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/specialties/{specialtyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a clinic specialty */
+        get: operations["adminSpecialtiesGet"];
+        put?: never;
+        post?: never;
+        /** Delete an unused clinic specialty */
+        delete: operations["adminSpecialtiesDelete"];
+        options?: never;
+        head?: never;
+        /** Update a clinic specialty */
+        patch: operations["adminSpecialtiesUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic services */
+        get: operations["adminServicesList"];
+        put?: never;
+        /** Create a clinic service */
+        post: operations["adminServicesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/services/{serviceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a clinic service */
+        get: operations["adminServicesGet"];
+        put?: never;
+        post?: never;
+        /** Delete an unused clinic service */
+        delete: operations["adminServicesDelete"];
+        options?: never;
+        head?: never;
+        /** Update a clinic service */
+        patch: operations["adminServicesUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/doctor-services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic doctor services */
+        get: operations["adminDoctorServicesList"];
+        put?: never;
+        /** Create a doctor service */
+        post: operations["adminDoctorServicesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/doctor-services/{doctorServiceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a doctor service */
+        get: operations["adminDoctorServicesGet"];
+        put?: never;
+        post?: never;
+        /** Delete an unused doctor service */
+        delete: operations["adminDoctorServicesDelete"];
+        options?: never;
+        head?: never;
+        /** Update a doctor service */
+        patch: operations["adminDoctorServicesUpdate"];
+        trace?: never;
+    };
+    "/v1/directory/doctors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List visible clinic doctors */
+        get: operations["patientDirectoryDoctorsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/directory/doctors/{doctorId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a visible clinic doctor */
+        get: operations["patientDirectoryDoctorGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/directory/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List visible clinic services */
+        get: operations["patientDirectoryServicesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/availability-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAvailabilityRulesList"];
+        put?: never;
+        post: operations["adminAvailabilityRulesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/availability-rules/{ruleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAvailabilityRulesGet"];
+        put?: never;
+        post?: never;
+        delete: operations["adminAvailabilityRulesDelete"];
+        options?: never;
+        head?: never;
+        patch: operations["adminAvailabilityRulesUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/clinic-closures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminClinicClosuresList"];
+        put?: never;
+        post: operations["adminClinicClosuresCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/clinic-closures/{closureId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminClinicClosuresGet"];
+        put?: never;
+        post?: never;
+        delete: operations["adminClinicClosuresDelete"];
+        options?: never;
+        head?: never;
+        patch: operations["adminClinicClosuresUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/doctor-availability-exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDoctorAvailabilityExceptionsList"];
+        put?: never;
+        post: operations["adminDoctorAvailabilityExceptionsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/doctor-availability-exceptions/{exceptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDoctorAvailabilityExceptionsGet"];
+        put?: never;
+        post?: never;
+        delete: operations["adminDoctorAvailabilityExceptionsDelete"];
+        options?: never;
+        head?: never;
+        patch: operations["adminDoctorAvailabilityExceptionsUpdate"];
+        trace?: never;
+    };
+    "/v1/directory/doctor-services/{doctorServiceId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get on-demand availability for a visible doctor service */
+        get: operations["patientDoctorServiceAvailabilityGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -652,7 +982,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -1130,6 +1460,437 @@ export interface components {
             /** @enum {string} */
             reason: "ELIGIBLE" | "PROFILE_INCOMPLETE" | "MAIN_ASSESSMENT_REQUIRED" | "ASSESSMENT_EXPIRED" | "LATEST_VERSION_REQUIRED";
             nextAction?: string | null;
+        };
+        ClinicResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            timeZone: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "INACTIVE";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UpdateClinicDto: {
+            name?: string;
+            /** @example Asia/Tehran */
+            timeZone?: string;
+        };
+        DoctorSpecialtyResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        DoctorResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId?: Record<string, never> | null;
+            displayName: string;
+            biography?: Record<string, never> | null;
+            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: Record<string, never> | null;
+            languages: string[];
+            education: string[];
+            certifications: string[];
+            specialties: components["schemas"]["DoctorSpecialtyResponseDto"][];
+            isActive: boolean;
+            /** @enum {string} */
+            publicationStatus: "UNPUBLISHED" | "PUBLISHED";
+            /** Format: date-time */
+            publishedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DoctorPageResponseDto: {
+            items: components["schemas"]["DoctorResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateDoctorDto: {
+            displayName: string;
+            biography?: Record<string, never> | null;
+            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: Record<string, never> | null;
+            languages?: string[];
+            education?: string[];
+            certifications?: string[];
+            specialtyIds?: string[];
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        UpdateDoctorDto: {
+            displayName?: string;
+            biography?: Record<string, never> | null;
+            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: Record<string, never> | null;
+            languages?: string[];
+            education?: string[];
+            certifications?: string[];
+            specialtyIds?: string[];
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        SpecialtyResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description?: Record<string, never> | null;
+            isActive: boolean;
+            /** @enum {string} */
+            publicationStatus: "UNPUBLISHED" | "PUBLISHED";
+            /** Format: date-time */
+            publishedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DirectoryPageResponseDto: {
+            items: components["schemas"]["SpecialtyResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateSpecialtyDto: {
+            name: string;
+            description?: Record<string, never> | null;
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        UpdateSpecialtyDto: {
+            name?: string;
+            description?: Record<string, never> | null;
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        CreateServiceDto: {
+            name: string;
+            description?: Record<string, never> | null;
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        ServiceResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description?: Record<string, never> | null;
+            isActive: boolean;
+            /** @enum {string} */
+            publicationStatus: "UNPUBLISHED" | "PUBLISHED";
+            /** Format: date-time */
+            publishedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UpdateServiceDto: {
+            name?: string;
+            description?: Record<string, never> | null;
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        DoctorServiceParentResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        DoctorServiceResponseDto: {
+            /** Format: uuid */
+            id: string;
+            doctor: components["schemas"]["DoctorServiceParentResponseDto"];
+            service: components["schemas"]["DoctorServiceParentResponseDto"];
+            /** @enum {string} */
+            visitMode: "IN_PERSON" | "ONLINE";
+            durationMinutes: number;
+            bufferMinutes: number;
+            priceAmount: number;
+            /** @enum {string} */
+            currency: "IRR";
+            isActive: boolean;
+            /** @enum {string} */
+            publicationStatus: "UNPUBLISHED" | "PUBLISHED";
+            /** Format: date-time */
+            publishedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DoctorServicePageResponseDto: {
+            items: components["schemas"]["DoctorServiceResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateDoctorServiceDto: {
+            /** Format: uuid */
+            doctorId: string;
+            /** Format: uuid */
+            serviceId: string;
+            /** @enum {string} */
+            visitMode: "IN_PERSON" | "ONLINE";
+            durationMinutes: number;
+            /** @default 0 */
+            bufferMinutes?: number;
+            priceAmount: number;
+            /**
+             * @default IRR
+             * @enum {string}
+             */
+            currency?: "IRR";
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        UpdateDoctorServiceDto: {
+            /** Format: uuid */
+            doctorId?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            /** @enum {string} */
+            visitMode?: "IN_PERSON" | "ONLINE";
+            durationMinutes?: number;
+            bufferMinutes?: number;
+            priceAmount?: number;
+            /** @enum {string} */
+            currency?: "IRR";
+            isActive?: boolean;
+            /** @enum {string} */
+            publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+        };
+        PatientSpecialtyDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        PatientServiceDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description?: Record<string, never> | null;
+        };
+        PatientOfferingDto: {
+            /** Format: uuid */
+            id: string;
+            service: components["schemas"]["PatientServiceDto"];
+            /** @enum {string} */
+            visitMode: "IN_PERSON" | "ONLINE";
+            durationMinutes: number;
+            bufferMinutes: number;
+            priceAmount: number;
+            /** @enum {string} */
+            currency: "IRR";
+        };
+        PatientDoctorListItemDto: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            profileImageUrl?: Record<string, never> | null;
+            yearsExperience?: Record<string, never> | null;
+            specialties: components["schemas"]["PatientSpecialtyDto"][];
+            offerings: components["schemas"]["PatientOfferingDto"][];
+        };
+        PatientDoctorPageResponseDto: {
+            items: components["schemas"]["PatientDoctorListItemDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PatientClinicDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            timeZone: string;
+        };
+        PatientDoctorDetailDto: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            profileImageUrl?: Record<string, never> | null;
+            yearsExperience?: Record<string, never> | null;
+            specialties: components["schemas"]["PatientSpecialtyDto"][];
+            offerings: components["schemas"]["PatientOfferingDto"][];
+            biography?: Record<string, never> | null;
+            languages: string[];
+            education: string[];
+            certifications: string[];
+            clinic: components["schemas"]["PatientClinicDto"];
+        };
+        PatientServicePageResponseDto: {
+            items: components["schemas"]["PatientServiceDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AvailabilityRuleResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            doctorId: string;
+            /** @enum {string} */
+            visitMode: "IN_PERSON" | "ONLINE";
+            isoWeekday: number;
+            startLocalTime: string;
+            endLocalTime: string;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AvailabilityRulePageResponseDto: {
+            items: components["schemas"]["AvailabilityRuleResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateAvailabilityRuleDto: {
+            /** Format: uuid */
+            doctorId: string;
+            /** @enum {string} */
+            visitMode: "IN_PERSON" | "ONLINE";
+            isoWeekday: number;
+            /** @example 09:00 */
+            startLocalTime: string;
+            /** @example 17:00 */
+            endLocalTime: string;
+            /** @default true */
+            isActive?: boolean;
+        };
+        UpdateAvailabilityRuleDto: {
+            /** Format: uuid */
+            doctorId?: string;
+            /** @enum {string} */
+            visitMode?: "IN_PERSON" | "ONLINE";
+            isoWeekday?: number;
+            /** @example 09:00 */
+            startLocalTime?: string;
+            /** @example 17:00 */
+            endLocalTime?: string;
+            isActive?: boolean;
+        };
+        ClinicClosureResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            label: string;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ClinicClosurePageResponseDto: {
+            items: components["schemas"]["ClinicClosureResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateClinicClosureDto: {
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            isActive?: boolean;
+            label: string;
+        };
+        UpdateClinicClosureDto: {
+            label?: string;
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            isActive?: boolean;
+        };
+        DoctorAvailabilityExceptionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            doctorId: string;
+            /** @enum {string} */
+            kind: "AVAILABLE" | "UNAVAILABLE";
+            /** @enum {string|null} */
+            visitMode?: "IN_PERSON" | "ONLINE" | null;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            label?: Record<string, never> | null;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DoctorAvailabilityExceptionPageResponseDto: {
+            items: components["schemas"]["DoctorAvailabilityExceptionResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateDoctorAvailabilityExceptionDto: {
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            isActive?: boolean;
+            /** Format: uuid */
+            doctorId: string;
+            /** @enum {string} */
+            kind: "AVAILABLE" | "UNAVAILABLE";
+            /** @enum {string|null} */
+            visitMode?: "IN_PERSON" | "ONLINE" | null;
+            label?: Record<string, never> | null;
+        };
+        UpdateDoctorAvailabilityExceptionDto: {
+            /** Format: uuid */
+            doctorId?: string;
+            /** @enum {string} */
+            kind?: "AVAILABLE" | "UNAVAILABLE";
+            /** @enum {string|null} */
+            visitMode?: "IN_PERSON" | "ONLINE" | null;
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            label?: Record<string, never> | null;
+            isActive?: boolean;
+        };
+        PatientAvailabilityItemDto: {
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            localDate: string;
+            localStartTime: string;
+            localEndTime: string;
+        };
+        PatientAvailabilityResponseDto: {
+            /** Format: uuid */
+            doctorServiceId: string;
+            timeZone: string;
+            fromDate: string;
+            toDate: string;
+            items: components["schemas"]["PatientAvailabilityItemDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
         };
     };
     responses: never;
@@ -2994,6 +3755,963 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientBookingEligibilityResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicResponseDto"];
+                };
+            };
+            /** @description The active clinic was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClinicDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicResponseDto"];
+                };
+            };
+            /** @description Clinic input is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorsList: {
+        parameters: {
+            query?: {
+                query?: string;
+                isActive?: boolean;
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                specialtyId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorPageResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDoctorDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorsDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminDoctorsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDoctorDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorResponseDto"];
+                };
+            };
+        };
+    };
+    adminSpecialtiesList: {
+        parameters: {
+            query?: {
+                query?: string;
+                isActive?: boolean;
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryPageResponseDto"];
+                };
+            };
+        };
+    };
+    adminSpecialtiesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSpecialtyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecialtyResponseDto"];
+                };
+            };
+        };
+    };
+    adminSpecialtiesGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                specialtyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecialtyResponseDto"];
+                };
+            };
+        };
+    };
+    adminSpecialtiesDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                specialtyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminSpecialtiesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                specialtyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSpecialtyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecialtyResponseDto"];
+                };
+            };
+        };
+    };
+    adminServicesList: {
+        parameters: {
+            query?: {
+                query?: string;
+                isActive?: boolean;
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryPageResponseDto"];
+                };
+            };
+        };
+    };
+    adminServicesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateServiceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceResponseDto"];
+                };
+            };
+        };
+    };
+    adminServicesGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                serviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceResponseDto"];
+                };
+            };
+        };
+    };
+    adminServicesDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                serviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminServicesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                serviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateServiceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorServicesList: {
+        parameters: {
+            query?: {
+                query?: string;
+                isActive?: boolean;
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                doctorId?: string;
+                serviceId?: string;
+                visitMode?: "IN_PERSON" | "ONLINE";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorServicePageResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorServicesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDoctorServiceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorServiceResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorServicesGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorServiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorServiceResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorServicesDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorServiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminDoctorServicesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorServiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDoctorServiceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorServiceResponseDto"];
+                };
+            };
+        };
+    };
+    patientDirectoryDoctorsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                query?: string;
+                specialtyId?: string;
+                serviceId?: string;
+                visitMode?: "IN_PERSON" | "ONLINE";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDoctorPageResponseDto"];
+                };
+            };
+        };
+    };
+    patientDirectoryDoctorGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDoctorDetailDto"];
+                };
+            };
+        };
+    };
+    patientDirectoryServicesList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                query?: string;
+                doctorId?: string;
+                visitMode?: "IN_PERSON" | "ONLINE";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientServicePageResponseDto"];
+                };
+            };
+        };
+    };
+    adminAvailabilityRulesList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                doctorId?: string;
+                visitMode?: "IN_PERSON" | "ONLINE";
+                isoWeekday?: number;
+                isActive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRulePageResponseDto"];
+                };
+            };
+        };
+    };
+    adminAvailabilityRulesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAvailabilityRuleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRuleResponseDto"];
+                };
+            };
+        };
+    };
+    adminAvailabilityRulesGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRuleResponseDto"];
+                };
+            };
+        };
+    };
+    adminAvailabilityRulesDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminAvailabilityRulesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAvailabilityRuleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityRuleResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicClosuresList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                from?: string;
+                to?: string;
+                isActive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicClosurePageResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicClosuresCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClinicClosureDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicClosureResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicClosuresGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                closureId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicClosureResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicClosuresDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                closureId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminClinicClosuresUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                closureId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClinicClosureDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicClosureResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorAvailabilityExceptionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                from?: string;
+                to?: string;
+                isActive?: boolean;
+                doctorId?: string;
+                kind?: "AVAILABLE" | "UNAVAILABLE";
+                visitMode?: "IN_PERSON" | "ONLINE";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorAvailabilityExceptionPageResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorAvailabilityExceptionsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDoctorAvailabilityExceptionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorAvailabilityExceptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorAvailabilityExceptionsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exceptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorAvailabilityExceptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorAvailabilityExceptionsDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exceptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminDoctorAvailabilityExceptionsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exceptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDoctorAvailabilityExceptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoctorAvailabilityExceptionResponseDto"];
+                };
+            };
+        };
+    };
+    patientDoctorServiceAvailabilityGet: {
+        parameters: {
+            query: {
+                fromDate: string;
+                toDate: string;
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                doctorServiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAvailabilityResponseDto"];
                 };
             };
         };

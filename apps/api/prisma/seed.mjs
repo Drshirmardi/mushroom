@@ -41,6 +41,17 @@ try {
       SET description = EXCLUDED.description,
           updated_at = CURRENT_TIMESTAMP
   `);
+  await client.query(`
+    INSERT INTO clinics (id, name, time_zone, status, updated_at)
+    SELECT gen_random_uuid(), 'کلینیک سبز زندگی', 'Asia/Tehran', 'ACTIVE', CURRENT_TIMESTAMP
+    WHERE NOT EXISTS (SELECT 1 FROM clinics WHERE status = 'ACTIVE')
+  `);
+  const seededClinic = await client.query(`
+    SELECT id FROM clinics WHERE status = 'ACTIVE' ORDER BY created_at ASC, id ASC LIMIT 1
+  `);
+  const clinicId = seededClinic.rows[0]?.id;
+  if (!clinicId) throw new Error('An active clinic is required for the development seed.');
+
   const policyBody = 'با ثبت اطلاعات پزشکی خوداظهاری، رضایت می‌دهم این داده‌ها برای تکمیل پرونده اولیهٔ کلینیک پردازش شوند.';
   const policyContentHash = createHash('sha256').update(policyBody, 'utf8').digest('hex');
   await client.query(`
@@ -51,7 +62,7 @@ try {
     SELECT gen_random_uuid(), id, 'MEDICAL_INTAKE_PROCESSING', 1, 'fa-IR',
       'رضایت پردازش اطلاعات پزشکی اولیه', $1, $2, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
     FROM clinics
-    WHERE status = 'ACTIVE'
+    WHERE id = $3::uuid
       AND NOT EXISTS (
         SELECT 1 FROM consent_policy_versions
         WHERE clinic_id = clinics.id
@@ -59,12 +70,84 @@ try {
           AND locale = 'fa-IR'
           AND status = 'ACTIVE'
       )
-  `, [policyBody, policyContentHash]);
+  `, [policyBody, policyContentHash, clinicId]);
   await client.query(`
-    INSERT INTO clinics (id, name, time_zone, status, updated_at)
-    SELECT gen_random_uuid(), 'کلینیک سبز زندگی', 'Asia/Tehran', 'ACTIVE', CURRENT_TIMESTAMP
-    WHERE NOT EXISTS (SELECT 1 FROM clinics WHERE status = 'ACTIVE')
-  `);
+    INSERT INTO specialties (id, clinic_id, name, canonical_name, description, is_active, publication_status, published_at, updated_at)
+    VALUES
+      ('40000000-0000-4000-8000-000000000001', $1::uuid, 'طب سنتی ایرانی', 'traditional-iranian-medicine', 'ویزیت و مشاورهٔ طب سنتی', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000002', $1::uuid, 'تغذیه', 'nutrition', 'مشاورهٔ تغذیه و سبک زندگی', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, name = EXCLUDED.name, canonical_name = EXCLUDED.canonical_name,
+      description = EXCLUDED.description, is_active = EXCLUDED.is_active,
+      publication_status = EXCLUDED.publication_status, published_at = EXCLUDED.published_at,
+      updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO services (id, clinic_id, name, canonical_name, description, is_active, publication_status, published_at, updated_at)
+    VALUES
+      ('40000000-0000-4000-8000-000000000011', $1::uuid, 'ویزیت طب سنتی', 'traditional-medicine-visit', 'ویزیت حضوری طب سنتی', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000012', $1::uuid, 'مشاورهٔ تغذیه', 'nutrition-consultation', 'مشاورهٔ آنلاین تغذیه', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, name = EXCLUDED.name, canonical_name = EXCLUDED.canonical_name,
+      description = EXCLUDED.description, is_active = EXCLUDED.is_active,
+      publication_status = EXCLUDED.publication_status, published_at = EXCLUDED.published_at,
+      updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO doctor_profiles (id, clinic_id, display_name, biography, years_experience, languages, education, certifications, is_active, publication_status, published_at, updated_at)
+    VALUES
+      ('40000000-0000-4000-8000-000000000021', $1::uuid, 'دکتر مهران فرهمند', 'پزشک طب سنتی با تمرکز بر مراقبت‌های سبک زندگی.', 12, ARRAY['فارسی', 'انگلیسی'], ARRAY['دکترای طب سنتی'], ARRAY['گواهی طب سنتی ایران'], FALSE, 'UNPUBLISHED', NULL, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000022', $1::uuid, 'دکتر نازنین بهرامی', 'مشاور تغذیه برای برنامه‌های پایدار روزمره.', 8, ARRAY['فارسی'], ARRAY['دکترای تغذیه'], ARRAY['گواهی تغذیهٔ بالینی'], FALSE, 'UNPUBLISHED', NULL, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, display_name = EXCLUDED.display_name, biography = EXCLUDED.biography,
+      years_experience = EXCLUDED.years_experience, languages = EXCLUDED.languages, education = EXCLUDED.education,
+      certifications = EXCLUDED.certifications, is_active = EXCLUDED.is_active,
+      publication_status = EXCLUDED.publication_status, published_at = EXCLUDED.published_at,
+      updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO doctor_specialties (clinic_id, doctor_id, specialty_id)
+    VALUES
+      ($1::uuid, '40000000-0000-4000-8000-000000000021', '40000000-0000-4000-8000-000000000001'),
+      ($1::uuid, '40000000-0000-4000-8000-000000000022', '40000000-0000-4000-8000-000000000002')
+    ON CONFLICT (doctor_id, specialty_id) DO NOTHING
+  `, [clinicId]);
+  await client.query(`
+    UPDATE doctor_profiles
+    SET is_active = TRUE, publication_status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id IN ('40000000-0000-4000-8000-000000000021', '40000000-0000-4000-8000-000000000022')
+      AND clinic_id = $1::uuid
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO doctor_services (id, clinic_id, doctor_id, service_id, visit_mode, duration_minutes, buffer_minutes, price_amount, currency, is_active, publication_status, published_at, updated_at)
+    VALUES
+      ('40000000-0000-4000-8000-000000000031', $1::uuid, '40000000-0000-4000-8000-000000000021', '40000000-0000-4000-8000-000000000011', 'IN_PERSON', 30, 10, 850000, 'IRR', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000032', $1::uuid, '40000000-0000-4000-8000-000000000022', '40000000-0000-4000-8000-000000000012', 'ONLINE', 45, 0, 650000, 'IRR', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, doctor_id = EXCLUDED.doctor_id, service_id = EXCLUDED.service_id,
+      visit_mode = EXCLUDED.visit_mode, duration_minutes = EXCLUDED.duration_minutes,
+      buffer_minutes = EXCLUDED.buffer_minutes, price_amount = EXCLUDED.price_amount, currency = EXCLUDED.currency,
+      is_active = EXCLUDED.is_active, publication_status = EXCLUDED.publication_status,
+      published_at = EXCLUDED.published_at, updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO availability_rules (id, clinic_id, doctor_id, visit_mode, iso_weekday, start_local_time, end_local_time, is_active, updated_at)
+    VALUES
+      ('40000000-0000-4000-8000-000000000041', $1::uuid, '40000000-0000-4000-8000-000000000021', 'IN_PERSON', 1, TIME '09:00:00', TIME '12:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000042', $1::uuid, '40000000-0000-4000-8000-000000000021', 'IN_PERSON', 2, TIME '09:00:00', TIME '12:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000043', $1::uuid, '40000000-0000-4000-8000-000000000021', 'IN_PERSON', 3, TIME '09:00:00', TIME '12:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000044', $1::uuid, '40000000-0000-4000-8000-000000000021', 'IN_PERSON', 4, TIME '09:00:00', TIME '12:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000045', $1::uuid, '40000000-0000-4000-8000-000000000021', 'IN_PERSON', 5, TIME '09:00:00', TIME '12:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000046', $1::uuid, '40000000-0000-4000-8000-000000000022', 'ONLINE', 1, TIME '10:00:00', TIME '13:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000047', $1::uuid, '40000000-0000-4000-8000-000000000022', 'ONLINE', 2, TIME '10:00:00', TIME '13:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000048', $1::uuid, '40000000-0000-4000-8000-000000000022', 'ONLINE', 3, TIME '10:00:00', TIME '13:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000049', $1::uuid, '40000000-0000-4000-8000-000000000022', 'ONLINE', 4, TIME '10:00:00', TIME '13:00:00', TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000050', $1::uuid, '40000000-0000-4000-8000-000000000022', 'ONLINE', 5, TIME '10:00:00', TIME '13:00:00', TRUE, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, doctor_id = EXCLUDED.doctor_id, visit_mode = EXCLUDED.visit_mode,
+      iso_weekday = EXCLUDED.iso_weekday, start_local_time = EXCLUDED.start_local_time,
+      end_local_time = EXCLUDED.end_local_time, is_active = EXCLUDED.is_active, updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
   if (developmentAdminPhone && developmentAdminPassword) {
     const passwordHash = await hash(developmentAdminPassword, {
       type: argon2id,
@@ -98,7 +181,7 @@ try {
     `, [adminUserId]);
     await client.query('DELETE FROM login_attempts WHERE phone = $1', [developmentAdminPhone]);
   }
-  console.log('Development seed completed: identity roles and the active clinic are available.');
+  console.log('Development seed completed: identity roles, the active clinic, and deterministic Phase 04 directory and schedule records are available.');
 } finally {
   await client.end();
 }

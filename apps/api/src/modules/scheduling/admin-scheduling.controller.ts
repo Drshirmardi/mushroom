@@ -1,0 +1,34 @@
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+
+import { RequirePermissions } from '../../common/auth/authorization.decorator';
+import { PERMISSIONS } from '../../common/auth/authorization.policy';
+import type { AuthenticatedRequest } from '../../common/auth/access-token.guard';
+import { AdminSchedulingService } from './admin-scheduling.service';
+import { AvailabilityRuleListQueryDto, AvailabilityRulePageResponseDto, AvailabilityRuleResponseDto, ClinicClosureListQueryDto, ClinicClosurePageResponseDto, ClinicClosureResponseDto, CreateAvailabilityRuleDto, CreateClinicClosureDto, CreateDoctorAvailabilityExceptionDto, DoctorAvailabilityExceptionListQueryDto, DoctorAvailabilityExceptionPageResponseDto, DoctorAvailabilityExceptionResponseDto, UpdateAvailabilityRuleDto, UpdateClinicClosureDto, UpdateDoctorAvailabilityExceptionDto } from './admin-scheduling.dto';
+
+@ApiTags('Admin Scheduling')
+@ApiBearerAuth('bearerAuth')
+@Controller('admin')
+@RequirePermissions(PERMISSIONS.SCHEDULING_MANAGE)
+export class AdminSchedulingController {
+  constructor(private readonly scheduling: AdminSchedulingService) {}
+  @Get('availability-rules') @ApiOperation({ operationId: 'adminAvailabilityRulesList' }) @ApiOkResponse({ type: AvailabilityRulePageResponseDto }) listRules(@Query() query: AvailabilityRuleListQueryDto) { return this.scheduling.listRules(query); }
+  @Post('availability-rules') @ApiOperation({ operationId: 'adminAvailabilityRulesCreate' }) @ApiCreatedResponse({ type: AvailabilityRuleResponseDto }) createRule(@Body() body: CreateAvailabilityRuleDto, @Req() request: AuthenticatedRequest) { return this.scheduling.createRule(body, this.context(request)); }
+  @Get('availability-rules/:ruleId') @ApiOperation({ operationId: 'adminAvailabilityRulesGet' }) @ApiParam({ name: 'ruleId', format: 'uuid' }) @ApiOkResponse({ type: AvailabilityRuleResponseDto }) getRule(@Param('ruleId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.scheduling.getRule(id); }
+  @Patch('availability-rules/:ruleId') @ApiOperation({ operationId: 'adminAvailabilityRulesUpdate' }) @ApiParam({ name: 'ruleId', format: 'uuid' }) @ApiOkResponse({ type: AvailabilityRuleResponseDto }) updateRule(@Param('ruleId', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateAvailabilityRuleDto, @Req() request: AuthenticatedRequest) { return this.scheduling.updateRule(id, body, this.context(request)); }
+  @Delete('availability-rules/:ruleId') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ operationId: 'adminAvailabilityRulesDelete' }) @ApiParam({ name: 'ruleId', format: 'uuid' }) @ApiNoContentResponse() deleteRule(@Param('ruleId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.scheduling.deleteRule(id, this.context(request)); }
+
+  @Get('clinic-closures') @ApiOperation({ operationId: 'adminClinicClosuresList' }) @ApiOkResponse({ type: ClinicClosurePageResponseDto }) listClosures(@Query() query: ClinicClosureListQueryDto) { return this.scheduling.listClosures(query); }
+  @Post('clinic-closures') @ApiOperation({ operationId: 'adminClinicClosuresCreate' }) @ApiCreatedResponse({ type: ClinicClosureResponseDto }) createClosure(@Body() body: CreateClinicClosureDto, @Req() request: AuthenticatedRequest) { return this.scheduling.createClosure(body, this.context(request)); }
+  @Get('clinic-closures/:closureId') @ApiOperation({ operationId: 'adminClinicClosuresGet' }) @ApiParam({ name: 'closureId', format: 'uuid' }) @ApiOkResponse({ type: ClinicClosureResponseDto }) getClosure(@Param('closureId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.scheduling.getClosure(id); }
+  @Patch('clinic-closures/:closureId') @ApiOperation({ operationId: 'adminClinicClosuresUpdate' }) @ApiParam({ name: 'closureId', format: 'uuid' }) @ApiOkResponse({ type: ClinicClosureResponseDto }) updateClosure(@Param('closureId', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateClinicClosureDto, @Req() request: AuthenticatedRequest) { return this.scheduling.updateClosure(id, body, this.context(request)); }
+  @Delete('clinic-closures/:closureId') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ operationId: 'adminClinicClosuresDelete' }) @ApiParam({ name: 'closureId', format: 'uuid' }) @ApiNoContentResponse() deleteClosure(@Param('closureId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.scheduling.deleteClosure(id, this.context(request)); }
+
+  @Get('doctor-availability-exceptions') @ApiOperation({ operationId: 'adminDoctorAvailabilityExceptionsList' }) @ApiOkResponse({ type: DoctorAvailabilityExceptionPageResponseDto }) listExceptions(@Query() query: DoctorAvailabilityExceptionListQueryDto) { return this.scheduling.listExceptions(query); }
+  @Post('doctor-availability-exceptions') @ApiOperation({ operationId: 'adminDoctorAvailabilityExceptionsCreate' }) @ApiCreatedResponse({ type: DoctorAvailabilityExceptionResponseDto }) createException(@Body() body: CreateDoctorAvailabilityExceptionDto, @Req() request: AuthenticatedRequest) { return this.scheduling.createException(body, this.context(request)); }
+  @Get('doctor-availability-exceptions/:exceptionId') @ApiOperation({ operationId: 'adminDoctorAvailabilityExceptionsGet' }) @ApiParam({ name: 'exceptionId', format: 'uuid' }) @ApiOkResponse({ type: DoctorAvailabilityExceptionResponseDto }) getException(@Param('exceptionId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.scheduling.getException(id); }
+  @Patch('doctor-availability-exceptions/:exceptionId') @ApiOperation({ operationId: 'adminDoctorAvailabilityExceptionsUpdate' }) @ApiParam({ name: 'exceptionId', format: 'uuid' }) @ApiOkResponse({ type: DoctorAvailabilityExceptionResponseDto }) updateException(@Param('exceptionId', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateDoctorAvailabilityExceptionDto, @Req() request: AuthenticatedRequest) { return this.scheduling.updateException(id, body, this.context(request)); }
+  @Delete('doctor-availability-exceptions/:exceptionId') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ operationId: 'adminDoctorAvailabilityExceptionsDelete' }) @ApiParam({ name: 'exceptionId', format: 'uuid' }) @ApiNoContentResponse() deleteException(@Param('exceptionId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.scheduling.deleteException(id, this.context(request)); }
+  private context(request: AuthenticatedRequest) { return { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip }; }
+}
