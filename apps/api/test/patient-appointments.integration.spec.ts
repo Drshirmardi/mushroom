@@ -117,4 +117,35 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const hold = await prisma.appointmentHold.findFirst({ where: { clinicId: profile.clinicId, startsAt: new Date(first.startsAt), releasedAt: { not: null } } });
     if (hold) holdIds.add(hold.id);
   });
+
+  it('lets an administrator create, filter, confirm, reschedule, and cancel clinic appointments under lifecycle policy', async () => {
+    const { profile, token } = await patient();
+    const adminId = randomUUID(); userIds.add(adminId);
+    const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: randomUUID(), roles: ['ADMIN'] });
+    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
+    const day = nextWeekday(rule.isoWeekday);
+    const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });
+    const [first, second] = available.json().items;
+    const adminHeaders = (key?: string) => headers(adminToken, key);
+    const create = await app.inject({ method: 'POST', url: '/v1/admin/appointments', headers: adminHeaders('admin-create'), payload: { patientId: profile.id, doctorServiceId: offering.id, startsAt: first.startsAt } });
+    expect(create.statusCode).toBe(201); expect(create.json()).toMatchObject({ patientId: profile.id, status: 'PENDING' });
+    const replay = await app.inject({ method: 'POST', url: '/v1/admin/appointments', headers: adminHeaders('admin-create'), payload: { patientId: profile.id, doctorServiceId: offering.id, startsAt: first.startsAt } });
+    expect(replay.statusCode).toBe(201); expect(replay.json().id).toBe(create.json().id);
+    const listed = await app.inject({ method: 'GET', url: `/v1/admin/appointments?patientId=${profile.id}&status=PENDING`, headers: adminHeaders() });
+    expect(listed.statusCode).toBe(200); expect(listed.json()).toMatchObject({ total: 1, items: [{ id: create.json().id, patientId: profile.id }] });
+    const confirmed = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${create.json().id}/confirm`, headers: adminHeaders() });
+    expect(confirmed.statusCode).toBe(200); expect(confirmed.json()).toMatchObject({ status: 'CONFIRMED' });
+    const rescheduled = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${create.json().id}/reschedule`, headers: adminHeaders(), payload: { doctorServiceId: offering.id, startsAt: second.startsAt } });
+    expect(rescheduled.statusCode).toBe(200); expect(rescheduled.json()).toMatchObject({ status: 'PENDING', startsAt: second.startsAt });
+    const cancelled = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${create.json().id}/cancel`, headers: adminHeaders(), payload: { reason: 'Clinic scheduling change' } });
+    expect(cancelled.statusCode).toBe(200); expect(cancelled.json()).toMatchObject({ status: 'CANCELLED' });
+    const history = await prisma.appointmentStatusHistory.findMany({ where: { appointmentId: create.json().id }, orderBy: { createdAt: 'asc' } });
+    expect(history.map((item) => item.action)).toEqual(['CREATED', 'CONFIRMED', 'RESCHEDULED', 'CANCELLED']);
+    const past = await prisma.appointment.create({ data: { clinicId: profile.clinicId, patientId: profile.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt: new Date(Date.now() - 3_600_000), endsAt: new Date(Date.now() - 1_800_000), status: 'CONFIRMED', priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: adminId, idempotencyKey: 'admin-past-policy', idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
+    const rejectedPastCancel = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${past.id}/cancel`, headers: adminHeaders(), payload: {} });
+    expect(rejectedPastCancel.statusCode).toBe(409); expect(rejectedPastCancel.json().code).toBe('APPOINTMENT_CHANGE_NOT_ALLOWED');
+    const reasonedPastCancel = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${past.id}/cancel`, headers: adminHeaders(), payload: { reason: 'Patient did not arrive' } });
+    expect(reasonedPastCancel.statusCode).toBe(200); expect(reasonedPastCancel.json()).toMatchObject({ status: 'CANCELLED' });
+  });
 });

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 18:36 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 18:43 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -77,6 +77,7 @@
 - `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T03` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T04` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T05` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 
 ### وضعیت تاریخی Phase 04
 
@@ -95,12 +96,12 @@
 
 ## آخرین batch بسته‌شده
 
-`F05-B04` — `DONE`
+`F05-B05` — `DONE`
 
-- `F05-T04` پس از typecheck و integration واقعی PostgreSQL برای patient ownership، pagination، cancellation
-  policy و reschedule همراه eligibility/availability recheck پذیرفته شد؛ شواهد:
+- `F05-T05` پس از typecheck و integration واقعی PostgreSQL برای create-on-behalf، filter،
+  confirm/cancel/reschedule، idempotency و policy ادمین پذیرفته شد؛ شواهد:
   [`logs/phase-05.md`](logs/phase-05.md).
-- task واجد شرایط بعدی: `F05-T05`؛ هنوز claim نشده است.
+- task واجد شرایط بعدی: `F05-T06`؛ هنوز claim نشده است.
 - هماهنگ‌سازی generated OpenAPI client عمداً در مالک آن، `F05-T11`، باقی مانده است؛ بنابراین
   `test/openapi-contract.spec.ts` تا آن task runtime document را با client checked-in ناسازگار گزارش می‌کند.
 

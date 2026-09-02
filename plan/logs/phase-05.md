@@ -142,3 +142,42 @@ Known limitations:
   - Generated OpenAPI client synchronization remains owned by F05-T11.
 Next task:
   - F05-T05, eligible but not claimed.
+
+## F05-T05 — Administrator appointment operations
+
+Task ID: F05-T05
+Completed at: 2026-09-02 18:43 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B05
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/admin-appointments.controller.ts
+  - apps/api/src/modules/appointments/admin-appointments.dto.ts
+  - apps/api/src/modules/appointments/admin-appointments.service.ts
+  - apps/api/src/modules/appointments/patient-appointments.module.ts
+  - apps/api/src/common/auth/authorization.policy.ts
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None.
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm exec tsc -p tsconfig.test.json --noEmit → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (7 tests)
+  - git diff --check → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/openapi-contract.spec.ts → expected deferred failure: runtime document includes Phase 05 appointment routes while checked-in generated client remains owned by F05-T11.
+Result:
+  - Administrator create-on-behalf requires idempotency, clinic-scoped target patient and offering, authoritative eligibility/availability recheck, price snapshot, released hold, and conflict-safe persistence → PASS
+  - Clinic-scoped operational listing supports patient, doctor, status, time-range, and pagination filters with deterministic ordering → PASS
+  - Administrator confirm, cancel, and reschedule enforce frozen lifecycle and cancellation policy, record immutable transition history, and preserve reschedule identity/snapshots → PASS
+  - Administrator cancellation after scheduled start rejects a blank reason and accepts a non-blank reason → PASS
+  - Fixed appointment-management permission permits only ADMIN; appointment resources remain scoped to the active clinic → PASS
+Known limitations:
+  - Generated OpenAPI client synchronization and appointment mock removal remain owned by F05-T11; no generated client artifact was changed here.
+Next task:
+  - F05-T06, eligible but not claimed.

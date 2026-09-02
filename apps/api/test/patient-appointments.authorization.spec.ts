@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { AuthorizationGuard } from '../src/common/auth/authorization.guard';
 import { PERMISSIONS, permissionsFor } from '../src/common/auth/authorization.policy';
 import { PatientAppointmentsController } from '../src/modules/appointments/patient-appointments.controller';
+import { AdminAppointmentsController } from '../src/modules/appointments/admin-appointments.controller';
 
 const context = (handler: Function, roles: string[]): ExecutionContext => ({ getHandler: () => handler, getClass: () => PatientAppointmentsController, switchToHttp: () => ({ getRequest: () => ({ auth: { roles } }) }) } as unknown as ExecutionContext);
 
@@ -23,6 +24,16 @@ describe('patient appointment create authorization', () => {
     for (const handler of [PatientAppointmentsController.prototype.list, PatientAppointmentsController.prototype.get, PatientAppointmentsController.prototype.cancel, PatientAppointmentsController.prototype.reschedule]) {
       expect(guard.canActivate(context(handler, ['PATIENT']))).toBe(true);
       for (const role of ['ADMIN', 'DOCTOR', 'STAFF']) expect(() => guard.canActivate(context(handler, [role]))).toThrow(/Insufficient permissions/);
+    }
+  });
+
+  it('grants clinic appointment operations only to administrators', () => {
+    const guard = new AuthorizationGuard(new Reflector());
+    const adminContext = (handler: Function, roles: string[]): ExecutionContext => ({ getHandler: () => handler, getClass: () => AdminAppointmentsController, switchToHttp: () => ({ getRequest: () => ({ auth: { roles } }) }) } as unknown as ExecutionContext);
+    expect(permissionsFor(['ADMIN'])).toContain(PERMISSIONS.APPOINTMENTS_MANAGE);
+    for (const handler of [AdminAppointmentsController.prototype.create, AdminAppointmentsController.prototype.list, AdminAppointmentsController.prototype.confirm, AdminAppointmentsController.prototype.cancel, AdminAppointmentsController.prototype.reschedule]) {
+      expect(guard.canActivate(adminContext(handler, ['ADMIN']))).toBe(true);
+      for (const role of ['PATIENT', 'DOCTOR', 'STAFF']) expect(() => guard.canActivate(adminContext(handler, [role]))).toThrow(/Insufficient permissions/);
     }
   });
 });

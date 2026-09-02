@@ -35,6 +35,7 @@ export const PERMISSIONS = {
   APPOINTMENTS_CREATE_SELF: 'appointments:create:self',
   APPOINTMENTS_READ_SELF: 'appointments:read:self',
   APPOINTMENTS_CHANGE_SELF: 'appointments:change:self',
+  APPOINTMENTS_MANAGE: 'appointments:manage',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -72,6 +73,7 @@ const ROLE_PERMISSIONS: Readonly<Record<RoleCode, readonly Permission[]>> = {
     PERMISSIONS.ASSESSMENTS_MANAGE,
     PERMISSIONS.DIRECTORY_MANAGE,
     PERMISSIONS.SCHEDULING_MANAGE,
+    PERMISSIONS.APPOINTMENTS_MANAGE,
   ],
 };
 
