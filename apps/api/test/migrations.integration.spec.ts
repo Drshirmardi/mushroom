@@ -142,9 +142,17 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'availability_rules',
         'clinic_closures',
         'doctor_availability_exceptions',
+        'appointments',
+        'appointment_holds',
+        'appointment_status_history',
+        'queue_entries',
+        'operational_activities',
       ]]);
 
       expect(tables.rows.map(({ table_name }) => table_name)).toEqual([
+        'appointment_holds',
+        'appointment_status_history',
+        'appointments',
         'assessment_versions',
         'audit_events',
         'availability_rules',
@@ -158,11 +166,13 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'doctor_services',
         'doctor_specialties',
         'login_attempts',
+        'operational_activities',
         'patient_assessment_submissions',
         'patient_consent_records',
         'patient_medical_intake_revisions',
         'patient_medical_intakes',
         'patient_profiles',
+        'queue_entries',
         'roles',
         'services',
         'sessions',
@@ -320,6 +330,39 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         { typname: 'visit_mode', value: 'ONLINE' },
       ]);
 
+      const phaseFiveEnums = await smokeClient.query<{
+        typname: string;
+        value: string;
+      }>(`
+        SELECT pg_type.typname, pg_enum.enumlabel AS value
+        FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+        WHERE pg_type.typname = ANY($1::text[])
+        ORDER BY pg_type.typname, pg_enum.enumsortorder
+      `, [[
+        'appointment_status',
+        'appointment_status_history_action',
+      ]]);
+      expect(phaseFiveEnums.rows).toEqual([
+        { typname: 'appointment_status', value: 'PENDING' },
+        { typname: 'appointment_status', value: 'CONFIRMED' },
+        { typname: 'appointment_status', value: 'CHECKED_IN' },
+        { typname: 'appointment_status', value: 'QUEUED' },
+        { typname: 'appointment_status', value: 'IN_PROGRESS' },
+        { typname: 'appointment_status', value: 'COMPLETED' },
+        { typname: 'appointment_status', value: 'NO_SHOW' },
+        { typname: 'appointment_status', value: 'CANCELLED' },
+        { typname: 'appointment_status_history_action', value: 'CREATED' },
+        { typname: 'appointment_status_history_action', value: 'CONFIRMED' },
+        { typname: 'appointment_status_history_action', value: 'CANCELLED' },
+        { typname: 'appointment_status_history_action', value: 'RESCHEDULED' },
+        { typname: 'appointment_status_history_action', value: 'CHECKED_IN' },
+        { typname: 'appointment_status_history_action', value: 'QUEUED' },
+        { typname: 'appointment_status_history_action', value: 'STARTED' },
+        { typname: 'appointment_status_history_action', value: 'COMPLETED' },
+        { typname: 'appointment_status_history_action', value: 'NO_SHOW' },
+      ]);
+
       const phaseFourTimestamps = await smokeClient.query<{ data_type: string }>(`
         SELECT data_type
         FROM information_schema.columns
@@ -352,6 +395,18 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         { conname: 'availability_rules_no_active_overlap', contype: 'x' },
         { conname: 'clinic_closures_no_active_overlap', contype: 'x' },
         { conname: 'doctor_availability_exceptions_no_active_overlap', contype: 'x' },
+      ]);
+
+      const appointmentOverlapConstraint = await smokeClient.query<{
+        conname: string;
+        contype: string;
+      }>(`
+        SELECT conname, contype
+        FROM pg_constraint
+        WHERE conname = 'appointments_no_active_doctor_overlap'
+      `);
+      expect(appointmentOverlapConstraint.rows).toEqual([
+        { conname: 'appointments_no_active_doctor_overlap', contype: 'x' },
       ]);
 
       const assessment = await smokeClient.query<{ id: string }>(`
@@ -449,6 +504,57 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       `, [userId, assessmentVersionId]);
       const patientId = patient.rows[0]?.id;
       expect(patientId).toBeDefined();
+
+      const doctor = await smokeClient.query<{ id: string }>(`
+        INSERT INTO doctor_profiles (id, clinic_id, display_name, updated_at)
+        SELECT gen_random_uuid(), clinic_id, 'پزشک نوبت آزمایشی', CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $1
+        RETURNING id
+      `, [assessmentVersionId]);
+      const doctorId = doctor.rows[0]?.id;
+      expect(doctorId).toBeDefined();
+
+      const service = await smokeClient.query<{ id: string }>(`
+        INSERT INTO services (id, clinic_id, name, canonical_name, updated_at)
+        SELECT gen_random_uuid(), clinic_id, 'خدمت نوبت آزمایشی', 'خدمت نوبت آزمایشی', CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $1
+        RETURNING id
+      `, [assessmentVersionId]);
+      const serviceId = service.rows[0]?.id;
+      expect(serviceId).toBeDefined();
+
+      const doctorService = await smokeClient.query<{ id: string }>(`
+        INSERT INTO doctor_services (
+          id, clinic_id, doctor_id, service_id, visit_mode,
+          duration_minutes, price_amount, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, $1, $2, 'IN_PERSON', 30, 500000, CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $3
+        RETURNING id
+      `, [doctorId, serviceId, assessmentVersionId]);
+      const doctorServiceId = doctorService.rows[0]?.id;
+      expect(doctorServiceId).toBeDefined();
+
+      const insertAppointment = (startsAt: string, endsAt: string, status: string) => smokeClient.query(`
+        INSERT INTO appointments (
+          id, clinic_id, patient_id, doctor_service_id, doctor_id,
+          starts_at, ends_at, status, price_amount, price_captured_at, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, $1, $2, $3,
+          $4::timestamptz, $5::timestamptz, $6::appointment_status,
+          500000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $7
+      `, [patientId, doctorServiceId, doctorId, startsAt, endsAt, status, assessmentVersionId]);
+
+      await insertAppointment('2026-09-15T09:00:00Z', '2026-09-15T10:00:00Z', 'PENDING');
+      await insertAppointment('2026-09-15T10:00:00Z', '2026-09-15T11:00:00Z', 'PENDING');
+      await expect(insertAppointment(
+        '2026-09-15T09:30:00Z', '2026-09-15T10:30:00Z', 'PENDING',
+      )).rejects.toMatchObject({
+        code: '23P01',
+        constraint: 'appointments_no_active_doctor_overlap',
+      });
+      await insertAppointment('2026-09-15T09:30:00Z', '2026-09-15T10:30:00Z', 'CANCELLED');
 
       const submission = await smokeClient.query<{ id: string }>(`
         INSERT INTO patient_assessment_submissions (

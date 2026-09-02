@@ -6,14 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 16:27 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 16:31 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `ندارد`
-- task فعال: `ندارد`
-- مسئول/Agent: `ندارد`
-- blocker فعال: `ندارد`
+- batch فعال: ندارد
+- task فعال: ندارد
+- blocker فعال: ندارد
 
 ## پیشرفت کلان
 
@@ -39,7 +38,7 @@
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
-- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
+- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `IN_PROGRESS`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
@@ -75,7 +74,7 @@
 ## وضعیت taskهای فاز فعال
 
 - `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
-- `F05-T02` — `NOT_STARTED`؛ task بعدی واجد شرایط، نیازمند claim مستقل migration/shared-path
+- `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 
 ### وضعیت تاریخی Phase 04
 
@@ -92,11 +91,16 @@
 - `F04-T11` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
-## batch در حال اجرا
+## آخرین batch بسته‌شده
+
+`F05-B02` — `DONE`
+
+- `F05-T02` پس از Prisma generate/typecheck و migration smoke واقعی PostgreSQL با ساخت/حذف
+  database ایزوله پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T03`؛ هنوز claim نشده است.
 
 `F05-B01` بسته شد: `F05-T01` پس از review قرارداد lifecycle، cancellation/reschedule و price
-snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md). batch فعال وجود ندارد؛
-`F05-T02` فقط با claim مستقل migration/shared-path می‌تواند شروع شود.
+snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
 
 `F04-B08` بدون تغییر implementation بسته شد: generated client مانع `F04-T08` و `F04-T09` بود. با authorization صریح مالک، `F04-B10` فقط prerequisite slice از `F04-T10` را اجرا و review کرد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
@@ -112,7 +116,9 @@ snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md
 
 `F04-CLOSE` با independent review بسته شد: تمام taskها، migration/seed، OpenAPI/generated client، تست‌های نهایی، browser evidence، mock boundary و Spec Kit consistency پذیرفته شدند؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
 
-`Phase 04` اکنون `DONE (CLOSED)` است. `F05-B01` برای `F05-T01` پس از review قرارداد lifecycle، cancellation/reschedule و price snapshot بسته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md). `F05-T02` فقط پس از claim مستقل migration/shared-path واجد شرایط است.
+`Phase 04` اکنون `DONE (CLOSED)` است. `F05-B01` برای `F05-T01` و `F05-B02` برای `F05-T02`
+پس از review بسته شدند؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md). `F05-T03` task واجد شرایط
+بعدی است، اما هنوز claim نشده است.
 
 ## Blockerها و تصمیم‌های باز
 
