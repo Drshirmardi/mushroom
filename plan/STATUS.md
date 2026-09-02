@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 20:06 +03:30`
-- Milestone فعال: `Milestone B — کلینیک قابل رزرو`
-- فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-02 21:38 +03:30`
+- Milestone فعال: `Milestone B — DONE (CLOSED)`
+- فاز فعال: ندارد؛ `Phase 05` بسته شده و `Phase 06` هنوز شروع نشده است.
+- وضعیت فاز فعال: ندارد
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -38,7 +38,7 @@
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
-- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `READY_FOR_REVIEW`
+- [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
@@ -104,6 +104,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F05-CLOSE` — `DONE (CLOSED)`
+
+- review مستقل closure تمام taskها، migration/seed، contract/client، concurrency، browser E2E،
+  buildها، mock boundary و evidence/spec synchronization را پذیرفت؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- `Phase 05` اکنون `DONE (CLOSED)` است. `Phase 06` همچنان `NOT_STARTED` و بدون claim است.
 
 `F05-B14` — `DONE`
 

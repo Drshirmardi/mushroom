@@ -509,3 +509,40 @@ Known limitations:
 Next task:
   - None. Phase 05 is `READY_FOR_REVIEW`; an independent phase review is required before it is
     marked `DONE` and before Phase 06 is activated.
+
+## F05-CLOSE — independent Phase 05 closure review
+
+Reviewed at: 2026-09-02 21:38 +03:30
+Reviewer: Codex /root (independent of the F05-T14 readiness reconciliation)
+Scope:
+  - Phase 05 only; no Phase 06 task, code path, contract, or claim was started.
+Review evidence:
+  - Authoritative roadmap/checklist, all F05-T01–F05-T14 evidence entries, STATUS, and all
+    Phase 05 Spec Kit artifacts were reconciled: 14/14 roadmap tasks and 14/14 Spec Kit tasks
+    are checked; no stale active batch, task, blocker, partial state, or unmapped work remains.
+  - Fresh real-PostgreSQL F05-T12 proof: `NODE_ENV=development` with the repository-defined
+    local `DATABASE_URL` `pnpm test -- --run test/patient-appointments.integration.spec.ts
+    --testNamePattern='100 concurrent'` → PASS (one success and 99 slot conflicts).
+  - Fresh empty-database migration/seed smoke: `NODE_ENV=development` with the repository-defined
+    local `DATABASE_URL` `pnpm test -- --run test/migrations.integration.spec.ts` → PASS (2 tests;
+    all migrations, create/drop isolation, and deterministic twice-run seed).
+  - Fresh production builds: `pnpm --dir apps/app build` → PASS and
+    `pnpm --dir apps/dashboard build` → PASS.
+  - Fresh contract drift check: `pnpm generate:api-client` → PASS, followed by no diff in
+    `packages/api-client/openapi.json` or `src/schema.generated.ts` → PASS.
+  - F05-T13 local-only browser evidence was re-read: the synthetic register/profile/assessment/
+    booking path reached dashboard appointment, calendar, queue, completion, and sourced Home V1;
+    no credentials or patient data were recorded. The recorded query baseline includes the queue
+    index-only scan and expected sequential scans on the tiny deterministic local dataset.
+  - Static review confirmed appointment writes retain clinic-scoped foreign keys, active-overlap
+    exclusion constraint, capacity/doctor advisory locks, server-side eligibility and ownership
+    checks, and repeat-safe operational transitions. Authorization tests cover patient-only and
+    administrator-only routes. Current single-active-clinic selection is the inherited Phase 04
+    MVP tenancy model; Phase 05 does not add a cross-clinic feature or bypass.
+  - Mock/static-data scan found no appointment or queue fixture/static counter in Phase 05 app or
+    dashboard paths. Phase 06 change scan found none. `git diff --check` and worktree status were
+    clean before this closure-record update.
+Result:
+  - No closure-blocking defect, unresolved acceptance criterion, contract drift, stale evidence,
+    migration problem, operational inconsistency, or unrelated/Phase 06 change was found.
+  - `Phase 05` is `DONE (CLOSED)`. `Phase 06` remains `NOT_STARTED` and unclaimed.

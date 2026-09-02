@@ -3,7 +3,7 @@
 **Feature Branch**: `codex/phase-05-appointment-booking-dashboard-operations`
 
 **Created**: 2026-09-02
-**Status**: Phase 05 execution is complete and `READY_FOR_REVIEW`. The authoritative live state
+**Status**: Phase 05 is `DONE (CLOSED)` after its independent closure review. The authoritative live state
 remains [`plan/STATUS.md`](../../plan/STATUS.md).
 
 **Input**: Adopt the authoritative Phase 05 roadmap without changing its scope, IDs, ordering,

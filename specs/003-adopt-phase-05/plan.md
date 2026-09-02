@@ -25,7 +25,7 @@ tasks. `plan/` remains the execution source of truth; the adoption itself activa
 
 **Constraints**: Preserve Phase 03 eligibility, Phase 04 availability, no mandatory MVP payment, shared-path single-writer ownership, truthful widgets, and task boundaries.
 **Scale/Scope**: Fourteen stable tasks, `F05-T01`–`F05-T14`; Phase 05 is
-`READY_FOR_REVIEW` after recorded execution.
+`DONE (CLOSED)` after recorded execution and independent closure review.
 
 ## Constitution Check
 
