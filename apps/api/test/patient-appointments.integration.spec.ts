@@ -70,6 +70,16 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const hold = await prisma.appointmentHold.findFirst({ where: { clinicId: profile.clinicId, startsAt: record.startsAt, releasedAt: { not: null } } });
     expect(hold).not.toBeNull();
     holdIds.add(hold!.id);
+    const listed = await app.inject({ method: 'GET', url: '/v1/appointments?page=1&pageSize=20', headers: headers(token) });
+    const detail = await app.inject({ method: 'GET', url: `/v1/appointments/${record.id}`, headers: headers(token) });
+    expect(listed.json()).toMatchObject({ total: 1, items: [{ id: record.id }] });
+    expect(detail.json()).toMatchObject({ id: record.id, patientId: profile.id });
+    const rescheduled = await app.inject({ method: 'POST', url: `/v1/appointments/${record.id}/reschedule`, headers: headers(token), payload: { doctorServiceId: offering.id, startsAt: available.json().items[1].startsAt } });
+    expect(rescheduled.statusCode).toBe(200);
+    expect(rescheduled.json()).toMatchObject({ id: record.id, status: 'PENDING', startsAt: available.json().items[1].startsAt });
+    const cancelled = await app.inject({ method: 'POST', url: `/v1/appointments/${record.id}/cancel`, headers: headers(token), payload: { reason: 'Changed plans' } });
+    expect(cancelled.statusCode).toBe(200);
+    expect(cancelled.json()).toMatchObject({ id: record.id, status: 'CANCELLED' });
   });
 
   it('rejects creation at the use-case boundary when onboarding is no longer eligible', async () => {

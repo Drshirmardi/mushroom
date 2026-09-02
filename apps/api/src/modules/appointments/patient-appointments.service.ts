@@ -1,17 +1,19 @@
-import { ConflictException, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 
-import { AppointmentStatus, AppointmentStatusHistoryAction } from '../../generated/prisma/client';
+import { AppointmentStatus, AppointmentStatusHistoryAction, Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { PatientBookingEligibilityService } from '../assessments/patient/patient-booking-eligibility.service';
 import { PatientAvailabilityService } from '../scheduling/patient-availability.service';
-import type { CreatePatientAppointmentDto } from './patient-appointments.dto';
+import type { CreatePatientAppointmentDto, PatientAppointmentListQueryDto } from './patient-appointments.dto';
 
 const invalidKey = () => new UnprocessableEntityException({ code: 'IDEMPOTENCY_KEY_REQUIRED', message: 'An Idempotency-Key header is required.', details: {} });
 const keyReused = () => new ConflictException({ code: 'IDEMPOTENCY_KEY_REUSED', message: 'The Idempotency-Key was already used for a different request.', details: {} });
 const ineligible = () => new UnprocessableEntityException({ code: 'BOOKING_INELIGIBLE', message: 'Booking eligibility is no longer satisfied.', details: {} });
 const unavailable = () => new ConflictException({ code: 'APPOINTMENT_SLOT_UNAVAILABLE', message: 'The requested appointment slot is no longer available.', details: {} });
 const conflict = () => new ConflictException({ code: 'APPOINTMENT_SLOT_CONFLICT', message: 'The requested appointment slot conflicts with an active appointment.', details: {} });
+const forbidden = () => new ForbiddenException({ code: 'APPOINTMENT_FORBIDDEN', message: 'The appointment is not available to this patient.', details: {} });
+const changeNotAllowed = () => new ConflictException({ code: 'APPOINTMENT_CHANGE_NOT_ALLOWED', message: 'This appointment cannot be changed.', details: {} });
 
 type AppointmentResult = Awaited<ReturnType<PatientAppointmentsService['response']>>;
 
@@ -76,6 +78,49 @@ export class PatientAppointmentsService {
     }
   }
 
+  async list(userId: string, query: PatientAppointmentListQueryDto) {
+    const patient = await this.patient(userId);
+    const where = { clinicId: patient.clinicId, patientId: patient.id };
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.appointment.count({ where }),
+      this.prisma.appointment.findMany({ where, orderBy: [{ startsAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
+    ]);
+    return { items: items.map((item) => this.response(item)), page: query.page, pageSize: query.pageSize, total };
+  }
+
+  async get(userId: string, id: string) { return this.response(await this.owned(userId, id)); }
+
+  async cancel(userId: string, id: string, rawReason?: string) {
+    const reason = rawReason?.trim() || null;
+    return this.prisma.$transaction(async (tx) => {
+      const appointment = await this.owned(userId, id, tx);
+      if ((appointment.status !== AppointmentStatus.PENDING && appointment.status !== AppointmentStatus.CONFIRMED) || appointment.startsAt <= new Date()) throw changeNotAllowed();
+      const cancelled = await tx.appointment.update({ where: { id }, data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date(), cancelReason: reason, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.CANCELLED, action: AppointmentStatusHistoryAction.CANCELLED, actorUserId: userId, reason, metadata: {} } } } });
+      return this.response(cancelled);
+    });
+  }
+
+  async reschedule(userId: string, id: string, body: CreatePatientAppointmentDto) {
+    const startsAt = new Date(body.startsAt);
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const appointment = await this.owned(userId, id, tx);
+        if ((appointment.status !== AppointmentStatus.PENDING && appointment.status !== AppointmentStatus.CONFIRMED) || appointment.startsAt <= new Date()) throw changeNotAllowed();
+        const decision = await this.eligibility.get(userId);
+        if (!decision.eligible) throw ineligible();
+        const candidate = await this.availability.candidate(userId, body.doctorServiceId, startsAt);
+        if (!candidate) throw unavailable();
+        const offering = await tx.doctorService.findFirst({ where: { id: body.doctorServiceId, clinicId: appointment.clinicId, isActive: true, publicationStatus: 'PUBLISHED', doctor: { isActive: true, publicationStatus: 'PUBLISHED' }, service: { isActive: true, publicationStatus: 'PUBLISHED' } }, select: { id: true, doctorId: true, durationMinutes: true, priceAmount: true, currency: true } });
+        if (!offering || candidate.endsAt.getTime() !== startsAt.getTime() + offering.durationMinutes * 60_000) throw unavailable();
+        const now = new Date();
+        const hold = await tx.appointmentHold.create({ data: { clinicId: appointment.clinicId, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, expiresAt: new Date(now.getTime() + 60_000) } });
+        const updated = await tx.appointment.update({ where: { id }, data: { doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, status: AppointmentStatus.PENDING, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: now, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.PENDING, action: AppointmentStatusHistoryAction.RESCHEDULED, actorUserId: userId, metadata: { previous: { startsAt: appointment.startsAt.toISOString(), endsAt: appointment.endsAt.toISOString(), priceAmount: appointment.priceAmount, currency: appointment.currency }, current: { startsAt: startsAt.toISOString(), endsAt: candidate.endsAt.toISOString(), priceAmount: offering.priceAmount, currency: offering.currency } } } } } });
+        await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
+        return this.response(updated);
+      });
+    } catch (error) { if (this.isExclusion(error)) throw conflict(); throw error; }
+  }
+
   private idempotencyKey(value: string | string[] | undefined) {
     const key = Array.isArray(value) ? undefined : value?.trim();
     if (!key || key.length > 255) throw invalidKey();
@@ -94,6 +139,19 @@ export class PatientAppointmentsService {
   private isExclusion(error: unknown) {
     const text = `${JSON.stringify(error)} ${error instanceof Error ? error.message : ''}`;
     return text.includes('23P01') || text.includes('appointments_no_active_doctor_overlap');
+  }
+
+  private async patient(userId: string) {
+    const patient = await this.prisma.patientProfile.findUnique({ where: { userId }, select: { id: true, clinicId: true } });
+    if (!patient) throw new NotFoundException({ code: 'PATIENT_PROFILE_NOT_FOUND', message: 'Patient profile was not found.', details: {} });
+    return patient;
+  }
+
+  private async owned(userId: string, id: string, tx: PrismaService | Prisma.TransactionClient = this.prisma) {
+    const patient = await tx.patientProfile.findUnique({ where: { userId }, select: { id: true, clinicId: true } });
+    const appointment = await tx.appointment.findUnique({ where: { id } });
+    if (!patient || !appointment || appointment.patientId !== patient.id || appointment.clinicId !== patient.clinicId) throw forbidden();
+    return appointment;
   }
 
   private response(appointment: { id: string; clinicId: string; patientId: string; doctorServiceId: string; doctorId: string; startsAt: Date; endsAt: Date; status: AppointmentStatus; priceAmount: number; currency: string; priceCapturedAt: Date; createdAt: Date }) {

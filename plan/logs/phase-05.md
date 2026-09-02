@@ -106,3 +106,39 @@ Known limitations:
   - Generated OpenAPI client synchronization is intentionally deferred to F05-T11; this task did not alter generated client files or mock-removal scope.
 Next task:
   - F05-T04, eligible but not claimed.
+
+## F05-T04 — Patient appointment list, detail, cancel, and reschedule
+
+Task ID: F05-T04
+Completed at: 2026-09-02 18:36 +03:30
+Agent/Thread: Codex /root
+Batch ID: F05-B04
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/patient-appointments.controller.ts
+  - apps/api/src/modules/appointments/patient-appointments.dto.ts
+  - apps/api/src/modules/appointments/patient-appointments.service.ts
+  - apps/api/src/common/auth/authorization.policy.ts
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+  - plan/logs/phase-05.md
+Migrations:
+  - None.
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm exec tsc -p tsconfig.test.json --noEmit → PASS
+  - NODE_ENV=development DATABASE_URL=<repository local URL> corepack pnpm exec vitest run --no-file-parallelism test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (4 tests)
+  - git diff --check → PASS
+Result:
+  - Patient-scoped list/detail access has pagination, deterministic ordering, and resource ownership enforcement → PASS
+  - Patient future PENDING/CONFIRMED cancellation records a CANCELLED transition and optional reason → PASS
+  - Reschedule rechecks Phase 03 eligibility and Phase 04 availability, captures a new price snapshot, preserves identity, and writes RESCHEDULED history metadata → PASS
+  - Patient read/change permissions reject non-patient roles → PASS
+Known limitations:
+  - Generated OpenAPI client synchronization remains owned by F05-T11.
+Next task:
+  - F05-T05, eligible but not claimed.

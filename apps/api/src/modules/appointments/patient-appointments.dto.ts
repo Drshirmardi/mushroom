@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 
 export class CreatePatientAppointmentDto {
   @ApiProperty({ format: 'uuid' })
@@ -10,6 +11,17 @@ export class CreatePatientAppointmentDto {
   @IsDateString({ strict: true })
   startsAt!: string;
 }
+
+export class PatientAppointmentListQueryDto {
+  @ApiPropertyOptional({ minimum: 1, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
+  @ApiPropertyOptional({ minimum: 1, maximum: 100, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) pageSize = 20;
+}
+
+export class CancelPatientAppointmentDto {
+  @ApiPropertyOptional({ maxLength: 500 }) @IsOptional() @IsString() @MaxLength(500) reason?: string;
+}
+
+export class ReschedulePatientAppointmentDto extends CreatePatientAppointmentDto {}
 
 export class PatientAppointmentResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -25,3 +37,5 @@ export class PatientAppointmentResponseDto {
   @ApiProperty({ format: 'date-time' }) priceCapturedAt!: Date;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
 }
+
+export class PatientAppointmentPageResponseDto { @ApiProperty({ type: PatientAppointmentResponseDto, isArray: true }) items!: PatientAppointmentResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }

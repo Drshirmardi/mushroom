@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 18:32 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 18:36 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -76,6 +76,7 @@
 - `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T03` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T04` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 
 ### وضعیت تاریخی Phase 04
 
@@ -94,12 +95,12 @@
 
 ## آخرین batch بسته‌شده
 
-`F05-B03` — `DONE`
+`F05-B04` — `DONE`
 
-- `F05-T03` پس از typecheck و integration واقعی PostgreSQL برای eligibility authoritative، availability
-  recheck، hold/release، price snapshot، idempotency و exclusion conflict پذیرفته شد؛ شواهد:
+- `F05-T04` پس از typecheck و integration واقعی PostgreSQL برای patient ownership، pagination، cancellation
+  policy و reschedule همراه eligibility/availability recheck پذیرفته شد؛ شواهد:
   [`logs/phase-05.md`](logs/phase-05.md).
-- task واجد شرایط بعدی: `F05-T04`؛ هنوز claim نشده است.
+- task واجد شرایط بعدی: `F05-T05`؛ هنوز claim نشده است.
 - هماهنگ‌سازی generated OpenAPI client عمداً در مالک آن، `F05-T11`، باقی مانده است؛ بنابراین
   `test/openapi-contract.spec.ts` تا آن task runtime document را با client checked-in ناسازگار گزارش می‌کند.
 
@@ -120,9 +121,8 @@ snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md
 
 `F04-CLOSE` با independent review بسته شد: تمام taskها، migration/seed، OpenAPI/generated client، تست‌های نهایی، browser evidence، mock boundary و Spec Kit consistency پذیرفته شدند؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
 
-`Phase 04` اکنون `DONE (CLOSED)` است. `F05-B01` برای `F05-T01` و `F05-B02` برای `F05-T02`
-پس از review بسته شدند؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md). `F05-T03` task واجد شرایط
-بعدی است، اما هنوز claim نشده است.
+`Phase 04` اکنون `DONE (CLOSED)` است. `F05-B01` تا `F05-B03` پس از review بسته شدند؛ شواهد:
+[`logs/phase-05.md`](logs/phase-05.md). `F05-T04` در batch جاری claim شده است.
 
 ## Blockerها و تصمیم‌های باز
 

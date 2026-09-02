@@ -32,7 +32,7 @@
 - [x] `F05-T01` — state machine، cancellation/reschedule policy و price snapshot
 - [x] `F05-T02` — migration، index و exclusion constraint overlap فعال پزشک
 - [x] `F05-T03` — create appointment با eligibility authoritative و idempotency
-- [ ] `F05-T04` — patient list/detail/cancel/reschedule
+- [x] `F05-T04` — patient list/detail/cancel/reschedule
 - [ ] `F05-T05` — admin create-on-behalf/list/filter/confirm/cancel/reschedule
 - [ ] `F05-T06` — check-in، queue، call-next، start، complete و no-show
 - [ ] `F05-T07` — status history، reason و operational activity
