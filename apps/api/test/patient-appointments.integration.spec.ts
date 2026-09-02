@@ -180,6 +180,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(queue.statusCode).toBe(200); expect(queue.json()).toMatchObject({ items: [{ appointment: { id: current.id, status: 'IN_PROGRESS' } }] });
     const repeatCallNext = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });
     expect(repeatCallNext.statusCode).toBe(200); expect(repeatCallNext.json().id).toBe(current.id);
+    const dashboardSummary = await app.inject({ method: 'GET', url: '/v1/admin/appointments/dashboard-summary', headers: headersForAdmin() });
+    expect(dashboardSummary.statusCode).toBe(200); expect(dashboardSummary.json()).toMatchObject({ timeZone: 'Asia/Tehran', inProgress: 1 }); expect(dashboardSummary.json().todayPlan).toEqual(expect.arrayContaining([expect.objectContaining({ id: current.id, status: 'IN_PROGRESS', visitMode: offering.visitMode })])); expect(dashboardSummary.json().recentAppointmentActivity).toEqual(expect.arrayContaining([expect.objectContaining({ appointmentId: current.id, type: 'APPOINTMENT_STARTED' })]));
+    expect(dashboardSummary.json().averageWaitMinutes).toEqual(expect.any(Number));
     const another = await appointment('CHECKED_IN', new Date(now + 2 * 86_400_000), new Date(now + 2 * 86_400_000 + 30 * 60_000));
     const busy = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${another.id}/start`, headers: headersForAdmin() });
     expect(busy.statusCode).toBe(409); expect(busy.json().code).toBe('APPOINTMENT_DOCTOR_BUSY');

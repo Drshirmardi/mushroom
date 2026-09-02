@@ -340,3 +340,40 @@ Known limitations:
   - Dashboard Home V1 aggregation and activity widgets remain F05-T10 ownership.
 Next task:
   - F05-T10, eligible but not claimed.
+
+## F05-T10 — Dashboard Home V1
+
+Task ID: F05-T10
+Completed at: 2026-09-02
+Agent/Thread: Codex /root
+Batch ID: F05-B10
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/admin-appointments.controller.ts
+  - apps/api/src/modules/appointments/admin-appointments.dto.ts
+  - apps/api/src/modules/appointments/admin-appointments.service.ts
+  - apps/api/test/patient-appointments.authorization.spec.ts
+  - apps/api/test/patient-appointments.integration.spec.ts
+  - apps/dashboard/src/features/dashboard/dashboard-page.tsx
+  - apps/dashboard/src/lib/appointment-api.ts
+  - apps/dashboard/src/lib/appointment-api.spec.ts
+  - plan/STATUS.md
+  - plan/phases/05-APPOINTMENT-OPERATIONS.md
+  - specs/003-adopt-phase-05/tasks.md
+Migrations:
+  - None.
+Tests run:
+  - NODE_ENV=development pnpm --filter @sabz-zendegi/api test -- --run test/patient-appointments.integration.spec.ts test/patient-appointments.authorization.spec.ts → PASS (8 tests; real PostgreSQL).
+  - pnpm --dir apps/dashboard test -- --run src/lib/appointment-api.spec.ts → PASS.
+  - pnpm --dir apps/dashboard typecheck → PASS.
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS.
+  - pnpm --dir apps/dashboard build → BLOCKED by an unrelated existing Next prerender failure in DashboardSessionGate on /_global-error and /discounts after compilation and TypeScript passed.
+Result:
+  - clinic-scoped dashboard summary provides clinic-local today bounds, visit-mode totals, pending requests, lifecycle counts, average checked-in-to-started wait, ordered today plan, and real appointment activity → PASS.
+  - Dashboard Home renders only these sourced appointment widgets alongside pre-existing live patient/assessment widgets; no financial/order/treatment/common-disease/mezaj widget was introduced → PASS.
+  - authorization and PostgreSQL summary integration cover administrator access, activity, and current queue state → PASS.
+Known limitations:
+  - Generated OpenAPI/client synchronization remains intentionally deferred to F05-T11.
+  - Dashboard production build has an unrelated pre-existing session-gate prerender failure and is not treated as F05-T10 completion work.
+Next task:
+  - F05-T11, eligible but not claimed.

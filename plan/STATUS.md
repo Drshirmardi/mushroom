@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 19:11 +03:30`
+- آخرین به‌رورسانی: `2026-09-02 19:20 +03:30`
 - Milestone فعال: `Milestone B — کلینیک قابل رزرو`
 - فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -99,6 +99,15 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F05-B10` — `DONE`
+
+- `F05-T10` پذیرفته شد: Dashboard Home V1 فقط KPI و برنامهٔ امروز clinic-local و activity
+  واقعی رزرو را نمایش می‌دهد؛ widgetهای بیمار و assessment نیز فقط منابع زندهٔ پیشین دارند.
+  integration PostgreSQL، typecheck و test dashboard پاس شدند؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T11`؛ هنوز claim نشده است. OpenAPI/generated client فقط در همین
+  task هماهنگ خواهد شد.
 
 `F05-B09` — `DONE`
 

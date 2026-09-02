@@ -36,3 +36,12 @@ export class OperationalActivityResponseDto { @ApiProperty({ format: 'uuid' }) i
 export class OperationalActivityPageResponseDto { @ApiProperty({ type: OperationalActivityResponseDto, isArray: true }) items!: OperationalActivityResponseDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }
 export class AdminQueueEntryResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty({ format: 'date-time' }) queuedAt!: Date; @ApiProperty({ type: AdminAppointmentResponseDto }) appointment!: AdminAppointmentResponseDto; }
 export class AdminQueueResponseDto { @ApiProperty({ type: AdminQueueEntryResponseDto, isArray: true }) items!: AdminQueueEntryResponseDto[]; }
+export class DashboardTodayPlanEntryResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty({ format: 'date-time' }) startsAt!: Date; @ApiProperty({ format: 'date-time' }) endsAt!: Date; @ApiProperty({ enum: statuses }) status!: string; @ApiProperty({ enum: ['IN_PERSON', 'ONLINE'] }) visitMode!: string; }
+export class DashboardAppointmentActivityResponseDto { @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty() type!: string; @ApiPropertyOptional({ format: 'uuid', nullable: true }) appointmentId!: string | null; @ApiPropertyOptional({ format: 'uuid', nullable: true }) patientId!: string | null; @ApiProperty({ format: 'date-time' }) createdAt!: Date; }
+export class DashboardAppointmentSummaryResponseDto {
+  @ApiProperty({ format: 'date-time' }) asOf!: Date; @ApiProperty() timeZone!: string;
+  @ApiProperty() todayAppointments!: number; @ApiProperty() inPersonAppointments!: number; @ApiProperty() onlineAppointments!: number; @ApiProperty() pendingRequests!: number;
+  @ApiProperty() checkedIn!: number; @ApiProperty() queued!: number; @ApiProperty() inProgress!: number; @ApiProperty() completed!: number; @ApiProperty({ nullable: true }) averageWaitMinutes!: number | null;
+  @ApiProperty({ type: DashboardTodayPlanEntryResponseDto, isArray: true }) todayPlan!: DashboardTodayPlanEntryResponseDto[];
+  @ApiProperty({ type: DashboardAppointmentActivityResponseDto, isArray: true }) recentAppointmentActivity!: DashboardAppointmentActivityResponseDto[];
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, ClipboardList, RefreshCw, ShieldAlert, UserPlus } from "lucide-react";
+import { AlertCircle, CalendarDays, CheckCircle2, ClipboardList, RefreshCw, ShieldAlert, UserPlus } from "lucide-react";
 
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { KpiCard } from "@/components/shared/kpi-card";
@@ -16,11 +16,13 @@ import {
 } from "@/lib/dashboard-assessment-summary";
 import { loadDirectorySettings, type DirectorySettingsState } from "@/lib/directory-settings-api";
 import { projectDashboardScheduleReadiness } from "@/lib/dashboard-schedule-readiness";
+import { dashboardAppointmentError, loadDashboardAppointmentSummary, type DashboardAppointmentSummary } from "@/lib/appointment-api";
 import { p } from "@/lib/utils";
 
 type SummaryViewState = DashboardOnboardingSummaryState | { status: "loading" };
 type AssessmentViewState = DashboardAssessmentSummaryState | { status: "loading" };
 type ScheduleViewState = DirectorySettingsState | { status: "loading" };
+type AppointmentViewState = { status: "loading" } | { status: "ready"; summary: DashboardAppointmentSummary } | { status: "error"; message: string };
 
 function formatAsOf(asOf: string, timeZone: string) {
   return new Intl.DateTimeFormat("fa-IR", {
@@ -35,19 +37,23 @@ export function DashboardPage() {
   const [state, setState] = useState<SummaryViewState>({ status: "loading" });
   const [assessmentState, setAssessmentState] = useState<AssessmentViewState>({ status: "loading" });
   const [scheduleState, setScheduleState] = useState<ScheduleViewState>({ status: "loading" });
+  const [appointmentState, setAppointmentState] = useState<AppointmentViewState>({ status: "loading" });
 
   const refresh = useCallback(async () => {
     setState({ status: "loading" });
     setAssessmentState({ status: "loading" });
     setScheduleState({ status: "loading" });
-    const [onboarding, assessment, schedule] = await Promise.all([
+    setAppointmentState({ status: "loading" });
+    const [onboarding, assessment, schedule, appointments] = await Promise.all([
       loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
       loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
       loadDirectorySettings(apiClient, authentication.accessToken),
+      loadDashboardAppointmentSummary(authentication.accessToken).then((summary) => ({ status: "ready" as const, summary })).catch((error) => ({ status: "error" as const, message: dashboardAppointmentError(error) })),
     ]);
     setState(onboarding);
     setAssessmentState(assessment);
     setScheduleState(schedule);
+    setAppointmentState(appointments);
   }, [authentication.accessToken]);
 
   useEffect(() => {
@@ -56,8 +62,9 @@ export function DashboardPage() {
       loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
       loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
       loadDirectorySettings(apiClient, authentication.accessToken),
+      loadDashboardAppointmentSummary(authentication.accessToken).then((summary) => ({ status: "ready" as const, summary })).catch((error) => ({ status: "error" as const, message: dashboardAppointmentError(error) })),
     ]).then(
-      ([nextState, nextAssessmentState, nextScheduleState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); setScheduleState(nextScheduleState); } },
+      ([nextState, nextAssessmentState, nextScheduleState, nextAppointmentState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); setScheduleState(nextScheduleState); setAppointmentState(nextAppointmentState); } },
     );
     return () => { cancelled = true; };
   }, [authentication.accessToken]);
@@ -105,6 +112,17 @@ export function DashboardPage() {
           </p>
         </>
       )}
+
+      <section className="space-y-4">
+        <div><h2 className="text-lg font-bold text-foreground">عملیات نوبت‌های امروز</h2><p className="mt-1 text-sm text-muted-foreground">همهٔ شاخص‌ها و برنامه از زمان محلی کلینیک محاسبه می‌شوند.</p></div>
+        {appointmentState.status === "loading" && <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground" role="status">در حال دریافت عملیات نوبت‌ها…</div>}
+        {appointmentState.status === "error" && <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900" role="alert">{appointmentState.message}<button onClick={() => void refresh()} className="mr-3 text-sm font-bold underline">تلاش دوباره</button></div>}
+        {appointmentState.status === "ready" && <>
+          <div className="grid gap-4 md:grid-cols-4"><KpiCard title="نوبت‌های امروز" value={p(appointmentState.summary.todayAppointments)} icon={CalendarDays} iconBg="bg-blue-100 text-blue-700" /><KpiCard title="حضوری / آنلاین" value={`${p(appointmentState.summary.inPersonAppointments)} / ${p(appointmentState.summary.onlineAppointments)}`} icon={CalendarDays} iconBg="bg-violet-100 text-violet-700" /><KpiCard title="درخواست‌های pending" value={p(appointmentState.summary.pendingRequests)} icon={ClipboardList} iconBg="bg-amber-100 text-amber-700" /><KpiCard title="تکمیل‌شده" value={p(appointmentState.summary.completed)} icon={CheckCircle2} iconBg="bg-emerald-100 text-emerald-700" /></div>
+          <div className="grid gap-4 md:grid-cols-4"><KpiCard title="check-in" value={p(appointmentState.summary.checkedIn)} icon={UserPlus} iconBg="bg-blue-100 text-blue-700" /><KpiCard title="در صف" value={p(appointmentState.summary.queued)} icon={ClipboardList} iconBg="bg-amber-100 text-amber-700" /><KpiCard title="در حال ویزیت" value={p(appointmentState.summary.inProgress)} icon={CalendarDays} iconBg="bg-violet-100 text-violet-700" /><KpiCard title="میانگین انتظار" value={appointmentState.summary.averageWaitMinutes === null ? "—" : `${p(appointmentState.summary.averageWaitMinutes)} دقیقه`} icon={RefreshCw} iconBg="bg-slate-100 text-slate-700" /></div>
+          <div className="grid gap-4 lg:grid-cols-2"><div className="rounded-2xl border border-border bg-card p-5"><h3 className="font-bold">برنامهٔ امروز</h3>{appointmentState.summary.todayPlan.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">برای امروز نوبتی ثبت نشده است.</p> : <ul className="mt-3 space-y-2 text-sm">{appointmentState.summary.todayPlan.map((item) => <li key={item.id} className="flex justify-between border-b border-border pb-2"><span>{formatAsOf(item.startsAt, appointmentState.summary.timeZone)}</span><span>{item.visitMode === "IN_PERSON" ? "حضوری" : "آنلاین"} · {item.status}</span></li>)}</ul>}</div><div className="rounded-2xl border border-border bg-card p-5"><h3 className="font-bold">فعالیت اخیر رزرو</h3>{appointmentState.summary.recentAppointmentActivity.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">فعالیت رزرو ثبت نشده است.</p> : <ul className="mt-3 space-y-2 text-sm">{appointmentState.summary.recentAppointmentActivity.map((item) => <li key={item.id} className="border-b border-border pb-2"><p>{item.type.replaceAll("_", " ")}</p><p className="text-xs text-muted-foreground">{formatAsOf(item.createdAt, appointmentState.summary.timeZone)}</p></li>)}</ul>}</div></div>
+        </>}
+      </section>
 
       {assessmentState.status === "loading" && (
         <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground" role="status">
