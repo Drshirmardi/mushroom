@@ -314,6 +314,8 @@ model User {
   clinicalNoteRevisionAuthors    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionAuthoredBy")
   clinicalNoteRevisionSigners    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionSignedBy")
   clinicalNoteRevisionPublishers ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionPublishedBy")
+  clinicalRecordRevisionAuthors  ClinicalRecordRevision[]       @relation("ClinicalRecordRevisionAuthoredBy")
+  clinicalRecordRevisionSigners  ClinicalRecordRevision[]       @relation("ClinicalRecordRevisionSignedBy")
   patientAccessAudits            PatientAccessAudit[]           @relation("PatientAccessAuditActor")
   clinicalClinicAccesses         ClinicalClinicAccess[]
 
@@ -1168,7 +1170,7 @@ model MedicationStatement {
 }
 
 model ClinicalRecordRevision {
-  id                      String                      @id @default(uuid()) @db.Uuid
+  id                      String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   diagnosisId             String?                     @map("diagnosis_id") @db.Uuid
   allergyRecordId         String?                     @map("allergy_record_id") @db.Uuid
   conditionRecordId       String?                     @map("condition_record_id") @db.Uuid
@@ -1191,6 +1193,8 @@ model ClinicalRecordRevision {
   medicationStatement     MedicationStatement?        @relation(fields: [medicationStatementId], references: [id], onDelete: Restrict)
   previousRevision        ClinicalRecordRevision?     @relation("ClinicalRecordRevisionPredecessor", fields: [previousRevisionId], references: [id], onDelete: Restrict)
   successorRevisions      ClinicalRecordRevision[]    @relation("ClinicalRecordRevisionPredecessor")
+  authoredByUser          User?                       @relation("ClinicalRecordRevisionAuthoredBy", fields: [authoredByUserId], references: [id], onDelete: SetNull)
+  signedByUser            User?                       @relation("ClinicalRecordRevisionSignedBy", fields: [signedByUserId], references: [id], onDelete: SetNull)
 
   @@unique([diagnosisId, revisionNumber], map: "clinical_record_revisions_diagnosis_revision_key")
   @@unique([allergyRecordId, revisionNumber], map: "clinical_record_revisions_allergy_revision_key")

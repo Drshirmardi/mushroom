@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 20:24 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 23:24 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: ندارد؛ `Phase 06` بسته شده و `Phase 07` هنوز شروع نشده است.
 - وضعیت فاز فعال: ندارد
@@ -71,7 +71,20 @@
 - `F03-T01` تا `F03-T08` مطابق checklist فاز تکمیل شده‌اند؛ شواهد بازسازی‌شده `F03-T03` تا `F03-T06` و verification جدید در [`logs/phase-03.md`](logs/phase-03.md) ثبت شد.
 - dependency: `Phase 02` → DONE.
 
-## وضعیت taskهای فاز فعال
+## prerequisite repair تکمیل‌شده — F06-R01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-03 22:58 +03:30`
+Completed at: `2026-09-03 23:24 +03:30`
+Status: `DONE`
+Scope: repository-baseline reconciliation discovered by `F07-T02`; represent the two existing `clinical_record_revisions` user foreign keys and its database-generated UUID default in the Prisma schema.
+Owned paths: `apps/api/prisma/schema.prisma`, `apps/api/prisma.config.ts`, `apps/api/.env.example`, `plan/STATUS.md`, `plan/logs/phase-06.md`
+Excluded: all existing migration files, any 14-constraint compatibility migration, Phase 07 migration generation, and local database mutation.
+Expected verification: isolated full migration replay and zero-drift diff against the corrected Phase 06 schema, Prisma validate/generate, focused Phase 06 clinical persistence/revision tests, and diff/whitespace validation.
+
+Result: the Prisma schema now represents both existing nullable user foreign keys and the database-generated UUID default. All 18 committed migrations replayed in isolation; migration-history → corrected committed schema produced an empty diff; Prisma validate/generate, 5 focused clinical revision/reconciliation tests, and 2 empty-database migration/seed smoke tests passed. No migration was added or changed. Evidence: [`logs/phase-06.md`](logs/phase-06.md).
+
+## وضعیت taskهای فاز پیشین
 
 - `F06-T01` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T02` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
