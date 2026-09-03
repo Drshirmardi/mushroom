@@ -17,6 +17,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
   afterEach(async () => {
     if (!userIds.size) return;
     const users = [...userIds];
+    await prisma.encounter.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.queueEntry.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.operationalActivity.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.appointmentStatusHistory.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
@@ -174,6 +175,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
   it('runs the administrator check-in, queue, call-next, start, complete, and no-show state machine safely', async () => {
     const { profile } = await patient();
     const adminId = randomUUID(); userIds.add(adminId);
+    await prisma.user.create({ data: { id: adminId, phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
     const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: randomUUID(), roles: ['ADMIN'] });
     const now = Date.now();
     const currentStartsAt = new Date(now - 5 * 60_000);
@@ -196,10 +198,15 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(repeatQueue.statusCode).toBe(200); expect(await prisma.queueEntry.count({ where: { appointmentId: current.id } })).toBe(1);
     const started = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });
     expect(started.statusCode).toBe(200); expect(started.json()).toMatchObject({ id: current.id, status: 'IN_PROGRESS' });
+    const encounter = await prisma.encounter.findUniqueOrThrow({ where: { appointmentId: current.id } });
+    expect(encounter).toMatchObject({ clinicId: profile.clinicId, appointmentId: current.id, patientId: profile.id, doctorId: offering.doctorId, state: 'IN_PROGRESS', startedByUserId: adminId });
     const queue = await app.inject({ method: 'GET', url: '/v1/admin/appointments/queue', headers: headersForAdmin() });
     expect(queue.statusCode).toBe(200); expect(queue.json()).toMatchObject({ items: [{ appointment: { id: current.id, status: 'IN_PROGRESS' } }] });
+    const repeatStart = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/start`, headers: headersForAdmin() });
+    expect(repeatStart.statusCode).toBe(200); expect(repeatStart.json().id).toBe(current.id);
     const repeatCallNext = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });
     expect(repeatCallNext.statusCode).toBe(200); expect(repeatCallNext.json().id).toBe(current.id);
+    expect(await prisma.encounter.count({ where: { appointmentId: current.id } })).toBe(1);
     const dashboardSummary = await app.inject({ method: 'GET', url: '/v1/admin/appointments/dashboard-summary', headers: headersForAdmin() });
     expect(dashboardSummary.statusCode).toBe(200); expect(dashboardSummary.json()).toMatchObject({ timeZone: 'Asia/Tehran', inProgress: 1 }); expect(dashboardSummary.json().todayPlan).toEqual(expect.arrayContaining([expect.objectContaining({ id: current.id, status: 'IN_PROGRESS', visitMode: offering.visitMode })])); expect(dashboardSummary.json().recentAppointmentActivity).toEqual(expect.arrayContaining([expect.objectContaining({ appointmentId: current.id, type: 'APPOINTMENT_STARTED' })]));
     expect(dashboardSummary.json().averageWaitMinutes).toEqual(expect.any(Number));
@@ -208,6 +215,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     expect(busy.statusCode).toBe(409); expect(busy.json().code).toBe('APPOINTMENT_DOCTOR_BUSY');
     const complete = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/complete`, headers: headersForAdmin() });
     expect(complete.statusCode).toBe(200); expect(complete.json()).toMatchObject({ status: 'COMPLETED' });
+    expect(await prisma.encounter.findUniqueOrThrow({ where: { appointmentId: current.id } })).toMatchObject({ id: encounter.id, state: 'COMPLETED', completedByUserId: adminId, completedAt: expect.any(Date) });
     const repeatComplete = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/complete`, headers: headersForAdmin() });
     expect(repeatComplete.statusCode).toBe(200); expect(repeatComplete.json().id).toBe(current.id);
     const empty = await app.inject({ method: 'POST', url: `/v1/admin/appointments/doctors/${offering.doctorId}/call-next`, headers: headersForAdmin() });

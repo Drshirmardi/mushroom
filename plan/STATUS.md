@@ -6,9 +6,9 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 21:38 +03:30`
-- Milestone فعال: `Milestone B — DONE (CLOSED)`
-- فاز فعال: ندارد؛ `Phase 05` بسته شده و `Phase 06` هنوز شروع نشده است.
+- آخرین به‌رورسانی: `2026-09-03 20:24 +03:30`
+- Milestone فعال: `Milestone C — IN_PROGRESS`
+- فاز فعال: ندارد؛ `Phase 06` بسته شده و `Phase 07` هنوز شروع نشده است.
 - وضعیت فاز فعال: ندارد
 - batch فعال: ندارد
 - task فعال: ندارد
@@ -26,7 +26,7 @@
 - [x] onboarding پزشکی و consent واقعی شده‌اند.
 - [x] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
 - [x] اولین جریان end-to-end رزرو نوبت کامل شده است.
-- [ ] اطلاعات بالینی واقعی شده‌اند.
+- [x] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
 - [ ] چت واقعی شده است.
 - [ ] production readiness تأیید شده است.
@@ -39,7 +39,7 @@
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
-- [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
+- [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
@@ -73,6 +73,22 @@
 
 ## وضعیت taskهای فاز فعال
 
+- `F06-T01` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T02` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T03` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T04` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T05` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T06` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T07` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T08` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T09` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T10` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T11` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T12` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+
+
+### وضعیت تاریخی Phase 05
+
 - `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T03` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
@@ -104,6 +120,98 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-CLOSE` — `DONE (CLOSED)`
+
+- review مستقل closure تمام معیارهای پذیرش `F06-T01` تا `F06-T12`، قرارداد policy بالینی،
+  migrationهای applied، generated OpenAPI/client، revision/sign/publish، authorization/resource
+  scope، audit/redaction، patient visibility، test/build و evidence مرور شد و blocker یا drift
+  پیدا نشد؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- `Phase 07` همچنان `NOT_STARTED` است؛ هیچ task یا batch آن claim یا آماده‌سازی نشده است.
+
+`F06-B12` — `DONE`
+
+- `F06-T12` evidence، full verification و review سازگاری/همگرایی Spec Kit را پذیرفت؛ Phase 06
+  اکنون `READY_FOR_REVIEW` است و هیچ task جدیدی به roadmap افزوده نشد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- next action: independent Phase 06 review; `Phase 07` remains `NOT_STARTED`.
+
+`F06-B11` — `DONE`
+
+- `F06-T11` OpenAPI runtime/client را با response schemaهای clinical همگام کرد، dashboard/app را
+  به generated client منتقل کرد، و gateهای security/revision/browser را پذیرفت؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T12`؛ هنوز claim نشده است.
+
+`F06-B10` — `DONE`
+
+- `F06-T10` سه surface بیمار را به summary/history/timeline مجاز persisted وصل و mockهای visit,
+  prescription, score و treatment را حذف کرد؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T11`؛ هنوز claim نشده است.
+
+`F06-B09` — `DONE`
+
+- `F06-T09` patient workspace dashboard را به clinical workspace مجاز، note/record revision،
+  sign/publish، appointment، assessment و timeline واقعی وصل کرد؛ traditional analysis بدون
+  data model Phase 06 صادقانه empty state است؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T10`؛ هنوز claim نشده است.
+
+`F06-B08` — `DONE`
+
+- `F06-T08` permissionهای بالینی configurable، grant صریح actor-to-clinic، guard fail-closed و
+  audit تراکنشی redacted را برای readهای clinical بیمار و writeهای note/reconciliation پذیرفت؛
+  export/download هنوز endpoint ندارد و بنابراین خارج از permission/audit قابل دسترسی نیست؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T09`؛ هنوز claim نشده است.
+
+`F06-B07` — `DONE`
+
+- `F06-T07` patient-safe timeline/history/visit-summary read model را فقط از current explicitly
+  published summary روی encounter تکمیل‌شده می‌خواند؛ private/draft/signed-but-unpublished content
+  و audit metadata خارج می‌مانند؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T08`؛ هنوز claim نشده است.
+
+`F06-B06` — `DONE`
+
+- `F06-T06` چهار نوع clinical record را فقط از provenance immutable intake و human review صریح
+  ایجاد می‌کند؛ edit و signing برای revision جاری append-only، private-by-default و دارای
+  optimistic-concurrency است؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T07`؛ هنوز claim نشده است.
+
+`F06-B05` — `DONE`
+
+- `F06-T05` revision chain private-by-default برای ClinicalNote را با optimistic concurrency،
+  signing exact revision و amendment append-only پذیرفته کرد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T06`؛ هنوز claim نشده است.
+
+`F06-B04` — `DONE`
+
+- `F06-T04` یک Encounter جدا را هنگام start appointment معتبر و در همان transaction می‌سازد و
+  هنگام complete آن را تکمیل می‌کند؛ retryهای start/call-next duplicate تولید نمی‌کنند؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T05`؛ هنوز claim نشده است.
+
+`F06-B03` — `DONE`
+
+- `F06-T03` persistence افزایشی encounter، clinical core، source provenance و patient access audit
+  را با migration/constraint و smoke PostgreSQL واقعی پذیرفته کرد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T04`؛ هنوز claim نشده است.
+
+`F06-B02` — `DONE`
+
+- `F06-T02` قرارداد intake خوداظهاری به clinical record reviewed را با provenance immutable،
+  human review صریح، جداسازی clinical output، visibility private-by-default و مرزبندی taskهای
+  migration/reconciliation freeze کرد؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T03`؛ هنوز claim نشده است.
+
+`F06-B01` — `DONE`
+
+- `F06-T01` پس از freeze قرارداد policy داده بالینی، بررسی traceability با roadmap/standards/
+  authorization/audit و review coordinator پذیرفته شد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T02`؛ هنوز claim نشده است.
 
 `F05-CLOSE` — `DONE (CLOSED)`
 

@@ -15,6 +15,7 @@ import { IntakeModule } from './modules/patients/intake/intake.module';
 import { SelfProfileModule } from './modules/patients/self-profile/self-profile.module';
 import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.module';
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
+import { ClinicalModule } from './modules/clinical/clinical.module';
 
 @Module({
   controllers: [HealthController],
@@ -43,6 +44,7 @@ import { PatientAppointmentsModule } from './modules/appointments/patient-appoin
     AdminDirectoryModule,
     AdminSchedulingModule,
     PatientAppointmentsModule,
+    ClinicalModule,
   ],
 })
 export class AppModule {}

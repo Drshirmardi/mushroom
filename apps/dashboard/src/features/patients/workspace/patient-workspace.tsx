@@ -6,8 +6,10 @@ import { ChevronLeft, FileText } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { Avatar, SectionCard, StatusBadge } from "@/components/shared";
 import { getAdminPatient, getAdminPatientAssessmentSubmissions, getAssessmentResultBandTitle, PatientApiError, type AdminAssessmentSubmissionList, type AdminPatientDetail } from "@/lib/patient-api";
+import { ClinicalWorkspaceApiError, createClinicalNote, getClinicalWorkspace, publishClinicalNote, reconcileClinicalRecord, saveClinicalNote, saveClinicalRecord, signClinicalNote, signClinicalRecord, type ClinicalRecordKind, type ClinicalWorkspace } from "@/lib/clinical-workspace-api";
+import { listAdminAppointments, type AdminAppointment, type AppointmentApiError } from "@/lib/appointment-api";
 
-const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات خوداظهاری" }, { id: "assessments", label: "ارزیابی‌ها" }] as const;
+const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات پزشکی" }, { id: "history", label: "تاریخچه بالینی" }, { id: "appointments", label: "نوبت‌ها" }, { id: "assessments", label: "ارزیابی‌ها" }, { id: "traditional", label: "طب سنتی" }, { id: "timeline", label: "خط زمانی" }] as const;
 const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-", AB_POSITIVE: "AB+", AB_NEGATIVE: "AB-", O_POSITIVE: "O+", O_NEGATIVE: "O-", UNKNOWN: "نامشخص" };
 const SEXES: Record<string, string> = { FEMALE: "زن", MALE: "مرد", INTERSEX: "اینترسکس", UNKNOWN: "نامشخص", PREFER_NOT_TO_SAY: "ترجیح می‌دهم نگویم" };
 
@@ -28,12 +30,34 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
   const [error, setError] = useState<PatientApiError | null>(null);
   const [assessments, setAssessments] = useState<AdminAssessmentSubmissionList | null>(null);
   const [assessmentError, setAssessmentError] = useState<PatientApiError | null>(null);
+  const [clinical, setClinical] = useState<ClinicalWorkspace | null>(null);
+  const [clinicalError, setClinicalError] = useState<ClinicalWorkspaceApiError | null>(null);
+  const [appointments, setAppointments] = useState<AdminAppointment[] | null>(null);
+  const [appointmentError, setAppointmentError] = useState<AppointmentApiError | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void getAdminPatient(authentication.accessToken, patientId).then(
       (data) => { if (!cancelled) setPatient(data); },
       (reason: unknown) => { if (!cancelled) setError(reason instanceof PatientApiError ? reason : new PatientApiError(0)); },
+    );
+    return () => { cancelled = true; };
+  }, [authentication.accessToken, patientId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getClinicalWorkspace(authentication.accessToken, patientId).then(
+      (data) => { if (!cancelled) setClinical(data); },
+      (reason: unknown) => { if (!cancelled) setClinicalError(reason instanceof ClinicalWorkspaceApiError ? reason : new ClinicalWorkspaceApiError(0)); },
+    );
+    return () => { cancelled = true; };
+  }, [authentication.accessToken, patientId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void listAdminAppointments(authentication.accessToken, { patientId }).then(
+      (data) => { if (!cancelled) setAppointments(data.items); },
+      (reason: unknown) => { if (!cancelled) setAppointmentError(reason as AppointmentApiError); },
     );
     return () => { cancelled = true; };
   }, [authentication.accessToken, patientId]);
@@ -69,7 +93,12 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
     <div className="flex-1 overflow-y-auto p-7">
       {tab === "overview" && <div className="grid max-w-3xl grid-cols-1 gap-6 lg:grid-cols-2"><SectionCard title="اطلاعات تماس و حساب"><Rows rows={basicRows} /></SectionCard><SectionCard title="وضعیت onboarding"><div className="space-y-3 text-sm"><p>رضایت فعال: <span className="font-semibold">{patient.consent.active ? "دارد" : "ندارد"}</span></p><p>وضعیت intake: <span className="font-semibold">{patient.intake.status === "AVAILABLE" ? "قابل مشاهده" : patient.intake.status === "CONSENT_REQUIRED" ? "نیازمند رضایت" : "ثبت نشده"}</span></p><p className="text-xs leading-6 text-muted-foreground">هر اطلاعات پزشکی موجود در این صفحه توسط خود بیمار گزارش شده است و تشخیص یا واقعیت بالینی تأییدشده محسوب نمی‌شود.</p></div></SectionCard></div>}
       {tab === "medical" && (medicalAvailable ? <div className="space-y-5"><div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>دادهٔ خوداظهاری بیمار</strong><p className="mt-1 text-xs leading-6">این اطلاعات به‌صورت خوداظهاری ثبت شده‌اند و نباید به‌عنوان تشخیص، تأیید پزشکی یا ادعای بالینی تفسیر شوند.</p></div><div className="grid max-w-3xl grid-cols-1 gap-5 lg:grid-cols-2"><SectionCard title="اطلاعات پایه"><Rows rows={intakeRows} /></SectionCard><SectionCard title="گزارش‌های خوداظهاری"><Rows rows={reportRows} /></SectionCard></div></div> : <EmptyMedical status={patient.intake.status} />)}
+      {tab === "medical" && <ClinicalRecords clinical={clinical} error={clinicalError} accessToken={authentication.accessToken} patientId={patientId} onChanged={setClinical} />}
+      {tab === "history" && <ClinicalNotes clinical={clinical} error={clinicalError} accessToken={authentication.accessToken} patientId={patientId} onChanged={setClinical} />}
+      {tab === "appointments" && <PatientAppointments appointments={appointments} error={appointmentError} />}
       {tab === "assessments" && <PatientAssessments assessments={assessments} error={assessmentError} />}
+      {tab === "traditional" && <TraditionalMedicine />}
+      {tab === "timeline" && <ClinicalTimeline clinical={clinical} error={clinicalError} />}
     </div>
   </div>;
 }
@@ -85,3 +114,64 @@ function PatientAssessments({ assessments, error }: { assessments: AdminAssessme
   return <div className="max-w-3xl space-y-4">{assessments.items.map((assessment) => { const band = getAssessmentResultBandTitle(assessment.resultSnapshot); return <SectionCard key={assessment.id} title={assessment.assessmentTitle}><Rows rows={[["وضعیت", assessmentState(assessment.state)], ["تلاش", String(assessment.attemptNumber)], ["امتیاز", assessment.score ?? "ثبت نشده"], ["نتیجه", band ?? "ثبت نشده"], ["تاریخ تکمیل", assessment.completedAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(assessment.completedAt)) : "ثبت نشده"]]} /></SectionCard>; })}</div>;
 }
 function assessmentState(state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED") { return state === "COMPLETE" ? "تکمیل‌شده" : state === "IN_PROGRESS" ? "در حال تکمیل" : "نامعتبر"; }
+
+function ClinicalNotice({ error }: { error: ClinicalWorkspaceApiError | null }) {
+  if (!error) return null;
+  if (error.status === 401 || error.status === 403) return <Notice tone="amber">اجازهٔ دسترسی بالینی این بیمار را ندارید.</Notice>;
+  return <Notice tone="red">دریافت یا ذخیرهٔ پروندهٔ بالینی ممکن نشد. دادهٔ ساختگی نمایش داده نمی‌شود.</Notice>;
+}
+
+function ClinicalRecords({ clinical, error, accessToken, patientId, onChanged }: { clinical: ClinicalWorkspace | null; error: ClinicalWorkspaceApiError | null; accessToken: string; patientId: string; onChanged: (value: ClinicalWorkspace) => void }) {
+  const [kind, setKind] = useState<ClinicalRecordKind>("DIAGNOSIS");
+  const [content, setContent] = useState('{\n  "label": ""\n}');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const refresh = async () => onChanged(await getClinicalWorkspace(accessToken, patientId));
+  const create = async () => {
+    if (!clinical?.intakeSource) return;
+    try {
+      const reviewedContent = JSON.parse(content) as Record<string, unknown>;
+      setBusy(true); setMessage(null);
+      await reconcileClinicalRecord(accessToken, patientId, { kind, encounterId: clinical.encounters[0]?.id, sourceIntakeId: clinical.intakeSource.intakeId, sourceIntakeRevisionId: clinical.intakeSource.revisionId, sourceIntakeRevisionNumber: clinical.intakeSource.revisionNumber, reviewedContent });
+      await refresh(); setMessage("رکورد بالینی بازبینی‌شده ذخیره شد.");
+    } catch { setMessage("ذخیره نشد؛ ساختار JSON و دسترسی بالینی را بررسی کنید."); } finally { setBusy(false); }
+  };
+  if (!clinical && !error) return <p className="text-sm text-muted-foreground">در حال دریافت اطلاعات بالینی…</p>;
+  if (error) return <ClinicalNotice error={error} />;
+  if (!clinical) return null;
+  return <div className="mt-5 max-w-4xl space-y-4"><SectionCard title="رکوردهای بالینی بازبینی‌شده"><p className="mb-4 text-xs leading-6 text-muted-foreground">اطلاعات خوداظهاری پایین‌تر از این خط، واقعیت بالینی نیستند. ایجاد هر رکورد از نسخهٔ intake مشخص و با مجوز بالینی انجام می‌شود.</p>{clinical.records.length === 0 ? <p className="text-sm text-muted-foreground">هنوز رکورد بالینی بازبینی‌شده‌ای ثبت نشده است.</p> : <div className="space-y-3">{clinical.records.map((record) => <ClinicalRecordEditor key={record.id} record={record} accessToken={accessToken} patientId={patientId} onChanged={refresh} />)}</div>}</SectionCard>{clinical.intakeSource && <SectionCard title="افزودن رکورد بازبینی‌شده"><div className="grid gap-3"><select value={kind} onChange={(event) => setKind(event.target.value as ClinicalRecordKind)} className="rounded-lg border border-border bg-card p-2 text-sm"><option value="DIAGNOSIS">تشخیص</option><option value="ALLERGY">آلرژی</option><option value="CONDITION">بیماری/وضعیت</option><option value="MEDICATION_STATEMENT">داروی جاری</option></select><textarea value={content} onChange={(event) => setContent(event.target.value)} rows={5} aria-label="محتوای بازبینی‌شده" className="rounded-lg border border-border bg-card p-3 font-mono text-xs" /><button onClick={() => void create()} disabled={busy} className="w-fit rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50">{busy ? "در حال ذخیره…" : "ایجاد رکورد بازبینی‌شده"}</button>{message && <p className="text-xs text-muted-foreground">{message}</p>}</div></SectionCard>}</div>;
+}
+
+function ClinicalRecordEditor({ record, accessToken, patientId, onChanged }: { record: ClinicalWorkspace["records"][number]; accessToken: string; patientId: string; onChanged: () => Promise<void> }) {
+  const [content, setContent] = useState(JSON.stringify(record.revision?.content ?? {}, null, 2));
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const current = record.revision;
+  const save = async () => { if (!current) return; try { setBusy(true); await saveClinicalRecord(accessToken, patientId, record.kind, record.id, { expectedRevision: record.currentRevision, reviewedContent: JSON.parse(content), amendmentReasonCategory: reason || null }); await onChanged(); } finally { setBusy(false); } };
+  const sign = async () => { if (!current) return; try { setBusy(true); await signClinicalRecord(accessToken, patientId, record.kind, record.id, record.currentRevision, record.currentRevision); await onChanged(); } finally { setBusy(false); } };
+  return <div className="rounded-xl border border-border p-4"><div className="mb-2 flex items-center justify-between"><strong className="text-sm">{record.kind}</strong><span className="text-xs text-muted-foreground">نسخه {record.currentRevision} · {current?.state ?? "نامشخص"}</span></div><textarea value={content} onChange={(event) => setContent(event.target.value)} rows={4} className="w-full rounded-lg border border-border bg-card p-2 font-mono text-xs" />{current?.state === "SIGNED" && <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="دسته‌بندی دلیل اصلاح" className="mt-2 w-full rounded-lg border border-border bg-card p-2 text-xs" />}<div className="mt-3 flex gap-2"><button onClick={() => void save()} disabled={busy} className="rounded-lg border border-primary px-3 py-1.5 text-xs text-primary disabled:opacity-50">ذخیره نسخه جدید</button>{current?.state === "DRAFT" && <button onClick={() => void sign()} disabled={busy} className="rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-50">امضا</button>}</div></div>;
+}
+
+function ClinicalNotes({ clinical, error, accessToken, patientId, onChanged }: { clinical: ClinicalWorkspace | null; error: ClinicalWorkspaceApiError | null; accessToken: string; patientId: string; onChanged: (value: ClinicalWorkspace) => void }) {
+  const [content, setContent] = useState(""); const [summary, setSummary] = useState(""); const [reason, setReason] = useState(""); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string | null>(null);
+  const refresh = async () => onChanged(await getClinicalWorkspace(accessToken, patientId));
+  const create = async () => { const encounter = clinical?.encounters[0]; if (!encounter || !content.trim()) return; try { setBusy(true); await createClinicalNote(accessToken, patientId, encounter.id, { expectedRevision: 0, content, isPrivate: true, patientSummary: summary || null }); await refresh(); setContent(""); setSummary(""); } catch { setMessage("ایجاد یادداشت ممکن نشد."); } finally { setBusy(false); } };
+  if (!clinical && !error) return <p className="text-sm text-muted-foreground">در حال دریافت تاریخچه بالینی…</p>;
+  if (error) return <ClinicalNotice error={error} />;
+  if (!clinical) return null;
+  return <div className="max-w-4xl space-y-4"><SectionCard title="یادداشت‌های بالینی کنترل‌شده">{clinical.notes.length === 0 ? <p className="text-sm text-muted-foreground">یادداشتی ثبت نشده است.</p> : <div className="space-y-3">{clinical.notes.map((note) => <ClinicalNoteEditor key={note.id} note={note} accessToken={accessToken} patientId={patientId} onChanged={refresh} />)}</div>}</SectionCard>{clinical.encounters.length > 0 && <SectionCard title="ایجاد یادداشت برای آخرین ویزیت"><textarea value={content} onChange={(event) => setContent(event.target.value)} rows={4} placeholder="یادداشت خصوصی پزشک" className="w-full rounded-lg border border-border bg-card p-3 text-sm" /><textarea value={summary} onChange={(event) => setSummary(event.target.value)} rows={2} placeholder="خلاصهٔ قابل انتشار برای بیمار (اختیاری)" className="mt-3 w-full rounded-lg border border-border bg-card p-3 text-sm" /><button onClick={() => void create()} disabled={busy || !content.trim()} className="mt-3 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50">{busy ? "در حال ذخیره…" : "ایجاد یادداشت"}</button>{message && <p className="mt-2 text-xs text-red-600">{message}</p>}</SectionCard>}</div>;
+}
+
+function ClinicalNoteEditor({ note, accessToken, patientId, onChanged }: { note: ClinicalWorkspace["notes"][number]; accessToken: string; patientId: string; onChanged: () => Promise<void> }) {
+  const current = note.revision; const [content, setContent] = useState(current?.content ?? ""); const [summary, setSummary] = useState(current?.patientSummary ?? ""); const [reason, setReason] = useState(""); const [busy, setBusy] = useState(false);
+  if (!current) return null;
+  const save = async () => { try { setBusy(true); await saveClinicalNote(accessToken, patientId, note.id, { expectedRevision: note.currentRevision, content, isPrivate: true, patientSummary: summary || null, amendmentReasonCategory: reason || null }); await onChanged(); } finally { setBusy(false); } };
+  const sign = async () => { try { setBusy(true); await signClinicalNote(accessToken, patientId, note.id, note.currentRevision, note.currentRevision); await onChanged(); } finally { setBusy(false); } };
+  const publish = async () => { try { setBusy(true); await publishClinicalNote(accessToken, patientId, note.id, note.currentRevision, note.currentRevision); await onChanged(); } finally { setBusy(false); } };
+  return <div className="rounded-xl border border-border p-4"><div className="mb-2 flex items-center justify-between"><strong className="text-sm">یادداشت ویزیت</strong><span className="text-xs text-muted-foreground">نسخه {note.currentRevision} · {current.state}</span></div><textarea value={content} onChange={(event) => setContent(event.target.value)} rows={4} className="w-full rounded-lg border border-border bg-card p-2 text-sm" /><textarea value={summary} onChange={(event) => setSummary(event.target.value)} rows={2} placeholder="خلاصهٔ بیمار" className="mt-2 w-full rounded-lg border border-border bg-card p-2 text-sm" />{current.state === "SIGNED" && <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="دسته‌بندی دلیل اصلاح" className="mt-2 w-full rounded-lg border border-border bg-card p-2 text-xs" />}<div className="mt-3 flex flex-wrap gap-2"><button onClick={() => void save()} disabled={busy} className="rounded-lg border border-primary px-3 py-1.5 text-xs text-primary disabled:opacity-50">ذخیره نسخه جدید</button>{current.state === "DRAFT" && <button onClick={() => void sign()} disabled={busy} className="rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-50">امضا</button>}{current.state === "SIGNED" && current.patientSummary && <button onClick={() => void publish()} disabled={busy} className="rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-50">انتشار خلاصه بیمار</button>}</div></div>;
+}
+
+function PatientAppointments({ appointments, error }: { appointments: AdminAppointment[] | null; error: AppointmentApiError | null }) { if (!appointments && !error) return <p className="text-sm text-muted-foreground">در حال دریافت نوبت‌ها…</p>; if (error) return <Notice tone={error.status === 401 || error.status === 403 ? "amber" : "red"}>دریافت نوبت‌های این بیمار ممکن نشد.</Notice>; if (!appointments?.length) return <EmptyPanel text="برای این بیمار نوبتی ثبت نشده است." />; return <div className="max-w-3xl space-y-3">{appointments.map((appointment) => <SectionCard key={appointment.id} title={appointment.status}><Rows rows={[["شروع", new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(appointment.startsAt))], ["پایان", new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(appointment.endsAt))]]} /></SectionCard>)}</div>; }
+function TraditionalMedicine() { return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center"><FileText size={36} className="mx-auto mb-3 text-muted-foreground/40" /><p className="text-sm font-medium">تحلیل طب سنتیِ persisted برای این بیمار در Phase 06 وجود ندارد.</p><p className="mt-2 text-xs leading-6 text-muted-foreground">این بخش عمداً تحلیل، تشخیص یا توصیهٔ ساختگی تولید نمی‌کند. مدل و workflow مستقل آن خارج از محدودهٔ فعلی هستند.</p></div>; }
+function ClinicalTimeline({ clinical, error }: { clinical: ClinicalWorkspace | null; error: ClinicalWorkspaceApiError | null }) { if (!clinical && !error) return <p className="text-sm text-muted-foreground">در حال دریافت خط زمانی…</p>; if (error) return <ClinicalNotice error={error} />; if (!clinical?.timeline.length) return <EmptyPanel text="هنوز رویداد بالینی ثبت‌شده‌ای وجود ندارد." />; return <div className="max-w-3xl space-y-3">{clinical.timeline.map((event) => <SectionCard key={event.id} title={event.type}><p className="text-sm text-muted-foreground">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.occurredAt))}</p></SectionCard>)}</div>; }
+function EmptyPanel({ text }: { text: string }) { return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">{text}</div>; }

@@ -17,6 +17,7 @@ import {
   type Permission,
   type RoleCode,
 } from './authorization.policy';
+import { CLINICAL_PERMISSIONS, ClinicalPermissionService, type ClinicalPermission } from './clinical-permission.service';
 import { PUBLIC_ROUTE_KEY } from './public.decorator';
 
 const unauthorized = (): UnauthorizedException =>
@@ -35,9 +36,9 @@ const forbidden = (): ForbiddenException =>
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector, private readonly clinicalPermissions?: ClinicalPermissionService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(
       PUBLIC_ROUTE_KEY,
       [context.getHandler(), context.getClass()],
@@ -66,12 +67,26 @@ export class AuthorizationGuard implements CanActivate {
 
     const hasRequiredRole = requiredRoles.length === 0
       || requiredRoles.some((role) => principal.roles.includes(role));
+    const clinical = requiredPermissions.filter((permission): permission is ClinicalPermission => (CLINICAL_PERMISSIONS as readonly string[]).includes(permission));
     const grantedPermissions = permissionsFor(principal.roles);
-    const hasRequiredPermissions = requiredPermissions.every((permission) =>
+    const hasStaticPermissions = requiredPermissions.filter((permission) => !clinical.includes(permission as ClinicalPermission)).every((permission) =>
       grantedPermissions.has(permission),
     );
+    if (!hasRequiredRole || !hasStaticPermissions) throw forbidden();
 
-    if (!hasRequiredRole || !hasRequiredPermissions) throw forbidden();
+    if (clinical.length > 0) {
+      return this.requireClinicalPermissions(principal.roles, clinical);
+    }
+
+    return true;
+  }
+
+  private async requireClinicalPermissions(
+    roles: RoleCode[],
+    permissions: ClinicalPermission[],
+  ): Promise<boolean> {
+    const allowed = await this.clinicalPermissions?.allows(roles, permissions) === true;
+    if (!allowed) throw forbidden();
 
     return true;
   }

@@ -1,29 +1,8 @@
 "use client";
-
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, ChevronLeft } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { toP } from "@/lib/format";
-
-const VISITS = [
-  { doctor: "دکتر شیرمردی", date: "۱۰ مرداد", type: "آکوپانکچر" },
-  { doctor: "دکتر میرزایی", date: "۲ مرداد", type: "تغذیه" },
-  { doctor: "دکتر شیرمردی", date: "۲۵ تیر", type: "مشاوره" },
-];
-
-const TABS = ["ویزیت‌ها", "نسخه‌ها", "آزمایشات", "پرداخت‌ها"];
-
-export default function MedicalHistoryPage() {
-  const router = useRouter();
-  return (
-    <div>
-      <PageHeader title="تاریخچه پزشکی" onBack={() => router.back()} />
-      <div className="px-4 space-y-3 pb-4">
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4"><p className="text-sm font-bold text-foreground mb-3">آخرین ویزیت‌ها</p>
-          {VISITS.map((v, i) => <div key={i} className="flex items-center gap-3 py-3 border-b border-border last:border-0"><div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center flex-shrink-0"><Calendar size={17} className="text-primary" /></div><div className="flex-1"><p className="text-sm font-bold text-foreground">{v.doctor}</p><p className="text-xs text-muted-foreground">{v.type} · {v.date}</p></div><button className="text-xs text-primary font-bold">نسخه</button></div>)}
-        </div>
-        {TABS.map(tab => <button key={tab} onClick={() => router.push("/profile/health-record")} className="w-full bg-white rounded-2xl border border-border shadow-sm p-4 flex items-center justify-between"><span className="text-sm font-bold text-foreground">{tab}</span><div className="flex items-center gap-2"><span className="text-xs text-muted-foreground">{toP(12)} مورد</span><ChevronLeft size={15} className="text-muted-foreground" /></div></button>)}
-      </div>
-    </div>
-  );
-}
+import { useAuthSession } from "@/components/auth/session-gate";
+import { ClinicalHistoryApiError, getPatientClinicalHistory, type PatientClinicalItem } from "@/lib/clinical-history-api";
+export default function MedicalHistoryPage() { const router = useRouter(); const { authentication } = useAuthSession(); const [items, setItems] = useState<PatientClinicalItem[] | null>(null); const [error, setError] = useState<ClinicalHistoryApiError | null>(null); useEffect(() => { void getPatientClinicalHistory(authentication.accessToken).then((data) => setItems(data.items), (reason: unknown) => setError(reason instanceof ClinicalHistoryApiError ? reason : new ClinicalHistoryApiError(0))); }, [authentication.accessToken]); return <div><PageHeader title="تاریخچه پزشکی" onBack={() => router.back()} /><div className="space-y-3 px-4 pb-4">{!items && !error && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت تاریخچه…</p>}{error && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">تاریخچه بالینی در دسترس نیست.</p>}{items?.length === 0 && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">تاریخچهٔ منتشرشده‌ای وجود ندارد.</p>}{items?.map((item) => <article key={item.appointmentId} className="flex gap-3 rounded-2xl border border-border bg-white p-4"><Calendar size={18} className="mt-1 text-primary" /><div><p className="text-xs text-muted-foreground">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(item.completedAt))}</p><p className="mt-1 text-sm leading-7 text-foreground">{item.patientSummary}</p></div></article>)}</div></div>; }

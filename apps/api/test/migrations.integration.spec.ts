@@ -147,9 +147,18 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'appointment_status_history',
         'queue_entries',
         'operational_activities',
+        'encounters',
+        'clinical_notes',
+        'clinical_note_revisions',
+        'diagnoses',
+        'allergy_records',
+        'condition_records',
+        'medication_statements',
+        'patient_access_audits',
       ]]);
 
       expect(tables.rows.map(({ table_name }) => table_name)).toEqual([
+        'allergy_records',
         'appointment_holds',
         'appointment_status_history',
         'appointments',
@@ -158,15 +167,22 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'availability_rules',
         'booking_eligibility_policies',
         'clinic_closures',
+        'clinical_note_revisions',
+        'clinical_notes',
         'clinics',
+        'condition_records',
         'consent_policy_versions',
         'credentials',
+        'diagnoses',
         'doctor_availability_exceptions',
         'doctor_profiles',
         'doctor_services',
         'doctor_specialties',
+        'encounters',
         'login_attempts',
+        'medication_statements',
         'operational_activities',
+        'patient_access_audits',
         'patient_assessment_submissions',
         'patient_consent_records',
         'patient_medical_intake_revisions',
@@ -363,6 +379,40 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         { typname: 'appointment_status_history_action', value: 'NO_SHOW' },
       ]);
 
+      const phaseSixEnums = await smokeClient.query<{
+        typname: string;
+        value: string;
+      }>(`
+        SELECT pg_type.typname, pg_enum.enumlabel AS value
+        FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+        WHERE pg_type.typname = ANY($1::text[])
+        ORDER BY pg_type.typname, pg_enum.enumsortorder
+      `, [[
+        'encounter_state', 'clinical_record_state',
+        'clinical_note_revision_state', 'patient_access_action',
+      ]]);
+      expect(phaseSixEnums.rows).toEqual([
+        { typname: 'clinical_note_revision_state', value: 'DRAFT' },
+        { typname: 'clinical_note_revision_state', value: 'SIGNED' },
+        { typname: 'clinical_note_revision_state', value: 'VOIDED' },
+        { typname: 'clinical_record_state', value: 'DRAFT' },
+        { typname: 'clinical_record_state', value: 'ACTIVE' },
+        { typname: 'clinical_record_state', value: 'INACTIVE' },
+        { typname: 'clinical_record_state', value: 'SUPERSEDED' },
+        { typname: 'clinical_record_state', value: 'VOIDED' },
+        { typname: 'encounter_state', value: 'IN_PROGRESS' },
+        { typname: 'encounter_state', value: 'COMPLETED' },
+        { typname: 'encounter_state', value: 'VOIDED' },
+        { typname: 'patient_access_action', value: 'READ' },
+        { typname: 'patient_access_action', value: 'CREATE' },
+        { typname: 'patient_access_action', value: 'UPDATE' },
+        { typname: 'patient_access_action', value: 'SIGN' },
+        { typname: 'patient_access_action', value: 'AMEND' },
+        { typname: 'patient_access_action', value: 'PUBLISH' },
+        { typname: 'patient_access_action', value: 'EXPORT' },
+      ]);
+
       const phaseFourTimestamps = await smokeClient.query<{ data_type: string }>(`
         SELECT data_type
         FROM information_schema.columns
@@ -555,6 +605,133 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         constraint: 'appointments_no_active_doctor_overlap',
       });
       await insertAppointment('2026-09-15T09:30:00Z', '2026-09-15T10:30:00Z', 'CANCELLED');
+
+      const encounterAppointment = await smokeClient.query<{ id: string; clinic_id: string }>(`
+        INSERT INTO appointments (
+          id, clinic_id, patient_id, doctor_service_id, doctor_id,
+          starts_at, ends_at, status, price_amount, price_captured_at, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, $1, $2, $3,
+          '2026-09-16T09:00:00Z'::timestamptz, '2026-09-16T10:00:00Z'::timestamptz,
+          'IN_PROGRESS', 500000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        FROM assessment_versions WHERE id = $4
+        RETURNING id, clinic_id
+      `, [patientId, doctorServiceId, doctorId, assessmentVersionId]);
+      const encounterAppointmentId = encounterAppointment.rows[0]?.id;
+      const encounterClinicId = encounterAppointment.rows[0]?.clinic_id;
+      expect(encounterAppointmentId).toBeDefined();
+      expect(encounterClinicId).toBeDefined();
+
+      await expect(smokeClient.query(`
+        INSERT INTO encounters (
+          id, clinic_id, appointment_id, patient_id, doctor_id, started_by_user_id, updated_at
+        ) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+      `, [encounterClinicId, encounterAppointmentId, patientId, doctorId, userId])).resolves.toBeDefined();
+
+      const encounter = await smokeClient.query<{ id: string }>(`
+        SELECT id FROM encounters WHERE appointment_id = $1
+      `, [encounterAppointmentId]);
+      const encounterId = encounter.rows[0]?.id;
+      expect(encounterId).toBeDefined();
+
+      await expect(smokeClient.query(`
+        INSERT INTO encounters (
+          id, clinic_id, appointment_id, patient_id, doctor_id, updated_at
+        ) VALUES (gen_random_uuid(), $1, $2, $3, $4, CURRENT_TIMESTAMP)
+      `, [encounterClinicId, encounterAppointmentId, patientId, doctorId])).rejects.toMatchObject({ code: '23505' });
+
+      await expect(smokeClient.query(`
+        UPDATE encounters SET state = 'COMPLETED', updated_at = CURRENT_TIMESTAMP WHERE id = $1
+      `, [encounterId])).rejects.toMatchObject({ code: '23514', constraint: 'encounters_state_timestamps_check' });
+
+      await smokeClient.query(`
+        UPDATE encounters
+        SET state = 'COMPLETED', completed_at = CURRENT_TIMESTAMP, completed_by_user_id = $2,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [encounterId, userId]);
+
+      const clinicalNote = await smokeClient.query<{ id: string }>(`
+        INSERT INTO clinical_notes (id, clinic_id, patient_id, encounter_id, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, $3, CURRENT_TIMESTAMP)
+        RETURNING id
+      `, [encounterClinicId, patientId, encounterId]);
+      const clinicalNoteId = clinicalNote.rows[0]?.id;
+      expect(clinicalNoteId).toBeDefined();
+
+      await expect(smokeClient.query(`
+        INSERT INTO clinical_note_revisions (
+          id, clinical_note_id, revision_number, state, content, signed_at, created_at
+        ) VALUES (gen_random_uuid(), $1, 1, 'SIGNED', 'یادداشت امضاشده', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `, [clinicalNoteId])).rejects.toMatchObject({ code: '23514', constraint: 'clinical_note_revisions_signed_integrity_check' });
+
+      const signedRevision = await smokeClient.query<{ id: string }>(`
+        INSERT INTO clinical_note_revisions (
+          id, clinical_note_id, revision_number, state, content, integrity_hash,
+          signed_at, signed_by_user_id, created_at
+        ) VALUES (
+          gen_random_uuid(), $1, 1, 'SIGNED', 'یادداشت امضاشده', repeat('a', 64),
+          CURRENT_TIMESTAMP, $2, CURRENT_TIMESTAMP
+        ) RETURNING id
+      `, [clinicalNoteId, userId]);
+      const signedRevisionId = signedRevision.rows[0]?.id;
+      expect(signedRevisionId).toBeDefined();
+
+      await expect(smokeClient.query(`
+        UPDATE clinical_note_revisions
+        SET published_at = CURRENT_TIMESTAMP, published_by_user_id = $2
+        WHERE id = $1
+      `, [signedRevisionId, userId])).rejects.toMatchObject({ code: '23514', constraint: 'clinical_note_revisions_patient_publication_check' });
+
+      await smokeClient.query(`
+        UPDATE clinical_note_revisions
+        SET patient_summary = 'خلاصه مجاز بیمار', published_at = CURRENT_TIMESTAMP, published_by_user_id = $2
+        WHERE id = $1
+      `, [signedRevisionId, userId]);
+
+      await expect(smokeClient.query(`
+        INSERT INTO diagnoses (
+          id, clinic_id, patient_id, source_intake_revision_id, updated_at
+        ) VALUES (gen_random_uuid(), $1, $2, gen_random_uuid(), CURRENT_TIMESTAMP)
+      `, [encounterClinicId, patientId])).rejects.toMatchObject({ code: '23514', constraint: 'diagnoses_source_reference_check' });
+
+      const sourceIntake = await smokeClient.query<{ id: string }>(`
+        INSERT INTO patient_medical_intakes (id, patient_id, clinic_id, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, CURRENT_TIMESTAMP)
+        RETURNING id
+      `, [patientId, encounterClinicId]);
+      const sourceIntakeId = sourceIntake.rows[0]?.id;
+      expect(sourceIntakeId).toBeDefined();
+
+      await expect(smokeClient.query(`
+        INSERT INTO diagnoses (
+          id, clinic_id, patient_id, source_intake_id, source_intake_revision_id,
+          source_intake_revision_number, updated_at
+        ) VALUES (gen_random_uuid(), $1, $2, $3, gen_random_uuid(), 1, CURRENT_TIMESTAMP)
+      `, [encounterClinicId, patientId, sourceIntakeId])).rejects.toMatchObject({
+        code: '23503', constraint: 'diagnoses_source_intake_revision_id_fkey',
+      });
+
+      await smokeClient.query(`
+        INSERT INTO diagnoses (id, clinic_id, patient_id, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, CURRENT_TIMESTAMP)
+      `, [encounterClinicId, patientId]);
+
+      await expect(smokeClient.query(`
+        INSERT INTO patient_access_audits (
+          id, clinic_id, patient_id, action, resource_type, metadata
+        ) VALUES (gen_random_uuid(), $1, $2, 'READ', 'ENCOUNTER', '[]'::jsonb)
+      `, [encounterClinicId, patientId])).rejects.toMatchObject({ code: '23514', constraint: 'patient_access_audits_safe_shape_check' });
+
+      await smokeClient.query(`
+        INSERT INTO patient_access_audits (
+          id, clinic_id, patient_id, actor_user_id, action, resource_type,
+          resource_id, resource_revision_id, request_id, correlation_id, metadata
+        ) VALUES (
+          gen_random_uuid(), $1, $2, $3, 'READ', 'CLINICAL_NOTE', $4, $5,
+          'request-1', 'correlation-1', '{"state":"SIGNED"}'::jsonb
+        )
+      `, [encounterClinicId, patientId, userId, clinicalNoteId, signedRevisionId]);
 
       const submission = await smokeClient.query<{ id: string }>(`
         INSERT INTO patient_assessment_submissions (

@@ -253,7 +253,7 @@ describe('Phase 04 directory and availability persistence', () => {
       )
     `, [fixture.clinicId, fixture.doctorId, fixture.otherServiceId])).rejects.toMatchObject({
       code: '23503',
-      constraint: 'doctor_services_service_clinic_fkey',
+      constraint: 'doctor_services_service_id_clinic_id_fkey',
     });
   }, 30_000);
 
