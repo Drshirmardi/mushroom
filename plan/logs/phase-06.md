@@ -442,3 +442,42 @@ Known limitations:
 Next task:
 
 - `F06-T10` (unclaimed).
+
+## F06-T10 — اتصال summary/history/health-record در app
+
+Task ID: F06-T10
+Completed at: 2026-09-03 19:53 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B10
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/app/src/{app/(app)/appointments/summary/page.tsx,app/(app)/profile/{history,health-record}/page.tsx,lib/clinical-history-api.{ts,spec.ts}}`
+- `plan/{STATUS.md,phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md,logs/phase-06.md}`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations: none.
+
+Tests run:
+
+- patient clinical-history API route/authentication test → PASS
+- patient app typecheck → PASS
+- `git diff --check` and coordinator patient-visibility review → PASS
+
+Result:
+
+- `/appointments/summary`, `/profile/history`, and `/profile/health-record` read only the existing
+  authenticated patient clinical summary/history/timeline contract → PASS
+- Unpublished, private, draft, and dashboard-only clinical data are not requested, transformed,
+  or rendered by the app → PASS
+- Invented patient, visit, prescription, treatment, score, and traditional-medicine content was
+  removed; empty/error states are truthful and do not fabricate clinical information → PASS
+
+Known limitations:
+
+- F06-T11 owns generated-client synchronization, final cross-surface security/revision coverage,
+  and browser E2E.
+
+Next task:
+
+- `F06-T11` (unclaimed).

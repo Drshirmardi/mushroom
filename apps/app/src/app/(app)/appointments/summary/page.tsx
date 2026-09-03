@@ -1,9 +1,7 @@
 "use client";
-
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
-
-export default function ConsultationSummaryPage() {
-  const router = useRouter();
-  return <div><PageHeader title="خلاصه مشاوره" onBack={() => router.push("/appointments")} /><div className="px-4"><p className="rounded-2xl border border-border bg-white p-5 text-sm leading-7 text-muted-foreground">خلاصه بالینی ویزیت پس از تکمیل فضای درمانی Phase 06 در دسترس خواهد بود.</p></div></div>;
-}
+import { useAuthSession } from "@/components/auth/session-gate";
+import { ClinicalHistoryApiError, getPatientClinicalHistory, type PatientClinicalItem } from "@/lib/clinical-history-api";
+export default function ConsultationSummaryPage() { const router = useRouter(); const { authentication } = useAuthSession(); const [items, setItems] = useState<PatientClinicalItem[] | null>(null); const [error, setError] = useState<ClinicalHistoryApiError | null>(null); useEffect(() => { void getPatientClinicalHistory(authentication.accessToken).then((data) => setItems(data.items), (reason: unknown) => setError(reason instanceof ClinicalHistoryApiError ? reason : new ClinicalHistoryApiError(0))); }, [authentication.accessToken]); return <div><PageHeader title="خلاصه مشاوره" onBack={() => router.push("/appointments")} /><div className="space-y-3 px-4">{!items && !error && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت خلاصه‌های مجاز…</p>}{error && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">خلاصه بالینی در دسترس نیست.</p>}{items?.length === 0 && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">هنوز خلاصهٔ منتشرشده‌ای برای شما وجود ندارد.</p>}{items?.map((item) => <article key={item.appointmentId} className="rounded-2xl border border-border bg-white p-5"><p className="text-xs text-muted-foreground">ویزیت {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(item.completedAt))}</p><p className="mt-2 text-sm leading-7 text-foreground">{item.patientSummary}</p></article>)}</div></div>; }

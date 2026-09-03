@@ -32,7 +32,7 @@
 - [x] `F06-T07` — timeline، history و summary مجاز بیمار
 - [x] `F06-T08` — resource-level authorization و audit read/write/export
 - [x] `F06-T09` — اتصال workspace dashboard و حذف placeholderهای scope
-- [ ] `F06-T10` — اتصال summary/history/health-record در app
+- [x] `F06-T10` — اتصال summary/history/health-record در app
 - [ ] `F06-T11` — OpenAPI/client، security، revision و browser E2E
 - [ ] `F06-T12` — evidence
 
