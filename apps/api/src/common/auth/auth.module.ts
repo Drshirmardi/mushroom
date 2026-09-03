@@ -26,6 +26,6 @@ import { RefreshCookieService } from './refresh-cookie.service';
       useClass: AuthorizationGuard,
     },
   ],
-  exports: [AccessTokenService, BrowserOriginService, RefreshCookieService],
+  exports: [AccessTokenService, BrowserOriginService, RefreshCookieService, ClinicalPermissionService],
 })
 export class AuthModule {}

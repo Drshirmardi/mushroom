@@ -9,7 +9,10 @@ import { ClinicalReconciliationService, CLINICAL_RECORD_KINDS } from '../src/mod
 import { PatientClinicalHistoryService } from '../src/modules/clinical/patient-clinical-history.service';
 import { ClinicalPermissionService } from '../src/common/auth/clinical-permission.service';
 import { ClinicalResourceAccessService } from '../src/modules/clinical/clinical-resource-access.service';
+import { AdminClinicalWorkspaceService } from '../src/modules/clinical/admin-clinical-workspace.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import type { ClinicalPermission } from '../src/generated/prisma/client';
+import type { RoleCode } from '../src/common/auth/authorization.policy';
 
 describe('clinical note revisions (PostgreSQL integration)', () => {
   let app: NestFastifyApplication;
@@ -19,6 +22,7 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
   let patientHistory: PatientClinicalHistoryService;
   let clinicalPermissions: ClinicalPermissionService;
   let clinicalAccess: ClinicalResourceAccessService;
+  let workspace: AdminClinicalWorkspaceService;
   const userIds = new Set<string>();
 
   beforeAll(async () => {
@@ -30,6 +34,7 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     patientHistory = app.get(PatientClinicalHistoryService);
     clinicalPermissions = app.get(ClinicalPermissionService);
     clinicalAccess = app.get(ClinicalResourceAccessService);
+    workspace = app.get(AdminClinicalWorkspaceService);
   }, 30_000);
 
   afterEach(async () => {
@@ -187,5 +192,25 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     await expect(clinicalAccess.patient(clinician.id, patient.id)).resolves.toMatchObject({ id: patient.id, clinicId: clinic.id });
     await expect(clinicalAccess.patient(clinician.id, randomUUID())).rejects.toMatchObject({ response: { code: 'CLINICAL_RESOURCE_FORBIDDEN' } });
     await prisma.clinicalRolePermission.delete({ where: { roleId_permission: { roleId: role.id, permission: 'CLINICAL_RECORD_VIEW' } } });
+  });
+
+  it('returns and mutates a clinic-granted dashboard workspace with revision and publication audit', async () => {
+    const { encounter, clinician, clinicianSession, patient } = await fixture();
+    const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
+    const role = await prisma.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } });
+    const permissions: ClinicalPermission[] = ['CLINICAL_RECORD_VIEW', 'CLINICAL_RECORD_EDIT', 'CLINICAL_RECORD_SIGN', 'CLINICAL_RECORD_AMEND'];
+    await prisma.clinicalRolePermission.createMany({ data: permissions.map((permission) => ({ roleId: role.id, permission })), skipDuplicates: true });
+    await prisma.clinicalClinicAccess.create({ data: { userId: clinician.id, clinicId: clinic.id } });
+    const actor = { actorUserId: clinician.id, actorSessionId: clinicianSession.id, requestId: 'dashboard-workspace-test', ipAddress: '127.0.0.1', roles: ['DOCTOR'] as RoleCode[] };
+    await expect(workspace.get(patient.id, actor)).resolves.toMatchObject({ patientId: patient.id, encounters: [expect.objectContaining({ id: encounter.id })], notes: [], records: [] });
+    const note = await workspace.createNote(patient.id, encounter.id, { expectedRevision: 0, content: 'PRIVATE: dashboard note', isPrivate: true, patientSummary: 'Dashboard patient summary' }, actor);
+    await workspace.signNote(patient.id, note.id, { revisionNumber: 1, expectedRevision: 1 }, actor);
+    await workspace.publishNote(patient.id, note.id, { revisionNumber: 1, expectedRevision: 1 }, actor);
+    const after = await workspace.get(patient.id, actor);
+    expect(after.notes).toEqual([expect.objectContaining({ id: note.id, currentPublishedRevision: 1, revision: expect.objectContaining({ state: 'SIGNED', content: 'PRIVATE: dashboard note', patientSummary: 'Dashboard patient summary' }) })]);
+    const audit = await prisma.patientAccessAudit.findMany({ where: { patientId: patient.id, requestId: 'dashboard-workspace-test' } });
+    expect(audit.map((entry) => entry.action)).toEqual(expect.arrayContaining(['READ', 'CREATE', 'SIGN', 'UPDATE']));
+    expect(JSON.stringify(audit.map((entry) => entry.metadata))).not.toContain('PRIVATE:');
+    await prisma.clinicalRolePermission.deleteMany({ where: { roleId: role.id, permission: { in: permissions } } });
   });
 });

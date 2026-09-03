@@ -34,9 +34,9 @@ export class ClinicalReconciliationService {
     private readonly audit: ClinicalAccessAuditService,
   ) {}
 
-  async reconcile(input: ReconcileClinicalRecordInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
+  async reconcile(input: ReconcileClinicalRecordInput, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
     return this.prisma.$transaction(async (tx) => {
-      const clinic = await this.clinic(tx);
+      const clinic = await this.clinic(tx, clinicId);
       const patient = await tx.patientProfile.findFirst({ where: { id: input.patientId, clinicId: clinic.id }, select: { id: true } });
       if (!patient) throw forbidden();
       if (input.encounterId) {
@@ -54,10 +54,10 @@ export class ClinicalReconciliationService {
     });
   }
 
-  async revise(kind: ClinicalRecordKind, recordId: string, input: ReviseClinicalRecordInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
+  async revise(kind: ClinicalRecordKind, recordId: string, input: ReviseClinicalRecordInput, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, kind, recordId);
-      const root = await this.existing(tx, kind, recordId);
+      const root = await this.existing(tx, kind, recordId, clinicId);
       if (root.currentRevisionNumber !== input.expectedRevision) throw revisionConflict(root.currentRevisionNumber);
       const previous = await tx.clinicalRecordRevision.findFirst({ where: this.parent(kind, root.id), orderBy: { revisionNumber: 'desc' } });
       if (!previous) throw revisionConflict(0);
@@ -71,10 +71,10 @@ export class ClinicalReconciliationService {
     });
   }
 
-  async sign(kind: ClinicalRecordKind, recordId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext) {
+  async sign(kind: ClinicalRecordKind, recordId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, kind, recordId);
-      const root = await this.existing(tx, kind, recordId);
+      const root = await this.existing(tx, kind, recordId, clinicId);
       if (root.currentRevisionNumber !== expectedRevision) throw revisionConflict(root.currentRevisionNumber);
       if (revisionNumber !== root.currentRevisionNumber) throw signingNotAllowed();
       const revision = await tx.clinicalRecordRevision.findFirst({ where: { ...this.parent(kind, root.id), revisionNumber } });
@@ -110,8 +110,8 @@ export class ClinicalReconciliationService {
     return `CLINICAL_${kind}`;
   }
 
-  private async existing(tx: Prisma.TransactionClient, kind: ClinicalRecordKind, id: string) {
-    const clinic = await this.clinic(tx);
+  private async existing(tx: Prisma.TransactionClient, kind: ClinicalRecordKind, id: string, clinicId?: string) {
+    const clinic = await this.clinic(tx, clinicId);
     const select = { id: true, clinicId: true, patientId: true, currentRevisionNumber: true, latestSignedRevisionNumber: true };
     const where = { id, clinicId: clinic.id, state: ClinicalRecordState.ACTIVE };
     const root = kind === 'DIAGNOSIS' ? await tx.diagnosis.findFirst({ where, select }) : kind === 'ALLERGY' ? await tx.allergyRecord.findFirst({ where, select }) : kind === 'CONDITION' ? await tx.conditionRecord.findFirst({ where, select }) : await tx.medicationStatement.findFirst({ where, select });
@@ -151,8 +151,8 @@ export class ClinicalReconciliationService {
     return { id, kind, currentRevision, latestSignedRevision, revision: { ...revision } };
   }
 
-  private async clinic(tx: Prisma.TransactionClient) {
-    const clinic = await tx.clinic.findFirst({ where: { status: 'ACTIVE' }, select: { id: true } });
+  private async clinic(tx: Prisma.TransactionClient, clinicId?: string) {
+    const clinic = await tx.clinic.findFirst({ where: { status: 'ACTIVE', ...(clinicId ? { id: clinicId } : {}) }, select: { id: true } });
     if (!clinic) throw forbidden();
     return clinic;
   }

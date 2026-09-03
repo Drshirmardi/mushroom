@@ -41,9 +41,9 @@ const amendmentReasonRequired = () => new UnprocessableEntityException({
 export class ClinicalNotesService {
   constructor(private readonly prisma: PrismaService, private readonly audit: ClinicalAccessAuditService) {}
 
-  async create(encounterId: string, input: CreateClinicalNoteInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
+  async create(encounterId: string, input: CreateClinicalNoteInput, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
     return this.prisma.$transaction(async (tx) => {
-      const encounter = await this.encounter(tx, encounterId);
+      const encounter = await this.encounter(tx, encounterId, clinicId);
       if (input.expectedRevision !== 0) throw revisionConflict(0);
 
       const note = await tx.clinicalNote.create({
@@ -65,10 +65,10 @@ export class ClinicalNotesService {
     });
   }
 
-  async save(noteId: string, input: SaveClinicalNoteInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
+  async save(noteId: string, input: SaveClinicalNoteInput, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
     return this.prisma.$transaction(async (tx) => {
       await this.lockNote(tx, noteId);
-      const note = await this.note(tx, noteId);
+      const note = await this.note(tx, noteId, clinicId);
       if (note.currentRevisionNumber !== input.expectedRevision) throw revisionConflict(note.currentRevisionNumber);
       const previous = note.revisions[0];
       if (!previous) throw revisionConflict(0);
@@ -92,10 +92,10 @@ export class ClinicalNotesService {
     });
   }
 
-  async sign(noteId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext) {
+  async sign(noteId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
     return this.prisma.$transaction(async (tx) => {
       await this.lockNote(tx, noteId);
-      const note = await this.note(tx, noteId);
+      const note = await this.note(tx, noteId, clinicId);
       if (note.currentRevisionNumber !== expectedRevision) throw revisionConflict(note.currentRevisionNumber);
       if (revisionNumber !== note.currentRevisionNumber) throw signingNotAllowed();
       const revision = note.revisions[0];
@@ -122,15 +122,30 @@ export class ClinicalNotesService {
     });
   }
 
-  private async encounter(tx: Prisma.TransactionClient, encounterId: string) {
-    const clinic = await this.clinic(tx);
+  async publish(noteId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext, clinicId?: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.lockNote(tx, noteId);
+      const note = await this.note(tx, noteId, clinicId);
+      if (note.currentRevisionNumber !== expectedRevision) throw revisionConflict(note.currentRevisionNumber);
+      if (revisionNumber !== note.currentRevisionNumber) throw signingNotAllowed();
+      const revision = note.revisions[0];
+      if (!revision || revision.revisionNumber !== revisionNumber || revision.state !== ClinicalNoteRevisionState.SIGNED || !revision.patientSummary) throw signingNotAllowed();
+      const published = await tx.clinicalNoteRevision.update({ where: { id: revision.id }, data: { publishedAt: new Date(), publishedByUserId: actorUserId } });
+      const updated = await tx.clinicalNote.update({ where: { id: note.id }, data: { currentPublishedRevisionNumber: published.revisionNumber } });
+      if (auditContext) await this.audit.record({ clinicId: note.clinicId, patientId: note.patientId, action: 'UPDATE', resourceType: 'CLINICAL_NOTE', resourceId: note.id, resourceRevisionId: published.id, metadata: { operation: 'PUBLISH', revisionNumber: published.revisionNumber } }, auditContext, tx);
+      return this.noteResponse(updated, published);
+    });
+  }
+
+  private async encounter(tx: Prisma.TransactionClient, encounterId: string, clinicId?: string) {
+    const clinic = await this.clinic(tx, clinicId);
     const encounter = await tx.encounter.findFirst({ where: { id: encounterId, clinicId: clinic.id } });
     if (!encounter) throw forbidden();
     return encounter;
   }
 
-  private async note(tx: Prisma.TransactionClient, noteId: string) {
-    const clinic = await this.clinic(tx);
+  private async note(tx: Prisma.TransactionClient, noteId: string, clinicId?: string) {
+    const clinic = await this.clinic(tx, clinicId);
     const note = await tx.clinicalNote.findFirst({
       where: { id: noteId, clinicId: clinic.id },
       include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } },
@@ -139,8 +154,8 @@ export class ClinicalNotesService {
     return note;
   }
 
-  private async clinic(tx: Prisma.TransactionClient) {
-    const clinic = await tx.clinic.findFirst({ where: { status: 'ACTIVE' }, select: { id: true } });
+  private async clinic(tx: Prisma.TransactionClient, clinicId?: string) {
+    const clinic = await tx.clinic.findFirst({ where: { status: 'ACTIVE', ...(clinicId ? { id: clinicId } : {}) }, select: { id: true } });
     if (!clinic) throw forbidden();
     return clinic;
   }

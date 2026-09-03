@@ -40,7 +40,7 @@ infrastructure. No extra setup task is added.
 
 - [x] T007 [US3] F06-T07: timeline، history و summary مجاز بیمار
 - [x] T008 [US3] F06-T08: resource-level authorization و audit read/write/export
-- [ ] T009 [US3] F06-T09: اتصال workspace dashboard و حذف placeholderهای scope
+- [x] T009 [US3] F06-T09: اتصال workspace dashboard و حذف placeholderهای scope
 - [ ] T010 [US3] F06-T10: اتصال summary/history/health-record در app
 - [ ] T011 [US3] F06-T11: OpenAPI/client، security، revision و browser E2E
 - [ ] T012 [US3] F06-T12: evidence

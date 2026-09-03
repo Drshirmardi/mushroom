@@ -7,6 +7,8 @@ import { PatientClinicalHistoryService } from './patient-clinical-history.servic
 import { ClinicalAccessAuditService } from './clinical-access-audit.service';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
 import { PatientClinicalController } from './patient-clinical.controller';
+import { AdminClinicalWorkspaceController } from './admin-clinical-workspace.controller';
+import { AdminClinicalWorkspaceService } from './admin-clinical-workspace.service';
 
-@Module({ controllers: [PatientClinicalController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService] })
+@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService] })
 export class ClinicalModule {}

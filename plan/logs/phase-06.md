@@ -397,3 +397,48 @@ Known limitations:
 Next task:
 
 - `F06-T09` (unclaimed).
+
+## F06-T09 — اتصال workspace dashboard و حذف placeholderهای scope
+
+Task ID: F06-T09
+Completed at: 2026-09-03 19:49 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B09
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/src/{common/auth/auth.module.ts,modules/clinical/**}`
+- `apps/api/test/clinical-notes.integration.spec.ts`
+- `apps/dashboard/src/{features/patients/workspace/patient-workspace.tsx,lib/{appointment-api.ts,clinical-workspace-api.ts,clinical-workspace-api.spec.ts}}`
+- `plan/{STATUS.md,phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md,logs/phase-06.md}`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations: none.
+
+Tests run:
+
+- API typecheck and focused real-PostgreSQL clinical workspace integration → PASS (5 tests)
+- dashboard clinical workspace/appointment API tests → PASS (2 tests)
+- dashboard production build and typecheck → PASS
+- `git diff --check` and coordinator diff/acceptance review → PASS
+
+Result:
+
+- The dashboard patient workspace uses persisted patient, intake, reviewed-record, note, appointment,
+  assessment, and timeline data; no Phase 06 clinical placeholder is retained → PASS
+- Authorized dashboard users can create/save successor revisions, sign exact revisions, and separately
+  publish a signed patient summary; tenant/patient resource checks, permission checks, audit, and
+  optimistic concurrency remain server-side → PASS
+- No prescription, treatment, medical-file, commerce, message, or other later-phase capability was
+  invented. Traditional-medicine analysis has no Phase 06 persisted model and therefore renders an
+  explicit truthful empty state rather than mock clinical content → PASS
+
+Known limitations:
+
+- `F06-T10` owns patient-app wiring. `F06-T11` owns generated-client synchronization and final
+  security/revision/browser E2E; the dashboard uses a local typed transport adapter until that owner
+  regenerates the shared client.
+
+Next task:
+
+- `F06-T10` (unclaimed).
