@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { ClinicalNotesService } from '../src/modules/clinical/clinical-notes.service';
 import { ClinicalReconciliationService, CLINICAL_RECORD_KINDS } from '../src/modules/clinical/clinical-reconciliation.service';
+import { PatientClinicalHistoryService } from '../src/modules/clinical/patient-clinical-history.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 
 describe('clinical note revisions (PostgreSQL integration)', () => {
@@ -13,6 +14,7 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
   let prisma: PrismaService;
   let notes: ClinicalNotesService;
   let reconciliation: ClinicalReconciliationService;
+  let patientHistory: PatientClinicalHistoryService;
   const userIds = new Set<string>();
 
   beforeAll(async () => {
@@ -21,6 +23,7 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     prisma = app.get(PrismaService);
     notes = app.get(ClinicalNotesService);
     reconciliation = app.get(ClinicalReconciliationService);
+    patientHistory = app.get(PatientClinicalHistoryService);
   }, 30_000);
 
   afterEach(async () => {
@@ -55,7 +58,7 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     const intakeRevision = await prisma.patientMedicalIntakeRevision.create({ data: { intakeId: intake.id, revisionNumber: 1, assignedSchemaVersion: 1, revisionState: 'DRAFT', allergyReport: { status: 'PRESENT', items: ['self-reported'] }, chronicConditionReport: { status: 'UNKNOWN', items: [] }, currentMedicationReport: { status: 'NONE', items: [] }, recordingMode: 'PATIENT_ENTRY', reportedPatientId: patient.id, payloadHash: randomUUID().replaceAll('-', '').repeat(2) } });
     const appointment = await prisma.appointment.create({ data: { clinicId: clinic.id, patientId: patient.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt: new Date(Date.now() - 30 * 60_000), endsAt: new Date(Date.now() + 30 * 60_000), status: 'IN_PROGRESS', startedAt: new Date(), priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: clinician.id, idempotencyKey: randomUUID(), idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
     const encounter = await prisma.encounter.create({ data: { clinicId: clinic.id, appointmentId: appointment.id, patientId: patient.id, doctorId: offering.doctorId, startedByUserId: clinician.id } });
-    return { encounter, clinician, patient, intake, intakeRevision };
+    return { encounter, clinician, patient, patientUser, intake, intakeRevision };
   };
 
   it('keeps private note history append-only, detects stale saves, and signs exact revisions', async () => {
@@ -112,5 +115,40 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     expect(revisions[1]).toMatchObject({ id: revised.revision.id, state: 'SIGNED', content: { reviewedLabel: 'clinician-corrected' }, signedByUserId: clinician.id, integrityHash: signed.revision.integrityHash });
     expect(revisions[2]).toMatchObject({ state: 'DRAFT', content: { reviewedLabel: 'corrected-after-signing' } });
     await expect(reconciliation.reconcile({ kind: 'DIAGNOSIS', patientId: patient.id, sourceIntakeId: intake.id, sourceIntakeRevisionId: randomUUID(), sourceIntakeRevisionNumber: 1, reviewedContent: { reviewedLabel: 'must-not-create' } }, clinician.id)).rejects.toMatchObject({ response: { code: 'CLINICAL_RECONCILIATION_SOURCE_INVALID' } });
+  });
+
+  it('returns only the current explicitly published visit summary to its patient', async () => {
+    const { encounter, clinician, patient, patientUser } = await fixture();
+    const completedAt = new Date();
+    await prisma.encounter.update({ where: { id: encounter.id }, data: { state: 'COMPLETED', completedAt, completedByUserId: clinician.id } });
+    const publishedAt = new Date(completedAt.getTime() + 1_000);
+    await prisma.clinicalNote.create({
+      data: {
+        clinicId: encounter.clinicId,
+        patientId: patient.id,
+        encounterId: encounter.id,
+        currentRevisionNumber: 2,
+        currentEffectiveRevisionNumber: 2,
+        latestSignedRevisionNumber: 2,
+        currentPublishedRevisionNumber: 2,
+        revisions: {
+          create: [
+            { revisionNumber: 1, state: 'SIGNED', content: 'PRIVATE: superseded clinician observation', isPrivate: true, patientSummary: 'Superseded patient summary', authoredByUserId: clinician.id, signedAt: completedAt, signedByUserId: clinician.id, integrityHash: 'a'.repeat(64), publishedAt, publishedByUserId: clinician.id },
+            { revisionNumber: 2, state: 'SIGNED', content: 'PRIVATE: current clinician observation', isPrivate: true, patientSummary: 'Current patient-safe visit summary', authoredByUserId: clinician.id, signedAt: publishedAt, signedByUserId: clinician.id, integrityHash: 'b'.repeat(64), publishedAt, publishedByUserId: clinician.id },
+          ],
+        },
+      },
+    });
+    await prisma.clinicalNote.create({ data: { clinicId: encounter.clinicId, patientId: patient.id, encounterId: encounter.id, currentRevisionNumber: 1, currentEffectiveRevisionNumber: 1, latestSignedRevisionNumber: 1, revisions: { create: { revisionNumber: 1, state: 'SIGNED', content: 'PRIVATE: signed but unpublished', isPrivate: true, patientSummary: 'Must not be visible', authoredByUserId: clinician.id, signedAt: publishedAt, signedByUserId: clinician.id, integrityHash: 'c'.repeat(64) } } } });
+    await prisma.clinicalNote.create({ data: { clinicId: encounter.clinicId, patientId: patient.id, encounterId: encounter.id, currentRevisionNumber: 1, currentEffectiveRevisionNumber: 1, revisions: { create: { revisionNumber: 1, content: 'PRIVATE: draft note', isPrivate: true, patientSummary: 'Also not visible', authoredByUserId: clinician.id } } } });
+
+    const timeline = await patientHistory.timeline(patientUser.id);
+    const history = await patientHistory.history(patientUser.id);
+    expect(timeline.items).toHaveLength(1);
+    expect(timeline.items[0]).toMatchObject({ encounterId: encounter.id, appointmentId: encounter.appointmentId, completedAt, revisionNumber: 2, patientSummary: 'Current patient-safe visit summary', publishedAt });
+    expect(timeline.items[0]).not.toHaveProperty('content');
+    expect(JSON.stringify(timeline)).not.toContain('PRIVATE:');
+    expect(history.items).toEqual(timeline.items);
+    await expect(patientHistory.summary(patientUser.id, encounter.appointmentId)).resolves.toMatchObject({ revisionNumber: 2, patientSummary: 'Current patient-safe visit summary' });
   });
 });

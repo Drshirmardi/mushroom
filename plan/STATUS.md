@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 19:04 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 19:10 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -79,6 +79,7 @@
 - `F06-T04` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T05` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T06` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T07` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 
 ### وضعیت تاریخی Phase 05
 
@@ -113,6 +114,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B07` — `DONE`
+
+- `F06-T07` patient-safe timeline/history/visit-summary read model را فقط از current explicitly
+  published summary روی encounter تکمیل‌شده می‌خواند؛ private/draft/signed-but-unpublished content
+  و audit metadata خارج می‌مانند؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T08`؛ هنوز claim نشده است.
 
 `F06-B06` — `DONE`
 

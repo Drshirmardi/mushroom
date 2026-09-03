@@ -38,7 +38,7 @@ infrastructure. No extra setup task is added.
 
 ## Phase 4: User Story 3 — Authorized Clinical Workspace (P2)
 
-- [ ] T007 [US3] F06-T07: timeline، history و summary مجاز بیمار
+- [x] T007 [US3] F06-T07: timeline، history و summary مجاز بیمار
 - [ ] T008 [US3] F06-T08: resource-level authorization و audit read/write/export
 - [ ] T009 [US3] F06-T09: اتصال workspace dashboard و حذف placeholderهای scope
 - [ ] T010 [US3] F06-T10: اتصال summary/history/health-record در app

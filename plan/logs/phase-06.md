@@ -293,3 +293,50 @@ Known limitations:
 Next task:
 
 - `F06-T07` (unclaimed).
+
+## F06-T07 — timeline، history و summary مجاز بیمار
+
+Task ID: F06-T07
+Completed at: 2026-09-03 19:10 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B07
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/src/modules/clinical/{clinical.module.ts,patient-clinical-history.service.ts}`
+- `apps/api/test/clinical-notes.integration.spec.ts`
+- `plan/STATUS.md`, `plan/phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md`, and
+  `plan/logs/phase-06.md`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations: none; F06-T03 already supplies the clinical-note publication persistence.
+
+Tests run:
+
+- API typecheck (including Prisma client generation) → PASS
+- focused PostgreSQL clinical-note/reconciliation/patient-visibility integration → PASS
+  (3 tests)
+- Spec Kit cross-artifact/constitution review → PASS; T007 remains one-to-one with F06-T07 and
+  no ordering or boundary conflict was found
+- `git diff --check` and coordinator diff/acceptance review → PASS
+
+Result:
+
+- The patient-safe read model is scoped by authenticated user → patient profile → clinic and only
+  includes current explicitly published summaries attached to completed encounters → PASS
+- Timeline is chronological, history is reverse chronological, and visit-summary selection is
+  deterministic when more than one permitted summary exists → PASS
+- Private note text, a superseded published revision, draft content, signed-but-unpublished
+  content, clinical reconciliation values, and audit metadata are not selected or returned → PASS
+- No controller/OpenAPI/generated-client, permission assignment, audit emission, dashboard/app
+  wiring, or mock-removal work was introduced outside `F06-T08`–`F06-T11` → PASS
+
+Known limitations:
+
+- `F06-T08` owns configurable permission enforcement, external clinical read/write/export
+  exposure, and fail-closed sensitive-read audit. `F06-T09` and `F06-T10` own dashboard and app
+  wiring. This internal read model is deliberately not externally routable before those controls.
+
+Next task:
+
+- `F06-T08` (unclaimed).
