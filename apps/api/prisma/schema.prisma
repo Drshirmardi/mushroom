@@ -268,6 +268,15 @@ enum ClinicalRecordRevisionState {
   @@map("clinical_record_revision_state")
 }
 
+enum ClinicalPermission {
+  CLINICAL_RECORD_VIEW
+  CLINICAL_RECORD_EDIT
+  CLINICAL_RECORD_SIGN
+  CLINICAL_RECORD_AMEND
+
+  @@map("clinical_permission")
+}
+
 enum PatientAccessAction {
   READ
   CREATE
@@ -306,6 +315,7 @@ model User {
   clinicalNoteRevisionSigners    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionSignedBy")
   clinicalNoteRevisionPublishers ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionPublishedBy")
   patientAccessAudits            PatientAccessAudit[]           @relation("PatientAccessAuditActor")
+  clinicalClinicAccesses         ClinicalClinicAccess[]
 
   @@map("users")
 }
@@ -352,8 +362,31 @@ model Role {
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
   users       UserRole[]
+  clinicalPermissions ClinicalRolePermission[]
 
   @@map("roles")
+}
+
+model ClinicalRolePermission {
+  roleId     String             @map("role_id") @db.Uuid
+  permission ClinicalPermission
+  role       Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permission])
+  @@index([permission], map: "clinical_role_permissions_permission_idx")
+  @@map("clinical_role_permissions")
+}
+
+model ClinicalClinicAccess {
+  userId    String   @map("user_id") @db.Uuid
+  clinicId  String   @map("clinic_id") @db.Uuid
+  grantedAt DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+
+  @@id([userId, clinicId])
+  @@index([clinicId, userId], map: "clinical_clinic_accesses_clinic_user_idx")
+  @@map("clinical_clinic_accesses")
 }
 
 model UserRole {
@@ -425,6 +458,7 @@ model Clinic {
   createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
   patientProfiles          PatientProfile[]
+  clinicalClinicAccesses   ClinicalClinicAccess[]
   medicalIntakes           PatientMedicalIntake[]
   consentPolicies          ConsentPolicyVersion[]
   assessmentVersions       AssessmentVersion[]

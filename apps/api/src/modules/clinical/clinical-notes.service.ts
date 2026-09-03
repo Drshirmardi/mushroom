@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 
 import { ClinicalNoteRevisionState, Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma/prisma.service';
+import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 
 export type CreateClinicalNoteInput = {
   expectedRevision: number;
@@ -38,9 +39,9 @@ const amendmentReasonRequired = () => new UnprocessableEntityException({
 
 @Injectable()
 export class ClinicalNotesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly audit: ClinicalAccessAuditService) {}
 
-  async create(encounterId: string, input: CreateClinicalNoteInput, actorUserId: string) {
+  async create(encounterId: string, input: CreateClinicalNoteInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
     return this.prisma.$transaction(async (tx) => {
       const encounter = await this.encounter(tx, encounterId);
       if (input.expectedRevision !== 0) throw revisionConflict(0);
@@ -58,12 +59,13 @@ export class ClinicalNotesService {
         },
         include: { revisions: true },
       });
+      if (auditContext) await this.audit.record({ clinicId: encounter.clinicId, patientId: encounter.patientId, action: 'CREATE', resourceType: 'CLINICAL_NOTE', resourceId: note.id, resourceRevisionId: note.revisions[0].id, metadata: { revisionNumber: 1 } }, auditContext, tx);
 
       return this.noteResponse(note, note.revisions[0]);
     });
   }
 
-  async save(noteId: string, input: SaveClinicalNoteInput, actorUserId: string) {
+  async save(noteId: string, input: SaveClinicalNoteInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
     return this.prisma.$transaction(async (tx) => {
       await this.lockNote(tx, noteId);
       const note = await this.note(tx, noteId);
@@ -84,12 +86,13 @@ export class ClinicalNotesService {
           currentEffectiveRevisionNumber: revisionNumber,
         },
       });
+      if (auditContext) await this.audit.record({ clinicId: note.clinicId, patientId: note.patientId, action: 'UPDATE', resourceType: 'CLINICAL_NOTE', resourceId: note.id, resourceRevisionId: revision.id, metadata: { revisionNumber, amendmentReasonCategory: amendmentReasonCategory ?? null } }, auditContext, tx);
 
       return this.noteResponse(updated, revision);
     });
   }
 
-  async sign(noteId: string, revisionNumber: number, expectedRevision: number, actorUserId: string) {
+  async sign(noteId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext) {
     return this.prisma.$transaction(async (tx) => {
       await this.lockNote(tx, noteId);
       const note = await this.note(tx, noteId);
@@ -113,6 +116,7 @@ export class ClinicalNotesService {
         where: { id: note.id },
         data: { latestSignedRevisionNumber: signed.revisionNumber },
       });
+      if (auditContext) await this.audit.record({ clinicId: note.clinicId, patientId: note.patientId, action: 'SIGN', resourceType: 'CLINICAL_NOTE', resourceId: note.id, resourceRevisionId: signed.id, metadata: { revisionNumber: signed.revisionNumber } }, auditContext, tx);
 
       return this.noteResponse(updated, signed);
     });

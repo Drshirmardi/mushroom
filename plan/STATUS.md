@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 19:10 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 19:33 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -80,6 +80,7 @@
 - `F06-T05` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T06` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T07` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T08` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 
 ### وضعیت تاریخی Phase 05
 
@@ -114,6 +115,14 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B08` — `DONE`
+
+- `F06-T08` permissionهای بالینی configurable، grant صریح actor-to-clinic، guard fail-closed و
+  audit تراکنشی redacted را برای readهای clinical بیمار و writeهای note/reconciliation پذیرفت؛
+  export/download هنوز endpoint ندارد و بنابراین خارج از permission/audit قابل دسترسی نیست؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T09`؛ هنوز claim نشده است.
 
 `F06-B07` — `DONE`
 

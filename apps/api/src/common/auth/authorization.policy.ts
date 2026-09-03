@@ -36,6 +36,10 @@ export const PERMISSIONS = {
   APPOINTMENTS_READ_SELF: 'appointments:read:self',
   APPOINTMENTS_CHANGE_SELF: 'appointments:change:self',
   APPOINTMENTS_MANAGE: 'appointments:manage',
+  CLINICAL_RECORD_VIEW: 'clinical:record:view',
+  CLINICAL_RECORD_EDIT: 'clinical:record:edit',
+  CLINICAL_RECORD_SIGN: 'clinical:record:sign',
+  CLINICAL_RECORD_AMEND: 'clinical:record:amend',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

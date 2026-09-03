@@ -29,7 +29,7 @@ protect clinical content and PII; retain single-writer ownership for migration, 
 authentication, and shared paths.
 
 **Scale/Scope**: Twelve stable tasks, `F06-T01`–`F06-T12`; Phase 06 is `IN_PROGRESS`, `F06-T01`
-through `F06-T07` are complete, and `F06-T08` is the next unclaimed roadmap task.
+through `F06-T08` are complete, and `F06-T09` is the next unclaimed roadmap task.
 
 ## Constitution Check
 

@@ -30,7 +30,7 @@
 - [x] `F06-T05` — note revision با optimistic concurrency و private clinician note
 - [x] `F06-T06` — diagnosis/allergy/condition/medication reconciliation
 - [x] `F06-T07` — timeline، history و summary مجاز بیمار
-- [ ] `F06-T08` — resource-level authorization و audit read/write/export
+- [x] `F06-T08` — resource-level authorization و audit read/write/export
 - [ ] `F06-T09` — اتصال workspace dashboard و حذف placeholderهای scope
 - [ ] `F06-T10` — اتصال summary/history/health-record در app
 - [ ] `F06-T11` — OpenAPI/client، security، revision و browser E2E

@@ -1,8 +1,9 @@
 import { ConflictException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 
-import { ClinicalRecordRevisionState, ClinicalRecordState, Prisma } from '../../generated/prisma/client';
+import { ClinicalRecordRevisionState, ClinicalRecordState, PatientAccessAction, Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma/prisma.service';
+import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 
 export const CLINICAL_RECORD_KINDS = ['DIAGNOSIS', 'ALLERGY', 'CONDITION', 'MEDICATION_STATEMENT'] as const;
 export type ClinicalRecordKind = (typeof CLINICAL_RECORD_KINDS)[number];
@@ -28,9 +29,12 @@ const signingNotAllowed = () => new ConflictException({ code: 'CLINICAL_RECORD_S
 
 @Injectable()
 export class ClinicalReconciliationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: ClinicalAccessAuditService,
+  ) {}
 
-  async reconcile(input: ReconcileClinicalRecordInput, actorUserId: string) {
+  async reconcile(input: ReconcileClinicalRecordInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
     return this.prisma.$transaction(async (tx) => {
       const clinic = await this.clinic(tx);
       const patient = await tx.patientProfile.findFirst({ where: { id: input.patientId, clinicId: clinic.id }, select: { id: true } });
@@ -45,11 +49,12 @@ export class ClinicalReconciliationService {
 
       const root = await this.root(tx, input.kind, rootData);
       const revision = await tx.clinicalRecordRevision.create({ data: { ...this.parent(input.kind, root.id), revisionNumber: 1, content: reviewedContent as Prisma.InputJsonValue, isPrivate: true, authoredByUserId: actorUserId } });
+      if (auditContext) await this.audit.record({ clinicId: clinic.id, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: this.resourceType(input.kind), resourceId: root.id, resourceRevisionId: revision.id, metadata: { revisionNumber: 1, source: 'REVIEWED_INTAKE' } }, auditContext, tx);
       return { id: root.id, kind: input.kind, patientId: patient.id, encounterId: input.encounterId ?? null, state: ClinicalRecordState.ACTIVE, currentRevision: 1, source: { intakeId: input.sourceIntakeId, intakeRevisionId: input.sourceIntakeRevisionId, intakeRevisionNumber: input.sourceIntakeRevisionNumber, provenance: 'PATIENT_SELF_REPORTED' }, revision: { id: revision.id, revisionNumber: revision.revisionNumber, state: revision.state, content: revision.content, isPrivate: revision.isPrivate, authoredByUserId: revision.authoredByUserId, authoredAt: revision.authoredAt } };
     });
   }
 
-  async revise(kind: ClinicalRecordKind, recordId: string, input: ReviseClinicalRecordInput, actorUserId: string) {
+  async revise(kind: ClinicalRecordKind, recordId: string, input: ReviseClinicalRecordInput, actorUserId: string, auditContext?: ClinicalAuditContext) {
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, kind, recordId);
       const root = await this.existing(tx, kind, recordId);
@@ -61,11 +66,12 @@ export class ClinicalReconciliationService {
       const revisionNumber = root.currentRevisionNumber + 1;
       const revision = await tx.clinicalRecordRevision.create({ data: { ...this.parent(kind, root.id), revisionNumber, previousRevisionId: previous.id, content: this.content(input.reviewedContent) as Prisma.InputJsonValue, isPrivate: true, amendmentReasonCategory, authoredByUserId: actorUserId } });
       await this.updateRoot(tx, kind, root.id, revisionNumber);
+      if (auditContext) await this.audit.record({ clinicId: root.clinicId, patientId: root.patientId, action: PatientAccessAction.UPDATE, resourceType: this.resourceType(kind), resourceId: root.id, resourceRevisionId: revision.id, metadata: { revisionNumber, amendmentReasonCategory: amendmentReasonCategory ?? null } }, auditContext, tx);
       return this.revisionResponse(kind, root.id, revision, revisionNumber, root.latestSignedRevisionNumber);
     });
   }
 
-  async sign(kind: ClinicalRecordKind, recordId: string, revisionNumber: number, expectedRevision: number, actorUserId: string) {
+  async sign(kind: ClinicalRecordKind, recordId: string, revisionNumber: number, expectedRevision: number, actorUserId: string, auditContext?: ClinicalAuditContext) {
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, kind, recordId);
       const root = await this.existing(tx, kind, recordId);
@@ -77,6 +83,7 @@ export class ClinicalReconciliationService {
       if (revision.state !== ClinicalRecordRevisionState.DRAFT) throw signingNotAllowed();
       const signed = await tx.clinicalRecordRevision.update({ where: { id: revision.id }, data: { state: ClinicalRecordRevisionState.SIGNED, signedAt: new Date(), signedByUserId: actorUserId, integrityHash: this.hash(kind, root.id, revision) } });
       await this.updateRoot(tx, kind, root.id, root.currentRevisionNumber, signed.revisionNumber);
+      if (auditContext) await this.audit.record({ clinicId: root.clinicId, patientId: root.patientId, action: PatientAccessAction.SIGN, resourceType: this.resourceType(kind), resourceId: root.id, resourceRevisionId: signed.id, metadata: { revisionNumber: signed.revisionNumber } }, auditContext, tx);
       return this.revisionResponse(kind, root.id, signed, root.currentRevisionNumber, signed.revisionNumber);
     });
   }
@@ -99,9 +106,13 @@ export class ClinicalReconciliationService {
     }
   }
 
+  private resourceType(kind: ClinicalRecordKind) {
+    return `CLINICAL_${kind}`;
+  }
+
   private async existing(tx: Prisma.TransactionClient, kind: ClinicalRecordKind, id: string) {
     const clinic = await this.clinic(tx);
-    const select = { id: true, currentRevisionNumber: true, latestSignedRevisionNumber: true };
+    const select = { id: true, clinicId: true, patientId: true, currentRevisionNumber: true, latestSignedRevisionNumber: true };
     const where = { id, clinicId: clinic.id, state: ClinicalRecordState.ACTIVE };
     const root = kind === 'DIAGNOSIS' ? await tx.diagnosis.findFirst({ where, select }) : kind === 'ALLERGY' ? await tx.allergyRecord.findFirst({ where, select }) : kind === 'CONDITION' ? await tx.conditionRecord.findFirst({ where, select }) : await tx.medicationStatement.findFirst({ where, select });
     if (!root) throw forbidden();

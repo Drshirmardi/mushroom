@@ -340,3 +340,60 @@ Known limitations:
 Next task:
 
 - `F06-T08` (unclaimed).
+
+## F06-T08 — resource-level authorization و audit read/write/export
+
+Task ID: F06-T08
+Completed at: 2026-09-03 19:33 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B08
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/prisma/{schema.prisma,migrations/20260903191500_phase_06_clinical_authorization/migration.sql}`
+- `apps/api/src/common/auth/{auth.module.ts,authorization.guard.ts,authorization.policy.ts,clinical-permission.service.ts}`
+- `apps/api/src/{app.module.ts,modules/clinical/**}`
+- `apps/api/test/clinical-notes.integration.spec.ts`
+- `plan/{STATUS.md,phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md,logs/phase-06.md}`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations:
+
+- `20260903191500_phase_06_clinical_authorization` — explicit configurable clinical role
+  permissions and actor-to-clinic resource grants; deployed and status-checked on configured
+  PostgreSQL.
+
+Tests run:
+
+- Prisma validate, generate, and migration status → PASS
+- isolated empty-PostgreSQL migration smoke with configured environment → PASS (2 tests)
+- API typecheck → PASS
+- focused PostgreSQL clinical authorization/audit integration → PASS (4 tests)
+- focused authorization-guard regression → PASS (15 tests)
+- `git diff --check` and coordinator diff/acceptance review → PASS
+
+Result:
+
+- Clinical authority is denied by default and requires the explicit configurable
+  `CLINICAL_RECORD_VIEW`, `EDIT`, `SIGN`, or `AMEND` assignment; a role name alone is not a
+  clinical grant → PASS
+- A separate actor-to-clinic grant is required for a patient clinical resource; an otherwise
+  permitted actor is denied outside the granted clinic → PASS
+- Patient clinical timeline, history, and visit-summary routes are authenticated, auditable, and
+  return only the existing patient-safe read model → PASS
+- Clinical-note and reviewed-record create, revision, and signing paths support transaction-bound
+  audit emission with actor, session, resource/revision, request, and safe metadata; tests prove
+  medical content is excluded → PASS
+- Clinical audit persistence fails closed when the audit write cannot be made. No clinical
+  export/download endpoint exists in this phase slice, so export remains unavailable rather than
+  bypassing the authorization/audit boundary → PASS
+
+Known limitations:
+
+- `F06-T09` owns dashboard workspace wiring and its real CRUD routes; `F06-T10` owns patient-app
+  wiring; `F06-T11` owns OpenAPI/client synchronization and final security/browser E2E. These
+  controls are deliberately not replaced with mock or role-only behavior.
+
+Next task:
+
+- `F06-T09` (unclaimed).

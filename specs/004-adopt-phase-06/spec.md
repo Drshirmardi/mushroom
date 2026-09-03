@@ -3,7 +3,7 @@
 **Feature Branch**: `codex/phase-06-encounter-clinical-workspace`
 
 **Created**: 2026-09-03
-**Status**: Phase 06 is `IN_PROGRESS`; `F06-T01` through `F06-T07` are complete. The authoritative live state remains
+**Status**: Phase 06 is `IN_PROGRESS`; `F06-T01` through `F06-T08` are complete. The authoritative live state remains
 [`plan/STATUS.md`](../../plan/STATUS.md).
 
 **Input**: Adopt the authoritative Phase 06 roadmap without changing its scope, IDs, ordering,
