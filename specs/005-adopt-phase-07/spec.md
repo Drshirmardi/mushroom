@@ -52,7 +52,7 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 
 ### Edge Cases
 
-- An issued prescription is amended rather than overwritten.
+- An issued prescription is amended rather than overwritten, and a changed revision requires new safety acknowledgement before issuance.
 - Repeated recording of one medication/adherence or task action is idempotent.
 - A patient refreshes or changes device after recording treatment activity.
 - A contraindication warning, authorization boundary, or audit obligation applies to an attempted treatment action.
@@ -61,7 +61,7 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 
 ### Functional Requirements
 
-- **FR-001 (`F07-T01`)**: The prescription lifecycle MUST support draft, issue, and amendment while keeping an issued prescription immutable and representing a correction as a revision.
+- **FR-001 (`F07-T01`)**: The prescription lifecycle MUST support editable drafts, exact-revision issuance, and amendment while keeping an issued prescription immutable and representing a correction as an append-only successor revision. Issuance requires `PRESCRIPTION_ISSUE` plus tenant/resource authorization; warnings require exact-revision acknowledgement unless an approved `NON_OVERRIDABLE` rule blocks issuance.
 - **FR-002 (`F07-T02`)**: Prescription, treatment, task, and adherence concepts MUST have the persistence foundation owned by the roadmap migration task.
 - **FR-003 (`F07-T03`)**: Dashboard prescription creation, draft, issue, and revision behavior MUST be available through the roadmap-owned prescription interface.
 - **FR-004 (`F07-T04`)**: Treatment medication, session, exercise, and nutrition plans MUST be available through the roadmap-owned treatment-plan interface.
@@ -98,5 +98,5 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 
 - Phase 06 is `DONE (CLOSED)` and supplies the completed clinical-workspace baseline.
 - The authoritative source lists `F07-T01` through `F07-T12` in order but declares no individual `Depends on` fields or batch map; this adoption does not create one.
-- Exact schema, route, safety-warning, ownership, and permission details remain owned by their named authoritative tasks.
-- Phase 07 remains `NOT_STARTED`; this documentation preparation neither claims nor starts `F07-T01` or any other roadmap task.
+- Exact schema and route details remain owned by their named authoritative tasks. The approved `F07-T01` baseline defines draft/issue/amend safety, default `DOCTOR` issuance authority, advisory acknowledgement, and the legal-confirmation boundary; enforcement remains owned by `F07-T09`.
+- `F07-T01` is complete with its approved policy baseline. Phase 07 remains `IN_PROGRESS`; `F07-T02`–`F07-T12` remain unclaimed and unchecked.

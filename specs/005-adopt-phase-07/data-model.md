@@ -4,7 +4,7 @@ This preserves the nine roadmap concepts. `F07-T02` owns persistence. Exact fiel
 
 ## Prescription, Prescription Item, and Prescription Revision
 
-The prescription and its itemized content, with a separate revision history. `F07-T01` owns the draft/issue/amend lifecycle and safety rules. An issued prescription is immutable; correction is a revision rather than an overwrite.
+The prescription and its itemized content, with a separate revision history. `F07-T01` owns the draft/issue/amend lifecycle and safety rules. An issued prescription is immutable; correction is an append-only successor revision rather than an overwrite. Issuance and safety acknowledgement are attached to the exact revision; exact fields and persistence remain owned by `F07-T02`.
 
 ## Treatment Plan
 

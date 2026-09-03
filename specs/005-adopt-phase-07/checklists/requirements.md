@@ -25,7 +25,7 @@
 - [x] All functional requirements map to exactly one authoritative `F07-T01`–`F07-T12` task.
 - [x] User scenarios cover the primary issue, follow, and review flows.
 - [x] Success criteria reflect the authoritative exit rules.
-- [x] The documentation does not claim, complete, or authorize a roadmap task.
+- [x] The documentation records only the reviewed `F07-T01` policy baseline and does not authorize later roadmap work.
 
 ## Notes
 

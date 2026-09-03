@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 23:24 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 22:08 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
-- فاز فعال: ندارد؛ `Phase 06` بسته شده و `Phase 07` هنوز شروع نشده است.
-- وضعیت فاز فعال: ندارد
+- فاز فعال: `Phase 07 — Prescription & Treatment`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -40,7 +40,7 @@
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
-- [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
+- [ ] `Phase 07` — Prescription & Treatment — `IN_PROGRESS`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
@@ -83,6 +83,11 @@ Excluded: all existing migration files, any 14-constraint compatibility migratio
 Expected verification: isolated full migration replay and zero-drift diff against the corrected Phase 06 schema, Prisma validate/generate, focused Phase 06 clinical persistence/revision tests, and diff/whitespace validation.
 
 Result: the Prisma schema now represents both existing nullable user foreign keys and the database-generated UUID default. All 18 committed migrations replayed in isolation; migration-history → corrected committed schema produced an empty diff; Prisma validate/generate, 5 focused clinical revision/reconciliation tests, and 2 empty-database migration/seed smoke tests passed. No migration was added or changed. Evidence: [`logs/phase-06.md`](logs/phase-06.md).
+
+## وضعیت taskهای Phase 07
+
+- `F07-T01` — `DONE`؛ approved issuance-policy baseline and verification: [`contracts/prescription-treatment-policy-v1.md`](contracts/prescription-treatment-policy-v1.md), evidence: [`logs/phase-07.md`](logs/phase-07.md).
+- batch بعدی واجد شرایط: `F07-B02 — F07-T02`؛ هنوز claim نشده است.
 
 ## وضعیت taskهای فاز پیشین
 

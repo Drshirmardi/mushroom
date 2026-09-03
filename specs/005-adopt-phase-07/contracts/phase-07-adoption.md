@@ -6,7 +6,7 @@
 
 | Authoritative task | Preserved boundary |
 |---|---|
-| `F07-T01` | Prescription draft/issue/amend lifecycle and safety rules. |
+| `F07-T01` | Approved editable-draft, immutable-issue, append-only-amend lifecycle; explicit `PRESCRIPTION_ISSUE` plus resource scope; default `DOCTOR` issuer; exact-revision warning acknowledgement; and legal boundary. |
 | `F07-T02` | Prescription/treatment/task/adherence migration. |
 | `F07-T03` | Prescription create/draft/issue/revision interface. |
 | `F07-T04` | Treatment medication/session/exercise/nutrition plan interface. |
@@ -22,9 +22,11 @@
 ## Non-negotiable Phase 07 outcomes
 
 - An issued prescription is immutable and corrected only through revision.
+- Issuance requires explicit capability plus tenant/resource scope; role or dashboard access alone is insufficient.
+- Advisory warnings require acknowledgement for the exact issued revision; only an approved `NON_OVERRIDABLE` rule blocks issuance.
 - Medication/exercise schedules are the future reminder source.
 - Treatment-task and adherence records persist across refresh and devices.
 - Progress derives from real events.
 - The dashboard issue → app display → patient log → dashboard review path passes.
 
-No task is claimed, activated, or completed by this document.
+This adoption records the completed `F07-T01` policy baseline only. No later Phase 07 task is claimed, activated, or completed by this document.

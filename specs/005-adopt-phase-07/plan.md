@@ -16,7 +16,7 @@ Prepare one-to-one Spec Kit artifacts for the existing twelve Phase 07 prescript
 **Project Type**: Existing monorepo.
 **Performance Goals**: No adoption-added target.
 **Constraints**: Preserve issued-prescription immutability, revision-only amendment, idempotent treatment logging, real-event progress, persisted cross-device patient activity, authorization/audit/contraindication boundaries, and single-writer ownership for migration, generated client, authentication, and shared paths.
-**Scale/Scope**: Twelve stable tasks, `F07-T01`–`F07-T12`; Phase 07 is `NOT_STARTED`. Phase 06 is `DONE (CLOSED)`. This adoption does not authorize `F07-T01` to begin.
+**Scale/Scope**: Twelve stable tasks, `F07-T01`–`F07-T12`; `F07-T01` is complete and Phase 07 is `IN_PROGRESS`. Phase 06 is `DONE (CLOSED)`. This adoption does not authorize later Phase 07 work without a claimed batch.
 
 ## Constitution Check
 
@@ -24,7 +24,7 @@ Prepare one-to-one Spec Kit artifacts for the existing twelve Phase 07 prescript
 
 - Adoption is documentation-only: no source, migration, generated client, or Phase 06 file changes.
 - IDs, source order, prerequisite, models, UI scope, and exit rules are copied without redesign.
-- `F07-T01` owns prescription lifecycle and safety rules; `F07-T02` owns migration; `F07-T03`–`F07-T06` own their named delivery boundaries; `F07-T09` owns the permission/audit/contraindication-warning contract; `F07-T10` owns generated-client and in-scope mock/local-state removal; `F07-T11` owns integrated verification.
+- `F07-T01` freezes approved prescription lifecycle and safety rules: editable drafts; immutable issued revisions; append-only correction; `PRESCRIPTION_ISSUE` plus tenant/resource authorization; default `DOCTOR` issuer; acknowledged advisory warnings; and blocking only for an approved `NON_OVERRIDABLE` rule. `F07-T02` owns migration; `F07-T03`–`F07-T06` own their named delivery boundaries; `F07-T09` implements the permission/audit/contraindication-warning contract; `F07-T10` owns generated-client and in-scope mock/local-state removal; `F07-T11` owns integrated verification.
 - The roadmap states no individual task dependency or batch map. No new hard dependency, parallel lane, claim, or completion state is declared here.
 - Roadmap-owned verification remains roadmap-owned; every task stays unchecked until its own review/evidence gate passes.
 
