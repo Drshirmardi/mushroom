@@ -575,3 +575,49 @@ Known limitations:
 Next action:
 
 - Independent Phase 06 review; `Phase 07` remains `NOT_STARTED`.
+
+## F06-CLOSE — independent Phase 06 closure review
+
+Completed at: 2026-09-03 20:24 +03:30
+Reviewed by: Codex /root
+
+Scope:
+
+- Closure-only independent review of the authoritative Phase 06 roadmap, `F06-T01`–`F06-T12`,
+  contracts, Spec Kit artifacts, source implementation, migrations, generated OpenAPI/client,
+  security/revision behavior, tests, builds, and browser evidence.
+
+Verification performed:
+
+- Roadmap/checklist/STATUS/Spec Kit mapping and acceptance-criteria coverage review → PASS
+- Approved `clinical-record-policy-v1` comparison against revision, signing, publication,
+  configurable permission, resource-scope, audit, retention-boundary, and patient-visibility
+  implementation → PASS
+- F06-T11 evidence re-review: generated client, role-only denial, explicit clinic grant,
+  revision conflict, private-data exclusion, and truthful browser empty state → PASS
+- `pnpm generate:api-client` → PASS; checked-in OpenAPI and generated schema remain unchanged
+- `pnpm --filter @sabz-zendegi/api test` → PASS (full suite; the two configured
+  persistence-environment tests remain explicitly skipped)
+- `pnpm --filter @sabz/app test` → PASS (8 files, 25 tests)
+- `pnpm --filter @sabz/dashboard test` → PASS (9 files, 32 tests)
+- `pnpm typecheck` → PASS (workspace)
+- `pnpm --filter @sabz/app build` and `pnpm --filter @sabz/dashboard build` → PASS
+- `prisma migrate status` → PASS (18 migrations applied; database schema up to date);
+  `prisma validate` → PASS
+- Fresh browser visit to the built patient history surface redirected an unauthenticated session
+  to sign-in and did not expose clinical content → PASS; authenticated persisted-empty-state and
+  dashboard role-only-denial evidence were independently rechecked in F06-T11 evidence
+- Spec Kit prerequisite/cross-artifact/constitution and non-destructive convergence review → PASS:
+  no unmapped task, ordering conflict, acceptance gap, implementation-boundary conflict, or
+  additional task
+- `git diff --check` and unrelated/Phase 07 scope review → PASS
+
+Result:
+
+- No unresolved blocker, partial task state, stale status/checklist/Spec Kit mapping, evidence
+  inconsistency, clinical-history integrity issue, signing/finalization inconsistency, unsafe
+  overwrite path, authorization/resource-scope gap, audit/privacy leakage, patient/private
+  visibility mistake, stale Phase 06 demo behavior, generated-client drift, migration/seed issue,
+  accidental Phase 07 implementation, or unrelated change was found.
+- Phase 06 is `DONE (CLOSED)`. `Phase 07` remains `NOT_STARTED`; no Phase 07 task or batch was
+  claimed or prepared.

@@ -1,6 +1,7 @@
 # Phase 06 — Encounter & Clinical Workspace
 
 - وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)` — پس از review مستقل closure در `2026-09-03`
 - Milestone: `C — هسته درمان`
 - پیش‌نیاز: `Phase 05 DONE`
 - خروجی اصلی: ویزیت از نوبت معتبر شروع می‌شود و پرونده بالینی کنترل‌شده در dashboard/app دیده می‌شود.

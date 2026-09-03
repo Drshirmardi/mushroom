@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 20:16 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 20:24 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
-- فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- فاز فعال: ندارد؛ `Phase 06` بسته شده و `Phase 07` هنوز شروع نشده است.
+- وضعیت فاز فعال: ندارد
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -26,7 +26,7 @@
 - [x] onboarding پزشکی و consent واقعی شده‌اند.
 - [x] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
 - [x] اولین جریان end-to-end رزرو نوبت کامل شده است.
-- [ ] اطلاعات بالینی واقعی شده‌اند.
+- [x] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
 - [ ] چت واقعی شده است.
 - [ ] production readiness تأیید شده است.
@@ -39,7 +39,7 @@
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
-- [ ] `Phase 06` — Encounter & Clinical Workspace — `READY_FOR_REVIEW`
+- [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
@@ -120,6 +120,14 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-CLOSE` — `DONE (CLOSED)`
+
+- review مستقل closure تمام معیارهای پذیرش `F06-T01` تا `F06-T12`، قرارداد policy بالینی،
+  migrationهای applied، generated OpenAPI/client، revision/sign/publish، authorization/resource
+  scope، audit/redaction، patient visibility، test/build و evidence مرور شد و blocker یا drift
+  پیدا نشد؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- `Phase 07` همچنان `NOT_STARTED` است؛ هیچ task یا batch آن claim یا آماده‌سازی نشده است.
 
 `F06-B12` — `DONE`
 

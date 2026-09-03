@@ -11,8 +11,9 @@ description: "One-to-one Spec Kit adoption of existing Phase 06 roadmap tasks"
 the checklist entries below remain the execution, claim, evidence, and commit identities. No task
 is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Execution status**: Consult `plan/STATUS.md` and the authoritative phase checklist for live
-Phase 06 state. This file does not authorize implementation.
+**Execution status**: `F06-T01`–`F06-T12` are complete and Phase 06 is `DONE (CLOSED)` after
+independent review. Consult `plan/STATUS.md` and the authoritative phase checklist for the live
+state. This file does not authorize implementation or Phase 07 work.
 
 ## Format
 
