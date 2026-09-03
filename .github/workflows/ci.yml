@@ -37,6 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @sabz-zendegi/api prisma:generate
       - run: pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+      - run: pnpm --filter @sabz-zendegi/api prisma:seed
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

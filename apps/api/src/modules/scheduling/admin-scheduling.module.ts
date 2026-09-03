@@ -5,5 +5,5 @@ import { AdminSchedulingService } from './admin-scheduling.service';
 import { PatientAvailabilityController } from './patient-availability.controller';
 import { PatientAvailabilityService } from './patient-availability.service';
 
-@Module({ controllers: [AdminSchedulingController, PatientAvailabilityController], providers: [AdminSchedulingService, PatientAvailabilityService] })
+@Module({ controllers: [AdminSchedulingController, PatientAvailabilityController], providers: [AdminSchedulingService, PatientAvailabilityService], exports: [PatientAvailabilityService] })
 export class AdminSchedulingModule {}

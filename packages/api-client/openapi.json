@@ -4733,6 +4733,981 @@
           "Patient Availability"
         ]
       }
+    },
+    "/v1/appointments": {
+      "post": {
+        "operationId": "patientAppointmentsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePatientAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAppointmentResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The idempotency key was reused or the slot is no longer available."
+          },
+          "422": {
+            "description": "Booking eligibility no longer permits this appointment."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a pending appointment from a current patient-visible slot",
+        "tags": [
+          "Patient appointments"
+        ]
+      },
+      "get": {
+        "operationId": "patientAppointmentsList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAppointmentPageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the authenticated patient appointments",
+        "tags": [
+          "Patient appointments"
+        ]
+      }
+    },
+    "/v1/appointments/{appointmentId}": {
+      "get": {
+        "operationId": "patientAppointmentsGet",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an authenticated patient appointment",
+        "tags": [
+          "Patient appointments"
+        ]
+      }
+    },
+    "/v1/appointments/{appointmentId}/history": {
+      "get": {
+        "operationId": "patientAppointmentsHistory",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentStatusHistoryPageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the authenticated patient appointment status timeline",
+        "tags": [
+          "Patient appointments"
+        ]
+      }
+    },
+    "/v1/appointments/{appointmentId}/cancel": {
+      "post": {
+        "operationId": "patientAppointmentsCancel",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelPatientAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel an eligible patient appointment",
+        "tags": [
+          "Patient appointments"
+        ]
+      }
+    },
+    "/v1/appointments/{appointmentId}/reschedule": {
+      "post": {
+        "operationId": "patientAppointmentsReschedule",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReschedulePatientAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reschedule an eligible patient appointment",
+        "tags": [
+          "Patient appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments": {
+      "post": {
+        "operationId": "adminAppointmentsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a pending appointment for a clinic patient",
+        "tags": [
+          "Admin appointments"
+        ]
+      },
+      "get": {
+        "operationId": "adminAppointmentsList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "doctorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "CONFIRMED",
+                "CHECKED_IN",
+                "QUEUED",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "NO_SHOW",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentPageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic appointments with operational filters",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/operational-activities": {
+      "get": {
+        "operationId": "adminOperationalActivitiesList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationalActivityPageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic appointment operational activity",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/queue": {
+      "get": {
+        "operationId": "adminAppointmentsQueueList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminQueueResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the clinic queue in authoritative queue-entry order",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/dashboard-summary": {
+      "get": {
+        "operationId": "adminAppointmentsDashboardSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardAppointmentSummaryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get clinic-local appointment KPIs, today plan, and recent booking activity",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/history": {
+      "get": {
+        "operationId": "adminAppointmentsHistory",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentStatusHistoryPageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic appointment status timeline",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/confirm": {
+      "post": {
+        "operationId": "adminAppointmentsConfirm",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Confirm a future pending appointment",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/cancel": {
+      "post": {
+        "operationId": "adminAppointmentsCancel",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAdminAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel an appointment under administrator policy",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/reschedule": {
+      "post": {
+        "operationId": "adminAppointmentsReschedule",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleAdminAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reschedule an appointment and return it to pending confirmation",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/check-in": {
+      "post": {
+        "operationId": "adminAppointmentsCheckIn",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check in a confirmed appointment on its clinic-local date",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/queue": {
+      "post": {
+        "operationId": "adminAppointmentsQueue",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add a checked-in appointment to the clinic queue",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/start": {
+      "post": {
+        "operationId": "adminAppointmentsStart",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start a checked-in or queued appointment",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/complete": {
+      "post": {
+        "operationId": "adminAppointmentsComplete",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Complete a doctor current appointment",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/no-show": {
+      "post": {
+        "operationId": "adminAppointmentsNoShow",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mark a past appointment as no-show",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
+    "/v1/admin/appointments/doctors/{doctorId}/call-next": {
+      "post": {
+        "operationId": "adminAppointmentsCallNext",
+        "parameters": [
+          {
+            "name": "doctorId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start the earliest queued appointment for a doctor",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
     }
   },
   "info": {
@@ -4857,6 +5832,15 @@
               "CONSENT_RECORD_NOT_ACTIVE",
               "MEDICAL_INTAKE_REVISION_CONFLICT",
               "IDEMPOTENCY_KEY_REUSED",
+              "IDEMPOTENCY_KEY_REQUIRED",
+              "BOOKING_INELIGIBLE",
+              "APPOINTMENT_SLOT_UNAVAILABLE",
+              "APPOINTMENT_SLOT_CONFLICT",
+              "APPOINTMENT_FORBIDDEN",
+              "APPOINTMENT_CHANGE_NOT_ALLOWED",
+              "APPOINTMENT_INVALID_TRANSITION",
+              "QUEUE_EMPTY",
+              "APPOINTMENT_DOCTOR_BUSY",
               "CLINIC_NOT_FOUND",
               "DOCTOR_NOT_FOUND",
               "SPECIALTY_NOT_FOUND",
@@ -8099,6 +9083,683 @@
           "page",
           "pageSize",
           "total"
+        ]
+      },
+      "CreatePatientAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-10T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "doctorServiceId",
+          "startsAt"
+        ]
+      },
+      "PatientAppointmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING"
+            ]
+          },
+          "priceAmount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "priceCapturedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "clinicId",
+          "patientId",
+          "doctorServiceId",
+          "doctorId",
+          "startsAt",
+          "endsAt",
+          "status",
+          "priceAmount",
+          "currency",
+          "priceCapturedAt",
+          "createdAt"
+        ]
+      },
+      "PatientAppointmentPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAppointmentResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "AppointmentStatusHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
+            ],
+            "nullable": true
+          },
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "object",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "toStatus",
+          "action",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "AppointmentStatusHistoryPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentStatusHistoryResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "CancelPatientAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "ReschedulePatientAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-10T08:30:00.000Z"
+          }
+        },
+        "required": [
+          "doctorServiceId",
+          "startsAt"
+        ]
+      },
+      "CreateAdminAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "patientId",
+          "doctorServiceId",
+          "startsAt"
+        ]
+      },
+      "AdminAppointmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
+            ]
+          },
+          "priceAmount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "priceCapturedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "clinicId",
+          "patientId",
+          "doctorServiceId",
+          "doctorId",
+          "startsAt",
+          "endsAt",
+          "status",
+          "priceAmount",
+          "currency",
+          "priceCapturedAt",
+          "createdAt"
+        ]
+      },
+      "AdminAppointmentPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "OperationalActivityResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "patientId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "OperationalActivityPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OperationalActivityResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "AdminQueueEntryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "queuedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "appointment": {
+            "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "queuedAt",
+          "appointment"
+        ]
+      },
+      "AdminQueueResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminQueueEntryResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "DashboardTodayPlanEntryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
+            ]
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "IN_PERSON",
+              "ONLINE"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "startsAt",
+          "endsAt",
+          "status",
+          "visitMode"
+        ]
+      },
+      "DashboardAppointmentActivityResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "patientId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "createdAt"
+        ]
+      },
+      "DashboardAppointmentSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "todayAppointments": {
+            "type": "number"
+          },
+          "inPersonAppointments": {
+            "type": "number"
+          },
+          "onlineAppointments": {
+            "type": "number"
+          },
+          "pendingRequests": {
+            "type": "number"
+          },
+          "checkedIn": {
+            "type": "number"
+          },
+          "queued": {
+            "type": "number"
+          },
+          "inProgress": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "number"
+          },
+          "averageWaitMinutes": {
+            "type": "object",
+            "nullable": true
+          },
+          "todayPlan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardTodayPlanEntryResponseDto"
+            }
+          },
+          "recentAppointmentActivity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardAppointmentActivityResponseDto"
+            }
+          }
+        },
+        "required": [
+          "asOf",
+          "timeZone",
+          "todayAppointments",
+          "inPersonAppointments",
+          "onlineAppointments",
+          "pendingRequests",
+          "checkedIn",
+          "queued",
+          "inProgress",
+          "completed",
+          "averageWaitMinutes",
+          "todayPlan",
+          "recentAppointmentActivity"
+        ]
+      },
+      "AdminAppointmentStatusHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromStatus": {
+            "type": "object",
+            "nullable": true
+          },
+          "toStatus": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "object",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "toStatus",
+          "action",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "AdminAppointmentStatusHistoryPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentStatusHistoryResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "CancelAdminAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "RescheduleAdminAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "doctorServiceId",
+          "startsAt"
         ]
       }
     }

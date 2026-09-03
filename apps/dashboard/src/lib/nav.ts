@@ -16,9 +16,9 @@ export interface NavItem {
 
 export const NAV: NavItem[] = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutGrid, group: "اصلی" },
-  { href: "/appointments", label: "نوبت‌ها", icon: CalendarDays, badge: "۱۲", group: "اصلی" },
+  { href: "/appointments", label: "نوبت‌ها", icon: CalendarDays, group: "اصلی" },
   { href: "/calendar", label: "تقویم", icon: CalendarDays, group: "اصلی" },
-  { href: "/queue", label: "صف انتظار", icon: Clock, badge: "۴", group: "اصلی" },
+  { href: "/queue", label: "صف انتظار", icon: Clock, group: "اصلی" },
   { href: "/patients", label: "بیماران", icon: Users, group: "بالینی" },
   { href: "/prescriptions", label: "نسخه بیماران", icon: FileText, group: "بالینی" },
   { href: "/assessments", label: "ارزیابی‌ها", icon: ClipboardList, group: "بالینی" },

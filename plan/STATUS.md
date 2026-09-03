@@ -6,14 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-01 20:32 +03:30`
-- Milestone فعال: `Milestone B — کلینیک قابل رزرو`
-- فاز فعال: `Phase 05 — Appointment Booking & Dashboard Operations`
-- وضعیت فاز فعال: `NOT_STARTED`
-- batch فعال: `ندارد`
-- task فعال: `ندارد`
-- مسئول/Agent: `ندارد`
-- blocker فعال: `ندارد`
+- آخرین به‌رورسانی: `2026-09-02 21:38 +03:30`
+- Milestone فعال: `Milestone B — DONE (CLOSED)`
+- فاز فعال: ندارد؛ `Phase 05` بسته شده و `Phase 06` هنوز شروع نشده است.
+- وضعیت فاز فعال: ندارد
+- batch فعال: ندارد
+- task فعال: ندارد
+- blocker فعال: ندارد
 
 ## پیشرفت کلان
 
@@ -26,7 +25,7 @@
 - [x] احراز هویت واقعی جایگزین mock شده است.
 - [x] onboarding پزشکی و consent واقعی شده‌اند.
 - [x] آزمون اصلی و eligibility قابل تنظیم واقعی شده‌اند.
-- [ ] اولین جریان end-to-end رزرو نوبت کامل شده است.
+- [x] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [ ] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
 - [ ] چت واقعی شده است.
@@ -39,7 +38,7 @@
 - [x] `Phase 02` — Patient Onboarding & Consent — `DONE`
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
-- [ ] `Phase 05` — Appointment Booking & Dashboard Operations — `NOT_STARTED`
+- [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
@@ -74,6 +73,23 @@
 
 ## وضعیت taskهای فاز فعال
 
+- `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T03` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T04` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T05` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T06` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T07` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T08` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T09` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T10` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T11` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T12` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T13` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+- `F05-T14` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
+
+### وضعیت تاریخی Phase 04
+
 - `F04-T01` — `DONE`
 - `F04-T02` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T03` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
@@ -87,7 +103,63 @@
 - `F04-T11` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md)
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
-## batch در حال اجرا
+## آخرین batch بسته‌شده
+
+`F05-CLOSE` — `DONE (CLOSED)`
+
+- review مستقل closure تمام taskها، migration/seed، contract/client، concurrency، browser E2E،
+  buildها، mock boundary و evidence/spec synchronization را پذیرفت؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- `Phase 05` اکنون `DONE (CLOSED)` است. `Phase 06` همچنان `NOT_STARTED` و بدون claim است.
+
+`F05-B14` — `DONE`
+
+- `F05-T14` پذیرفته شد: تمام taskهای Phase 05، exit criteria، migration/seed smoke، suiteهای
+  مرتبط، browser evidence و Spec Kit consistency/convergence review پاس شده‌اند؛ Phase 05
+  اکنون `READY_FOR_REVIEW` است؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
+- task جدیدی claim نشده است. review مستقل فاز باید پیش از `DONE` شدن و فعال‌سازی Phase 06 انجام شود.
+
+`F05-B13` — `DONE`
+
+- `F05-T13` پذیرفته شد: browser E2E محلیِ synthetic از register/profile/assessment تا booking و
+  عملیات dashboard/queue پایان یافت؛ calendar و Home V1 با داده‌های عملیات هم‌خوان بودند و
+  baseline query/load PostgreSQL ثبت شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T14`؛ هنوز claim نشده است.
+
+`F05-B12` — `DONE`
+
+- `F05-T12` پذیرفته شد: PostgreSQL واقعی ۱۰۰ درخواست هم‌زمان را با دقیقاً یک رزرو موفق و
+  ۹۹ conflict پایدار کنترل می‌کند؛ idempotency، authorization و transitionهای تکراری نیز
+  regression-tested هستند؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T13`؛ هنوز claim نشده است.
+
+`F05-B11` — `DONE`
+
+- `F05-T11` پذیرفته شد: runtime OpenAPI و generated client تمام endpointهای Phase 05 را پوشش
+  می‌دهند و fixture appointment و badgeهای عملیاتی ساختگی حذف شدند؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T12`؛ هنوز claim نشده است.
+
+`F05-B10` — `DONE`
+
+- `F05-T10` پذیرفته شد: Dashboard Home V1 فقط KPI و برنامهٔ امروز clinic-local و activity
+  واقعی رزرو را نمایش می‌دهد؛ widgetهای بیمار و assessment نیز فقط منابع زندهٔ پیشین دارند.
+  integration PostgreSQL، typecheck و test dashboard پاس شدند؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T11`؛ هنوز claim نشده است. OpenAPI/generated client فقط در همین
+  task هماهنگ خواهد شد.
+
+`F05-B09` — `DONE`
+
+- `F05-T09` پس از typecheck/build dashboard و integration واقعی PostgreSQL برای list و queue
+  مرتب‌شده پذیرفته شد؛ شواهد:
+  [`logs/phase-05.md`](logs/phase-05.md).
+- task واجد شرایط بعدی: `F05-T10`؛ هنوز claim نشده است.
+- هماهنگ‌سازی generated OpenAPI client عمداً در مالک آن، `F05-T11`، باقی مانده است؛ بنابراین
+  `test/openapi-contract.spec.ts` تا آن task runtime document را با client checked-in ناسازگار گزارش می‌کند.
+
+`F05-B01` بسته شد: `F05-T01` پس از review قرارداد lifecycle، cancellation/reschedule و price
+snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md).
 
 `F04-B08` بدون تغییر implementation بسته شد: generated client مانع `F04-T08` و `F04-T09` بود. با authorization صریح مالک، `F04-B10` فقط prerequisite slice از `F04-T10` را اجرا و review کرد؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md).
 
@@ -103,7 +175,8 @@
 
 `F04-CLOSE` با independent review بسته شد: تمام taskها، migration/seed، OpenAPI/generated client، تست‌های نهایی، browser evidence، mock boundary و Spec Kit consistency پذیرفته شدند؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md).
 
-`Phase 04` اکنون `DONE (CLOSED)` است. `Phase 05` phase فعال بعدی است اما `NOT_STARTED` می‌ماند؛ هیچ batch یا task از آن در این run claim یا start نشده است.
+`Phase 04` اکنون `DONE (CLOSED)` است. `F05-B01` تا `F05-B03` پس از review بسته شدند؛ شواهد:
+[`logs/phase-05.md`](logs/phase-05.md). `F05-T04` در batch جاری claim شده است.
 
 ## Blockerها و تصمیم‌های باز
 

@@ -1,58 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Search, Plus, Stethoscope, Video, Play, Eye, FileText, CalendarDays,
-} from "lucide-react";
-import { APPTS } from "@/data/appointments";
-import { Avatar, StatusBadge, TypeBadge } from "@/components/shared";
+import { useCallback, useEffect, useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { dashboardAppointmentError, listAdminAppointments, transitionAppointment, type AdminAppointment, type AdminAppointmentStatus } from "@/lib/appointment-api";
+
+const labels: Record<AdminAppointmentStatus, string> = { PENDING: "در انتظار تأیید", CONFIRMED: "تأیید شده", CHECKED_IN: "پذیرش", QUEUED: "در صف", IN_PROGRESS: "در حال ویزیت", COMPLETED: "تکمیل شده", NO_SHOW: "عدم مراجعه", CANCELLED: "لغو شده" };
 
 export function AppointmentsPage() {
-  const [tab, setTab] = useState<"inPerson" | "online">("inPerson");
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("همه");
-  const statuses = ["همه", "در انتظار تایید", "تایید شده", "در حال انجام", "پایان یافته", "لغو شده"];
-  const filtered = APPTS.filter(a => {
-    const mt = tab === "inPerson" ? a.type === "حضوری" : a.type === "آنلاین";
-    const ms = a.patient.includes(search) || a.time.includes(search);
-    const mst = statusFilter === "همه" || a.status === statusFilter;
-    return mt && ms && mst;
-  });
-  return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
-      <div className="flex items-center gap-2 bg-card border border-border rounded-2xl p-1.5 w-fit shadow-sm">
-        {([["inPerson", "ویزیت حضوری", Stethoscope], ["online", "ویزیت آنلاین", Video]] as const).map(([id, label, Icon]) => (
-          <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            <Icon size={16} />{label}
-          </button>
-        ))}
-      </div>
-      <div className="bg-card border border-border rounded-2xl px-5 py-4 shadow-sm flex flex-wrap items-center gap-3">
-        <div className="relative"><Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="جستجوی بیمار..." className="bg-secondary rounded-xl pr-8 pl-4 py-2 text-sm w-52 outline-none focus:ring-2 focus:ring-primary/20" /></div>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {statuses.map(s => <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${statusFilter === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{s}</button>)}
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors mr-auto"><Plus size={16} />نوبت جدید</button>
-      </div>
-      <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead><tr className="border-b border-border bg-secondary/40">{["بیمار", "تاریخ", "ساعت", "نوع", "وضعیت", "اقدامات"].map(h => <th key={h} className="text-right px-5 py-3.5 text-xs font-bold text-muted-foreground">{h}</th>)}</tr></thead>
-          <tbody>
-            {filtered.map((apt, i) => (
-              <tr key={apt.id} className={`border-b border-border last:border-0 hover:bg-secondary/30 transition-colors ${i % 2 === 1 ? "bg-secondary/10" : ""}`}>
-                <td className="px-5 py-3.5"><div className="flex items-center gap-3"><Avatar letter={apt.avatar} size="sm" /><div><p className="text-sm font-semibold">{apt.patient}</p><p className="text-xs text-muted-foreground">{apt.phone}</p></div></div></td>
-                <td className="px-5 py-3.5 text-sm text-muted-foreground">۱۴۰۳/۰۴/۱۷</td>
-                <td className="px-5 py-3.5 text-sm font-bold text-foreground">{apt.time}</td>
-                <td className="px-5 py-3.5"><TypeBadge type={apt.type} /></td>
-                <td className="px-5 py-3.5"><StatusBadge status={apt.status} /></td>
-                <td className="px-5 py-3.5"><div className="flex gap-1">{[Play, Eye, FileText, CalendarDays].map((Ic, li) => <button key={li} className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"><Ic size={13} /></button>)}</div></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {filtered.length === 0 && <div className="text-center py-14 text-muted-foreground"><CalendarDays size={36} className="mx-auto mb-2 opacity-20" /><p className="text-sm">نوبتی یافت نشد</p></div>}
-      </div>
-    </div>
-  );
+  const { authentication } = useDashboardSession(); const [items, setItems] = useState<AdminAppointment[] | null>(null); const [error, setError] = useState<string | null>(null); const [status, setStatus] = useState<AdminAppointmentStatus | "ALL">("ALL"); const [busy, setBusy] = useState<string | null>(null);
+  const load = useCallback(() => { setItems(null); setError(null); void listAdminAppointments(authentication.accessToken, status === "ALL" ? {} : { status }).then((value) => setItems(value.items), (reason: unknown) => setError(dashboardAppointmentError(reason))); }, [authentication.accessToken, status]);
+  useEffect(() => { const timer = setTimeout(load, 0); return () => clearTimeout(timer); }, [load]);
+  const act = async (appointment: AdminAppointment, action: "confirm" | "check-in" | "queue" | "start" | "complete" | "no-show") => { setBusy(`${appointment.id}:${action}`); try { await transitionAppointment(authentication.accessToken, appointment.id, action); load(); } catch (reason) { setError(dashboardAppointmentError(reason)); } finally { setBusy(null); } };
+  const action = (appointment: AdminAppointment) => appointment.status === "PENDING" ? "confirm" : appointment.status === "CONFIRMED" ? "check-in" : appointment.status === "CHECKED_IN" ? "queue" : appointment.status === "QUEUED" ? "start" : appointment.status === "IN_PROGRESS" ? "complete" : null;
+  return <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-7"><div className="flex items-center justify-between"><div><h1 className="text-xl font-bold">نوبت‌ها</h1><p className="mt-1 text-sm text-muted-foreground">اطلاعات و عملیات مستقیماً از سامانهٔ نوبت‌دهی دریافت می‌شوند.</p></div><button onClick={load} className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-bold"><RefreshCw size={15} />به‌روزرسانی</button></div><div className="flex flex-wrap gap-2">{(["ALL", "PENDING", "CONFIRMED", "CHECKED_IN", "QUEUED", "IN_PROGRESS", "COMPLETED", "NO_SHOW", "CANCELLED"] as const).map((value) => <button key={value} onClick={() => setStatus(value)} className={`rounded-lg px-3 py-1.5 text-xs font-bold ${status === value ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>{value === "ALL" ? "همه" : labels[value]}</button>)}</div>{!items && !error && <p role="status" className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">در حال دریافت نوبت‌ها…</p>}{error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-900"><p>{error}</p><button onClick={load} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>}{items && <div className="overflow-hidden rounded-2xl border border-border bg-card"><table className="w-full"><thead><tr className="border-b border-border bg-secondary/40">{["بیمار", "زمان", "وضعیت", "عملیات"].map((title) => <th key={title} className="px-5 py-3 text-right text-xs font-bold text-muted-foreground">{title}</th>)}</tr></thead><tbody>{items.map((appointment) => { const next = action(appointment); return <tr key={appointment.id} className="border-b border-border last:border-0"><td className="px-5 py-4 text-sm">شناسه بیمار: {appointment.patientId.slice(0, 8)}</td><td className="px-5 py-4 text-sm">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(appointment.startsAt))}</td><td className="px-5 py-4 text-sm font-bold">{labels[appointment.status]}</td><td className="px-5 py-4">{next && <button disabled={busy !== null} onClick={() => void act(appointment, next)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground disabled:opacity-50">{labels[next === "confirm" ? "CONFIRMED" : next === "check-in" ? "CHECKED_IN" : next === "queue" ? "QUEUED" : next === "start" ? "IN_PROGRESS" : "COMPLETED"]}</button>}</td></tr>; })}</tbody></table>{items.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">نوبتی یافت نشد.</p>}</div>}</div>;
 }

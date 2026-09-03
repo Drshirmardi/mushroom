@@ -40,6 +40,19 @@ const subtract = (windows: Window[], blocks: Window[]) => merge(windows).flatMap
 @Injectable()
 export class PatientAvailabilityService {
   constructor(private readonly prisma: PrismaService) {}
+  async candidate(userId: string, doctorServiceId: string, startsAt: Date) {
+    if (Number.isNaN(startsAt.getTime()) || startsAt <= new Date()) return null;
+    const clinic = await this.patientClinic(userId);
+    const local = localDateTime(startsAt, clinic.timeZone);
+    const availability = await this.get(userId, doctorServiceId, {
+      fromDate: local.localDate,
+      toDate: local.localDate,
+      page: 1,
+      pageSize: 100,
+    });
+    return availability.items.find((item) => item.startsAt.getTime() === startsAt.getTime()) ?? null;
+  }
+
   async get(userId: string, doctorServiceId: string, query: PatientAvailabilityQueryDto) {
     const from = parseDay(query.fromDate); const to = parseDay(query.toDate);
     if (compareDays(from, to) > 0 || Math.round((Date.UTC(to.year, to.month - 1, to.day) - Date.UTC(from.year, from.month - 1, from.day)) / 86_400_000) + 1 > 31) throw queryInvalid(['fromDate', 'toDate']);

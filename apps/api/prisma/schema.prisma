@@ -207,6 +207,33 @@ enum DoctorAvailabilityExceptionKind {
   @@map("doctor_availability_exception_kind")
 }
 
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  QUEUED
+  IN_PROGRESS
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+
+  @@map("appointment_status")
+}
+
+enum AppointmentStatusHistoryAction {
+  CREATED
+  CONFIRMED
+  CANCELLED
+  RESCHEDULED
+  CHECKED_IN
+  QUEUED
+  STARTED
+  COMPLETED
+  NO_SHOW
+
+  @@map("appointment_status_history_action")
+}
+
 model User {
   id                          String                         @id @default(uuid()) @db.Uuid
   phone                       String                         @unique(map: "users_phone_key") @db.VarChar(13)
@@ -356,6 +383,10 @@ model Clinic {
   availabilityRules        AvailabilityRule[]
   closures                 ClinicClosure[]
   doctorExceptions         DoctorAvailabilityException[]
+  appointments             Appointment[]
+  appointmentHolds         AppointmentHold[]
+  queueEntries             QueueEntry[]
+  operationalActivities    OperationalActivity[]
 
   @@map("clinics")
 }
@@ -386,7 +417,10 @@ model PatientProfile {
   consentRecords          PatientConsentRecord[]
   reportedIntakeRevisions PatientMedicalIntakeRevision[] @relation("IntakeRevisionReportedPatient")
   assessmentSubmissions   PatientAssessmentSubmission[]
+  appointments            Appointment[]
+  operationalActivities   OperationalActivity[]
 
+  @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
   @@map("patient_profiles")
 }
@@ -585,6 +619,9 @@ model DoctorProfile {
   doctorServices    DoctorService[]
   availabilityRules AvailabilityRule[]
   exceptions        DoctorAvailabilityException[]
+  appointments      Appointment[]
+  appointmentHolds  AppointmentHold[]
+  queueEntries      QueueEntry[]
 
   @@unique([id, clinicId], map: "doctor_profiles_id_clinic_key")
   @@index([clinicId, isActive, publicationStatus, displayName, id], map: "doctor_profiles_directory_idx")
@@ -662,8 +699,11 @@ model DoctorService {
   clinic            Clinic                     @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   doctor            DoctorProfile              @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
   service           Service                    @relation(fields: [serviceId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  appointments      Appointment[]
+  appointmentHolds  AppointmentHold[]
 
   @@unique([clinicId, doctorId, serviceId, visitMode], map: "doctor_services_offering_key")
+  @@unique([id, clinicId], map: "doctor_services_id_clinic_key")
   @@index([clinicId, doctorId, visitMode, isActive, publicationStatus], map: "doctor_services_doctor_mode_idx")
   @@index([clinicId, serviceId, visitMode, isActive, publicationStatus], map: "doctor_services_service_mode_idx")
   @@map("doctor_services")
@@ -719,4 +759,110 @@ model DoctorAvailabilityException {
 
   @@index([clinicId, doctorId, kind, visitMode, isActive, startsAt, endsAt], map: "doctor_availability_exceptions_lookup_idx")
   @@map("doctor_availability_exceptions")
+}
+
+model Appointment {
+  id                     String                         @id @default(uuid()) @db.Uuid
+  clinicId               String                         @map("clinic_id") @db.Uuid
+  patientId              String                         @map("patient_id") @db.Uuid
+  doctorServiceId        String                         @map("doctor_service_id") @db.Uuid
+  doctorId               String                         @map("doctor_id") @db.Uuid
+  startsAt               DateTime                       @map("starts_at") @db.Timestamptz(3)
+  endsAt                 DateTime                       @map("ends_at") @db.Timestamptz(3)
+  status                 AppointmentStatus              @default(PENDING)
+  priceAmount            Int                            @map("price_amount")
+  currency               String                         @default("IRR") @db.Char(3)
+  priceCapturedAt        DateTime                       @map("price_captured_at") @db.Timestamptz(3)
+  idempotencyActorUserId String?                        @map("idempotency_actor_user_id") @db.Uuid
+  idempotencyKey         String?                        @map("idempotency_key") @db.VarChar(255)
+  idempotencyRequestHash String?                        @map("idempotency_request_hash") @db.Char(64)
+  confirmedAt            DateTime?                      @map("confirmed_at") @db.Timestamptz(3)
+  checkedInAt            DateTime?                      @map("checked_in_at") @db.Timestamptz(3)
+  queuedAt               DateTime?                      @map("queued_at") @db.Timestamptz(3)
+  startedAt              DateTime?                      @map("started_at") @db.Timestamptz(3)
+  completedAt            DateTime?                      @map("completed_at") @db.Timestamptz(3)
+  cancelledAt            DateTime?                      @map("cancelled_at") @db.Timestamptz(3)
+  noShowAt               DateTime?                      @map("no_show_at") @db.Timestamptz(3)
+  cancelReason           String?                        @map("cancel_reason") @db.VarChar(500)
+  createdAt              DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                 Clinic                         @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                PatientProfile                 @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  doctorService          DoctorService                  @relation(fields: [doctorServiceId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  doctor                 DoctorProfile                  @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  statusHistory          AppointmentStatusHistory[]
+  queueEntry             QueueEntry?
+  operationalActivities  OperationalActivity[]
+
+  @@unique([id, clinicId], map: "appointments_id_clinic_key")
+  @@unique([idempotencyActorUserId, idempotencyKey], map: "appointments_idempotency_key")
+  @@index([clinicId, patientId, startsAt, id], map: "appointments_patient_list_idx")
+  @@index([clinicId, doctorId, startsAt, id], map: "appointments_doctor_schedule_idx")
+  @@index([clinicId, status, startsAt, id], map: "appointments_operations_idx")
+  @@map("appointments")
+}
+
+model AppointmentHold {
+  id              String        @id @default(uuid()) @db.Uuid
+  clinicId        String        @map("clinic_id") @db.Uuid
+  doctorServiceId String        @map("doctor_service_id") @db.Uuid
+  doctorId        String        @map("doctor_id") @db.Uuid
+  startsAt        DateTime      @map("starts_at") @db.Timestamptz(3)
+  endsAt          DateTime      @map("ends_at") @db.Timestamptz(3)
+  expiresAt       DateTime      @map("expires_at") @db.Timestamptz(3)
+  releasedAt      DateTime?     @map("released_at") @db.Timestamptz(3)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic          Clinic        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  doctorService   DoctorService @relation(fields: [doctorServiceId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  doctor          DoctorProfile @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@index([clinicId, doctorId, startsAt, endsAt], map: "appointment_holds_capacity_idx")
+  @@map("appointment_holds")
+}
+
+model AppointmentStatusHistory {
+  id            String                         @id @default(uuid()) @db.Uuid
+  appointmentId String                         @map("appointment_id") @db.Uuid
+  fromStatus    AppointmentStatus?             @map("from_status")
+  toStatus      AppointmentStatus              @map("to_status")
+  action        AppointmentStatusHistoryAction
+  actorUserId   String?                        @map("actor_user_id") @db.Uuid
+  reason        String?                        @db.VarChar(500)
+  metadata      Json                           @default("{}")
+  createdAt     DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  appointment   Appointment                    @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([appointmentId, createdAt, id], map: "appointment_status_history_timeline_idx")
+  @@map("appointment_status_history")
+}
+
+model QueueEntry {
+  id            String      @id @default(uuid()) @db.Uuid
+  clinicId      String      @map("clinic_id") @db.Uuid
+  appointmentId String      @unique(map: "queue_entries_appointment_id_key") @map("appointment_id") @db.Uuid
+  doctorId      String      @map("doctor_id") @db.Uuid
+  queuedAt      DateTime    @map("queued_at") @db.Timestamptz(3)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic        Clinic      @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  doctor        DoctorProfile @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@index([clinicId, doctorId, queuedAt, id], map: "queue_entries_next_idx")
+  @@map("queue_entries")
+}
+
+model OperationalActivity {
+  id            String          @id @default(uuid()) @db.Uuid
+  clinicId      String          @map("clinic_id") @db.Uuid
+  appointmentId String?         @map("appointment_id") @db.Uuid
+  patientId     String?         @map("patient_id") @db.Uuid
+  type          String          @db.VarChar(100)
+  metadata      Json            @default("{}")
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic        Clinic          @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  appointment   Appointment?    @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  patient       PatientProfile? @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@index([clinicId, createdAt, id], map: "operational_activities_feed_idx")
+  @@map("operational_activities")
 }
