@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 18:53 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 19:04 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
-- task فعال: ندارد؛ `F06-T06` واجد شرایط بعدی و هنوز unclaimed است.
+- task فعال: ندارد
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -78,6 +78,7 @@
 - `F06-T03` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T04` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T05` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T06` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 
 ### وضعیت تاریخی Phase 05
 
@@ -112,6 +113,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B06` — `DONE`
+
+- `F06-T06` چهار نوع clinical record را فقط از provenance immutable intake و human review صریح
+  ایجاد می‌کند؛ edit و signing برای revision جاری append-only، private-by-default و دارای
+  optimistic-concurrency است؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T07`؛ هنوز claim نشده است.
 
 `F06-B05` — `DONE`
 

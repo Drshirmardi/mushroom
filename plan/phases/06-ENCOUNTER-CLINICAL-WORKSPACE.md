@@ -28,7 +28,7 @@
 - [x] `F06-T03` — migration encounter/clinical core/audit
 - [x] `F06-T04` — start/complete encounter از appointment معتبر
 - [x] `F06-T05` — note revision با optimistic concurrency و private clinician note
-- [ ] `F06-T06` — diagnosis/allergy/condition/medication reconciliation
+- [x] `F06-T06` — diagnosis/allergy/condition/medication reconciliation
 - [ ] `F06-T07` — timeline، history و summary مجاز بیمار
 - [ ] `F06-T08` — resource-level authorization و audit read/write/export
 - [ ] `F06-T09` — اتصال workspace dashboard و حذف placeholderهای scope

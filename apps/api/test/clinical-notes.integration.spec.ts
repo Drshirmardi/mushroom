@@ -5,12 +5,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApiApplication } from '../src/app.factory';
 import { ClinicalNotesService } from '../src/modules/clinical/clinical-notes.service';
+import { ClinicalReconciliationService, CLINICAL_RECORD_KINDS } from '../src/modules/clinical/clinical-reconciliation.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 
 describe('clinical note revisions (PostgreSQL integration)', () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
   let notes: ClinicalNotesService;
+  let reconciliation: ClinicalReconciliationService;
   const userIds = new Set<string>();
 
   beforeAll(async () => {
@@ -18,15 +20,23 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     await app.init();
     prisma = app.get(PrismaService);
     notes = app.get(ClinicalNotesService);
+    reconciliation = app.get(ClinicalReconciliationService);
   }, 30_000);
 
   afterEach(async () => {
     if (!userIds.size) return;
     const users = [...userIds];
+    await prisma.clinicalRecordRevision.deleteMany({ where: { OR: [{ diagnosis: { patient: { userId: { in: users } } } }, { allergyRecord: { patient: { userId: { in: users } } } }, { conditionRecord: { patient: { userId: { in: users } } } }, { medicationStatement: { patient: { userId: { in: users } } } }] } });
+    await prisma.diagnosis.deleteMany({ where: { patient: { userId: { in: users } } } });
+    await prisma.allergyRecord.deleteMany({ where: { patient: { userId: { in: users } } } });
+    await prisma.conditionRecord.deleteMany({ where: { patient: { userId: { in: users } } } });
+    await prisma.medicationStatement.deleteMany({ where: { patient: { userId: { in: users } } } });
     await prisma.clinicalNoteRevision.deleteMany({ where: { clinicalNote: { encounter: { appointment: { idempotencyActorUserId: { in: users } } } } } });
     await prisma.clinicalNote.deleteMany({ where: { encounter: { appointment: { idempotencyActorUserId: { in: users } } } } });
     await prisma.encounter.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.appointment.deleteMany({ where: { idempotencyActorUserId: { in: users } } });
+    await prisma.patientMedicalIntakeRevision.deleteMany({ where: { intake: { patient: { userId: { in: users } } } } });
+    await prisma.patientMedicalIntake.deleteMany({ where: { patient: { userId: { in: users } } } });
     await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.user.deleteMany({ where: { id: { in: users } } });
     userIds.clear();
@@ -41,9 +51,11 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     const clinician = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
     userIds.add(patientUser.id); userIds.add(clinician.id);
     const patient = await prisma.patientProfile.create({ data: { userId: patientUser.id, clinicId: clinic.id } });
+    const intake = await prisma.patientMedicalIntake.create({ data: { patientId: patient.id, clinicId: clinic.id, currentRevisionNumber: 1 } });
+    const intakeRevision = await prisma.patientMedicalIntakeRevision.create({ data: { intakeId: intake.id, revisionNumber: 1, assignedSchemaVersion: 1, revisionState: 'DRAFT', allergyReport: { status: 'PRESENT', items: ['self-reported'] }, chronicConditionReport: { status: 'UNKNOWN', items: [] }, currentMedicationReport: { status: 'NONE', items: [] }, recordingMode: 'PATIENT_ENTRY', reportedPatientId: patient.id, payloadHash: randomUUID().replaceAll('-', '').repeat(2) } });
     const appointment = await prisma.appointment.create({ data: { clinicId: clinic.id, patientId: patient.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt: new Date(Date.now() - 30 * 60_000), endsAt: new Date(Date.now() + 30 * 60_000), status: 'IN_PROGRESS', startedAt: new Date(), priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: clinician.id, idempotencyKey: randomUUID(), idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
     const encounter = await prisma.encounter.create({ data: { clinicId: clinic.id, appointmentId: appointment.id, patientId: patient.id, doctorId: offering.doctorId, startedByUserId: clinician.id } });
-    return { encounter, clinician };
+    return { encounter, clinician, patient, intake, intakeRevision };
   };
 
   it('keeps private note history append-only, detects stale saves, and signs exact revisions', async () => {
@@ -75,5 +87,30 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     expect(revisions).toHaveLength(3);
     expect(revisions[1]).toMatchObject({ id: saved.revision.id, state: 'SIGNED', content: 'Updated private clinical observation.', signedByUserId: clinician.id, integrityHash: signed.revision.integrityHash });
     expect(revisions[2]).toMatchObject({ state: 'DRAFT', content: 'Corrected private clinical observation.', isPrivate: true });
+  });
+
+  it('creates all reviewed clinical record kinds only from explicit immutable intake provenance', async () => {
+    const { encounter, clinician, patient, intake, intakeRevision } = await fixture();
+    const records = await Promise.all(CLINICAL_RECORD_KINDS.map((kind) => reconciliation.reconcile({ kind, patientId: patient.id, encounterId: encounter.id, sourceIntakeId: intake.id, sourceIntakeRevisionId: intakeRevision.id, sourceIntakeRevisionNumber: intakeRevision.revisionNumber, reviewedContent: { reviewedLabel: `${kind}-reviewed` } }, clinician.id)));
+    expect(records).toHaveLength(4);
+    for (const record of records) expect(record).toMatchObject({ state: 'ACTIVE', currentRevision: 1, source: { intakeId: intake.id, intakeRevisionId: intakeRevision.id, intakeRevisionNumber: 1, provenance: 'PATIENT_SELF_REPORTED' }, revision: { revisionNumber: 1, state: 'DRAFT', isPrivate: true, authoredByUserId: clinician.id } });
+    expect(await prisma.clinicalRecordRevision.count()).toBeGreaterThanOrEqual(4);
+    const diagnosis = records.find((record) => record.kind === 'DIAGNOSIS')!;
+    expect(diagnosis.revision.content).toEqual({ reviewedLabel: 'DIAGNOSIS-reviewed' });
+
+    const revised = await reconciliation.revise('DIAGNOSIS', diagnosis.id, { expectedRevision: 1, reviewedContent: { reviewedLabel: 'clinician-corrected' } }, clinician.id);
+    expect(revised).toMatchObject({ currentRevision: 2, latestSignedRevision: null, revision: { revisionNumber: 2, previousRevisionId: diagnosis.revision.id, state: 'DRAFT', isPrivate: true, content: { reviewedLabel: 'clinician-corrected' }, authoredByUserId: clinician.id } });
+    await expect(reconciliation.revise('DIAGNOSIS', diagnosis.id, { expectedRevision: 1, reviewedContent: { reviewedLabel: 'stale' } }, clinician.id)).rejects.toMatchObject({ response: { code: 'CLINICAL_RECORD_REVISION_CONFLICT', details: { currentRevision: 2 } } });
+
+    const signed = await reconciliation.sign('DIAGNOSIS', diagnosis.id, 2, 2, clinician.id);
+    expect(signed).toMatchObject({ currentRevision: 2, latestSignedRevision: 2, revision: { id: revised.revision.id, state: 'SIGNED', signedByUserId: clinician.id, signedAt: expect.any(Date), integrityHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
+    await expect(reconciliation.revise('DIAGNOSIS', diagnosis.id, { expectedRevision: 2, reviewedContent: { reviewedLabel: 'unexplained-signed-edit' } }, clinician.id)).rejects.toMatchObject({ response: { code: 'CLINICAL_RECORD_AMENDMENT_REASON_REQUIRED' } });
+    const amended = await reconciliation.revise('DIAGNOSIS', diagnosis.id, { expectedRevision: 2, reviewedContent: { reviewedLabel: 'corrected-after-signing' }, amendmentReasonCategory: 'CLINICAL_CORRECTION' }, clinician.id);
+    expect(amended).toMatchObject({ currentRevision: 3, latestSignedRevision: 2, revision: { revisionNumber: 3, previousRevisionId: revised.revision.id, state: 'DRAFT', amendmentReasonCategory: 'CLINICAL_CORRECTION' } });
+    const revisions = await prisma.clinicalRecordRevision.findMany({ where: { diagnosisId: diagnosis.id }, orderBy: { revisionNumber: 'asc' } });
+    expect(revisions).toHaveLength(3);
+    expect(revisions[1]).toMatchObject({ id: revised.revision.id, state: 'SIGNED', content: { reviewedLabel: 'clinician-corrected' }, signedByUserId: clinician.id, integrityHash: signed.revision.integrityHash });
+    expect(revisions[2]).toMatchObject({ state: 'DRAFT', content: { reviewedLabel: 'corrected-after-signing' } });
+    await expect(reconciliation.reconcile({ kind: 'DIAGNOSIS', patientId: patient.id, sourceIntakeId: intake.id, sourceIntakeRevisionId: randomUUID(), sourceIntakeRevisionNumber: 1, reviewedContent: { reviewedLabel: 'must-not-create' } }, clinician.id)).rejects.toMatchObject({ response: { code: 'CLINICAL_RECONCILIATION_SOURCE_INVALID' } });
   });
 });

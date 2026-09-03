@@ -34,7 +34,7 @@ infrastructure. No extra setup task is added.
 
 - [x] T004 [US1] F06-T04: start/complete encounter از appointment معتبر
 - [x] T005 [US1] F06-T05: note revision با optimistic concurrency و private clinician note
-- [ ] T006 [US2] F06-T06: diagnosis/allergy/condition/medication reconciliation
+- [x] T006 [US2] F06-T06: diagnosis/allergy/condition/medication reconciliation
 
 ## Phase 4: User Story 3 — Authorized Clinical Workspace (P2)
 

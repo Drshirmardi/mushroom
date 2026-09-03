@@ -235,3 +235,61 @@ Known limitations:
 Next task:
 
 - `F06-T06` (unclaimed).
+
+## F06-T06 — diagnosis/allergy/condition/medication reconciliation
+
+Task ID: F06-T06
+Completed at: 2026-09-03 19:04 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B06
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/prisma/schema.prisma`
+- `apps/api/prisma/migrations/20260903190000_phase_06_clinical_reconciliation/migration.sql`
+- `apps/api/src/modules/clinical/{clinical.module.ts,clinical-reconciliation.service.ts}`
+- `apps/api/test/clinical-notes.integration.spec.ts`
+- `plan/STATUS.md`, `plan/phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md`, and
+  `plan/logs/phase-06.md`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations:
+
+- `20260903190000_phase_06_clinical_reconciliation` — generic controlled revisions for diagnosis,
+  allergy, condition, and medication statement roots, with one-parent, object-content,
+  signing-integrity, history, and ordered-revision constraints.
+
+Tests run:
+
+- Prisma client generation and API typecheck → PASS
+- `prisma migrate deploy` and `prisma migrate status` on configured PostgreSQL → PASS
+- isolated empty-PostgreSQL migration smoke with configured environment → PASS (2 tests)
+- focused PostgreSQL clinical note/reconciliation integration → PASS (2 tests)
+- Spec Kit prerequisite/cross-artifact/constitution analysis → PASS; no critical mapping,
+  ordering, coverage, or boundary conflict
+- `git diff --check` and coordinator diff/acceptance review → PASS
+
+Result:
+
+- All four reviewed clinical-record roots require a same-clinic patient, optional matching
+  encounter, and an explicit immutable self-reported intake revision; self-report values are not
+  copied or promoted automatically → PASS
+- Each record starts as a private draft revision with source pointer, author identity, and
+  timestamp; the database allows exactly one root parent and ordered history per revision → PASS
+- Revisioned saves use a transaction-scoped record lock plus expected-version check; stale saves
+  receive `CLINICAL_RECORD_REVISION_CONFLICT` rather than overwriting another operator → PASS
+- Signing attests only the current draft revision with signer identity, timestamp, and canonical
+  integrity hash; edits after signing create a successor draft and require an amendment category
+  while preserving the signed revision → PASS
+- No HTTP route, role-only permission, patient publication/view, dashboard/app wiring, generated
+  client update, or sensitive audit-event emission was introduced outside its owning task → PASS
+
+Known limitations:
+
+- `F06-T07` owns patient-facing timeline/history/summary; `F06-T08` owns configurable
+  resource-level authorization, external clinical operation exposure, and fail-closed sensitive
+  access audit emission. The reconciliation service remains internal until those controls exist.
+
+Next task:
+
+- `F06-T07` (unclaimed).

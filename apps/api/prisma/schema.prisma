@@ -260,6 +260,14 @@ enum ClinicalNoteRevisionState {
   @@map("clinical_note_revision_state")
 }
 
+enum ClinicalRecordRevisionState {
+  DRAFT
+  SIGNED
+  VOIDED
+
+  @@map("clinical_record_revision_state")
+}
+
 enum PatientAccessAction {
   READ
   CREATE
@@ -1040,6 +1048,7 @@ model Diagnosis {
   encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
   sourceIntake                   PatientMedicalIntake?         @relation("DiagnosisSourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
   sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("DiagnosisSourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+  revisions                      ClinicalRecordRevision[]
 
   @@index([clinicId, patientId, state, updatedAt, id], map: "diagnoses_patient_state_updated_idx")
   @@index([sourceIntakeId, sourceIntakeRevisionId], map: "diagnoses_intake_source_idx")
@@ -1065,6 +1074,7 @@ model AllergyRecord {
   encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
   sourceIntake                   PatientMedicalIntake?         @relation("AllergySourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
   sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("AllergySourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+  revisions                      ClinicalRecordRevision[]
 
   @@index([clinicId, patientId, state, updatedAt, id], map: "allergy_records_patient_state_updated_idx")
   @@index([sourceIntakeId, sourceIntakeRevisionId], map: "allergy_records_intake_source_idx")
@@ -1090,6 +1100,7 @@ model ConditionRecord {
   encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
   sourceIntake                   PatientMedicalIntake?         @relation("ConditionSourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
   sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("ConditionSourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+  revisions                      ClinicalRecordRevision[]
 
   @@index([clinicId, patientId, state, updatedAt, id], map: "condition_records_patient_state_updated_idx")
   @@index([sourceIntakeId, sourceIntakeRevisionId], map: "condition_records_intake_source_idx")
@@ -1115,10 +1126,47 @@ model MedicationStatement {
   encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
   sourceIntake                   PatientMedicalIntake?         @relation("MedicationSourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
   sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("MedicationSourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+  revisions                      ClinicalRecordRevision[]
 
   @@index([clinicId, patientId, state, updatedAt, id], map: "medication_statements_patient_state_updated_idx")
   @@index([sourceIntakeId, sourceIntakeRevisionId], map: "medication_statements_intake_source_idx")
   @@map("medication_statements")
+}
+
+model ClinicalRecordRevision {
+  id                      String                      @id @default(uuid()) @db.Uuid
+  diagnosisId             String?                     @map("diagnosis_id") @db.Uuid
+  allergyRecordId         String?                     @map("allergy_record_id") @db.Uuid
+  conditionRecordId       String?                     @map("condition_record_id") @db.Uuid
+  medicationStatementId   String?                     @map("medication_statement_id") @db.Uuid
+  revisionNumber          Int                         @map("revision_number")
+  previousRevisionId      String?                     @map("previous_revision_id") @db.Uuid
+  state                   ClinicalRecordRevisionState @default(DRAFT)
+  content                 Json
+  isPrivate               Boolean                     @default(true) @map("is_private")
+  amendmentReasonCategory String?                     @map("amendment_reason_category") @db.VarChar(100)
+  integrityHash           String?                     @map("integrity_hash") @db.Char(64)
+  authoredAt              DateTime                    @default(now()) @map("authored_at") @db.Timestamptz(3)
+  authoredByUserId        String?                     @map("authored_by_user_id") @db.Uuid
+  signedAt                DateTime?                   @map("signed_at") @db.Timestamptz(3)
+  signedByUserId          String?                     @map("signed_by_user_id") @db.Uuid
+  createdAt               DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  diagnosis               Diagnosis?                  @relation(fields: [diagnosisId], references: [id], onDelete: Restrict)
+  allergyRecord           AllergyRecord?              @relation(fields: [allergyRecordId], references: [id], onDelete: Restrict)
+  conditionRecord         ConditionRecord?            @relation(fields: [conditionRecordId], references: [id], onDelete: Restrict)
+  medicationStatement     MedicationStatement?        @relation(fields: [medicationStatementId], references: [id], onDelete: Restrict)
+  previousRevision        ClinicalRecordRevision?     @relation("ClinicalRecordRevisionPredecessor", fields: [previousRevisionId], references: [id], onDelete: Restrict)
+  successorRevisions      ClinicalRecordRevision[]    @relation("ClinicalRecordRevisionPredecessor")
+
+  @@unique([diagnosisId, revisionNumber], map: "clinical_record_revisions_diagnosis_revision_key")
+  @@unique([allergyRecordId, revisionNumber], map: "clinical_record_revisions_allergy_revision_key")
+  @@unique([conditionRecordId, revisionNumber], map: "clinical_record_revisions_condition_revision_key")
+  @@unique([medicationStatementId, revisionNumber], map: "clinical_record_revisions_medication_revision_key")
+  @@index([diagnosisId, createdAt, id], map: "clinical_record_revisions_diagnosis_created_idx")
+  @@index([allergyRecordId, createdAt, id], map: "clinical_record_revisions_allergy_created_idx")
+  @@index([conditionRecordId, createdAt, id], map: "clinical_record_revisions_condition_created_idx")
+  @@index([medicationStatementId, createdAt, id], map: "clinical_record_revisions_medication_created_idx")
+  @@map("clinical_record_revisions")
 }
 
 model PatientAccessAudit {
