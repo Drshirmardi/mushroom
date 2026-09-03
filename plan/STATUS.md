@@ -7,11 +7,11 @@
 ## وضعیت کلی
 
 - آخرین به‌رورسانی: `2026-09-02 21:38 +03:30`
-- Milestone فعال: `Milestone B — DONE (CLOSED)`
-- فاز فعال: ندارد؛ `Phase 05` بسته شده و `Phase 06` هنوز شروع نشده است.
-- وضعیت فاز فعال: ندارد
+- Milestone فعال: `Milestone C — IN_PROGRESS`
+- فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
-- task فعال: ندارد
+- task فعال: ندارد؛ `F06-T02` واجد شرایط بعدی و هنوز unclaimed است.
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -39,7 +39,7 @@
 - [x] `Phase 03` — Assessment Engine & Booking Eligibility — `DONE`
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
-- [ ] `Phase 06` — Encounter & Clinical Workspace — `NOT_STARTED`
+- [ ] `Phase 06` — Encounter & Clinical Workspace — `IN_PROGRESS`
 - [ ] `Phase 07` — Prescription & Treatment — `NOT_STARTED`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
@@ -73,6 +73,11 @@
 
 ## وضعیت taskهای فاز فعال
 
+- `F06-T01` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T02` — `UNCLAIMED`؛ پیش‌نیاز F06-T01 پاس شده است.
+
+### وضعیت تاریخی Phase 05
+
 - `F05-T01` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T02` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
 - `F05-T03` — `DONE`؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md)
@@ -104,6 +109,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B01` — `DONE`
+
+- `F06-T01` پس از freeze قرارداد policy داده بالینی، بررسی traceability با roadmap/standards/
+  authorization/audit و review coordinator پذیرفته شد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T02`؛ هنوز claim نشده است.
 
 `F05-CLOSE` — `DONE (CLOSED)`
 

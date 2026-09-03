@@ -9,14 +9,16 @@ batch/task is active.
 **Alternatives considered**: Regeneration, decomposition, reordering, pre-claiming, or counting
 this adoption as progress are rejected.
 
-## Decision: Leave legal clinical-record policy to `F06-T01`
+## Decision: Freeze the approved legal clinical-record policy in `F06-T01`
 
-**Rationale**: The first roadmap task owns retention, patient visibility, signing, and amendment
-policy. Adoption does not choose retention duration, visibility categories, sign-off semantics,
-amendment mechanics, schemas, routes, or permissions.
+**Rationale**: The approved policy contract defines flexible dashboard editing over immutable
+historical revisions, separate save/sign/publish operations, configurable permission plus
+resource-level authorization, private-by-default clinical content, a 10-year configurable
+engineering default, and explicit legal-compliance confirmations.
 
-**Alternatives considered**: A speculative retention schedule, access matrix, amendment workflow,
-or DTO catalog is rejected as premature design.
+**Alternatives considered**: Direct overwrite of signed records, role-only clinical authority,
+automatic patient publication, and representing engineering defaults as legal compliance are
+rejected.
 
 ## Decision: Preserve reviewed clinical-record conversion boundary
 

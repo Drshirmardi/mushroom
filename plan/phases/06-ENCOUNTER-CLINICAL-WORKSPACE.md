@@ -23,7 +23,7 @@
 
 ## Taskها
 
-- [ ] `F06-T01` — policy حقوقی retention، patient visibility، sign و amendment
+- [x] `F06-T01` — policy حقوقی retention، patient visibility، sign و amendment
 - [ ] `F06-T02` — قرارداد تبدیل intake self-reported به clinical record reviewed
 - [ ] `F06-T03` — migration encounter/clinical core/audit
 - [ ] `F06-T04` — start/complete encounter از appointment معتبر

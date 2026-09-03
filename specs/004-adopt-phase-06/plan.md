@@ -28,8 +28,8 @@ do not promote self-reported intake automatically; enforce resource-level author
 protect clinical content and PII; retain single-writer ownership for migration, OpenAPI/client,
 authentication, and shared paths.
 
-**Scale/Scope**: Twelve stable tasks, `F06-T01`–`F06-T12`; Phase 06 is `NOT_STARTED` and
-`F06-T01` is unclaimed.
+**Scale/Scope**: Twelve stable tasks, `F06-T01`–`F06-T12`; Phase 06 is `IN_PROGRESS`, `F06-T01`
+is complete, and `F06-T02` is the next unclaimed task.
 
 ## Constitution Check
 
@@ -39,8 +39,9 @@ authentication, and shared paths.
   change.
 - Existing architecture and boundaries remain unchanged; no dependency or service is introduced.
 - IDs, source order, prerequisite, models, UI scope, and exit rules are copied without redesign.
-- `F06-T01` remains the legal-policy contract gate; exact retention, visibility, signing, and
-  amendment policy are not pre-decided.
+- `F06-T01` freezes the approved legal/clinical-data product policy in
+  `plan/contracts/clinical-record-policy-v1.md`; jurisdiction-dependent confirmation remains
+  explicitly open.
 - `F06-T02` remains the self-reported-to-reviewed-clinical-record contract gate; `F06-T03` owns
   persistence; `F06-T11` owns contract/client synchronization and cross-cutting verification.
 - Roadmap-owned verification remains roadmap-owned; every task stays unchecked until its own

@@ -1,14 +1,15 @@
 # Phase 06 Contract Adoption
 
-This maps existing Phase 06 capabilities but does not freeze endpoint paths, request/response
-schemas, exact retention periods, visibility categories, sign/amendment behavior, clinical-note
-fields, audit schema, permissions, or client types.
+This maps existing Phase 06 capabilities. Endpoint paths, request/response schemas, clinical-note
+fields, audit schema, concrete permission assignments, and client types remain unfrozen. The
+approved `F06-T01` policy is authoritative at
+[`plan/contracts/clinical-record-policy-v1.md`](../../../plan/contracts/clinical-record-policy-v1.md).
 
 ## Legal and Clinical-Classification Freeze Boundary
 
 | Task | Required boundary |
 |---|---|
-| `F06-T01` | Legal retention, patient visibility, signing, and amendment policy. |
+| `F06-T01` | Approved clinical-record policy: retention default/legal boundary, visibility, signing, append-only revisions, amendment, publication, and configurable authorization. |
 | `F06-T02` | Self-reported intake conversion to reviewed clinical record. |
 | `F06-T03` | Encounter, clinical-core, and audit migration boundary. |
 | `F06-T04` | Start/complete an encounter from a valid appointment without duplicate encounter creation. |

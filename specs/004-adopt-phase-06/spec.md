@@ -3,7 +3,7 @@
 **Feature Branch**: `codex/phase-06-encounter-clinical-workspace`
 
 **Created**: 2026-09-03
-**Status**: Phase 06 is `NOT_STARTED`. The authoritative live state remains
+**Status**: Phase 06 is `IN_PROGRESS`; `F06-T01` is complete. The authoritative live state remains
 [`plan/STATUS.md`](../../plan/STATUS.md).
 
 **Input**: Adopt the authoritative Phase 06 roadmap without changing its scope, IDs, ordering,
@@ -106,8 +106,10 @@ recorded only in the authoritative roadmap and task evidence.
   split, merge, rename, reorder, claim, or complete it.
 - **FR-003**: Adoption MUST NOT activate Phase 06, modify implementation, migrations, generated
   clients, Phase 05 files, or unrelated files.
-- **FR-004 (`F06-T01`)**: The legal policy for retention, patient visibility, signing, and
-  amendment MUST be established before dependent clinical-record work.
+- **FR-004 (`F06-T01`)**: The approved policy at
+  [`plan/contracts/clinical-record-policy-v1.md`](../../plan/contracts/clinical-record-policy-v1.md)
+  establishes retention, patient visibility, signing, amendment, revision-based editing,
+  publication, configurable authorization, and legal-compliance boundaries before dependent work.
 - **FR-005 (`F06-T02`)**: The conversion boundary from self-reported intake to a reviewed
   clinical record MUST be defined without treating self-report as a clinical fact automatically.
 - **FR-006 (`F06-T03`)**: Persistence MUST cover the roadmap encounter, clinical-core, and audit
@@ -162,5 +164,5 @@ recorded only in the authoritative roadmap and task evidence.
 - Phase 05 remains the completed predecessor and valid-appointment authority.
 - The source declares list order but no individual `Depends on` fields or batch map; this adoption
   preserves that fact and invents no dependency graph.
-- Exact retention rules, visibility categories, sign/amendment behavior, fields, schemas, routes,
-  and permissions remain for their owning roadmap tasks.
+- Exact fields, schemas, routes, and permission assignments remain for their owning roadmap tasks;
+  `F06-T01` policy is frozen in the authoritative clinical-record policy contract.
