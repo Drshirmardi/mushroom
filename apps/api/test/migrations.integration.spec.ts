@@ -150,6 +150,17 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'encounters',
         'clinical_notes',
         'clinical_note_revisions',
+        'prescriptions',
+        'prescription_revisions',
+        'prescription_items',
+        'prescription_safety_acknowledgements',
+        'treatment_plans',
+        'treatment_medications',
+        'exercise_plans',
+        'nutrition_plans',
+        'treatment_tasks',
+        'medication_adherence_logs',
+        'treatment_progress_events',
         'diagnoses',
         'allergy_records',
         'condition_records',
@@ -179,8 +190,11 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'doctor_services',
         'doctor_specialties',
         'encounters',
+        'exercise_plans',
         'login_attempts',
+        'medication_adherence_logs',
         'medication_statements',
+        'nutrition_plans',
         'operational_activities',
         'patient_access_audits',
         'patient_assessment_submissions',
@@ -188,11 +202,19 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'patient_medical_intake_revisions',
         'patient_medical_intakes',
         'patient_profiles',
+        'prescription_items',
+        'prescription_revisions',
+        'prescription_safety_acknowledgements',
+        'prescriptions',
         'queue_entries',
         'roles',
         'services',
         'sessions',
         'specialties',
+        'treatment_medications',
+        'treatment_plans',
+        'treatment_progress_events',
+        'treatment_tasks',
         'user_profiles',
         'user_roles',
         'users',
@@ -413,6 +435,33 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         { typname: 'patient_access_action', value: 'EXPORT' },
       ]);
 
+      const phaseSevenEnums = await smokeClient.query<{
+        typname: string;
+        value: string;
+      }>(`
+        SELECT pg_type.typname, pg_enum.enumlabel AS value
+        FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+        WHERE pg_type.typname = ANY($1::text[])
+        ORDER BY pg_type.typname, pg_enum.enumsortorder
+      `, [[
+        'prescription_revision_state',
+        'treatment_plan_state',
+        'treatment_task_state',
+      ]]);
+      expect(phaseSevenEnums.rows).toEqual([
+        { typname: 'prescription_revision_state', value: 'DRAFT' },
+        { typname: 'prescription_revision_state', value: 'ISSUED' },
+        { typname: 'prescription_revision_state', value: 'VOIDED' },
+        { typname: 'treatment_plan_state', value: 'DRAFT' },
+        { typname: 'treatment_plan_state', value: 'ACTIVE' },
+        { typname: 'treatment_plan_state', value: 'COMPLETED' },
+        { typname: 'treatment_plan_state', value: 'VOIDED' },
+        { typname: 'treatment_task_state', value: 'SCHEDULED' },
+        { typname: 'treatment_task_state', value: 'COMPLETED' },
+        { typname: 'treatment_task_state', value: 'CANCELLED' },
+      ]);
+
       const phaseFourTimestamps = await smokeClient.query<{ data_type: string }>(`
         SELECT data_type
         FROM information_schema.columns
@@ -554,6 +603,79 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       `, [userId, assessmentVersionId]);
       const patientId = patient.rows[0]?.id;
       expect(patientId).toBeDefined();
+
+      const phaseSevenPrescription = await smokeClient.query<{
+        id: string;
+      }>(`
+        INSERT INTO prescriptions (id, clinic_id, patient_id, updated_at)
+        SELECT gen_random_uuid(), clinic_id, $1, CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1
+        RETURNING id
+      `, [patientId]);
+      const prescriptionId = phaseSevenPrescription.rows[0]?.id;
+      expect(prescriptionId).toBeDefined();
+
+      const phaseSevenRevision = await smokeClient.query<{ id: string }>(`
+        INSERT INTO prescription_revisions (
+          id, prescription_id, revision_number, integrity_hash
+        ) VALUES (gen_random_uuid(), $1, 1, repeat('a', 64))
+        RETURNING id
+      `, [prescriptionId]);
+      const prescriptionRevisionId = phaseSevenRevision.rows[0]?.id;
+      expect(prescriptionRevisionId).toBeDefined();
+
+      await smokeClient.query(`
+        INSERT INTO prescription_items (
+          id, prescription_revision_id, position, medication_name
+        ) VALUES (gen_random_uuid(), $1, 1, 'داروی آزمایشی')
+      `, [prescriptionRevisionId]);
+      await expect(smokeClient.query(`
+        INSERT INTO prescription_items (
+          id, prescription_revision_id, position, medication_name
+        ) VALUES (gen_random_uuid(), $1, 1, 'داروی تکراری')
+      `, [prescriptionRevisionId])).rejects.toMatchObject({ code: '23505' });
+
+      const phaseSevenTreatmentPlan = await smokeClient.query<{ id: string }>(`
+        INSERT INTO treatment_plans (id, clinic_id, patient_id, updated_at)
+        SELECT gen_random_uuid(), clinic_id, $1, CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1
+        RETURNING id
+      `, [patientId]);
+      const treatmentPlanId = phaseSevenTreatmentPlan.rows[0]?.id;
+      expect(treatmentPlanId).toBeDefined();
+
+      const phaseSevenMedication = await smokeClient.query<{ id: string }>(`
+        INSERT INTO treatment_medications (id, treatment_plan_id, name, updated_at)
+        VALUES (gen_random_uuid(), $1, 'داروی برنامه درمانی', CURRENT_TIMESTAMP)
+        RETURNING id
+      `, [treatmentPlanId]);
+      const treatmentMedicationId = phaseSevenMedication.rows[0]?.id;
+      expect(treatmentMedicationId).toBeDefined();
+
+      const phaseSevenTask = await smokeClient.query<{ id: string }>(`
+        INSERT INTO treatment_tasks (id, treatment_plan_id, kind, scheduled_for, updated_at)
+        VALUES (gen_random_uuid(), $1, 'MEDICATION', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        RETURNING id
+      `, [treatmentPlanId]);
+      const treatmentTaskId = phaseSevenTask.rows[0]?.id;
+      expect(treatmentTaskId).toBeDefined();
+
+      await smokeClient.query(`
+        INSERT INTO medication_adherence_logs (
+          id, treatment_medication_id, treatment_task_id, idempotency_key
+        ) VALUES (gen_random_uuid(), $1, $2, 'phase-seven-adherence-key')
+      `, [treatmentMedicationId, treatmentTaskId]);
+      await expect(smokeClient.query(`
+        INSERT INTO medication_adherence_logs (
+          id, treatment_medication_id, treatment_task_id, idempotency_key
+        ) VALUES (gen_random_uuid(), $1, $2, 'phase-seven-adherence-key')
+      `, [treatmentMedicationId, treatmentTaskId])).rejects.toMatchObject({ code: '23505' });
+
+      await expect(smokeClient.query(`
+        INSERT INTO treatment_progress_events (
+          id, treatment_plan_id, treatment_task_id, event_type
+        ) VALUES (gen_random_uuid(), $1, gen_random_uuid(), 'TASK_COMPLETED')
+      `, [treatmentPlanId])).rejects.toMatchObject({ code: '23503' });
 
       const doctor = await smokeClient.query<{ id: string }>(`
         INSERT INTO doctor_profiles (id, clinic_id, display_name, updated_at)

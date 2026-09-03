@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 22:08 +03:30`
+- آخرین به‌رورسانی: `2026-09-04 03:18 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 07 — Prescription & Treatment`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد
-- task فعال: ندارد
-- blocker فعال: ندارد
+- batch فعال: `ندارد`
+- task فعال: `ندارد؛ F07-T03 واجد شرایط است اما claim نشده است`
+- blocker فعال: ندارد؛ F07-T02 با migration clean/shadow isolated تکمیل شد. Phase 07 همچنان در حال اجرا است.
 
 ## پیشرفت کلان
 
@@ -79,15 +79,39 @@ Completed at: `2026-09-03 23:24 +03:30`
 Status: `DONE`
 Scope: repository-baseline reconciliation discovered by `F07-T02`; represent the two existing `clinical_record_revisions` user foreign keys and its database-generated UUID default in the Prisma schema.
 Owned paths: `apps/api/prisma/schema.prisma`, `apps/api/prisma.config.ts`, `apps/api/.env.example`, `plan/STATUS.md`, `plan/logs/phase-06.md`
-Excluded: all existing migration files, any 14-constraint compatibility migration, Phase 07 migration generation, and local database mutation.
+Excluded: all existing migration files, any 14-constraint compatibility migration, Phase 07 migration generation, local database mutation, and `F07-T03`.
 Expected verification: isolated full migration replay and zero-drift diff against the corrected Phase 06 schema, Prisma validate/generate, focused Phase 06 clinical persistence/revision tests, and diff/whitespace validation.
 
 Result: the Prisma schema now represents both existing nullable user foreign keys and the database-generated UUID default. All 18 committed migrations replayed in isolation; migration-history → corrected committed schema produced an empty diff; Prisma validate/generate, 5 focused clinical revision/reconciliation tests, and 2 empty-database migration/seed smoke tests passed. No migration was added or changed. Evidence: [`logs/phase-06.md`](logs/phase-06.md).
 
+## آخرین batch تکمیل‌شده — F07-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-03 22:20 +03:30`
+Phase: `Phase 07 — Prescription & Treatment`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/prescription-treatment-policy-v1.md`
+
+Tasks:
+
+- Task ID: `F07-T02`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F07-T01 DONE`
+  Scope: migration prescription/treatment/task/adherence
+  Owned paths: `apps/api/prisma.config.ts`, `apps/api/.env.example`, `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/20260903222000_phase_07_prescription_treatment_foundation/migration.sql`, `apps/api/test/migrations.integration.spec.ts`, `plan/logs/phase-07.md`, `plan/STATUS.md`, `plan/phases/07-PRESCRIPTION-TREATMENT.md`, `specs/005-adopt-phase-07/{data-model.md,contracts/phase-07-adoption.md,tasks.md}`
+  Shared/exclusive resource: `Prisma schema, migration, migration integration test`
+  Expected verification: Prisma validation/generation, empty-database migration smoke, focused migration integration assertions, `git diff --check`
+  Result: a generated-only Phase 07 foundation migration was reviewed, applied to the clean reconstructed local database, and verified with isolated shadow, fresh PostgreSQL smoke, real constraint exercise, and Phase 06/API regression checks. The original database and verified backups remain rollback protection. Evidence: `plan/logs/phase-07.md`.
+
 ## وضعیت taskهای Phase 07
 
 - `F07-T01` — `DONE`؛ approved issuance-policy baseline and verification: [`contracts/prescription-treatment-policy-v1.md`](contracts/prescription-treatment-policy-v1.md), evidence: [`logs/phase-07.md`](logs/phase-07.md).
-- batch بعدی واجد شرایط: `F07-B02 — F07-T02`؛ هنوز claim نشده است.
+- `F07-T02` — `DONE`؛ migration prescription/treatment/task/adherence with clean local switchover verification: [`logs/phase-07.md`](logs/phase-07.md).
+
+## batch بعدی واجد شرایط
+
+`F07-B03` — `F07-T03` — prescription create/draft/issue/revision API. Not claimed or started; it remains serialized after the accepted F07-T02 persistence foundation.
 
 ## وضعیت taskهای فاز پیشین
 

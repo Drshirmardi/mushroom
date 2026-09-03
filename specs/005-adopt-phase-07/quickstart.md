@@ -1,6 +1,6 @@
 # Phase 07 Validation Quickstart
 
-This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` is complete and this guide does not claim or start later tasks.
+This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` and `F07-T02` are complete and this guide does not claim or start later tasks.
 
 ## Prerequisites
 
