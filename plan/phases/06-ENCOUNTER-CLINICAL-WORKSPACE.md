@@ -25,7 +25,7 @@
 
 - [x] `F06-T01` — policy حقوقی retention، patient visibility، sign و amendment
 - [x] `F06-T02` — قرارداد تبدیل intake self-reported به clinical record reviewed
-- [ ] `F06-T03` — migration encounter/clinical core/audit
+- [x] `F06-T03` — migration encounter/clinical core/audit
 - [ ] `F06-T04` — start/complete encounter از appointment معتبر
 - [ ] `F06-T05` — note revision با optimistic concurrency و private clinician note
 - [ ] `F06-T06` — diagnosis/allergy/condition/medication reconciliation

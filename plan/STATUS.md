@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 18:18 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 18:37 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
-- task فعال: ندارد؛ `F06-T03` واجد شرایط بعدی و هنوز unclaimed است.
+- task فعال: ندارد؛ `F06-T04` واجد شرایط بعدی و هنوز unclaimed است.
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -75,7 +75,8 @@
 
 - `F06-T01` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T02` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
-- `F06-T03` — `UNCLAIMED`؛ ترتیب roadmap پس از F06-T02 است.
+- `F06-T03` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T04` — `UNCLAIMED`؛ ترتیب roadmap پس از F06-T03 است.
 
 ### وضعیت تاریخی Phase 05
 
@@ -110,6 +111,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B03` — `DONE`
+
+- `F06-T03` persistence افزایشی encounter، clinical core، source provenance و patient access audit
+  را با migration/constraint و smoke PostgreSQL واقعی پذیرفته کرد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T04`؛ هنوز claim نشده است.
 
 `F06-B02` — `DONE`
 

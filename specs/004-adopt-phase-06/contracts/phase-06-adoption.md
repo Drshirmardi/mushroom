@@ -11,7 +11,7 @@ approved `F06-T01` policy is authoritative at
 |---|---|
 | `F06-T01` | Approved clinical-record policy: retention default/legal boundary, visibility, signing, append-only revisions, amendment, publication, and configurable authorization. |
 | `F06-T02` | [`clinical-intake-review-v1`](../../../plan/contracts/clinical-intake-review-v1.md): self-reported intake conversion to reviewed clinical record. |
-| `F06-T03` | Encounter, clinical-core, and audit migration boundary. |
+| `F06-T03` | Persisted encounter, clinical-core, source-provenance, and patient-access-audit boundary in `apps/api/prisma/migrations/20260903145457_phase_06_clinical_core/` and follow-on integrity migrations. |
 | `F06-T04` | Start/complete an encounter from a valid appointment without duplicate encounter creation. |
 | `F06-T05` | Note revision, optimistic concurrency, and private clinician-note boundary. |
 | `F06-T06` | Diagnosis, allergy, condition, and medication reconciliation. |

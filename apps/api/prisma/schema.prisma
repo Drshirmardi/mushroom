@@ -234,26 +234,70 @@ enum AppointmentStatusHistoryAction {
   @@map("appointment_status_history_action")
 }
 
+enum EncounterState {
+  IN_PROGRESS
+  COMPLETED
+  VOIDED
+
+  @@map("encounter_state")
+}
+
+enum ClinicalRecordState {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  SUPERSEDED
+  VOIDED
+
+  @@map("clinical_record_state")
+}
+
+enum ClinicalNoteRevisionState {
+  DRAFT
+  SIGNED
+  VOIDED
+
+  @@map("clinical_note_revision_state")
+}
+
+enum PatientAccessAction {
+  READ
+  CREATE
+  UPDATE
+  SIGN
+  AMEND
+  PUBLISH
+  EXPORT
+
+  @@map("patient_access_action")
+}
+
 model User {
-  id                          String                         @id @default(uuid()) @db.Uuid
-  phone                       String                         @unique(map: "users_phone_key") @db.VarChar(13)
-  status                      UserStatus                     @default(ACTIVE)
-  createdAt                   DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                   DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  credential                  Credential?
-  sessions                    Session[]
-  roles                       UserRole[]                     @relation("UserRoleUser")
-  assignedRoles               UserRole[]                     @relation("UserRoleAssignedBy")
-  loginAttempts               LoginAttempt[]
-  auditEvents                 AuditEvent[]                   @relation("AuditEventActor")
-  userProfile                 UserProfile?
-  patientProfile              PatientProfile?
-  doctorProfile               DoctorProfile?
-  recordedIntakeRevisions     PatientMedicalIntakeRevision[] @relation("IntakeRevisionRecordedBy")
-  acceptedConsentRecords      PatientConsentRecord[]         @relation("ConsentAcceptedBy")
-  withdrawnConsentRecords     PatientConsentRecord[]         @relation("ConsentWithdrawnBy")
-  publishedConsentPolicies    ConsentPolicyVersion[]         @relation("ConsentPolicyPublishedBy")
-  publishedAssessmentVersions AssessmentVersion[]            @relation("AssessmentVersionPublishedBy")
+  id                             String                         @id @default(uuid()) @db.Uuid
+  phone                          String                         @unique(map: "users_phone_key") @db.VarChar(13)
+  status                         UserStatus                     @default(ACTIVE)
+  createdAt                      DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  credential                     Credential?
+  sessions                       Session[]
+  roles                          UserRole[]                     @relation("UserRoleUser")
+  assignedRoles                  UserRole[]                     @relation("UserRoleAssignedBy")
+  loginAttempts                  LoginAttempt[]
+  auditEvents                    AuditEvent[]                   @relation("AuditEventActor")
+  userProfile                    UserProfile?
+  patientProfile                 PatientProfile?
+  doctorProfile                  DoctorProfile?
+  recordedIntakeRevisions        PatientMedicalIntakeRevision[] @relation("IntakeRevisionRecordedBy")
+  acceptedConsentRecords         PatientConsentRecord[]         @relation("ConsentAcceptedBy")
+  withdrawnConsentRecords        PatientConsentRecord[]         @relation("ConsentWithdrawnBy")
+  publishedConsentPolicies       ConsentPolicyVersion[]         @relation("ConsentPolicyPublishedBy")
+  publishedAssessmentVersions    AssessmentVersion[]            @relation("AssessmentVersionPublishedBy")
+  encountersStarted              Encounter[]                    @relation("EncounterStartedBy")
+  encountersCompleted            Encounter[]                    @relation("EncounterCompletedBy")
+  clinicalNoteRevisionAuthors    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionAuthoredBy")
+  clinicalNoteRevisionSigners    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionSignedBy")
+  clinicalNoteRevisionPublishers ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionPublishedBy")
+  patientAccessAudits            PatientAccessAudit[]           @relation("PatientAccessAuditActor")
 
   @@map("users")
 }
@@ -287,6 +331,7 @@ model Session {
   auditEvents             AuditEvent[]
   acceptedConsentRecords  PatientConsentRecord[]   @relation("ConsentAcceptedBySession")
   withdrawnConsentRecords PatientConsentRecord[]   @relation("ConsentWithdrawnBySession")
+  patientAccessAudits     PatientAccessAudit[]     @relation("PatientAccessAuditSession")
 
   @@index([userId, revokedAt, expiresAt], map: "sessions_user_active_idx")
   @@map("sessions")
@@ -387,6 +432,13 @@ model Clinic {
   appointmentHolds         AppointmentHold[]
   queueEntries             QueueEntry[]
   operationalActivities    OperationalActivity[]
+  encounters               Encounter[]
+  clinicalNotes            ClinicalNote[]
+  diagnoses                Diagnosis[]
+  allergyRecords           AllergyRecord[]
+  conditionRecords         ConditionRecord[]
+  medicationStatements     MedicationStatement[]
+  patientAccessAudits      PatientAccessAudit[]
 
   @@map("clinics")
 }
@@ -419,6 +471,13 @@ model PatientProfile {
   assessmentSubmissions   PatientAssessmentSubmission[]
   appointments            Appointment[]
   operationalActivities   OperationalActivity[]
+  encounters              Encounter[]
+  clinicalNotes           ClinicalNote[]
+  diagnoses               Diagnosis[]
+  allergyRecords          AllergyRecord[]
+  conditionRecords        ConditionRecord[]
+  medicationStatements    MedicationStatement[]
+  patientAccessAudits     PatientAccessAudit[]
 
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
@@ -438,6 +497,10 @@ model PatientMedicalIntake {
   patient                 PatientProfile                 @relation(fields: [patientId], references: [id], onDelete: Restrict)
   clinic                  Clinic                         @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   revisions               PatientMedicalIntakeRevision[]
+  diagnosisSources        Diagnosis[]                    @relation("DiagnosisSourceIntake")
+  allergySources          AllergyRecord[]                @relation("AllergySourceIntake")
+  conditionSources        ConditionRecord[]              @relation("ConditionSourceIntake")
+  medicationSources       MedicationStatement[]          @relation("MedicationSourceIntake")
 
   @@index([clinicId, submissionState, updatedAt], map: "patient_medical_intakes_clinic_state_updated_at_idx")
   @@map("patient_medical_intakes")
@@ -476,6 +539,10 @@ model PatientMedicalIntakeRevision {
   reportedPatient          PatientProfile                  @relation("IntakeRevisionReportedPatient", fields: [reportedPatientId], references: [id], onDelete: Restrict)
   recordedByUser           User?                           @relation("IntakeRevisionRecordedBy", fields: [recordedByUserId], references: [id], onDelete: SetNull)
   completedConsentRecord   PatientConsentRecord?           @relation(fields: [completedConsentRecordId], references: [id], onDelete: Restrict)
+  diagnosisSources         Diagnosis[]                     @relation("DiagnosisSourceRevision")
+  allergySources           AllergyRecord[]                 @relation("AllergySourceRevision")
+  conditionSources         ConditionRecord[]               @relation("ConditionSourceRevision")
+  medicationSources        MedicationStatement[]           @relation("MedicationSourceRevision")
 
   @@unique([intakeId, revisionNumber], map: "patient_medical_intake_revisions_intake_revision_key")
   @@unique([intakeId, mutationOperation, mutationKey], map: "patient_medical_intake_revisions_mutation_key")
@@ -622,6 +689,7 @@ model DoctorProfile {
   appointments      Appointment[]
   appointmentHolds  AppointmentHold[]
   queueEntries      QueueEntry[]
+  encounters        Encounter[]
 
   @@unique([id, clinicId], map: "doctor_profiles_id_clinic_key")
   @@index([clinicId, isActive, publicationStatus, displayName, id], map: "doctor_profiles_directory_idx")
@@ -762,37 +830,38 @@ model DoctorAvailabilityException {
 }
 
 model Appointment {
-  id                     String                         @id @default(uuid()) @db.Uuid
-  clinicId               String                         @map("clinic_id") @db.Uuid
-  patientId              String                         @map("patient_id") @db.Uuid
-  doctorServiceId        String                         @map("doctor_service_id") @db.Uuid
-  doctorId               String                         @map("doctor_id") @db.Uuid
-  startsAt               DateTime                       @map("starts_at") @db.Timestamptz(3)
-  endsAt                 DateTime                       @map("ends_at") @db.Timestamptz(3)
-  status                 AppointmentStatus              @default(PENDING)
-  priceAmount            Int                            @map("price_amount")
-  currency               String                         @default("IRR") @db.Char(3)
-  priceCapturedAt        DateTime                       @map("price_captured_at") @db.Timestamptz(3)
-  idempotencyActorUserId String?                        @map("idempotency_actor_user_id") @db.Uuid
-  idempotencyKey         String?                        @map("idempotency_key") @db.VarChar(255)
-  idempotencyRequestHash String?                        @map("idempotency_request_hash") @db.Char(64)
-  confirmedAt            DateTime?                      @map("confirmed_at") @db.Timestamptz(3)
-  checkedInAt            DateTime?                      @map("checked_in_at") @db.Timestamptz(3)
-  queuedAt               DateTime?                      @map("queued_at") @db.Timestamptz(3)
-  startedAt              DateTime?                      @map("started_at") @db.Timestamptz(3)
-  completedAt            DateTime?                      @map("completed_at") @db.Timestamptz(3)
-  cancelledAt            DateTime?                      @map("cancelled_at") @db.Timestamptz(3)
-  noShowAt               DateTime?                      @map("no_show_at") @db.Timestamptz(3)
-  cancelReason           String?                        @map("cancel_reason") @db.VarChar(500)
-  createdAt              DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt              DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                 Clinic                         @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  patient                PatientProfile                 @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
-  doctorService          DoctorService                  @relation(fields: [doctorServiceId, clinicId], references: [id, clinicId], onDelete: Restrict)
-  doctor                 DoctorProfile                  @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  id                     String                     @id @default(uuid()) @db.Uuid
+  clinicId               String                     @map("clinic_id") @db.Uuid
+  patientId              String                     @map("patient_id") @db.Uuid
+  doctorServiceId        String                     @map("doctor_service_id") @db.Uuid
+  doctorId               String                     @map("doctor_id") @db.Uuid
+  startsAt               DateTime                   @map("starts_at") @db.Timestamptz(3)
+  endsAt                 DateTime                   @map("ends_at") @db.Timestamptz(3)
+  status                 AppointmentStatus          @default(PENDING)
+  priceAmount            Int                        @map("price_amount")
+  currency               String                     @default("IRR") @db.Char(3)
+  priceCapturedAt        DateTime                   @map("price_captured_at") @db.Timestamptz(3)
+  idempotencyActorUserId String?                    @map("idempotency_actor_user_id") @db.Uuid
+  idempotencyKey         String?                    @map("idempotency_key") @db.VarChar(255)
+  idempotencyRequestHash String?                    @map("idempotency_request_hash") @db.Char(64)
+  confirmedAt            DateTime?                  @map("confirmed_at") @db.Timestamptz(3)
+  checkedInAt            DateTime?                  @map("checked_in_at") @db.Timestamptz(3)
+  queuedAt               DateTime?                  @map("queued_at") @db.Timestamptz(3)
+  startedAt              DateTime?                  @map("started_at") @db.Timestamptz(3)
+  completedAt            DateTime?                  @map("completed_at") @db.Timestamptz(3)
+  cancelledAt            DateTime?                  @map("cancelled_at") @db.Timestamptz(3)
+  noShowAt               DateTime?                  @map("no_show_at") @db.Timestamptz(3)
+  cancelReason           String?                    @map("cancel_reason") @db.VarChar(500)
+  createdAt              DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                 Clinic                     @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                PatientProfile             @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  doctorService          DoctorService              @relation(fields: [doctorServiceId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  doctor                 DoctorProfile              @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
   statusHistory          AppointmentStatusHistory[]
   queueEntry             QueueEntry?
   operationalActivities  OperationalActivity[]
+  encounter              Encounter?
 
   @@unique([id, clinicId], map: "appointments_id_clinic_key")
   @@unique([idempotencyActorUserId, idempotencyKey], map: "appointments_idempotency_key")
@@ -837,14 +906,14 @@ model AppointmentStatusHistory {
 }
 
 model QueueEntry {
-  id            String      @id @default(uuid()) @db.Uuid
-  clinicId      String      @map("clinic_id") @db.Uuid
-  appointmentId String      @unique(map: "queue_entries_appointment_id_key") @map("appointment_id") @db.Uuid
-  doctorId      String      @map("doctor_id") @db.Uuid
-  queuedAt      DateTime    @map("queued_at") @db.Timestamptz(3)
-  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
-  clinic        Clinic      @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  id            String        @id @default(uuid()) @db.Uuid
+  clinicId      String        @map("clinic_id") @db.Uuid
+  appointmentId String        @unique(map: "queue_entries_appointment_id_key") @map("appointment_id") @db.Uuid
+  doctorId      String        @map("doctor_id") @db.Uuid
+  queuedAt      DateTime      @map("queued_at") @db.Timestamptz(3)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic        Clinic        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
   doctor        DoctorProfile @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
 
   @@index([clinicId, doctorId, queuedAt, id], map: "queue_entries_next_idx")
@@ -865,4 +934,215 @@ model OperationalActivity {
 
   @@index([clinicId, createdAt, id], map: "operational_activities_feed_idx")
   @@map("operational_activities")
+}
+
+model Encounter {
+  id                   String                @id @default(uuid()) @db.Uuid
+  clinicId             String                @map("clinic_id") @db.Uuid
+  appointmentId        String                @unique(map: "encounters_appointment_id_key") @map("appointment_id") @db.Uuid
+  patientId            String                @map("patient_id") @db.Uuid
+  doctorId             String                @map("doctor_id") @db.Uuid
+  state                EncounterState        @default(IN_PROGRESS)
+  startedAt            DateTime              @default(now()) @map("started_at") @db.Timestamptz(3)
+  startedByUserId      String?               @map("started_by_user_id") @db.Uuid
+  completedAt          DateTime?             @map("completed_at") @db.Timestamptz(3)
+  completedByUserId    String?               @map("completed_by_user_id") @db.Uuid
+  voidedAt             DateTime?             @map("voided_at") @db.Timestamptz(3)
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic               Clinic                @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  appointment          Appointment           @relation(fields: [appointmentId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  patient              PatientProfile        @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  doctor               DoctorProfile         @relation(fields: [doctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  startedByUser        User?                 @relation("EncounterStartedBy", fields: [startedByUserId], references: [id], onDelete: SetNull)
+  completedByUser      User?                 @relation("EncounterCompletedBy", fields: [completedByUserId], references: [id], onDelete: SetNull)
+  clinicalNotes        ClinicalNote[]
+  diagnoses            Diagnosis[]
+  allergyRecords       AllergyRecord[]
+  conditionRecords     ConditionRecord[]
+  medicationStatements MedicationStatement[]
+
+  @@unique([id, clinicId], map: "encounters_id_clinic_key")
+  @@unique([appointmentId, clinicId], map: "encounters_appointment_clinic_key")
+  @@index([clinicId, patientId, startedAt, id], map: "encounters_patient_timeline_idx")
+  @@index([clinicId, doctorId, state, startedAt, id], map: "encounters_doctor_state_idx")
+  @@map("encounters")
+}
+
+model ClinicalNote {
+  id                             String                 @id @default(uuid()) @db.Uuid
+  clinicId                       String                 @map("clinic_id") @db.Uuid
+  patientId                      String                 @map("patient_id") @db.Uuid
+  encounterId                    String                 @map("encounter_id") @db.Uuid
+  currentRevisionNumber          Int                    @default(0) @map("current_revision_number")
+  currentEffectiveRevisionNumber Int?                   @map("current_effective_revision_number")
+  latestSignedRevisionNumber     Int?                   @map("latest_signed_revision_number")
+  currentPublishedRevisionNumber Int?                   @map("current_published_revision_number")
+  createdAt                      DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                         Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                        PatientProfile         @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  encounter                      Encounter              @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  revisions                      ClinicalNoteRevision[]
+
+  @@unique([id, clinicId], map: "clinical_notes_id_clinic_key")
+  @@index([clinicId, patientId, updatedAt, id], map: "clinical_notes_patient_updated_idx")
+  @@index([encounterId, createdAt, id], map: "clinical_notes_encounter_created_idx")
+  @@map("clinical_notes")
+}
+
+model ClinicalNoteRevision {
+  id                      String                    @id @default(uuid()) @db.Uuid
+  clinicalNoteId          String                    @map("clinical_note_id") @db.Uuid
+  revisionNumber          Int                       @map("revision_number")
+  previousRevisionId      String?                   @map("previous_revision_id") @db.Uuid
+  state                   ClinicalNoteRevisionState @default(DRAFT)
+  content                 String                    @db.Text
+  isPrivate               Boolean                   @default(true) @map("is_private")
+  patientSummary          String?                   @map("patient_summary") @db.Text
+  amendmentReasonCategory String?                   @map("amendment_reason_category") @db.VarChar(100)
+  integrityHash           String?                   @map("integrity_hash") @db.Char(64)
+  authoredAt              DateTime                  @default(now()) @map("authored_at") @db.Timestamptz(3)
+  authoredByUserId        String?                   @map("authored_by_user_id") @db.Uuid
+  signedAt                DateTime?                 @map("signed_at") @db.Timestamptz(3)
+  signedByUserId          String?                   @map("signed_by_user_id") @db.Uuid
+  publishedAt             DateTime?                 @map("published_at") @db.Timestamptz(3)
+  publishedByUserId       String?                   @map("published_by_user_id") @db.Uuid
+  createdAt               DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinicalNote            ClinicalNote              @relation(fields: [clinicalNoteId], references: [id], onDelete: Restrict)
+  previousRevision        ClinicalNoteRevision?     @relation("ClinicalNoteRevisionPredecessor", fields: [previousRevisionId], references: [id], onDelete: Restrict)
+  successorRevisions      ClinicalNoteRevision[]    @relation("ClinicalNoteRevisionPredecessor")
+  authoredByUser          User?                     @relation("ClinicalNoteRevisionAuthoredBy", fields: [authoredByUserId], references: [id], onDelete: SetNull)
+  signedByUser            User?                     @relation("ClinicalNoteRevisionSignedBy", fields: [signedByUserId], references: [id], onDelete: SetNull)
+  publishedByUser         User?                     @relation("ClinicalNoteRevisionPublishedBy", fields: [publishedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([clinicalNoteId, revisionNumber], map: "clinical_note_revisions_note_revision_key")
+  @@index([clinicalNoteId, createdAt, id], map: "clinical_note_revisions_note_created_idx")
+  @@map("clinical_note_revisions")
+}
+
+model Diagnosis {
+  id                             String                        @id @default(uuid()) @db.Uuid
+  clinicId                       String                        @map("clinic_id") @db.Uuid
+  patientId                      String                        @map("patient_id") @db.Uuid
+  encounterId                    String?                       @map("encounter_id") @db.Uuid
+  sourceIntakeId                 String?                       @map("source_intake_id") @db.Uuid
+  sourceIntakeRevisionId         String?                       @map("source_intake_revision_id") @db.Uuid
+  sourceIntakeRevisionNumber     Int?                          @map("source_intake_revision_number")
+  state                          ClinicalRecordState           @default(DRAFT)
+  currentRevisionNumber          Int                           @default(0) @map("current_revision_number")
+  latestSignedRevisionNumber     Int?                          @map("latest_signed_revision_number")
+  currentPublishedRevisionNumber Int?                          @map("current_published_revision_number")
+  createdAt                      DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                         Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                        PatientProfile                @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  sourceIntake                   PatientMedicalIntake?         @relation("DiagnosisSourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
+  sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("DiagnosisSourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, patientId, state, updatedAt, id], map: "diagnoses_patient_state_updated_idx")
+  @@index([sourceIntakeId, sourceIntakeRevisionId], map: "diagnoses_intake_source_idx")
+  @@map("diagnoses")
+}
+
+model AllergyRecord {
+  id                             String                        @id @default(uuid()) @db.Uuid
+  clinicId                       String                        @map("clinic_id") @db.Uuid
+  patientId                      String                        @map("patient_id") @db.Uuid
+  encounterId                    String?                       @map("encounter_id") @db.Uuid
+  sourceIntakeId                 String?                       @map("source_intake_id") @db.Uuid
+  sourceIntakeRevisionId         String?                       @map("source_intake_revision_id") @db.Uuid
+  sourceIntakeRevisionNumber     Int?                          @map("source_intake_revision_number")
+  state                          ClinicalRecordState           @default(DRAFT)
+  currentRevisionNumber          Int                           @default(0) @map("current_revision_number")
+  latestSignedRevisionNumber     Int?                          @map("latest_signed_revision_number")
+  currentPublishedRevisionNumber Int?                          @map("current_published_revision_number")
+  createdAt                      DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                         Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                        PatientProfile                @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  sourceIntake                   PatientMedicalIntake?         @relation("AllergySourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
+  sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("AllergySourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, patientId, state, updatedAt, id], map: "allergy_records_patient_state_updated_idx")
+  @@index([sourceIntakeId, sourceIntakeRevisionId], map: "allergy_records_intake_source_idx")
+  @@map("allergy_records")
+}
+
+model ConditionRecord {
+  id                             String                        @id @default(uuid()) @db.Uuid
+  clinicId                       String                        @map("clinic_id") @db.Uuid
+  patientId                      String                        @map("patient_id") @db.Uuid
+  encounterId                    String?                       @map("encounter_id") @db.Uuid
+  sourceIntakeId                 String?                       @map("source_intake_id") @db.Uuid
+  sourceIntakeRevisionId         String?                       @map("source_intake_revision_id") @db.Uuid
+  sourceIntakeRevisionNumber     Int?                          @map("source_intake_revision_number")
+  state                          ClinicalRecordState           @default(DRAFT)
+  currentRevisionNumber          Int                           @default(0) @map("current_revision_number")
+  latestSignedRevisionNumber     Int?                          @map("latest_signed_revision_number")
+  currentPublishedRevisionNumber Int?                          @map("current_published_revision_number")
+  createdAt                      DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                         Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                        PatientProfile                @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  sourceIntake                   PatientMedicalIntake?         @relation("ConditionSourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
+  sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("ConditionSourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, patientId, state, updatedAt, id], map: "condition_records_patient_state_updated_idx")
+  @@index([sourceIntakeId, sourceIntakeRevisionId], map: "condition_records_intake_source_idx")
+  @@map("condition_records")
+}
+
+model MedicationStatement {
+  id                             String                        @id @default(uuid()) @db.Uuid
+  clinicId                       String                        @map("clinic_id") @db.Uuid
+  patientId                      String                        @map("patient_id") @db.Uuid
+  encounterId                    String?                       @map("encounter_id") @db.Uuid
+  sourceIntakeId                 String?                       @map("source_intake_id") @db.Uuid
+  sourceIntakeRevisionId         String?                       @map("source_intake_revision_id") @db.Uuid
+  sourceIntakeRevisionNumber     Int?                          @map("source_intake_revision_number")
+  state                          ClinicalRecordState           @default(DRAFT)
+  currentRevisionNumber          Int                           @default(0) @map("current_revision_number")
+  latestSignedRevisionNumber     Int?                          @map("latest_signed_revision_number")
+  currentPublishedRevisionNumber Int?                          @map("current_published_revision_number")
+  createdAt                      DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                         Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                        PatientProfile                @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  encounter                      Encounter?                    @relation(fields: [encounterId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  sourceIntake                   PatientMedicalIntake?         @relation("MedicationSourceIntake", fields: [sourceIntakeId], references: [id], onDelete: Restrict)
+  sourceIntakeRevision           PatientMedicalIntakeRevision? @relation("MedicationSourceRevision", fields: [sourceIntakeRevisionId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, patientId, state, updatedAt, id], map: "medication_statements_patient_state_updated_idx")
+  @@index([sourceIntakeId, sourceIntakeRevisionId], map: "medication_statements_intake_source_idx")
+  @@map("medication_statements")
+}
+
+model PatientAccessAudit {
+  id                 String              @id @default(uuid()) @db.Uuid
+  clinicId           String              @map("clinic_id") @db.Uuid
+  patientId          String              @map("patient_id") @db.Uuid
+  actorUserId        String?             @map("actor_user_id") @db.Uuid
+  actorSessionId     String?             @map("actor_session_id") @db.Uuid
+  action             PatientAccessAction
+  resourceType       String              @map("resource_type") @db.VarChar(100)
+  resourceId         String?             @map("resource_id") @db.Uuid
+  resourceRevisionId String?             @map("resource_revision_id") @db.Uuid
+  requestId          String?             @map("request_id") @db.VarChar(128)
+  correlationId      String?             @map("correlation_id") @db.VarChar(128)
+  ipAddress          String?             @map("ip_address") @db.Inet
+  metadata           Json                @default("{}")
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic             Clinic              @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient            PatientProfile      @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  actorUser          User?               @relation("PatientAccessAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorSession       Session?            @relation("PatientAccessAuditSession", fields: [actorSessionId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId, patientId, createdAt, id], map: "patient_access_audits_patient_created_idx")
+  @@index([actorUserId, createdAt, id], map: "patient_access_audits_actor_created_idx")
+  @@index([resourceType, resourceId, createdAt, id], map: "patient_access_audits_resource_created_idx")
+  @@map("patient_access_audits")
 }

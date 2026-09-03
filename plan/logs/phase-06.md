@@ -84,3 +84,58 @@ Known limitations:
 Next task:
 
 - `F06-T03` (unclaimed).
+
+## F06-T03 — migration encounter/clinical core/audit
+
+Task ID: F06-T03
+Completed at: 2026-09-03 18:37 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B03
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/prisma/schema.prisma`
+- `apps/api/prisma/migrations/20260903145457_phase_06_clinical_core/migration.sql`
+- `apps/api/prisma/migrations/20260903145600_phase_06_clinical_integrity/migration.sql`
+- `apps/api/prisma/migrations/20260903145700_phase_06_intake_revision_provenance/migration.sql`
+- `apps/api/test/migrations.integration.spec.ts`
+- `plan/STATUS.md`, `plan/phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md`, and
+  `plan/logs/phase-06.md`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,research.md,data-model.md,contracts/phase-06-adoption.md,tasks.md}`
+
+Migrations:
+
+- `20260903145457_phase_06_clinical_core` — encounter, note/revision, clinical-record roots, and
+  patient-access audit persistence.
+- `20260903145600_phase_06_clinical_integrity` — encounter lifecycle, signed/private-note,
+  publication, source-reference, and safe audit-metadata checks.
+- `20260903145700_phase_06_intake_revision_provenance` — restrictive source-intake-revision FKs.
+
+Tests run:
+
+- `prisma validate` and generated Prisma client → PASS
+- API typecheck → PASS
+- `prisma migrate deploy` and `prisma migrate status` on configured PostgreSQL → PASS
+- isolated empty-PostgreSQL migration smoke, including Phase 06 constraints → PASS (2 tests)
+- full API Vitest suite with configured PostgreSQL environment → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- appointment and encounter are separate, tenant-scoped resources with a database-enforced
+  one-encounter-per-appointment invariant and coherent lifecycle timestamps → PASS
+- controlled note roots/revisions support ordered history, private-by-default content, separate
+  signing/publication fields, and signing/publication integrity constraints → PASS
+- diagnosis, allergy, condition, and medication roots preserve clinic/patient/encounter scope and
+  optional immutable intake/revision provenance without automatic clinical conversion → PASS
+- patient access audit has actor/session/resource/revision/request/correlation scope and
+  object-shaped safe metadata; no clinical value or PII column was introduced → PASS
+
+Known limitations:
+
+- F06-T04 through F06-T08 own encounter workflow, note/reconciliation values, authorization
+  enforcement, audit event emission, and patient visibility; no endpoint or UI is introduced here.
+
+Next task:
+
+- `F06-T04` (unclaimed).

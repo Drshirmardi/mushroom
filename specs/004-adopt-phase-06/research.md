@@ -38,6 +38,18 @@ default-private patient visibility. It defers schema to `F06-T03` and reconcilia
 **Alternatives considered**: Auto-conversion on intake complete/read/edit, mutable source links,
 role-only conversion authority, and automatic clinical publication are rejected.
 
+## Decision: Persist F06-T03 clinical core and audit foundation
+
+**Rationale**: The additive Prisma migrations create a one-to-one appointment/encounter boundary,
+tenant-scoped clinical roots, immutable note-revision links, separate sign/publish fields,
+reviewed-record source provenance, and a PII-safe patient-access audit ledger. PostgreSQL checks
+enforce lifecycle timestamps, signed-note integrity, publication shape, source-reference shape,
+and audit metadata shape.
+
+**Alternatives considered**: Reusing appointments as encounters, automatic intake promotion,
+mutable signed note content, unscoped resource links, and operational audit metadata containing
+clinical values are rejected.
+
 ## Decision: Keep appointment and encounter boundaries distinct
 
 **Rationale**: Phase 05 is the completed appointment authority. Phase 06 starts/completes a
