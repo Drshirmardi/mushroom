@@ -3,7 +3,7 @@
 **Feature Branch**: `codex/phase-06-encounter-clinical-workspace`
 
 **Created**: 2026-09-03
-**Status**: Phase 06 is `IN_PROGRESS`; `F06-T01` is complete. The authoritative live state remains
+**Status**: Phase 06 is `IN_PROGRESS`; `F06-T01` and `F06-T02` are complete. The authoritative live state remains
 [`plan/STATUS.md`](../../plan/STATUS.md).
 
 **Input**: Adopt the authoritative Phase 06 roadmap without changing its scope, IDs, ordering,
@@ -110,8 +110,11 @@ recorded only in the authoritative roadmap and task evidence.
   [`plan/contracts/clinical-record-policy-v1.md`](../../plan/contracts/clinical-record-policy-v1.md)
   establishes retention, patient visibility, signing, amendment, revision-based editing,
   publication, configurable authorization, and legal-compliance boundaries before dependent work.
-- **FR-005 (`F06-T02`)**: The conversion boundary from self-reported intake to a reviewed
-  clinical record MUST be defined without treating self-report as a clinical fact automatically.
+- **FR-005 (`F06-T02`)**: The conversion boundary at
+  [`plan/contracts/clinical-intake-review-v1.md`](../../plan/contracts/clinical-intake-review-v1.md)
+  MUST preserve immutable self-reported intake provenance, require an explicit authorized human
+  review for a separate clinical output, and never treat self-report as a clinical fact
+  automatically.
 - **FR-006 (`F06-T03`)**: Persistence MUST cover the roadmap encounter, clinical-core, and audit
   migration boundary.
 - **FR-007 (`F06-T04`)**: An encounter MUST start and complete from a valid appointment while
@@ -165,4 +168,4 @@ recorded only in the authoritative roadmap and task evidence.
 - The source declares list order but no individual `Depends on` fields or batch map; this adoption
   preserves that fact and invents no dependency graph.
 - Exact fields, schemas, routes, and permission assignments remain for their owning roadmap tasks;
-  `F06-T01` policy is frozen in the authoritative clinical-record policy contract.
+  `F06-T01` policy and `F06-T02` conversion boundary are frozen in their authoritative contracts.

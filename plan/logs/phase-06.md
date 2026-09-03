@@ -38,3 +38,49 @@ Known limitations:
 Next batch:
 
 - `F06-B02` — `F06-T02` (unclaimed).
+
+## F06-T02 — قرارداد تبدیل intake self-reported به clinical record reviewed
+
+Task ID: F06-T02
+Completed at: 2026-09-03 18:18 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B02
+Reviewed by: Codex /root
+Changed files:
+
+- `plan/contracts/clinical-intake-review-v1.md`
+- `plan/STATUS.md`
+- `plan/phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,research.md,data-model.md,contracts/phase-06-adoption.md,tasks.md}`
+- `plan/logs/phase-06.md`
+
+Migrations: none.
+
+Tests run:
+
+- Spec Kit prerequisite check with required tasks and artifacts → PASS
+- requirements checklist review: 10/10 checked → PASS
+- cross-artifact/constitution analysis: 12/12 roadmap IDs map one-to-one; no ordering or
+  implementation-boundary conflict → PASS
+- F06-T02 contract traceability and scope-boundary PowerShell check → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- self-reported intake remains immutable provenance and cannot automatically become a clinical
+  fact → PASS
+- a separately authorized human review creates or changes a later clinical output; no one-to-one
+  mapping, auto-copy, or role-only authority is permitted → PASS
+- source revision reference, optimistic concurrency, safe audit metadata, default-private
+  visibility, and separate save/sign/publish lifecycle are frozen → PASS
+- F06-T03 owns persistence and F06-T06 owns reconciliation; no migration, endpoint, UI,
+  generated client, or implementation source was changed → PASS
+
+Known limitations:
+
+- concrete clinical schema, permissions enforcement, reconciliation, patient views, and legal
+  jurisdiction confirmation remain with their owning later tasks.
+
+Next task:
+
+- `F06-T03` (unclaimed).

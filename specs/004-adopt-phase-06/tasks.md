@@ -27,7 +27,7 @@ infrastructure. No extra setup task is added.
 ## Phase 2: Policy, Clinical Conversion, and Persistence Foundation
 
 - [x] T001 F06-T01: policy حقوقی retention، patient visibility، sign و amendment
-- [ ] T002 F06-T02: قرارداد تبدیل intake self-reported به clinical record reviewed
+- [x] T002 F06-T02: قرارداد تبدیل intake self-reported به clinical record reviewed
 - [ ] T003 F06-T03: migration encounter/clinical core/audit
 
 ## Phase 3: Preserved Delivery Sequence — User Stories 1 and 2 (P1)

@@ -29,21 +29,21 @@ protect clinical content and PII; retain single-writer ownership for migration, 
 authentication, and shared paths.
 
 **Scale/Scope**: Twelve stable tasks, `F06-T01`–`F06-T12`; Phase 06 is `IN_PROGRESS`, `F06-T01`
-is complete, and `F06-T02` is the next unclaimed task.
+and `F06-T02` are complete, and `F06-T03` is the next unclaimed roadmap task.
 
 ## Constitution Check
 
 *GATE: Passed before research and after design.*
 
-- Documentation only: no source, migration, client, Phase 05, roadmap-status, claim, or checkbox
-  change.
+- F06-T02 is documentation-only: no source, migration, client, or Phase 05 change.
 - Existing architecture and boundaries remain unchanged; no dependency or service is introduced.
 - IDs, source order, prerequisite, models, UI scope, and exit rules are copied without redesign.
 - `F06-T01` freezes the approved legal/clinical-data product policy in
   `plan/contracts/clinical-record-policy-v1.md`; jurisdiction-dependent confirmation remains
   explicitly open.
-- `F06-T02` remains the self-reported-to-reviewed-clinical-record contract gate; `F06-T03` owns
-  persistence; `F06-T11` owns contract/client synchronization and cross-cutting verification.
+- `F06-T02` freezes the self-reported-to-reviewed-clinical-record contract gate;
+  `F06-T03` owns persistence; `F06-T11` owns contract/client synchronization and cross-cutting
+  verification.
 - Roadmap-owned verification remains roadmap-owned; every task stays unchecked until its own
   review/evidence gate passes.
 

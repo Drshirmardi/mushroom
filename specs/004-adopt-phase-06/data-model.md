@@ -18,22 +18,26 @@ clinician-note boundaries owned by `F06-T05`. Signing and amendment policy remai
 ## Diagnosis
 
 A reviewed clinical record reconciled under `F06-T06`; it is not an automatic conversion of
-self-reported intake.
+self-reported intake. Its source may retain an immutable intake-revision reference under
+`clinical-intake-review-v1`, but is a separate clinical resource.
 
 ## Allergy Record
 
 A reviewed clinical record reconciled under `F06-T06`; it is not an automatic conversion of
-self-reported intake.
+self-reported intake. Its source may retain an immutable intake-revision reference under
+`clinical-intake-review-v1`, but is a separate clinical resource.
 
 ## Condition Record
 
 A reviewed clinical record reconciled under `F06-T06`; it is not an automatic conversion of
-self-reported intake.
+self-reported intake. Its source may retain an immutable intake-revision reference under
+`clinical-intake-review-v1`, but is a separate clinical resource.
 
 ## Medication Statement
 
 A reviewed clinical record reconciled under `F06-T06`; it is not an automatic conversion of
-self-reported intake.
+self-reported intake. Its source may retain an immutable intake-revision reference under
+`clinical-intake-review-v1`, but is a separate clinical resource.
 
 ## Patient Access Audit
 

@@ -3,8 +3,8 @@
 ## Decision: Preserve the Phase 06 roadmap verbatim
 
 **Rationale**: The authoritative phase defines twelve stable IDs, models, UI scope, and exit
-rules. `plan/STATUS.md` confirms Phase 05 is `DONE (CLOSED)`, Phase 06 is `NOT_STARTED`, and no
-batch/task is active.
+rules. The initial adoption preserved the then-unstarted Phase 06; live state is always read from
+`plan/STATUS.md`.
 
 **Alternatives considered**: Regeneration, decomposition, reordering, pre-claiming, or counting
 this adoption as progress are rejected.
@@ -28,6 +28,15 @@ reconciliation work.
 
 **Alternatives considered**: Treating intake as a diagnosis, allergy, condition, or medication
 statement without review is rejected.
+
+## Decision: Freeze F06-T02 intake-review conversion contract
+
+**Rationale**: `clinical-intake-review-v1` records immutable source provenance, an explicit
+authorized human-review gate, separate clinical output, revision-based follow-on operations, and
+default-private patient visibility. It defers schema to `F06-T03` and reconciliation to `F06-T06`.
+
+**Alternatives considered**: Auto-conversion on intake complete/read/edit, mutable source links,
+role-only conversion authority, and automatic clinical publication are rejected.
 
 ## Decision: Keep appointment and encounter boundaries distinct
 

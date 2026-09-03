@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-02 21:38 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 18:18 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
-- task فعال: ندارد؛ `F06-T02` واجد شرایط بعدی و هنوز unclaimed است.
+- task فعال: ندارد؛ `F06-T03` واجد شرایط بعدی و هنوز unclaimed است.
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -74,7 +74,8 @@
 ## وضعیت taskهای فاز فعال
 
 - `F06-T01` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
-- `F06-T02` — `UNCLAIMED`؛ پیش‌نیاز F06-T01 پاس شده است.
+- `F06-T02` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T03` — `UNCLAIMED`؛ ترتیب roadmap پس از F06-T02 است.
 
 ### وضعیت تاریخی Phase 05
 
@@ -109,6 +110,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B02` — `DONE`
+
+- `F06-T02` قرارداد intake خوداظهاری به clinical record reviewed را با provenance immutable،
+  human review صریح، جداسازی clinical output، visibility private-by-default و مرزبندی taskهای
+  migration/reconciliation freeze کرد؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T03`؛ هنوز claim نشده است.
 
 `F06-B01` — `DONE`
 
