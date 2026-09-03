@@ -43,7 +43,7 @@ infrastructure. No extra setup task is added.
 - [x] T009 [US3] F06-T09: اتصال workspace dashboard و حذف placeholderهای scope
 - [x] T010 [US3] F06-T10: اتصال summary/history/health-record در app
 - [x] T011 [US3] F06-T11: OpenAPI/client، security، revision و browser E2E
-- [ ] T012 [US3] F06-T12: evidence
+- [x] T012 [US3] F06-T12: evidence
 
 ## Dependencies & Execution Order
 

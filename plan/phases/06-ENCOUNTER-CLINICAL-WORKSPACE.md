@@ -34,7 +34,7 @@
 - [x] `F06-T09` — اتصال workspace dashboard و حذف placeholderهای scope
 - [x] `F06-T10` — اتصال summary/history/health-record در app
 - [x] `F06-T11` — OpenAPI/client، security، revision و browser E2E
-- [ ] `F06-T12` — evidence
+- [x] `F06-T12` — evidence
 
 ## قواعد و معیار خروج
 

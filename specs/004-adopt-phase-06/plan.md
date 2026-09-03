@@ -28,8 +28,9 @@ do not promote self-reported intake automatically; enforce resource-level author
 protect clinical content and PII; retain single-writer ownership for migration, OpenAPI/client,
 authentication, and shared paths.
 
-**Scale/Scope**: Twelve stable tasks, `F06-T01`–`F06-T12`; Phase 06 is `IN_PROGRESS`,
-`F06-T01` through `F06-T11` are complete, and `F06-T12` is the next unclaimed roadmap task.
+**Scale/Scope**: Twelve stable tasks, `F06-T01`–`F06-T12`; Phase 06 is `READY_FOR_REVIEW` and
+all authoritative tasks are complete. Independent phase review remains required before Phase 06
+can be `DONE` or Phase 07 can begin.
 
 ## Constitution Check
 

@@ -524,3 +524,54 @@ Known limitations:
 Next task:
 
 - `F06-T12` (unclaimed).
+
+## F06-T12 — evidence
+
+Task ID: F06-T12
+Completed at: 2026-09-03 20:16 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B12
+Reviewed by: Codex /root
+Changed files:
+
+- `plan/{STATUS.md,phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md,logs/phase-06.md}`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations: none; the accepted F06-T03/F06-T06/F06-T08 migrations remain applied and verified.
+
+Tests run:
+
+- Spec Kit prerequisite check with required tasks → PASS
+- final cross-artifact/constitution analysis: 15 functional requirements, 6 buildable success
+  criteria, and all 12 authoritative roadmap tasks covered; no unmapped task, ordering conflict,
+  duplication, ambiguity, or constitution violation → PASS
+- non-destructive convergence assessment: implementation satisfies the completed Spec Kit scope;
+  no convergence task appended, so the one-to-one authoritative roadmap mapping is preserved → PASS
+- `pnpm --filter @sabz-zendegi/api test` → PASS (full API suite; 2 pre-existing persistence
+  checks skipped by their configured environment)
+- `pnpm --filter @sabz/app test` → PASS (8 files, 25 tests)
+- `pnpm --filter @sabz/dashboard test` → PASS (9 files, 32 tests)
+- `pnpm --filter @sabz-zendegi/api-client test` → PASS (1 file, 1 test)
+- `pnpm typecheck` → PASS (all workspace packages)
+- current app/dashboard production builds, F06-T11 targeted security/revision/OpenAPI checks, and
+  local browser gate → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- All twelve authoritative Phase 06 tasks are implemented, independently committed, checked in
+  source order, and synchronized with the phase checklist, live status, task log, and Spec Kit → PASS
+- Phase 06 exit rules are satisfied: appointment/encounter separation, reviewed intake provenance,
+  patient-safe publication, explicit tenant/resource clinical authority, audited revision workflow,
+  generated contracts, real app/dashboard wiring, and browser evidence → PASS
+- Phase 06 is `READY_FOR_REVIEW`; no new task, dependency, implementation scope, migration, or
+  Phase 07 work was added during evidence review → PASS
+
+Known limitations:
+
+- Independent Phase 06 closure review remains required before the phase can be marked `DONE` or
+  Phase 07 can be activated.
+
+Next action:
+
+- Independent Phase 06 review; `Phase 07` remains `NOT_STARTED`.
