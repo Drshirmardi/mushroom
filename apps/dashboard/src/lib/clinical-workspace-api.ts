@@ -1,27 +1,29 @@
-import { apiBaseUrl } from "@/lib/api";
+import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
-export type ClinicalRecordKind = "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
-export type ClinicalRevision = { id: string; revisionNumber: number; previousRevisionId: string | null; state: "DRAFT" | "SIGNED"; content: Record<string, unknown>; isPrivate: boolean; amendmentReasonCategory: string | null; authoredAt: string; authoredByUserId: string | null; signedAt: string | null; signedByUserId: string | null };
-export type ClinicalNoteRevision = Omit<ClinicalRevision, "content"> & { content: string; patientSummary: string | null; publishedAt: string | null; publishedByUserId: string | null };
-export type ClinicalWorkspace = {
-  patientId: string;
-  intakeSource: { intakeId: string; revisionId: string; revisionNumber: number } | null;
-  encounters: Array<{ id: string; appointmentId: string; state: string; startedAt: string; completedAt: string | null }>;
-  notes: Array<{ id: string; encounterId: string; currentRevision: number; currentEffectiveRevision: number | null; latestSignedRevision: number | null; currentPublishedRevision: number | null; revision: ClinicalNoteRevision | null }>;
-  records: Array<{ id: string; kind: ClinicalRecordKind; encounterId: string | null; state: string; currentRevision: number; latestSignedRevision: number | null; revision: ClinicalRevision | null }>;
-  timeline: Array<{ id: string; type: string; occurredAt: string; encounterId: string | null }>;
-};
+import { apiClient } from "@/lib/api";
+
+export type ClinicalRecordKind = components["schemas"]["ReconcileClinicalRecordDto"]["kind"];
+export type ClinicalRevision = components["schemas"]["ClinicalRecordRevisionResponseDto"];
+export type ClinicalNoteRevision = components["schemas"]["ClinicalNoteRevisionResponseDto"];
+export type ClinicalWorkspace = components["schemas"]["AdminClinicalWorkspaceResponseDto"];
+export type CreateClinicalNoteInput = components["schemas"]["CreateClinicalNoteDto"];
+export type SaveClinicalNoteInput = components["schemas"]["SaveClinicalNoteDto"];
+export type ReconcileClinicalRecordInput = components["schemas"]["ReconcileClinicalRecordDto"];
+export type ReviseClinicalRecordInput = components["schemas"]["ReviseClinicalRecordDto"];
 
 export class ClinicalWorkspaceApiError extends Error {
-  constructor(public readonly status: number, public readonly code: string | null = null) { super(code ?? "CLINICAL_WORKSPACE_REQUEST_FAILED"); }
+  constructor(public readonly status: number, public readonly code: string | null = null) {
+    super(code ?? "CLINICAL_WORKSPACE_REQUEST_FAILED");
+  }
 }
 
-async function request<T>(accessToken: string, path: string, init?: RequestInit): Promise<T> {
+const authorization = (accessToken: string) => ({ authorization: `Bearer ${accessToken}` });
+
+async function dataOrThrow<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   try {
-    const response = await fetch(new URL(path, apiBaseUrl), { ...init, headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json", ...(init?.headers ?? {}) } });
-    const data: unknown = await response.json().catch(() => null);
-    if (response.ok && data) return data as T;
-    const code = data && typeof data === "object" && "code" in data && typeof data.code === "string" ? data.code : null;
+    const { data, error, response } = await withRequestTimeout(request);
+    if (response.ok && data) return data;
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
     throw new ClinicalWorkspaceApiError(response.status, code);
   } catch (error) {
     if (error instanceof ClinicalWorkspaceApiError) throw error;
@@ -29,13 +31,34 @@ async function request<T>(accessToken: string, path: string, init?: RequestInit)
   }
 }
 
-const root = (patientId: string) => `/v1/admin/patients/${encodeURIComponent(patientId)}/clinical-workspace`;
+export const getClinicalWorkspace = (accessToken: string, patientId: string) => dataOrThrow<ClinicalWorkspace>(
+  apiClient.GET("/v1/admin/patients/{patientId}/clinical-workspace", { headers: authorization(accessToken), params: { path: { patientId } } }),
+);
 
-export function getClinicalWorkspace(accessToken: string, patientId: string) { return request<ClinicalWorkspace>(accessToken, root(patientId)); }
-export function createClinicalNote(accessToken: string, patientId: string, encounterId: string, input: { expectedRevision: number; content: string; isPrivate: boolean; patientSummary: string | null }) { return request(accessToken, `${root(patientId)}/encounters/${encodeURIComponent(encounterId)}/notes`, { method: "POST", body: JSON.stringify(input) }); }
-export function saveClinicalNote(accessToken: string, patientId: string, noteId: string, input: { expectedRevision: number; content: string; isPrivate: boolean; patientSummary: string | null; amendmentReasonCategory?: string | null }) { return request(accessToken, `${root(patientId)}/notes/${encodeURIComponent(noteId)}/revisions`, { method: "POST", body: JSON.stringify(input) }); }
-export function signClinicalNote(accessToken: string, patientId: string, noteId: string, revisionNumber: number, expectedRevision: number) { return request(accessToken, `${root(patientId)}/notes/${encodeURIComponent(noteId)}/sign`, { method: "POST", body: JSON.stringify({ revisionNumber, expectedRevision }) }); }
-export function publishClinicalNote(accessToken: string, patientId: string, noteId: string, revisionNumber: number, expectedRevision: number) { return request(accessToken, `${root(patientId)}/notes/${encodeURIComponent(noteId)}/publish`, { method: "POST", body: JSON.stringify({ revisionNumber, expectedRevision }) }); }
-export function reconcileClinicalRecord(accessToken: string, patientId: string, input: { kind: ClinicalRecordKind; encounterId?: string; sourceIntakeId: string; sourceIntakeRevisionId: string; sourceIntakeRevisionNumber: number; reviewedContent: Record<string, unknown> }) { return request(accessToken, `${root(patientId)}/records`, { method: "POST", body: JSON.stringify(input) }); }
-export function saveClinicalRecord(accessToken: string, patientId: string, kind: ClinicalRecordKind, recordId: string, input: { expectedRevision: number; reviewedContent: Record<string, unknown>; amendmentReasonCategory?: string | null }) { return request(accessToken, `${root(patientId)}/records/${kind}/${encodeURIComponent(recordId)}/revisions`, { method: "POST", body: JSON.stringify(input) }); }
-export function signClinicalRecord(accessToken: string, patientId: string, kind: ClinicalRecordKind, recordId: string, revisionNumber: number, expectedRevision: number) { return request(accessToken, `${root(patientId)}/records/${kind}/${encodeURIComponent(recordId)}/sign`, { method: "POST", body: JSON.stringify({ revisionNumber, expectedRevision }) }); }
+export const createClinicalNote = (accessToken: string, patientId: string, encounterId: string, body: CreateClinicalNoteInput) => dataOrThrow<components["schemas"]["ClinicalNoteResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/encounters/{encounterId}/notes", { headers: authorization(accessToken), params: { path: { patientId, encounterId } }, body }),
+);
+
+export const saveClinicalNote = (accessToken: string, patientId: string, noteId: string, body: SaveClinicalNoteInput) => dataOrThrow<components["schemas"]["ClinicalNoteResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/revisions", { headers: authorization(accessToken), params: { path: { patientId, noteId } }, body }),
+);
+
+export const signClinicalNote = (accessToken: string, patientId: string, noteId: string, revisionNumber: number, expectedRevision: number) => dataOrThrow<components["schemas"]["ClinicalNoteResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/sign", { headers: authorization(accessToken), params: { path: { patientId, noteId } }, body: { revisionNumber, expectedRevision } }),
+);
+
+export const publishClinicalNote = (accessToken: string, patientId: string, noteId: string, revisionNumber: number, expectedRevision: number) => dataOrThrow<components["schemas"]["ClinicalNoteResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/publish", { headers: authorization(accessToken), params: { path: { patientId, noteId } }, body: { revisionNumber, expectedRevision } }),
+);
+
+export const reconcileClinicalRecord = (accessToken: string, patientId: string, body: ReconcileClinicalRecordInput) => dataOrThrow<components["schemas"]["ClinicalRecordResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/records", { headers: authorization(accessToken), params: { path: { patientId } }, body }),
+);
+
+export const saveClinicalRecord = (accessToken: string, patientId: string, kind: ClinicalRecordKind, recordId: string, body: ReviseClinicalRecordInput) => dataOrThrow<components["schemas"]["ClinicalRecordResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/revisions", { headers: authorization(accessToken), params: { path: { patientId, kind, recordId } }, body }),
+);
+
+export const signClinicalRecord = (accessToken: string, patientId: string, kind: ClinicalRecordKind, recordId: string, revisionNumber: number, expectedRevision: number) => dataOrThrow<components["schemas"]["ClinicalRecordResponseDto"]>(
+  apiClient.POST("/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/sign", { headers: authorization(accessToken), params: { path: { patientId, kind, recordId } }, body: { revisionNumber, expectedRevision } }),
+);

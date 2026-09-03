@@ -42,7 +42,7 @@ infrastructure. No extra setup task is added.
 - [x] T008 [US3] F06-T08: resource-level authorization و audit read/write/export
 - [x] T009 [US3] F06-T09: اتصال workspace dashboard و حذف placeholderهای scope
 - [x] T010 [US3] F06-T10: اتصال summary/history/health-record در app
-- [ ] T011 [US3] F06-T11: OpenAPI/client، security، revision و browser E2E
+- [x] T011 [US3] F06-T11: OpenAPI/client، security، revision و browser E2E
 - [ ] T012 [US3] F06-T12: evidence
 
 ## Dependencies & Execution Order

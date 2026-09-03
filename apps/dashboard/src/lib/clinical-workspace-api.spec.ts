@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createApiClient } from "@sabz-zendegi/api-client";
 
 import { createClinicalNote, getClinicalWorkspace, publishClinicalNote, reconcileClinicalRecord, saveClinicalNote, saveClinicalRecord, signClinicalNote, signClinicalRecord } from "./clinical-workspace-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.stubGlobal("fetch", fetchMock);
-vi.mock("@/lib/api", () => ({ apiBaseUrl: "https://api.example.test" }));
+vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock as typeof fetch }) }));
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
 
 describe("dashboard clinical workspace API", () => {
@@ -20,7 +21,10 @@ describe("dashboard clinical workspace API", () => {
     await reconcileClinicalRecord("token", "patient", { kind: "DIAGNOSIS", sourceIntakeId: "intake", sourceIntakeRevisionId: "revision", sourceIntakeRevisionNumber: 1, reviewedContent: { label: "reviewed" } });
     await saveClinicalRecord("token", "patient", "DIAGNOSIS", "record", { expectedRevision: 1, reviewedContent: { label: "revised" } });
     await signClinicalRecord("token", "patient", "DIAGNOSIS", "record", 2, 2);
-    const requests = fetchMock.mock.calls.map(([request, init]) => ({ url: request as URL, init: init as RequestInit }));
+    const requests = fetchMock.mock.calls.map(([request, init]) => ({
+      url: new URL(request instanceof Request ? request.url : String(request)),
+      headers: request instanceof Request ? request.headers : new Headers((init as RequestInit | undefined)?.headers),
+    }));
     expect(requests.map(({ url }) => url.pathname)).toEqual([
       "/v1/admin/patients/patient/clinical-workspace",
       "/v1/admin/patients/patient/clinical-workspace/encounters/encounter/notes",
@@ -31,7 +35,7 @@ describe("dashboard clinical workspace API", () => {
       "/v1/admin/patients/patient/clinical-workspace/records/DIAGNOSIS/record/revisions",
       "/v1/admin/patients/patient/clinical-workspace/records/DIAGNOSIS/record/sign",
     ]);
-    expect(requests.every(({ init }) => (init.headers as Record<string, string>).authorization === "Bearer token")).toBe(true);
-    expect(requests.slice(1).every(({ init }) => (init.headers as Record<string, string>)["content-type"] === "application/json")).toBe(true);
+    expect(requests.every(({ headers }) => headers.get("authorization") === "Bearer token")).toBe(true);
+    expect(requests.slice(1).every(({ headers }) => headers.get("content-type") === "application/json")).toBe(true);
   });
 });

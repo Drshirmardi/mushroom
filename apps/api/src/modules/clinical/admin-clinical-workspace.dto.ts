@@ -8,11 +8,11 @@ export class CreateClinicalNoteDto {
   @ApiProperty({ minimum: 0 }) @Type(() => Number) @IsInt() @Min(0) expectedRevision!: number;
   @ApiProperty() @IsString() @IsNotEmpty() @MaxLength(50_000) content!: string;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isPrivate?: boolean;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_value, summary) => summary !== null) @IsString() @MaxLength(10_000) patientSummary?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @ValidateIf((_value, summary) => summary !== null) @IsString() @MaxLength(10_000) patientSummary?: string | null;
 }
 
 export class SaveClinicalNoteDto extends CreateClinicalNoteDto {
-  @ApiPropertyOptional({ maxLength: 120, nullable: true }) @IsOptional() @ValidateIf((_value, reason) => reason !== null) @IsString() @MaxLength(120) amendmentReasonCategory?: string | null;
+  @ApiPropertyOptional({ type: String, maxLength: 120, nullable: true }) @IsOptional() @ValidateIf((_value, reason) => reason !== null) @IsString() @MaxLength(120) amendmentReasonCategory?: string | null;
 }
 
 export class SignClinicalRevisionDto {
@@ -28,11 +28,11 @@ export class ReconcileClinicalRecordDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') sourceIntakeId!: string;
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') sourceIntakeRevisionId!: string;
   @ApiProperty({ minimum: 1 }) @Type(() => Number) @IsInt() @Min(1) sourceIntakeRevisionNumber!: number;
-  @ApiProperty({ type: Object }) @IsObject() reviewedContent!: Record<string, unknown>;
+  @ApiProperty({ type: Object, additionalProperties: true }) @IsObject() reviewedContent!: Record<string, unknown>;
 }
 
 export class ReviseClinicalRecordDto {
   @ApiProperty({ minimum: 1 }) @Type(() => Number) @IsInt() @Min(1) expectedRevision!: number;
-  @ApiProperty({ type: Object }) @IsObject() reviewedContent!: Record<string, unknown>;
-  @ApiPropertyOptional({ maxLength: 120, nullable: true }) @IsOptional() @ValidateIf((_value, reason) => reason !== null) @IsString() @MaxLength(120) amendmentReasonCategory?: string | null;
+  @ApiProperty({ type: Object, additionalProperties: true }) @IsObject() reviewedContent!: Record<string, unknown>;
+  @ApiPropertyOptional({ type: String, maxLength: 120, nullable: true }) @IsOptional() @ValidateIf((_value, reason) => reason !== null) @IsString() @MaxLength(120) amendmentReasonCategory?: string | null;
 }

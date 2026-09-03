@@ -1278,6 +1278,193 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/clinical/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List permitted patient clinical timeline */
+        get: operations["patientClinicalTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/clinical/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List permitted patient clinical history */
+        get: operations["patientClinicalHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/clinical/appointments/{appointmentId}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get permitted patient visit summary */
+        get: operations["patientClinicalAppointmentSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an authorized patient clinical workspace */
+        get: operations["adminClinicalWorkspaceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/encounters/{encounterId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a controlled clinical-note revision */
+        post: operations["adminClinicalWorkspaceCreateNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save a controlled clinical-note revision */
+        post: operations["adminClinicalWorkspaceSaveNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign an exact clinical-note revision */
+        post: operations["adminClinicalWorkspaceSignNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish an already signed patient summary */
+        post: operations["adminClinicalWorkspacePublishNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a reviewed clinical record from immutable intake provenance */
+        post: operations["adminClinicalWorkspaceReconcileRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save a controlled reviewed-record revision */
+        post: operations["adminClinicalWorkspaceReviseRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign an exact reviewed-record revision */
+        post: operations["adminClinicalWorkspaceSignRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2420,6 +2607,174 @@ export interface components {
             /** Format: date-time */
             startsAt: string;
         };
+        PatientClinicalItemResponseDto: {
+            /** Format: uuid */
+            encounterId: string;
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: date-time */
+            completedAt: string;
+            revisionNumber: number;
+            patientSummary: string;
+            /** Format: date-time */
+            publishedAt: string;
+        };
+        PatientClinicalListResponseDto: {
+            items: components["schemas"]["PatientClinicalItemResponseDto"][];
+        };
+        AdminClinicalWorkspaceIntakeSourceDto: {
+            /** Format: uuid */
+            intakeId: string;
+            /** Format: uuid */
+            revisionId: string;
+            revisionNumber: number;
+        };
+        AdminClinicalWorkspaceEncounterDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            appointmentId: string;
+            state: string;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+        };
+        ClinicalNoteRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "SIGNED";
+            content: string;
+            isPrivate: boolean;
+            patientSummary: string | null;
+            amendmentReasonCategory: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            signedAt: string | null;
+            /** Format: uuid */
+            signedByUserId: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** Format: uuid */
+            publishedByUserId: string | null;
+            integrityHash: string | null;
+        };
+        ClinicalNoteResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            encounterId: string;
+            /** Format: uuid */
+            patientId?: string;
+            currentRevision: number;
+            currentEffectiveRevision: number | null;
+            latestSignedRevision: number | null;
+            currentPublishedRevision: number | null;
+            revision: components["schemas"]["ClinicalNoteRevisionResponseDto"] | null;
+        };
+        ClinicalRecordRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "SIGNED";
+            content: {
+                [key: string]: unknown;
+            };
+            isPrivate: boolean;
+            amendmentReasonCategory: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            signedAt: string | null;
+            /** Format: uuid */
+            signedByUserId: string | null;
+            integrityHash: string | null;
+        };
+        ClinicalRecordResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+            /** Format: uuid */
+            patientId?: string;
+            /** Format: uuid */
+            encounterId?: string | null;
+            state?: string;
+            currentRevision: number;
+            latestSignedRevision: number | null;
+            revision: components["schemas"]["ClinicalRecordRevisionResponseDto"] | null;
+        };
+        AdminClinicalWorkspaceTimelineItemDto: {
+            id: string;
+            type: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** Format: uuid */
+            encounterId: string | null;
+        };
+        AdminClinicalWorkspaceResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            intakeSource: components["schemas"]["AdminClinicalWorkspaceIntakeSourceDto"] | null;
+            encounters: components["schemas"]["AdminClinicalWorkspaceEncounterDto"][];
+            notes: components["schemas"]["ClinicalNoteResponseDto"][];
+            records: components["schemas"]["ClinicalRecordResponseDto"][];
+            timeline: components["schemas"]["AdminClinicalWorkspaceTimelineItemDto"][];
+        };
+        CreateClinicalNoteDto: {
+            expectedRevision: number;
+            content: string;
+            isPrivate?: boolean;
+            patientSummary?: string | null;
+        };
+        SaveClinicalNoteDto: {
+            expectedRevision: number;
+            content: string;
+            isPrivate?: boolean;
+            patientSummary?: string | null;
+            amendmentReasonCategory?: string | null;
+        };
+        SignClinicalRevisionDto: {
+            revisionNumber: number;
+            expectedRevision: number;
+        };
+        PublishClinicalNoteDto: {
+            revisionNumber: number;
+            expectedRevision: number;
+        };
+        ReconcileClinicalRecordDto: {
+            /** @enum {string} */
+            kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+            /** Format: uuid */
+            encounterId?: string;
+            /** Format: uuid */
+            sourceIntakeId: string;
+            /** Format: uuid */
+            sourceIntakeRevisionId: string;
+            sourceIntakeRevisionNumber: number;
+            reviewedContent: {
+                [key: string]: unknown;
+            };
+        };
+        ReviseClinicalRecordDto: {
+            expectedRevision: number;
+            reviewedContent: {
+                [key: string]: unknown;
+            };
+            amendmentReasonCategory?: string | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -2734,8 +3089,8 @@ export interface operations {
     authListSessions: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
                 limit?: components["schemas"]["Object"];
+                page?: components["schemas"]["Object"];
             };
             header?: never;
             path?: never;
@@ -4077,11 +4432,11 @@ export interface operations {
     adminAssessmentSubmissionsList: {
         parameters: {
             query?: {
-                pageSize?: number;
-                page?: number;
-                state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
                 assessmentVersionId?: string;
+                page?: number;
+                pageSize?: number;
                 patientId?: string;
+                state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
             header?: never;
             path?: never;
@@ -4350,11 +4705,11 @@ export interface operations {
     adminDoctorsList: {
         parameters: {
             query?: {
-                query?: string;
                 isActive?: boolean;
-                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                query?: string;
                 specialtyId?: string;
             };
             header?: never;
@@ -4464,11 +4819,11 @@ export interface operations {
     adminSpecialtiesList: {
         parameters: {
             query?: {
-                query?: string;
                 isActive?: boolean;
-                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                query?: string;
             };
             header?: never;
             path?: never;
@@ -4577,11 +4932,11 @@ export interface operations {
     adminServicesList: {
         parameters: {
             query?: {
-                query?: string;
                 isActive?: boolean;
-                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                query?: string;
             };
             header?: never;
             path?: never;
@@ -4690,12 +5045,12 @@ export interface operations {
     adminDoctorServicesList: {
         parameters: {
             query?: {
-                query?: string;
+                doctorId?: string;
                 isActive?: boolean;
-                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
-                doctorId?: string;
+                publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
+                query?: string;
                 serviceId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
@@ -4809,8 +5164,8 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
                 query?: string;
-                specialtyId?: string;
                 serviceId?: string;
+                specialtyId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: never;
@@ -4853,10 +5208,10 @@ export interface operations {
     patientDirectoryServicesList: {
         parameters: {
             query?: {
+                doctorId?: string;
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
                 query?: string;
-                doctorId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: never;
@@ -4878,12 +5233,12 @@ export interface operations {
     adminAvailabilityRulesList: {
         parameters: {
             query?: {
+                doctorId?: string;
+                isActive?: boolean;
+                isoWeekday?: number;
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
-                doctorId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
-                isoWeekday?: number;
-                isActive?: boolean;
             };
             header?: never;
             path?: never;
@@ -4992,11 +5347,11 @@ export interface operations {
     adminClinicClosuresList: {
         parameters: {
             query?: {
+                from?: string;
+                isActive?: boolean;
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
-                from?: string;
                 to?: string;
-                isActive?: boolean;
             };
             header?: never;
             path?: never;
@@ -5105,13 +5460,13 @@ export interface operations {
     adminDoctorAvailabilityExceptionsList: {
         parameters: {
             query?: {
+                doctorId?: string;
+                from?: string;
+                isActive?: boolean;
+                kind?: "AVAILABLE" | "UNAVAILABLE";
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
-                from?: string;
                 to?: string;
-                isActive?: boolean;
-                doctorId?: string;
-                kind?: "AVAILABLE" | "UNAVAILABLE";
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: never;
@@ -5222,9 +5577,9 @@ export interface operations {
         parameters: {
             query: {
                 fromDate: string;
-                toDate: string;
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
+                toDate: string;
             };
             header?: never;
             path: {
@@ -5401,13 +5756,13 @@ export interface operations {
     adminAppointmentsList: {
         parameters: {
             query?: {
-                patientId?: string;
                 doctorId?: string;
-                status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
                 from?: string;
-                to?: string;
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
+                patientId?: string;
+                status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
+                to?: string;
             };
             header?: never;
             path?: never;
@@ -5451,9 +5806,9 @@ export interface operations {
     adminOperationalActivitiesList: {
         parameters: {
             query?: {
+                appointmentId?: string;
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
-                appointmentId?: string;
                 patientId?: string;
             };
             header?: never;
@@ -5727,6 +6082,269 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAppointmentResponseDto"];
+                };
+            };
+        };
+    };
+    patientClinicalTimeline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientClinicalListResponseDto"];
+                };
+            };
+        };
+    };
+    patientClinicalHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientClinicalListResponseDto"];
+                };
+            };
+        };
+    };
+    patientClinicalAppointmentSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientClinicalItemResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinicalWorkspaceResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceCreateNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounterId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClinicalNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceSaveNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                noteId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveClinicalNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceSignNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                noteId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignClinicalRevisionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspacePublishNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                noteId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishClinicalNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceReconcileRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileClinicalRecordDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceReviseRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+                patientId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviseClinicalRecordDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceSignRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+                patientId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignClinicalRevisionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
                 };
             };
         };

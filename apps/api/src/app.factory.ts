@@ -10,6 +10,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { OpenAPIObject } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -18,6 +19,27 @@ import { createFastifyLoggingOptions } from './common/logging/fastify-logging.co
 export const SWAGGER_UI_OPTIONS = Object.freeze({
   persistAuthorization: false,
 });
+
+function normalizeOpenApiParameterOrder(document: OpenAPIObject): OpenAPIObject {
+  for (const pathItem of Object.values(document.paths)) {
+    for (const operation of Object.values(pathItem ?? {})) {
+      if (!operation || typeof operation !== 'object' || !('parameters' in operation)) {
+        continue;
+      }
+
+      const parameters = operation.parameters;
+      if (!Array.isArray(parameters)) continue;
+
+      parameters.sort((left, right) => {
+        const leftKey = `${left.in}:${left.name}`;
+        const rightKey = `${right.in}:${right.name}`;
+        return leftKey.localeCompare(rightKey);
+      });
+    }
+  }
+
+  return document;
+}
 
 export async function createApiApplication(): Promise<NestFastifyApplication> {
   const trustedProxies = (process.env.TRUSTED_PROXIES ?? '')
@@ -69,7 +91,9 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
       'refreshCookie',
     )
     .build();
-  const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
+  const openApiDocument = normalizeOpenApiParameterOrder(
+    SwaggerModule.createDocument(app, openApiConfig),
+  );
 
   if (configService.get<string>('NODE_ENV') !== 'production') {
     SwaggerModule.setup('docs', app, openApiDocument, {

@@ -407,13 +407,13 @@
         "operationId": "authListSessions",
         "parameters": [
           {
-            "name": "page",
+            "name": "limit",
             "required": false,
             "in": "query",
             "schema": {
               "minimum": 1,
-              "maximum": 10000,
-              "default": 1,
+              "maximum": 50,
+              "default": 20,
               "allOf": [
                 {
                   "$ref": "#/components/schemas/Object"
@@ -422,13 +422,13 @@
             }
           },
           {
-            "name": "limit",
+            "name": "page",
             "required": false,
             "in": "query",
             "schema": {
               "minimum": 1,
-              "maximum": 50,
-              "default": 20,
+              "maximum": 10000,
+              "default": 1,
               "allOf": [
                 {
                   "$ref": "#/components/schemas/Object"
@@ -495,18 +495,18 @@
         "operationId": "authRevokeSession",
         "parameters": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "Origin",
-            "in": "header",
-            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
-            "required": false,
+            "name": "id",
+            "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -1114,18 +1114,18 @@
         "operationId": "patientWithdrawConsent",
         "parameters": [
           {
-            "name": "consentRecordId",
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Stable key for this withdrawal attempt.",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "description": "Stable key for this withdrawal attempt.",
+            "name": "consentRecordId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -1759,21 +1759,21 @@
         "operationId": "adminPatientsCorrectIntake",
         "parameters": [
           {
-            "name": "patientId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
             "name": "Idempotency-Key",
             "in": "header",
             "required": true,
             "schema": {
               "type": "string",
               "maxLength": 255
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           }
         ],
@@ -2262,13 +2262,12 @@
         "operationId": "adminAssessmentSubmissionsList",
         "parameters": [
           {
-            "name": "pageSize",
+            "name": "assessmentVersionId",
             "required": false,
             "in": "query",
             "schema": {
-              "minimum": 1,
-              "maximum": 50,
-              "type": "number"
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -2282,6 +2281,25 @@
             }
           },
           {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "state",
             "required": false,
             "in": "query",
@@ -2291,24 +2309,6 @@
                 "COMPLETE",
                 "INVALIDATED"
               ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "assessmentVersionId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "patientId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
@@ -2544,21 +2544,21 @@
         "operationId": "patientAssessmentSubmissionSubmit",
         "parameters": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
             "name": "Idempotency-Key",
             "in": "header",
             "required": true,
             "schema": {
               "type": "string",
               "maxLength": 255
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           }
         ],
@@ -2736,31 +2736,11 @@
         "operationId": "adminDoctorsList",
         "parameters": [
           {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "isActive",
             "required": false,
             "in": "query",
             "schema": {
               "type": "boolean"
-            }
-          },
-          {
-            "name": "publicationStatus",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "UNPUBLISHED",
-                "PUBLISHED"
-              ]
             }
           },
           {
@@ -2791,6 +2771,26 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "publicationStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "UNPUBLISHED",
+                "PUBLISHED"
+              ]
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -2976,31 +2976,11 @@
         "operationId": "adminSpecialtiesList",
         "parameters": [
           {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "isActive",
             "required": false,
             "in": "query",
             "schema": {
               "type": "boolean"
-            }
-          },
-          {
-            "name": "publicationStatus",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "UNPUBLISHED",
-                "PUBLISHED"
-              ]
             }
           },
           {
@@ -3031,6 +3011,26 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "publicationStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "UNPUBLISHED",
+                "PUBLISHED"
+              ]
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -3207,31 +3207,11 @@
         "operationId": "adminServicesList",
         "parameters": [
           {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "isActive",
             "required": false,
             "in": "query",
             "schema": {
               "type": "boolean"
-            }
-          },
-          {
-            "name": "publicationStatus",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "UNPUBLISHED",
-                "PUBLISHED"
-              ]
             }
           },
           {
@@ -3262,6 +3242,26 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "publicationStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "UNPUBLISHED",
+                "PUBLISHED"
+              ]
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -3438,10 +3438,11 @@
         "operationId": "adminDoctorServicesList",
         "parameters": [
           {
-            "name": "query",
+            "name": "doctorId",
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "string"
             }
           },
@@ -3451,18 +3452,6 @@
             "in": "query",
             "schema": {
               "type": "boolean"
-            }
-          },
-          {
-            "name": "publicationStatus",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "UNPUBLISHED",
-                "PUBLISHED"
-              ]
             }
           },
           {
@@ -3496,11 +3485,22 @@
             }
           },
           {
-            "name": "doctorId",
+            "name": "publicationStatus",
             "required": false,
             "in": "query",
             "schema": {
-              "format": "uuid",
+              "type": "string",
+              "enum": [
+                "UNPUBLISHED",
+                "PUBLISHED"
+              ]
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -3738,7 +3738,7 @@
             }
           },
           {
-            "name": "specialtyId",
+            "name": "serviceId",
             "required": false,
             "in": "query",
             "schema": {
@@ -3747,7 +3747,7 @@
             }
           },
           {
-            "name": "serviceId",
+            "name": "specialtyId",
             "required": false,
             "in": "query",
             "schema": {
@@ -3833,6 +3833,15 @@
         "operationId": "patientDirectoryServicesList",
         "parameters": [
           {
+            "name": "doctorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -3868,15 +3877,6 @@
             "in": "query",
             "schema": {
               "maxLength": 160,
-              "type": "string"
-            }
-          },
-          {
-            "name": "doctorId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
               "type": "string"
             }
           },
@@ -3921,6 +3921,33 @@
         "operationId": "adminAvailabilityRulesList",
         "parameters": [
           {
+            "name": "doctorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isoWeekday",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 7,
+              "type": "number"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -3951,15 +3978,6 @@
             }
           },
           {
-            "name": "doctorId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
             "name": "visitMode",
             "required": false,
             "in": "query",
@@ -3969,24 +3987,6 @@
                 "IN_PERSON",
                 "ONLINE"
               ]
-            }
-          },
-          {
-            "name": "isoWeekday",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 7,
-              "type": "number"
-            }
-          },
-          {
-            "name": "isActive",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           }
         ],
@@ -4163,6 +4163,23 @@
         "operationId": "adminClinicClosuresList",
         "parameters": [
           {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -4193,29 +4210,12 @@
             }
           },
           {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
             "name": "to",
             "required": false,
             "in": "query",
             "schema": {
               "format": "date-time",
               "type": "string"
-            }
-          },
-          {
-            "name": "isActive",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           }
         ],
@@ -4392,6 +4392,44 @@
         "operationId": "adminDoctorAvailabilityExceptionsList",
         "parameters": [
           {
+            "name": "doctorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AVAILABLE",
+                "UNAVAILABLE"
+              ]
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -4422,50 +4460,12 @@
             }
           },
           {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
             "name": "to",
             "required": false,
             "in": "query",
             "schema": {
               "format": "date-time",
               "type": "string"
-            }
-          },
-          {
-            "name": "isActive",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "doctorId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "kind",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "AVAILABLE",
-                "UNAVAILABLE"
-              ]
             }
           },
           {
@@ -4672,15 +4672,6 @@
             }
           },
           {
-            "name": "toDate",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "example": "2026-09-30",
-              "type": "string"
-            }
-          },
-          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -4708,6 +4699,15 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "toDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
             }
           }
         ],
@@ -5065,15 +5065,6 @@
         "operationId": "adminAppointmentsList",
         "parameters": [
           {
-            "name": "patientId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
             "name": "doctorId",
             "required": false,
             "in": "query",
@@ -5083,34 +5074,7 @@
             }
           },
           {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "PENDING",
-                "CONFIRMED",
-                "CHECKED_IN",
-                "QUEUED",
-                "IN_PROGRESS",
-                "COMPLETED",
-                "NO_SHOW",
-                "CANCELLED"
-              ]
-            }
-          },
-          {
             "name": "from",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
             "required": false,
             "in": "query",
             "schema": {
@@ -5145,6 +5109,42 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "CONFIRMED",
+                "CHECKED_IN",
+                "QUEUED",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "NO_SHOW",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
             }
           }
         ],
@@ -5176,6 +5176,15 @@
         "operationId": "adminOperationalActivitiesList",
         "parameters": [
           {
+            "name": "appointmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -5202,15 +5211,6 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
-            }
-          },
-          {
-            "name": "appointmentId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
             }
           },
           {
@@ -5706,6 +5706,541 @@
         "summary": "Start the earliest queued appointment for a doctor",
         "tags": [
           "Admin appointments"
+        ]
+      }
+    },
+    "/v1/patients/me/clinical/timeline": {
+      "get": {
+        "operationId": "patientClinicalTimeline",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientClinicalListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List permitted patient clinical timeline",
+        "tags": [
+          "Patient clinical history"
+        ]
+      }
+    },
+    "/v1/patients/me/clinical/history": {
+      "get": {
+        "operationId": "patientClinicalHistory",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientClinicalListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List permitted patient clinical history",
+        "tags": [
+          "Patient clinical history"
+        ]
+      }
+    },
+    "/v1/patients/me/clinical/appointments/{appointmentId}/summary": {
+      "get": {
+        "operationId": "patientClinicalAppointmentSummary",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientClinicalItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get permitted patient visit summary",
+        "tags": [
+          "Patient clinical history"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace": {
+      "get": {
+        "operationId": "adminClinicalWorkspaceGet",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminClinicalWorkspaceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an authorized patient clinical workspace",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/encounters/{encounterId}/notes": {
+      "post": {
+        "operationId": "adminClinicalWorkspaceCreateNote",
+        "parameters": [
+          {
+            "name": "encounterId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicalNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalNoteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a controlled clinical-note revision",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/revisions": {
+      "post": {
+        "operationId": "adminClinicalWorkspaceSaveNote",
+        "parameters": [
+          {
+            "name": "noteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveClinicalNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalNoteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save a controlled clinical-note revision",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/sign": {
+      "post": {
+        "operationId": "adminClinicalWorkspaceSignNote",
+        "parameters": [
+          {
+            "name": "noteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignClinicalRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalNoteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sign an exact clinical-note revision",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/publish": {
+      "post": {
+        "operationId": "adminClinicalWorkspacePublishNote",
+        "parameters": [
+          {
+            "name": "noteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishClinicalNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalNoteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Publish an already signed patient summary",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/records": {
+      "post": {
+        "operationId": "adminClinicalWorkspaceReconcileRecord",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconcileClinicalRecordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalRecordResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a reviewed clinical record from immutable intake provenance",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/revisions": {
+      "post": {
+        "operationId": "adminClinicalWorkspaceReviseRecord",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "DIAGNOSIS",
+                "ALLERGY",
+                "CONDITION",
+                "MEDICATION_STATEMENT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviseClinicalRecordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalRecordResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save a controlled reviewed-record revision",
+        "tags": [
+          "Admin clinical workspace"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/sign": {
+      "post": {
+        "operationId": "adminClinicalWorkspaceSignRecord",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "DIAGNOSIS",
+                "ALLERGY",
+                "CONDITION",
+                "MEDICATION_STATEMENT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignClinicalRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalRecordResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sign an exact reviewed-record revision",
+        "tags": [
+          "Admin clinical workspace"
         ]
       }
     }
@@ -9760,6 +10295,595 @@
         "required": [
           "doctorServiceId",
           "startsAt"
+        ]
+      },
+      "PatientClinicalItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "encounterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "patientSummary": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "encounterId",
+          "appointmentId",
+          "completedAt",
+          "revisionNumber",
+          "patientSummary",
+          "publishedAt"
+        ]
+      },
+      "PatientClinicalListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientClinicalItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AdminClinicalWorkspaceIntakeSourceDto": {
+        "type": "object",
+        "properties": {
+          "intakeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "intakeId",
+          "revisionId",
+          "revisionNumber"
+        ]
+      },
+      "AdminClinicalWorkspaceEncounterDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "appointmentId",
+          "state",
+          "startedAt",
+          "completedAt"
+        ]
+      },
+      "ClinicalNoteRevisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "previousRevisionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SIGNED"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "patientSummary": {
+            "type": "string",
+            "nullable": true
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "nullable": true
+          },
+          "authoredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "authoredByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "signedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "signedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "integrityHash": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "revisionNumber",
+          "previousRevisionId",
+          "state",
+          "content",
+          "isPrivate",
+          "patientSummary",
+          "amendmentReasonCategory",
+          "authoredAt",
+          "authoredByUserId",
+          "signedAt",
+          "signedByUserId",
+          "publishedAt",
+          "publishedByUserId",
+          "integrityHash"
+        ]
+      },
+      "ClinicalNoteResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "encounterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "currentEffectiveRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "latestSignedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "currentPublishedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "revision": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicalNoteRevisionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "encounterId",
+          "currentRevision",
+          "currentEffectiveRevision",
+          "latestSignedRevision",
+          "currentPublishedRevision",
+          "revision"
+        ]
+      },
+      "ClinicalRecordRevisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "previousRevisionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SIGNED"
+            ]
+          },
+          "content": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "nullable": true
+          },
+          "authoredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "authoredByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "signedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "signedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "integrityHash": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "revisionNumber",
+          "previousRevisionId",
+          "state",
+          "content",
+          "isPrivate",
+          "amendmentReasonCategory",
+          "authoredAt",
+          "authoredByUserId",
+          "signedAt",
+          "signedByUserId",
+          "integrityHash"
+        ]
+      },
+      "ClinicalRecordResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "DIAGNOSIS",
+              "ALLERGY",
+              "CONDITION",
+              "MEDICATION_STATEMENT"
+            ]
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "encounterId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "state": {
+            "type": "string"
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "latestSignedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "revision": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClinicalRecordRevisionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "currentRevision",
+          "latestSignedRevision",
+          "revision"
+        ]
+      },
+      "AdminClinicalWorkspaceTimelineItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "encounterId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "occurredAt",
+          "encounterId"
+        ]
+      },
+      "AdminClinicalWorkspaceResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "intakeSource": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminClinicalWorkspaceIntakeSourceDto"
+              }
+            ]
+          },
+          "encounters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminClinicalWorkspaceEncounterDto"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClinicalNoteResponseDto"
+            }
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClinicalRecordResponseDto"
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminClinicalWorkspaceTimelineItemDto"
+            }
+          }
+        },
+        "required": [
+          "patientId",
+          "intakeSource",
+          "encounters",
+          "notes",
+          "records",
+          "timeline"
+        ]
+      },
+      "CreateClinicalNoteDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "content": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "patientSummary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "content"
+        ]
+      },
+      "SaveClinicalNoteDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "content": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "patientSummary": {
+            "type": "string",
+            "nullable": true
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "content"
+        ]
+      },
+      "SignClinicalRevisionDto": {
+        "type": "object",
+        "properties": {
+          "revisionNumber": {
+            "type": "number",
+            "minimum": 1
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "revisionNumber",
+          "expectedRevision"
+        ]
+      },
+      "PublishClinicalNoteDto": {
+        "type": "object",
+        "properties": {
+          "revisionNumber": {
+            "type": "number",
+            "minimum": 1
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "revisionNumber",
+          "expectedRevision"
+        ]
+      },
+      "ReconcileClinicalRecordDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "DIAGNOSIS",
+              "ALLERGY",
+              "CONDITION",
+              "MEDICATION_STATEMENT"
+            ]
+          },
+          "encounterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceIntakeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceIntakeRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceIntakeRevisionNumber": {
+            "type": "number",
+            "minimum": 1
+          },
+          "reviewedContent": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "kind",
+          "sourceIntakeId",
+          "sourceIntakeRevisionId",
+          "sourceIntakeRevisionNumber",
+          "reviewedContent"
+        ]
+      },
+      "ReviseClinicalRecordDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "reviewedContent": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "reviewedContent"
         ]
       }
     }

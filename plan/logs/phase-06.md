@@ -481,3 +481,46 @@ Known limitations:
 Next task:
 
 - `F06-T11` (unclaimed).
+
+## F06-T11 — OpenAPI/client، security، revision و browser E2E
+
+Task ID: F06-T11
+Completed at: 2026-09-03 20:12 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B11
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/src/{app.factory.ts,modules/clinical/{admin-clinical-workspace.controller.ts,admin-clinical-workspace.dto.ts,clinical-response.dto.ts,patient-clinical.controller.ts}}`
+- `packages/api-client/{openapi.json,src/schema.generated.ts}`
+- `apps/dashboard/src/lib/clinical-workspace-api.{ts,spec.ts}`
+- `apps/app/src/lib/clinical-history-api.{ts,spec.ts}`
+- `plan/{STATUS.md,phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md,logs/phase-06.md}`
+- `specs/004-adopt-phase-06/{plan.md,tasks.md}`
+
+Migrations: none.
+
+Tests run:
+
+- `pnpm generate:api-client` and `pnpm --filter @sabz-zendegi/api-client {build,test}` → PASS
+- focused API OpenAPI, authorization, and clinical revision integration suite → PASS (25 tests)
+- dashboard/app clinical transport suites → PASS (3 tests)
+- API, API-client, dashboard, and app typechecks → PASS
+- dashboard and app production builds → PASS
+- local browser gate on `localhost`: dashboard clinical tabs deny a role-only administrator without explicit clinical permission; patient history renders the persisted published-history empty state and no demo visits/prescriptions → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- Runtime OpenAPI and the checked-in generated client are synchronized, with deterministic parameter ordering and typed Phase 06 request/response contracts → PASS
+- Dashboard and patient app clinical transports use generated API operations and schemas rather than duplicate route/response definitions → PASS
+- Authorization, tenant/resource audit, append-only revision, optimistic concurrency, signing, and patient-publication boundaries retain their targeted PostgreSQL/API coverage → PASS
+- Browser verification confirms least-privilege denial for a dashboard administrator missing an explicit clinical grant and truthful patient empty-state rendering without clinical demo data → PASS
+
+Known limitations:
+
+- The tested local dashboard administrator intentionally has no clinical permission; configured clinical grants and their positive workflow remain covered by the focused integration authorization/revision matrix. No dashboard role grant was changed for verification.
+
+Next task:
+
+- `F06-T12` (unclaimed).

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 19:50 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 20:12 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -83,6 +83,7 @@
 - `F06-T08` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T09` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T10` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T11` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 
 
 ### وضعیت تاریخی Phase 05
@@ -118,6 +119,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B11` — `DONE`
+
+- `F06-T11` OpenAPI runtime/client را با response schemaهای clinical همگام کرد، dashboard/app را
+  به generated client منتقل کرد، و gateهای security/revision/browser را پذیرفت؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T12`؛ هنوز claim نشده است.
 
 `F06-B10` — `DONE`
 
