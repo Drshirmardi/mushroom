@@ -139,3 +139,51 @@ Known limitations:
 Next task:
 
 - `F06-T04` (unclaimed).
+
+## F06-T04 — start/complete encounter از appointment معتبر
+
+Task ID: F06-T04
+Completed at: 2026-09-03 18:45 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B04
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/src/modules/clinical/{clinical.module.ts,encounter-lifecycle.service.ts}`
+- `apps/api/src/modules/appointments/{admin-appointments.service.ts,patient-appointments.module.ts}`
+- `apps/api/test/patient-appointments.integration.spec.ts`
+- `plan/STATUS.md`, `plan/phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md`, and
+  `plan/logs/phase-06.md`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations: none.
+
+Tests run:
+
+- API typecheck (including Prisma client generation) → PASS
+- focused PostgreSQL appointment/encounter workflow integration → PASS (6 tests)
+- focused appointment authorization regression → PASS (3 tests)
+- Spec Kit prerequisite and cross-artifact/constitution review → PASS; no critical conflict
+- `git diff --check` → PASS
+
+Result:
+
+- Starting a valid checked-in or queued appointment creates one separate, tenant-scoped in-progress
+  Encounter in the same transaction → PASS
+- Repeat direct-start and call-next requests reuse the same Encounter; the database one-to-one
+  appointment invariant remains the duplicate-prevention backstop → PASS
+- Completing the in-progress appointment completes that same Encounter atomically and preserves
+  start/completion actor identities and timestamps → PASS
+- Existing appointment state-machine, doctor serialization, and operational activity behavior are
+  preserved; no appointment lifecycle authority, migration, clinical value, patient view, or
+  generated API contract was recreated → PASS
+
+Known limitations:
+
+- Explicit configurable clinical permissions, resource-level authorization, and sensitive access
+  audit emission remain owned by `F06-T08`; note/revision, reconciliation, and patient-visible
+  summary behavior remain with `F06-T05` through `F06-T07`.
+
+Next task:
+
+- `F06-T05` (unclaimed).

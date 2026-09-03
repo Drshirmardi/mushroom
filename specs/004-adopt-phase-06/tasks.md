@@ -32,7 +32,7 @@ infrastructure. No extra setup task is added.
 
 ## Phase 3: Preserved Delivery Sequence — User Stories 1 and 2 (P1)
 
-- [ ] T004 [US1] F06-T04: start/complete encounter از appointment معتبر
+- [x] T004 [US1] F06-T04: start/complete encounter از appointment معتبر
 - [ ] T005 [US1] F06-T05: note revision با optimistic concurrency و private clinician note
 - [ ] T006 [US2] F06-T06: diagnosis/allergy/condition/medication reconciliation
 
