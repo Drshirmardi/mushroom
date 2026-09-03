@@ -187,3 +187,51 @@ Known limitations:
 Next task:
 
 - `F06-T05` (unclaimed).
+
+## F06-T05 — note revision با optimistic concurrency و private clinician note
+
+Task ID: F06-T05
+Completed at: 2026-09-03 18:53 +03:30
+Agent/Thread: Codex /root
+Batch ID: F06-B05
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/src/modules/clinical/{clinical.module.ts,clinical-notes.service.ts}`
+- `apps/api/test/clinical-notes.integration.spec.ts`
+- `plan/STATUS.md`, `plan/phases/06-ENCOUNTER-CLINICAL-WORKSPACE.md`, and
+  `plan/logs/phase-06.md`
+- `specs/004-adopt-phase-06/{spec.md,plan.md,tasks.md}`
+
+Migrations: none; `F06-T03` supplied the required persistence and constraints.
+
+Tests run:
+
+- API typecheck (including Prisma client generation) → PASS
+- focused PostgreSQL clinical-note revision integration, including simultaneous save attempts →
+  PASS (1 test)
+- `git diff --check` → PASS
+
+Result:
+
+- A new ClinicalNote starts with a private-by-default draft revision and preserves author identity
+  and timestamp → PASS
+- Each save creates a successor revision and moves only the current-effective pointer; the original
+  content is not overwritten → PASS
+- A transaction-scoped note lock plus expected revision prevents simultaneous saves from silently
+  overwriting one another; the stale writer receives `CLINICAL_NOTE_REVISION_CONFLICT` → PASS
+- Signing attests exactly the current draft revision with signer identity, timestamp, and canonical
+  integrity hash; later save creates a separate draft successor and requires an amendment category
+  when the predecessor is signed → PASS
+- No patient view, patient publication, clinical reconciliation, HTTP exposure, permission
+  assignment, or audit event emission was introduced outside the owning tasks → PASS
+
+Known limitations:
+
+- `F06-T07` owns patient-facing timeline/history/summary and `F06-T08` owns public clinical
+  operation exposure with configurable permission, resource authorization, and fail-closed audit;
+  this service is intentionally not externally routable before those boundaries exist.
+
+Next task:
+
+- `F06-T06` (unclaimed).

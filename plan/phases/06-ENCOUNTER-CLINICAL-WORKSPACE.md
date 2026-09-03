@@ -27,7 +27,7 @@
 - [x] `F06-T02` — قرارداد تبدیل intake self-reported به clinical record reviewed
 - [x] `F06-T03` — migration encounter/clinical core/audit
 - [x] `F06-T04` — start/complete encounter از appointment معتبر
-- [ ] `F06-T05` — note revision با optimistic concurrency و private clinician note
+- [x] `F06-T05` — note revision با optimistic concurrency و private clinician note
 - [ ] `F06-T06` — diagnosis/allergy/condition/medication reconciliation
 - [ ] `F06-T07` — timeline، history و summary مجاز بیمار
 - [ ] `F06-T08` — resource-level authorization و audit read/write/export

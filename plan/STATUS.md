@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-03 18:45 +03:30`
+- آخرین به‌رورسانی: `2026-09-03 18:53 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 06 — Encounter & Clinical Workspace`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
-- task فعال: ندارد؛ `F06-T05` واجد شرایط بعدی و هنوز unclaimed است.
+- task فعال: ندارد؛ `F06-T06` واجد شرایط بعدی و هنوز unclaimed است.
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -77,6 +77,7 @@
 - `F06-T02` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T03` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 - `F06-T04` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
+- `F06-T05` — `DONE`؛ شواهد: [`logs/phase-06.md`](logs/phase-06.md)
 
 ### وضعیت تاریخی Phase 05
 
@@ -111,6 +112,13 @@
 - `F04-T12` — `DONE`؛ شواهد: [`logs/phase-04.md`](logs/phase-04.md) و [`../specs/002-adopt-phase-04/evidence.md`](../specs/002-adopt-phase-04/evidence.md)
 
 ## آخرین batch بسته‌شده
+
+`F06-B05` — `DONE`
+
+- `F06-T05` revision chain private-by-default برای ClinicalNote را با optimistic concurrency،
+  signing exact revision و amendment append-only پذیرفته کرد؛ شواهد:
+  [`logs/phase-06.md`](logs/phase-06.md).
+- task واجد شرایط بعدی: `F06-T06`؛ هنوز claim نشده است.
 
 `F06-B04` — `DONE`
 
