@@ -1,6 +1,6 @@
 # Phase 07 Validation Quickstart
 
-This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T03` are complete and this guide does not claim or start later tasks.
+This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T04` are complete and this guide does not claim or start later tasks.
 
 ## Prerequisites
 
@@ -12,7 +12,8 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 
 - `F07-T01`: focused lifecycle and safety-rule review for immutable issue and revision amendment.
 - `F07-T02`: migration smoke and focused real-PostgreSQL integration evidence.
-- `F07-T03`–`F07-T06`: targeted domain/API/type checks for prescription lifecycle, treatment plans, idempotent patient activity, and real-event progress/timeline as applicable.
+- `F07-T04`: reviewed additive `TreatmentSessionPlan` migration SQL; fresh PostgreSQL migration/constraint smoke; Prisma validation/generation and migration-history/schema diff; and focused treatment-plan API coverage for tenant/resource access, ordered session definitions, patient reads, audit, and exclusion of schedule/execution fields.
+- `F07-T05`–`F07-T06`: targeted domain/API/type checks for idempotent patient activity and real-event progress/timeline as applicable.
 - `F07-T07`–`F07-T08`: focused dashboard/app type checks and truthful in-scope mock/local-state removal only after the real source and contract are ready.
 - `F07-T09`: authorization matrix, audit, and contraindication-warning coverage.
 - `F07-T10`: regenerate/typecheck the client and review in-scope connection removal.

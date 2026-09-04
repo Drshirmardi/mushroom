@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-07-prescription-treatment`
 **Created**: 2026-09-03
-**Status**: Execution tracking only — Phase 07 is `IN_PROGRESS`; `F07-T01` through `F07-T03` are complete.
+**Status**: Execution tracking only — Phase 07 is `IN_PROGRESS`; `F07-T01` through `F07-T04` are complete.
 **Input**: Adopt the authoritative Phase 07 Prescription & Treatment roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -64,7 +64,7 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - **FR-001 (`F07-T01`)**: The prescription lifecycle MUST support editable drafts, exact-revision issuance, and amendment while keeping an issued prescription immutable and representing a correction as an append-only successor revision. Issuance requires `PRESCRIPTION_ISSUE` plus tenant/resource authorization; warnings require exact-revision acknowledgement unless an approved `NON_OVERRIDABLE` rule blocks issuance.
 - **FR-002 (`F07-T02`)**: Prescription, treatment, task, and adherence concepts MUST have the persistence foundation owned by the roadmap migration task.
 - **FR-003 (`F07-T03`)**: Dashboard prescription creation, draft, issue, and revision behavior MUST be available through the roadmap-owned prescription interface.
-- **FR-004 (`F07-T04`)**: Treatment medication, session, exercise, and nutrition plans MUST be available through the roadmap-owned treatment-plan interface.
+- **FR-004 (`F07-T04`)**: Treatment medication, session, exercise, and nutrition plans MUST be available through the roadmap-owned treatment-plan interface. The owner-approved session boundary is a dedicated ordered `TreatmentSessionPlan` definition (`treatmentPlanId`, `position`, `title`, `goals`, optional clinician/patient instructions, and timestamps), not a scheduled occurrence, task execution, appointment, or encounter.
 - **FR-005 (`F07-T05`)**: Medication and treatment-task schedule recording MUST be idempotent, and medication adherence/task completion MUST persist.
 - **FR-006 (`F07-T06`)**: Progress and timeline information MUST be calculated from real progress events, not a fixed UI value.
 - **FR-007 (`F07-T07`)**: The dashboard prescription builder and patient workspace MUST use the in-scope prescription and treatment information.
@@ -78,6 +78,7 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 
 - **Prescription, Prescription Item, and Prescription Revision**: The prescribed treatment record, its items, and revision history.
 - **Treatment Plan**: The patient treatment program and its treatment medication, exercise, nutrition, and task-related elements.
+- **Treatment Session Plan**: An ordered clinical definition of an intended treatment session under a treatment plan, without scheduling or execution state.
 - **Treatment Medication**: A medication-oriented element of a treatment plan.
 - **Exercise Plan**: An exercise-oriented element of a treatment plan.
 - **Nutrition Plan**: A nutrition-oriented element of a treatment plan.
@@ -99,4 +100,4 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - Phase 06 is `DONE (CLOSED)` and supplies the completed clinical-workspace baseline.
 - The authoritative source lists `F07-T01` through `F07-T12` in order but declares no individual `Depends on` fields or batch map; this adoption does not create one.
 - Exact schema and route details remain owned by their named authoritative tasks. The approved `F07-T01` baseline defines draft/issue/amend safety, default `DOCTOR` issuance authority, advisory acknowledgement, and the legal-confirmation boundary; enforcement remains owned by `F07-T09`.
-- `F07-T01` through `F07-T03` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T04`–`F07-T12` remain unclaimed and unchecked.
+- `F07-T01` through `F07-T04` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T05`–`F07-T12` remain unclaimed and unchecked. The permanent owner-approved F07-T04 boundary is recorded in [`plan/contracts/treatment-session-plan-v1.md`](../../plan/contracts/treatment-session-plan-v1.md).

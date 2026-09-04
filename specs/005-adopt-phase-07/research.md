@@ -24,6 +24,12 @@
 
 **Alternatives considered**: Fixed UI progress, local-only treatment logs, or non-idempotent retry behavior is rejected.
 
+## Decision: Use an owner-approved dedicated treatment-session definition
+
+**Rationale**: The owner resolved the F07-T04 ambiguity by approving an ordered persisted `TreatmentSessionPlan` under a treatment plan. It is a clinical definition, not a scheduled appointment, task execution, encounter, or completion record. The minimal model and its restricted delete/unique-position constraints support the existing treatment-plan interface without absorbing F07-T05 scheduling/adherence or F07-T06 derived-progress scope.
+
+**Alternatives considered**: Reusing `TreatmentTask`, treating a session as a scheduled appointment, or storing an unbounded session structure in `TreatmentPlan` would either mix F07-T05 execution concerns into F07-T04 or weaken the required ordered definition.
+
 ## Decision: Preserve real-event progress and the dashboard-to-app journey
 
 **Rationale**: The roadmap requires progress calculated from real events and a dashboard issue → app display → patient log → dashboard review flow. `F07-T06` owns real progress; `F07-T07` and `F07-T08` own their distinct UI connections; `F07-T11` owns browser verification.

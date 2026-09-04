@@ -132,3 +132,49 @@ Known limitations:
 Next batch:
 
 - `F07-B04` — `F07-T04` is eligible but not claimed or started.
+
+## F07-T04 — treatment medication/session/exercise/nutrition plan API
+
+Task ID: F07-T04
+Completed at: 2026-09-04 16:32 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B04
+Reviewed by: Codex /root
+Owner-approved boundary: [`../contracts/treatment-session-plan-v1.md`](../contracts/treatment-session-plan-v1.md)
+
+Changed files:
+
+- `apps/api/prisma/schema.prisma`
+- `apps/api/prisma/migrations/20260904124643_phase_07_treatment_session_plan/migration.sql`
+- `apps/api/src/common/errors/api-error.ts`
+- `apps/api/src/modules/clinical/{treatment-plan.dto.ts,treatment-plan-response.dto.ts,treatment-plan.service.ts,admin-treatment-plans.controller.ts,patient-treatment-plans.controller.ts,clinical.module.ts}`
+- `apps/api/test/{migrations.integration.spec.ts,treatment-plan.integration.spec.ts}`
+- `plan/contracts/treatment-session-plan-v1.md`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,data-model.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Migration review:
+
+- Previewed `20260904124643_phase_07_treatment_session_plan` before deployment. It contains only `CREATE TABLE treatment_session_plans`, unique `(treatment_plan_id, position)`, and a `RESTRICT` foreign key to `treatment_plans` → PASS.
+- No Phase 06, legacy, or F07-T02 table, index, constraint, or migration mutation appears in the reviewed SQL → PASS.
+
+Tests run:
+
+- `prisma validate`, `prisma generate`, and `prisma migrate status` → PASS (20 committed migrations; clean active development database).
+- migration-history → `schema.prisma` diff using the isolated disposable shadow database → PASS (empty migration).
+- `tsc -p tsconfig.test.json --noEmit` → PASS.
+- `vitest run test/migrations.integration.spec.ts --no-file-parallelism` with the repository’s development seed setting → PASS (2/2; fresh PostgreSQL replay, seed, new table, unique-position, and foreign-key constraints).
+- `vitest run test/treatment-plan.integration.spec.ts --no-file-parallelism` → PASS (3/3; plan and definition CRUD, ordering, duplicate rejection, schedule-field rejection, plan editability, patient read, clinic-resource denial, audit, and runtime OpenAPI declarations).
+- `vitest run test/prescription.integration.spec.ts --no-file-parallelism` → PASS (4/4).
+- `vitest run test/clinical-notes.integration.spec.ts --no-file-parallelism` → PASS (5/5).
+- `git diff --check` → PASS.
+
+Result:
+
+- `TreatmentSessionPlan` is an ordered clinical definition attached to one `TreatmentPlan`, with only the approved fields, unique plan/position constraint, restrictive owner-plan foreign key, timestamps, and no independent session lifecycle.
+- Authorized dashboard users can create/read/update treatment plans plus medication, session, exercise, and nutrition definitions; authorized patients can read active/completed treatment plans. Existing clinical capability, clinic-resource authorization, and audit conventions apply.
+- No scheduled occurrence, recurrence, reminder, attendance, completion state, appointment/encounter/task relation, media/modality model, per-session exercise/diet/video relation, revision infrastructure, dashboard UI, patient-app UI, or generated client synchronization was added. F07-T05 remains unclaimed and owns scheduling/execution/adherence semantics; F07-T10 retains checked-in generated-client synchronization.
+
+Next batch:
+
+- `F07-B05` — `F07-T05` is eligible but unclaimed and not started.

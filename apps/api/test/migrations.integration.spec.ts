@@ -158,6 +158,7 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'treatment_medications',
         'exercise_plans',
         'nutrition_plans',
+        'treatment_session_plans',
         'treatment_tasks',
         'medication_adherence_logs',
         'treatment_progress_events',
@@ -214,6 +215,7 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'treatment_medications',
         'treatment_plans',
         'treatment_progress_events',
+        'treatment_session_plans',
         'treatment_tasks',
         'user_profiles',
         'user_roles',
@@ -643,6 +645,22 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       `, [patientId]);
       const treatmentPlanId = phaseSevenTreatmentPlan.rows[0]?.id;
       expect(treatmentPlanId).toBeDefined();
+
+      await smokeClient.query(`
+        INSERT INTO treatment_session_plans (
+          id, treatment_plan_id, position, title, goals, updated_at
+        ) VALUES (gen_random_uuid(), $1, 1, 'جلسه درمانی آزمایشی', ARRAY['هدف آزمایشی'], CURRENT_TIMESTAMP)
+      `, [treatmentPlanId]);
+      await expect(smokeClient.query(`
+        INSERT INTO treatment_session_plans (
+          id, treatment_plan_id, position, title, goals, updated_at
+        ) VALUES (gen_random_uuid(), $1, 1, 'جلسه درمانی تکراری', ARRAY['هدف تکراری'], CURRENT_TIMESTAMP)
+      `, [treatmentPlanId])).rejects.toMatchObject({ code: '23505' });
+      await expect(smokeClient.query(`
+        INSERT INTO treatment_session_plans (
+          id, treatment_plan_id, position, title, goals, updated_at
+        ) VALUES (gen_random_uuid(), gen_random_uuid(), 1, 'جلسه درمانی نامعتبر', ARRAY['هدف نامعتبر'], CURRENT_TIMESTAMP)
+      `)).rejects.toMatchObject({ code: '23503' });
 
       const phaseSevenMedication = await smokeClient.query<{ id: string }>(`
         INSERT INTO treatment_medications (id, treatment_plan_id, name, updated_at)

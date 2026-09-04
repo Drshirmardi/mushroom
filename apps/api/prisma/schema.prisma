@@ -1346,6 +1346,7 @@ model TreatmentPlan {
   clinic    Clinic             @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   patient   PatientProfile     @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
   medications TreatmentMedication[]
+  sessionPlans TreatmentSessionPlan[]
   exercisePlans ExercisePlan[]
   nutritionPlans NutritionPlan[]
   tasks     TreatmentTask[]
@@ -1354,6 +1355,22 @@ model TreatmentPlan {
   @@unique([id, clinicId], map: "treatment_plans_id_clinic_key")
   @@index([clinicId, patientId, state, updatedAt, id], map: "treatment_plans_patient_state_updated_idx")
   @@map("treatment_plans")
+}
+
+model TreatmentSessionPlan {
+  id                  String        @id @default(uuid()) @db.Uuid
+  treatmentPlanId     String        @map("treatment_plan_id") @db.Uuid
+  position            Int
+  title               String        @db.VarChar(255)
+  goals               String[]      @default([])
+  instructions        String?       @db.Text
+  patientInstructions String?       @map("patient_instructions") @db.Text
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan       TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+
+  @@unique([treatmentPlanId, position], map: "treatment_session_plans_plan_position_key")
+  @@map("treatment_session_plans")
 }
 
 model TreatmentMedication {

@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-04 03:42 +03:30`
+- آخرین به‌رورسانی: `2026-09-04 16:32 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 07 — Prescription & Treatment`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `ندارد`
-- task فعال: `ندارد؛ F07-T04 واجد شرایط است اما claim نشده است`
-- blocker فعال: ندارد؛ F07-T02 با migration clean/shadow isolated تکمیل شد. Phase 07 همچنان در حال اجرا است.
+- batch فعال: ندارد
+- task فعال: ندارد
+- blocker فعال: ندارد؛ task واجد شرایط بعدی `F07-T05` است و هنوز claim نشده است.
 
 ## پیشرفت کلان
 
@@ -109,6 +109,7 @@ Tasks:
 - `F07-T01` — `DONE`؛ approved issuance-policy baseline and verification: [`contracts/prescription-treatment-policy-v1.md`](contracts/prescription-treatment-policy-v1.md), evidence: [`logs/phase-07.md`](logs/phase-07.md).
 - `F07-T02` — `DONE`؛ migration prescription/treatment/task/adherence with clean local switchover verification: [`logs/phase-07.md`](logs/phase-07.md).
 - `F07-T03` — `DONE`؛ prescription create/draft/issue/revision API with append-only issued history and real PostgreSQL verification: [`logs/phase-07.md`](logs/phase-07.md).
+- `F07-T04` — `DONE`؛ treatment medication/session/exercise/nutrition plan API with the owner-approved persisted `TreatmentSessionPlan` boundary and fresh PostgreSQL verification: [`contracts/treatment-session-plan-v1.md`](contracts/treatment-session-plan-v1.md), evidence: [`logs/phase-07.md`](logs/phase-07.md).
 
 ## آخرین batch تکمیل‌شده — F07-B03
 
@@ -130,9 +131,26 @@ Tasks:
   Expected verification: input/response validation, PostgreSQL lifecycle/revision/constraint integration, authorization/resource-boundary regression, Prisma validation/generation, API smoke, and `git diff --check`
   Result: append-only prescription draft/revision and exact-revision issue API accepted with optimistic concurrency, immutable issued history, integrity evidence, current clinical capability/resource boundary, and real PostgreSQL coverage. The dedicated `PRESCRIPTION_ISSUE`, audit, and contraindication enforcement remains exclusively owned by `F07-T09`; generated client synchronization remains exclusively owned by `F07-T10`.
 
-## batch بعدی واجد شرایط
+## آخرین batch تکمیل‌شده — F07-B04
 
-`F07-B04` — `F07-T04` — treatment medication/session/exercise/nutrition plan API. Not claimed or started; it remains serialized after the accepted F07-T03 prescription API foundation.
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-04 03:45 +03:30`
+Phase: `Phase 07 — Prescription & Treatment`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/treatment-session-plan-v1.md`
+
+Tasks:
+
+- Task ID: `F07-T04`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F07-T01 DONE`, `F07-T02 DONE`, `F07-T03 DONE`
+  Scope: treatment medication/session/exercise/nutrition plan API
+  Owned paths: `apps/api/prisma/{schema.prisma,migrations/*_phase_07_treatment_session_plan/migration.sql}`, `apps/api/src/modules/clinical/{treatment-plan*.ts,admin-treatment-plans.controller.ts,patient-treatment-plans.controller.ts,clinical.module.ts}`, `apps/api/src/common/errors/api-error.ts`, `apps/api/test/{migrations.integration.spec.ts,treatment-plan*.spec.ts}`, `plan/contracts/treatment-session-plan-v1.md`, `plan/logs/phase-07.md`, `plan/STATUS.md`, `plan/phases/07-PRESCRIPTION-TREATMENT.md`, `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,data-model.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+  Shared/exclusive resource: `Prisma schema/migration, Clinical module/API contract, and PostgreSQL integration test`
+  Expected verification: reviewed additive migration SQL; fresh PostgreSQL migration/constraint smoke; DTO/response validation; real PostgreSQL treatment-plan persistence and clinic-resource boundary; Prisma validation/generation; focused API smoke; and `git diff --check`
+  Contract: owner-approved `TreatmentSessionPlan` definition only; no schedule, recurrence, reminder, attendance, completion, appointment/encounter/task relation, media, modality, revision, or per-session exercise/diet/video persistence. F07-T05/F07-T06 retain execution and derived status.
+  Result: the isolated additive migration creates only `treatment_session_plans`, its unique `(treatment_plan_id, position)` index, and a restrictive foreign key to `treatment_plans`. The API supplies validated plan and definition CRUD, patient reads, current clinic/resource authorization, and clinical audit evidence without changing F07-T02, generating the checked-in client, or adding F07-T05 scheduling/execution behavior. Evidence: `plan/logs/phase-07.md`.
 
 ## وضعیت taskهای فاز پیشین
 

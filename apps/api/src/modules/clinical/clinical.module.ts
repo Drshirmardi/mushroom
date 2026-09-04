@@ -11,6 +11,9 @@ import { AdminClinicalWorkspaceController } from './admin-clinical-workspace.con
 import { AdminClinicalWorkspaceService } from './admin-clinical-workspace.service';
 import { AdminPrescriptionsController } from './admin-prescriptions.controller';
 import { PrescriptionService } from './prescription.service';
+import { AdminTreatmentPlansController } from './admin-treatment-plans.controller';
+import { PatientTreatmentPlansController } from './patient-treatment-plans.controller';
+import { TreatmentPlanService } from './treatment-plan.service';
 
-@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService] })
+@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController, AdminTreatmentPlansController, PatientTreatmentPlansController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService] })
 export class ClinicalModule {}

@@ -9,7 +9,7 @@
 | `F07-T01` | Approved editable-draft, immutable-issue, append-only-amend lifecycle; explicit `PRESCRIPTION_ISSUE` plus resource scope; default `DOCTOR` issuer; exact-revision warning acknowledgement; and legal boundary. |
 | `F07-T02` | Prescription/treatment/task/adherence migration. |
 | `F07-T03` | Prescription create/draft/issue/revision interface. |
-| `F07-T04` | Treatment medication/session/exercise/nutrition plan interface. |
+| `F07-T04` | Treatment medication/session/exercise/nutrition plan interface, including the owner-approved minimal persisted `TreatmentSessionPlan`: ordered clinical definition only; unique plan/position; no independent status, scheduling, execution, appointment, encounter, task, recurrence, reminder, attendance, media, modality, revision, or per-session join model. Runtime OpenAPI declarations belong here; checked-in generated-client synchronization remains with `F07-T10`. |
 | `F07-T05` | Task schedule and idempotent medication/task recording. |
 | `F07-T06` | Real progress calculation and timeline. |
 | `F07-T07` | Prescription builder and dashboard patient workspace connection. |
