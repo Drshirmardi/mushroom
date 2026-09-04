@@ -100,4 +100,4 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - Phase 06 is `DONE (CLOSED)` and supplies the completed clinical-workspace baseline.
 - The authoritative source lists `F07-T01` through `F07-T12` in order but declares no individual `Depends on` fields or batch map; this adoption does not create one.
 - Exact schema and route details remain owned by their named authoritative tasks. The approved `F07-T01` baseline defines draft/issue/amend safety, default `DOCTOR` issuance authority, and the legal-confirmation boundary. The owner-approved F07-T09 clarification defers automated contraindication evaluation; F07-T09 enforces only issuance authorization, resource scope, audit, and revision integrity.
-- `F07-T01` through `F07-T10` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T11`–`F07-T12` remain unclaimed and unchecked.
+- `F07-T01` through `F07-T11` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T12` remains unclaimed and unchecked.

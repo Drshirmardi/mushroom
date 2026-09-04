@@ -1,6 +1,6 @@
 # Phase 07 Validation Quickstart
 
-This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T10` are complete and this guide does not claim or start later tasks.
+This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T11` are complete and this guide does not claim or start later tasks.
 
 ## Prerequisites
 
@@ -29,6 +29,8 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 5. Review the resulting patient activity in the dashboard; exercise required ownership, authorization, audit, and the approved no-active-rule boundary.
 
 **Pass criteria**: the dashboard issue → app display → patient log → dashboard review journey passes; issued prescriptions remain immutable; correction is revision-based; schedules are the future reminder source; patient activity persists across refresh/devices; progress is real-event derived; explicit issuance authorization/audit holds; and no automated clinical rule behavior is claimed or activated.
+
+`F07-T11` result: passed locally with disposable synthetic accounts and records. The dashboard issued a revision, the patient app displayed the persisted treatment definitions and recorded one adherence event, a fresh page and separate authenticated session observed that event, and dashboard review showed the effective issued successor revision and real 0% task-derived progress. Both issued revisions, audit links, issuer identities, timestamps, and integrity hashes were inspected before the synthetic data was removed.
 
 ## Evidence (`F07-T12`)
 

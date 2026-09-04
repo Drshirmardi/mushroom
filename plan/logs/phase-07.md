@@ -415,3 +415,34 @@ Result:
 Next batch:
 
 - `F07-B11` — `F07-T11` is eligible but unclaimed and not started.
+
+## F07-T11 — immutability, amendment, ownership, and browser E2E
+
+Task ID: F07-T11
+Completed at: 2026-09-04 22:56 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B11
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/prescription-treatment-policy-v1.md`](../contracts/prescription-treatment-policy-v1.md), [`../contracts/prescription-dashboard-connection-v1.md`](../contracts/prescription-dashboard-connection-v1.md), [`../contracts/patient-treatment-app-connection-v1.md`](../contracts/patient-treatment-app-connection-v1.md), and the browser gate in [`../../specs/005-adopt-phase-07/quickstart.md`](../../specs/005-adopt-phase-07/quickstart.md)
+
+Verification:
+
+- Local browser E2E with disposable synthetic clinician/patient accounts: issued a draft, created and issued one amendment successor, loaded permitted treatment definitions in the patient app, recorded one medication-adherence event, reloaded the app, and reviewed the effective revision and real treatment-plan progress in the dashboard → PASS.
+- Synthetic issued history inspection: both revisions were `ISSUED`; revision 2 linked to revision 1; revision 1's item was unchanged; each revision retained issuer identity, issue timestamp, and integrity hash; two revision-linked, timestamped `SIGN` audit entries existed → PASS.
+- Fresh second authenticated patient session read the persisted adherence event and the same 0% result. The percentage correctly remained task-state-derived because adherence is a timeline event, not completion of the outstanding scheduled task → PASS.
+- `apps/api`: `vitest run test/prescription.integration.spec.ts test/treatment-plan.integration.spec.ts test/treatment-activity.integration.spec.ts test/treatment-progress.integration.spec.ts --no-file-parallelism` → PASS (4 files, 10 tests; immutable amendment chain, stale-revision/concurrency, explicit `DOCTOR` issuance capability, `ADMIN`/`STAFF` denial, tenant/resource denial, audit, idempotency, real-event timeline, and no active contraindication rules).
+- `apps/api`: `prisma validate` and `prisma migrate status` → PASS (22 migrations; clean active development database).
+- `apps/dashboard`: `test` and `typecheck` → PASS (10 files, 34 tests).
+- `apps/app`: `test` and `typecheck` → PASS (9 files, 26 tests).
+- `git diff --check` → PASS.
+
+Result:
+
+- The authorized synthetic clinician used the existing single dashboard. Its issue authority came from `DOCTOR` and `PRESCRIPTION_ISSUE`; the synthetic account additionally held `ADMIN` only for the pre-existing patient-workspace read permission. `ADMIN` alone remained denied by focused regression.
+- Dashboard and app views used persisted, authorized F07 data with no fabricated fallback. The dashboard displayed the effective issued successor revision; the patient app displayed patient-owned treatment definitions and persisted activity; the dashboard displayed real task-derived progress.
+- No active contraindication rule, warning, acknowledgement, `NON_OVERRIDABLE` behavior, role-management UI, migration, Phase 08 behavior, or change to F07-T01–T10 was introduced.
+- All synthetic accounts, sessions, prescriptions, plans, tasks, activity/events, audits, and temporary clinical role grants used for this verification were removed after the checks. Preserved local-development data was not modified.
+
+Next batch:
+
+- `F07-B12` — `F07-T12` is eligible but unclaimed and not started.
