@@ -16,7 +16,7 @@ Maintain one-to-one Spec Kit artifacts for the existing twelve Phase 07 prescrip
 **Project Type**: Existing monorepo.
 **Performance Goals**: No adoption-added target.
 **Constraints**: Preserve issued-prescription immutability, revision-only amendment, idempotent treatment logging, real-event progress, persisted cross-device patient activity, authorization/audit/contraindication boundaries, and single-writer ownership for migration, generated client, authentication, and shared paths.
-**Scale/Scope**: Twelve stable tasks, `F07-T01`–`F07-T12`; all are complete and Phase 07 is `READY_FOR_REVIEW` pending independent closure review. Phase 06 is `DONE (CLOSED)`. This adoption does not authorize Phase 08 work.
+**Scale/Scope**: Twelve stable tasks, `F07-T01`–`F07-T12`; all are complete and Phase 07 is `DONE (CLOSED)` after independent closure review. Phase 06 is `DONE (CLOSED)`. Phase 08 remains `NOT_STARTED` and is not authorized by this adoption.
 
 ## Constitution Check
 
@@ -28,7 +28,7 @@ Maintain one-to-one Spec Kit artifacts for the existing twelve Phase 07 prescrip
 - The roadmap states no individual task dependency or batch map. No new hard dependency, parallel lane, claim, or completion state is declared here.
 - Roadmap-owned verification remains roadmap-owned; every task stayed unchecked until its own review/evidence gate passed.
 
-Post-implementation re-check: passed. The owner-approved F07-T04 session-definition clarification is recorded in the Phase 07 contract and evidence; no broader architecture change is introduced. F07-T11 verified the accepted immutable-revision and dashboard/app journey using disposable local data, without changing the product boundary. F07-T12 then passed final migration/client/API/frontend, no-fallback/no-Phase-08, and Spec Kit consistency/convergence gates without creating a further task.
+Post-implementation re-check: passed. The owner-approved F07-T04 session-definition clarification is recorded in the Phase 07 contract and evidence; no broader architecture change is introduced. F07-T11 verified the accepted immutable-revision and dashboard/app journey using disposable local data, without changing the product boundary. F07-T12 then passed final migration/client/API/frontend, no-fallback/no-Phase-08, and Spec Kit consistency/convergence gates without creating a further task. Independent closure review re-ran the focused F07 PostgreSQL suite, Prisma/client/frontend gates, migration-history/schema diff, and cross-artifact analysis; it found no closure gap.
 
 ## Project Structure
 

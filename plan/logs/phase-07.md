@@ -473,3 +473,31 @@ Result:
 
 - All F07 roadmap tasks and Phase exit criteria have accepted task-level evidence. The owner-approved boundaries remain intact: `TreatmentSessionPlan` is a clinical definition rather than a scheduled/executed session; task scheduling stays F07-T05; progress is real-event-derived; issuance uses explicit capability plus resource scope/audit; and no active contraindication rule engine, warning acknowledgement, `NON_OVERRIDABLE` behavior, role-management UI, or Phase 08 behavior exists.
 - Status, checklist, evidence, and Spec Kit artifacts are synchronized. Phase 07 is `READY_FOR_REVIEW`, not closed: the required independent closure review has deliberately not been performed. Phase 08 remains `NOT_STARTED` and is neither claimed nor prepared.
+
+## F07-CLOSE — independent Phase 07 closure review
+
+Completed at: 2026-09-04 23:33 +03:30
+Reviewed by: Codex /root
+
+Scope:
+
+- Closure-only independent review of the authoritative Phase 07 roadmap, `F07-T01`–`F07-T12`, accepted contracts, Spec Kit artifacts, implementation, migrations, generated OpenAPI/client, authorization/audit/revision integrity, dashboard/app behavior, tests, and browser evidence.
+
+Verification performed:
+
+- Roadmap/checklist/STATUS/Spec Kit mapping, all twelve task records, functional-requirement/success-criterion coverage, source ordering, dependency-risk, constitution, and non-destructive convergence review → PASS. No unmapped task, implementation gap, stale current-state mapping, or additional task was found.
+- `F07-T09` re-review → PASS. The route and service both require database-backed `PRESCRIPTION_ISSUE`; current role mapping is `DOCTOR` only; clinic/patient resource access is enforced separately; exact revision issue takes an advisory transaction lock, records a revision-scoped `SIGN` audit in that transaction, and fails closed without audit context. The historical F07-T01 advisory-rule wording is superseded by the owner-approved F07-T09 decision; current policy, source scan, and tests confirm no active evaluator, acknowledgement flow, rule seed, `NON_OVERRIDABLE` behavior, or rule-management UI.
+- Prescription lifecycle/revision review → PASS. Draft saves are optimistic-concurrency guarded and append revisions; issue accepts only the exact current non-empty draft; issued content carries issuer/timestamps/integrity hash and is never overwritten; amendment links a distinct successor revision with a required reason category.
+- Treatment/session/task/adherence/progress review → PASS. `TreatmentSessionPlan` remains the approved ordered definition with no execution state; one-off medication/exercise tasks retain persisted future `scheduledFor`; patient task completion and keyed adherence are owned and repeat-safe; progress percentage is read from persisted non-cancelled task state while the timeline is append-only real action evidence.
+- `F07-T11` browser E2E evidence re-review → PASS. Disposable synthetic dashboard issue → amendment → patient treatment display → patient adherence → refresh and fresh authenticated session → dashboard review retained immutable original/successor linkage, issuer/audit/timestamps, ownership boundaries, persisted activity, and real task-state-derived progress. The synthetic records were removed; no preserved local record was changed.
+- Focused real-PostgreSQL F07 integration suite → PASS (4 files, 10 tests: prescription lifecycle/capability/resource denial, ordered plans/session boundary, task/adherence idempotency/ownership, and patient/dashboard progress/timeline); API typecheck → PASS.
+- Active clean PostgreSQL `prisma validate` and `prisma migrate status` → PASS (22 applied migrations). A fresh disposable PostgreSQL shadow database replayed committed migration history and `prisma migrate diff --from-migrations ... --to-schema ... --exit-code` reported no schema difference; the shadow was dropped afterward.
+- Runtime OpenAPI export/client freshness and checked-in artifact diff → PASS; `@sabz-zendegi/api-client` build/test/typecheck → PASS (1 client test).
+- Dashboard test/typecheck/build → PASS (10 files, 34 tests); patient app test/typecheck/build → PASS (9 files, 26 tests).
+- F07 source/static review → PASS. The completed dashboard/app adapters use generated client types and operations; no in-scope mock/demo/fake or browser-local-state fallback remains; patient reads are self-owned; dashboard reads/writes retain selected patient/resource authorization; no Phase 08 follow-up, notification, reminder-dispatch, health-tracking, content-delivery, or recurrence behavior/path was added.
+- `git diff --check`, clean worktree, and F07 commit-path review → PASS. No unrelated uncommitted change or Phase 08 change was found.
+
+Result:
+
+- No unresolved blocker, partial task state, stale status/checklist/Spec Kit mapping, evidence inconsistency, issuance/revision/immutability defect, authorization/resource-scope gap, audit defect, treatment/session/task/adherence/progress disagreement, generated-client/OpenAPI drift, migration/schema drift, stale F07 mock/local state, active contraindication-rule behavior, patient/dashboard disagreement, accidental Phase 08 implementation, or unrelated change was found.
+- Phase 07 is `DONE (CLOSED)`. Phase 08 remains `NOT_STARTED`; no Phase 08 task, batch, or preparation was claimed or created.

@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-04 23:09 +03:30`
+- آخرین به‌رورسانی: `2026-09-04 23:33 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
-- فاز فعال: `Phase 07 — Prescription & Treatment`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- فاز فعال: ندارد؛ `Phase 07` بسته شده و `Phase 08` هنوز شروع نشده است.
+- وضعیت فاز فعال: ندارد
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -40,7 +40,7 @@
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
-- [ ] `Phase 07` — Prescription & Treatment — `READY_FOR_REVIEW`
+- [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
@@ -316,6 +316,16 @@ Tasks:
   Expected verification: Prisma migration/schema status, runtime OpenAPI/generated-client freshness, relevant API/frontend suites, `git diff --check`, in-scope mock/local-state and Phase 08 leakage review, and Spec Kit prerequisite/consistency/convergence analysis
   Contract: do not change product code, migrations, generated artifacts, completed F07 tasks, or Phase 08. Mark `F07-T12` done only after every gate passes; leave Phase 07 `READY_FOR_REVIEW` for an independent closure review.
   Result: all gates passed. The active clean PostgreSQL database reports all 22 committed migrations applied; Prisma validation passed; runtime OpenAPI/client regeneration created no drift; the API, generated-client, dashboard, and app suites/typechecks/builds passed; in-scope F07 sources contain no mock or browser-local-state fallback; no Phase 08 path or behavior was added; and final Spec Kit prerequisite, requirement-coverage, ordering, consistency, and convergence checks found no gap or new task. Phase 07 is `READY_FOR_REVIEW`; independent closure review remains required before any later phase is considered.
+
+## آخرین batch بسته‌شده
+
+`F07-CLOSE` — `DONE (CLOSED)`
+
+- review مستقل closure تمام معیارهای `F07-T01` تا `F07-T12`، قراردادهای accepted، migration/schema،
+  generated OpenAPI/client، authorization/resource scope، audit، immutable prescription revision،
+  treatment/task/adherence/progress، dashboard/app behavior، browser evidence، و Spec Kit را
+  مرور کرد و blocker، drift یا تغییر unrelated پیدا نکرد؛ شواهد: [`logs/phase-07.md`](logs/phase-07.md).
+- `Phase 08` همچنان `NOT_STARTED` است؛ هیچ task، batch یا آماده‌سازی برای آن انجام نشده است.
 
 ## وضعیت taskهای فاز پیشین
 

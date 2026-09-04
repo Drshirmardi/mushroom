@@ -1,6 +1,7 @@
 # Phase 07 — Prescription & Treatment
 
 - وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)` — پس از review مستقل closure در `2026-09-04`
 - Milestone: `C — هسته درمان`
 - پیش‌نیاز: `Phase 06 DONE`
 - خروجی اصلی: نسخه و برنامه درمان در dashboard صادر و در app پیگیری می‌شود.

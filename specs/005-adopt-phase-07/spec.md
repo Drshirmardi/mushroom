@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-07-prescription-treatment`
 **Created**: 2026-09-03
-**Status**: Execution tracking only — all `F07-T01` through `F07-T12` tasks are complete; Phase 07 is `READY_FOR_REVIEW` pending independent closure review.
+**Status**: Execution tracking only — all `F07-T01` through `F07-T12` tasks are complete; Phase 07 is `DONE (CLOSED)` after independent closure review.
 **Input**: Adopt the authoritative Phase 07 Prescription & Treatment roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -100,4 +100,4 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - Phase 06 is `DONE (CLOSED)` and supplies the completed clinical-workspace baseline.
 - The authoritative source lists `F07-T01` through `F07-T12` in order but declares no individual `Depends on` fields or batch map; this adoption does not create one.
 - Exact schema and route details remain owned by their named authoritative tasks. The approved `F07-T01` baseline defines draft/issue/amend safety, default `DOCTOR` issuance authority, and the legal-confirmation boundary. The owner-approved F07-T09 clarification defers automated contraindication evaluation; F07-T09 enforces only issuance authorization, resource scope, audit, and revision integrity.
-- `F07-T01` through `F07-T12` are complete. Phase 07 is `READY_FOR_REVIEW`; independent closure review remains outside F07-T12, and Phase 08 remains `NOT_STARTED`.
+- `F07-T01` through `F07-T12` are complete. Phase 07 is `DONE (CLOSED)` after independent closure review; Phase 08 remains `NOT_STARTED` and unprepared.

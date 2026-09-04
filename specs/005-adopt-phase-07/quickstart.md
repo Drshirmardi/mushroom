@@ -1,6 +1,6 @@
 # Phase 07 Validation Quickstart
 
-This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T12` are complete and Phase 07 is `READY_FOR_REVIEW` pending independent closure review. This guide does not authorize Phase 08 work.
+This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T12` are complete and Phase 07 is `DONE (CLOSED)` after independent closure review. This guide does not authorize Phase 08 work.
 
 ## Prerequisites
 
@@ -36,4 +36,4 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 
 Record accepted evidence in `plan/logs/phase-07.md` under `plan/logs/README.md`, then synchronize authoritative status only after review. Never record credentials, tokens, medical content, or PII.
 
-`F07-T12` result: passed. The clean active PostgreSQL migration ledger and Prisma validation are clean; runtime OpenAPI/client regeneration has no checked-in drift; API, client, dashboard, and app verification passed; the F07 source scan found no mock or local-state fallback and no Phase 08 behavior; and Spec Kit prerequisite, requirement-coverage, consistency, and convergence checks found no unresolved implementation gap. Phase 07 is `READY_FOR_REVIEW`; its independent closure review has not been performed.
+`F07-T12` result: passed. The clean active PostgreSQL migration ledger and Prisma validation are clean; runtime OpenAPI/client regeneration has no checked-in drift; API, client, dashboard, and app verification passed; the F07 source scan found no mock or local-state fallback and no Phase 08 behavior; and Spec Kit prerequisite, requirement-coverage, consistency, and convergence checks found no unresolved implementation gap. Independent closure review then revalidated the focused F07 PostgreSQL suite, migration-history/schema diff, client, frontend, browser evidence, and product boundaries. Phase 07 is `DONE (CLOSED)`; Phase 08 remains `NOT_STARTED`.

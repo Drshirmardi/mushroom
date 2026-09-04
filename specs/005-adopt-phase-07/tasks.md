@@ -9,7 +9,7 @@ description: "One-to-one Spec Kit adoption of existing Phase 07 roadmap tasks"
 
 **Roadmap boundary**: `T001`–`T012` are Spec Kit labels only. The authoritative roadmap IDs in the checklist entries below remain the execution, claim, evidence, and commit identities. No task is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Execution status**: `F07-T01` through `F07-T12` are complete after their respective review gates. Phase 07 is `READY_FOR_REVIEW` pending independent closure review; consult `plan/STATUS.md` and the authoritative phase checklist for the live state. This file does not authorize Phase 08 work.
+**Execution status**: `F07-T01` through `F07-T12` are complete and Phase 07 is `DONE (CLOSED)` after independent closure review. Consult `plan/STATUS.md` and the authoritative phase checklist for the live state. This file does not authorize Phase 08 work.
 
 ## Format
 
