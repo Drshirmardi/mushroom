@@ -15,7 +15,7 @@
 | `F07-T07` | Selected-patient prescription builder and dashboard patient-workspace connection using accepted prescription, treatment-plan, and real-progress APIs; no fabricated selection/data; generated-client sync remains `F07-T10`. See [`prescription-dashboard-connection-v1.md`](../../../plan/contracts/prescription-dashboard-connection-v1.md). |
 | `F07-T08` | Authenticated patient treatment connection to accepted plan, activity, and progress APIs; no fabricated treatment data. |
 | `F07-T09` | Explicit issuance permission, tenant/resource authorization, audit, and revision-integrity contract. The owner-approved clarification defers automated contraindication warning/rule behavior until a separately approved clinical feature has a trusted source. |
-| `F07-T10` | OpenAPI/generated client and in-scope mock/local-state removal. |
+| `F07-T10` | Exported accepted F07 OpenAPI, regenerated `@sabz-zendegi/api-client`, and converted the completed F07 dashboard/app adapters to generated-client request/response types. No route, persistence, authorization, contraindication, or product behavior is added. |
 | `F07-T11` | Immutability, amendment, ownership, and browser E2E. |
 | `F07-T12` | Evidence. |
 

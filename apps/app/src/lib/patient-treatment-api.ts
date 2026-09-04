@@ -1,18 +1,54 @@
-import { apiBaseUrl } from "@/lib/api";
+import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
-export type TreatmentMedication = { id: string; name: string; dosage: string | null; instructions: string | null };
-export type TreatmentSessionPlan = { id: string; position: number; title: string; goals: string[]; instructions: string | null; patientInstructions: string | null };
-export type ExercisePlan = { id: string; title: string; instructions: string | null };
-export type NutritionPlan = { id: string; title: string; instructions: string | null };
-export type TreatmentPlan = { id: string; state: "ACTIVE" | "COMPLETED"; title: string | null; medications: TreatmentMedication[]; sessionPlans: TreatmentSessionPlan[]; exercisePlans: ExercisePlan[]; nutritionPlans: NutritionPlan[] };
-export type TreatmentTask = { id: string; treatmentPlanId: string; kind: "MEDICATION" | "EXERCISE"; scheduledFor: string; state: "SCHEDULED" | "COMPLETED" | "CANCELLED"; completedAt: string | null };
-export type TreatmentProgress = { treatmentPlanId: string; percentage: number; completedTasks: number; totalTasks: number; timeline: Array<{ id: string; eventType: "TASK_COMPLETED" | "MEDICATION_ADHERENCE_RECORDED"; occurredAt: string }> };
-export class PatientTreatmentApiError extends Error { constructor(public readonly status: number, public readonly code: string | null = null) { super(code ?? "PATIENT_TREATMENT_REQUEST_FAILED"); } }
+import { apiClient } from "@/lib/api";
 
-async function request<T>(accessToken: string, path: string, init?: RequestInit): Promise<T> { try { const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers: { authorization: `Bearer ${accessToken}`, ...(init?.body ? { "content-type": "application/json" } : {}), ...init?.headers } }); const body: unknown = await response.json().catch(() => null); if (!response.ok) throw new PatientTreatmentApiError(response.status, body && typeof body === "object" && "code" in body && typeof body.code === "string" ? body.code : null); return body as T; } catch (error) { if (error instanceof PatientTreatmentApiError) throw error; throw new PatientTreatmentApiError(0); } }
+export type TreatmentMedication = components["schemas"]["TreatmentMedicationResponseDto"];
+export type TreatmentSessionPlan = components["schemas"]["TreatmentSessionPlanResponseDto"];
+export type ExercisePlan = components["schemas"]["ExercisePlanResponseDto"];
+export type NutritionPlan = components["schemas"]["NutritionPlanResponseDto"];
+export type TreatmentPlan = components["schemas"]["TreatmentPlanResponseDto"];
+export type TreatmentTask = components["schemas"]["TreatmentTaskResponseDto"];
+export type TreatmentProgress = components["schemas"]["TreatmentProgressResponseDto"];
 
-export const listPatientTreatmentPlans = (token: string) => request<{ items: TreatmentPlan[] }>(token, "/v1/patients/me/treatment-plans");
-export const listPatientTreatmentTasks = (token: string) => request<{ items: TreatmentTask[] }>(token, "/v1/patients/me/treatment/tasks");
-export const getPatientTreatmentProgress = (token: string, planId: string) => request<TreatmentProgress>(token, `/v1/patients/me/treatment-plans/${planId}/progress`);
-export const completePatientTreatmentTask = (token: string, taskId: string) => request<TreatmentTask>(token, `/v1/patients/me/treatment/tasks/${taskId}/complete`, { method: "POST" });
-export const recordPatientMedicationAdherence = (token: string, medicationId: string, treatmentTaskId?: string) => request<{ id: string }>(token, `/v1/patients/me/treatment/medications/${medicationId}/adherence`, { method: "POST", headers: { "idempotency-key": crypto.randomUUID() }, body: JSON.stringify(treatmentTaskId ? { treatmentTaskId } : {}) });
+export class PatientTreatmentApiError extends Error {
+  constructor(public readonly status: number, public readonly code: string | null = null) {
+    super(code ?? "PATIENT_TREATMENT_REQUEST_FAILED");
+  }
+}
+
+const authorization = (accessToken: string) => ({ authorization: `Bearer ${accessToken}` });
+
+async function dataOrThrow<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
+  try {
+    const { data, error, response } = await withRequestTimeout(request);
+    if (response.ok && data) return data;
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
+    throw new PatientTreatmentApiError(response.status, code);
+  } catch (error) {
+    if (error instanceof PatientTreatmentApiError) throw error;
+    throw new PatientTreatmentApiError(0);
+  }
+}
+
+export const listPatientTreatmentPlans = (accessToken: string) => dataOrThrow<components["schemas"]["TreatmentPlanListResponseDto"]>(
+  apiClient.GET("/v1/patients/me/treatment-plans", { headers: authorization(accessToken) }),
+);
+
+export const listPatientTreatmentTasks = (accessToken: string) => dataOrThrow<components["schemas"]["TreatmentTaskListResponseDto"]>(
+  apiClient.GET("/v1/patients/me/treatment/tasks", { headers: authorization(accessToken) }),
+);
+
+export const getPatientTreatmentProgress = (accessToken: string, planId: string) => dataOrThrow<TreatmentProgress>(
+  apiClient.GET("/v1/patients/me/treatment-plans/{planId}/progress", { headers: authorization(accessToken), params: { path: { planId } } }),
+);
+
+export const completePatientTreatmentTask = (accessToken: string, taskId: string) => dataOrThrow<TreatmentTask>(
+  apiClient.POST("/v1/patients/me/treatment/tasks/{taskId}/complete", { headers: authorization(accessToken), params: { path: { taskId } } }),
+);
+
+export const recordPatientMedicationAdherence = (accessToken: string, medicationId: string, treatmentTaskId?: string) => {
+  const idempotencyKey = crypto.randomUUID();
+  return dataOrThrow<components["schemas"]["MedicationAdherenceResponseDto"]>(
+    apiClient.POST("/v1/patients/me/treatment/medications/{medicationId}/adherence", { headers: { ...authorization(accessToken), "Idempotency-Key": idempotencyKey }, params: { header: { "Idempotency-Key": idempotencyKey }, path: { medicationId } }, body: treatmentTaskId ? { treatmentTaskId } : {} }),
+  );
+};

@@ -378,3 +378,40 @@ Result:
 Next batch:
 
 - `F07-B10` — `F07-T10` is eligible but unclaimed and not started.
+
+## F07-T10 — OpenAPI/client synchronization and in-scope transport cleanup
+
+Task ID: F07-T10
+Completed at: 2026-09-04 19:33 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B10
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/prescription-dashboard-connection-v1.md`](../contracts/prescription-dashboard-connection-v1.md), [`../contracts/patient-treatment-app-connection-v1.md`](../contracts/patient-treatment-app-connection-v1.md), and [`../contracts/prescription-treatment-policy-v1.md`](../contracts/prescription-treatment-policy-v1.md)
+
+Changed files:
+
+- `packages/api-client/{openapi.json,src/schema.generated.ts}`
+- `apps/dashboard/src/lib/{prescription-treatment-api.ts,prescription-treatment-api.spec.ts}`
+- `apps/app/src/lib/{patient-treatment-api.ts,patient-treatment-api.spec.ts}`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Tests run:
+
+- `corepack pnpm generate:api-client` → PASS (runtime OpenAPI export and checked-in generated types are fresh).
+- `corepack pnpm --filter @sabz-zendegi/api-client {build,test,typecheck}` → PASS (generated source freshness, package build/typecheck, 1 client test).
+- `corepack pnpm --filter @sabz/dashboard test`, `typecheck`, `lint`, and `build` → PASS (10 files/34 tests; lint has only the two pre-existing unused clinical-editor warnings outside this task).
+- `corepack pnpm --filter @sabz/app test`, `typecheck`, and `build` → PASS (9 files/26 tests).
+- `corepack pnpm exec vitest run test/prescription.integration.spec.ts test/treatment-plan.integration.spec.ts test/treatment-activity.integration.spec.ts test/treatment-progress.integration.spec.ts --no-file-parallelism` from `apps/api` → PASS (4 files/10 real-PostgreSQL tests).
+- `git diff --check` → PASS.
+
+Result:
+
+- The checked-in OpenAPI artifact now exposes the already accepted Phase 07 prescription, treatment-plan/session/definition, task/adherence, and progress operations; no new route, migration, service, authorization policy, or runtime behavior was introduced.
+- Dashboard and patient treatment adapters now use generated paths, request bodies, and response types while retaining the existing bounded timeout and explicit API-error behavior. The generated adherence operation also verifies the required `Idempotency-Key` header at compile time.
+- The completed F07 dashboard/app connections retain truthful selected-patient, authenticated-patient, loading, error, and empty states; no in-scope Phase 07 mock or local-only data fallback remains.
+- The owner-approved Phase 07 boundary remains unchanged: no active contraindication-rule engine, warning/acknowledgement flow, `NON_OVERRIDABLE` behavior, rule-management UI, session scheduling/execution expansion, or Phase 08 work.
+
+Next batch:
+
+- `F07-B11` — `F07-T11` is eligible but unclaimed and not started.

@@ -6243,6 +6243,1449 @@
           "Admin clinical workspace"
         ]
       }
+    },
+    "/v1/admin/patients/{patientId}/prescriptions": {
+      "get": {
+        "operationId": "adminPrescriptionsList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List authorized patient prescriptions",
+        "tags": [
+          "Admin prescriptions"
+        ]
+      },
+      "post": {
+        "operationId": "adminPrescriptionsCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePrescriptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a prescription draft",
+        "tags": [
+          "Admin prescriptions"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}": {
+      "get": {
+        "operationId": "adminPrescriptionsGet",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "prescriptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an authorized prescription current revision",
+        "tags": [
+          "Admin prescriptions"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/revisions": {
+      "post": {
+        "operationId": "adminPrescriptionsSaveDraft",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "prescriptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePrescriptionDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save an append-only prescription draft revision",
+        "tags": [
+          "Admin prescriptions"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/issue": {
+      "post": {
+        "operationId": "adminPrescriptionsIssue",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "prescriptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssuePrescriptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Issue an exact current prescription revision",
+        "tags": [
+          "Admin prescriptions"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans": {
+      "get": {
+        "operationId": "adminTreatmentPlansList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List authorized patient treatment plans",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      },
+      "post": {
+        "operationId": "adminTreatmentPlansCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTreatmentPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an authorized treatment-plan definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}": {
+      "get": {
+        "operationId": "adminTreatmentPlansGet",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an authorized treatment-plan definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      },
+      "patch": {
+        "operationId": "adminTreatmentPlansUpdate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTreatmentPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update an editable treatment-plan definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications": {
+      "post": {
+        "operationId": "adminTreatmentPlanMedicationsCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TreatmentMedicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentMedicationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add a treatment medication definition without schedule execution",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications/{medicationId}": {
+      "patch": {
+        "operationId": "adminTreatmentPlanMedicationsUpdate",
+        "parameters": [
+          {
+            "name": "medicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTreatmentMedicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentMedicationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update an editable treatment medication definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions": {
+      "post": {
+        "operationId": "adminTreatmentPlanSessionsCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TreatmentSessionPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentSessionPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add an ordered clinical session definition without scheduling",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions/{sessionId}": {
+      "patch": {
+        "operationId": "adminTreatmentPlanSessionsUpdate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTreatmentSessionPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentSessionPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update an ordered clinical session definition without scheduling",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises": {
+      "post": {
+        "operationId": "adminTreatmentPlanExercisesCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExercisePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExercisePlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add an exercise definition without schedule execution",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises/{exerciseId}": {
+      "patch": {
+        "operationId": "adminTreatmentPlanExercisesUpdate",
+        "parameters": [
+          {
+            "name": "exerciseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExercisePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExercisePlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update an editable exercise definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition": {
+      "post": {
+        "operationId": "adminTreatmentPlanNutritionCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NutritionPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NutritionPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add a nutrition definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition/{nutritionId}": {
+      "patch": {
+        "operationId": "adminTreatmentPlanNutritionUpdate",
+        "parameters": [
+          {
+            "name": "nutritionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNutritionPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NutritionPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update an editable nutrition definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/patients/me/treatment-plans": {
+      "get": {
+        "operationId": "patientTreatmentPlansList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the patient permitted active or completed treatment plans",
+        "tags": [
+          "Patient treatment plans"
+        ]
+      }
+    },
+    "/v1/patients/me/treatment-plans/{planId}": {
+      "get": {
+        "operationId": "patientTreatmentPlansGet",
+        "parameters": [
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a patient permitted active or completed treatment plan",
+        "tags": [
+          "Patient treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks": {
+      "get": {
+        "operationId": "adminTreatmentTasksList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentTaskListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List authorized treatment-task occurrences",
+        "tags": [
+          "Admin treatment tasks"
+        ]
+      },
+      "post": {
+        "operationId": "adminTreatmentTasksCreate",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTreatmentTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentTaskResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Schedule a one-off medication or exercise task",
+        "tags": [
+          "Admin treatment tasks"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}": {
+      "patch": {
+        "operationId": "adminTreatmentTasksReschedule",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleTreatmentTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentTaskResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reschedule a scheduled treatment task",
+        "tags": [
+          "Admin treatment tasks"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}/cancel": {
+      "post": {
+        "operationId": "adminTreatmentTasksCancel",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentTaskResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel a scheduled treatment task",
+        "tags": [
+          "Admin treatment tasks"
+        ]
+      }
+    },
+    "/v1/patients/me/treatment/tasks": {
+      "get": {
+        "operationId": "patientTreatmentTasksList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentTaskListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the patient scheduled treatment tasks",
+        "tags": [
+          "Patient treatment activity"
+        ]
+      }
+    },
+    "/v1/patients/me/treatment/tasks/{taskId}/complete": {
+      "post": {
+        "operationId": "patientTreatmentTasksComplete",
+        "parameters": [
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentTaskResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Complete one permitted treatment task repeat-safely",
+        "tags": [
+          "Patient treatment activity"
+        ]
+      }
+    },
+    "/v1/patients/me/treatment/medications/{medicationId}/adherence": {
+      "post": {
+        "operationId": "patientMedicationAdherenceRecord",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "medicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordMedicationAdherenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicationAdherenceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Record permitted medication adherence idempotently",
+        "tags": [
+          "Patient treatment activity"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/progress": {
+      "get": {
+        "operationId": "adminTreatmentProgressGet",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentProgressResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get authorized real treatment progress and timeline",
+        "tags": [
+          "Admin treatment progress"
+        ]
+      }
+    },
+    "/v1/patients/me/treatment-plans/{planId}/progress": {
+      "get": {
+        "operationId": "patientTreatmentProgressGet",
+        "parameters": [
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentProgressResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the authenticated patient real treatment progress and timeline",
+        "tags": [
+          "Patient treatment progress"
+        ]
+      }
     }
   },
   "info": {
@@ -6394,6 +7837,17 @@
               "AVAILABILITY_INTERVAL_OVERLAP",
               "SCHEDULE_INTERVAL_INVALID",
               "AVAILABILITY_QUERY_INVALID",
+              "TREATMENT_PLAN_RESOURCE_FORBIDDEN",
+              "TREATMENT_PLAN_NOT_EDITABLE",
+              "TREATMENT_PLAN_STATE_INVALID",
+              "TREATMENT_SESSION_POSITION_CONFLICT",
+              "TREATMENT_PLAN_TEXT_REQUIRED",
+              "TREATMENT_TASK_RESOURCE_FORBIDDEN",
+              "TREATMENT_TASK_PLAN_INACTIVE",
+              "TREATMENT_TASK_SCHEDULE_INVALID",
+              "TREATMENT_TASK_STATE_INVALID",
+              "TREATMENT_ADHERENCE_TASK_INVALID",
+              "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN",
               "HTTP_ERROR",
               "INTERNAL_SERVER_ERROR"
             ],
@@ -10884,6 +12338,933 @@
         "required": [
           "expectedRevision",
           "reviewedContent"
+        ]
+      },
+      "PrescriptionItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "number"
+          },
+          "medicationName": {
+            "type": "string"
+          },
+          "doseText": {
+            "type": "string",
+            "nullable": true
+          },
+          "frequencyText": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationText": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "medicationName",
+          "doseText",
+          "frequencyText",
+          "durationText",
+          "instructions"
+        ]
+      },
+      "PrescriptionRevisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "previousRevisionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ISSUED",
+              "VOIDED"
+            ]
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "nullable": true
+          },
+          "integrityHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "authoredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "authoredByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "issuedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "revisionNumber",
+          "previousRevisionId",
+          "state",
+          "amendmentReasonCategory",
+          "integrityHash",
+          "authoredAt",
+          "authoredByUserId",
+          "issuedAt",
+          "issuedByUserId",
+          "items"
+        ]
+      },
+      "PrescriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "currentIssuedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "latestIssuedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "revision": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrescriptionRevisionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "currentRevision",
+          "currentIssuedRevision",
+          "latestIssuedRevision",
+          "revision"
+        ]
+      },
+      "PrescriptionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PrescriptionItemDto": {
+        "type": "object",
+        "properties": {
+          "medicationName": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "doseText": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "frequencyText": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "durationText": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "medicationName"
+        ]
+      },
+      "CreatePrescriptionDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionItemDto"
+            }
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "items"
+        ]
+      },
+      "SavePrescriptionDraftDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionItemDto"
+            }
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "items"
+        ]
+      },
+      "IssuePrescriptionDto": {
+        "type": "object",
+        "properties": {
+          "revisionNumber": {
+            "type": "number",
+            "minimum": 1
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "revisionNumber",
+          "expectedRevision"
+        ]
+      },
+      "TreatmentMedicationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dosage": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "dosage",
+          "instructions",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TreatmentSessionPlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "patientInstructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "title",
+          "goals",
+          "instructions",
+          "patientInstructions",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ExercisePlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "instructions",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "NutritionPlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "instructions",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TreatmentPlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "COMPLETED",
+              "VOIDED"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "medications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentMedicationResponseDto"
+            }
+          },
+          "sessionPlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentSessionPlanResponseDto"
+            }
+          },
+          "exercisePlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExercisePlanResponseDto"
+            }
+          },
+          "nutritionPlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NutritionPlanResponseDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "state",
+          "title",
+          "medications",
+          "sessionPlans",
+          "exercisePlans",
+          "nutritionPlans",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TreatmentPlanListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentPlanResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "TreatmentMedicationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "dosage": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "TreatmentSessionPlanDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "goals": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "patientInstructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "position",
+          "title",
+          "goals"
+        ]
+      },
+      "ExercisePlanDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "NutritionPlanDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "CreateTreatmentPlanDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "medications": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentMedicationDto"
+            }
+          },
+          "sessionPlans": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentSessionPlanDto"
+            }
+          },
+          "exercisePlans": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExercisePlanDto"
+            }
+          },
+          "nutritionPlans": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NutritionPlanDto"
+            }
+          }
+        }
+      },
+      "UpdateTreatmentPlanDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "COMPLETED",
+              "VOIDED"
+            ]
+          }
+        }
+      },
+      "UpdateTreatmentMedicationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "dosage": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        }
+      },
+      "UpdateTreatmentSessionPlanDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "goals": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "patientInstructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        }
+      },
+      "UpdateExercisePlanDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        }
+      },
+      "UpdateNutritionPlanDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        }
+      },
+      "TreatmentTaskResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatmentPlanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "MEDICATION",
+              "EXERCISE"
+            ]
+          },
+          "scheduledFor": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "treatmentPlanId",
+          "kind",
+          "scheduledFor",
+          "state",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TreatmentTaskListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentTaskResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateTreatmentTaskDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "MEDICATION",
+              "EXERCISE"
+            ]
+          },
+          "scheduledFor": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "kind",
+          "scheduledFor"
+        ]
+      },
+      "RescheduleTreatmentTaskDto": {
+        "type": "object",
+        "properties": {
+          "scheduledFor": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "scheduledFor"
+        ]
+      },
+      "RecordMedicationAdherenceDto": {
+        "type": "object",
+        "properties": {
+          "treatmentTaskId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional matching MEDICATION task in the same treatment plan."
+          }
+        }
+      },
+      "MedicationAdherenceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatmentMedicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatmentTaskId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "recordedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "treatmentMedicationId",
+          "recordedAt",
+          "createdAt"
+        ]
+      },
+      "TreatmentProgressEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatmentPlanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatmentTaskId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "TASK_COMPLETED",
+              "MEDICATION_ADHERENCE_RECORDED"
+            ]
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "treatmentPlanId",
+          "eventType",
+          "occurredAt"
+        ]
+      },
+      "TreatmentProgressResponseDto": {
+        "type": "object",
+        "properties": {
+          "treatmentPlanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "percentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "completedTasks": {
+            "type": "number",
+            "minimum": 0
+          },
+          "totalTasks": {
+            "type": "number",
+            "minimum": 0
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentProgressEventResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "treatmentPlanId",
+          "percentage",
+          "completedTasks",
+          "totalTasks",
+          "timeline"
         ]
       }
     }

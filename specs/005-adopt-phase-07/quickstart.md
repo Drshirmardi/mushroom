@@ -1,6 +1,6 @@
 # Phase 07 Validation Quickstart
 
-This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T07` are complete and this guide does not claim or start later tasks.
+This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T10` are complete and this guide does not claim or start later tasks.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 - `F07-T07`: selected-patient dashboard adapter contract tests; dashboard test/type/lint/build; focused accepted prescription/treatment/progress API regression; and truthful missing-selection/error states. Checked-in generated-client synchronization remains out of scope.
 - `F07-T08`: patient treatment adapter contract tests; app test/type/build; focused accepted plan/activity/progress API regression; and truthful loading/error/empty states without fabricated treatment data.
 - `F07-T09`: explicit-issuance authorization matrix, audit, revision-integrity, and automated-safety-rule deferral coverage.
-- `F07-T10`: regenerate/typecheck the client and review in-scope connection removal.
+- `F07-T10`: exported the accepted F07 runtime OpenAPI surface, regenerated and typechecked `@sabz-zendegi/api-client`, and converted both completed F07 frontend transport adapters to generated-client wrappers. Contract tests, app/dashboard type/build checks, focused real-PostgreSQL API regression, and no-fallback review passed.
 
 ## Phase browser gate (`F07-T11`)
 

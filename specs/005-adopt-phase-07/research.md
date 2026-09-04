@@ -48,6 +48,12 @@
 
 **Alternatives considered**: Local medication/task toggles, fabricated session/exercise/progress data, or a client-sync change before F07-T10 are rejected.
 
+## Decision: Synchronize the accepted F07 client contract without changing product scope
+
+**Rationale**: `F07-T10` exports the already accepted server OpenAPI surface and regenerates the checked-in client. The dashboard and patient treatment adapters retain their thin error/timeout boundary but use generated path, request, and response types rather than manual paths or duplicate API shapes. This removes the temporary transport duplication while keeping the selected-patient and patient-owned API behavior unchanged.
+
+**Alternatives considered**: Hand-maintaining F07 route/type copies, deleting error-aware adapters altogether, adding a second client abstraction, or reintroducing mock/local treatment data are rejected.
+
 ## Decision: Do not infer parallel lanes
 
 **Rationale**: The source has no batch map or per-task dependencies. Future execution must claim and assign non-overlapping ownership under `plan/05-AGENT-WORKFLOW.md`.
