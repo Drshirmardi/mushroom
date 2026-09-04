@@ -9,7 +9,7 @@ description: "One-to-one Spec Kit adoption of existing Phase 07 roadmap tasks"
 
 **Roadmap boundary**: `T001`–`T012` are Spec Kit labels only. The authoritative roadmap IDs in the checklist entries below remain the execution, claim, evidence, and commit identities. No task is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Execution status**: `F07-T01` through `F07-T11` are complete after their respective review gates; `F07-T12` remains unclaimed and unchecked. Consult `plan/STATUS.md` and the authoritative phase checklist for the live state. This file does not authorize implementation.
+**Execution status**: `F07-T01` through `F07-T12` are complete after their respective review gates. Phase 07 is `READY_FOR_REVIEW` pending independent closure review; consult `plan/STATUS.md` and the authoritative phase checklist for the live state. This file does not authorize Phase 08 work.
 
 ## Format
 
@@ -41,7 +41,7 @@ Reuse the completed Phase 06 clinical-workspace baseline, existing API/frontend/
 - [x] T009 [US3] F07-T09: permission، audit، contraindication warning contract
 - [x] T010 [US3] F07-T10: OpenAPI/client و حذف mock/local state scope
 - [x] T011 [US3] F07-T11: immutability، amendment، ownership و browser E2E
-- [ ] T012 [US3] F07-T12: evidence
+- [x] T012 [US3] F07-T12: evidence
 
 ## Dependencies & Execution Order
 

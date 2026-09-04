@@ -29,4 +29,4 @@
 - Progress derives from real events.
 - The dashboard issue → app display → patient log → dashboard review path passes.
 
-This adoption records the completed `F07-T01` policy baseline only. No later Phase 07 task is claimed, activated, or completed by this document.
+This adoption records the approved Phase 07 boundaries and completed one-to-one roadmap execution through `F07-T12`. Phase 07 is `READY_FOR_REVIEW`; independent closure review remains required, and no Phase 08 task is claimed, activated, or prepared by this document.

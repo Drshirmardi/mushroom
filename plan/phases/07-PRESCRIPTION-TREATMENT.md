@@ -36,7 +36,7 @@
 - [x] `F07-T09` — permission، audit، contraindication warning contract
 - [x] `F07-T10` — OpenAPI/client و حذف mock/local state scope
 - [x] `F07-T11` — immutability، amendment، ownership و browser E2E
-- [ ] `F07-T12` — evidence
+- [x] `F07-T12` — evidence
 
 ## قواعد و معیار خروج
 

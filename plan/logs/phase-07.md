@@ -446,3 +446,30 @@ Result:
 Next batch:
 
 - `F07-B12` — `F07-T12` is eligible but unclaimed and not started.
+
+## F07-T12 — final verification, evidence, and Spec Kit convergence
+
+Task ID: F07-T12
+Completed at: 2026-09-04 23:09 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B12
+Reviewed by: Codex /root
+Contract baseline: the authoritative Phase 07 roadmap, accepted Phase 07 contracts, and [`../../specs/005-adopt-phase-07/`](../../specs/005-adopt-phase-07/)
+
+Verification:
+
+- Spec Kit prerequisite check with required tasks and available design artifacts → PASS (`specs/005-adopt-phase-07/` selected; required `tasks.md` present).
+- One-to-one task-map, ordering, requirement/acceptance coverage, and dependency-risk analysis across the authoritative roadmap and Spec Kit `spec.md`, `plan.md`, `tasks.md`, and `quickstart.md` → PASS. All twelve stable IDs match in source order; the roadmap's absence of individual `Depends on` fields remains documented without manufacturing a dependency. No convergence gap or new task was identified.
+- Active clean PostgreSQL: `prisma validate` and `prisma migrate status` → PASS (22 committed migrations, schema up to date).
+- `corepack pnpm generate:api-client`, followed by checked-in OpenAPI/generated-type diff inspection → PASS (no runtime OpenAPI or generated-client drift).
+- API full test suite and typecheck → PASS; generated-client build, test, and typecheck → PASS.
+- Dashboard test/typecheck/lint/build → PASS (10 files/34 tests; lint has only the two pre-existing unrelated clinical-editor warnings); app test/typecheck/build → PASS (9 files/26 tests).
+- Focused F07 PostgreSQL/browser evidence remains accepted from `F07-T11`: immutable issued revision and linked amendment, issuer/audit/timestamp preservation, authorization/ownership boundaries, persisted patient activity after refresh and separate authenticated session, dashboard review, and real-event progress → PASS. Disposable synthetic data was removed then; no preserved local-development record was changed.
+- Targeted F07 source review found no `mock`, fixture/demo/fake, `localStorage`, or `sessionStorage` fallback in the completed prescription/treatment API, dashboard, or patient-app paths; both adapters import the generated API client → PASS.
+- Targeted F07 source review and branch path review found no Phase 08 follow-up, notification, reminder-dispatch, health-tracking, content-delivery, or recurrence behavior/path → PASS.
+- `git diff --check` → PASS.
+
+Result:
+
+- All F07 roadmap tasks and Phase exit criteria have accepted task-level evidence. The owner-approved boundaries remain intact: `TreatmentSessionPlan` is a clinical definition rather than a scheduled/executed session; task scheduling stays F07-T05; progress is real-event-derived; issuance uses explicit capability plus resource scope/audit; and no active contraindication rule engine, warning acknowledgement, `NON_OVERRIDABLE` behavior, role-management UI, or Phase 08 behavior exists.
+- Status, checklist, evidence, and Spec Kit artifacts are synchronized. Phase 07 is `READY_FOR_REVIEW`, not closed: the required independent closure review has deliberately not been performed. Phase 08 remains `NOT_STARTED` and is neither claimed nor prepared.

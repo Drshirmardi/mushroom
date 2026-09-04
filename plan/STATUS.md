@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-04 22:56 +03:30`
+- آخرین به‌رورسانی: `2026-09-04 23:09 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 07 — Prescription & Treatment`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -40,7 +40,7 @@
 - [x] `Phase 04` — Clinic, Doctors, Services & Availability — `DONE (CLOSED)`
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
-- [ ] `Phase 07` — Prescription & Treatment — `IN_PROGRESS`
+- [ ] `Phase 07` — Prescription & Treatment — `READY_FOR_REVIEW`
 - [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
@@ -117,6 +117,7 @@ Tasks:
 - `F07-T09` — `DONE`؛ explicit `PRESCRIPTION_ISSUE`, default `DOCTOR` mapping, tenant/resource authorization, transactional issuance audit, and owner-approved automated-safety-rule deferral: [`contracts/prescription-treatment-policy-v1.md`](contracts/prescription-treatment-policy-v1.md), evidence: [`logs/phase-07.md`](logs/phase-07.md).
 - `F07-T10` — `DONE`؛ exported accepted F07 OpenAPI, regenerated the checked-in client, and replaced the completed F07 dashboard/app transport duplication with generated-client wrappers; evidence: [`logs/phase-07.md`](logs/phase-07.md).
 - `F07-T11` — `DONE`؛ local browser journey and PostgreSQL verification confirm immutable issued revisions, revision-only amendment, ownership, audit, persisted patient activity, and real-event progress; evidence: [`logs/phase-07.md`](logs/phase-07.md).
+- `F07-T12` — `DONE`؛ final Phase 07 verification, evidence reconciliation, and Spec Kit consistency/convergence review passed; evidence: [`logs/phase-07.md`](logs/phase-07.md).
 
 ## آخرین batch تکمیل‌شده — F07-B03
 
@@ -293,6 +294,28 @@ Tasks:
   Result: accepted after a local browser flow using disposable synthetic accounts, persisted patient activity across a fresh page and a second authenticated session, dashboard review, exact revision/audit inspection, focused real-PostgreSQL API tests, dashboard/app tests and typechecks, Prisma validation/status, and whitespace review. The synthetic data was removed after verification; no preserved local-development record was changed.
 
 Next eligible batch: `F07-B12` — `F07-T12` is eligible, unclaimed, and not started.
+
+## آخرین batch تکمیل‌شده — F07-B12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-04 23:00 +03:30`
+Completed at: `2026-09-04 23:09 +03:30`
+Phase: `Phase 07 — Prescription & Treatment`
+Batch status: `DONE`
+Contract baseline: the accepted Phase 07 roadmap, contracts, and `specs/005-adopt-phase-07/` artifacts
+
+Tasks:
+
+- Task ID: `F07-T12`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F07-T01` through `F07-T11` `DONE`
+  Scope: final Phase 07 verification, evidence, authoritative checklist/status reconciliation, and Spec Kit consistency/convergence review only
+  Owned paths: `plan/{STATUS.md,logs/phase-07.md,phases/07-PRESCRIPTION-TREATMENT.md}` and `specs/005-adopt-phase-07/**`
+  Shared/exclusive resource: Phase 07 final evidence and status synchronization
+  Expected verification: Prisma migration/schema status, runtime OpenAPI/generated-client freshness, relevant API/frontend suites, `git diff --check`, in-scope mock/local-state and Phase 08 leakage review, and Spec Kit prerequisite/consistency/convergence analysis
+  Contract: do not change product code, migrations, generated artifacts, completed F07 tasks, or Phase 08. Mark `F07-T12` done only after every gate passes; leave Phase 07 `READY_FOR_REVIEW` for an independent closure review.
+  Result: all gates passed. The active clean PostgreSQL database reports all 22 committed migrations applied; Prisma validation passed; runtime OpenAPI/client regeneration created no drift; the API, generated-client, dashboard, and app suites/typechecks/builds passed; in-scope F07 sources contain no mock or browser-local-state fallback; no Phase 08 path or behavior was added; and final Spec Kit prerequisite, requirement-coverage, ordering, consistency, and convergence checks found no gap or new task. Phase 07 is `READY_FOR_REVIEW`; independent closure review remains required before any later phase is considered.
 
 ## وضعیت taskهای فاز پیشین
 
