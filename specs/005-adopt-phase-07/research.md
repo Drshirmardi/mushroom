@@ -20,9 +20,9 @@
 
 ## Decision: Preserve persistent, idempotent treatment activity
 
-**Rationale**: The roadmap requires schedule, medication/adherence, and task-completion information to persist through refresh and across devices. `F07-T05` owns the idempotent recording boundary.
+**Rationale**: The roadmap requires schedule, medication/adherence, and task-completion information to persist through refresh and across devices. `F07-T05` uses the existing F07-T02 `TreatmentTask` and `MedicationAdherenceLog` foundation: each task is a one-off `MEDICATION` or `EXERCISE` occurrence and its `scheduledFor` is the future reminder source. Completion is a single server-controlled state transition and a matching adherence retry returns the first keyed record. This keeps the approved F07-T04 session definition separate from execution/scheduling.
 
-**Alternatives considered**: Fixed UI progress, local-only treatment logs, or non-idempotent retry behavior is rejected.
+**Alternatives considered**: Fixed UI progress, local-only treatment logs, non-idempotent retry behavior, treating `TreatmentSessionPlan` as a scheduled occurrence, or interpreting arbitrary medication/exercise schedule JSON as a recurrence engine are rejected.
 
 ## Decision: Use an owner-approved dedicated treatment-session definition
 

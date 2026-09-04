@@ -24,11 +24,11 @@ Exercise- and nutrition-oriented parts of a treatment plan, both owned by `F07-T
 
 ## Treatment Task
 
-A scheduled treatment activity. Its idempotent completion recording is owned by `F07-T05`; its future reminder relationship is limited to the roadmap statement that the schedule is the future reminder source.
+An F07-T05 one-off `MEDICATION` or `EXERCISE` occurrence under an active treatment plan. It has persisted `scheduledFor`, `SCHEDULED`/`COMPLETED`/`CANCELLED` state, server-controlled `completedAt`, and timestamps. `scheduledFor` is the future reminder source; it has no session-plan, appointment, encounter, recurrence, reminder-dispatch, or progress-event relation. Patient completion is repeat-safe and records one state transition.
 
 ## Medication Adherence Log
 
-A persisted medication/adherence activity record, owned by `F07-T05`. It remains available after refresh and from another device.
+A persisted medication/adherence activity record, owned by `F07-T05`. It remains available after refresh and from another device. Its unique `idempotencyKey` preserves the first record for the same medication/optional matching medication-task retry and rejects reuse for a different source.
 
 ## Treatment Progress Event
 

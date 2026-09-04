@@ -178,3 +178,43 @@ Result:
 Next batch:
 
 - `F07-B05` — `F07-T05` is eligible but unclaimed and not started.
+
+## F07-T05 — task schedule and idempotent medication/task recording
+
+Task ID: F07-T05
+Completed at: 2026-09-04 16:55 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B05
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/treatment-task-activity-v1.md`](../contracts/treatment-task-activity-v1.md)
+
+Changed files:
+
+- `apps/api/src/common/errors/api-error.ts`
+- `apps/api/src/modules/clinical/{treatment-activity.dto.ts,treatment-activity-response.dto.ts,treatment-activity.service.ts,admin-treatment-tasks.controller.ts,patient-treatment-activity.controller.ts,clinical.module.ts}`
+- `apps/api/test/treatment-activity.integration.spec.ts`
+- `plan/contracts/treatment-task-activity-v1.md`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,data-model.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Migrations: none; the accepted F07-T02 `TreatmentTask` and `MedicationAdherenceLog` persistence foundation is reused unchanged.
+
+Tests run:
+
+- `prisma validate`, `prisma generate`, and `prisma migrate status` → PASS (20 committed migrations; clean active development database).
+- `tsc -p tsconfig.test.json --noEmit` → PASS.
+- `vitest run test/treatment-activity.integration.spec.ts --no-file-parallelism` → PASS (3/3; one-off medication/exercise schedule, future-time validation, reschedule/cancel, patient-owned task reads, repeat-safe completion with one audit state transition, keyed adherence replay/reuse rejection, optional matching task validation, clinic-resource denial, and runtime OpenAPI declarations).
+- `vitest run test/treatment-activity.integration.spec.ts test/treatment-plan.integration.spec.ts test/prescription.integration.spec.ts test/clinical-notes.integration.spec.ts --no-file-parallelism` → PASS (13/13).
+- `vitest run test/migrations.integration.spec.ts --no-file-parallelism` with the repository development seed setting → PASS (2/2; fresh PostgreSQL migration replay and deterministic seed smoke).
+- `git diff --check` → PASS.
+
+Result:
+
+- Authorized clinical users can list, create, reschedule, and cancel one-off `MEDICATION`/`EXERCISE` `TreatmentTask` occurrences for an active treatment plan in their granted clinic. `scheduledFor` is the persisted future reminder source.
+- Patients can read only their own non-cancelled active/completed-plan tasks and repeat-safely complete only an owned scheduled task; the state transition and `completedAt` are server controlled and a repeated completion does not create a second audit transition.
+- Medication adherence requires `Idempotency-Key`; an optional task must be a non-cancelled matching medication task in the same active plan. A matching retry returns the first record; reuse for another medication or task is rejected by the existing unique-key authority.
+- Existing audit and authorization conventions apply. No schema/migration change, `TreatmentSessionPlan` relationship, session scheduling, appointment/encounter behavior, recurrence engine, reminder dispatch, progress event/calculation, UI/client connection, generated-client synchronization, RBAC-management infrastructure, or Phase 08 behavior was introduced.
+
+Next batch:
+
+- `F07-B06` — `F07-T06` is eligible but unclaimed and not started.

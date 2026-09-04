@@ -14,6 +14,9 @@ import { PrescriptionService } from './prescription.service';
 import { AdminTreatmentPlansController } from './admin-treatment-plans.controller';
 import { PatientTreatmentPlansController } from './patient-treatment-plans.controller';
 import { TreatmentPlanService } from './treatment-plan.service';
+import { AdminTreatmentTasksController } from './admin-treatment-tasks.controller';
+import { PatientTreatmentActivityController } from './patient-treatment-activity.controller';
+import { TreatmentActivityService } from './treatment-activity.service';
 
-@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController, AdminTreatmentPlansController, PatientTreatmentPlansController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService] })
+@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController, AdminTreatmentPlansController, PatientTreatmentPlansController, AdminTreatmentTasksController, PatientTreatmentActivityController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService] })
 export class ClinicalModule {}

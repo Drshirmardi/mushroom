@@ -13,7 +13,8 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 - `F07-T01`: focused lifecycle and safety-rule review for immutable issue and revision amendment.
 - `F07-T02`: migration smoke and focused real-PostgreSQL integration evidence.
 - `F07-T04`: reviewed additive `TreatmentSessionPlan` migration SQL; fresh PostgreSQL migration/constraint smoke; Prisma validation/generation and migration-history/schema diff; and focused treatment-plan API coverage for tenant/resource access, ordered session definitions, patient reads, audit, and exclusion of schedule/execution fields.
-- `F07-T05`–`F07-T06`: targeted domain/API/type checks for idempotent patient activity and real-event progress/timeline as applicable.
+- `F07-T05`: targeted PostgreSQL/API/type checks for one-off medication/exercise scheduling, repeat-safe owned task completion, keyed medication-adherence replay, clinic-resource authorization, audit, and runtime OpenAPI declarations. No migration is expected because the F07-T02 persistence foundation is reused.
+- `F07-T06`: targeted domain/API/type checks for real-event progress and timeline behavior as applicable.
 - `F07-T07`–`F07-T08`: focused dashboard/app type checks and truthful in-scope mock/local-state removal only after the real source and contract are ready.
 - `F07-T09`: authorization matrix, audit, and contraindication-warning coverage.
 - `F07-T10`: regenerate/typecheck the client and review in-scope connection removal.
