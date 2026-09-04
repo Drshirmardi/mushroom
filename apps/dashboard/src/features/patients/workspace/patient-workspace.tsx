@@ -8,8 +8,9 @@ import { Avatar, SectionCard, StatusBadge } from "@/components/shared";
 import { getAdminPatient, getAdminPatientAssessmentSubmissions, getAssessmentResultBandTitle, PatientApiError, type AdminAssessmentSubmissionList, type AdminPatientDetail } from "@/lib/patient-api";
 import { ClinicalWorkspaceApiError, createClinicalNote, getClinicalWorkspace, publishClinicalNote, reconcileClinicalRecord, saveClinicalNote, saveClinicalRecord, signClinicalNote, signClinicalRecord, type ClinicalRecordKind, type ClinicalWorkspace } from "@/lib/clinical-workspace-api";
 import { listAdminAppointments, type AdminAppointment, type AppointmentApiError } from "@/lib/appointment-api";
+import { getTreatmentProgress, listPrescriptions, listTreatmentPlans, PrescriptionTreatmentApiError, type Prescription, type TreatmentPlanSummary, type TreatmentProgress } from "@/lib/prescription-treatment-api";
 
-const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات پزشکی" }, { id: "history", label: "تاریخچه بالینی" }, { id: "appointments", label: "نوبت‌ها" }, { id: "assessments", label: "ارزیابی‌ها" }, { id: "traditional", label: "طب سنتی" }, { id: "timeline", label: "خط زمانی" }] as const;
+const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات پزشکی" }, { id: "history", label: "تاریخچه بالینی" }, { id: "treatment", label: "نسخه و درمان" }, { id: "appointments", label: "نوبت‌ها" }, { id: "assessments", label: "ارزیابی‌ها" }, { id: "traditional", label: "طب سنتی" }, { id: "timeline", label: "خط زمانی" }] as const;
 const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-", AB_POSITIVE: "AB+", AB_NEGATIVE: "AB-", O_POSITIVE: "O+", O_NEGATIVE: "O-", UNKNOWN: "نامشخص" };
 const SEXES: Record<string, string> = { FEMALE: "زن", MALE: "مرد", INTERSEX: "اینترسکس", UNKNOWN: "نامشخص", PREFER_NOT_TO_SAY: "ترجیح می‌دهم نگویم" };
 
@@ -34,6 +35,10 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
   const [clinicalError, setClinicalError] = useState<ClinicalWorkspaceApiError | null>(null);
   const [appointments, setAppointments] = useState<AdminAppointment[] | null>(null);
   const [appointmentError, setAppointmentError] = useState<AppointmentApiError | null>(null);
+  const [prescriptions, setPrescriptions] = useState<Prescription[] | null>(null);
+  const [plans, setPlans] = useState<TreatmentPlanSummary[] | null>(null);
+  const [treatmentError, setTreatmentError] = useState<PrescriptionTreatmentApiError | null>(null);
+  const [progress, setProgress] = useState<Record<string, TreatmentProgress>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +46,18 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
       (data) => { if (!cancelled) setPatient(data); },
       (reason: unknown) => { if (!cancelled) setError(reason instanceof PatientApiError ? reason : new PatientApiError(0)); },
     );
+    return () => { cancelled = true; };
+  }, [authentication.accessToken, patientId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [prescriptionData, planData] = await Promise.all([listPrescriptions(authentication.accessToken, patientId), listTreatmentPlans(authentication.accessToken, patientId)]);
+        const values = await Promise.all(planData.items.map(async (plan) => [plan.id, await getTreatmentProgress(authentication.accessToken, patientId, plan.id)] as const));
+        if (!cancelled) { setPrescriptions(prescriptionData.items); setPlans(planData.items); setProgress(Object.fromEntries(values)); }
+      } catch (reason) { if (!cancelled) setTreatmentError(reason instanceof PrescriptionTreatmentApiError ? reason : new PrescriptionTreatmentApiError(0)); }
+    })();
     return () => { cancelled = true; };
   }, [authentication.accessToken, patientId]);
 
@@ -95,6 +112,7 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
       {tab === "medical" && (medicalAvailable ? <div className="space-y-5"><div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>دادهٔ خوداظهاری بیمار</strong><p className="mt-1 text-xs leading-6">این اطلاعات به‌صورت خوداظهاری ثبت شده‌اند و نباید به‌عنوان تشخیص، تأیید پزشکی یا ادعای بالینی تفسیر شوند.</p></div><div className="grid max-w-3xl grid-cols-1 gap-5 lg:grid-cols-2"><SectionCard title="اطلاعات پایه"><Rows rows={intakeRows} /></SectionCard><SectionCard title="گزارش‌های خوداظهاری"><Rows rows={reportRows} /></SectionCard></div></div> : <EmptyMedical status={patient.intake.status} />)}
       {tab === "medical" && <ClinicalRecords clinical={clinical} error={clinicalError} accessToken={authentication.accessToken} patientId={patientId} onChanged={setClinical} />}
       {tab === "history" && <ClinicalNotes clinical={clinical} error={clinicalError} accessToken={authentication.accessToken} patientId={patientId} onChanged={setClinical} />}
+      {tab === "treatment" && <TreatmentSummary prescriptions={prescriptions} plans={plans} progress={progress} error={treatmentError} onOpenBuilder={() => router.push(`/prescriptions?patientId=${encodeURIComponent(patientId)}`)} />}
       {tab === "appointments" && <PatientAppointments appointments={appointments} error={appointmentError} />}
       {tab === "assessments" && <PatientAssessments assessments={assessments} error={assessmentError} />}
       {tab === "traditional" && <TraditionalMedicine />}
@@ -104,6 +122,12 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
 }
 
 function Rows({ rows }: { rows: string[][] }) { return <div className="space-y-3">{rows.map(([label, value]) => <div key={label} className="flex gap-3 text-sm"><span className="w-32 flex-shrink-0 text-muted-foreground">{label}:</span><span className="font-medium">{value}</span></div>)}</div>; }
+function TreatmentSummary({ prescriptions, plans, progress, error, onOpenBuilder }: { prescriptions: Prescription[] | null; plans: TreatmentPlanSummary[] | null; progress: Record<string, TreatmentProgress>; error: PrescriptionTreatmentApiError | null; onOpenBuilder: () => void }) {
+  if (error?.status === 401 || error?.status === 403) return <Notice tone="amber">اجازهٔ مشاهدهٔ نسخه یا درمان این بیمار را ندارید.</Notice>;
+  if (error) return <Notice tone="red">دریافت اطلاعات درمان ممکن نشد. دادهٔ ساختگی نمایش داده نمی‌شود.</Notice>;
+  if (!prescriptions || !plans) return <p className="text-sm text-muted-foreground">در حال دریافت نسخه و برنامهٔ درمان…</p>;
+  return <div className="max-w-4xl space-y-5"><div className="flex items-center justify-between"><div><h3 className="font-bold">نسخه و برنامهٔ درمان</h3><p className="mt-1 text-xs text-muted-foreground">این داده‌ها از پروندهٔ درمان واقعی بیمار خوانده می‌شوند.</p></div><button onClick={onOpenBuilder} className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">باز کردن نسخه‌ساز</button></div><SectionCard title="نسخه‌ها">{prescriptions.length === 0 ? <p className="text-sm text-muted-foreground">هنوز نسخه‌ای برای این بیمار ثبت نشده است.</p> : <div className="space-y-3">{prescriptions.map((prescription) => <div key={prescription.id} className="rounded-lg border border-border p-3 text-sm"><div className="flex justify-between"><strong>نسخه {prescription.currentRevision}</strong><span className="text-muted-foreground">{prescription.revision?.state === "ISSUED" ? "صادرشده" : "پیش‌نویس"}</span></div><p className="mt-2 text-xs text-muted-foreground">{prescription.revision?.items.map((item) => item.medicationName).join("، ") || "بدون قلم دارو"}</p></div>)}</div>}</SectionCard><SectionCard title="برنامه‌های درمان">{plans.length === 0 ? <p className="text-sm text-muted-foreground">هنوز برنامهٔ درمانی ثبت نشده است.</p> : <div className="space-y-3">{plans.map((plan) => <div key={plan.id} className="rounded-lg border border-border p-3"><div className="flex justify-between text-sm"><strong>{plan.title ?? "برنامهٔ درمان"}</strong><span className="text-muted-foreground">{progress[plan.id]?.percentage ?? 0}٪</span></div><p className="mt-2 text-xs text-muted-foreground">{progress[plan.id] ? `${progress[plan.id].completedTasks} از ${progress[plan.id].totalTasks} فعالیت انجام شده` : "پیشرفت قابل دریافت نیست"}</p></div>)}</div>}</SectionCard></div>;
+}
 function Notice({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "neutral" | "amber" | "red" }) { const color = tone === "red" ? "border-red-200 bg-red-50 text-red-700" : tone === "amber" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-border bg-card text-muted-foreground"; return <div className={`m-7 rounded-xl border p-4 text-sm ${color}`}>{children}</div>; }
 function EmptyMedical({ status }: { status: AdminPatientDetail["intake"]["status"] }) { const message = status === "CONSENT_REQUIRED" ? "برای مشاهدهٔ دادهٔ خوداظهاری، رضایت فعال بیمار لازم است." : "هنوز دادهٔ پزشکی اولیه برای این بیمار ثبت نشده است."; return <div className="max-w-xl rounded-2xl border border-border bg-card p-8 text-center"><FileText size={36} className="mx-auto mb-3 text-muted-foreground/40" /><p className="text-sm font-medium">{message}</p><p className="mt-2 text-xs text-muted-foreground">در این بخش هیچ دادهٔ ساختگی یا ادعای بالینی نمایش داده نمی‌شود.</p></div>; }
 function PatientAssessments({ assessments, error }: { assessments: AdminAssessmentSubmissionList | null; error: PatientApiError | null }) {

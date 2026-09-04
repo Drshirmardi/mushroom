@@ -36,6 +36,12 @@
 
 **Alternatives considered**: A fixed percentage, mock-only user interface, or a disconnected dashboard/app flow is rejected.
 
+## Decision: Connect the dashboard through the selected patient only
+
+**Rationale**: The existing dashboard patient workspace already supplies the real `patientId` needed by the accepted F07 APIs. `F07-T07` uses that identity to open the prescription builder and to read a summary of prescriptions, treatment-plan definitions, and server-derived progress. A no-selection or API failure remains an explicit UI state rather than introducing a demo patient or fallback data. The temporary typed adapter avoids mutating checked-in generated client output, which remains exclusively owned by `F07-T10`.
+
+**Alternatives considered**: A global implicit patient, dashboard-only fabricated treatment data, or generated-client changes before the F07-T10 task are rejected.
+
 ## Decision: Do not infer parallel lanes
 
 **Rationale**: The source has no batch map or per-task dependencies. Future execution must claim and assign non-overlapping ownership under `plan/05-AGENT-WORKFLOW.md`.

@@ -1,6 +1,6 @@
 # Phase 07 Validation Quickstart
 
-This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T04` are complete and this guide does not claim or start later tasks.
+This guide preserves Phase 07 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F07-T01` through `F07-T07` are complete and this guide does not claim or start later tasks.
 
 ## Prerequisites
 
@@ -15,7 +15,8 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 - `F07-T04`: reviewed additive `TreatmentSessionPlan` migration SQL; fresh PostgreSQL migration/constraint smoke; Prisma validation/generation and migration-history/schema diff; and focused treatment-plan API coverage for tenant/resource access, ordered session definitions, patient reads, audit, and exclusion of schedule/execution fields.
 - `F07-T05`: targeted PostgreSQL/API/type checks for one-off medication/exercise scheduling, repeat-safe owned task completion, keyed medication-adherence replay, clinic-resource authorization, audit, and runtime OpenAPI declarations. No migration is expected because the F07-T02 persistence foundation is reused.
 - `F07-T06`: targeted PostgreSQL/API/type checks for transactional real-event append, retry deduplication, task-state-derived percentage, patient/clinic-resource authorization, audit, and runtime OpenAPI declarations. No migration, UI connection, or client synchronization is expected.
-- `F07-T07`–`F07-T08`: focused dashboard/app type checks and truthful in-scope mock/local-state removal only after the real source and contract are ready.
+- `F07-T07`: selected-patient dashboard adapter contract tests; dashboard test/type/lint/build; focused accepted prescription/treatment/progress API regression; and truthful missing-selection/error states. Checked-in generated-client synchronization remains out of scope.
+- `F07-T08`: focused patient-app type checks and truthful in-scope mock/local-state removal only after the real source and contract are ready.
 - `F07-T09`: authorization matrix, audit, and contraindication-warning coverage.
 - `F07-T10`: regenerate/typecheck the client and review in-scope connection removal.
 

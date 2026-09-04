@@ -256,3 +256,42 @@ Result:
 Next batch:
 
 - `F07-B07` — `F07-T07` is eligible but unclaimed and not started.
+
+## F07-T07 — prescription builder and dashboard patient-workspace connection
+
+Task ID: F07-T07
+Completed at: 2026-09-04 17:15 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B07
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/prescription-dashboard-connection-v1.md`](../contracts/prescription-dashboard-connection-v1.md)
+
+Changed files:
+
+- `apps/dashboard/src/features/{prescriptions/prescriptions-page.tsx,patients/workspace/patient-workspace.tsx}`
+- `apps/dashboard/src/lib/{prescription-treatment-api.ts,prescription-treatment-api.spec.ts}`
+- `plan/contracts/prescription-dashboard-connection-v1.md`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Migrations: none; this task connects accepted F07 APIs and does not modify persistence.
+
+Tests run:
+
+- `apps/dashboard: corepack pnpm vitest run` → PASS (10 files, 34 tests), including the selected-patient prescription/treatment adapter contract test.
+- `apps/dashboard: corepack pnpm typecheck` → PASS.
+- `apps/dashboard: corepack pnpm lint` → PASS with no errors; two pre-existing unused clinical-record-editor warnings remain outside this task's changes.
+- `apps/dashboard: corepack pnpm build` → PASS.
+- `apps/api: corepack pnpm vitest run test/prescription.integration.spec.ts test/treatment-plan.integration.spec.ts test/treatment-progress.integration.spec.ts --no-file-parallelism` → PASS (3 files, 6 tests; accepted API lifecycle, treatment-plan, real-progress, and clinic-resource regression).
+- `git diff --check` → PASS.
+
+Result:
+
+- The dashboard patient workspace now opens the prescription builder with the selected real patient identity and renders server-sourced prescription history, treatment-plan definitions, and real derived progress in its treatment summary.
+- The builder creates a draft, saves an append-only draft successor, and issues the exact current revision through accepted F07 APIs. It reloads the returned revision and preserves issued history instead of inventing a local success state.
+- Missing patient selection, authorization denial, request failure, and empty states remain explicit; no fabricated patient, prescription, treatment, or progress data is substituted.
+- The approved `TreatmentSessionPlan` boundary is unchanged. No patient-app connection, scheduling/execution behavior, authorization-policy expansion, generated-client synchronization, broad mock cleanup, browser E2E, or Phase 08 work was introduced. `F07-T08` remains unclaimed and owns the next patient-app connection.
+
+Next batch:
+
+- `F07-B08` — `F07-T08` is eligible but unclaimed and not started.
