@@ -33,19 +33,17 @@ Dashboard access alone never grants prescription authority. Issuance requires bo
 
 The existing permitted clinical dashboard workflow may create, edit, review, and issue only when the server verifies the required capability and resource scope. UI simplicity never replaces backend authorization.
 
-## Contraindication and safety acknowledgement
+## Contraindication and safety-rule boundary
 
-- Safety/contraindication warnings are acknowledgement-required advisories by default. An authorized issuer may proceed only after explicitly acknowledging each applicable advisory for the exact prescription revision being issued.
-- An acknowledgement records the controlled warning/rule identifier and classification, exact prescription revision identity and integrity evidence, issuer identity, clinic/tenant and patient/resource scope, timestamp, and required audit reference. It does not copy prescription content, medical detail, free text, or unnecessary PII into operational logs or audit metadata.
-- A changed prescription revision invalidates prior acknowledgement for issuance. The current exact revision must be re-evaluated and acknowledged before it can be issued.
-- A rule classified as `NON_OVERRIDABLE` blocks issuance. No `NON_OVERRIDABLE` clinical rule may be invented without an approved clinical/legal source.
-- The product does not allow AI or automation to independently issue a prescription, acknowledge a warning, classify a contraindication, or convert self-reported intake into a clinical fact.
+The owner-approved F07-T09 clarification defers automated contraindication and safety-rule evaluation from the current Phase 07 delivery. Phase 07 therefore has no active rule source, warning evaluation, acknowledgement workflow, `NON_OVERRIDABLE` behavior, rule seed, hard-coded classification, or rule-management UI. Prescription issuance must not be blocked merely because no clinical rule source is approved.
 
-`F07-T09` owns the enforcement contract, policy evaluation inputs, response/error shape, authorization/audit implementation, and warning presentation. This baseline does not predefine drug databases, contraindication rules, dose ranges, or clinical classifications.
+The clinician remains responsible for reviewing the patient and deciding what to prescribe through the authorized dashboard. The existing acknowledgement persistence foundation remains inactive; no new acknowledgement is created or evaluated in Phase 07. A later clinical feature may add automated safety rules only with a separately approved trusted medical rule source and its own product, legal, persistence, API, and verification boundary.
+
+`F07-T09` owns explicit issuance authorization, tenant/resource authorization, safe transactional audit, and revision-integrity enforcement. It does not predefine drug databases, contraindication rules, dose ranges, clinical classifications, or speculative rule infrastructure.
 
 ## Audit, privacy, and legal boundary
 
-Sensitive prescription create, edit, revision, warning acknowledgement, issue, amendment, supersession, read, export/download, and future disposition operations require audit with actor/session, controlled action, clinic/tenant/patient/resource/revision identifiers, timestamp, request/correlation identifier, and controlled safe metadata. Sensitive operations fail closed if their required audit cannot be recorded in the same transaction. The detailed implementation belongs to `F07-T09`.
+Phase 07 records every prescription issuance with actor/session, controlled action, clinic/tenant/patient/resource/revision identifiers, timestamp, request/correlation identifier, and controlled safe metadata. Issuance fails closed when that audit cannot be recorded in the same transaction. This task does not retroactively expand audit implementation across completed create, edit, read, amendment, export/download, or future disposition surfaces.
 
 Operational logs and audit metadata never contain prescription content, medication/treatment detail, warning free text, amendment free text, names, phones, emails, or unnecessary PII.
 

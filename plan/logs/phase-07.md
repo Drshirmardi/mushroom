@@ -332,3 +332,49 @@ Result:
 Next batch:
 
 - `F07-B09` — `F07-T09` is eligible, unclaimed, and not started.
+
+## F07-T09 — explicit issuance authorization, audit, and safety-rule deferral
+
+Task ID: F07-T09
+Completed at: 2026-09-04 19:04 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B09
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/prescription-treatment-policy-v1.md`](../contracts/prescription-treatment-policy-v1.md)
+
+Changed files:
+
+- `apps/api/prisma/{schema.prisma,migrations/20260904135520_phase_07_prescription_issue_capability/migration.sql,migrations/20260904174000_phase_07_doctor_prescription_issue_default/migration.sql}`
+- `apps/api/src/common/auth/{authorization.policy.ts,clinical-permission.service.ts}`
+- `apps/api/src/modules/clinical/{admin-prescriptions.controller.ts,prescription.service.ts}`
+- `apps/api/test/{migrations.integration.spec.ts,prescription.integration.spec.ts}`
+- `plan/contracts/prescription-treatment-policy-v1.md`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,data-model.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Migrations:
+
+- `20260904135520_phase_07_prescription_issue_capability` — reviewed generated enum addition for `PRESCRIPTION_ISSUE`.
+- `20260904174000_phase_07_doctor_prescription_issue_default` — reviewed idempotent data migration that maps the new capability to `DOCTOR` only; `ADMIN` and `STAFF` receive no implicit mapping.
+
+Tests run:
+
+- reviewed both F07-T09 migration SQL files before deployment → PASS; only the capability enum and `DOCTOR` mapping are present, with no Phase 06, legacy, or earlier F07 mutation.
+- `prisma migrate deploy`, `prisma migrate status`, `prisma validate`, and `prisma generate` → PASS (22 committed migrations; clean active development database).
+- `tsc --noEmit` → PASS.
+- migration-history → `schema.prisma` diff through a fresh disposable PostgreSQL shadow database → PASS (no difference; disposable shadow dropped after verification).
+- `NODE_ENV=development node --env-file=.env node_modules/vitest/vitest.mjs run test/migrations.integration.spec.ts --no-file-parallelism` → PASS (2/2; fresh PostgreSQL replay, deterministic seed, and `DOCTOR`-only capability mapping).
+- `vitest run test/prescription.integration.spec.ts --no-file-parallelism` → PASS (3/3; exact-revision issuance, immutable amendment history, `DOCTOR` capability, `ADMIN`/`STAFF` denial, clinic-resource denial, transactional audit, and zero active safety acknowledgements).
+- `vitest run test/prescription.integration.spec.ts test/treatment-plan.integration.spec.ts test/treatment-activity.integration.spec.ts test/treatment-progress.integration.spec.ts test/clinical-notes.integration.spec.ts --no-file-parallelism` → PASS (5 files, 15 tests).
+- `git diff --check` → PASS.
+
+Result:
+
+- Issuance requires the explicit database-backed `PRESCRIPTION_ISSUE` capability at both endpoint and service layers, then the existing tenant/clinic/patient resource check. The default mapping grants it only to `DOCTOR`; role-only `ADMIN` and `STAFF` access is denied.
+- Issuing an exact current draft revision records a revision-scoped `SIGN` audit event in the same transaction. Missing or failed audit recording prevents issuance from committing; existing stale-revision, append-only amendment, and integrity-hash protections remain intact.
+- The owner-approved clarification is recorded: current Phase 07 has no automated contraindication-rule evaluator, warning/acknowledgement flow, `NON_OVERRIDABLE` behavior, rule seed, hard-coded rule, or rule-management UI. Existing acknowledgement persistence is inactive and an issued revision creates no acknowledgement.
+- No generated-client synchronization, dashboard/app UI change, scheduling/execution behavior, Phase 08 functionality, or completed-task rewrite was introduced.
+
+Next batch:
+
+- `F07-B10` — `F07-T10` is eligible but unclaimed and not started.

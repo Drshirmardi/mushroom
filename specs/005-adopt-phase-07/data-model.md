@@ -4,7 +4,7 @@ This preserves the roadmap concepts plus the owner-approved, narrowly scoped `Tr
 
 ## Prescription, Prescription Item, and Prescription Revision
 
-The prescription and its itemized content, with a separate revision history. `F07-T01` owns the draft/issue/amend lifecycle and safety rules. An issued prescription is immutable; correction is an append-only successor revision rather than an overwrite. Issuance and safety acknowledgement are attached to the exact revision; exact fields and persistence remain owned by `F07-T02`.
+The prescription and its itemized content, with a separate revision history. `F07-T01` owns the draft/issue/amend lifecycle. An issued prescription is immutable; correction is an append-only successor revision rather than an overwrite. Issuance is attached to the exact revision. The existing `PrescriptionSafetyAcknowledgement` foundation remains inactive in Phase 07 under the owner-approved F07-T09 clarification; no rule evaluator, acknowledgement API, or blocking classification is added.
 
 ## Treatment Plan
 

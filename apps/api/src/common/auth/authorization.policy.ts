@@ -40,6 +40,7 @@ export const PERMISSIONS = {
   CLINICAL_RECORD_EDIT: 'clinical:record:edit',
   CLINICAL_RECORD_SIGN: 'clinical:record:sign',
   CLINICAL_RECORD_AMEND: 'clinical:record:amend',
+  PRESCRIPTION_ISSUE: 'prescription:issue',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

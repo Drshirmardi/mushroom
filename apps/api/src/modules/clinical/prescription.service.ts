@@ -4,11 +4,12 @@ import { createHash } from 'node:crypto';
 import { ClinicalPermissionService, type ClinicalPermission } from '../../common/auth/clinical-permission.service';
 import type { RoleCode } from '../../common/auth/authorization.policy';
 import { PrismaService } from '../../database/prisma/prisma.service';
-import { PrescriptionRevisionState, Prisma } from '../../generated/prisma/client';
+import { PatientAccessAction, PrescriptionRevisionState, Prisma } from '../../generated/prisma/client';
 import type { CreatePrescriptionDto, IssuePrescriptionDto, SavePrescriptionDraftDto } from './prescription.dto';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
+import { ClinicalAccessAuditService } from './clinical-access-audit.service';
 
-type PrescriptionActor = { actorUserId: string; roles: RoleCode[] };
+type PrescriptionActor = { actorUserId: string; actorSessionId?: string; requestId?: string; ipAddress?: string; roles: RoleCode[] };
 type PrescriptionItemInput = CreatePrescriptionDto['items'][number];
 
 const forbidden = () => new ForbiddenException({ code: 'PRESCRIPTION_RESOURCE_FORBIDDEN', message: 'The prescription is not available to this actor.', details: {} });
@@ -18,7 +19,7 @@ const amendmentReasonRequired = () => new UnprocessableEntityException({ code: '
 
 @Injectable()
 export class PrescriptionService {
-  constructor(private readonly prisma: PrismaService, private readonly access: ClinicalResourceAccessService, private readonly permissions: ClinicalPermissionService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: ClinicalResourceAccessService, private readonly permissions: ClinicalPermissionService, private readonly audit: ClinicalAccessAuditService) {}
 
   async list(patientId: string, actor: PrescriptionActor, cursor?: string, limit = 50) {
     const patient = await this.access.patient(actor.actorUserId, patientId);
@@ -76,8 +77,7 @@ export class PrescriptionService {
 
   async issue(patientId: string, prescriptionId: string, input: IssuePrescriptionDto, actor: PrescriptionActor) {
     const patient = await this.access.patient(actor.actorUserId, patientId);
-    // F07-T09 replaces this existing clinical-sign boundary with the frozen PRESCRIPTION_ISSUE policy contract.
-    await this.require(actor, 'clinical:record:sign');
+    await this.require(actor, 'prescription:issue');
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, prescriptionId);
       const prescription = await this.prescription(prescriptionId, patient.id, patient.clinicId, tx);
@@ -90,6 +90,8 @@ export class PrescriptionService {
       const integrityHash = this.integrityHash(prescription.id, revision);
       const issued = await tx.prescriptionRevision.update({ where: { id: revision.id }, data: { state: PrescriptionRevisionState.ISSUED, issuedAt: new Date(), issuedByUserId: actor.actorUserId, integrityHash }, include: { items: { orderBy: { position: 'asc' } } } });
       const updated = await tx.prescription.update({ where: { id: prescription.id }, data: { currentIssuedRevisionNumber: issued.revisionNumber, latestIssuedRevisionNumber: issued.revisionNumber } });
+      if (!actor.actorSessionId || !actor.requestId || !actor.ipAddress) throw new UnprocessableEntityException({ code: 'PRESCRIPTION_AUDIT_CONTEXT_REQUIRED', message: 'Prescription issuance requires audit context.', details: {} });
+      await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.SIGN, resourceType: 'PRESCRIPTION', resourceId: prescription.id, resourceRevisionId: issued.id, metadata: { revisionNumber: issued.revisionNumber } }, { actorUserId: actor.actorUserId, actorSessionId: actor.actorSessionId, requestId: actor.requestId, ipAddress: actor.ipAddress }, tx);
       return this.response(updated, issued);
     });
   }

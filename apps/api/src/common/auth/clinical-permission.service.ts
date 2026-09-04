@@ -8,15 +8,17 @@ export const CLINICAL_PERMISSIONS = [
   'clinical:record:edit',
   'clinical:record:sign',
   'clinical:record:amend',
+  'prescription:issue',
 ] as const;
 
 export type ClinicalPermission = (typeof CLINICAL_PERMISSIONS)[number];
 
-const databasePermission: Record<ClinicalPermission, 'CLINICAL_RECORD_VIEW' | 'CLINICAL_RECORD_EDIT' | 'CLINICAL_RECORD_SIGN' | 'CLINICAL_RECORD_AMEND'> = {
+const databasePermission: Record<ClinicalPermission, 'CLINICAL_RECORD_VIEW' | 'CLINICAL_RECORD_EDIT' | 'CLINICAL_RECORD_SIGN' | 'CLINICAL_RECORD_AMEND' | 'PRESCRIPTION_ISSUE'> = {
   'clinical:record:view': 'CLINICAL_RECORD_VIEW',
   'clinical:record:edit': 'CLINICAL_RECORD_EDIT',
   'clinical:record:sign': 'CLINICAL_RECORD_SIGN',
   'clinical:record:amend': 'CLINICAL_RECORD_AMEND',
+  'prescription:issue': 'PRESCRIPTION_ISSUE',
 };
 
 @Injectable()

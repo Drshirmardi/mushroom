@@ -74,6 +74,18 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'STAFF',
       ]);
 
+      const prescriptionIssuers = await preSeedClient.query<{ code: string }>(`
+        SELECT roles.code::text
+        FROM clinical_role_permissions
+        INNER JOIN roles ON roles.id = clinical_role_permissions.role_id
+        WHERE clinical_role_permissions.permission = 'PRESCRIPTION_ISSUE'
+        ORDER BY roles.code
+      `);
+
+      expect(prescriptionIssuers.rows.map(({ code }) => code)).toEqual([
+        'DOCTOR',
+      ]);
+
       const clinics = await preSeedClient.query<{
         name: string;
         time_zone: string;

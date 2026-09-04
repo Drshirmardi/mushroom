@@ -273,6 +273,7 @@ enum ClinicalPermission {
   CLINICAL_RECORD_EDIT
   CLINICAL_RECORD_SIGN
   CLINICAL_RECORD_AMEND
+  PRESCRIPTION_ISSUE
 
   @@map("clinical_permission")
 }

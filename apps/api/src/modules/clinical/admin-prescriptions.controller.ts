@@ -45,11 +45,11 @@ export class AdminPrescriptionsController {
 
   @Post(':prescriptionId/issue')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions(PERMISSIONS.CLINICAL_RECORD_SIGN)
+  @RequirePermissions(PERMISSIONS.PRESCRIPTION_ISSUE)
   @ApiParam({ name: 'prescriptionId', format: 'uuid' })
   @ApiOperation({ operationId: 'adminPrescriptionsIssue', summary: 'Issue an exact current prescription revision' })
   @ApiOkResponse({ type: PrescriptionResponseDto })
   issue(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Param('prescriptionId', new ParseUUIDPipe({ version: '4' })) prescriptionId: string, @Body() body: IssuePrescriptionDto, @Req() request: AuthenticatedRequest) { return this.prescriptions.issue(patientId, prescriptionId, body, this.actor(request)); }
 
-  private actor(request: AuthenticatedRequest) { return { actorUserId: request.auth.userId, roles: request.auth.roles }; }
+  private actor(request: AuthenticatedRequest) { return { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip, roles: request.auth.roles }; }
 }

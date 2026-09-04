@@ -12,11 +12,11 @@
 
 **Alternatives considered**: Editing an issued prescription in place or treating amendment as an overwrite is rejected.
 
-## Decision: Freeze approved issuer and warning policy in `F07-T01`
+## Decision: Freeze approved issuer and defer automated safety rules
 
-**Rationale**: The approved baseline requires explicit `PRESCRIPTION_ISSUE` and tenant/resource authorization rather than dashboard access or role alone. `DOCTOR` is the default current issuer; `ADMIN` and `STAFF` receive no implicit issuance authority. Warnings are acknowledged advisories for the exact issued revision unless an approved `NON_OVERRIDABLE` rule blocks issuance. Enforcement stays with `F07-T09`.
+**Rationale**: The approved baseline requires explicit `PRESCRIPTION_ISSUE` and tenant/resource authorization rather than dashboard access or role alone. `DOCTOR` is the default current issuer; `ADMIN` and `STAFF` receive no implicit issuance authority. The owner-approved F07-T09 clarification defers automated contraindication evaluation because no trusted rule source is available. Phase 07 consequently has no active warnings, acknowledgements, or `NON_OVERRIDABLE` blocking behavior; F07-T09 retains authorization, audit, and revision-integrity enforcement.
 
-**Alternatives considered**: Role-only access, implicit dashboard authority, reusable acknowledgement after a revision changes, automatic AI issuance, and invented non-overridable clinical rules are rejected.
+**Alternatives considered**: Role-only access, implicit dashboard authority, automatic AI issuance, invented clinical rules, an empty-but-active rule engine, and speculative rule-management infrastructure are rejected.
 
 ## Decision: Preserve persistent, idempotent treatment activity
 

@@ -33,7 +33,7 @@
 - [x] `F07-T06` — progress calculation و timeline واقعی
 - [x] `F07-T07` — اتصال prescription builder و patient workspace dashboard
 - [x] `F07-T08` — اتصال treatment/med/session/exercise/progress در app
-- [ ] `F07-T09` — permission، audit، contraindication warning contract
+- [x] `F07-T09` — permission، audit، contraindication warning contract
 - [ ] `F07-T10` — OpenAPI/client و حذف mock/local state scope
 - [ ] `F07-T11` — immutability، amendment، ownership و browser E2E
 - [ ] `F07-T12` — evidence

@@ -17,7 +17,7 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 - `F07-T06`: targeted PostgreSQL/API/type checks for transactional real-event append, retry deduplication, task-state-derived percentage, patient/clinic-resource authorization, audit, and runtime OpenAPI declarations. No migration, UI connection, or client synchronization is expected.
 - `F07-T07`: selected-patient dashboard adapter contract tests; dashboard test/type/lint/build; focused accepted prescription/treatment/progress API regression; and truthful missing-selection/error states. Checked-in generated-client synchronization remains out of scope.
 - `F07-T08`: patient treatment adapter contract tests; app test/type/build; focused accepted plan/activity/progress API regression; and truthful loading/error/empty states without fabricated treatment data.
-- `F07-T09`: authorization matrix, audit, and contraindication-warning coverage.
+- `F07-T09`: explicit-issuance authorization matrix, audit, revision-integrity, and automated-safety-rule deferral coverage.
 - `F07-T10`: regenerate/typecheck the client and review in-scope connection removal.
 
 ## Phase browser gate (`F07-T11`)
@@ -26,9 +26,9 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 2. Connect the issued treatment to the app and display the permitted patient treatment details.
 3. Record permitted patient medication/adherence or treatment-task activity, then refresh and repeat from another device context.
 4. Confirm progress and timeline use real progress events rather than a fixed UI value.
-5. Review the resulting patient activity in the dashboard; exercise required ownership, authorization, audit, and contraindication-warning boundaries.
+5. Review the resulting patient activity in the dashboard; exercise required ownership, authorization, audit, and the approved no-active-rule boundary.
 
-**Pass criteria**: the dashboard issue → app display → patient log → dashboard review journey passes; issued prescriptions remain immutable; correction is revision-based; schedules are the future reminder source; patient activity persists across refresh/devices; progress is real-event derived; and required safety boundaries hold.
+**Pass criteria**: the dashboard issue → app display → patient log → dashboard review journey passes; issued prescriptions remain immutable; correction is revision-based; schedules are the future reminder source; patient activity persists across refresh/devices; progress is real-event derived; explicit issuance authorization/audit holds; and no automated clinical rule behavior is claimed or activated.
 
 ## Evidence (`F07-T12`)
 

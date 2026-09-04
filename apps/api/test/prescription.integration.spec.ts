@@ -4,13 +4,17 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApiApplication } from '../src/app.factory';
+import { AccessTokenService } from '../src/common/auth/access-token.service';
+import { ClinicalPermissionService } from '../src/common/auth/clinical-permission.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { PrescriptionService } from '../src/modules/clinical/prescription.service';
 import type { RoleCode } from '../src/common/auth/authorization.policy';
 
 describe('prescription lifecycle API (PostgreSQL integration)', () => {
   let app: NestFastifyApplication;
+  let accessTokens: AccessTokenService;
   let prisma: PrismaService;
+  let clinicalPermissions: ClinicalPermissionService;
   let prescriptions: PrescriptionService;
   const userIds = new Set<string>();
   const createdDoctorPermissions = new Set<'CLINICAL_RECORD_VIEW' | 'CLINICAL_RECORD_EDIT' | 'CLINICAL_RECORD_SIGN' | 'CLINICAL_RECORD_AMEND'>();
@@ -18,7 +22,9 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
   beforeAll(async () => {
     app = await createApiApplication();
     await app.init();
+    accessTokens = app.get(AccessTokenService);
     prisma = app.get(PrismaService);
+    clinicalPermissions = app.get(ClinicalPermissionService);
     prescriptions = app.get(PrescriptionService);
   }, 30_000);
 
@@ -29,6 +35,8 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
     await prisma.prescriptionItem.deleteMany({ where: { prescriptionRevision: { prescription: { patient: { userId: { in: users } } } } } });
     await prisma.prescriptionRevision.deleteMany({ where: { prescription: { patient: { userId: { in: users } } } } });
     await prisma.prescription.deleteMany({ where: { patient: { userId: { in: users } } } });
+    await prisma.patientAccessAudit.deleteMany({ where: { patient: { userId: { in: users } } } });
+    await prisma.session.deleteMany({ where: { userId: { in: users } } });
     await prisma.clinicalClinicAccess.deleteMany({ where: { userId: { in: users } } });
     await prisma.userRole.deleteMany({ where: { userId: { in: users } } });
     if (createdDoctorPermissions.size) {
@@ -52,6 +60,7 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
     userIds.add(patientUser.id); userIds.add(clinician.id);
     const patient = await prisma.patientProfile.create({ data: { userId: patientUser.id, clinicId: clinic.id } });
     await prisma.userRole.create({ data: { userId: clinician.id, roleId: doctorRole.id } });
+    const session = await prisma.session.create({ data: { userId: clinician.id, refreshTokenHash: randomUUID().replace(/-/g, '').padEnd(64, '0'), expiresAt: new Date(Date.now() + 60_000) } });
     await prisma.clinicalClinicAccess.create({ data: { userId: clinician.id, clinicId: clinic.id } });
     const requiredPermissions = ['CLINICAL_RECORD_VIEW', 'CLINICAL_RECORD_EDIT', 'CLINICAL_RECORD_SIGN', 'CLINICAL_RECORD_AMEND'] as const;
     const existingPermissions = new Set((await prisma.clinicalRolePermission.findMany({ where: { roleId: doctorRole.id, permission: { in: [...requiredPermissions] } }, select: { permission: true } })).map((entry) => entry.permission));
@@ -60,7 +69,8 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
       await prisma.clinicalRolePermission.createMany({ data: missingPermissions.map((permission) => ({ roleId: doctorRole.id, permission })), skipDuplicates: true });
       for (const permission of missingPermissions) createdDoctorPermissions.add(permission);
     }
-    return { patient, clinician, actor: { actorUserId: clinician.id, roles: ['DOCTOR'] as RoleCode[] } };
+    const token = await accessTokens.issue({ userId: clinician.id, sessionId: session.id, roles: ['DOCTOR'] });
+    return { patient, clinician, token, actor: { actorUserId: clinician.id, actorSessionId: session.id, requestId: randomUUID(), ipAddress: '127.0.0.1', roles: ['DOCTOR'] as RoleCode[] } };
   };
 
   it('creates drafts, serializes revisions, issues an exact revision, and preserves issued evidence', async () => {
@@ -81,6 +91,8 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
     const issued = await prescriptions.issue(patient.id, created.id, { revisionNumber: 2, expectedRevision: 2 }, actor);
     expect(issued).toMatchObject({ currentRevision: 2, currentIssuedRevision: 2, latestIssuedRevision: 2, revision: { id: saved.revision!.id, state: 'ISSUED', issuedByUserId: clinician.id, issuedAt: expect.any(Date), integrityHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
     await expect(prescriptions.save(patient.id, created.id, { expectedRevision: 2, items: [{ medicationName: 'Unsafe overwrite' }] }, actor)).rejects.toMatchObject({ response: { code: 'PRESCRIPTION_AMENDMENT_REASON_REQUIRED' } });
+    await expect(prisma.patientAccessAudit.findFirstOrThrow({ where: { patientId: patient.id, resourceId: created.id, resourceRevisionId: saved.revision!.id } })).resolves.toMatchObject({ action: 'SIGN', actorUserId: clinician.id, metadata: { revisionNumber: 2 } });
+    expect(await prisma.prescriptionSafetyAcknowledgement.count({ where: { prescriptionRevisionId: saved.revision!.id } })).toBe(0);
 
     const amended = await prescriptions.save(patient.id, created.id, { expectedRevision: 2, amendmentReasonCategory: 'CLINICAL_CORRECTION', items: [{ medicationName: 'Corrected medicine', durationText: '14 days' }] }, actor);
     expect(amended).toMatchObject({ currentRevision: 3, currentIssuedRevision: 2, revision: { revisionNumber: 3, previousRevisionId: saved.revision!.id, state: 'DRAFT', amendmentReasonCategory: 'CLINICAL_CORRECTION' } });
@@ -91,6 +103,43 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
     expect(history).toHaveLength(3);
     expect(history[1]).toMatchObject({ id: saved.revision!.id, state: 'ISSUED', integrityHash: issued.revision!.integrityHash, items: [{ medicationName: 'Updated medicine', instructions: 'With food' }] });
     expect(history[2]).toMatchObject({ state: 'ISSUED', previousRevisionId: saved.revision!.id, items: [{ medicationName: 'Corrected medicine' }] });
+  });
+
+  it('uses only the explicit DOCTOR issuance capability and the existing clinic-resource boundary', async () => {
+    expect(await clinicalPermissions.allows(['DOCTOR'], ['prescription:issue'])).toBe(true);
+    expect(await clinicalPermissions.allows(['ADMIN'], ['prescription:issue'])).toBe(false);
+    expect(await clinicalPermissions.allows(['STAFF'], ['prescription:issue'])).toBe(false);
+
+    const { patient, token, actor } = await fixture();
+    const created = await prescriptions.create(patient.id, { expectedRevision: 0, items: [{ medicationName: 'Capability boundary medicine' }] }, actor);
+    const adminToken = await accessTokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] });
+    const roleOnlyAdmin = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/patients/${patient.id}/prescriptions/${created.id}/issue`,
+      headers: { authorization: `Bearer ${adminToken}`, 'content-type': 'application/json' },
+      payload: JSON.stringify({ revisionNumber: 1, expectedRevision: 1 }),
+    });
+    expect(roleOnlyAdmin.statusCode).toBe(403);
+
+    const issued = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/patients/${patient.id}/prescriptions/${created.id}/issue`,
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      payload: JSON.stringify({ revisionNumber: 1, expectedRevision: 1 }),
+    });
+    expect(issued.statusCode).toBe(200);
+    const doctorRole = await prisma.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } });
+    const ungrantedClinician = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
+    userIds.add(ungrantedClinician.id);
+    await prisma.userRole.create({ data: { userId: ungrantedClinician.id, roleId: doctorRole.id } });
+
+    await expect(prescriptions.issue(patient.id, created.id, { revisionNumber: 1, expectedRevision: 1 }, {
+      actorUserId: ungrantedClinician.id,
+      actorSessionId: randomUUID(),
+      requestId: randomUUID(),
+      ipAddress: '127.0.0.1',
+      roles: ['DOCTOR'],
+    })).rejects.toMatchObject({ response: { code: 'CLINICAL_RESOURCE_FORBIDDEN' } });
   });
 
   it('requires a configured capability and matching clinic resource grant before exposing prescriptions', async () => {
