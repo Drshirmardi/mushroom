@@ -218,3 +218,41 @@ Result:
 Next batch:
 
 - `F07-B06` — `F07-T06` is eligible but unclaimed and not started.
+
+## F07-T06 — real progress calculation and timeline
+
+Task ID: F07-T06
+Completed at: 2026-09-04 17:02 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B06
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/treatment-progress-v1.md`](../contracts/treatment-progress-v1.md)
+
+Changed files:
+
+- `apps/api/src/common/errors/api-error.ts`
+- `apps/api/src/modules/clinical/{treatment-activity.service.ts,treatment-progress-response.dto.ts,treatment-progress.service.ts,admin-treatment-progress.controller.ts,patient-treatment-progress.controller.ts,clinical.module.ts}`
+- `apps/api/test/treatment-progress.integration.spec.ts`
+- `plan/contracts/treatment-progress-v1.md`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,plan.md,research.md,data-model.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Migrations: none; the accepted F07-T02 event and task persistence foundation is reused unchanged.
+
+Tests run:
+
+- `prisma validate`, `prisma generate`, and `prisma migrate status` → PASS (20 committed migrations; clean active development database).
+- `tsc -p tsconfig.test.json --noEmit` → PASS.
+- `vitest run test/treatment-progress.integration.spec.ts --no-file-parallelism` → PASS (1/1; accepted task/adherence actions append exactly two events despite retries, task state produces 50% for one of two tasks, patient/admin reads, and clinic-resource denial).
+- `vitest run test/treatment-progress.integration.spec.ts test/treatment-activity.integration.spec.ts test/treatment-plan.integration.spec.ts test/prescription.integration.spec.ts test/clinical-notes.integration.spec.ts --no-file-parallelism` → PASS (14/14).
+- `git diff --check` → PASS.
+
+Result:
+
+- `TASK_COMPLETED` and `MEDICATION_ADHERENCE_RECORDED` are append-only real event types written transactionally only when F07-T05 accepts the underlying action; completion/adherence retries write no duplicate event.
+- Patient and authorized clinical reads return newest-first persisted timeline entries and task-state-derived percentage (`completed non-cancelled / all non-cancelled`, rounded; zero if none), never a fixed or manually edited value.
+- No migration, session lifecycle, scheduling/recurrence/reminder behavior, appointment/encounter relation, backfill, background job, dashboard/app connection, generated-client synchronization, or Phase 08 work was introduced.
+
+Next batch:
+
+- `F07-B07` — `F07-T07` is eligible but unclaimed and not started.

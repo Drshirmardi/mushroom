@@ -100,6 +100,7 @@ export class TreatmentActivityService {
         if (current.state === TreatmentTaskState.COMPLETED) return this.taskResponse(current);
         throw taskStateInvalid();
       }
+      await tx.treatmentProgressEvent.create({ data: { treatmentPlanId: current.treatmentPlanId, treatmentTaskId: current.id, eventType: 'TASK_COMPLETED', occurredAt: current.completedAt ?? completedAt, metadata: { source: 'TREATMENT_TASK' } } });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'PATIENT_TREATMENT_TASK', resourceId: current.id, metadata: { action: 'COMPLETE', treatmentPlanId: current.treatmentPlanId } }, context, tx);
       return this.taskResponse(current);
     });
@@ -120,6 +121,7 @@ export class TreatmentActivityService {
       if (existing) return this.idempotentAdherence(existing, medication.id, taskId);
       try {
         const adherence = await tx.medicationAdherenceLog.create({ data: { treatmentMedicationId: medication.id, treatmentTaskId: taskId, idempotencyKey: key } });
+        await tx.treatmentProgressEvent.create({ data: { treatmentPlanId: medication.treatmentPlanId, treatmentTaskId: taskId, eventType: 'MEDICATION_ADHERENCE_RECORDED', occurredAt: adherence.recordedAt, metadata: { source: 'MEDICATION_ADHERENCE' } } });
         await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'MEDICATION_ADHERENCE', resourceId: adherence.id, metadata: { treatmentPlanId: medication.treatmentPlanId, treatmentTaskId: taskId } }, context, tx);
         return this.adherenceResponse(adherence);
       } catch (cause) {

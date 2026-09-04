@@ -32,7 +32,7 @@ A persisted medication/adherence activity record, owned by `F07-T05`. It remains
 
 ## Treatment Progress Event
 
-A real treatment event used by `F07-T06` for progress calculation and timeline display; it is not a fixed UI value.
+An append-only real patient-action event used by `F07-T06` for timeline display. `TASK_COMPLETED` and `MEDICATION_ADHERENCE_RECORDED` are written only with the accepted F07-T05 action; retries write no duplicate event. Plan percentage is derived from persisted non-cancelled task state, not from a fixed UI value or a manual field.
 
 ```text
 Prescription

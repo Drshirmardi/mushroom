@@ -16,7 +16,7 @@ Maintain one-to-one Spec Kit artifacts for the existing twelve Phase 07 prescrip
 **Project Type**: Existing monorepo.
 **Performance Goals**: No adoption-added target.
 **Constraints**: Preserve issued-prescription immutability, revision-only amendment, idempotent treatment logging, real-event progress, persisted cross-device patient activity, authorization/audit/contraindication boundaries, and single-writer ownership for migration, generated client, authentication, and shared paths.
-**Scale/Scope**: Twelve stable tasks, `F07-T01`–`F07-T12`; `F07-T01` through `F07-T05` are complete and Phase 07 is `IN_PROGRESS`. Phase 06 is `DONE (CLOSED)`. This adoption does not authorize later Phase 07 work without a claimed batch.
+**Scale/Scope**: Twelve stable tasks, `F07-T01`–`F07-T12`; `F07-T01` through `F07-T06` are complete and Phase 07 is `IN_PROGRESS`. Phase 06 is `DONE (CLOSED)`. This adoption does not authorize later Phase 07 work without a claimed batch.
 
 ## Constitution Check
 

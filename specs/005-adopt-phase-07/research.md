@@ -32,7 +32,7 @@
 
 ## Decision: Preserve real-event progress and the dashboard-to-app journey
 
-**Rationale**: The roadmap requires progress calculated from real events and a dashboard issue → app display → patient log → dashboard review flow. `F07-T06` owns real progress; `F07-T07` and `F07-T08` own their distinct UI connections; `F07-T11` owns browser verification.
+**Rationale**: The roadmap requires progress calculated from real events and a dashboard issue → app display → patient log → dashboard review flow. `F07-T06` uses the existing append-only `TreatmentProgressEvent` table for accepted task completion and medication-adherence actions, while percentage is calculated at read time from completed/non-cancelled task state. `F07-T07` and `F07-T08` own their distinct UI connections; `F07-T11` owns browser verification.
 
 **Alternatives considered**: A fixed percentage, mock-only user interface, or a disconnected dashboard/app flow is rejected.
 

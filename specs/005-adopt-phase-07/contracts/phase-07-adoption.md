@@ -11,7 +11,7 @@
 | `F07-T03` | Prescription create/draft/issue/revision interface. |
 | `F07-T04` | Treatment medication/session/exercise/nutrition plan interface, including the owner-approved minimal persisted `TreatmentSessionPlan`: ordered clinical definition only; unique plan/position; no independent status, scheduling, execution, appointment, encounter, task, recurrence, reminder, attendance, media, modality, revision, or per-session join model. Runtime OpenAPI declarations belong here; checked-in generated-client synchronization remains with `F07-T10`. |
 | `F07-T05` | One-off `MEDICATION`/`EXERCISE` task scheduling with `scheduledFor` as the future reminder source; authorized clinic-resource operations; patient-owned repeat-safe completion; and keyed medication-adherence recording. It reuses the F07-T02 foundation and does not add a session relationship, recurrence, reminder dispatch, progress event, frontend connection, or generated-client synchronization. |
-| `F07-T06` | Real progress calculation and timeline. |
+| `F07-T06` | Real progress calculation from persisted non-cancelled task state and append-only `TASK_COMPLETED`/`MEDICATION_ADHERENCE_RECORDED` timeline events. No session lifecycle, scheduling, UI connection, or client synchronization. |
 | `F07-T07` | Prescription builder and dashboard patient workspace connection. |
 | `F07-T08` | App treatment connection. |
 | `F07-T09` | Permission, audit, and contraindication-warning contract. |
