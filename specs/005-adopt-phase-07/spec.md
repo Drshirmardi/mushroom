@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-07-prescription-treatment`
 **Created**: 2026-09-03
-**Status**: Execution tracking only — Phase 07 is `IN_PROGRESS`; `F07-T01` and `F07-T02` are complete.
+**Status**: Execution tracking only — Phase 07 is `IN_PROGRESS`; `F07-T01` through `F07-T03` are complete.
 **Input**: Adopt the authoritative Phase 07 Prescription & Treatment roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -99,4 +99,4 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - Phase 06 is `DONE (CLOSED)` and supplies the completed clinical-workspace baseline.
 - The authoritative source lists `F07-T01` through `F07-T12` in order but declares no individual `Depends on` fields or batch map; this adoption does not create one.
 - Exact schema and route details remain owned by their named authoritative tasks. The approved `F07-T01` baseline defines draft/issue/amend safety, default `DOCTOR` issuance authority, advisory acknowledgement, and the legal-confirmation boundary; enforcement remains owned by `F07-T09`.
-- `F07-T01` and `F07-T02` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T03`–`F07-T12` remain unclaimed and unchecked.
+- `F07-T01` through `F07-T03` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T04`–`F07-T12` remain unclaimed and unchecked.

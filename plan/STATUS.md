@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-04 03:18 +03:30`
+- آخرین به‌رورسانی: `2026-09-04 03:42 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 07 — Prescription & Treatment`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
-- task فعال: `ندارد؛ F07-T03 واجد شرایط است اما claim نشده است`
+- task فعال: `ندارد؛ F07-T04 واجد شرایط است اما claim نشده است`
 - blocker فعال: ندارد؛ F07-T02 با migration clean/shadow isolated تکمیل شد. Phase 07 همچنان در حال اجرا است.
 
 ## پیشرفت کلان
@@ -108,10 +108,31 @@ Tasks:
 
 - `F07-T01` — `DONE`؛ approved issuance-policy baseline and verification: [`contracts/prescription-treatment-policy-v1.md`](contracts/prescription-treatment-policy-v1.md), evidence: [`logs/phase-07.md`](logs/phase-07.md).
 - `F07-T02` — `DONE`؛ migration prescription/treatment/task/adherence with clean local switchover verification: [`logs/phase-07.md`](logs/phase-07.md).
+- `F07-T03` — `DONE`؛ prescription create/draft/issue/revision API with append-only issued history and real PostgreSQL verification: [`logs/phase-07.md`](logs/phase-07.md).
+
+## آخرین batch تکمیل‌شده — F07-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-04 03:31 +03:30`
+Phase: `Phase 07 — Prescription & Treatment`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/prescription-treatment-policy-v1.md`
+
+Tasks:
+
+- Task ID: `F07-T03`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F07-T01 DONE`, `F07-T02 DONE`
+  Scope: prescription create/draft/issue/revision API
+  Owned paths: `apps/api/src/modules/clinical/{prescription*.ts,clinical.module.ts}`, `apps/api/test/prescription*.spec.ts`, `plan/logs/phase-07.md`, `plan/STATUS.md`, `plan/phases/07-PRESCRIPTION-TREATMENT.md`, `specs/005-adopt-phase-07/{spec.md,plan.md,quickstart.md,tasks.md}`
+  Shared/exclusive resource: `Clinical module/API contract and PostgreSQL integration test`
+  Expected verification: input/response validation, PostgreSQL lifecycle/revision/constraint integration, authorization/resource-boundary regression, Prisma validation/generation, API smoke, and `git diff --check`
+  Result: append-only prescription draft/revision and exact-revision issue API accepted with optimistic concurrency, immutable issued history, integrity evidence, current clinical capability/resource boundary, and real PostgreSQL coverage. The dedicated `PRESCRIPTION_ISSUE`, audit, and contraindication enforcement remains exclusively owned by `F07-T09`; generated client synchronization remains exclusively owned by `F07-T10`.
 
 ## batch بعدی واجد شرایط
 
-`F07-B03` — `F07-T03` — prescription create/draft/issue/revision API. Not claimed or started; it remains serialized after the accepted F07-T02 persistence foundation.
+`F07-B04` — `F07-T04` — treatment medication/session/exercise/nutrition plan API. Not claimed or started; it remains serialized after the accepted F07-T03 prescription API foundation.
 
 ## وضعیت taskهای فاز پیشین
 

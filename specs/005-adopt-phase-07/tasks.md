@@ -9,7 +9,7 @@ description: "One-to-one Spec Kit adoption of existing Phase 07 roadmap tasks"
 
 **Roadmap boundary**: `T001`–`T012` are Spec Kit labels only. The authoritative roadmap IDs in the checklist entries below remain the execution, claim, evidence, and commit identities. No task is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Execution status**: `F07-T01` and `F07-T02` are complete after their respective review gates; `F07-T03`–`F07-T12` remain unclaimed and unchecked. Consult `plan/STATUS.md` and the authoritative phase checklist for the live state. This file does not authorize implementation.
+**Execution status**: `F07-T01` through `F07-T03` are complete after their respective review gates; `F07-T04`–`F07-T12` remain unclaimed and unchecked. Consult `plan/STATUS.md` and the authoritative phase checklist for the live state. This file does not authorize implementation.
 
 ## Format
 
@@ -26,7 +26,7 @@ Reuse the completed Phase 06 clinical-workspace baseline, existing API/frontend/
 
 ## Phase 3: Preserved Delivery Sequence — User Story 1 (P1)
 
-- [ ] T003 [US1] F07-T03: prescription create/draft/issue/revision API
+- [x] T003 [US1] F07-T03: prescription create/draft/issue/revision API
 - [ ] T004 [US1] F07-T04: treatment medication/session/exercise/nutrition plan API
 
 ## Phase 4: User Story 2 — Follow Treatment (P2)

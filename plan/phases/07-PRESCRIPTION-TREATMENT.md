@@ -26,7 +26,7 @@
 
 - [x] `F07-T01` — lifecycle draft/issue/amend و قواعد ایمنی نسخه
 - [x] `F07-T02` — migration prescription/treatment/task/adherence
-- [ ] `F07-T03` — prescription create/draft/issue/revision API
+- [x] `F07-T03` — prescription create/draft/issue/revision API
 - [ ] `F07-T04` — treatment medication/session/exercise/nutrition plan API
 - [ ] `F07-T05` — task schedule و ثبت مصرف/انجام با idempotency
 - [ ] `F07-T06` — progress calculation و timeline واقعی

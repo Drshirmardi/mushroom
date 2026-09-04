@@ -89,3 +89,46 @@ Known limitations:
 Next batch:
 
 - `F07-B03` — `F07-T03` is eligible but not claimed or started.
+
+## F07-T03 — prescription create/draft/issue/revision API
+
+Task ID: F07-T03
+Completed at: 2026-09-04 03:42 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B03
+Reviewed by: Codex /root
+Changed files:
+
+- `apps/api/src/modules/clinical/{admin-prescriptions.controller.ts,prescription.dto.ts,prescription-response.dto.ts,prescription.service.ts,clinical.module.ts}`
+- `apps/api/test/prescription.integration.spec.ts`
+- `plan/STATUS.md`
+- `plan/phases/07-PRESCRIPTION-TREATMENT.md`
+- `plan/logs/phase-07.md`
+- `specs/005-adopt-phase-07/{spec.md,quickstart.md,tasks.md}`
+
+Migrations: none; F07-T02 persistence foundation is reused unchanged.
+
+Tests run:
+
+- `prisma validate` and `prisma generate` → PASS
+- `tsc -p tsconfig.test.json --noEmit` → PASS
+- `vitest run test/prescription.integration.spec.ts test/health.integration.spec.ts --no-file-parallelism` → PASS (4/4)
+- real PostgreSQL lifecycle coverage: concurrent stale draft rejection, exact current-revision issue, immutable issued history, required amendment reason, integrity hash, and clinic-resource denial → PASS
+- generated runtime OpenAPI document exposes the new protected prescription routes → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- Authorized clinical users can list/get, create, save append-only drafts, and issue the exact current prescription revision through validated `/v1/admin/patients/:patientId/prescriptions` routes → PASS
+- Current clinic-resource grants and configurable clinical read/edit/sign capabilities are enforced before the corresponding prescription operation → PASS
+- Issued revisions preserve issuer identity, timestamp, ordered item content, predecessor link, and deterministic integrity evidence; correction creates a successor draft instead of overwriting issued content → PASS
+- No treatment-plan, adherence, progress, UI, client-generation, migration, or Phase 08 work was introduced → PASS
+
+Known limitations:
+
+- The frozen explicit `PRESCRIPTION_ISSUE` capability, transactional audit, warning evaluation/acknowledgement, and `NON_OVERRIDABLE` enforcement remain exclusively owned by `F07-T09`; this task retains the existing configurable clinical capability and clinic-resource boundary without adding RBAC infrastructure.
+- Checked-in generated API client synchronization intentionally remains with `F07-T10`; the current OpenAPI client-synchronization test therefore reports the expected future-task diff and is not a F07-T03 completion gate.
+
+Next batch:
+
+- `F07-B04` — `F07-T04` is eligible but not claimed or started.
