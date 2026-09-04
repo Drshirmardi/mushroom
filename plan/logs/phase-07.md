@@ -295,3 +295,40 @@ Result:
 Next batch:
 
 - `F07-B08` — `F07-T08` is eligible but unclaimed and not started.
+
+## F07-T08 — patient treatment application connection
+
+Task ID: F07-T08
+Completed at: 2026-09-04 17:22 +03:30
+Agent/Thread: Codex /root
+Batch ID: F07-B08
+Reviewed by: Codex /root
+Contract baseline: [`../contracts/patient-treatment-app-connection-v1.md`](../contracts/patient-treatment-app-connection-v1.md)
+
+Changed files:
+
+- `apps/app/src/app/(app)/treatment/**`
+- `apps/app/src/lib/{patient-treatment-api.ts,patient-treatment-api.spec.ts}`
+- `plan/contracts/patient-treatment-app-connection-v1.md`
+- `plan/{STATUS.md,phases/07-PRESCRIPTION-TREATMENT.md,logs/phase-07.md}`
+- `specs/005-adopt-phase-07/{spec.md,quickstart.md,contracts/phase-07-adoption.md,tasks.md}`
+
+Migrations: none; this task connects the accepted patient APIs without persistence changes.
+
+Tests run:
+
+- `apps/app: corepack pnpm vitest run` → PASS (9 files, 26 tests), including the patient treatment API adapter contract test.
+- `apps/app: corepack pnpm typecheck` → PASS.
+- `apps/app: corepack pnpm build` → PASS.
+- `apps/api: corepack pnpm vitest run test/treatment-activity.integration.spec.ts test/treatment-plan.integration.spec.ts test/treatment-progress.integration.spec.ts --no-file-parallelism` → PASS (3 files, 7 tests).
+- `git diff --check` → PASS.
+
+Result:
+
+- The patient treatment area displays only authenticated patient-owned plan definitions, medication/session/exercise/nutrition content, scheduled activity, and server-derived progress.
+- Patient completion and medication-adherence buttons call the accepted repeat-safe/keyed APIs and reload persisted data. Loading, failure, and empty states never substitute demo treatment content.
+- Legacy treatment detail routes now return to this real connected view rather than displaying their former fabricated detail screens. No scheduling creation, appointment/session execution, authorization-policy expansion, generated-client synchronization, browser E2E, or Phase 08 work was introduced.
+
+Next batch:
+
+- `F07-B09` — `F07-T09` is eligible, unclaimed, and not started.

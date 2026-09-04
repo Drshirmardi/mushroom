@@ -42,6 +42,12 @@
 
 **Alternatives considered**: A global implicit patient, dashboard-only fabricated treatment data, or generated-client changes before the F07-T10 task are rejected.
 
+## Decision: Connect the app through patient self-service APIs
+
+**Rationale**: The completed F07 patient APIs expose permitted treatment definitions, scheduled activity, persisted patient actions, and real derived progress. F07-T08 replaces the treatment area's demo stores with those own-resource reads and accepted action calls. No session is treated as a completed occurrence and no schedule is invented in the UI.
+
+**Alternatives considered**: Local medication/task toggles, fabricated session/exercise/progress data, or a client-sync change before F07-T10 are rejected.
+
 ## Decision: Do not infer parallel lanes
 
 **Rationale**: The source has no batch map or per-task dependencies. Future execution must claim and assign non-overlapping ownership under `plan/05-AGENT-WORKFLOW.md`.

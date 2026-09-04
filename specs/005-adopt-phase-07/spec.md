@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-07-prescription-treatment`
 **Created**: 2026-09-03
-**Status**: Execution tracking only — Phase 07 is `IN_PROGRESS`; `F07-T01` through `F07-T07` are complete.
+**Status**: Execution tracking only — Phase 07 is `IN_PROGRESS`; `F07-T01` through `F07-T08` are complete.
 **Input**: Adopt the authoritative Phase 07 Prescription & Treatment roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -68,7 +68,7 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - **FR-005 (`F07-T05`)**: One-off `MEDICATION` and `EXERCISE` task occurrences MUST persist their future `scheduledFor` reminder source. An authenticated patient MUST be able to repeat-safely complete only their own scheduled task; medication adherence MUST require a scoped `Idempotency-Key`, preserve the first result for a matching retry, and reject a key reused for a different medication or task. No session-plan scheduling or real-progress calculation is part of this requirement.
 - **FR-006 (`F07-T06`)**: Progress and timeline information MUST be calculated from real progress events, not a fixed UI value.
 - **FR-007 (`F07-T07`)**: The dashboard prescription builder and selected patient workspace MUST use the accepted prescription, treatment-plan, and real-progress APIs. Missing selection, access, and request failures MUST remain truthful and MUST NOT substitute fabricated patient, prescription, treatment, or progress data. Generated-client synchronization remains `F07-T10` scope.
-- **FR-008 (`F07-T08`)**: The app treatment area MUST use the in-scope treatment, medication, session, exercise, and progress information.
+- **FR-008 (`F07-T08`)**: The app treatment area MUST use authenticated patient-owned treatment-plan, scheduled-task, and derived-progress APIs for treatment, medication, session, exercise, nutrition, and progress information; failed or empty reads MUST remain truthful and not use demo data.
 - **FR-009 (`F07-T09`)**: The Phase 07 permission, audit, and contraindication-warning contract MUST govern the authorized treatment experience.
 - **FR-010 (`F07-T10`)**: In-scope frontend connections MUST use the generated contract and remove Phase 07 mock/local state.
 - **FR-011 (`F07-T11`)**: The end-to-end journey MUST preserve prescription immutability, amendment behavior, ownership, and required browser verification.
@@ -100,4 +100,4 @@ The dashboard and app use actual prescription, treatment, adherence, and progres
 - Phase 06 is `DONE (CLOSED)` and supplies the completed clinical-workspace baseline.
 - The authoritative source lists `F07-T01` through `F07-T12` in order but declares no individual `Depends on` fields or batch map; this adoption does not create one.
 - Exact schema and route details remain owned by their named authoritative tasks. The approved `F07-T01` baseline defines draft/issue/amend safety, default `DOCTOR` issuance authority, advisory acknowledgement, and the legal-confirmation boundary; enforcement remains owned by `F07-T09`.
-- `F07-T01` through `F07-T07` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T08`–`F07-T12` remain unclaimed and unchecked. The permanent owner-approved F07-T04 boundary is recorded in [`plan/contracts/treatment-session-plan-v1.md`](../../plan/contracts/treatment-session-plan-v1.md); the F07-T07 selected-patient dashboard boundary is recorded in [`plan/contracts/prescription-dashboard-connection-v1.md`](../../plan/contracts/prescription-dashboard-connection-v1.md).
+- `F07-T01` through `F07-T08` are complete. Phase 07 remains `IN_PROGRESS`; `F07-T09`–`F07-T12` remain unclaimed and unchecked.

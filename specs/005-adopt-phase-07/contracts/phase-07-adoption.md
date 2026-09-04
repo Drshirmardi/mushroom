@@ -13,7 +13,7 @@
 | `F07-T05` | One-off `MEDICATION`/`EXERCISE` task scheduling with `scheduledFor` as the future reminder source; authorized clinic-resource operations; patient-owned repeat-safe completion; and keyed medication-adherence recording. It reuses the F07-T02 foundation and does not add a session relationship, recurrence, reminder dispatch, progress event, frontend connection, or generated-client synchronization. |
 | `F07-T06` | Real progress calculation from persisted non-cancelled task state and append-only `TASK_COMPLETED`/`MEDICATION_ADHERENCE_RECORDED` timeline events. No session lifecycle, scheduling, UI connection, or client synchronization. |
 | `F07-T07` | Selected-patient prescription builder and dashboard patient-workspace connection using accepted prescription, treatment-plan, and real-progress APIs; no fabricated selection/data; generated-client sync remains `F07-T10`. See [`prescription-dashboard-connection-v1.md`](../../../plan/contracts/prescription-dashboard-connection-v1.md). |
-| `F07-T08` | App treatment connection. |
+| `F07-T08` | Authenticated patient treatment connection to accepted plan, activity, and progress APIs; no fabricated treatment data. |
 | `F07-T09` | Permission, audit, and contraindication-warning contract. |
 | `F07-T10` | OpenAPI/generated client and in-scope mock/local-state removal. |
 | `F07-T11` | Immutability, amendment, ownership, and browser E2E. |

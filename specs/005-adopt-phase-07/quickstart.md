@@ -16,7 +16,7 @@ This guide preserves Phase 07 validation gates. Live execution state is authorit
 - `F07-T05`: targeted PostgreSQL/API/type checks for one-off medication/exercise scheduling, repeat-safe owned task completion, keyed medication-adherence replay, clinic-resource authorization, audit, and runtime OpenAPI declarations. No migration is expected because the F07-T02 persistence foundation is reused.
 - `F07-T06`: targeted PostgreSQL/API/type checks for transactional real-event append, retry deduplication, task-state-derived percentage, patient/clinic-resource authorization, audit, and runtime OpenAPI declarations. No migration, UI connection, or client synchronization is expected.
 - `F07-T07`: selected-patient dashboard adapter contract tests; dashboard test/type/lint/build; focused accepted prescription/treatment/progress API regression; and truthful missing-selection/error states. Checked-in generated-client synchronization remains out of scope.
-- `F07-T08`: focused patient-app type checks and truthful in-scope mock/local-state removal only after the real source and contract are ready.
+- `F07-T08`: patient treatment adapter contract tests; app test/type/build; focused accepted plan/activity/progress API regression; and truthful loading/error/empty states without fabricated treatment data.
 - `F07-T09`: authorization matrix, audit, and contraindication-warning coverage.
 - `F07-T10`: regenerate/typecheck the client and review in-scope connection removal.
 
