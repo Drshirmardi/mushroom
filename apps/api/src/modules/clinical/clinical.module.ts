@@ -9,6 +9,17 @@ import { ClinicalResourceAccessService } from './clinical-resource-access.servic
 import { PatientClinicalController } from './patient-clinical.controller';
 import { AdminClinicalWorkspaceController } from './admin-clinical-workspace.controller';
 import { AdminClinicalWorkspaceService } from './admin-clinical-workspace.service';
+import { AdminPrescriptionsController } from './admin-prescriptions.controller';
+import { PrescriptionService } from './prescription.service';
+import { AdminTreatmentPlansController } from './admin-treatment-plans.controller';
+import { PatientTreatmentPlansController } from './patient-treatment-plans.controller';
+import { TreatmentPlanService } from './treatment-plan.service';
+import { AdminTreatmentTasksController } from './admin-treatment-tasks.controller';
+import { PatientTreatmentActivityController } from './patient-treatment-activity.controller';
+import { TreatmentActivityService } from './treatment-activity.service';
+import { AdminTreatmentProgressController } from './admin-treatment-progress.controller';
+import { PatientTreatmentProgressController } from './patient-treatment-progress.controller';
+import { TreatmentProgressService } from './treatment-progress.service';
 
-@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService] })
+@Module({ controllers: [PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController, AdminTreatmentPlansController, PatientTreatmentPlansController, AdminTreatmentTasksController, PatientTreatmentActivityController, AdminTreatmentProgressController, PatientTreatmentProgressController], providers: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService, TreatmentProgressService], exports: [EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService, TreatmentProgressService] })
 export class ClinicalModule {}

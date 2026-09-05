@@ -1465,6 +1465,418 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/patients/{patientId}/prescriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized patient prescriptions */
+        get: operations["adminPrescriptionsList"];
+        put?: never;
+        /** Create a prescription draft */
+        post: operations["adminPrescriptionsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an authorized prescription current revision */
+        get: operations["adminPrescriptionsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save an append-only prescription draft revision */
+        post: operations["adminPrescriptionsSaveDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue an exact current prescription revision */
+        post: operations["adminPrescriptionsIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized patient treatment plans */
+        get: operations["adminTreatmentPlansList"];
+        put?: never;
+        /** Create an authorized treatment-plan definition */
+        post: operations["adminTreatmentPlansCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an authorized treatment-plan definition */
+        get: operations["adminTreatmentPlansGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable treatment-plan definition */
+        patch: operations["adminTreatmentPlansUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a treatment medication definition without schedule execution */
+        post: operations["adminTreatmentPlanMedicationsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications/{medicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable treatment medication definition */
+        patch: operations["adminTreatmentPlanMedicationsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an ordered clinical session definition without scheduling */
+        post: operations["adminTreatmentPlanSessionsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an ordered clinical session definition without scheduling */
+        patch: operations["adminTreatmentPlanSessionsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an exercise definition without schedule execution */
+        post: operations["adminTreatmentPlanExercisesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises/{exerciseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable exercise definition */
+        patch: operations["adminTreatmentPlanExercisesUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a nutrition definition */
+        post: operations["adminTreatmentPlanNutritionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition/{nutritionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable nutrition definition */
+        patch: operations["adminTreatmentPlanNutritionUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/treatment-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the patient permitted active or completed treatment plans */
+        get: operations["patientTreatmentPlansList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment-plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a patient permitted active or completed treatment plan */
+        get: operations["patientTreatmentPlansGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized treatment-task occurrences */
+        get: operations["adminTreatmentTasksList"];
+        put?: never;
+        /** Schedule a one-off medication or exercise task */
+        post: operations["adminTreatmentTasksCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reschedule a scheduled treatment task */
+        patch: operations["adminTreatmentTasksReschedule"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a scheduled treatment task */
+        post: operations["adminTreatmentTasksCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the patient scheduled treatment tasks */
+        get: operations["patientTreatmentTasksList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment/tasks/{taskId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete one permitted treatment task repeat-safely */
+        post: operations["patientTreatmentTasksComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment/medications/{medicationId}/adherence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record permitted medication adherence idempotently */
+        post: operations["patientMedicationAdherenceRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get authorized real treatment progress and timeline */
+        get: operations["adminTreatmentProgressGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment-plans/{planId}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the authenticated patient real treatment progress and timeline */
+        get: operations["patientTreatmentProgressGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1494,7 +1906,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -2774,6 +3186,263 @@ export interface components {
                 [key: string]: unknown;
             };
             amendmentReasonCategory?: string | null;
+        };
+        PrescriptionItemResponseDto: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            medicationName: string;
+            doseText: string | null;
+            frequencyText: string | null;
+            durationText: string | null;
+            instructions: string | null;
+        };
+        PrescriptionRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "ISSUED" | "VOIDED";
+            amendmentReasonCategory: string | null;
+            integrityHash: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            issuedAt: string | null;
+            /** Format: uuid */
+            issuedByUserId: string | null;
+            items: components["schemas"]["PrescriptionItemResponseDto"][];
+        };
+        PrescriptionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            currentRevision: number;
+            currentIssuedRevision: number | null;
+            latestIssuedRevision: number | null;
+            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
+        };
+        PrescriptionListResponseDto: {
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        PrescriptionItemDto: {
+            medicationName: string;
+            doseText?: string;
+            frequencyText?: string;
+            durationText?: string;
+            instructions?: string;
+        };
+        CreatePrescriptionDto: {
+            expectedRevision: number;
+            items: components["schemas"]["PrescriptionItemDto"][];
+        };
+        SavePrescriptionDraftDto: {
+            expectedRevision: number;
+            items: components["schemas"]["PrescriptionItemDto"][];
+            amendmentReasonCategory?: string;
+        };
+        IssuePrescriptionDto: {
+            revisionNumber: number;
+            expectedRevision: number;
+        };
+        TreatmentMedicationResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            dosage: string | null;
+            instructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentSessionPlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            title: string;
+            goals: string[];
+            instructions: string | null;
+            patientInstructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ExercisePlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            instructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        NutritionPlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            instructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentPlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            /** @enum {string} */
+            state: "DRAFT" | "ACTIVE" | "COMPLETED" | "VOIDED";
+            title: string | null;
+            medications: components["schemas"]["TreatmentMedicationResponseDto"][];
+            sessionPlans: components["schemas"]["TreatmentSessionPlanResponseDto"][];
+            exercisePlans: components["schemas"]["ExercisePlanResponseDto"][];
+            nutritionPlans: components["schemas"]["NutritionPlanResponseDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentPlanListResponseDto: {
+            items: components["schemas"]["TreatmentPlanResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        TreatmentMedicationDto: {
+            name: string;
+            dosage?: string;
+            instructions?: string;
+        };
+        TreatmentSessionPlanDto: {
+            position: number;
+            title: string;
+            goals: string[];
+            instructions?: string;
+            patientInstructions?: string;
+        };
+        ExercisePlanDto: {
+            title: string;
+            instructions?: string;
+        };
+        NutritionPlanDto: {
+            title: string;
+            instructions?: string;
+        };
+        CreateTreatmentPlanDto: {
+            title?: string;
+            medications?: components["schemas"]["TreatmentMedicationDto"][];
+            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
+            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
+            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+        };
+        UpdateTreatmentPlanDto: {
+            title?: string;
+            /** @enum {string} */
+            state?: "DRAFT" | "ACTIVE" | "COMPLETED" | "VOIDED";
+        };
+        UpdateTreatmentMedicationDto: {
+            name?: string;
+            dosage?: string;
+            instructions?: string;
+        };
+        UpdateTreatmentSessionPlanDto: {
+            position?: number;
+            title?: string;
+            goals?: string[];
+            instructions?: string;
+            patientInstructions?: string;
+        };
+        UpdateExercisePlanDto: {
+            title?: string;
+            instructions?: string;
+        };
+        UpdateNutritionPlanDto: {
+            title?: string;
+            instructions?: string;
+        };
+        TreatmentTaskResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            treatmentPlanId: string;
+            /** @enum {string} */
+            kind: "MEDICATION" | "EXERCISE";
+            /** Format: date-time */
+            scheduledFor: string;
+            /** @enum {string} */
+            state: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+            /** Format: date-time */
+            completedAt?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentTaskListResponseDto: {
+            items: components["schemas"]["TreatmentTaskResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        CreateTreatmentTaskDto: {
+            /** @enum {string} */
+            kind: "MEDICATION" | "EXERCISE";
+            /** Format: date-time */
+            scheduledFor: string;
+        };
+        RescheduleTreatmentTaskDto: {
+            /** Format: date-time */
+            scheduledFor: string;
+        };
+        RecordMedicationAdherenceDto: {
+            /**
+             * Format: uuid
+             * @description Optional matching MEDICATION task in the same treatment plan.
+             */
+            treatmentTaskId?: string;
+        };
+        MedicationAdherenceResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            treatmentMedicationId: string;
+            /** Format: uuid */
+            treatmentTaskId?: string | null;
+            /** Format: date-time */
+            recordedAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TreatmentProgressEventResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            treatmentPlanId: string;
+            /** Format: uuid */
+            treatmentTaskId?: string | null;
+            /** @enum {string} */
+            eventType: "TASK_COMPLETED" | "MEDICATION_ADHERENCE_RECORDED";
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        TreatmentProgressResponseDto: {
+            /** Format: uuid */
+            treatmentPlanId: string;
+            percentage: number;
+            completedTasks: number;
+            totalTasks: number;
+            timeline: components["schemas"]["TreatmentProgressEventResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
         };
     };
     responses: never;
@@ -6345,6 +7014,689 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClinicalRecordResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsList: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                limit?: unknown;
+            };
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePrescriptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsSaveDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavePrescriptionDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssuePrescriptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanListResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTreatmentPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTreatmentPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanMedicationsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TreatmentMedicationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentMedicationResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanMedicationsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                medicationId: string;
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTreatmentMedicationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentMedicationResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanSessionsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TreatmentSessionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentSessionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanSessionsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTreatmentSessionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentSessionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanExercisesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExercisePlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExercisePlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanExercisesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exerciseId: string;
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExercisePlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExercisePlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanNutritionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NutritionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NutritionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanNutritionUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nutritionId: string;
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNutritionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NutritionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentPlansList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanListResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentPlansGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskListResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTreatmentTaskDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksReschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescheduleTreatmentTaskDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentTasksList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskListResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentTasksComplete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    patientMedicationAdherenceRecord: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                medicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordMedicationAdherenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicationAdherenceResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentProgressGet: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                limit?: unknown;
+            };
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentProgressResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentProgressGet: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                limit?: unknown;
+            };
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentProgressResponseDto"];
                 };
             };
         };

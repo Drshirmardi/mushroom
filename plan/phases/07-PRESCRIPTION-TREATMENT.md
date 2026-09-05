@@ -1,6 +1,7 @@
 # Phase 07 — Prescription & Treatment
 
 - وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)` — پس از review مستقل closure در `2026-09-04`
 - Milestone: `C — هسته درمان`
 - پیش‌نیاز: `Phase 06 DONE`
 - خروجی اصلی: نسخه و برنامه درمان در dashboard صادر و در app پیگیری می‌شود.
@@ -15,6 +16,7 @@
 
 - `Prescription`، `PrescriptionItem` و `PrescriptionRevision`
 - `TreatmentPlan`
+- `TreatmentSessionPlan`
 - `TreatmentMedication`
 - `ExercisePlan`
 - `NutritionPlan`
@@ -24,18 +26,18 @@
 
 ## Taskها
 
-- [ ] `F07-T01` — lifecycle draft/issue/amend و قواعد ایمنی نسخه
-- [ ] `F07-T02` — migration prescription/treatment/task/adherence
-- [ ] `F07-T03` — prescription create/draft/issue/revision API
-- [ ] `F07-T04` — treatment medication/session/exercise/nutrition plan API
-- [ ] `F07-T05` — task schedule و ثبت مصرف/انجام با idempotency
-- [ ] `F07-T06` — progress calculation و timeline واقعی
-- [ ] `F07-T07` — اتصال prescription builder و patient workspace dashboard
-- [ ] `F07-T08` — اتصال treatment/med/session/exercise/progress در app
-- [ ] `F07-T09` — permission، audit، contraindication warning contract
-- [ ] `F07-T10` — OpenAPI/client و حذف mock/local state scope
-- [ ] `F07-T11` — immutability، amendment، ownership و browser E2E
-- [ ] `F07-T12` — evidence
+- [x] `F07-T01` — lifecycle draft/issue/amend و قواعد ایمنی نسخه
+- [x] `F07-T02` — migration prescription/treatment/task/adherence
+- [x] `F07-T03` — prescription create/draft/issue/revision API
+- [x] `F07-T04` — treatment medication/session/exercise/nutrition plan API
+- [x] `F07-T05` — task schedule و ثبت مصرف/انجام با idempotency
+- [x] `F07-T06` — progress calculation و timeline واقعی
+- [x] `F07-T07` — اتصال prescription builder و patient workspace dashboard
+- [x] `F07-T08` — اتصال treatment/med/session/exercise/progress در app
+- [x] `F07-T09` — permission، audit، contraindication warning contract
+- [x] `F07-T10` — OpenAPI/client و حذف mock/local state scope
+- [x] `F07-T11` — immutability، amendment، ownership و browser E2E
+- [x] `F07-T12` — evidence
 
 ## قواعد و معیار خروج
 

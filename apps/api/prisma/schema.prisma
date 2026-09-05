@@ -273,8 +273,34 @@ enum ClinicalPermission {
   CLINICAL_RECORD_EDIT
   CLINICAL_RECORD_SIGN
   CLINICAL_RECORD_AMEND
+  PRESCRIPTION_ISSUE
 
   @@map("clinical_permission")
+}
+
+enum PrescriptionRevisionState {
+  DRAFT
+  ISSUED
+  VOIDED
+
+  @@map("prescription_revision_state")
+}
+
+enum TreatmentPlanState {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  VOIDED
+
+  @@map("treatment_plan_state")
+}
+
+enum TreatmentTaskState {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+
+  @@map("treatment_task_state")
 }
 
 enum PatientAccessAction {
@@ -483,6 +509,8 @@ model Clinic {
   conditionRecords         ConditionRecord[]
   medicationStatements     MedicationStatement[]
   patientAccessAudits      PatientAccessAudit[]
+  prescriptions            Prescription[]
+  treatmentPlans           TreatmentPlan[]
 
   @@map("clinics")
 }
@@ -522,6 +550,8 @@ model PatientProfile {
   conditionRecords        ConditionRecord[]
   medicationStatements    MedicationStatement[]
   patientAccessAudits     PatientAccessAudit[]
+  prescriptions           Prescription[]
+  treatmentPlans          TreatmentPlan[]
 
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
@@ -1231,4 +1261,202 @@ model PatientAccessAudit {
   @@index([actorUserId, createdAt, id], map: "patient_access_audits_actor_created_idx")
   @@index([resourceType, resourceId, createdAt, id], map: "patient_access_audits_resource_created_idx")
   @@map("patient_access_audits")
+}
+
+model Prescription {
+  id                           String                 @id @default(uuid()) @db.Uuid
+  clinicId                     String                 @map("clinic_id") @db.Uuid
+  patientId                    String                 @map("patient_id") @db.Uuid
+  currentRevisionNumber        Int                    @default(0) @map("current_revision_number")
+  currentIssuedRevisionNumber  Int?                   @map("current_issued_revision_number")
+  latestIssuedRevisionNumber   Int?                   @map("latest_issued_revision_number")
+  createdAt                    DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                    DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                       Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                      PatientProfile         @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  revisions                    PrescriptionRevision[]
+
+  @@unique([id, clinicId], map: "prescriptions_id_clinic_key")
+  @@index([clinicId, patientId, updatedAt, id], map: "prescriptions_patient_updated_idx")
+  @@map("prescriptions")
+}
+
+model PrescriptionRevision {
+  id                      String                    @id @default(uuid()) @db.Uuid
+  prescriptionId          String                    @map("prescription_id") @db.Uuid
+  revisionNumber          Int                       @map("revision_number")
+  previousRevisionId      String?                   @map("previous_revision_id") @db.Uuid
+  state                   PrescriptionRevisionState @default(DRAFT)
+  amendmentReasonCategory String?                   @map("amendment_reason_category") @db.VarChar(100)
+  integrityHash           String?                   @map("integrity_hash") @db.Char(64)
+  authoredAt              DateTime                  @default(now()) @map("authored_at") @db.Timestamptz(3)
+  authoredByUserId        String?                   @map("authored_by_user_id") @db.Uuid
+  issuedAt                DateTime?                 @map("issued_at") @db.Timestamptz(3)
+  issuedByUserId          String?                   @map("issued_by_user_id") @db.Uuid
+  createdAt               DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  prescription            Prescription              @relation(fields: [prescriptionId], references: [id], onDelete: Restrict)
+  previousRevision        PrescriptionRevision?     @relation("PrescriptionRevisionPredecessor", fields: [previousRevisionId], references: [id], onDelete: Restrict)
+  successorRevisions      PrescriptionRevision[]    @relation("PrescriptionRevisionPredecessor")
+  items                   PrescriptionItem[]
+  safetyAcknowledgements  PrescriptionSafetyAcknowledgement[]
+
+  @@unique([prescriptionId, revisionNumber], map: "prescription_revisions_prescription_revision_key")
+  @@index([prescriptionId, createdAt, id], map: "prescription_revisions_prescription_created_idx")
+  @@map("prescription_revisions")
+}
+
+model PrescriptionItem {
+  id                     String               @id @default(uuid()) @db.Uuid
+  prescriptionRevisionId String               @map("prescription_revision_id") @db.Uuid
+  position               Int
+  medicationName         String               @map("medication_name") @db.VarChar(255)
+  doseText               String?              @map("dose_text") @db.VarChar(255)
+  frequencyText          String?              @map("frequency_text") @db.VarChar(255)
+  durationText           String?              @map("duration_text") @db.VarChar(255)
+  instructions           String?              @db.Text
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  prescriptionRevision   PrescriptionRevision @relation(fields: [prescriptionRevisionId], references: [id], onDelete: Restrict)
+
+  @@unique([prescriptionRevisionId, position], map: "prescription_items_revision_position_key")
+  @@map("prescription_items")
+}
+
+model PrescriptionSafetyAcknowledgement {
+  id                     String               @id @default(uuid()) @db.Uuid
+  prescriptionRevisionId String               @map("prescription_revision_id") @db.Uuid
+  ruleId                 String               @map("rule_id") @db.VarChar(128)
+  classification         String               @db.VarChar(64)
+  integrityHash          String               @map("integrity_hash") @db.Char(64)
+  acknowledgedAt         DateTime             @default(now()) @map("acknowledged_at") @db.Timestamptz(3)
+  acknowledgedByUserId   String?              @map("acknowledged_by_user_id") @db.Uuid
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  prescriptionRevision   PrescriptionRevision @relation(fields: [prescriptionRevisionId], references: [id], onDelete: Restrict)
+
+  @@unique([prescriptionRevisionId, ruleId], map: "prescription_safety_acknowledgements_revision_rule_key")
+  @@map("prescription_safety_acknowledgements")
+}
+
+model TreatmentPlan {
+  id        String             @id @default(uuid()) @db.Uuid
+  clinicId  String             @map("clinic_id") @db.Uuid
+  patientId String             @map("patient_id") @db.Uuid
+  state     TreatmentPlanState @default(DRAFT)
+  title     String?            @db.VarChar(255)
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic             @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient   PatientProfile     @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  medications TreatmentMedication[]
+  sessionPlans TreatmentSessionPlan[]
+  exercisePlans ExercisePlan[]
+  nutritionPlans NutritionPlan[]
+  tasks     TreatmentTask[]
+  progressEvents TreatmentProgressEvent[]
+
+  @@unique([id, clinicId], map: "treatment_plans_id_clinic_key")
+  @@index([clinicId, patientId, state, updatedAt, id], map: "treatment_plans_patient_state_updated_idx")
+  @@map("treatment_plans")
+}
+
+model TreatmentSessionPlan {
+  id                  String        @id @default(uuid()) @db.Uuid
+  treatmentPlanId     String        @map("treatment_plan_id") @db.Uuid
+  position            Int
+  title               String        @db.VarChar(255)
+  goals               String[]      @default([])
+  instructions        String?       @db.Text
+  patientInstructions String?       @map("patient_instructions") @db.Text
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan       TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+
+  @@unique([treatmentPlanId, position], map: "treatment_session_plans_plan_position_key")
+  @@map("treatment_session_plans")
+}
+
+model TreatmentMedication {
+  id              String        @id @default(uuid()) @db.Uuid
+  treatmentPlanId String        @map("treatment_plan_id") @db.Uuid
+  name            String        @db.VarChar(255)
+  dosage          String?       @db.VarChar(255)
+  schedule        Json          @default("{}")
+  instructions    String?       @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+  adherenceLogs   MedicationAdherenceLog[]
+
+  @@index([treatmentPlanId, createdAt, id], map: "treatment_medications_plan_created_idx")
+  @@map("treatment_medications")
+}
+
+model ExercisePlan {
+  id              String        @id @default(uuid()) @db.Uuid
+  treatmentPlanId String        @map("treatment_plan_id") @db.Uuid
+  title           String        @db.VarChar(255)
+  instructions    String?       @db.Text
+  schedule        Json          @default("{}")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+
+  @@map("exercise_plans")
+}
+
+model NutritionPlan {
+  id              String        @id @default(uuid()) @db.Uuid
+  treatmentPlanId String        @map("treatment_plan_id") @db.Uuid
+  title           String        @db.VarChar(255)
+  instructions    String?       @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+
+  @@map("nutrition_plans")
+}
+
+model TreatmentTask {
+  id              String             @id @default(uuid()) @db.Uuid
+  treatmentPlanId String             @map("treatment_plan_id") @db.Uuid
+  kind            String             @db.VarChar(64)
+  scheduledFor    DateTime           @map("scheduled_for") @db.Timestamptz(3)
+  state           TreatmentTaskState @default(SCHEDULED)
+  completedAt     DateTime?          @map("completed_at") @db.Timestamptz(3)
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan      @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+  adherenceLogs   MedicationAdherenceLog[]
+  progressEvents  TreatmentProgressEvent[]
+
+  @@index([treatmentPlanId, state, scheduledFor, id], map: "treatment_tasks_plan_state_schedule_idx")
+  @@map("treatment_tasks")
+}
+
+model MedicationAdherenceLog {
+  id                    String              @id @default(uuid()) @db.Uuid
+  treatmentMedicationId String              @map("treatment_medication_id") @db.Uuid
+  treatmentTaskId       String?             @map("treatment_task_id") @db.Uuid
+  idempotencyKey        String              @unique(map: "medication_adherence_logs_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  recordedAt            DateTime            @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  treatmentMedication   TreatmentMedication @relation(fields: [treatmentMedicationId], references: [id], onDelete: Restrict)
+  treatmentTask         TreatmentTask?      @relation(fields: [treatmentTaskId], references: [id], onDelete: Restrict)
+
+  @@index([treatmentMedicationId, recordedAt, id], map: "medication_adherence_logs_medication_recorded_idx")
+  @@map("medication_adherence_logs")
+}
+
+model TreatmentProgressEvent {
+  id              String        @id @default(uuid()) @db.Uuid
+  treatmentPlanId String        @map("treatment_plan_id") @db.Uuid
+  treatmentTaskId String?       @map("treatment_task_id") @db.Uuid
+  eventType       String        @map("event_type") @db.VarChar(64)
+  occurredAt      DateTime      @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  metadata        Json          @default("{}")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+  treatmentTask   TreatmentTask? @relation(fields: [treatmentTaskId], references: [id], onDelete: Restrict)
+
+  @@index([treatmentPlanId, occurredAt, id], map: "treatment_progress_events_plan_occurred_idx")
+  @@map("treatment_progress_events")
 }
