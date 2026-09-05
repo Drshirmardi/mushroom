@@ -145,3 +145,36 @@ Result:
   - Durable uniquely keyed outbox and retrying worker bootstrap added; F08-T07 retains reminder event and delivery ownership.
 Next task:
   - F08-T07
+
+## F08-T07 — appointment و treatment reminders idempotent
+
+Task ID: F08-T07
+Completed at: 2026-09-05 10:57 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B07
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/appointments/{admin-appointments.service,patient-appointments.module,patient-appointments.service}.ts
+  - apps/api/src/modules/assessments/notifications/notifications.service.ts
+  - apps/api/src/modules/clinical/{clinical.module,treatment-activity.service}.ts
+  - apps/api/src/modules/outbox/{outbox.module,outbox.service,outbox.worker,reminder.service}.ts
+  - apps/api/test/{patient-appointments.integration,treatment-activity.integration,reminders.integration}.spec.ts
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md}
+  - specs/006-adopt-phase-08/{spec.md,plan.md,quickstart.md,tasks.md,checklists/requirements.md,contracts/phase-08-adoption.md}
+Migrations:
+  - existing 20260905063352_phase_08_outbox_bootstrap deployed to the local PostgreSQL rehearsal database → PASS
+Tests run:
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - apps/api/node_modules/.bin/tsc.cmd -p tsconfig.test.json --noEmit → PASS
+  - apps/api/node_modules/.bin/vitest.cmd run --no-file-parallelism test/reminders.integration.spec.ts → PASS (2 tests)
+  - focused appointment create/reschedule/cancel and treatment schedule/reschedule/complete/cancel PostgreSQL integrations → PASS
+  - git diff --check → PASS
+Result:
+  - patient and administrator appointment creation/rescheduling, plus treatment task creation/rescheduling, create one uniquely keyed outbox reminder per current UTC schedule → PASS
+  - rescheduled, cancelled, and early-completed schedule sources suppress stale pending reminders → PASS
+  - notification creation and outbox acknowledgement share one transaction; transient delivery failure retries once and never duplicates the in-app notification → PASS
+  - notification preferences suppress in-app output while recording the outbox event as delivered → PASS
+Known limitations:
+  - Phase 08 restart/timezone/browser end-to-end validation remains owned by F08-T10.
+Next task:
+  - F08-T08 (eligible but not started)

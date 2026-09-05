@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-08-follow-up-health-tracking-notifications-content`
 **Created**: 2026-09-05
-**Status**: Execution preparation only — Phase 08 is `NOT_STARTED`; all `F08-T01` through `F08-T11` tasks remain unchecked and unclaimed.
+**Status**: Phase 08 is `IN_PROGRESS`; `F08-T01` through `F08-T07` are complete, while `F08-T08` through `F08-T11` remain unchecked. Live execution state is in `plan/STATUS.md`.
 **Input**: Adopt the authoritative Phase 08 roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -115,4 +115,4 @@ The patient app and dashboard use real Phase 08 sources for health tracking, not
 - Phase 05 is `DONE (CLOSED)`; the roadmap identifies Phase 07 treatment scheduling as the predecessor for treatment reminders.
 - The source lists `F08-T01` through `F08-T11` in order but declares no individual task `Depends on` fields or batch map. This adoption creates neither.
 - Exact fields, routes, schemas, delivery channels, worker technology, and media implementation details are future task decisions and are not frozen here.
-- Phase 08 remains `NOT_STARTED`; no task is claimed, implemented, checked, or completed by these artifacts.
+- Phase 08 execution is live; this artifact remains subordinate to `plan/` for task status, claims, and completion evidence.

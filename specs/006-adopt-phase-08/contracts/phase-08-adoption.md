@@ -25,4 +25,4 @@
 - Reminder work is independent of the HTTP request and retryable.
 - Only published content is patient-visible.
 
-The roadmap declares Phase 08 `NOT_STARTED`; no task is claimed, activated, checked, completed, or otherwise authorized by this adoption.
+Phase 08 is `IN_PROGRESS`; live task claims, completion, and evidence remain authoritative only in `plan/`.

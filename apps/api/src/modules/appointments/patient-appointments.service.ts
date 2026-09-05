@@ -5,6 +5,7 @@ import { AppointmentStatus, AppointmentStatusHistoryAction, Prisma } from '../..
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { PatientBookingEligibilityService } from '../assessments/patient/patient-booking-eligibility.service';
 import { PatientAvailabilityService } from '../scheduling/patient-availability.service';
+import { ReminderService } from '../outbox/reminder.service';
 import type { AppointmentTimelineQueryDto, CreatePatientAppointmentDto, PatientAppointmentListQueryDto } from './patient-appointments.dto';
 
 const invalidKey = () => new UnprocessableEntityException({ code: 'IDEMPOTENCY_KEY_REQUIRED', message: 'An Idempotency-Key header is required.', details: {} });
@@ -23,6 +24,7 @@ export class PatientAppointmentsService {
     private readonly prisma: PrismaService,
     private readonly eligibility: PatientBookingEligibilityService,
     private readonly availability: PatientAvailabilityService,
+    private readonly reminders: ReminderService,
   ) {}
 
   async create(userId: string, body: CreatePatientAppointmentDto, rawKey: string | string[] | undefined): Promise<AppointmentResult> {
@@ -71,6 +73,7 @@ export class PatientAppointmentsService {
           },
         });
         await this.activity(tx, created, 'APPOINTMENT_CREATED', { action: AppointmentStatusHistoryAction.CREATED });
+        await this.reminders.appointment(tx, { id: created.id, clinicId: patient.clinicId, patientId: patient.id, recipientId: userId, startsAt: created.startsAt });
         await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         return created;
       }, { maxWait: 30_000, timeout: 30_000 });
@@ -111,6 +114,7 @@ export class PatientAppointmentsService {
       const appointment = await this.owned(userId, id, tx);
       if ((appointment.status !== AppointmentStatus.PENDING && appointment.status !== AppointmentStatus.CONFIRMED) || appointment.startsAt <= new Date()) throw changeNotAllowed();
       const cancelled = await tx.appointment.update({ where: { id }, data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date(), cancelReason: reason, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.CANCELLED, action: AppointmentStatusHistoryAction.CANCELLED, actorUserId: userId, reason, metadata: {} } } } });
+      await this.reminders.cancelAppointment(tx, cancelled.id, 'Appointment cancelled');
       await this.activity(tx, cancelled, 'APPOINTMENT_CANCELLED', { action: AppointmentStatusHistoryAction.CANCELLED });
       return this.response(cancelled);
     });
@@ -131,6 +135,8 @@ export class PatientAppointmentsService {
         const now = new Date();
         const hold = await tx.appointmentHold.create({ data: { clinicId: appointment.clinicId, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, expiresAt: new Date(now.getTime() + 60_000) } });
         const updated = await tx.appointment.update({ where: { id }, data: { doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, status: AppointmentStatus.PENDING, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: now, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.PENDING, action: AppointmentStatusHistoryAction.RESCHEDULED, actorUserId: userId, metadata: { previous: { startsAt: appointment.startsAt.toISOString(), endsAt: appointment.endsAt.toISOString(), priceAmount: appointment.priceAmount, currency: appointment.currency }, current: { startsAt: startsAt.toISOString(), endsAt: candidate.endsAt.toISOString(), priceAmount: offering.priceAmount, currency: offering.currency } } } } } });
+        if (appointment.startsAt.getTime() !== updated.startsAt.getTime()) await this.reminders.cancelAppointment(tx, updated.id, 'Appointment rescheduled');
+        await this.reminders.appointment(tx, { id: updated.id, clinicId: updated.clinicId, patientId: updated.patientId, recipientId: userId, startsAt: updated.startsAt });
         await this.activity(tx, updated, 'APPOINTMENT_RESCHEDULED', { action: AppointmentStatusHistoryAction.RESCHEDULED });
         await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         return this.response(updated);

@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 10:01 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 10:57 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `F08-B06`
-- task فعال: `F08-T06`
+- batch فعال: ندارد
+- task فعال: ندارد
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -50,26 +50,27 @@
 
 ## handoff فاز فعال
 
-`F08-B06` — `DONE`: F08-T06 added the durable outbox bootstrap; clean-database migration replay passed.
+بدون batch فعال. batch واجد شرایط بعدی: `F08-B08` / `F08-T08`؛ شروع نشده و خارج از این handoff است.
 
-## batch فعال — F08-B06
+## آخرین batch — F08-B07
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-09-05 10:05 +03:30`
+Completed at: `2026-09-05 10:57 +03:30`
 Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 Batch status: `DONE`
-Contract baseline: durable PostgreSQL outbox; T07 alone owns reminder scheduling and delivery behavior
+Contract baseline: Phase 05 appointments, Phase 07 treatment tasks, and F08-T06 durable outbox
 
 Tasks:
 
-- Task ID: `F08-T06`
+- Task ID: `F08-T07`
   Agent/Thread: `Codex /root`
   Status: `DONE`
-  Depends on: `F08-T05 DONE`
-  Scope: ADR and bootstrap durable outbox worker for real reminders
-  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/**,test/**}`, `plan/{decisions,STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
-  Shared/exclusive resource: outbox schema, worker process boundary
-  Expected verification: migration deploy, claim/retry transaction tests, Prisma validation, and `git diff --check`
+  Depends on: `F08-T06 DONE`
+  Scope: idempotent appointment and treatment reminder event creation and delivery
+  Owned paths: `apps/api/{src/modules/**,test/**}`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: reminder outbox consumer and existing schedule mutation hooks
+  Expected verification: repeat-safe reminder integration tests and worker retry test
 
 ## آخرین batch — F08-B05
 

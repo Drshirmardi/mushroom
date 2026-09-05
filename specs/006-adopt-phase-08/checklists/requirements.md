@@ -25,7 +25,7 @@
 - [x] All functional requirements map to exactly one authoritative `F08-T01`–`F08-T11` task.
 - [x] User scenarios cover the primary patient, dashboard, reminder, content, and review flows.
 - [x] Success criteria reflect the authoritative Phase 08 exit rules.
-- [x] The documentation preserves all tasks as unchecked and unclaimed and records no Phase 08 implementation decision.
+- [x] The documentation defers live task status, claims, and implementation evidence to authoritative `plan/` records.
 
 ## Notes
 

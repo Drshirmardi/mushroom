@@ -21,6 +21,8 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     await prisma.queueEntry.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.operationalActivity.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
     await prisma.appointmentStatusHistory.deleteMany({ where: { appointment: { idempotencyActorUserId: { in: users } } } });
+    const appointmentIds = (await prisma.appointment.findMany({ where: { idempotencyActorUserId: { in: users } }, select: { id: true } })).map((appointment) => appointment.id);
+    if (appointmentIds.length) await prisma.outboxEvent.deleteMany({ where: { aggregateType: 'APPOINTMENT', aggregateId: { in: appointmentIds } } });
     await prisma.appointment.deleteMany({ where: { idempotencyActorUserId: { in: users } } });
     if (holdIds.size) await prisma.appointmentHold.deleteMany({ where: { id: { in: [...holdIds] } } });
     await prisma.patientMedicalIntakeRevision.deleteMany({ where: { intake: { patient: { userId: { in: users } } } } });
@@ -78,6 +80,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const record = await prisma.appointment.findUniqueOrThrow({ where: { id: create.json().id }, include: { statusHistory: true } });
     expect(record.statusHistory).toHaveLength(1);
     expect(record.statusHistory[0]).toMatchObject({ action: 'CREATED', toStatus: 'PENDING', actorUserId: profile.userId });
+    expect(await prisma.outboxEvent.findFirstOrThrow({ where: { aggregateType: 'APPOINTMENT', aggregateId: record.id } })).toMatchObject({ status: 'PENDING', availableAt: record.startsAt });
     const hold = await prisma.appointmentHold.findFirst({ where: { clinicId: profile.clinicId, startsAt: record.startsAt, releasedAt: { not: null } } });
     expect(hold).not.toBeNull();
     holdIds.add(hold!.id);
@@ -88,9 +91,11 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const rescheduled = await app.inject({ method: 'POST', url: `/v1/appointments/${record.id}/reschedule`, headers: headers(token), payload: { doctorServiceId: offering.id, startsAt: available.json().items[1].startsAt } });
     expect(rescheduled.statusCode).toBe(200);
     expect(rescheduled.json()).toMatchObject({ id: record.id, status: 'PENDING', startsAt: available.json().items[1].startsAt });
+    expect(await prisma.outboxEvent.groupBy({ by: ['status'], where: { aggregateType: 'APPOINTMENT', aggregateId: record.id }, _count: true })).toEqual(expect.arrayContaining([expect.objectContaining({ status: 'FAILED', _count: 1 }), expect.objectContaining({ status: 'PENDING', _count: 1 })]));
     const cancelled = await app.inject({ method: 'POST', url: `/v1/appointments/${record.id}/cancel`, headers: headers(token), payload: { reason: 'Changed plans' } });
     expect(cancelled.statusCode).toBe(200);
     expect(cancelled.json()).toMatchObject({ id: record.id, status: 'CANCELLED' });
+    expect(await prisma.outboxEvent.count({ where: { aggregateType: 'APPOINTMENT', aggregateId: record.id, status: 'PENDING' } })).toBe(0);
   });
 
   it('rejects creation at the use-case boundary when onboarding is no longer eligible', async () => {

@@ -9,7 +9,7 @@ description: "One-to-one Spec Kit adoption of the authoritative Phase 08 roadmap
 
 **Roadmap boundary**: `T001`–`T011` are Spec Kit labels only. The authoritative roadmap IDs below remain the execution, claim, evidence, and commit identities. No task is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Execution status**: Phase 08 is `NOT_STARTED`; `F08-T01` through `F08-T11` are unchecked and unclaimed. Consult `plan/STATUS.md` and the authoritative phase checklist for live state. This file does not authorize implementation.
+**Execution status**: Phase 08 is `IN_PROGRESS`; `F08-T01` through `F08-T07` are complete and `F08-T08` through `F08-T11` are unchecked. Consult `plan/STATUS.md` and the authoritative phase checklist for live state. This file does not authorize implementation.
 
 ## Format
 
@@ -33,7 +33,7 @@ Reuse the completed Phase 05 appointment baseline, completed Phase 07 treatment-
 ## Phase 4: Real Reminder Boundary
 
 - [x] T006 F08-T06: ADR و bootstrap outbox/worker فقط برای reminder واقعی
-- [ ] T007 [US2] F08-T07: appointment و treatment reminders idempotent
+- [x] T007 [US2] F08-T07: appointment و treatment reminders idempotent
 
 ## Phase 5: Connected Interfaces — User Story 1 (P1) / User Story 4 (P4)
 

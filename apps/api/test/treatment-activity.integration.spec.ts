@@ -27,6 +27,8 @@ describe('treatment activity API (PostgreSQL integration)', () => {
     await prisma.patientAccessAudit.deleteMany({ where: { patient: { userId: { in: users } } } });
     await prisma.medicationAdherenceLog.deleteMany({ where: { treatmentMedication: { treatmentPlan: { patient: { userId: { in: users } } } } } });
     await prisma.treatmentProgressEvent.deleteMany({ where: { treatmentPlan: { patient: { userId: { in: users } } } } });
+    const taskIds = (await prisma.treatmentTask.findMany({ where: { treatmentPlan: { patient: { userId: { in: users } } } }, select: { id: true } })).map((task) => task.id);
+    if (taskIds.length) await prisma.outboxEvent.deleteMany({ where: { aggregateType: 'TREATMENT_TASK', aggregateId: { in: taskIds } } });
     await prisma.treatmentTask.deleteMany({ where: { treatmentPlan: { patient: { userId: { in: users } } } } });
     await prisma.treatmentMedication.deleteMany({ where: { treatmentPlan: { patient: { userId: { in: users } } } } });
     await prisma.exercisePlan.deleteMany({ where: { treatmentPlan: { patient: { userId: { in: users } } } } });
@@ -98,6 +100,7 @@ describe('treatment activity API (PostgreSQL integration)', () => {
     expect(medication.statusCode).toBe(201); expect(exercise.statusCode).toBe(201);
     const medicationTask = medication.json() as { id: string; state: string; scheduledFor: string };
     expect(medicationTask).toMatchObject({ state: 'SCHEDULED', scheduledFor: medicationAt });
+    expect(await prisma.outboxEvent.count({ where: { aggregateType: 'TREATMENT_TASK', aggregateId: { in: [medicationTask.id, exercise.json().id] }, status: 'PENDING' } })).toBe(2);
 
     const past = await request('POST', `/v1/admin/patients/${patient.id}/treatment-plans/${plan.id}/tasks`, doctorToken, { kind: 'MEDICATION', scheduledFor: new Date(Date.now() - 60_000).toISOString() });
     expect(past.statusCode).toBe(422); expect(past.json()).toMatchObject({ code: 'TREATMENT_TASK_SCHEDULE_INVALID' });
@@ -105,6 +108,7 @@ describe('treatment activity API (PostgreSQL integration)', () => {
     const rescheduledAt = new Date(Date.now() + 72 * 60 * 60_000).toISOString();
     const rescheduled = await request('PATCH', `/v1/admin/patients/${patient.id}/treatment-plans/${plan.id}/tasks/${medicationTask.id}`, doctorToken, { scheduledFor: rescheduledAt });
     expect(rescheduled.statusCode).toBe(200); expect(rescheduled.json()).toMatchObject({ id: medicationTask.id, scheduledFor: rescheduledAt });
+    expect(await prisma.outboxEvent.groupBy({ by: ['status'], where: { aggregateType: 'TREATMENT_TASK', aggregateId: medicationTask.id }, _count: true })).toEqual(expect.arrayContaining([expect.objectContaining({ status: 'FAILED', _count: 1 }), expect.objectContaining({ status: 'PENDING', _count: 1 })]));
 
     const patientTasks = await request('GET', '/v1/patients/me/treatment/tasks', patientToken);
     expect(patientTasks.statusCode).toBe(200);
@@ -115,10 +119,12 @@ describe('treatment activity API (PostgreSQL integration)', () => {
     expect(firstCompletion.statusCode).toBe(200); expect(replayCompletion.statusCode).toBe(200);
     expect(replayCompletion.json()).toMatchObject({ id: medicationTask.id, state: 'COMPLETED', completedAt: firstCompletion.json().completedAt });
     expect(await prisma.patientAccessAudit.count({ where: { patientId: patient.id, resourceType: 'PATIENT_TREATMENT_TASK', action: 'UPDATE' } })).toBe(1);
+    expect(await prisma.outboxEvent.count({ where: { aggregateType: 'TREATMENT_TASK', aggregateId: medicationTask.id, status: 'PENDING' } })).toBe(0);
 
     const exerciseTask = exercise.json() as { id: string };
     const cancelled = await request('POST', `/v1/admin/patients/${patient.id}/treatment-plans/${plan.id}/tasks/${exerciseTask.id}/cancel`, doctorToken);
     expect(cancelled.statusCode).toBe(200); expect(cancelled.json()).toMatchObject({ id: exerciseTask.id, state: 'CANCELLED' });
+    expect(await prisma.outboxEvent.count({ where: { aggregateType: 'TREATMENT_TASK', aggregateId: exerciseTask.id, status: 'PENDING' } })).toBe(0);
     const afterCancel = await request('GET', '/v1/patients/me/treatment/tasks', patientToken);
     expect(afterCancel.json().items).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: exerciseTask.id })]));
   });
