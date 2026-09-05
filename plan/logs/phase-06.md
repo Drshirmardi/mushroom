@@ -621,3 +621,67 @@ Result:
   accidental Phase 07 implementation, or unrelated change was found.
 - Phase 06 is `DONE (CLOSED)`. `Phase 07` remains `NOT_STARTED`; no Phase 07 task or batch was
   claimed or prepared.
+
+## F06-R01 — repository clinical migration-baseline reconciliation
+
+Task ID: F06-R01
+Completed at: 2026-09-03 23:24 +03:30
+Agent/Thread: Codex /root
+
+Reason:
+
+- `F07-T02` isolated migration planning exposed three unexplained Phase 06 differences between
+  the complete committed migration history and the committed Prisma schema.
+- Migration `20260903190000_phase_06_clinical_reconciliation` already creates nullable
+  `authored_by_user_id` and `signed_by_user_id` foreign keys to `users` with `ON DELETE SET NULL`,
+  plus a database-side `gen_random_uuid()` default for `clinical_record_revisions.id`.
+- The Prisma model omitted both relations and represented the identifier with a Prisma-side
+  `uuid()` default. This repair changes only the schema representation; database behavior and
+  persisted semantics remain unchanged.
+
+Changed files:
+
+- `apps/api/prisma/schema.prisma`
+- `apps/api/prisma.config.ts`
+- `apps/api/.env.example`
+- `plan/STATUS.md`
+- `plan/logs/phase-06.md`
+
+Verification:
+
+- complete 18-migration replay in disposable PostgreSQL database `sabz_zendegi_shadow_f06_r01`
+  → PASS
+- committed migration history → corrected Phase 06 Prisma schema using Prisma's configured
+  shadow database → PASS (`-- This is an empty migration.`)
+- Prisma validate and generate against the isolated corrected schema → PASS (Prisma `7.9.1`)
+- focused `clinical-notes.integration.spec.ts` against migrated and deterministically seeded
+  disposable PostgreSQL → PASS (1 file, 5 tests)
+- `migrations.integration.spec.ts` with the required development seed context → PASS
+  (1 file, 2 tests)
+- TypeScript test compilation and diff/whitespace validation → PASS
+
+Review result:
+
+- The schema now faithfully represents both existing clinical-record revision user foreign keys
+  and the database-generated UUID default; migration-derived schema and committed schema have no
+  unexplained Phase 06 or legacy drift.
+- No existing migration was edited, no migration was created, and no production/shared or local
+  development data was changed.
+- The optional Prisma 7 `SHADOW_DATABASE_URL` configuration is repository-supported, contains no
+  embedded credentials, and is inactive unless a developer supplies a local value.
+- The 14 legacy FK-name differences are not repository-baseline drift. They remain isolated to
+  the contaminated local development database and its historical migration checksum mismatch;
+  no compatibility/rename migration was created.
+
+Next action:
+
+- Post-commit read-only classification found non-seed operational data in the contaminated local
+  database: 9 patient profiles, 7 medical intakes, 9 intake revisions, 10 consent records,
+  1 assessment submission, 4 appointments, 40 sessions, 3,818 audit events, and related
+  identity/operations rows. No clinical note or clinical reconciliation rows were present.
+- Treat the local database as preservation-required. Keep `F07-T02` blocked and incomplete until
+  the owner approves a preservation-safe workflow: create and verify a complete backup, restore
+  it to a disposable clone, test the 14 constraint-name corrections on that clone, verify data
+  counts/constraints/application tests, and only then separately authorize a live compatibility
+  action. Do not mutate `_prisma_migrations`, use `migrate resolve`, reset/drop the local database,
+  generate the Phase 07 migration, or start `F07-T03`.
