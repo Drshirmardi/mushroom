@@ -7,6 +7,7 @@ import { createApiApplication } from '../src/app.factory';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { NotificationsService } from '../src/modules/assessments/notifications/notifications.service';
 import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
+import { OutboxService } from '../src/modules/outbox/outbox.service';
 import { ReminderService } from '../src/modules/outbox/reminder.service';
 
 describe('appointment and treatment reminders (PostgreSQL integration)', () => {
@@ -14,6 +15,7 @@ describe('appointment and treatment reminders (PostgreSQL integration)', () => {
   let prisma: PrismaService;
   let reminders: ReminderService;
   let worker: OutboxWorker;
+  let outbox: OutboxService;
   let notifications: NotificationsService;
   const userIds = new Set<string>();
   const eventKeys = new Set<string>();
@@ -24,6 +26,7 @@ describe('appointment and treatment reminders (PostgreSQL integration)', () => {
     prisma = app.get(PrismaService);
     reminders = app.get(ReminderService);
     worker = app.get(OutboxWorker);
+    outbox = app.get(OutboxService);
     notifications = app.get(NotificationsService);
   }, 30_000);
 
@@ -97,5 +100,25 @@ describe('appointment and treatment reminders (PostgreSQL integration)', () => {
 
     expect(await prisma.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: key } })).toMatchObject({ status: 'DELIVERED' });
     expect(await prisma.notification.count({ where: { recipientId: user.id, category: 'TREATMENT' } })).toBe(0);
+  });
+
+  it('recovers an interrupted stale claim after restart and delivers exactly one notification', async () => {
+    const { clinic, user, profile } = await patient();
+    const appointmentId = randomUUID();
+    const startsAt = new Date(Date.now() - 1_000);
+    const key = `appointment-reminder:${appointmentId}:${startsAt.toISOString()}`;
+    eventKeys.add(key);
+    await prisma.$transaction((tx) => reminders.appointment(tx, { id: appointmentId, clinicId: clinic.id, patientId: profile.id, recipientId: user.id, startsAt }));
+
+    const abandoned = (await outbox.claim()).find((event) => event.idempotencyKey === key);
+    expect(abandoned).toMatchObject({ status: 'PROCESSING', attempts: 1 });
+    await prisma.outboxEvent.update({ where: { id: abandoned!.id }, data: { lockedAt: new Date(Date.now() - 61_000) } });
+
+    await worker.tick();
+    expect(await prisma.outboxEvent.findUniqueOrThrow({ where: { id: abandoned!.id } })).toMatchObject({ status: 'DELIVERED', attempts: 2 });
+    expect(await prisma.notification.count({ where: { recipientId: user.id, category: 'REMINDER' } })).toBe(1);
+
+    await worker.tick();
+    expect(await prisma.notification.count({ where: { recipientId: user.id, category: 'REMINDER' } })).toBe(1);
   });
 });

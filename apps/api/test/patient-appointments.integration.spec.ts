@@ -12,6 +12,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
   let prisma: PrismaService;
   const userIds = new Set<string>();
   const holdIds = new Set<string>();
+  const isolatedDoctorServiceIds = new Set<string>();
+  const isolatedDoctorIds = new Set<string>();
+  const isolatedSpecialtyIds = new Set<string>();
 
   beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); }, 30_000);
   afterEach(async () => {
@@ -31,8 +34,15 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     await prisma.userProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.user.deleteMany({ where: { id: { in: users } } });
+    if (isolatedDoctorServiceIds.size) await prisma.doctorService.deleteMany({ where: { id: { in: [...isolatedDoctorServiceIds] } } });
+    if (isolatedDoctorIds.size) await prisma.doctorSpecialty.deleteMany({ where: { doctorId: { in: [...isolatedDoctorIds] } } });
+    if (isolatedDoctorIds.size) await prisma.doctorProfile.deleteMany({ where: { id: { in: [...isolatedDoctorIds] } } });
+    if (isolatedSpecialtyIds.size) await prisma.specialty.deleteMany({ where: { id: { in: [...isolatedSpecialtyIds] } } });
     userIds.clear();
     holdIds.clear();
+    isolatedDoctorServiceIds.clear();
+    isolatedDoctorIds.clear();
+    isolatedSpecialtyIds.clear();
   });
   afterAll(async () => { await app.close(); });
 
@@ -51,6 +61,19 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     }
     const token = await app.get(AccessTokenService).issue({ userId: user.id, sessionId: randomUUID(), roles: ['PATIENT'] });
     return { user, profile, token };
+  };
+
+  const isolatedOffering = async (clinicId: string) => {
+    const base = await prisma.doctorService.findFirstOrThrow({ where: { clinicId, isActive: true, publicationStatus: 'PUBLISHED' }, select: { serviceId: true, visitMode: true, durationMinutes: true, priceAmount: true, currency: true } });
+    const specialty = await prisma.specialty.create({ data: { clinicId, name: `F08 timezone ${randomUUID()}`, canonicalName: `f08-timezone-${randomUUID()}`, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
+    isolatedSpecialtyIds.add(specialty.id);
+    const doctor = await prisma.doctorProfile.create({ data: { clinicId, displayName: `F08 timezone ${randomUUID()}`, isActive: true } });
+    isolatedDoctorIds.add(doctor.id);
+    await prisma.doctorSpecialty.create({ data: { clinicId, doctorId: doctor.id, specialtyId: specialty.id } });
+    await prisma.doctorProfile.update({ where: { id: doctor.id }, data: { publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
+    const offering = await prisma.doctorService.create({ data: { clinicId, doctorId: doctor.id, serviceId: base.serviceId, visitMode: base.visitMode, durationMinutes: base.durationMinutes, priceAmount: base.priceAmount, currency: base.currency, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
+    isolatedDoctorServiceIds.add(offering.id);
+    return offering;
   };
 
   const nextWeekday = (weekday: number) => {
@@ -198,7 +221,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const anotherEndsAt = new Date(now + 2 * 86_400_000 + 30 * 60_000);
     const absentStartsAt = new Date(now - 3 * 60 * 60_000);
     const absentEndsAt = new Date(now - 2 * 60 * 60_000);
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED', doctor: { appointments: { none: { status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, OR: [{ startsAt: { lt: currentEndsAt }, endsAt: { gt: currentStartsAt } }, { startsAt: { lt: anotherEndsAt }, endsAt: { gt: anotherStartsAt } }, { startsAt: { lt: absentEndsAt }, endsAt: { gt: absentStartsAt } }] } } } } });
+    const offering = await isolatedOffering(profile.clinicId);
     const headersForAdmin = () => headers(adminToken);
     const appointment = async (status: 'CONFIRMED' | 'CHECKED_IN', startsAt: Date, endsAt: Date) => prisma.appointment.create({ data: { clinicId: profile.clinicId, patientId: profile.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt, status, confirmedAt: status === 'CONFIRMED' ? new Date() : new Date(), checkedInAt: status === 'CHECKED_IN' ? new Date() : null, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: adminId, idempotencyKey: randomUUID(), idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
     const previousLocalDay = await appointment('CONFIRMED', new Date(currentDayAtNoon.getTime() - 86_400_000), new Date(currentDayAtNoon.getTime() - 84_600_000));

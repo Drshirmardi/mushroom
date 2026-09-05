@@ -29,7 +29,7 @@
 - [x] `F08-T07` — appointment و treatment reminders idempotent
 - [x] `F08-T08` — اتصال app tracker/notification/article
 - [x] `F08-T09` — اتصال dashboard health/notification/content
-- [x] `F08-T10` — restart/retry/idempotency، timezone و browser E2E
+- [x] `F08-T10` — restart/retry/idempotency، timezone و browser E2E — stale-claim recovery rework accepted; Phase 08 remains `READY_FOR_REVIEW`
 - [x] `F08-T11` — حذف mock scope و review Milestone C
 
 ## معیار خروج

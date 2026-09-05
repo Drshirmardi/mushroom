@@ -276,3 +276,48 @@ Tests run:
 Result:
   - Removed the remaining in-scope dashboard notification fixture, static notification badge, and fabricated unread dot. The panel now reads the authorized clinic notification source and renders truthful loading, error, and empty states.
   - Phase 08 is `READY_FOR_REVIEW`; independent closure review remains required and Phase 09 has not been started.
+
+## Independent Phase 08 closure review — BLOCKED
+
+Reviewed at: 2026-09-05 12:00 +03:30
+Reviewer: Codex /root
+Finding:
+  - HIGH — `F08-T10` / Phase 08 exit criterion “reminder work is retryable after restart”: `OutboxService.claim()` only selects `PENDING` events, while `OutboxWorker` has no startup or lease-expiry recovery for `PROCESSING` rows. If the process stops after a claim and before its delivery transaction commits, the row remains `PROCESSING` and is never selected again. The existing retry test covers a caught delivery failure, not an interrupted claimed event.
+Evidence:
+  - apps/api/src/modules/outbox/outbox.service.ts: `claim()` filters on `status: PENDING` only.
+  - apps/api/src/modules/outbox/outbox.worker.ts: startup schedules `tick()` but performs no stale-claim recovery.
+  - apps/api/test/reminders.integration.spec.ts: retry is induced by a caught mock rejection and returns the row to `PENDING`; it does not simulate process loss after claim.
+Safe remediation:
+  - Rework `F08-T10` only: reclaim lease-expired/stale `PROCESSING` rows to `PENDING` (or atomically claim them), preserve the existing idempotency key and notification-plus-delivery transaction, and add a PostgreSQL regression that claims an event, simulates restart, and proves exactly one eventual notification.
+Closure result:
+  - Phase 08 is `BLOCKED`; no closure commit was created and Phase 09 remains `NOT_STARTED`.
+
+Closure verification re-run:
+  - Focused Phase 08 PostgreSQL integrations: 6 files / 15 tests passed; 2 files / 2 tests failed.
+  - `mezaj-results.integration.spec.ts` attempts to create a fixed `MEZAJ` version 1 and clears only its in-memory tracking sets, so repeated execution encounters the persisted `(clinic_id, assessment_key, locale, version_number)` uniqueness constraint. This is a repeatability gap for the F08-T03 verification fixture, not evidence that the immutable result contract itself is false.
+  - `patient-appointments.integration.spec.ts` hit the existing active-doctor overlap exclusion constraint while exercising the Tehran-day state-machine fixture. Its time-slot fixture must be isolated from persistent/local concurrent appointment state before it can serve as independent F08-T10 timezone evidence.
+  - These test-fixture gaps reinforce that F08-T10 cannot pass its independent restart/timezone gate. Safe repair stays within F08-T10 verification ownership: use unique/cleaned Phase 08 test fixtures and then rerun the affected focused tests after the stale-claim fix.
+
+## F08-T10 rework — stale claim recovery accepted
+
+Task ID: F08-T10
+Completed at: 2026-09-05 12:20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B10R
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/outbox/outbox.service.ts
+  - apps/api/test/{outbox,reminders,mezaj-results,patient-appointments}.integration.spec.ts
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md}
+  - specs/006-adopt-phase-08/{spec.md,plan.md,quickstart.md,tasks.md,contracts/phase-08-adoption.md}
+Migrations:
+  - none; existing OutboxEvent `status`, `lockedAt`, `availableAt`, and idempotency key provide the required lease decision and transaction boundary.
+Tests run:
+  - Phase 08 PostgreSQL integrations: outbox, reminders, patient appointments, treatment activity, Mezaj, notifications, health observations → PASS (7 files, 18 tests)
+  - content-publication PostgreSQL integration → PASS (1 file, 1 test)
+  - API typecheck, test TypeScript configuration, Prisma schema validation, and `git diff --check` → PASS
+Result:
+  - Normal outbox claim now atomically returns `PROCESSING` rows whose `lockedAt` is older than the defined 60-second lease to `PENDING`, then reclaims them. Fresh claims are not eligible for recovery.
+  - PostgreSQL restart regression simulates a claimed reminder whose worker disappears, deterministically ages the claim, and proves exactly one notification and a `DELIVERED` terminal event after recovery; a subsequent worker tick does not duplicate delivery. Existing idempotency and notification-plus-delivery transaction remain unchanged.
+  - Mezaj verification uses unique locale/version fixture identifiers because completed/published records are immutable. Tehran state-machine verification creates and cleans an isolated published doctor, specialty, and service so existing active scheduling cannot collide.
+  - This explicitly remediates the independent closure-review HIGH finding. Phase 08 is restored to `READY_FOR_REVIEW`; no closure review was performed in this batch and Phase 09 remains `NOT_STARTED`.

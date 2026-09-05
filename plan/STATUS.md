@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 11:50 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 12:20 +03:30`
 - Milestone فعال: `Milestone C — READY_FOR_REVIEW`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `READY_FOR_REVIEW`
-- batch فعال: ندارد
-- task فعال: ندارد
-- blocker فعال: ندارد
+- batch فعال: `none`
+- task فعال: `none`
+- blocker فعال: `none`
 
 ## پیشرفت کلان
 
@@ -50,7 +50,27 @@
 
 ## handoff فاز فعال
 
-`Phase 08` — `READY_FOR_REVIEW`: all roadmap tasks are complete; an independent closure review is required before any Phase 09 work.
+`F08-B10R` is complete: F08-T10 stale-claim recovery and independent PostgreSQL restart/timezone regressions passed. Phase 08 is `READY_FOR_REVIEW`; an independent closure review remains required. Phase 09 remains `NOT_STARTED`.
+
+## آخرین batch — F08-B10R
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 12:10 +03:30`
+Completed at: `2026-09-05 12:20 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: accepted F08-T06/F08-T07 outbox and reminder behavior; closure finding in `plan/logs/phase-08.md`
+
+Tasks:
+
+- Task ID: `F08-T10`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T09 DONE`
+  Scope: stale `PROCESSING` outbox-claim recovery, restart/idempotency regression, and deterministic affected Phase 08 verification fixtures only
+  Owned paths: `apps/api/src/modules/outbox/**`, `apps/api/test/{outbox,reminders,mezaj-results,patient-appointments}.integration.spec.ts`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: outbox claim lifecycle and local PostgreSQL rehearsal database
+  Expected verification: stale-claim restart delivery without duplicate notification, existing reminder/preference coverage, deterministic Mezaj/Tehran suites, API typecheck, and diff validation
 
 ## آخرین batch — F08-B11
 
@@ -78,14 +98,14 @@ Coordinator/Thread: `Codex /root`
 Started at: `2026-09-05 11:30 +03:30`
 Completed at: `2026-09-05 11:35 +03:30`
 Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
-Batch status: `DONE`
+Batch status: `REWORK`
 Contract baseline: accepted F08-T01 through F08-T09 API and UI slices
 
 Tasks:
 
 - Task ID: `F08-T10`
   Agent/Thread: `Codex /root`
-  Status: `DONE`
+  Status: `REWORK`
   Depends on: `F08-T01 through F08-T09 DONE`
   Scope: integrated restart/retry/idempotency, timezone, and browser E2E verification only; minimal in-scope repair only if a demonstrated defect requires it
   Owned paths: `apps/{api,app,dashboard}/test/**`, existing Phase 08 test paths, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
