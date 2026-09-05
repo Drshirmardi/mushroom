@@ -105,3 +105,29 @@ Batch ID: F08-B04
 Result: notification, in-app delivery, and patient preference persistence plus patient-owned list/read/read-all/preference APIs are implemented.
 Tests run: notification PostgreSQL authorization/read-state integration test, Prisma migration deploy/typecheck, generated OpenAPI client build, and diff check → PASS.
 Next batch: F08-T05 after prerequisite review.
+## F08-T05 — content publication lifecycle و media policy
+
+Task ID: F08-T05
+Completed at: 2026-09-05 10:01 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B05
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/prisma/schema.prisma and migration 20260905062736_phase_08_content_publication
+  - apps/api/src/modules/content/** and authorization policy
+  - apps/api/test/content-publication.integration.spec.ts
+  - packages/api-client/openapi.json and generated schema
+Migrations:
+  - Content lifecycle migration applied to the local PostgreSQL rehearsal database.
+Tests run:
+  - apps/api node_modules/.bin/vitest.cmd run --no-file-parallelism test/content-publication.integration.spec.ts → PASS
+  - corepack pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - corepack pnpm generate:api-client → PASS
+  - git diff --check → PASS
+Result:
+  - ArticleCategory, Article, and Banner persist DRAFT/PUBLISHED/ARCHIVED lifecycle state; patient routes expose only published records.
+  - Content updates are admin-authorized and audited; media stays external metadata only, with opaque-key, type, and size validation.
+Known limitations:
+  - Upload implementation and interface connections remain owned by later Phase 08 tasks; no binary media is persisted.
+Next task:
+  - F08-T06

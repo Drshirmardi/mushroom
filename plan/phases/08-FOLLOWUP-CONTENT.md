@@ -24,7 +24,7 @@
 - [x] `F08-T02` — write/query tracker و dashboard health views
 - [x] `F08-T03` — mezaj result از assessment versioned
 - [x] `F08-T04` — notification/preference و in-app read state
-- [ ] `F08-T05` — content publication lifecycle و media policy
+- [x] `F08-T05` — content publication lifecycle و media policy
 - [ ] `F08-T06` — ADR و bootstrap outbox/worker فقط برای reminder واقعی
 - [ ] `F08-T07` — appointment و treatment reminders idempotent
 - [ ] `F08-T08` — اتصال app tracker/notification/article

@@ -193,6 +193,14 @@ enum DirectoryPublicationStatus {
   @@map("directory_publication_status")
 }
 
+enum ContentPublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@map("content_publication_status")
+}
+
 enum VisitMode {
   IN_PERSON
   ONLINE
@@ -539,6 +547,9 @@ model Clinic {
   conditionRecords         ConditionRecord[]
   healthObservations       HealthObservation[]
   notifications            Notification[]
+  articleCategories        ArticleCategory[]
+  articles                 Article[]
+  banners                  Banner[]
   medicationStatements     MedicationStatement[]
   patientAccessAudits      PatientAccessAudit[]
   prescriptions            Prescription[]
@@ -591,6 +602,61 @@ model PatientProfile {
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
   @@map("patient_profiles")
+}
+
+model ArticleCategory {
+  id        String   @id @default(uuid()) @db.Uuid
+  clinicId  String   @map("clinic_id") @db.Uuid
+  name      String   @db.VarChar(120)
+  slug      String   @db.VarChar(140)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  articles  Article[]
+
+  @@unique([clinicId, slug], map: "article_categories_clinic_slug_key")
+  @@map("article_categories")
+}
+
+model Article {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  clinicId              String                   @map("clinic_id") @db.Uuid
+  categoryId            String                   @map("category_id") @db.Uuid
+  slug                  String                   @db.VarChar(180)
+  title                 String                   @db.VarChar(240)
+  summary               String?                  @db.VarChar(500)
+  body                  String                   @db.Text
+  publicationStatus     ContentPublicationStatus @default(DRAFT) @map("publication_status")
+  publishedAt           DateTime?                @map("published_at") @db.Timestamptz(3)
+  coverObjectKey        String?                  @map("cover_object_key") @db.VarChar(512)
+  coverContentType      String?                  @map("cover_content_type") @db.VarChar(120)
+  coverSizeBytes        Int?                     @map("cover_size_bytes")
+  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  category              ArticleCategory          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([clinicId, slug], map: "articles_clinic_slug_key")
+  @@index([clinicId, publicationStatus, publishedAt, id], map: "articles_clinic_publication_published_idx")
+  @@map("articles")
+}
+
+model Banner {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  clinicId              String                   @map("clinic_id") @db.Uuid
+  title                 String                   @db.VarChar(240)
+  destinationUrl        String?                  @map("destination_url") @db.VarChar(2048)
+  publicationStatus     ContentPublicationStatus @default(DRAFT) @map("publication_status")
+  publishedAt           DateTime?                @map("published_at") @db.Timestamptz(3)
+  mediaObjectKey        String?                  @map("media_object_key") @db.VarChar(512)
+  mediaContentType      String?                  @map("media_content_type") @db.VarChar(120)
+  mediaSizeBytes        Int?                     @map("media_size_bytes")
+  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, publicationStatus, publishedAt, id], map: "banners_clinic_publication_published_idx")
+  @@map("banners")
 }
 
 model Notification {

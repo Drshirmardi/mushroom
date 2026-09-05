@@ -1,0 +1,15 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsIn, IsInt, IsOptional, IsString, IsUrl, Max, MaxLength, Min } from 'class-validator';
+
+export class MediaDto {
+  @ApiProperty({ example: 'content/7c47f4af-3f20-4402-bb01-e6193cf79445/cover.webp' }) @IsString() @MaxLength(512) objectKey!: string;
+  @ApiProperty({ example: 'image/webp' }) @IsString() @MaxLength(120) contentType!: string;
+  @ApiProperty({ example: 245000 }) @IsInt() @Min(1) @Max(5_000_000) sizeBytes!: number;
+}
+
+export class CreateCategoryDto { @ApiProperty() @IsString() @MaxLength(120) name!: string; @ApiProperty() @IsString() @MaxLength(140) slug!: string; }
+export class UpdateCategoryDto { @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(120) name?: string; @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(140) slug?: string; }
+export class CreateArticleDto { @ApiProperty() @IsString() @MaxLength(180) slug!: string; @ApiProperty() @IsString() @MaxLength(240) title!: string; @ApiProperty() @IsString() @MaxLength(500) @IsOptional() summary?: string; @ApiProperty() @IsString() @MaxLength(100_000) body!: string; @ApiProperty() @IsString() categoryId!: string; @ApiPropertyOptional({ enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] }) @IsOptional() @IsIn(['DRAFT', 'PUBLISHED', 'ARCHIVED']) publicationStatus?: 'DRAFT'|'PUBLISHED'|'ARCHIVED'; @ApiPropertyOptional({ type: MediaDto }) @IsOptional() cover?: MediaDto; }
+export class UpdateArticleDto { @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(180) slug?: string; @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(240) title?: string; @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(500) summary?: string; @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(100_000) body?: string; @ApiPropertyOptional() @IsOptional() @IsString() categoryId?: string; @ApiPropertyOptional({ enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] }) @IsOptional() @IsIn(['DRAFT', 'PUBLISHED', 'ARCHIVED']) publicationStatus?: 'DRAFT'|'PUBLISHED'|'ARCHIVED'; @ApiPropertyOptional({ type: MediaDto }) @IsOptional() cover?: MediaDto; }
+export class CreateBannerDto { @ApiProperty() @IsString() @MaxLength(240) title!: string; @ApiPropertyOptional() @IsOptional() @IsUrl({ require_tld: false }) @MaxLength(2048) destinationUrl?: string; @ApiPropertyOptional({ enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] }) @IsOptional() @IsIn(['DRAFT', 'PUBLISHED', 'ARCHIVED']) publicationStatus?: 'DRAFT'|'PUBLISHED'|'ARCHIVED'; @ApiPropertyOptional({ type: MediaDto }) @IsOptional() media?: MediaDto; }
+export class UpdateBannerDto { @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(240) title?: string; @ApiPropertyOptional() @IsOptional() @IsUrl({ require_tld: false }) @MaxLength(2048) destinationUrl?: string; @ApiPropertyOptional({ enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] }) @IsOptional() @IsIn(['DRAFT', 'PUBLISHED', 'ARCHIVED']) publicationStatus?: 'DRAFT'|'PUBLISHED'|'ARCHIVED'; @ApiPropertyOptional({ type: MediaDto }) @IsOptional() media?: MediaDto; }
