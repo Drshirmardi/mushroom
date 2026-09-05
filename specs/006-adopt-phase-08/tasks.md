@@ -23,7 +23,7 @@ Reuse the completed Phase 05 appointment baseline, completed Phase 07 treatment-
 
 - [x] T001 F08-T01: metric/unit/range و query contract health observations
 - [x] T002 F08-T02: write/query tracker و dashboard health views
-- [ ] T003 F08-T03: mezaj result از assessment versioned
+- [x] T003 F08-T03: mezaj result از assessment versioned
 
 ## Phase 3: Notification and Content Boundaries — User Story 2 (P2) / User Story 3 (P3)
 

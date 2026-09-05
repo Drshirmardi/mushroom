@@ -558,6 +558,7 @@ model PatientProfile {
   consentRecords          PatientConsentRecord[]
   reportedIntakeRevisions PatientMedicalIntakeRevision[] @relation("IntakeRevisionReportedPatient")
   assessmentSubmissions   PatientAssessmentSubmission[]
+  mezajResults            MezajResult[]
   appointments            Appointment[]
   operationalActivities   OperationalActivity[]
   encounters              Encounter[]
@@ -727,6 +728,7 @@ model AssessmentVersion {
   clinic                    Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   publishedByUser           User?                         @relation("AssessmentVersionPublishedBy", fields: [publishedByUserId], references: [id], onDelete: SetNull)
   submissions               PatientAssessmentSubmission[]
+  mezajResults              MezajResult[]
   requiredByBookingPolicies BookingEligibilityPolicy[]    @relation("BookingPolicyRequiredVersion")
 
   @@unique([clinicId, assessmentKey, locale, versionNumber], map: "assessment_versions_version_key")
@@ -752,10 +754,27 @@ model PatientAssessmentSubmission {
   updatedAt                DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
   patient                  PatientProfile         @relation(fields: [patientId], references: [id], onDelete: Restrict)
   assessmentVersion        AssessmentVersion      @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
+  mezajResult              MezajResult?
 
   @@unique([patientId, assessmentVersionId, attemptNumber], map: "patient_assessment_submissions_attempt_key")
   @@index([patientId, state, completedAt], map: "patient_assessment_submissions_eligibility_idx")
   @@map("patient_assessment_submissions")
+}
+
+model MezajResult {
+  id                     String                      @id @default(uuid()) @db.Uuid
+  patientId              String                      @map("patient_id") @db.Uuid
+  assessmentVersionId    String                      @map("assessment_version_id") @db.Uuid
+  assessmentSubmissionId String                      @unique(map: "mezaj_results_submission_id_key") @map("assessment_submission_id") @db.Uuid
+  resultBandSnapshot     Json                        @map("result_band_snapshot")
+  assessedAt             DateTime                    @map("assessed_at") @db.Timestamptz(3)
+  createdAt              DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  patient                PatientProfile              @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  assessmentVersion      AssessmentVersion           @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
+  assessmentSubmission   PatientAssessmentSubmission @relation(fields: [assessmentSubmissionId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, assessedAt, id], map: "mezaj_results_patient_assessed_idx")
+  @@map("mezaj_results")
 }
 
 model BookingEligibilityPolicy {

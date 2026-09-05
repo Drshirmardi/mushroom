@@ -2622,6 +2622,33 @@
         ]
       }
     },
+    "/v1/patients/me/mezaj": {
+      "get": {
+        "operationId": "patientMezajResultGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MezajResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the latest immutable Mezaj result derived from a completed versioned assessment",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
     "/v1/patients/me/booking-eligibility": {
       "get": {
         "operationId": "patientBookingEligibilityGet",
@@ -9730,6 +9757,38 @@
         },
         "required": [
           "answers"
+        ]
+      },
+      "MezajResultResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentSubmissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultBand": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "assessedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "assessmentSubmissionId",
+          "resultBand",
+          "assessedAt"
         ]
       },
       "PatientBookingEligibilityResponseDto": {

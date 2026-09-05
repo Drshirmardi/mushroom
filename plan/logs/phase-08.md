@@ -65,3 +65,35 @@ Known limitations:
   - app tracker connection is owned by F08-T08; notification/content/reminder work remains out of scope.
 Next batch:
   - F08-T03 after normal prerequisite and ownership review.
+
+## F08-T03 — Mezaj result from a versioned assessment
+
+Task ID: F08-T03
+Completed at: 2026-09-05 09:47 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B03
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/prisma/schema.prisma
+  - apps/api/prisma/migrations/20260905094500_phase_08_mezaj_results/migration.sql
+  - apps/api/src/modules/assessments/application/assessment-audit.ts
+  - apps/api/src/modules/assessments/patient/patient-assessments.{service,controller,dto}.ts
+  - apps/api/test/mezaj-results.integration.spec.ts
+  - packages/api-client/openapi.json
+  - packages/api-client/src/schema.generated.ts
+  - plan/STATUS.md
+  - plan/phases/08-FOLLOWUP-CONTENT.md
+  - specs/006-adopt-phase-08/tasks.md
+  - plan/logs/phase-08.md
+Migrations:
+  - 20260905094500_phase_08_mezaj_results → PASS (local PostgreSQL deploy)
+Tests run:
+  - pnpm --filter @sabz-zendegi/api test -- mezaj-results.integration.spec.ts → PASS
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - pnpm generate:api-client and pnpm --filter @sabz-zendegi/api-client build → PASS
+  - git diff --check → PASS
+Result:
+  - a MEZAJ-keyed assessment completion transaction persists one immutable source-linked MezajResult with its frozen result-band snapshot → PASS
+  - patient-only latest-result API is authorized and audited; app rendering remains owned by F08-T08 → PASS
+Next batch:
+  - F08-T04 after normal prerequisite and ownership review.

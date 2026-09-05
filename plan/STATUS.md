@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 09:41 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 09:47 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,7 +50,27 @@
 
 ## handoff فاز فعال
 
-`F08-B02` — `DONE`: `F08-T02` added the health-observation persistence/API/dashboard view contract implementation; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+`F08-B03` — `DONE`: `F08-T03` persists Mezaj results only from immutable completed MEZAJ assessment versions; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+
+## آخرین batch — F08-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 09:43 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Completed at: `2026-09-05 09:47 +03:30`
+Batch status: `DONE`
+Contract baseline: immutable completed assessment submission and version result snapshot
+
+Tasks:
+
+- Task ID: `F08-T03`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T02 DONE`
+  Scope: assessment-version-derived MezajResult persistence and patient read API
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/assessments/**,test/**}`, `packages/api-client/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: Prisma schema/migration, completed-assessment transaction and API contract
+  Expected verification: migration deploy, assessment-derived result persistence/read authorization tests, Prisma/OpenAPI/client validation, and `git diff --check`
 
 ## آخرین batch — F08-B02
 
