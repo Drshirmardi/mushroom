@@ -57,6 +57,14 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     return date.toISOString().slice(0, 10);
   };
 
+  const currentTehranDayAtNoon = () => {
+    const parts = new Intl.DateTimeFormat('en-CA-u-ca-gregory-nu-latn', {
+      timeZone: 'Asia/Tehran', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date());
+    const part = (kind: string) => parts.find((item) => item.type === kind)?.value;
+    return new Date(`${part('year')}-${part('month')}-${part('day')}T12:00:00+03:30`);
+  };
+
   it('authoritatively rechecks eligibility and creates one pending appointment with an immutable price snapshot', async () => {
     const { token, profile } = await patient();
     const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' }, include: { doctor: true } });
@@ -178,8 +186,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     await prisma.user.create({ data: { id: adminId, phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
     const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: randomUUID(), roles: ['ADMIN'] });
     const now = Date.now();
-    const currentStartsAt = new Date(now - 5 * 60_000);
-    const currentEndsAt = new Date(now + 25 * 60_000);
+    const currentDayAtNoon = currentTehranDayAtNoon();
+    const currentStartsAt = new Date(currentDayAtNoon.getTime() - 5 * 60_000);
+    const currentEndsAt = new Date(currentDayAtNoon.getTime() + 25 * 60_000);
     const anotherStartsAt = new Date(now + 2 * 86_400_000);
     const anotherEndsAt = new Date(now + 2 * 86_400_000 + 30 * 60_000);
     const absentStartsAt = new Date(now - 3 * 60 * 60_000);
@@ -187,6 +196,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED', doctor: { appointments: { none: { status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, OR: [{ startsAt: { lt: currentEndsAt }, endsAt: { gt: currentStartsAt } }, { startsAt: { lt: anotherEndsAt }, endsAt: { gt: anotherStartsAt } }, { startsAt: { lt: absentEndsAt }, endsAt: { gt: absentStartsAt } }] } } } } });
     const headersForAdmin = () => headers(adminToken);
     const appointment = async (status: 'CONFIRMED' | 'CHECKED_IN', startsAt: Date, endsAt: Date) => prisma.appointment.create({ data: { clinicId: profile.clinicId, patientId: profile.id, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt, status, confirmedAt: status === 'CONFIRMED' ? new Date() : new Date(), checkedInAt: status === 'CHECKED_IN' ? new Date() : null, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: new Date(), idempotencyActorUserId: adminId, idempotencyKey: randomUUID(), idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2) } });
+    const previousLocalDay = await appointment('CONFIRMED', new Date(currentDayAtNoon.getTime() - 86_400_000), new Date(currentDayAtNoon.getTime() - 84_600_000));
+    const rejectedPreviousDayCheckIn = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${previousLocalDay.id}/check-in`, headers: headersForAdmin() });
+    expect(rejectedPreviousDayCheckIn.statusCode).toBe(409); expect(rejectedPreviousDayCheckIn.json().code).toBe('APPOINTMENT_CHANGE_NOT_ALLOWED');
     const current = await appointment('CONFIRMED', currentStartsAt, currentEndsAt);
     const checkIn = await app.inject({ method: 'POST', url: `/v1/admin/appointments/${current.id}/check-in`, headers: headersForAdmin() });
     expect(checkIn.statusCode).toBe(200); expect(checkIn.json()).toMatchObject({ status: 'CHECKED_IN' });
