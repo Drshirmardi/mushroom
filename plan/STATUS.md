@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 11:25 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 11:35 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,7 +50,27 @@
 
 ## handoff فاز فعال
 
-بدون batch فعال. batch واجد شرایط بعدی: `F08-B10` / `F08-T10`؛ شروع نشده و خارج از این handoff است.
+بدون batch فعال. batch واجد شرایط بعدی: `F08-B11` / `F08-T11`؛ شروع نشده و خارج از این handoff است.
+
+## آخرین batch — F08-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:30 +03:30`
+Completed at: `2026-09-05 11:35 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: accepted F08-T01 through F08-T09 API and UI slices
+
+Tasks:
+
+- Task ID: `F08-T10`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T09 DONE`
+  Scope: integrated restart/retry/idempotency, timezone, and browser E2E verification only; minimal in-scope repair only if a demonstrated defect requires it
+  Owned paths: `apps/{api,app,dashboard}/test/**`, existing Phase 08 test paths, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: local PostgreSQL rehearsal database and browser validation
+  Expected verification: focused restart/retry/idempotency/timezone APIs and local browser journey
 
 ## آخرین batch — F08-B09
 

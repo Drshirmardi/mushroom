@@ -228,3 +228,25 @@ Result:
   - An administrator-only clinic notification list completes the previously missing dashboard read boundary; patient access is rejected.
 Next batch:
   - F08-B10 — F08-T10 (eligible but not started)
+
+## F08-T10 — restart/retry/idempotency، timezone و browser E2E
+
+Task ID: F08-T10
+Completed at: 2026-09-05 11:35 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B10
+Reviewed by: Codex /root
+Changed files:
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md}
+  - specs/006-adopt-phase-08/{spec.md,plan.md,quickstart.md,tasks.md}
+Migrations:
+  - none
+Tests run:
+  - reminders and patient-appointment PostgreSQL integrations → PASS (8 tests): retry/idempotency, restart-safe delivery, appointment idempotency, and Tehran timezone boundary
+  - health-observation and treatment-activity PostgreSQL integrations → PASS (4 tests): persisted patient-to-authorized-dashboard observation source and repeat-safe treatment activity
+  - local browser journey → PASS: authenticated dashboard notifications/content render truthful empty states; health tracking renders its authorization boundary; patient app renders the corresponding authorization state without a mock fallback
+  - git diff --check → PASS
+Result:
+  - Accepted Phase 08 resilience and browser gate: no demonstrated restart, retry, idempotency, timezone, shared-source, or truthful UI-state defect required a repair.
+Next batch:
+  - F08-B11 — F08-T11 (eligible but not started)
