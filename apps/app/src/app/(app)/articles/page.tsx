@@ -1,40 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
-import { ARTICLES, ARTICLE_CATEGORIES } from "@/lib/data/articles";
+import { followUpErrorMessage, listPatientArticles, type PatientArticle } from "@/lib/follow-up-api";
 import { useScreenNavigation } from "@/lib/navigation";
 
 export default function ArticlesPage() {
-  const router = useRouter();
-  const navigateScreen = useScreenNavigation();
-  const [cat, setCat] = useState("همه");
-
-  const filtered = cat === "همه" ? ARTICLES : ARTICLES.filter(a => a.cat === cat);
-  return (
-    <div>
-      <PageHeader title="مقالات آموزشی" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {ARTICLE_CATEGORIES.map(c => <button key={c} onClick={() => setCat(c)} className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${cat === c ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>{c}</button>)}
-        </div>
-        <div className="space-y-3">
-          {filtered.map(a => (
-            <button key={a.title} onClick={() => navigateScreen("ArticleDetail", { title: a.title })} className="w-full bg-white rounded-2xl border border-border shadow-sm overflow-hidden flex text-right">
-              <img src={`https://images.unsplash.com/${a.img}?w=120&h=100&fit=crop&auto=format`} alt={a.title} className="w-28 h-24 object-cover flex-shrink-0" />
-              <div className="p-3 flex flex-col justify-center flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground leading-tight mb-1.5 line-clamp-2">{a.title}</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-secondary text-primary px-2 py-0.5 rounded-full font-semibold">{a.cat}</span>
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock size={10} />{a.time}</span>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const router = useRouter(); const navigateScreen = useScreenNavigation(); const { authentication } = useAuthSession(); const [items, setItems] = useState<PatientArticle[] | null>(null); const [error, setError] = useState<string | null>(null); const [category, setCategory] = useState("همه");
+  const reload = () => { setItems(null); setError(null); void listPatientArticles(authentication.accessToken).then((value) => setItems(value.items), (reason: unknown) => setError(followUpErrorMessage(reason))); };
+  useEffect(reload, [authentication.accessToken]);
+  const categories = useMemo(() => ["همه", ...new Set((items ?? []).map((item) => item.category.name))], [items]);
+  const filtered = category === "همه" ? items : items?.filter((item) => item.category.name === category);
+  return <div><PageHeader title="مقالات آموزشی" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{items && <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`flex-shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${category === item ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>{item}</button>)}</div>}{!items && !error && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت مقاله‌ها…</p>}{error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"><p>{error}</p><button onClick={reload} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>}{filtered?.length === 0 && <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">مقالهٔ منتشرشده‌ای وجود ندارد.</p>}<div className="space-y-3">{filtered?.map((item) => <button key={item.id} onClick={() => navigateScreen("ArticleDetail", { title: item.slug })} className="flex w-full overflow-hidden rounded-2xl border border-border bg-white text-right shadow-sm"><div className="flex h-24 w-28 flex-shrink-0 items-center justify-center bg-accent"><BookOpen size={24} className="text-primary" /></div><div className="flex min-w-0 flex-1 flex-col justify-center p-3"><p className="mb-1.5 line-clamp-2 text-sm font-bold leading-tight text-foreground">{item.title}</p><span className="w-fit rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-primary">{item.category.name}</span><p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{item.summary}</p></div></button>)}</div></div></div>;
 }

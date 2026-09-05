@@ -178,3 +178,30 @@ Known limitations:
   - Phase 08 restart/timezone/browser end-to-end validation remains owned by F08-T10.
 Next task:
   - F08-T08 (eligible but not started)
+
+## F08-T08 — اتصال app tracker/notification/article
+
+Task ID: F08-T08
+Completed at: 2026-09-05 11:15 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B08
+Reviewed by: Codex /root
+Changed files:
+  - apps/app/src/lib/follow-up-api.{ts,spec.ts}
+  - apps/app/src/app/(app)/{trackers/pain,trackers/mood,mezaj,notifications,profile/notifications,articles,articles/[title]}/page.tsx
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md}
+  - specs/006-adopt-phase-08/{spec.md,plan.md,quickstart.md,tasks.md}
+Migrations:
+  - none
+Tests run:
+  - apps/app/node_modules/.bin/vitest.cmd run src/lib/follow-up-api.spec.ts → PASS (3 tests)
+  - corepack pnpm --filter @sabz/app typecheck → PASS
+  - git diff --check → PASS
+Result:
+  - Pain and mood trackers persist and render contract-scoped HealthObservation records rather than local chart fixtures.
+  - Mezaj reads the assessment-derived result; notification list/read/read-all/preferences use persisted APIs and update UI only after request success.
+  - Article list/detail use patient published-content APIs, with loading, error, empty, and access-denied states rendered without a local fallback.
+Known limitations:
+  - Integrated restart/retry/idempotency, timezone, and browser validation remains F08-T10; in-scope mock-scope review remains F08-T11.
+Next batch:
+  - F08-B09 — F08-T09 (eligible but not started)

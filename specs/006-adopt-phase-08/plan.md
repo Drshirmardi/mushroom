@@ -16,7 +16,7 @@ Preserve a one-to-one Spec Kit representation of the authoritative eleven-task P
 **Project Type**: Existing monorepo.
 **Performance Goals**: No Phase 08 adoption-added target.
 **Constraints**: Preserve the existing roadmap; never use mock data after its source task is complete; respect authorization, preferences, idempotency, UTC/timezone rules, durable side-effect boundaries, single-writer ownership, and published-only content visibility.
-**Scale/Scope**: Eleven stable tasks, `F08-T01`–`F08-T11`. Phase 08 is `IN_PROGRESS`; `F08-T01`–`F08-T07` are complete. Phase 05 and Phase 07 are completed predecessors named by the roadmap.
+**Scale/Scope**: Eleven stable tasks, `F08-T01`–`F08-T11`. Phase 08 is `IN_PROGRESS`; `F08-T01`–`F08-T08` are complete. Phase 05 and Phase 07 are completed predecessors named by the roadmap.
 
 ## Constitution Check
 

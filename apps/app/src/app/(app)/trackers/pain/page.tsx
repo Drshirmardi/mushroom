@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Area,
@@ -12,14 +12,23 @@ import {
 } from "recharts";
 import { PageHeader } from "@/components/shared/page-header";
 import { SuccessScreen } from "@/components/shared/success-screen";
-import { painData } from "@/lib/data/charts";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { createHealthObservation, followUpErrorMessage, listHealthObservations, type HealthObservation } from "@/lib/follow-up-api";
 import { toP } from "@/lib/format";
 
 export default function PainTrackerPage() {
   const router = useRouter();
+  const { authentication } = useAuthSession();
   const [pain, setPain] = useState(3);
   const [selectedLoc, setSelectedLoc] = useState("کمر");
   const [saved, setSaved] = useState(false);
+  const [history, setHistory] = useState<HealthObservation[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const chartData = useMemo(() => (history ?? []).slice(0, 7).reverse().map((item) => ({ day: new Intl.DateTimeFormat("fa-IR", { weekday: "short" }).format(new Date(item.observedAt)), value: item.value })), [history]);
+  const reload = () => { setHistory(null); setError(null); void listHealthObservations(authentication.accessToken, "PAIN").then((value) => setHistory(value.items), (reason: unknown) => setError(followUpErrorMessage(reason))); };
+  useEffect(reload, [authentication.accessToken]);
+  const save = async () => { setSaving(true); setError(null); try { const item = await createHealthObservation(authentication.accessToken, { metric: "PAIN", value: pain, observedAt: new Date().toISOString() }); setHistory((current) => [item, ...(current ?? [])]); setSaved(true); } catch (reason) { setError(followUpErrorMessage(reason, "ثبت درد ممکن نشد؛ دوباره تلاش کنید.")); } finally { setSaving(false); } };
   if (saved) return <div><PageHeader title="ثبت درد" onBack={() => setSaved(false)} /><SuccessScreen title="درد ثبت شد!" desc="اطلاعات درد برای دکتر شیرمردی ارسال شد." onDone={() => router.back()} /></div>;
   return (
     <div>
@@ -46,18 +55,21 @@ export default function PainTrackerPage() {
           </div>
         </div>
         <div className="bg-white rounded-3xl border border-border shadow-sm p-5">
-          <p className="text-sm font-bold text-foreground mb-3">روند هفتگی</p>
-          <ResponsiveContainer width="100%" height={120}>
-            <AreaChart data={painData}>
+          <div className="mb-3 flex items-center justify-between"><p className="text-sm font-bold text-foreground">روند ثبت‌شده</p><button onClick={reload} className="text-xs font-semibold text-primary">به‌روزرسانی</button></div>
+          {!history && !error && <p className="py-8 text-center text-sm text-muted-foreground">در حال دریافت روند درد…</p>}
+          {error && <p role="alert" className="py-3 text-center text-sm text-red-700">{error}</p>}
+          {history?.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">هنوز دردی ثبت نشده است.</p>}
+          {chartData.length > 0 && <ResponsiveContainer width="100%" height={120}>
+            <AreaChart data={chartData}>
               <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1b5e3b" stopOpacity={0.3} /><stop offset="95%" stopColor="#1b5e3b" stopOpacity={0} /></linearGradient></defs>
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "Vazirmatn" }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 10]} hide />
               <Tooltip contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, borderRadius: 12 }} formatter={(v) => [toP(v as number), "درد"]} />
               <Area type="monotone" dataKey="value" stroke="#1b5e3b" strokeWidth={2.5} fill="url(#pg)" dot={{ fill: "#1b5e3b", r: 3 }} />
             </AreaChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer>}
         </div>
-        <button onClick={() => setSaved(true)} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">ثبت درد امروز</button>
+        <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-60">{saving ? "در حال ثبت…" : "ثبت درد امروز"}</button>
       </div>
     </div>
   );
