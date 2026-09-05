@@ -27,7 +27,7 @@ Reuse the completed Phase 05 appointment baseline, completed Phase 07 treatment-
 
 ## Phase 3: Notification and Content Boundaries — User Story 2 (P2) / User Story 3 (P3)
 
-- [ ] T004 [US2] F08-T04: notification/preference و in-app read state
+- [x] T004 [US2] F08-T04: notification/preference و in-app read state
 - [ ] T005 [US3] F08-T05: content publication lifecycle و media policy
 
 ## Phase 4: Real Reminder Boundary

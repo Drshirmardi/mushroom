@@ -97,3 +97,11 @@ Result:
   - patient-only latest-result API is authorized and audited; app rendering remains owned by F08-T08 → PASS
 Next batch:
   - F08-T04 after normal prerequisite and ownership review.
+
+## F08-T04 — notification preferences and in-app read state
+
+Task ID: F08-T04
+Batch ID: F08-B04
+Result: notification, in-app delivery, and patient preference persistence plus patient-owned list/read/read-all/preference APIs are implemented.
+Tests run: notification PostgreSQL authorization/read-state integration test, Prisma migration deploy/typecheck, generated OpenAPI client build, and diff check → PASS.
+Next batch: F08-T05 after prerequisite review.

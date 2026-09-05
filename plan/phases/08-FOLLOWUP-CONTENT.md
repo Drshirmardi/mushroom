@@ -23,7 +23,7 @@
 - [x] `F08-T01` — metric/unit/range و query contract health observations
 - [x] `F08-T02` — write/query tracker و dashboard health views
 - [x] `F08-T03` — mezaj result از assessment versioned
-- [ ] `F08-T04` — notification/preference و in-app read state
+- [x] `F08-T04` — notification/preference و in-app read state
 - [ ] `F08-T05` — content publication lifecycle و media policy
 - [ ] `F08-T06` — ADR و bootstrap outbox/worker فقط برای reminder واقعی
 - [ ] `F08-T07` — appointment و treatment reminders idempotent

@@ -17,6 +17,7 @@ import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.mod
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
 import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
+import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
 
 @Module({
   controllers: [HealthController],
@@ -46,7 +47,7 @@ import { HealthObservationsModule } from './modules/assessments/health/health-ob
     AdminSchedulingModule,
     PatientAppointmentsModule,
     ClinicalModule,
-    HealthObservationsModule,
+    HealthObservationsModule, NotificationsModule,
   ],
 })
 export class AppModule {}

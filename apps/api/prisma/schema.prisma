@@ -319,6 +319,19 @@ enum HealthObservationUnit {
   KILOGRAMS
 }
 
+enum NotificationCategory {
+  REMINDER
+  TREATMENT
+  CONTENT
+  SYSTEM
+}
+enum NotificationDeliveryChannel {
+  IN_APP
+}
+enum NotificationDeliveryStatus {
+  DELIVERED
+}
+
 enum PatientAccessAction {
   READ
   CREATE
@@ -360,6 +373,7 @@ model User {
   clinicalRecordRevisionSigners  ClinicalRecordRevision[]       @relation("ClinicalRecordRevisionSignedBy")
   patientAccessAudits            PatientAccessAudit[]           @relation("PatientAccessAuditActor")
   clinicalClinicAccesses         ClinicalClinicAccess[]
+  notifications                  Notification[]
 
   @@map("users")
 }
@@ -524,6 +538,7 @@ model Clinic {
   allergyRecords           AllergyRecord[]
   conditionRecords         ConditionRecord[]
   healthObservations       HealthObservation[]
+  notifications            Notification[]
   medicationStatements     MedicationStatement[]
   patientAccessAudits      PatientAccessAudit[]
   prescriptions            Prescription[]
@@ -559,6 +574,7 @@ model PatientProfile {
   reportedIntakeRevisions PatientMedicalIntakeRevision[] @relation("IntakeRevisionReportedPatient")
   assessmentSubmissions   PatientAssessmentSubmission[]
   mezajResults            MezajResult[]
+  notificationPreferences NotificationPreference[]
   appointments            Appointment[]
   operationalActivities   OperationalActivity[]
   encounters              Encounter[]
@@ -575,6 +591,43 @@ model PatientProfile {
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
   @@map("patient_profiles")
+}
+
+model Notification {
+  id          String       @id @default(uuid()) @db.Uuid
+  clinicId    String       @map("clinic_id") @db.Uuid
+  recipientId String       @map("recipient_id") @db.Uuid
+  category    NotificationCategory
+  title       String       @db.VarChar(255)
+  body        String       @db.Text
+  readAt      DateTime?    @map("read_at") @db.Timestamptz(3)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic      Clinic       @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  recipient   User         @relation(fields: [recipientId], references: [id], onDelete: Restrict)
+  deliveries  NotificationDelivery[]
+  @@index([recipientId, readAt, createdAt, id], map: "notifications_recipient_read_created_idx")
+  @@map("notifications")
+}
+
+model NotificationDelivery {
+  id             String                     @id @default(uuid()) @db.Uuid
+  notificationId String                     @map("notification_id") @db.Uuid
+  channel        NotificationDeliveryChannel
+  status         NotificationDeliveryStatus
+  deliveredAt    DateTime                   @default(now()) @map("delivered_at") @db.Timestamptz(3)
+  notification   Notification               @relation(fields: [notificationId], references: [id], onDelete: Restrict)
+  @@unique([notificationId, channel], map: "notification_deliveries_notification_channel_key")
+  @@map("notification_deliveries")
+}
+
+model NotificationPreference {
+  patientId       String               @map("patient_id") @db.Uuid
+  category        NotificationCategory
+  inAppEnabled    Boolean              @default(true) @map("in_app_enabled")
+  updatedAt       DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patient         PatientProfile       @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  @@id([patientId, category])
+  @@map("notification_preferences")
 }
 
 model HealthObservation {

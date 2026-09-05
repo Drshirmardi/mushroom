@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 09:47 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 09:48 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,7 +50,26 @@
 
 ## handoff فاز فعال
 
-`F08-B03` — `DONE`: `F08-T03` persists Mezaj results only from immutable completed MEZAJ assessment versions; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+`F08-B04` — `DONE`: `F08-T04` added patient in-app notification, preference, and read-state APIs; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+
+## batch فعال — F08-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 09:48 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `IN_PROGRESS`
+Contract baseline: patient in-app notification and preference state
+
+Tasks:
+
+- Task ID: `F08-T04`
+  Agent/Thread: `Codex /root`
+  Status: `CLAIMED`
+  Depends on: `F08-T03 DONE`
+  Scope: notification/preference persistence and in-app read-state API
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/**,test/**}`, `packages/api-client/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: notification schema and API contract
+  Expected verification: migration deploy, preference/read-state authorization and idempotency tests, Prisma/OpenAPI/client validation, and `git diff --check`
 
 ## آخرین batch — F08-B03
 
