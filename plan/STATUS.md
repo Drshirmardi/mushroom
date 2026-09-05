@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 12:25 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 13:15 +03:30`
 - Milestone فعال: `Milestone C — DONE (CLOSED)`
 - فاز فعال: `ندارد؛ Phase 08 بسته شده و Phase 09 هنوز شروع نشده است.`
 - وضعیت فاز فعال: `ندارد`
@@ -50,7 +50,28 @@
 
 ## handoff فاز فعال
 
-Phase 08 independent closure review passed. `F08-T01` through `F08-T11` are closed with synchronized evidence and Spec Kit artifacts. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
+Phase 08 migration-history remediation passed. The branch-local unreleased history now replays cleanly from Phase 07 to the final Phase 08 schema; preserved local development data was reconstructed into a verified candidate database without changing the original. Phase 08 remains `DONE (CLOSED)`. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
+
+## آخرین batch — F08-MR
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 12:55 +03:30`
+Completed at: `2026-09-05 13:15 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: final committed Phase 07 schema to final committed Phase 08 schema; branch-local unreleased migration history only
+
+Tasks:
+
+- Task ID: `F08-MR`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T11 DONE`
+  Scope: replace only the unreleased Phase 08 migration sequence with a coherent final-schema baseline; reconstruct a separate local candidate database from data-only source records; validate clean replay, ledger, constraints, Phase 08 regressions, and full integration.
+  Owned paths: `apps/api/prisma/migrations/20260905*phase_08*/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: local PostgreSQL candidate/shadow databases and Phase 08 migration ledger
+  Do not change: `Phase 07` or earlier migrations, existing rehearsal database/checksums, Phase 09 paths, application runtime/schema behavior, or production/shared environments.
+  Result: one generated Phase 07→final-Phase-08 migration replaces the five unreleased branch-local migrations. Fresh replay, idempotent seed, schema diff, preserved-data fingerprints, full API suite, generated contract, app/dashboard, and whitespace gates passed; evidence: [`logs/phase-08.md`](logs/phase-08.md).
 
 ## آخرین batch — F08-B10R
 

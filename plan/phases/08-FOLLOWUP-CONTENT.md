@@ -2,6 +2,7 @@
 
 - وضعیت اولیه: `NOT_STARTED`
 - وضعیت نهایی: `DONE (CLOSED)`
+- migration-history remediation: `ACCEPTED` — unreleased Phase 08 migrations were coherently rebaselined from the Phase 07 schema; clean replay and preserved-data reconstruction passed.
 - Milestone: `C — هسته درمان`
 - پیش‌نیاز: `Phase 05 DONE`؛ reminder درمان به `Phase 07`
 - خروجی اصلی: پیگیری سلامت، اعلان داخل اپ و محتوای آموزشی واقعی هستند.

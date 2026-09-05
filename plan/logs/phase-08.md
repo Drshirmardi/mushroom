@@ -342,3 +342,29 @@ Review findings:
   - No Phase 08 changes introduce AI/LLM behavior, a second reminder scheduler/outbox, stale notification mocks/local-state fallbacks, generated-contract drift, unrelated changes, or Phase 09 implementation.
 Closure result:
   - Phase 08 is `DONE (CLOSED)`. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
+
+## F08-MR — branch-local Phase 08 migration-history rebaseline
+
+Task ID: F08-MR
+Completed at: 2026-09-05 13:15 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-MR
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/prisma/migrations/20260905*phase_08*/migration.sql
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md}
+Migrations:
+  - Replaced five unreleased, branch-local Phase 08 migrations with `20260905130000_phase_08_follow_up_foundation`, generated as the exact delta from the committed Phase 07 migration history to the unchanged final Phase 08 Prisma schema.
+  - The prior outbox migration altered Phase 08 tables before their creation. The rebaseline creates all Phase 08 enums/tables/indexes before foreign keys and contains no Phase 07-or-earlier migration change.
+Branch/shared-history review:
+  - The five prior Phase 08 migrations exist only on this unmerged branch, are absent from `main` and all remote branches, and no shared-environment configuration is present. Local ledger hits were limited to the preserved rehearsal database and a prior local verification database.
+Preservation:
+  - The original configured rehearsal database was not changed and its migration ledger/checksums were not edited or resolved.
+  - A separate clean reconstructed database received only a data-only copy. All 63 application-table row counts and content fingerprints matched the source before and after verification; constraints, indexes, and user triggers are valid, and its ledger contains the corrected 23 migration files.
+Tests run:
+  - Fresh empty PostgreSQL candidate: corrected 23-migration replay → PASS; deterministic seed twice → PASS; Prisma migration status and migration-history-to-final-schema diff → PASS.
+  - Reconstructed preserved-data candidate: data copy/fingerprint comparison, relational-integrity checks, migration status, and schema diff → PASS.
+  - API test TypeScript check plus full PostgreSQL API suite with configured environment → PASS (61 files, 294 tests), including clean migration/seed smoke, stale claim/restart/exactly-once reminders, Tehran timezone, preferences, authorization, audit, privacy, health observations, Mezaj, and content coverage.
+  - Prisma validate/generate, runtime OpenAPI export, generated-client check/build, API typecheck, patient-app tests/typecheck/production build, dashboard tests/typecheck/production build, and diff/whitespace validation → PASS; no generated-client drift.
+Result:
+  - The final Phase 08 runtime schema and behavior are unchanged; only the unreleased migration history was coherently rebaselined. Phase 08 remains `DONE (CLOSED)` and Phase 09 remains `NOT_STARTED`.
