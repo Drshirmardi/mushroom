@@ -1,6 +1,7 @@
 # Phase 08 — Follow-up, Health Tracking, Notifications & Content
 
 - وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)`
 - Milestone: `C — هسته درمان`
 - پیش‌نیاز: `Phase 05 DONE`؛ reminder درمان به `Phase 07`
 - خروجی اصلی: پیگیری سلامت، اعلان داخل اپ و محتوای آموزشی واقعی هستند.
@@ -29,7 +30,7 @@
 - [x] `F08-T07` — appointment و treatment reminders idempotent
 - [x] `F08-T08` — اتصال app tracker/notification/article
 - [x] `F08-T09` — اتصال dashboard health/notification/content
-- [x] `F08-T10` — restart/retry/idempotency، timezone و browser E2E — stale-claim recovery rework accepted; Phase 08 remains `READY_FOR_REVIEW`
+- [x] `F08-T10` — restart/retry/idempotency، timezone و browser E2E — stale-claim recovery rework accepted
 - [x] `F08-T11` — حذف mock scope و review Milestone C
 
 ## معیار خروج

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-08-follow-up-health-tracking-notifications-content`
 **Created**: 2026-09-05
-**Status**: Phase 08 is `READY_FOR_REVIEW`; all roadmap tasks are accepted and independent closure review remains required. Live execution state is in `plan/STATUS.md`.
+**Status**: Phase 08 is `DONE (CLOSED)` after independent closure review. All roadmap tasks are accepted; Phase 09 remains `NOT_STARTED`. Live execution state is in `plan/STATUS.md`.
 **Input**: Adopt the authoritative Phase 08 roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*

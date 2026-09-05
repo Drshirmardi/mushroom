@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 12:20 +03:30`
-- Milestone فعال: `Milestone C — READY_FOR_REVIEW`
-- فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-05 12:25 +03:30`
+- Milestone فعال: `Milestone C — DONE (CLOSED)`
+- فاز فعال: `ندارد؛ Phase 08 بسته شده و Phase 09 هنوز شروع نشده است.`
+- وضعیت فاز فعال: `ندارد`
 - batch فعال: `none`
 - task فعال: `none`
 - blocker فعال: `none`
@@ -41,7 +41,7 @@
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
-- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `READY_FOR_REVIEW`
+- [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
@@ -50,7 +50,7 @@
 
 ## handoff فاز فعال
 
-`F08-B10R` is complete: F08-T10 stale-claim recovery and independent PostgreSQL restart/timezone regressions passed. Phase 08 is `READY_FOR_REVIEW`; an independent closure review remains required. Phase 09 remains `NOT_STARTED`.
+Phase 08 independent closure review passed. `F08-T01` through `F08-T11` are closed with synchronized evidence and Spec Kit artifacts. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
 
 ## آخرین batch — F08-B10R
 

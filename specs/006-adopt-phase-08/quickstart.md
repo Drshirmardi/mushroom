@@ -1,6 +1,6 @@
 # Phase 08 Validation Quickstart
 
-This guide preserves Phase 08 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); F08-T10 restart-recovery rework is accepted and Phase 08 is `READY_FOR_REVIEW` pending independent closure review.
+This guide preserves Phase 08 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); F08-T10 restart-recovery rework is accepted and Phase 08 is `DONE (CLOSED)` after independent closure review. Phase 09 remains `NOT_STARTED`.
 
 ## Preconditions for future execution
 

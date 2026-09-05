@@ -9,7 +9,7 @@ description: "One-to-one Spec Kit adoption of the authoritative Phase 08 roadmap
 
 **Roadmap boundary**: `T001`–`T011` are Spec Kit labels only. The authoritative roadmap IDs below remain the execution, claim, evidence, and commit identities. No task is split, merged, renamed, reordered, claimed, or completed by this adoption.
 
-**Execution status**: Phase 08 is `READY_FOR_REVIEW`; all roadmap tasks are accepted and independent closure review remains required. Consult `plan/STATUS.md` and the authoritative phase checklist for live state. This file does not authorize implementation.
+**Execution status**: Phase 08 is `DONE (CLOSED)` after independent closure review; all roadmap tasks are accepted and Phase 09 remains `NOT_STARTED`. Consult `plan/STATUS.md` and the authoritative phase checklist for live state. This file does not authorize implementation.
 
 ## Format
 

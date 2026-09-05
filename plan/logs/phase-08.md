@@ -321,3 +321,24 @@ Result:
   - PostgreSQL restart regression simulates a claimed reminder whose worker disappears, deterministically ages the claim, and proves exactly one notification and a `DELIVERED` terminal event after recovery; a subsequent worker tick does not duplicate delivery. Existing idempotency and notification-plus-delivery transaction remain unchanged.
   - Mezaj verification uses unique locale/version fixture identifiers because completed/published records are immutable. Tehran state-machine verification creates and cleans an isolated published doctor, specialty, and service so existing active scheduling cannot collide.
   - This explicitly remediates the independent closure-review HIGH finding. Phase 08 is restored to `READY_FOR_REVIEW`; no closure review was performed in this batch and Phase 09 remains `NOT_STARTED`.
+
+## Independent Phase 08 closure review — PASSED / CLOSED
+
+Reviewed at: 2026-09-05 12:25 +03:30
+Reviewer: Codex /root
+Scope:
+  - Independent review of the authoritative Phase 08 roadmap, all F08-T01 through F08-T11 acceptance criteria, task evidence, STATUS/checklist state, and Spec Kit artifacts.
+Verification:
+  - Focused Phase 08 PostgreSQL integrations (outbox, reminders, patient appointments, treatment activity, Mezaj, notifications, health observations, and content publication) → PASS (8 files, 19 tests).
+  - Repeatability rerun of Mezaj and Tehran appointment fixtures → PASS (2 files, 7 tests).
+  - API, API-test, patient-app, and dashboard typechecks; Prisma schema validation and migration status → PASS; the rehearsal database is current across 27 migrations.
+  - Runtime OpenAPI export, generated API-client build, and generated-artifact diff → PASS with no drift.
+  - Diff/whitespace validation → PASS.
+  - Browser recheck → PASS: the authorized dashboard notification surface renders the live empty state, and an unauthorized patient notification surface renders its authorization boundary without fabricated fallback data. The recorded F08-T10 authenticated browser journey remains applicable because the stale-claim remediation changed only backend outbox code.
+Review findings:
+  - F08-T10 stale `PROCESSING` rows are recovered only after the 60-second lease; fresh claims remain unavailable to other workers. The PostgreSQL interruption regression proves one eventual notification, `DELIVERED` terminal state, and no duplicate after a further worker/restart attempt. The existing idempotency key and notification-plus-delivery transaction remain intact.
+  - Reminder preferences, recipient/resource authorization, metadata-only audit behavior, Tehran timezone boundaries, shared patient/dashboard observation source, and published-only content visibility are covered by the accepted targeted integrations and adapters.
+  - Spec Kit analysis maps every Phase 08 requirement and success criterion to F08-T01 through F08-T11 with no inconsistency; convergence found no implementation gap and appended no task.
+  - No Phase 08 changes introduce AI/LLM behavior, a second reminder scheduler/outbox, stale notification mocks/local-state fallbacks, generated-contract drift, unrelated changes, or Phase 09 implementation.
+Closure result:
+  - Phase 08 is `DONE (CLOSED)`. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
