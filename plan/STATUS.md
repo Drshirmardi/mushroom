@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-04 23:33 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 09:31 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
-- فاز فعال: ندارد؛ `Phase 07` بسته شده و `Phase 08` هنوز شروع نشده است.
-- وضعیت فاز فعال: ندارد
+- فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -41,7 +41,7 @@
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
-- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
+- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `IN_PROGRESS`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
@@ -49,6 +49,10 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+`F08-B01` — `DONE`: `F08-T01` approved the health-observation metric/unit/range and query contract without implementation work; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+
+Next eligible batch: `F08-B02` — `F08-T02` is eligible, unclaimed, and not started.
 
 - فاز قبلی: `Phase 01 — Identity & Access` پس از Bugbot و Security Review مستقل بدون یافته باز تکمیل شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - regression مسیر dev API که metadata تزریق وابستگی Nest را حذف می‌کرد در `F01-R01` اصلاح شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)

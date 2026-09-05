@@ -6,7 +6,7 @@
 
 | Authoritative task | Preserved boundary |
 |---|---|
-| `F08-T01` | Metric, unit, range, and health-observation query contract. |
+| `F08-T01` | Metric, unit, range, and health-observation query contract; approved baseline: [`plan/contracts/health-observation-v1.md`](../../../plan/contracts/health-observation-v1.md). |
 | `F08-T02` | Tracker write/query and dashboard health views. |
 | `F08-T03` | Mezaj result from versioned assessment. |
 | `F08-T04` | Notification, preference, and in-app read state. |

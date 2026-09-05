@@ -21,7 +21,7 @@ Reuse the completed Phase 05 appointment baseline, completed Phase 07 treatment-
 
 ## Phase 2: Health Follow-up Foundation
 
-- [ ] T001 F08-T01: metric/unit/range و query contract health observations
+- [x] T001 F08-T01: metric/unit/range و query contract health observations
 - [ ] T002 F08-T02: write/query tracker و dashboard health views
 - [ ] T003 F08-T03: mezaj result از assessment versioned
 
