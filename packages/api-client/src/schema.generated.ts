@@ -1894,41 +1894,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/health-observations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List own health observations */
-        get: operations["patientHealthObservationsList"];
-        put?: never;
-        /** Record one permitted health observation */
-        post: operations["patientHealthObservationCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/health-observations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List authorized patient health observations */
-        get: operations["adminHealthObservationsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/patients/me/notifications": {
         parameters: {
             query?: never;
@@ -1991,6 +1956,57 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["NotificationsController_preference"];
+        trace?: never;
+    };
+    "/v1/admin/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminNotificationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/health-observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List own health observations */
+        get: operations["patientHealthObservationsList"];
+        put?: never;
+        /** Record one permitted health observation */
+        post: operations["patientHealthObservationCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/health-observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized patient health observations */
+        get: operations["adminHealthObservationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/patients/me/articles": {
@@ -3701,6 +3717,7 @@ export interface components {
             /** Format: uuid */
             nextCursor?: string | null;
         };
+        PreferenceDto: Record<string, never>;
         CreateHealthObservationDto: {
             /** @enum {string} */
             metric: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
@@ -3726,7 +3743,6 @@ export interface components {
             /** Format: uuid */
             nextCursor?: Record<string, never> | null;
         };
-        PreferenceDto: Record<string, never>;
         CreateCategoryDto: {
             name: string;
             slug: string;
@@ -8049,81 +8065,6 @@ export interface operations {
             };
         };
     };
-    patientHealthObservationsList: {
-        parameters: {
-            query?: {
-                cursor?: string;
-                from?: string;
-                limit?: number;
-                metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
-                to?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthObservationListResponseDto"];
-                };
-            };
-        };
-    };
-    patientHealthObservationCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateHealthObservationDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthObservationResponseDto"];
-                };
-            };
-        };
-    };
-    adminHealthObservationsList: {
-        parameters: {
-            query?: {
-                cursor?: string;
-                from?: string;
-                limit?: number;
-                metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
-                to?: string;
-            };
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthObservationListResponseDto"];
-                };
-            };
-        };
-    };
     patientNotificationsList: {
         parameters: {
             query?: never;
@@ -8212,6 +8153,98 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminNotificationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patientHealthObservationsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                from?: string;
+                limit?: number;
+                metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthObservationListResponseDto"];
+                };
+            };
+        };
+    };
+    patientHealthObservationCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHealthObservationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthObservationResponseDto"];
+                };
+            };
+        };
+    };
+    adminHealthObservationsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                from?: string;
+                limit?: number;
+                metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
+                to?: string;
+            };
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthObservationListResponseDto"];
+                };
             };
         };
     };

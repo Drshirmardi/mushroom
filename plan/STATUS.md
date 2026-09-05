@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 11:15 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 11:25 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,7 +50,27 @@
 
 ## handoff فاز فعال
 
-بدون batch فعال. batch واجد شرایط بعدی: `F08-B09` / `F08-T09`؛ شروع نشده و خارج از این handoff است.
+بدون batch فعال. batch واجد شرایط بعدی: `F08-B10` / `F08-T10`؛ شروع نشده و خارج از این handoff است.
+
+## آخرین batch — F08-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:20 +03:30`
+Completed at: `2026-09-05 11:25 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: F08-T02/T04/T05 APIs and generated client
+
+Tasks:
+
+- Task ID: `F08-T09`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T02, F08-T04, F08-T05, F08-T08 DONE`
+  Scope: dashboard health, notification, and published-content connection
+  Owned paths: `apps/dashboard/**`, `apps/api/src/modules/assessments/notifications/**`, `apps/api/test/notifications.integration.spec.ts`, `packages/api-client/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: dashboard Phase 08 API adapters, notification read contract, and generated client
+  Expected verification: dashboard typecheck, notification authorization integration, generated-client build, and targeted dashboard connection checks
 
 ## آخرین batch — F08-B08
 

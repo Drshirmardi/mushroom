@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-08-follow-up-health-tracking-notifications-content`
 **Created**: 2026-09-05
-**Status**: Phase 08 is `IN_PROGRESS`; `F08-T01` through `F08-T08` are complete, while `F08-T09` through `F08-T11` remain unchecked. Live execution state is in `plan/STATUS.md`.
+**Status**: Phase 08 is `IN_PROGRESS`; `F08-T01` through `F08-T09` are complete, while `F08-T10` through `F08-T11` remain unchecked. Live execution state is in `plan/STATUS.md`.
 **Input**: Adopt the authoritative Phase 08 roadmap into Spec Kit without activating implementation.
 
 ## User Scenarios & Testing *(mandatory)*

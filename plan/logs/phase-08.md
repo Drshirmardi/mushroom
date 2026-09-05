@@ -205,3 +205,26 @@ Known limitations:
   - Integrated restart/retry/idempotency, timezone, and browser validation remains F08-T10; in-scope mock-scope review remains F08-T11.
 Next batch:
   - F08-B09 — F08-T09 (eligible but not started)
+
+## F08-T09 — اتصال dashboard health/notification/content
+
+Task ID: F08-T09
+Completed at: 2026-09-05 11:25 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B09
+Reviewed by: Codex /root
+Changed files:
+  - apps/dashboard/src/{features/{health-tracking,notifications,content},lib/phase-08-api.{ts,spec.ts}}
+  - apps/api/src/modules/assessments/notifications/* and apps/api/test/notifications.integration.spec.ts
+  - packages/api-client/{openapi.json,src/schema.generated.ts}
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md} and specs/006-adopt-phase-08/*
+Migrations:
+  - none
+Tests run:
+  - API typecheck and notification PostgreSQL authorization integration → PASS
+  - API OpenAPI export, generated-client build, dashboard typecheck, focused dashboard adapter test, and git diff --check → PASS
+Result:
+  - Dashboard health chart uses persisted observation timestamps; notification and content screens use authorized clinic APIs with truthful loading, error, empty, and forbidden states.
+  - An administrator-only clinic notification list completes the previously missing dashboard read boundary; patient access is rejected.
+Next batch:
+  - F08-B10 — F08-T10 (eligible but not started)
