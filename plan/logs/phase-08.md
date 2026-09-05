@@ -250,3 +250,29 @@ Result:
   - Accepted Phase 08 resilience and browser gate: no demonstrated restart, retry, idempotency, timezone, shared-source, or truthful UI-state defect required a repair.
 Next batch:
   - F08-B11 — F08-T11 (eligible but not started)
+
+## F08-T11 — حذف mock scope و review Milestone C
+
+Task ID: F08-T11
+Completed at: 2026-09-05 11:50 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B11
+Reviewed by: Codex /root
+Changed files:
+  - apps/dashboard/src/components/layout/{header,notif-panel}.tsx
+  - apps/dashboard/src/lib/nav.ts
+  - apps/dashboard/src/data/notifications.ts (removed)
+  - plan/{STATUS.md,phases/08-FOLLOWUP-CONTENT.md,logs/phase-08.md}
+  - specs/006-adopt-phase-08/{spec.md,plan.md,quickstart.md,tasks.md,contracts/phase-08-adoption.md}
+Migrations:
+  - none
+Tests run:
+  - dashboard typecheck and focused Phase 08 adapter test → PASS
+  - runtime OpenAPI export/generated-client freshness → PASS (no drift)
+  - scoped app/dashboard mock and browser-local-state review → PASS; the assessment submission idempotency key uses session storage but is outside the Phase 08 UI scope and is not a data fallback
+  - local browser dashboard notification panel → PASS; it renders the live empty state without a static badge, dot, or fixture
+  - `git diff --check` → PASS
+  - Spec Kit cross-artifact analysis and convergence → PASS; all 11 requirements map to the completed roadmap tasks, no constitution conflict or implementation gap, and no convergence task appended
+Result:
+  - Removed the remaining in-scope dashboard notification fixture, static notification badge, and fabricated unread dot. The panel now reads the authorized clinic notification source and renders truthful loading, error, and empty states.
+  - Phase 08 is `READY_FOR_REVIEW`; independent closure review remains required and Phase 09 has not been started.

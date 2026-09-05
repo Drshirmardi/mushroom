@@ -1,13 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { NOTIFS, NOTIF_ICON_FALLBACK, NOTIF_ICON_MAP } from "@/data/notifications";
+import { Bell, BookOpen, Calendar, FileText } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { dashboardPhaseEightError, listDashboardNotifications, type DashboardNotification } from "@/lib/phase-08-api";
 import { p } from "@/lib/utils";
+
+const ICONS: Record<DashboardNotification["category"], LucideIcon> = { REMINDER: Calendar, TREATMENT: FileText, CONTENT: BookOpen, SYSTEM: Bell };
 
 export function NotifPanel({ onClose }: { onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { authentication } = useDashboardSession();
+  const [items, setItems] = useState<DashboardNotification[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
@@ -15,7 +23,17 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("mousedown", h);
   }, [onClose]);
 
-  const unread = NOTIFS.filter(n => !n.read);
+  useEffect(() => {
+    let active = true;
+    setItems(null); setError(null);
+    void listDashboardNotifications(authentication.accessToken).then(
+      (value) => { if (active) setItems(value.items); },
+      (reason: unknown) => { if (active) setError(dashboardPhaseEightError(reason, "اعلان‌های کلینیک دریافت نشد.")); },
+    );
+    return () => { active = false; };
+  }, [authentication.accessToken]);
+
+  const unread = (items ?? []).filter((item) => !item.readAt);
   return (
     <div ref={ref} className="absolute top-full left-0 mt-2 w-96 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden">
       <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -23,19 +41,22 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
           <h3 className="font-bold text-foreground">اعلان‌ها</h3>
           {unread.length > 0 && <span className="bg-red-500 text-white text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold">{p(unread.length)} جدید</span>}
         </div>
-        <button className="text-xs text-primary font-semibold hover:underline">همه خوانده‌شده</button>
       </div>
       <div className="max-h-80 overflow-y-auto divide-y divide-border">
-        {NOTIFS.map(n => {
-          const { icon: Icon, bg } = NOTIF_ICON_MAP[n.type] ?? NOTIF_ICON_FALLBACK;
+        {!items && !error && <p className="px-4 py-5 text-xs text-muted-foreground" role="status">در حال دریافت اعلان‌ها…</p>}
+        {error && <p className="px-4 py-5 text-xs text-red-700" role="alert">{error}</p>}
+        {items?.length === 0 && <p className="px-4 py-5 text-xs text-muted-foreground">اعلانی وجود ندارد.</p>}
+        {items?.slice(0, 5).map(item => {
+          const Icon = ICONS[item.category];
           return (
-            <div key={n.id} className={`flex items-start gap-3 px-4 py-3.5 hover:bg-secondary/40 cursor-pointer transition-colors ${!n.read ? "bg-primary/5" : ""}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${bg}`}><Icon size={14} /></div>
+            <div key={item.id} className={`flex items-start gap-3 px-4 py-3.5 hover:bg-secondary/40 transition-colors ${!item.readAt ? "bg-primary/5" : ""}`}>
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon size={14} /></div>
               <div className="flex-1 min-w-0">
-                <p className={`text-xs leading-snug ${!n.read ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{n.text}</p>
-                <p className="text-[0.65rem] text-muted-foreground/60 mt-1">{n.time}</p>
+                <p className={`text-xs leading-snug ${!item.readAt ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{item.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
+                <p className="text-[0.65rem] text-muted-foreground/60 mt-1">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(item.createdAt))}</p>
               </div>
-              {!n.read && <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0" />}
+              {!item.readAt && <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0" />}
             </div>
           );
         })}

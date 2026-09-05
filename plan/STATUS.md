@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 11:35 +03:30`
-- Milestone فعال: `Milestone C — IN_PROGRESS`
+- آخرین به‌رورسانی: `2026-09-05 11:50 +03:30`
+- Milestone فعال: `Milestone C — READY_FOR_REVIEW`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: ندارد
 - task فعال: ندارد
 - blocker فعال: ندارد
@@ -41,7 +41,7 @@
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
-- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `IN_PROGRESS`
+- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `READY_FOR_REVIEW`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
@@ -50,7 +50,27 @@
 
 ## handoff فاز فعال
 
-بدون batch فعال. batch واجد شرایط بعدی: `F08-B11` / `F08-T11`؛ شروع نشده و خارج از این handoff است.
+`Phase 08` — `READY_FOR_REVIEW`: all roadmap tasks are complete; an independent closure review is required before any Phase 09 work.
+
+## آخرین batch — F08-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:40 +03:30`
+Completed at: `2026-09-05 11:50 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: accepted F08-T01 through F08-T10 contracts and verification
+
+Tasks:
+
+- Task ID: `F08-T11`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T10 DONE`
+  Scope: in-scope Phase 08 mock/local-state fallback removal, final Milestone C review, evidence, and Spec Kit consistency/convergence only
+  Owned paths: `apps/{app,dashboard}/src/**` only for demonstrated Phase 08 mock removal, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: Phase 08 final evidence and status synchronization
+  Expected verification: in-scope mock review, targeted frontend checks, contract/freshness review, and Spec Kit consistency/convergence
 
 ## آخرین batch — F08-B10
 

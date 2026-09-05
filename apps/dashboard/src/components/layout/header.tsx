@@ -26,7 +26,6 @@ export function Header() {
         <div className="relative">
           <button onClick={() => setShowNotif(v => !v)} className="relative p-2 rounded-xl hover:bg-secondary transition-colors">
             <Bell size={17} className="text-muted-foreground" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-background" />
           </button>
           {showNotif && <NotifPanel onClose={() => setShowNotif(false)} />}
         </div>

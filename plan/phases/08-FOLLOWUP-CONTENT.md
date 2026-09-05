@@ -30,7 +30,7 @@
 - [x] `F08-T08` — اتصال app tracker/notification/article
 - [x] `F08-T09` — اتصال dashboard health/notification/content
 - [x] `F08-T10` — restart/retry/idempotency، timezone و browser E2E
-- [ ] `F08-T11` — حذف mock scope و review Milestone C
+- [x] `F08-T11` — حذف mock scope و review Milestone C
 
 ## معیار خروج
 

@@ -1,6 +1,6 @@
 # Phase 08 Validation Quickstart
 
-This guide preserves Phase 08 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F08-T01` through `F08-T10` are complete and `F08-T11` remains unchecked.
+This guide preserves Phase 08 validation gates. Live execution state is authoritative in [`plan/STATUS.md`](../../plan/STATUS.md); `F08-T01` through `F08-T11` are complete and Phase 08 is `READY_FOR_REVIEW`.
 
 ## Preconditions for future execution
 

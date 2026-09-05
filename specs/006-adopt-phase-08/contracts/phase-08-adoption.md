@@ -25,4 +25,4 @@
 - Reminder work is independent of the HTTP request and retryable.
 - Only published content is patient-visible.
 
-Phase 08 is `IN_PROGRESS`; live task claims, completion, and evidence remain authoritative only in `plan/`.
+Phase 08 is `READY_FOR_REVIEW`; live task claims, completion, and evidence remain authoritative only in `plan/`.
