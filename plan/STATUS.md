@@ -10,8 +10,8 @@
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد
-- task فعال: ندارد
+- batch فعال: `F08-B06`
+- task فعال: `F08-T06`
 - blocker فعال: ندارد
 
 ## پیشرفت کلان
@@ -50,7 +50,26 @@
 
 ## handoff فاز فعال
 
-`F08-B05` — `DONE`: `F08-T05` added audited content lifecycle and published-only patient APIs; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+`F08-B06` — `DONE`: F08-T06 added the durable outbox bootstrap; clean-database migration replay passed.
+
+## batch فعال — F08-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 10:05 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: durable PostgreSQL outbox; T07 alone owns reminder scheduling and delivery behavior
+
+Tasks:
+
+- Task ID: `F08-T06`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T05 DONE`
+  Scope: ADR and bootstrap durable outbox worker for real reminders
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/**,test/**}`, `plan/{decisions,STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: outbox schema, worker process boundary
+  Expected verification: migration deploy, claim/retry transaction tests, Prisma validation, and `git diff --check`
 
 ## آخرین batch — F08-B05
 

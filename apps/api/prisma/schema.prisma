@@ -201,6 +201,15 @@ enum ContentPublicationStatus {
   @@map("content_publication_status")
 }
 
+enum OutboxEventStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  FAILED
+
+  @@map("outbox_event_status")
+}
+
 enum VisitMode {
   IN_PERSON
   ONLINE
@@ -657,6 +666,25 @@ model Banner {
 
   @@index([clinicId, publicationStatus, publishedAt, id], map: "banners_clinic_publication_published_idx")
   @@map("banners")
+}
+
+model OutboxEvent {
+  id             String           @id @default(uuid()) @db.Uuid
+  eventType      String           @map("event_type") @db.VarChar(120)
+  aggregateType  String           @map("aggregate_type") @db.VarChar(100)
+  aggregateId    String           @map("aggregate_id") @db.Uuid
+  idempotencyKey String           @unique(map: "outbox_events_idempotency_key") @map("idempotency_key") @db.VarChar(240)
+  payload        Json
+  status         OutboxEventStatus @default(PENDING)
+  availableAt    DateTime         @default(now()) @map("available_at") @db.Timestamptz(3)
+  lockedAt       DateTime?        @map("locked_at") @db.Timestamptz(3)
+  attempts       Int              @default(0)
+  lastError      String?          @map("last_error") @db.VarChar(500)
+  deliveredAt    DateTime?        @map("delivered_at") @db.Timestamptz(3)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  @@index([status, availableAt, id], map: "outbox_events_status_available_idx")
+  @@map("outbox_events")
 }
 
 model Notification {

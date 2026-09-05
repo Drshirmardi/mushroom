@@ -19,6 +19,7 @@ import { ClinicalModule } from './modules/clinical/clinical.module';
 import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
 import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
 import { ContentModule } from './modules/content/content.module';
+import { OutboxModule } from './modules/outbox/outbox.module';
 
 @Module({
   controllers: [HealthController],
@@ -48,7 +49,7 @@ import { ContentModule } from './modules/content/content.module';
     AdminSchedulingModule,
     PatientAppointmentsModule,
     ClinicalModule,
-    HealthObservationsModule, NotificationsModule, ContentModule,
+    HealthObservationsModule, NotificationsModule, ContentModule, OutboxModule,
   ],
 })
 export class AppModule {}

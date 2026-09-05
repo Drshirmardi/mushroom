@@ -131,3 +131,17 @@ Known limitations:
   - Upload implementation and interface connections remain owned by later Phase 08 tasks; no binary media is persisted.
 Next task:
   - F08-T06
+## F08-T06 — ADR و bootstrap outbox/worker فقط برای reminder واقعی
+
+Task ID: F08-T06
+Completed at: 2026-09-05 10:04 +03:30
+Agent/Thread: Codex /root
+Batch ID: F08-B06
+Reviewed by: Codex /root
+Tests run:
+  - clean PostgreSQL migration replay and deploy → PASS
+  - outbox.integration.spec.ts → PASS
+Result:
+  - Durable uniquely keyed outbox and retrying worker bootstrap added; F08-T07 retains reminder event and delivery ownership.
+Next task:
+  - F08-T07

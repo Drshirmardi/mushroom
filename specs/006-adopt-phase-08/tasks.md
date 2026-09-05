@@ -32,7 +32,7 @@ Reuse the completed Phase 05 appointment baseline, completed Phase 07 treatment-
 
 ## Phase 4: Real Reminder Boundary
 
-- [ ] T006 F08-T06: ADR و bootstrap outbox/worker فقط برای reminder واقعی
+- [x] T006 F08-T06: ADR و bootstrap outbox/worker فقط برای reminder واقعی
 - [ ] T007 [US2] F08-T07: appointment و treatment reminders idempotent
 
 ## Phase 5: Connected Interfaces — User Story 1 (P1) / User Story 4 (P4)
