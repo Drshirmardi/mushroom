@@ -303,6 +303,22 @@ enum TreatmentTaskState {
   @@map("treatment_task_state")
 }
 
+enum HealthObservationMetric {
+  PAIN
+  MOOD
+  SLEEP_HOURS
+  STRESS
+  ENERGY
+  WEIGHT
+}
+
+enum HealthObservationUnit {
+  SCORE_10
+  SCORE_5
+  HOURS
+  KILOGRAMS
+}
+
 enum PatientAccessAction {
   READ
   CREATE
@@ -507,6 +523,7 @@ model Clinic {
   diagnoses                Diagnosis[]
   allergyRecords           AllergyRecord[]
   conditionRecords         ConditionRecord[]
+  healthObservations       HealthObservation[]
   medicationStatements     MedicationStatement[]
   patientAccessAudits      PatientAccessAudit[]
   prescriptions            Prescription[]
@@ -552,10 +569,28 @@ model PatientProfile {
   patientAccessAudits     PatientAccessAudit[]
   prescriptions           Prescription[]
   treatmentPlans          TreatmentPlan[]
+  healthObservations      HealthObservation[]
 
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
   @@map("patient_profiles")
+}
+
+model HealthObservation {
+  id         String                  @id @default(uuid()) @db.Uuid
+  clinicId   String                  @map("clinic_id") @db.Uuid
+  patientId  String                  @map("patient_id") @db.Uuid
+  metric     HealthObservationMetric
+  unit       HealthObservationUnit
+  value      Decimal                 @db.Decimal(10, 2)
+  observedAt DateTime                @map("observed_at") @db.Timestamptz(3)
+  createdAt  DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic     Clinic                  @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient    PatientProfile          @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+
+  @@index([patientId, metric, observedAt, id], map: "health_observations_patient_metric_time_idx")
+  @@index([clinicId, patientId, observedAt, id], map: "health_observations_clinic_patient_time_idx")
+  @@map("health_observations")
 }
 
 model PatientMedicalIntake {

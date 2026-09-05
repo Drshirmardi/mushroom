@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 09:31 +03:30`
+- آخرین به‌رورسانی: `2026-09-05 09:41 +03:30`
 - Milestone فعال: `Milestone C — IN_PROGRESS`
 - فاز فعال: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,9 +50,27 @@
 
 ## handoff فاز فعال
 
-`F08-B01` — `DONE`: `F08-T01` approved the health-observation metric/unit/range and query contract without implementation work; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+`F08-B02` — `DONE`: `F08-T02` added the health-observation persistence/API/dashboard view contract implementation; evidence: [`logs/phase-08.md`](logs/phase-08.md).
 
-Next eligible batch: `F08-B02` — `F08-T02` is eligible, unclaimed, and not started.
+## آخرین batch — F08-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 09:33 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Completed at: `2026-09-05 09:41 +03:30`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/health-observation-v1.md`
+
+Tasks:
+
+- Task ID: `F08-T02`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 DONE`
+  Scope: health-observation persistence, tracker write/query, and dashboard health views
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/**,test/**}`, `apps/dashboard/src/{features,app,data}/health*`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: Prisma schema/migration, health-observation API contract, PostgreSQL integration test
+  Expected verification: migration replay, real PostgreSQL write/query and authorization tests, dashboard connection checks, Prisma validation/generation, and `git diff --check`
 
 - فاز قبلی: `Phase 01 — Identity & Access` پس از Bugbot و Security Review مستقل بدون یافته باز تکمیل شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - regression مسیر dev API که metadata تزریق وابستگی Nest را حذف می‌کرد در `F01-R01` اصلاح شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)

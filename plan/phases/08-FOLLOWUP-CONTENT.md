@@ -21,7 +21,7 @@
 ## Taskها
 
 - [x] `F08-T01` — metric/unit/range و query contract health observations
-- [ ] `F08-T02` — write/query tracker و dashboard health views
+- [x] `F08-T02` — write/query tracker و dashboard health views
 - [ ] `F08-T03` — mezaj result از assessment versioned
 - [ ] `F08-T04` — notification/preference و in-app read state
 - [ ] `F08-T05` — content publication lifecycle و media policy

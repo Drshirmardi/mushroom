@@ -16,6 +16,7 @@ import { SelfProfileModule } from './modules/patients/self-profile/self-profile.
 import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.module';
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
+import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
 
 @Module({
   controllers: [HealthController],
@@ -45,6 +46,7 @@ import { ClinicalModule } from './modules/clinical/clinical.module';
     AdminSchedulingModule,
     PatientAppointmentsModule,
     ClinicalModule,
+    HealthObservationsModule,
   ],
 })
 export class AppModule {}

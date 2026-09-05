@@ -7686,6 +7686,213 @@
           "Patient treatment progress"
         ]
       }
+    },
+    "/v1/patients/me/health-observations": {
+      "post": {
+        "operationId": "patientHealthObservationCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHealthObservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthObservationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Record one permitted health observation",
+        "tags": [
+          "Health observations"
+        ]
+      },
+      "get": {
+        "operationId": "patientHealthObservationsList",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "metric",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAIN",
+                "MOOD",
+                "SLEEP_HOURS",
+                "STRESS",
+                "ENERGY",
+                "WEIGHT"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthObservationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List own health observations",
+        "tags": [
+          "Health observations"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/health-observations": {
+      "get": {
+        "operationId": "adminHealthObservationsList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "metric",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAIN",
+                "MOOD",
+                "SLEEP_HOURS",
+                "STRESS",
+                "ENERGY",
+                "WEIGHT"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthObservationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List authorized patient health observations",
+        "tags": [
+          "Health observations"
+        ]
+      }
     }
   },
   "info": {
@@ -13265,6 +13472,101 @@
           "completedTasks",
           "totalTasks",
           "timeline"
+        ]
+      },
+      "CreateHealthObservationDto": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "PAIN",
+              "MOOD",
+              "SLEEP_HOURS",
+              "STRESS",
+              "ENERGY",
+              "WEIGHT"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "metric",
+          "value",
+          "observedAt"
+        ]
+      },
+      "HealthObservationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "PAIN",
+              "MOOD",
+              "SLEEP_HOURS",
+              "STRESS",
+              "ENERGY",
+              "WEIGHT"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "SCORE_10",
+              "SCORE_5",
+              "HOURS",
+              "KILOGRAMS"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "observedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "metric",
+          "unit",
+          "value",
+          "observedAt",
+          "createdAt"
+        ]
+      },
+      "HealthObservationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HealthObservationResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
         ]
       }
     }
