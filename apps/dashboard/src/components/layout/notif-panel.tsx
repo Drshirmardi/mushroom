@@ -16,6 +16,7 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
   const { authentication } = useDashboardSession();
   const [items, setItems] = useState<DashboardNotification[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadedToken, setLoadedToken] = useState<string | null>(null);
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
@@ -25,15 +26,15 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let active = true;
-    setItems(null); setError(null);
     void listDashboardNotifications(authentication.accessToken).then(
-      (value) => { if (active) setItems(value.items); },
-      (reason: unknown) => { if (active) setError(dashboardPhaseEightError(reason, "اعلان‌های کلینیک دریافت نشد.")); },
+      (value) => { if (active) { setItems(value.items); setError(null); setLoadedToken(authentication.accessToken); } },
+      (reason: unknown) => { if (active) { setItems(null); setError(dashboardPhaseEightError(reason, "اعلان‌های کلینیک دریافت نشد.")); setLoadedToken(authentication.accessToken); } },
     );
     return () => { active = false; };
   }, [authentication.accessToken]);
 
   const unread = (items ?? []).filter((item) => !item.readAt);
+  const isCurrent = loadedToken === authentication.accessToken;
   return (
     <div ref={ref} className="absolute top-full left-0 mt-2 w-96 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden">
       <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -43,10 +44,10 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
         </div>
       </div>
       <div className="max-h-80 overflow-y-auto divide-y divide-border">
-        {!items && !error && <p className="px-4 py-5 text-xs text-muted-foreground" role="status">در حال دریافت اعلان‌ها…</p>}
-        {error && <p className="px-4 py-5 text-xs text-red-700" role="alert">{error}</p>}
-        {items?.length === 0 && <p className="px-4 py-5 text-xs text-muted-foreground">اعلانی وجود ندارد.</p>}
-        {items?.slice(0, 5).map(item => {
+        {(!isCurrent || (!items && !error)) && <p className="px-4 py-5 text-xs text-muted-foreground" role="status">در حال دریافت اعلان‌ها…</p>}
+        {isCurrent && error && <p className="px-4 py-5 text-xs text-red-700" role="alert">{error}</p>}
+        {isCurrent && items?.length === 0 && <p className="px-4 py-5 text-xs text-muted-foreground">اعلانی وجود ندارد.</p>}
+        {isCurrent && items?.slice(0, 5).map(item => {
           const Icon = ICONS[item.category];
           return (
             <div key={item.id} className={`flex items-start gap-3 px-4 py-3.5 hover:bg-secondary/40 transition-colors ${!item.readAt ? "bg-primary/5" : ""}`}>

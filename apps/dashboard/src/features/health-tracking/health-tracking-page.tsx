@@ -14,9 +14,11 @@ const METRICS: Array<{ id: HealthObservationMetric; label: string; unit: string;
 ];
 
 export function HealthTrackingPage() {
-  const { authentication } = useDashboardSession(); const [patients, setPatients] = useState<AdminPatientList["items"]>([]); const [patientId, setPatientId] = useState(""); const [metric, setMetric] = useState<HealthObservationMetric>("PAIN"); const [observations, setObservations] = useState<Awaited<ReturnType<typeof getAdminHealthObservations>> | null>(null); const [error, setError] = useState<string | null>(null);
+  const { authentication } = useDashboardSession(); const [patients, setPatients] = useState<AdminPatientList["items"]>([]); const [patientId, setPatientId] = useState(""); const [metric, setMetric] = useState<HealthObservationMetric>("PAIN"); const [observations, setObservations] = useState<Awaited<ReturnType<typeof getAdminHealthObservations>> | null>(null); const [error, setError] = useState<string | null>(null); const [loadedKey, setLoadedKey] = useState<string | null>(null);
   useEffect(() => { let cancelled = false; void getAdminPatients(authentication.accessToken).then((result) => { if (!cancelled) { setPatients(result.items); setPatientId((current) => current || result.items[0]?.patientId || ""); } }, () => { if (!cancelled) setError("فهرست بیماران دریافت نشد."); }); return () => { cancelled = true; }; }, [authentication.accessToken]);
-  useEffect(() => { if (!patientId) return; let cancelled = false; setObservations(null); setError(null); void getAdminHealthObservations(authentication.accessToken, patientId, metric).then((result) => { if (!cancelled) setObservations(result); }, (reason: unknown) => { if (!cancelled) setError(reason instanceof HealthObservationsApiError && reason.status === 403 ? "اجازهٔ مشاهدهٔ دادهٔ این بیمار را ندارید." : "داده‌های سلامت دریافت نشد."); }); return () => { cancelled = true; }; }, [authentication.accessToken, metric, patientId]);
+  const requestKey = `${authentication.accessToken}:${patientId}:${metric}`;
+  useEffect(() => { if (!patientId) return; let cancelled = false; void getAdminHealthObservations(authentication.accessToken, patientId, metric).then((result) => { if (!cancelled) { setObservations(result); setError(null); setLoadedKey(requestKey); } }, (reason: unknown) => { if (!cancelled) { setObservations(null); setError(reason instanceof HealthObservationsApiError && reason.status === 403 ? "اجازهٔ مشاهدهٔ دادهٔ این بیمار را ندارید." : "داده‌های سلامت دریافت نشد."); setLoadedKey(requestKey); } }); return () => { cancelled = true; }; }, [authentication.accessToken, metric, patientId, requestKey]);
+  const isCurrent = loadedKey === requestKey;
   const current = METRICS.find((item) => item.id === metric)!; const chartData = (observations?.items ?? []).map((item: { value: number; observedAt: string }) => ({ value: item.value, day: new Intl.DateTimeFormat("fa-IR", { dateStyle: "short" }).format(new Date(item.observedAt)) }));
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-6">
@@ -31,7 +33,7 @@ export function HealthTrackingPage() {
       <div className="bg-card border border-border rounded-2xl shadow-sm">
         <div className="px-5 py-4 border-b border-border"><h2 className="font-bold">{current.label}</h2></div>
         <div className="p-5">
-          {!patientId ? <p className="text-sm text-muted-foreground">بیماری برای نمایش وجود ندارد.</p> : error ? <p className="text-sm text-red-700">{error}</p> : !observations ? <p className="text-sm text-muted-foreground">در حال دریافت مشاهده‌ها…</p> : chartData.length === 0 ? <p className="text-sm text-muted-foreground">برای این معیار هنوز مشاهده‌ای ثبت نشده است.</p> : <ResponsiveContainer width="100%" height={260}>
+          {!patientId ? <p className="text-sm text-muted-foreground">بیماری برای نمایش وجود ندارد.</p> : !isCurrent ? <p className="text-sm text-muted-foreground">در حال دریافت مشاهده‌ها…</p> : error ? <p className="text-sm text-red-700">{error}</p> : !observations ? <p className="text-sm text-muted-foreground">در حال دریافت مشاهده‌ها…</p> : chartData.length === 0 ? <p className="text-sm text-muted-foreground">برای این معیار هنوز مشاهده‌ای ثبت نشده است.</p> : <ResponsiveContainer width="100%" height={260}>
             <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" />
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#6B8C7A" }} axisLine={false} tickLine={false} />
