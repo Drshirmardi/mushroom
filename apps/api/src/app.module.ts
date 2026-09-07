@@ -16,6 +16,10 @@ import { SelfProfileModule } from './modules/patients/self-profile/self-profile.
 import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.module';
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
+import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
+import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
+import { ContentModule } from './modules/content/content.module';
+import { OutboxModule } from './modules/outbox/outbox.module';
 
 @Module({
   controllers: [HealthController],
@@ -45,6 +49,7 @@ import { ClinicalModule } from './modules/clinical/clinical.module';
     AdminSchedulingModule,
     PatientAppointmentsModule,
     ClinicalModule,
+    HealthObservationsModule, NotificationsModule, ContentModule, OutboxModule,
   ],
 })
 export class AppModule {}

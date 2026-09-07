@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-04 23:33 +03:30`
-- Milestone فعال: `Milestone C — IN_PROGRESS`
-- فاز فعال: ندارد؛ `Phase 07` بسته شده و `Phase 08` هنوز شروع نشده است.
-- وضعیت فاز فعال: ندارد
-- batch فعال: ندارد
-- task فعال: ندارد
-- blocker فعال: ندارد
+- آخرین به‌رورسانی: `2026-09-05 13:15 +03:30`
+- Milestone فعال: `Milestone C — DONE (CLOSED)`
+- فاز فعال: `ندارد؛ Phase 08 بسته شده و Phase 09 هنوز شروع نشده است.`
+- وضعیت فاز فعال: `ندارد`
+- batch فعال: `none`
+- task فعال: `none`
+- blocker فعال: `none`
 
 ## پیشرفت کلان
 
@@ -41,7 +41,7 @@
 - [x] `Phase 05` — Appointment Booking & Dashboard Operations — `DONE (CLOSED)`
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
-- [ ] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `NOT_STARTED`
+- [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
@@ -49,6 +49,209 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+Phase 08 migration-history remediation passed. The branch-local unreleased history now replays cleanly from Phase 07 to the final Phase 08 schema; preserved local development data was reconstructed into a verified candidate database without changing the original. Phase 08 remains `DONE (CLOSED)`. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
+
+## آخرین batch — F08-MR
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 12:55 +03:30`
+Completed at: `2026-09-05 13:15 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: final committed Phase 07 schema to final committed Phase 08 schema; branch-local unreleased migration history only
+
+Tasks:
+
+- Task ID: `F08-MR`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T11 DONE`
+  Scope: replace only the unreleased Phase 08 migration sequence with a coherent final-schema baseline; reconstruct a separate local candidate database from data-only source records; validate clean replay, ledger, constraints, Phase 08 regressions, and full integration.
+  Owned paths: `apps/api/prisma/migrations/20260905*phase_08*/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: local PostgreSQL candidate/shadow databases and Phase 08 migration ledger
+  Do not change: `Phase 07` or earlier migrations, existing rehearsal database/checksums, Phase 09 paths, application runtime/schema behavior, or production/shared environments.
+  Result: one generated Phase 07→final-Phase-08 migration replaces the five unreleased branch-local migrations. Fresh replay, idempotent seed, schema diff, preserved-data fingerprints, full API suite, generated contract, app/dashboard, and whitespace gates passed; evidence: [`logs/phase-08.md`](logs/phase-08.md).
+
+## آخرین batch — F08-B10R
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 12:10 +03:30`
+Completed at: `2026-09-05 12:20 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: accepted F08-T06/F08-T07 outbox and reminder behavior; closure finding in `plan/logs/phase-08.md`
+
+Tasks:
+
+- Task ID: `F08-T10`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T09 DONE`
+  Scope: stale `PROCESSING` outbox-claim recovery, restart/idempotency regression, and deterministic affected Phase 08 verification fixtures only
+  Owned paths: `apps/api/src/modules/outbox/**`, `apps/api/test/{outbox,reminders,mezaj-results,patient-appointments}.integration.spec.ts`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: outbox claim lifecycle and local PostgreSQL rehearsal database
+  Expected verification: stale-claim restart delivery without duplicate notification, existing reminder/preference coverage, deterministic Mezaj/Tehran suites, API typecheck, and diff validation
+
+## آخرین batch — F08-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:40 +03:30`
+Completed at: `2026-09-05 11:50 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: accepted F08-T01 through F08-T10 contracts and verification
+
+Tasks:
+
+- Task ID: `F08-T11`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 through F08-T10 DONE`
+  Scope: in-scope Phase 08 mock/local-state fallback removal, final Milestone C review, evidence, and Spec Kit consistency/convergence only
+  Owned paths: `apps/{app,dashboard}/src/**` only for demonstrated Phase 08 mock removal, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: Phase 08 final evidence and status synchronization
+  Expected verification: in-scope mock review, targeted frontend checks, contract/freshness review, and Spec Kit consistency/convergence
+
+## آخرین batch — F08-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:30 +03:30`
+Completed at: `2026-09-05 11:35 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `REWORK`
+Contract baseline: accepted F08-T01 through F08-T09 API and UI slices
+
+Tasks:
+
+- Task ID: `F08-T10`
+  Agent/Thread: `Codex /root`
+  Status: `REWORK`
+  Depends on: `F08-T01 through F08-T09 DONE`
+  Scope: integrated restart/retry/idempotency, timezone, and browser E2E verification only; minimal in-scope repair only if a demonstrated defect requires it
+  Owned paths: `apps/{api,app,dashboard}/test/**`, existing Phase 08 test paths, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: local PostgreSQL rehearsal database and browser validation
+  Expected verification: focused restart/retry/idempotency/timezone APIs and local browser journey
+
+## آخرین batch — F08-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:20 +03:30`
+Completed at: `2026-09-05 11:25 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: F08-T02/T04/T05 APIs and generated client
+
+Tasks:
+
+- Task ID: `F08-T09`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T02, F08-T04, F08-T05, F08-T08 DONE`
+  Scope: dashboard health, notification, and published-content connection
+  Owned paths: `apps/dashboard/**`, `apps/api/src/modules/assessments/notifications/**`, `apps/api/test/notifications.integration.spec.ts`, `packages/api-client/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: dashboard Phase 08 API adapters, notification read contract, and generated client
+  Expected verification: dashboard typecheck, notification authorization integration, generated-client build, and targeted dashboard connection checks
+
+## آخرین batch — F08-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 11:00 +03:30`
+Completed at: `2026-09-05 11:15 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: F08-T02/T03/T04/T05 APIs and generated client
+
+Tasks:
+
+- Task ID: `F08-T08`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T02, F08-T03, F08-T04, F08-T05 DONE`
+  Scope: patient-app tracker, notification, mezaj, and published-content connection
+  Owned paths: `apps/app/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: patient-app Phase 08 API adapters and in-scope mock removal
+  Expected verification: app typecheck and targeted patient-app connection checks
+
+## آخرین batch — F08-B07
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 10:05 +03:30`
+Completed at: `2026-09-05 10:57 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: Phase 05 appointments, Phase 07 treatment tasks, and F08-T06 durable outbox
+
+Tasks:
+
+- Task ID: `F08-T07`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T06 DONE`
+  Scope: idempotent appointment and treatment reminder event creation and delivery
+  Owned paths: `apps/api/{src/modules/**,test/**}`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: reminder outbox consumer and existing schedule mutation hooks
+  Expected verification: repeat-safe reminder integration tests and worker retry test
+
+## آخرین batch — F08-B05
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 09:57 +03:30`
+Completed at: `2026-09-05 10:01 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Batch status: `DONE`
+Contract baseline: published-only patient content and metadata-only media policy
+
+Tasks:
+
+- Task ID: `F08-T05`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T04 DONE`
+  Scope: content publication lifecycle and media policy API
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/**,test/**}`, `packages/api-client/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: content schema and API contract
+  Expected verification: migration deploy, published-only authorization tests, Prisma/OpenAPI/client validation, and `git diff --check`
+
+## آخرین batch — F08-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 09:43 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Completed at: `2026-09-05 09:47 +03:30`
+Batch status: `DONE`
+Contract baseline: immutable completed assessment submission and version result snapshot
+
+Tasks:
+
+- Task ID: `F08-T03`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T02 DONE`
+  Scope: assessment-version-derived MezajResult persistence and patient read API
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/assessments/**,test/**}`, `packages/api-client/**`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: Prisma schema/migration, completed-assessment transaction and API contract
+  Expected verification: migration deploy, assessment-derived result persistence/read authorization tests, Prisma/OpenAPI/client validation, and `git diff --check`
+
+## آخرین batch — F08-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-05 09:33 +03:30`
+Phase: `Phase 08 — Follow-up, Health Tracking, Notifications & Content`
+Completed at: `2026-09-05 09:41 +03:30`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/health-observation-v1.md`
+
+Tasks:
+
+- Task ID: `F08-T02`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F08-T01 DONE`
+  Scope: health-observation persistence, tracker write/query, and dashboard health views
+  Owned paths: `apps/api/{prisma,schema/migrations,src/modules/**,test/**}`, `apps/dashboard/src/{features,app,data}/health*`, `plan/{STATUS.md,logs/phase-08.md,phases/08-FOLLOWUP-CONTENT.md}`, `specs/006-adopt-phase-08/**`
+  Shared/exclusive resource: Prisma schema/migration, health-observation API contract, PostgreSQL integration test
+  Expected verification: migration replay, real PostgreSQL write/query and authorization tests, dashboard connection checks, Prisma validation/generation, and `git diff --check`
 
 - فاز قبلی: `Phase 01 — Identity & Access` پس از Bugbot و Security Review مستقل بدون یافته باز تکمیل شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)
 - regression مسیر dev API که metadata تزریق وابستگی Nest را حذف می‌کرد در `F01-R01` اصلاح شد؛ شواهد: [`logs/phase-01.md`](logs/phase-01.md)

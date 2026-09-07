@@ -31,7 +31,7 @@ export const NAV: NavItem[] = [
   { href: "/discounts", label: "کدهای تخفیف", icon: Tag, group: "فروشگاه" },
   { href: "/revenue", label: "درآمد و گزارشات", icon: TrendingUp, group: "مالی" },
   { href: "/messages", label: "پیام‌ها", icon: MessageSquare, badge: "۳", group: "سیستم" },
-  { href: "/notifications", label: "اعلان‌ها", icon: Bell, badge: "۳", group: "سیستم" },
+  { href: "/notifications", label: "اعلان‌ها", icon: Bell, group: "سیستم" },
   { href: "/automation", label: "اتوماسیون", icon: Zap, group: "سیستم" },
   { href: "/content", label: "مدیریت محتوا", icon: Archive, group: "سیستم" },
   { href: "/settings", label: "تنظیمات", icon: Settings, group: "سیستم" },

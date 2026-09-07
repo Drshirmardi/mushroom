@@ -1,46 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Leaf, Moon, Sun, Wind } from "lucide-react";
+import { Leaf } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
-import { MEZAJ_TYPES } from "@/lib/data/mezaj";
+import { followUpErrorMessage, getMezajResult, type MezajResult } from "@/lib/follow-up-api";
 import { useScreenNavigation } from "@/lib/navigation";
 
+const displayValue = (item: unknown) => typeof item === "string" || typeof item === "number" ? String(item) : null;
+
 export default function MezajDetailPage() {
-  const router = useRouter();
-  const navigateScreen = useScreenNavigation();
-  const mezaj = MEZAJ_TYPES[3]; // sodavi
-  return (
-    <div>
-      <PageHeader title="مزاج شما" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        <div className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-3xl p-6 text-white text-center">
-          <div className="text-5xl mb-3">{mezaj.emoji}</div>
-          <h2 className="text-2xl font-black mb-1">مزاج {mezaj.name}</h2>
-          <p className="text-white/70 text-sm">{mezaj.desc}</p>
-          <div className="mt-4 bg-white/10 rounded-2xl p-3"><p className="text-xs text-white/80">تاریخ تشخیص: ۵ مرداد ۱۴۰۳ · دکتر شیرمردی</p></div>
-        </div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
-          <p className="text-sm font-bold text-foreground mb-3">ویژگی‌های مزاج سوداوی</p>
-          {["تفکر عمیق و تحلیل‌گری", "حافظه قوی و دقت بالا", "حساسیت عاطفی", "نیاز به برنامه‌ریزی منظم", "تأثیرپذیری از سرما و خشکی"].map((f, i) => (
-            <div key={i} className="flex items-center gap-2 py-2 border-b border-border last:border-0">
-              <div className="w-1.5 h-1.5 bg-slate-500 rounded-full" /><span className="text-sm text-foreground">{f}</span>
-            </div>
-          ))}
-        </div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4">
-          <p className="text-sm font-bold text-foreground mb-3">توصیه‌های درمانی برای مزاج سوداوی</p>
-          {[{ icon: Leaf, text: "مصرف غذاهای گرم و مرطوب مانند خورشت‌های سنتی" }, { icon: Sun, text: "ورزش منظم در محیط باز و آفتابی" }, { icon: Moon, text: "خواب کافی و منظم بین ۷ تا ۹ ساعت" }, { icon: Wind, text: "پرهیز از محیط‌های سرد و خشک" }].map((r, i) => {
-            const Icon = r.icon;
-            return <div key={i} className="flex items-start gap-3 py-2.5 border-b border-border last:border-0"><Icon size={16} className="text-primary mt-0.5 flex-shrink-0" /><span className="text-sm text-foreground">{r.text}</span></div>;
-          })}
-        </div>
-        <div className="bg-amber-50 rounded-2xl border border-amber-200 p-4">
-          <p className="text-xs font-bold text-amber-700 mb-2">نظر دکتر شیرمردی</p>
-          <p className="text-sm text-amber-800 leading-7">با توجه به مزاج سوداوی شما، برنامه درمانی بر اساس گرم کردن بدن و افزایش رطوبت طراحی شده است.</p>
-        </div>
-        <button onClick={() => navigateScreen("BookStep1", { doctorId: "d3" })} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20">مشاوره با دکتر طب سنتی</button>
-      </div>
-    </div>
-  );
+  const router = useRouter(); const navigateScreen = useScreenNavigation(); const { authentication } = useAuthSession(); const [result, setResult] = useState<MezajResult | null>(null); const [error, setError] = useState<string | null>(null);
+  const reload = () => { setResult(null); setError(null); void getMezajResult(authentication.accessToken).then(setResult, (reason: unknown) => setError(followUpErrorMessage(reason))); };
+  useEffect(reload, [authentication.accessToken]);
+  const entries = result ? Object.entries(result.resultBand).filter(([, item]) => displayValue(item) !== null) : [];
+  return <div><PageHeader title="مزاج شما" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{!result && !error && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت نتیجهٔ مزاج…</p>}{error && <div role="alert" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground"><p>{error}</p><button onClick={reload} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>}{result && <><div className="rounded-3xl bg-gradient-to-br from-slate-700 to-slate-900 p-6 text-center text-white"><Leaf className="mx-auto mb-3" size={42} /><h2 className="text-2xl font-black">نتیجهٔ ارزیابی مزاج</h2><p className="mt-2 text-sm text-white/70">بر پایهٔ ارزیابی تکمیل‌شدهٔ شما</p><div className="mt-4 rounded-2xl bg-white/10 p-3 text-xs text-white/80">تاریخ ارزیابی: {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(result.assessedAt))}</div></div><div className="rounded-2xl border border-border bg-white p-4"><p className="mb-3 text-sm font-bold text-foreground">خلاصهٔ نتیجه</p>{entries.length > 0 ? entries.map(([key, item]) => <div key={key} className="flex items-center justify-between gap-3 border-b border-border py-2 last:border-0"><span className="text-sm text-muted-foreground">{key}</span><span className="text-sm font-semibold text-foreground">{displayValue(item)}</span></div>) : <p className="text-sm text-muted-foreground">جزئیات قابل نمایش برای این نتیجه ثبت نشده است.</p>}</div></>}<button onClick={() => navigateScreen("BookStep1")} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white shadow-md shadow-primary/20">مشاوره با پزشک</button></div></div>;
 }

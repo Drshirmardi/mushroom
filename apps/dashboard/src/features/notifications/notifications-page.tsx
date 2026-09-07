@@ -1,44 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { Archive, Search, Trash2 } from "lucide-react";
-import { NOTIFS, NOTIF_ICON_FALLBACK, NOTIF_ICON_MAP } from "@/data/notifications";
+import { useEffect, useMemo, useState } from "react";
+import { Bell, BookOpen, Calendar, FileText, Search } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { dashboardPhaseEightError, listDashboardNotifications, type DashboardNotification } from "@/lib/phase-08-api";
+
+const ICONS: Record<DashboardNotification["category"], LucideIcon> = { REMINDER: Calendar, TREATMENT: FileText, CONTENT: BookOpen, SYSTEM: Bell };
 
 export function NotificationsPage() {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "unread" | "archived">("all");
-  const filtered = NOTIFS.filter(n => {
-    const ms = n.text.includes(search);
-    const mf = filter === "all" || (filter === "unread" && !n.read) || (filter === "archived" && n.read);
-    return ms && mf;
-  });
-  return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm"><Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="جستجو در اعلان‌ها..." className="w-full bg-card border border-border rounded-xl pr-8 pl-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20" /></div>
-        <div className="flex items-center gap-1 bg-card border border-border rounded-xl p-1">
-          {([["all", "همه"], ["unread", "خوانده‌نشده"], ["archived", "آرشیو"]] as const).map(([v, l]) => (
-            <button key={v} onClick={() => setFilter(v)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{l}</button>
-          ))}
-        </div>
-        <button className="text-xs text-primary font-semibold hover:underline mr-auto">همه خوانده‌شده</button>
-      </div>
-      <div className="space-y-2 max-w-2xl">
-        {filtered.map(n => {
-          const { icon: Icon, bg } = NOTIF_ICON_MAP[n.type] ?? NOTIF_ICON_FALLBACK;
-          return (
-            <div key={n.id} className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${!n.read ? "bg-card border-primary/20 shadow-sm" : "bg-card border-border"}`}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${bg}`}><Icon size={18} /></div>
-              <div className="flex-1 min-w-0"><p className={`text-sm ${!n.read ? "font-semibold" : ""}`}>{n.text}</p><p className="text-xs text-muted-foreground mt-1">{n.time}</p></div>
-              <div className="flex gap-1 flex-shrink-0">
-                <button className="p-1.5 hover:bg-secondary rounded-lg"><Archive size={13} className="text-muted-foreground" /></button>
-                <button className="p-1.5 hover:bg-red-50 rounded-lg"><Trash2 size={13} className="text-muted-foreground" /></button>
-              </div>
-              {!n.read && <div className="w-2 h-2 bg-primary rounded-full mt-1 flex-shrink-0" />}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  const { authentication } = useDashboardSession(); const [items, setItems] = useState<DashboardNotification[] | null>(null); const [error, setError] = useState<string | null>(null); const [search, setSearch] = useState(""); const [filter, setFilter] = useState<"all" | "unread" | "read">("all"); const [requestVersion, setRequestVersion] = useState(0); const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const requestKey = `${authentication.accessToken}:${requestVersion}`;
+  const reload = () => setRequestVersion((value) => value + 1);
+  useEffect(() => { void listDashboardNotifications(authentication.accessToken).then((value) => { setItems(value.items); setError(null); setLoadedKey(requestKey); }, (reason: unknown) => { setItems(null); setError(dashboardPhaseEightError(reason, "اعلان‌های کلینیک دریافت نشد.")); setLoadedKey(requestKey); }); }, [authentication.accessToken, requestKey]);
+  const isCurrent = loadedKey === requestKey;
+  const filtered = useMemo(() => (items ?? []).filter((item) => (filter === "all" || (filter === "unread" ? !item.readAt : Boolean(item.readAt))) && `${item.title} ${item.body}`.includes(search)), [filter, items, search]);
+  return <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-7"><div className="flex items-center gap-3"><div className="relative max-w-sm flex-1"><Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="جستجو در اعلان‌ها..." className="w-full rounded-xl border border-border bg-card py-2.5 pl-4 pr-8 text-sm outline-none focus:ring-2 focus:ring-primary/20" /></div><div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">{([['all', 'همه'], ['unread', 'خوانده‌نشده'], ['read', 'خوانده‌شده']] as const).map(([value, label]) => <button key={value} onClick={() => setFilter(value)} className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${filter === value ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{label}</button>)}</div><button onClick={reload} className="mr-auto text-xs font-semibold text-primary hover:underline">به‌روزرسانی</button></div>{(!isCurrent || (!items && !error)) && <p role="status" className="max-w-2xl rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">در حال دریافت اعلان‌های کلینیک…</p>}{isCurrent && error && <div role="alert" className="max-w-2xl rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"><p>{error}</p><button onClick={reload} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>}{isCurrent && items && filtered.length === 0 && <p className="max-w-2xl rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">اعلانی با این شرایط وجود ندارد.</p>}<div className="max-w-2xl space-y-2">{isCurrent && filtered.map((item) => { const Icon = ICONS[item.category]; return <article key={item.id} className={`flex items-start gap-4 rounded-2xl border p-4 ${item.readAt ? "border-border bg-card" : "border-primary/20 bg-card shadow-sm"}`}><div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon size={18} /></div><div className="min-w-0 flex-1"><p className={`text-sm ${item.readAt ? "" : "font-semibold"}`}>{item.title}</p><p className="mt-1 text-xs text-muted-foreground">{item.body}</p><p className="mt-1 text-xs text-muted-foreground">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(item.createdAt))}</p></div>{!item.readAt && <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />}</article>; })}</div></div>;
 }

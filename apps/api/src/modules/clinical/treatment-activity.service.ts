@@ -7,6 +7,7 @@ import { PrismaService } from '../../database/prisma/prisma.service';
 import type { CreateTreatmentTaskDto, RecordMedicationAdherenceDto, RescheduleTreatmentTaskDto } from './treatment-activity.dto';
 import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
+import { ReminderService } from '../outbox/reminder.service';
 
 type ClinicalActor = ClinicalAuditContext & { roles: RoleCode[] };
 type Tx = Prisma.TransactionClient;
@@ -27,6 +28,7 @@ export class TreatmentActivityService {
     private readonly access: ClinicalResourceAccessService,
     private readonly permissions: ClinicalPermissionService,
     private readonly audit: ClinicalAccessAuditService,
+    private readonly reminders: ReminderService,
   ) {}
 
   async listAdmin(patientId: string, planId: string, actor: ClinicalActor) {
@@ -46,6 +48,7 @@ export class TreatmentActivityService {
       const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
       if (plan.state !== TreatmentPlanState.ACTIVE) throw inactivePlan();
       const task = await tx.treatmentTask.create({ data: { treatmentPlanId: plan.id, kind: input.kind, scheduledFor } });
+      const recipient = await tx.patientProfile.findUnique({ where: { id: patient.id }, select: { userId: true } }); if (recipient) await this.reminders.treatment(tx, { id: task.id, clinicId: patient.clinicId, patientId: patient.id, recipientId: recipient.userId, scheduledFor: task.scheduledFor });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'TREATMENT_TASK', resourceId: task.id, metadata: { treatmentPlanId: plan.id, kind: task.kind } }, actor, tx);
       return this.taskResponse(task);
     });
@@ -60,6 +63,7 @@ export class TreatmentActivityService {
       const task = await this.task(tx, taskId, plan.id);
       if (task.state !== TreatmentTaskState.SCHEDULED) throw taskStateInvalid();
       const updated = await tx.treatmentTask.update({ where: { id: task.id }, data: { scheduledFor } });
+      const recipient = await tx.patientProfile.findUnique({ where: { id: patient.id }, select: { userId: true } }); if (recipient) { if (task.scheduledFor.getTime() !== updated.scheduledFor.getTime()) await this.reminders.cancelTreatmentTask(tx, updated.id, 'Treatment task rescheduled'); await this.reminders.treatment(tx, { id: updated.id, clinicId: patient.clinicId, patientId: patient.id, recipientId: recipient.userId, scheduledFor: updated.scheduledFor }); }
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'TREATMENT_TASK', resourceId: task.id, metadata: { treatmentPlanId: plan.id, action: 'RESCHEDULE' } }, actor, tx);
       return this.taskResponse(updated);
     });
@@ -72,6 +76,7 @@ export class TreatmentActivityService {
       const task = await this.task(tx, taskId, plan.id);
       if (task.state !== TreatmentTaskState.SCHEDULED) throw taskStateInvalid();
       const updated = await tx.treatmentTask.update({ where: { id: task.id }, data: { state: TreatmentTaskState.CANCELLED } });
+      await this.reminders.cancelTreatmentTask(tx, updated.id, 'Treatment task cancelled');
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'TREATMENT_TASK', resourceId: task.id, metadata: { treatmentPlanId: plan.id, action: 'CANCEL' } }, actor, tx);
       return this.taskResponse(updated);
     });
@@ -100,6 +105,7 @@ export class TreatmentActivityService {
         if (current.state === TreatmentTaskState.COMPLETED) return this.taskResponse(current);
         throw taskStateInvalid();
       }
+      await this.reminders.cancelTreatmentTask(tx, current.id, 'Treatment task completed');
       await tx.treatmentProgressEvent.create({ data: { treatmentPlanId: current.treatmentPlanId, treatmentTaskId: current.id, eventType: 'TASK_COMPLETED', occurredAt: current.completedAt ?? completedAt, metadata: { source: 'TREATMENT_TASK' } } });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'PATIENT_TREATMENT_TASK', resourceId: current.id, metadata: { action: 'COMPLETE', treatmentPlanId: current.treatmentPlanId } }, context, tx);
       return this.taskResponse(current);

@@ -4,7 +4,7 @@ import type { AuthenticatedRequest } from '../../../common/auth/access-token.gua
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
-import { PatientAssessmentListResponseDto, PatientAssessmentSubmissionResponseDto, SaveAssessmentAnswersDto } from './patient-assessments.dto';
+import { MezajResultResponseDto, PatientAssessmentListResponseDto, PatientAssessmentSubmissionResponseDto, SaveAssessmentAnswersDto } from './patient-assessments.dto';
 import { PatientAssessmentsService } from './patient-assessments.service';
 
 @ApiTags('Patient Assessments') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT')
@@ -23,5 +23,7 @@ export class PatientAssessmentsController {
   submit(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Headers('idempotency-key') idempotencyKey: string | undefined, @Req() request: AuthenticatedRequest) { return this.assessments.submit(id, idempotencyKey, request.auth.userId, this.context(request)); }
   @Get('assessment-submissions/:id/result') @RequirePermissions(PERMISSIONS.ASSESSMENTS_READ_SELF) @ApiOperation({ operationId: 'patientAssessmentSubmissionResult', summary: 'Get an immutable assessment result' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: PatientAssessmentSubmissionResponseDto })
   result(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.assessments.result(id, request.auth.userId, this.context(request)); }
+  @Get('patients/me/mezaj') @RequirePermissions(PERMISSIONS.ASSESSMENTS_READ_SELF) @ApiOperation({ operationId: 'patientMezajResultGet', summary: 'Get the latest immutable Mezaj result derived from a completed versioned assessment' }) @ApiOkResponse({ type: MezajResultResponseDto })
+  mezaj(@Req() request: AuthenticatedRequest) { return this.assessments.mezaj(request.auth.userId, this.context(request)); }
   private context(request: AuthenticatedRequest) { return { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip }; }
 }

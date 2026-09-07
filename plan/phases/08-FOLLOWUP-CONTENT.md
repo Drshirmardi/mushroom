@@ -1,6 +1,8 @@
 # Phase 08 — Follow-up, Health Tracking, Notifications & Content
 
 - وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)`
+- migration-history remediation: `ACCEPTED` — unreleased Phase 08 migrations were coherently rebaselined from the Phase 07 schema; clean replay and preserved-data reconstruction passed.
 - Milestone: `C — هسته درمان`
 - پیش‌نیاز: `Phase 05 DONE`؛ reminder درمان به `Phase 07`
 - خروجی اصلی: پیگیری سلامت، اعلان داخل اپ و محتوای آموزشی واقعی هستند.
@@ -20,17 +22,17 @@
 
 ## Taskها
 
-- [ ] `F08-T01` — metric/unit/range و query contract health observations
-- [ ] `F08-T02` — write/query tracker و dashboard health views
-- [ ] `F08-T03` — mezaj result از assessment versioned
-- [ ] `F08-T04` — notification/preference و in-app read state
-- [ ] `F08-T05` — content publication lifecycle و media policy
-- [ ] `F08-T06` — ADR و bootstrap outbox/worker فقط برای reminder واقعی
-- [ ] `F08-T07` — appointment و treatment reminders idempotent
-- [ ] `F08-T08` — اتصال app tracker/notification/article
-- [ ] `F08-T09` — اتصال dashboard health/notification/content
-- [ ] `F08-T10` — restart/retry/idempotency، timezone و browser E2E
-- [ ] `F08-T11` — حذف mock scope و review Milestone C
+- [x] `F08-T01` — metric/unit/range و query contract health observations
+- [x] `F08-T02` — write/query tracker و dashboard health views
+- [x] `F08-T03` — mezaj result از assessment versioned
+- [x] `F08-T04` — notification/preference و in-app read state
+- [x] `F08-T05` — content publication lifecycle و media policy
+- [x] `F08-T06` — ADR و bootstrap outbox/worker فقط برای reminder واقعی
+- [x] `F08-T07` — appointment و treatment reminders idempotent
+- [x] `F08-T08` — اتصال app tracker/notification/article
+- [x] `F08-T09` — اتصال dashboard health/notification/content
+- [x] `F08-T10` — restart/retry/idempotency، timezone و browser E2E — stale-claim recovery rework accepted
+- [x] `F08-T11` — حذف mock scope و review Milestone C
 
 ## معیار خروج
 

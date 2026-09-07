@@ -1,39 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Bookmark, ChevronLeft, Clock, Share2 } from "lucide-react";
+import { Bookmark, ChevronLeft, Share2 } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { followUpErrorMessage, getPatientArticle, type PatientArticle } from "@/lib/follow-up-api";
 
 export default function ArticleDetailPage() {
-  const router = useRouter();
-  const params = useParams<{ title: string }>();
-  const title = params?.title || "فواید آکوپانکچر برای کاهش استرس و اضطراب";
-  const [saved, setSaved] = useState(false);
-  return (
-    <div>
-      <div className="relative">
-        <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=390&h=220&fit=crop&auto=format" alt="مقاله" className="w-full h-52 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <div className="absolute top-3 right-4"><button onClick={() => router.back()} className="w-9 h-9 bg-white/90 rounded-xl flex items-center justify-center"><ChevronLeft size={20} style={{ transform: "rotate(180deg)" }} /></button></div>
-        <div className="absolute bottom-3 left-4 flex gap-2">
-          <button onClick={() => setSaved(s => !s)} className={`w-9 h-9 rounded-xl flex items-center justify-center ${saved ? "bg-primary text-white" : "bg-white/90"}`}><Bookmark size={18} className={saved ? "fill-white" : ""} /></button>
-          <button className="w-9 h-9 bg-white/90 rounded-xl flex items-center justify-center"><Share2 size={18} /></button>
-        </div>
-      </div>
-      <div className="px-4 py-5 space-y-4 pb-8">
-        <div className="flex items-center gap-2"><span className="bg-secondary text-primary text-xs font-bold px-3 py-1 rounded-full">درمان</span><span className="text-xs text-muted-foreground flex items-center gap-1"><Clock size={11} />۵ دقیقه مطالعه</span></div>
-        <h1 className="text-xl font-bold text-foreground leading-relaxed">{title}</h1>
-        <div className="flex items-center gap-3 py-3 border-y border-border">
-          <div className="w-10 h-10 rounded-full overflow-hidden"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=80&h=80&fit=crop" alt="دکتر" className="w-full h-full object-cover" /></div>
-          <div><p className="text-sm font-bold text-foreground">دکتر سید ابوالفتح شیرمردی</p><p className="text-xs text-muted-foreground">متخصص طب سنتی</p></div>
-          <span className="mr-auto text-xs text-muted-foreground">۱۰ مرداد</span>
-        </div>
-        {["آکوپانکچر یکی از قدیمی‌ترین روش‌های درمانی در طب سنتی چین است که قرن‌هاست برای کاهش درد و استرس استفاده می‌شود. این روش درمانی بر اساس نظریه جریان انرژی «چی» در بدن استوار است.",
-          "تحقیقات علمی نشان داده‌اند که آکوپانکچر می‌تواند سطح کورتیزول را کاهش دهد و سیستم عصبی پاراسمپاتیک را فعال کند.",
-          "بیماران پس از جلسات منظم، کیفیت خواب بهتر، اضطراب کمتر و رضایت بیشتر از زندگی گزارش می‌دهند."].map((p, i) => (
-            <p key={i} className="text-sm text-foreground/80 leading-8">{p}</p>
-          ))}
-      </div>
-    </div>
-  );
+  const router = useRouter(); const params = useParams<{ title: string }>(); const { authentication } = useAuthSession(); const [item, setItem] = useState<PatientArticle | null>(null); const [error, setError] = useState<string | null>(null); const [saved, setSaved] = useState(false); const slug = params?.title;
+  const reload = () => { if (!slug) return; setItem(null); setError(null); void getPatientArticle(authentication.accessToken, slug).then(setItem, (reason: unknown) => setError(followUpErrorMessage(reason, "مقاله در دسترس نیست."))); };
+  useEffect(reload, [authentication.accessToken, slug]);
+  if (!item && !error) return <p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت مقاله…</p>;
+  if (error) return <div className="m-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"><p>{error}</p><button onClick={reload} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>;
+  if (!item) return null;
+  return <div><div className="relative h-40 bg-gradient-to-br from-primary/20 to-secondary"><div className="absolute top-3 right-4"><button onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90"><ChevronLeft size={20} style={{ transform: "rotate(180deg)" }} /></button></div><div className="absolute bottom-3 left-4 flex gap-2"><button onClick={() => setSaved((value) => !value)} className={`flex h-9 w-9 items-center justify-center rounded-xl ${saved ? "bg-primary text-white" : "bg-white/90"}`}><Bookmark size={18} className={saved ? "fill-white" : ""} /></button><button className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90"><Share2 size={18} /></button></div></div><article className="space-y-4 px-4 py-5 pb-8"><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-primary">{item.category.name}</span><h1 className="text-xl font-bold leading-relaxed text-foreground">{item.title}</h1>{item.summary && <p className="text-sm leading-8 text-muted-foreground">{item.summary}</p>}<div className="whitespace-pre-wrap border-t border-border pt-4 text-sm leading-8 text-foreground/80">{item.body}</div></article></div>;
 }

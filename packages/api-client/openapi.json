@@ -2622,6 +2622,33 @@
         ]
       }
     },
+    "/v1/patients/me/mezaj": {
+      "get": {
+        "operationId": "patientMezajResultGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MezajResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the latest immutable Mezaj result derived from a completed versioned assessment",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
     "/v1/patients/me/booking-eligibility": {
       "get": {
         "operationId": "patientBookingEligibilityGet",
@@ -7686,6 +7713,626 @@
           "Patient treatment progress"
         ]
       }
+    },
+    "/v1/patients/me/notifications": {
+      "get": {
+        "operationId": "patientNotificationsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/v1/patients/me/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_read",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/v1/patients/me/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_all",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/v1/patients/me/notifications/preferences": {
+      "get": {
+        "operationId": "NotificationsController_preferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "patch": {
+        "operationId": "NotificationsController_preference",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/v1/admin/notifications": {
+      "get": {
+        "operationId": "adminNotificationsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/v1/patients/me/health-observations": {
+      "post": {
+        "operationId": "patientHealthObservationCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHealthObservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthObservationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Record one permitted health observation",
+        "tags": [
+          "Health observations"
+        ]
+      },
+      "get": {
+        "operationId": "patientHealthObservationsList",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "metric",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAIN",
+                "MOOD",
+                "SLEEP_HOURS",
+                "STRESS",
+                "ENERGY",
+                "WEIGHT"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthObservationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List own health observations",
+        "tags": [
+          "Health observations"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/health-observations": {
+      "get": {
+        "operationId": "adminHealthObservationsList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "metric",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAIN",
+                "MOOD",
+                "SLEEP_HOURS",
+                "STRESS",
+                "ENERGY",
+                "WEIGHT"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthObservationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List authorized patient health observations",
+        "tags": [
+          "Health observations"
+        ]
+      }
+    },
+    "/v1/patients/me/articles": {
+      "get": {
+        "operationId": "ContentController_patientArticles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/patients/me/articles/{slug}": {
+      "get": {
+        "operationId": "ContentController_patientArticle",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/patients/me/banners": {
+      "get": {
+        "operationId": "ContentController_patientBanners",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/categories": {
+      "get": {
+        "operationId": "ContentController_categories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      },
+      "post": {
+        "operationId": "ContentController_createCategory",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/articles": {
+      "get": {
+        "operationId": "ContentController_articles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      },
+      "post": {
+        "operationId": "ContentController_createArticle",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/articles/{id}": {
+      "patch": {
+        "operationId": "ContentController_updateArticle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/banners": {
+      "get": {
+        "operationId": "ContentController_banners",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      },
+      "post": {
+        "operationId": "ContentController_createBanner",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBannerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/banners/{id}": {
+      "patch": {
+        "operationId": "ContentController_updateBanner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBannerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
     }
   },
   "info": {
@@ -9523,6 +10170,38 @@
         },
         "required": [
           "answers"
+        ]
+      },
+      "MezajResultResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentSubmissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultBand": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "assessedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "assessmentSubmissionId",
+          "resultBand",
+          "assessedAt"
         ]
       },
       "PatientBookingEligibilityResponseDto": {
@@ -13266,6 +13945,258 @@
           "totalTasks",
           "timeline"
         ]
+      },
+      "PreferenceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateHealthObservationDto": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "PAIN",
+              "MOOD",
+              "SLEEP_HOURS",
+              "STRESS",
+              "ENERGY",
+              "WEIGHT"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "metric",
+          "value",
+          "observedAt"
+        ]
+      },
+      "HealthObservationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "PAIN",
+              "MOOD",
+              "SLEEP_HOURS",
+              "STRESS",
+              "ENERGY",
+              "WEIGHT"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "SCORE_10",
+              "SCORE_5",
+              "HOURS",
+              "KILOGRAMS"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "observedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "metric",
+          "unit",
+          "value",
+          "observedAt",
+          "createdAt"
+        ]
+      },
+      "HealthObservationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HealthObservationResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "MediaDto": {
+        "type": "object",
+        "properties": {
+          "objectKey": {
+            "type": "string",
+            "example": "content/7c47f4af-3f20-4402-bb01-e6193cf79445/cover.webp"
+          },
+          "contentType": {
+            "type": "string",
+            "example": "image/webp"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "example": 245000
+          }
+        },
+        "required": [
+          "objectKey",
+          "contentType",
+          "sizeBytes"
+        ]
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "publicationStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "cover": {
+            "$ref": "#/components/schemas/MediaDto"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "summary",
+          "body",
+          "categoryId"
+        ]
+      },
+      "UpdateArticleDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "publicationStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "cover": {
+            "$ref": "#/components/schemas/MediaDto"
+          }
+        }
+      },
+      "CreateBannerDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "destinationUrl": {
+            "type": "string"
+          },
+          "publicationStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "media": {
+            "$ref": "#/components/schemas/MediaDto"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "UpdateBannerDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "destinationUrl": {
+            "type": "string"
+          },
+          "publicationStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "media": {
+            "$ref": "#/components/schemas/MediaDto"
+          }
+        }
       }
     }
   }

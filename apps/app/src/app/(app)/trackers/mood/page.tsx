@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Line,
@@ -10,7 +10,8 @@ import {
   XAxis,
 } from "recharts";
 import { PageHeader } from "@/components/shared/page-header";
-import { moodData } from "@/lib/data/charts";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { createHealthObservation, followUpErrorMessage, listHealthObservations, type HealthObservation } from "@/lib/follow-up-api";
 import { toP } from "@/lib/format";
 
 const MOODS = [
@@ -23,10 +24,22 @@ const MOODS = [
 
 export default function MoodTrackerPage() {
   const router = useRouter();
+  const { authentication } = useAuthSession();
   const [selected, setSelected] = useState(3);
   const [sleep, setSleep] = useState(7);
   const [stress, setStress] = useState(4);
   const [energy, setEnergy] = useState(6);
+  const [history, setHistory] = useState<HealthObservation[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const chartData = useMemo(() => {
+    const days = new Map<string, { day: string; mood?: number; sleep?: number; energy?: number }>();
+    (history ?? []).slice().reverse().forEach((item) => { const key = new Date(item.observedAt).toLocaleDateString("en-CA"); const day = days.get(key) ?? { day: new Intl.DateTimeFormat("fa-IR", { weekday: "short" }).format(new Date(item.observedAt)) }; if (item.metric === "MOOD") day.mood = item.value; if (item.metric === "SLEEP_HOURS") day.sleep = item.value; if (item.metric === "ENERGY") day.energy = item.value; days.set(key, day); });
+    return [...days.values()].slice(-7);
+  }, [history]);
+  const reload = () => { setHistory(null); setError(null); void listHealthObservations(authentication.accessToken).then((value) => setHistory(value.items.filter((item) => ["MOOD", "SLEEP_HOURS", "STRESS", "ENERGY"].includes(item.metric))), (reason: unknown) => setError(followUpErrorMessage(reason))); };
+  useEffect(reload, [authentication.accessToken]);
+  const save = async () => { setSaving(true); setError(null); const observedAt = new Date().toISOString(); try { const saved = await Promise.all([createHealthObservation(authentication.accessToken, { metric: "MOOD", value: selected, observedAt }), createHealthObservation(authentication.accessToken, { metric: "SLEEP_HOURS", value: sleep, observedAt }), createHealthObservation(authentication.accessToken, { metric: "STRESS", value: stress, observedAt }), createHealthObservation(authentication.accessToken, { metric: "ENERGY", value: energy, observedAt })]); setHistory((current) => [...saved, ...(current ?? [])]); } catch (reason) { setError(followUpErrorMessage(reason, "ثبت حال امروز ممکن نشد؛ دوباره تلاش کنید.")); } finally { setSaving(false); } };
   return (
     <div>
       <PageHeader title="ردیابی خلق‌وخو" onBack={() => router.back()} />
@@ -49,18 +62,21 @@ export default function MoodTrackerPage() {
           </div>
         ))}
         <div className="bg-white rounded-3xl border border-border shadow-sm p-5">
-          <p className="text-sm font-bold text-foreground mb-3">روند هفتگی</p>
-          <ResponsiveContainer width="100%" height={110}>
-            <LineChart data={moodData}>
+          <div className="mb-3 flex items-center justify-between"><p className="text-sm font-bold text-foreground">روند ثبت‌شده</p><button onClick={reload} className="text-xs font-semibold text-primary">به‌روزرسانی</button></div>
+          {!history && !error && <p className="py-8 text-center text-sm text-muted-foreground">در حال دریافت روند…</p>}
+          {error && <p role="alert" className="py-3 text-center text-sm text-red-700">{error}</p>}
+          {history?.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">هنوز موردی ثبت نشده است.</p>}
+          {chartData.length > 0 && <ResponsiveContainer width="100%" height={110}>
+            <LineChart data={chartData}>
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "Vazirmatn" }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ fontFamily: "Vazirmatn", fontSize: 11, borderRadius: 12 }} />
               <Line type="monotone" dataKey="mood" stroke="#1b5e3b" strokeWidth={2} dot={false} name="خلق" />
               <Line type="monotone" dataKey="sleep" stroke="#3b82f6" strokeWidth={2} dot={false} name="خواب" />
               <Line type="monotone" dataKey="energy" stroke="#f59e0b" strokeWidth={2} dot={false} name="انرژی" />
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer>}
         </div>
-        <button onClick={() => router.back()} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm active:scale-[0.98] transition-transform">ثبت حال امروز</button>
+        <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-60">{saving ? "در حال ثبت…" : "ثبت حال امروز"}</button>
       </div>
     </div>
   );
