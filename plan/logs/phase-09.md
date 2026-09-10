@@ -55,3 +55,53 @@ Known limitations:
 Next batch:
 
 - `F09-B02 / F09-T02` is eligible after this task commit. It is not claimed by this batch.
+
+## F09-T02 — commerce/payment persistence foundation
+
+Task ID: F09-T02
+Completed at: 2026-09-10 06:20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F09-B02
+Status: DONE — review gate passed
+
+Implementation candidate:
+
+- one additive Phase 09 Prisma migration for catalog/category/product/SKU, TOMAN price/tax snapshots,
+  inventory/ledger/reservations, cart/wishlist/address, discount foundation, immutable order snapshots,
+  provider config/revision/credential-version, payment attempts/payments/refunds, FK/unique/check constraints
+  and immutability/link triggers;
+- non-sensitive idempotent catalog/inventory development seed only; no provider config, credential or payment
+  seed data;
+- PostgreSQL migration test coverage for empty replay, idempotent seed, Phase 08→09 upgrade and required
+  money/stock/provider/default/config-revision/providerOrderId/duplicate-payment constraints.
+
+Checks completed:
+
+- `prisma validate` → PASS.
+- `prisma generate` → PASS; generated client has no tracked diff.
+- `tsc -p tsconfig.test.json --noEmit` → PASS.
+- Manual migration SQL review → PASS for bigint TOMAN-only commerce money, no medical/appointment IRR changes,
+  `UNCONFIRMED` provider-unit gate, disabled/default go-live check, immutable snapshots/revisions, encrypted-only
+  credential columns and relevant FK/unique/check constraints.
+- Plaintext-provider/PII/`TOMAN × 10` scan over task-owned schema, seed and migration test → PASS; the only
+  marker is the frozen-contract evidence for the prohibited conversion. No Sadad sample/PDF path was read,
+  staged or modified.
+- `git diff --check` → PASS.
+
+Database and review gate:
+
+- PostgreSQL 16.14 repository connection health check → PASS; migration ledger was at final Phase 08 before the
+  isolated suite began.
+- `test/migrations.integration.spec.ts` with dotenv-loaded repository configuration → PASS (3/3): fresh empty
+  migration replay, migration deploy plus seed twice, all Phase 09 money/stock/default/config-revision/
+  providerOrderId/duplicate-payment constraints, immutable snapshots/revisions, and final Phase 08→09 upgrade.
+- Shadow-database `prisma migrate diff --from-migrations --to-schema` → PASS; zero schema/migration drift.
+- Final `prisma validate`, `prisma generate`, TypeScript migration-test compile and `git diff --check` → PASS.
+- Final main-agent scope review → PASS: only the claimed Prisma schema/migration/seed/test and Phase 09 status/
+  evidence/checklist paths are included; no API/UI/OpenAPI/client, real credential, Sadad network activity, or
+  confidential sample/PDF path is included.
+
+Result:
+
+- `F09-T02` is accepted and ready for the isolated task commit `feat(F09-T02): add commerce payment persistence`.
+- Next eligible batch after that commit: `F09-B03 / F09-T03`; it is not claimed or started here.

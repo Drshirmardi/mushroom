@@ -115,7 +115,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - خروجی: قرارداد `FROZEN`، state/error/endpoint matrix، ADR traceability و policyهای قطعی
   - پذیرش: هیچ money unit، provider capability یا lifecycle مبهم باقی نماند؛ unknownهای خارجی فقط به‌صورت
     صریح `SADAD_GO_LIVE_BLOCKED` هستند و provider تأییدنشده enabled/default نمی‌شود.
-- [ ] `F09-T02` — migration catalog/inventory/cart/address/order/payment و provider config revision
+- [x] `F09-T02` — migration catalog/inventory/cart/address/order/payment و provider config revision
   - Depends on: `F09-T01 DONE`
   - خروجی: schema/migration/seed برای commerce، config/credential revision، attempt/payment/refund
   - پذیرش: fresh replay، constraintهای money/idempotency/uniqueness و عدم ذخیره secret خام پاس شوند.

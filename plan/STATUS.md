@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-10 04:36 +03:30`
+- آخرین به‌رورسانی: `2026-09-10 06:20 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -42,7 +42,7 @@
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
-- [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
+- [ ] `Phase 09` — Commerce, Inventory & Payments — `IN_PROGRESS`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
@@ -50,10 +50,33 @@
 
 ## handoff فاز فعال
 
-`F09-B01/F09-T01` is `DONE`. The commerce/payment-provider contract is frozen with tax-inclusive TOMAN,
-receipt-only, pickup/courier snapshots, audited manual refund and credential crypto-shredding policies. Sadad
-remains `UNCONFIRMED`: its acceptance facts are `SADAD_GO_LIVE_BLOCKED`, so it cannot be enabled/default or
-contacted. Evidence: [`logs/phase-09.md`](logs/phase-09.md). `F09-B02/F09-T02` is eligible but unclaimed.
+`F09-B02/F09-T02` is `DONE`: the isolated real-PostgreSQL suite passed empty replay, seed idempotency,
+constraint coverage and final Phase 08→09 upgrade; schema/migration drift is zero. Sadad remains
+`UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`; no provider enablement or real call occurred. The next eligible
+batch is `F09-B03 / F09-T03`, but it is not claimed by this task.
+
+## آخرین batch — F09-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 04:50 +03:30`
+Phase: `Phase 09 — Commerce, Inventory & Payments`
+Completed at: `2026-09-10 06:20 +03:30`
+Batch status: `DONE`
+Contract baseline: accepted `F09-T01` commit `750d53f`; Phase 08 final schema and migration ledger
+
+Tasks:
+
+- Task ID: `F09-T02`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F09-T01 DONE` — verified at `750d53f`
+  Scope: persist the frozen commerce/catalog/SKU/inventory/cart/wishlist/address/discount/order/payment-provider/payment/refund foundation, one coherent Phase 09 migration, non-sensitive idempotent seed and PostgreSQL-backed migration/constraint coverage only.
+  Owned paths: `apps/api/{prisma/schema.prisma,prisma/seed.mjs,prisma/migrations/20260910050000_phase_09_commerce_foundation/migration.sql,test/migrations.integration.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, `specs/007-adopt-phase-09/**`
+  Shared/exclusive resource: Prisma schema, Phase 09 migration ledger, seed and local PostgreSQL migration-test databases
+  Do not change: `apps/api/src/**`, `apps/{app,dashboard}/**`, `packages/**`, OpenAPI/generated client, prior migrations, payment-provider implementation, credentials, network configuration, or the confidential Sadad PDF/.NET sample directory.
+  Verification: Prisma validate/generate, TypeScript migration-test compile, manual SQL/constraint review, credential/plaintext and TOMAN×10 scan, `git diff --check`, a real PostgreSQL empty replay with seed twice, Phase 08→09 upgrade and a shadow-database migration/schema drift check all passed.
+  Review gate: `PASS` — only owned paths changed; no credential, provider call, Sadad sample/PDF path, API/UI or generated output is included.
+  Next eligible batch: `F09-B03 / F09-T03` — do not claim or start in this task.
 
 ## آخرین batch — F09-B01
 

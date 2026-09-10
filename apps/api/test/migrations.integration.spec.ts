@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { Client } from 'pg';
@@ -36,9 +36,11 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
 
   afterAll(async () => {
     if (!adminClient) return;
-
-    await adminClient.query(`DROP DATABASE IF EXISTS "${databaseName}"`);
-    await adminClient.end();
+    try {
+      await adminClient.query(`DROP DATABASE IF EXISTS "${databaseName}"`);
+    } finally {
+      await adminClient.end().catch(() => undefined);
+    }
   });
 
   it('applies every migration to a newly created database', async () => {
@@ -983,6 +985,160 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         '+989131234567',
         '+989141112233',
       ]);
+
+      const commerceTables = await smokeClient.query<{ table_name: string }>(`
+        SELECT table_name FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = ANY($1::text[])
+        ORDER BY table_name
+      `, [[
+        'commerce_categories', 'commerce_products', 'commerce_skus', 'inventory_items',
+        'inventory_ledger_entries', 'inventory_reservations', 'commerce_carts',
+        'commerce_cart_items', 'wishlist_items', 'commerce_addresses', 'commerce_discounts',
+        'commerce_orders', 'commerce_order_lines', 'commerce_order_snapshots',
+        'payment_provider_configs', 'payment_provider_config_revisions',
+        'payment_provider_credential_versions', 'payment_attempts', 'payments', 'refunds',
+      ]]);
+      expect(commerceTables.rows).toHaveLength(20);
+
+      const commerceProduct = await smokeClient.query<{ sku_id: string; inventory_id: string }>(`
+        SELECT commerce_skus.id AS sku_id, inventory_items.id AS inventory_id
+        FROM commerce_skus INNER JOIN inventory_items ON inventory_items.sku_id = commerce_skus.id
+        WHERE commerce_skus.code = 'SAMPLE-COMMERCE-001'
+      `);
+      expect(commerceProduct.rows).toHaveLength(1);
+
+      await expect(smokeClient.query(`
+        UPDATE inventory_items SET reserved_quantity = on_hand_quantity + 1
+        WHERE id = $1
+      `, [commerceProduct.rows[0]?.inventory_id])).rejects.toMatchObject({ code: '23514' });
+
+      const commerceOrder = await smokeClient.query<{ id: string }>(`
+        INSERT INTO commerce_orders (
+          id, clinic_id, patient_id, order_number, idempotency_key, shipping_method,
+          subtotal_amount_toman, tax_amount_toman, discount_amount_toman,
+          shipping_amount_toman, total_amount_toman, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, id, 900000001, 'phase-nine-order-1', 'PICKUP',
+          125000, 0, 0, 0, 125000, CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1 RETURNING id
+      `, [patientId]);
+      const commerceOrderId = commerceOrder.rows[0]?.id;
+      expect(commerceOrderId).toBeDefined();
+
+      await smokeClient.query(`
+        INSERT INTO commerce_order_lines (
+          id, order_id, sku_id, position, sku_code_snapshot, product_title_snapshot,
+          quantity, unit_price_toman, unit_tax_toman, discount_amount_toman, line_total_toman
+        ) VALUES (gen_random_uuid(), $1, $2, 1, 'SAMPLE-COMMERCE-001', 'محصول نمونهٔ فروشگاه', 1, 125000, 0, 0, 125000)
+      `, [commerceOrderId, commerceProduct.rows[0]?.sku_id]);
+      const snapshot = await smokeClient.query<{ id: string }>(`
+        INSERT INTO commerce_order_snapshots (
+          id, order_id, subtotal_amount_toman, tax_amount_toman, discount_amount_toman,
+          shipping_amount_toman, total_amount_toman, payload, integrity_hash
+        ) VALUES (gen_random_uuid(), $1, 125000, 0, 0, 0, 125000, '{"currency":"TOMAN"}'::jsonb, repeat('a', 64))
+        RETURNING id
+      `, [commerceOrderId]);
+      await expect(smokeClient.query(`
+        UPDATE commerce_order_snapshots SET payload = '{}'::jsonb WHERE id = $1
+      `, [snapshot.rows[0]?.id])).rejects.toMatchObject({ code: 'P0001' });
+
+      const providerConfig = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_provider_configs (id, clinic_id, provider_code, updated_at)
+        SELECT gen_random_uuid(), clinic_id, 'sadad', CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1 RETURNING id
+      `, [patientId]);
+      const providerConfigId = providerConfig.rows[0]?.id;
+      await expect(smokeClient.query(`
+        UPDATE payment_provider_configs SET enabled = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = $1
+      `, [providerConfigId])).rejects.toMatchObject({ code: '23514' });
+      const credentialVersion = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_provider_credential_versions (
+          id, config_id, version_number, encrypted_payload, encryption_nonce,
+          authentication_tag, encryption_key_version
+        ) VALUES (gen_random_uuid(), $1, 1, decode('00', 'hex'), decode('01', 'hex'), decode('02', 'hex'), 'test-key-v1')
+        RETURNING id
+      `, [providerConfigId]);
+      const providerRevision = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_provider_config_revisions (
+          id, config_id, revision_number, credential_version_id
+        ) VALUES (gen_random_uuid(), $1, 1, $2) RETURNING id
+      `, [providerConfigId, credentialVersion.rows[0]?.id]);
+      await smokeClient.query(`
+        UPDATE payment_provider_configs SET active_revision_id = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
+      `, [providerConfigId, providerRevision.rows[0]?.id]);
+      await expect(smokeClient.query(`
+        UPDATE payment_provider_config_revisions SET capability_snapshot = '{"changed":true}'::jsonb WHERE id = $1
+      `, [providerRevision.rows[0]?.id])).rejects.toMatchObject({ code: 'P0001' });
+
+      const paymentAttempt = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_attempts (
+          id, clinic_id, patient_id, order_id, provider_config_revision_id, provider_order_id,
+          commerce_amount_toman, provider_unit, idempotency_key, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, id, $2, $3, 900000001, 125000, 'UNCONFIRMED',
+          'phase-nine-payment-attempt-1', CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1 RETURNING id
+      `, [patientId, commerceOrderId, providerRevision.rows[0]?.id]);
+      await expect(smokeClient.query(`
+        INSERT INTO payment_attempts (
+          id, clinic_id, patient_id, order_id, provider_config_revision_id, provider_order_id,
+          commerce_amount_toman, provider_unit, idempotency_key, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, id, $2, $3, 900000001, 125000, 'UNCONFIRMED',
+          'phase-nine-payment-attempt-2', CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1
+      `, [patientId, commerceOrderId, providerRevision.rows[0]?.id])).rejects.toMatchObject({ code: '23505' });
+      await expect(smokeClient.query(`
+        UPDATE payment_attempts SET provider_amount = 125000 WHERE id = $1
+      `, [paymentAttempt.rows[0]?.id])).rejects.toMatchObject({ code: '23514' });
+
+      const genericProviderConfig = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_provider_configs (id, clinic_id, provider_code, provider_unit, go_live_ready, updated_at)
+        SELECT gen_random_uuid(), clinic_id, 'testpay', 'IRR', TRUE, CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1 RETURNING id
+      `, [patientId]);
+      const genericCredential = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_provider_credential_versions (
+          id, config_id, version_number, encrypted_payload, encryption_nonce,
+          authentication_tag, encryption_key_version
+        ) VALUES (gen_random_uuid(), $1, 1, decode('03', 'hex'), decode('04', 'hex'), decode('05', 'hex'), 'test-key-v1')
+        RETURNING id
+      `, [genericProviderConfig.rows[0]?.id]);
+      const genericRevision = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_provider_config_revisions (
+          id, config_id, revision_number, provider_unit, go_live_ready, credential_version_id
+        ) VALUES (gen_random_uuid(), $1, 1, 'IRR', TRUE, $2) RETURNING id
+      `, [genericProviderConfig.rows[0]?.id, genericCredential.rows[0]?.id]);
+      await smokeClient.query(`
+        UPDATE payment_provider_configs SET active_revision_id = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
+      `, [genericProviderConfig.rows[0]?.id, genericRevision.rows[0]?.id]);
+      const duplicatePaymentOrder = await smokeClient.query<{ id: string }>(`
+        INSERT INTO commerce_orders (
+          id, clinic_id, patient_id, order_number, idempotency_key, shipping_method,
+          subtotal_amount_toman, tax_amount_toman, discount_amount_toman,
+          shipping_amount_toman, total_amount_toman, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, id, 900000002, 'phase-nine-order-2', 'PICKUP',
+          125000, 0, 0, 0, 125000, CURRENT_TIMESTAMP FROM patient_profiles WHERE id = $1 RETURNING id
+      `, [patientId]);
+      const genericAttempt = await smokeClient.query<{ id: string }>(`
+        INSERT INTO payment_attempts (
+          id, clinic_id, patient_id, order_id, provider_config_revision_id, provider_order_id,
+          commerce_amount_toman, provider_amount, provider_unit, idempotency_key, updated_at
+        )
+        SELECT gen_random_uuid(), clinic_id, id, $2, $3, 900000002, 125000, 92001, 'IRR',
+          'phase-nine-payment-attempt-3', CURRENT_TIMESTAMP FROM patient_profiles WHERE id = $1 RETURNING id
+      `, [patientId, duplicatePaymentOrder.rows[0]?.id, genericRevision.rows[0]?.id]);
+      await smokeClient.query(`
+        INSERT INTO payments (
+          id, order_id, payment_attempt_id, commerce_amount_toman, provider_amount, provider_unit, verified_at
+        ) VALUES (gen_random_uuid(), $1, $2, 125000, 92001, 'IRR', CURRENT_TIMESTAMP)
+      `, [duplicatePaymentOrder.rows[0]?.id, genericAttempt.rows[0]?.id]);
+      await expect(smokeClient.query(`
+        INSERT INTO payments (
+          id, order_id, payment_attempt_id, commerce_amount_toman, provider_amount, provider_unit, verified_at
+        ) VALUES (gen_random_uuid(), $1, $2, 125000, 92001, 'IRR', CURRENT_TIMESTAMP)
+      `, [duplicatePaymentOrder.rows[0]?.id, genericAttempt.rows[0]?.id])).rejects.toMatchObject({ code: '23505' });
     } finally {
       await smokeClient.end();
     }
@@ -1069,6 +1225,37 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       expect(noInventedRows.rows[0]).toEqual({
         user_profiles: '0', intakes: '0', revisions: '0', consents: '0',
       });
+    } finally {
+      await upgradeClient.end();
+      await adminClient.query(`DROP DATABASE IF EXISTS "${upgradeDatabaseName}"`);
+    }
+  });
+
+  it('upgrades the final Phase 08 migration baseline to the Phase 09 foundation', async () => {
+    const upgradeDatabaseName = `sabz_zendegi_phase_eight_upgrade_${randomUUID().replaceAll('-', '')}`;
+    const upgradeDatabaseUrl = createDatabaseUrl(upgradeDatabaseName);
+    await adminClient.query(`CREATE DATABASE "${upgradeDatabaseName}"`);
+    const upgradeClient = new Client({ connectionString: upgradeDatabaseUrl });
+    await upgradeClient.connect();
+    try {
+      const migrationNames = readdirSync(resolve(process.cwd(), 'prisma/migrations'), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .filter((name) => name <= '20260905130000_phase_08_follow_up_foundation')
+        .sort();
+      for (const migrationName of migrationNames) {
+        await upgradeClient.query(readFileSync(resolve(
+          process.cwd(), `prisma/migrations/${migrationName}/migration.sql`,
+        ), 'utf8'));
+      }
+      await upgradeClient.query(readFileSync(resolve(
+        process.cwd(), 'prisma/migrations/20260910050000_phase_09_commerce_foundation/migration.sql',
+      ), 'utf8'));
+      const result = await upgradeClient.query<{ count: string }>(`
+        SELECT count(*)::text AS count FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'payment_attempts'
+      `);
+      expect(result.rows[0]?.count).toBe('1');
     } finally {
       await upgradeClient.end();
       await adminClient.query(`DROP DATABASE IF EXISTS "${upgradeDatabaseName}"`);
