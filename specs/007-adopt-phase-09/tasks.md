@@ -1,73 +1,152 @@
 ---
 
-description: "One-to-one Spec Kit adoption of the authoritative Phase 09 roadmap tasks"
+description: "Actionable one-to-one execution map for authoritative Phase 09 roadmap tasks"
 
 ---
 
-# Tasks: Adopt Phase 09 — Commerce, Inventory & Payments
+# Tasks: Phase 09 — Commerce, Inventory & Multi-provider Payments
 
-**Input**: `/specs/007-adopt-phase-09/` and authoritative `plan/phases/09-COMMERCE-PAYMENTS.md`.
+**Input**: `/specs/007-adopt-phase-09/`, `plan/phases/09-COMMERCE-PAYMENTS.md`, ADR-0009 and
+`plan/contracts/{commerce-payment-provider-v1,sadad-ipg-v1}.md`.
 
-**Roadmap boundary**: `T001`–`T012` are Spec Kit labels only. The authoritative roadmap IDs below remain the execution, claim, evidence, and commit identities. No task is split, merged, renamed, reordered, claimed, or completed by this adoption.
+**Roadmap boundary**: `T001`–`T012` are Spec Kit labels only. `F09-T01`–`F09-T12` remain the claim,
+evidence and commit identities. Every checklist item below maps one-to-one to one roadmap task; implementation
+may use checkpoints but must retain that roadmap ID and one final task-level commit.
 
-**Execution status**: Phase 09 is `NOT_STARTED`; `F09-T01` is unclaimed. Consult `plan/STATUS.md` and the authoritative phase checklist for live state. This file does not authorize implementation.
+**Execution status**: `F09-B01/F09-T01` is claimed in `plan/STATUS.md`. The commercial contract is being
+frozen; Sadad acceptance facts are `SADAD_GO_LIVE_BLOCKED`, not a start blocker.
 
-## Format
+**Tests**: Tests are required because the phase specification explicitly requires financial idempotency,
+inventory concurrency, authorization, redaction, migration, contract and browser evidence.
 
-`[Spec Kit ID] [Story?] [Authoritative roadmap ID] Description`. No `[P]` marker is assigned: the authoritative source has no batch map or per-task `Depends on` fields. Task implementation paths and ownership must be set only by a future coordinator’s compliant batch claim.
+## Phase 1: Contract and persistence foundation
 
-## Phase 1: Commerce Contract and Persistence
+**Goal**: Freeze product/provider behavior and create the safe persistence baseline used by all stories.
 
-- [ ] T001 F09-T01: قرارداد catalog/SKU/price/tax/shipping/order/payment/refund
-- [ ] T002 F09-T02: migration catalog/inventory/cart/address/order/payment
+**Independent test**: Contract review has no unresolved commercial/lifecycle/capability decision and proves
+that `UNCONFIRMED` Sadad cannot be enabled/default. Migration and plaintext-secret persistence proof belong to
+`F09-T02`.
 
-## Phase 2: Catalog and Store Experience — User Story 1 (P1)
+- [x] T001 F09-T01 Freeze tax-inclusive/receipt-only TOMAN policy, pickup/courier snapshots, audited manual
+  refund, 90-day credential crypto-shredding, and the store-TOMAN versus medical-service-IRR boundary plus
+  lifecycle/error/authorization/endpoint matrices. Record Sadad amount/version/environment/redirect/callback/
+  date/IP-domain/credential uncertainty as `SADAD_GO_LIVE_BLOCKED`, reject enabled/default while
+  `providerUnit=UNCONFIRMED`, and freeze unsupported capabilities in the task-owned plan/contracts/spec docs.
+- [ ] T002 F09-T02 Implement and verify catalog, SKU, inventory, cart, wishlist, address, order snapshot, discount, provider-config revision, encrypted credential version, payment-attempt, payment and refund persistence in `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<phase-09-foundation>/migration.sql`, `apps/api/prisma/seed.ts`, and `apps/api/test/migrations.integration.spec.ts`
 
-- [ ] T003 [US1] F09-T03: dashboard catalog/category/product/inventory management
-- [ ] T004 [US1] F09-T04: app browse/search/detail/wishlist/cart
+**Checkpoint**: Contract is frozen and Phase 08→09 plus empty-database migrations replay without drift.
 
-## Phase 3: Checkout and Inventory Integrity — User Story 2 (P2)
+---
 
-- [ ] T005 [US2] F09-T05: checkout، shipping و order snapshot
-- [ ] T006 [US2] F09-T06: stock ledger/reservation/expiry و concurrency
-- [ ] T007 [US2] F09-T07: discount usage limits
+## Phase 2: User Story 1 — Trustworthy catalog and cart (Priority: P1)
 
-## Phase 4: Payment and Lifecycle Operations — User Story 3 (P3)
+**Goal**: ADMIN manages the real catalog/inventory and the patient browses, saves and carts the same data.
 
-- [ ] T008 [US3] F09-T08: payment adapter و signed/idempotent webhook
-- [ ] T009 [US3] F09-T09: fulfillment، tracking، cancellation، return/refund و reconciliation
+**Independent test**: A product/SKU created by an authorized dashboard user is searchable in the patient app;
+wishlist/cart survive reload and unauthorized cross-patient access fails.
 
-## Phase 5: Connected Commerce Results — User Story 4 (P4)
+- [ ] T003 [US1] F09-T03 Implement authorized/audited category, product, SKU, price and inventory-management API plus dashboard loading/error/empty flows in `apps/api/src/modules/commerce/catalog/**`, `apps/api/test/admin-commerce-catalog.integration.spec.ts`, `apps/dashboard/src/features/store/**`, `apps/dashboard/src/features/store-builder/**`, `apps/dashboard/src/data/store.ts`, and the task-owned generated slice in `packages/api-client/**`
+- [ ] T004 [US1] F09-T04 Implement patient catalog browse/search/detail, persisted wishlist and cart APIs and replace local app sources in `apps/api/src/modules/commerce/catalog/**`, `apps/api/src/modules/commerce/cart/**`, `apps/api/test/patient-commerce-catalog.integration.spec.ts`, `apps/api/test/patient-cart.authorization.spec.ts`, `apps/app/src/app/(app)/store/**`, `apps/app/src/stores/cart.ts`, `apps/app/src/stores/wishlist.ts`, `apps/app/src/lib/data/catalog.ts`, and the task-owned generated slice in `packages/api-client/**`
 
-- [ ] T010 [US4] F09-T10: اتصال app/dashboard و Dashboard Home commerce widgets
-- [ ] T011 [US4] F09-T11: revenue از payment/refund واقعی
-- [ ] T012 [US4] F09-T12: OpenAPI/client، tests، حذف mock و evidence
+**Checkpoint**: User Story 1 is independently usable with real catalog/cart data and no in-scope local source
+of truth.
 
-## Dependencies & Execution Order
+---
 
-Phase 09 requires `Phase 02 DONE` and job infrastructure required from Phase 08. The exact authoritative source order is:
+## Phase 3: User Story 2 — Safe checkout and inventory integrity (Priority: P2)
+
+**Goal**: Checkout creates immutable commercial history while concurrent stock and discount use remain safe.
+
+**Independent test**: A cart checks out idempotently; later catalog mutation does not alter the order; competing
+reservations never oversell or exceed discount limits.
+
+- [ ] T005 [US2] F09-T05 Implement idempotent checkout, patient address/shipping selection and immutable line/price/tax/discount/shipping snapshots in `apps/api/src/modules/commerce/checkout/**`, `apps/api/src/modules/commerce/orders/**`, `apps/api/test/checkout-order-snapshot.integration.spec.ts`, `apps/app/src/app/(app)/store/checkout/page.tsx`, `apps/app/src/app/(app)/store/orders/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+- [ ] T006 [US2] F09-T06 Implement inventory ledger, atomic reservation/consume/release, expiry/retry jobs and PostgreSQL concurrency coverage in `apps/api/src/modules/commerce/inventory/**`, `apps/api/src/modules/outbox/**` only where the accepted commerce event contract requires it, `apps/api/test/inventory-concurrency.integration.spec.ts`, `apps/api/test/inventory-reservation-expiry.integration.spec.ts`, and `apps/api/test/outbox.integration.spec.ts`
+- [ ] T007 [US2] F09-T07 Implement server-authoritative discount eligibility, reservation and global/per-patient usage limits with dashboard management in `apps/api/src/modules/commerce/discounts/**`, `apps/api/test/discount-usage-concurrency.integration.spec.ts`, `apps/dashboard/src/features/discounts/**`, `apps/dashboard/src/app/(app)/discounts/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+
+**Checkpoint**: User Story 2 proves immutable totals, non-negative stock and repeat-safe discount use.
+
+---
+
+## Phase 4: User Story 3 — Multi-provider foundation and Sadad operations (Priority: P3)
+
+**Goal**: ADMIN configures a safe default provider; Sadad payment is authoritative only after idempotent Verify;
+the same order proceeds through fulfillment or evidence-backed refund/reconciliation.
+
+**Independent test**: A sanitized Sadad-compatible attempt survives credential rotation; callback/Verify replay
+including `ResCode=100` creates one business effect; an unsupported refund cannot be marked successful.
+
+- [ ] T008 [US3] F09-T08 Implement provider port/registry, fake-provider contract suite, exact frozen ADMIN/patient/callback routes, versioned encrypted dashboard configuration, and the `plan/contracts/sadad-ipg-v1.md` PaymentRequest/redirect/acceptance-proven-callback/Verify/retry adapter with durable numeric provider OrderId and cardholder redaction in `apps/api/src/modules/commerce/payments/**`, `apps/api/test/payment-provider-contract.spec.ts`, `apps/api/test/sadad-adapter.spec.ts`, `apps/api/test/payment-idempotency.integration.spec.ts`, `apps/api/test/payment-provider-config.integration.spec.ts`, `apps/dashboard/src/features/settings/settings-page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+- [ ] T009 [US3] F09-T09 Implement authorized fulfillment, tracking, cancellation, return, policy-backed
+  audited manual refund and reconciliation without synthetic success in `apps/api/src/modules/commerce/orders/**`,
+  `apps/api/src/modules/commerce/payments/**`, `apps/api/test/order-fulfillment-refund.integration.spec.ts`,
+  `apps/dashboard/src/features/orders/**`, `apps/dashboard/src/app/(app)/orders/page.tsx`, and the task-owned
+  generated slice in `packages/api-client/**`
+
+**Checkpoint**: User Story 3 manages one authoritative order from configured provider through delivery or
+refund/reconciliation with audit and no duplicated financial effect.
+
+---
+
+## Phase 5: User Story 4 — Connected commerce results (Priority: P4)
+
+**Goal**: Patient and dashboard surfaces show the real purchase lifecycle and revenue derives only from
+authoritative payments/refunds.
+
+**Independent test**: The patient completes checkout→Sadad→verified receipt→tracking while dashboard sees the
+same order and payment/refund-driven widgets/revenue.
+
+- [ ] T010 [US4] F09-T10 Connect patient payment/result/receipt/tracking and dashboard commerce/order/Home widgets with truthful states in `apps/app/src/app/(app)/store/payment/page.tsx`, `apps/app/src/app/(app)/store/order-success/page.tsx`, `apps/app/src/app/(app)/store/order-tracking/page.tsx`, `apps/dashboard/src/features/orders/**`, `apps/dashboard/src/features/dashboard/dashboard-page.tsx`, `apps/dashboard/src/data/store.ts`, and frontend connection tests adjacent to those features
+- [ ] T011 [US4] F09-T11 Implement documented revenue formulas/read models from verified Payment minus accepted Refund only, with clinic timezone/currency boundaries and dashboard views in `apps/api/src/modules/commerce/reporting/**`, `apps/api/test/commerce-revenue.integration.spec.ts`, `apps/dashboard/src/features/revenue/**`, `apps/dashboard/src/app/(app)/revenue/page.tsx`, `apps/dashboard/src/data/revenue.ts`, `apps/dashboard/src/features/dashboard/dashboard-page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+
+**Checkpoint**: User Story 4 exposes no mock order/revenue totals and no callback/unpaid order counts as income.
+
+---
+
+## Phase 6: Final verification and evidence
+
+**Goal**: Prove the complete Phase 09 vertical slice and prepare it for independent phase closure review.
+
+- [ ] T012 [US4] F09-T12 Export and verify final OpenAPI/generated client, remove remaining in-scope commerce mocks, run migration/authorization/concurrency/provider/redaction/retry/browser gates, and record evidence in `packages/api-client/**`, `apps/api/test/openapi-contract.spec.ts`, `apps/api/test/**`, `apps/app/src/**`, `apps/dashboard/src/**`, `plan/logs/phase-09.md`, `plan/STATUS.md`, `plan/phases/09-COMMERCE-PAYMENTS.md`, and `specs/007-adopt-phase-09/**`
+
+## Dependencies & execution order
 
 ```text
-F09-T01, F09-T02, F09-T03, F09-T04, F09-T05, F09-T06,
-F09-T07, F09-T08, F09-T09, F09-T10, F09-T11, F09-T12
+F09-T01 → F09-T02 → F09-T03 → F09-T04 → F09-T05 → F09-T06 → F09-T07
+        → F09-T08 → F09-T09 → F09-T10 → F09-T11 → F09-T12
 ```
 
-The source defines no individual `Depends on` fields or batch map. Before execution, the coordinator must validate the phase prerequisites and unresolved policy blocker, freeze relevant contracts, define non-overlapping owned paths, serialize shared transaction/client surfaces, and claim a batch under `plan/05-AGENT-WORKFLOW.md`.
+- `F09-T01` freezes all commercial decisions and isolates unconfirmed external Sadad facts as
+  `SADAD_GO_LIVE_BLOCKED`; those facts cannot enable Sadad or issue a real request.
+- `F09-T02` is the exclusive schema/migration/seed baseline.
+- `F09-T05` creates order snapshots; `F09-T06` adds safe reservation/consumption; `F09-T07` freezes the
+  payable discounted amount before provider work.
+- `F09-T08` requires order and reservation semantics and owns provider/config/crypto/payment behavior.
+- `F09-T09` requires an authoritative payment and frozen refund policy.
+- `F09-T10`–`F09-T11` consume accepted real sources; `F09-T12` is the final cross-surface gate.
 
-### Source-Implied Gates (not new dependencies)
+## Parallel opportunities
 
-- `F09-T01` owns commercial-contract definition before later persistence, checkout, payment, lifecycle, and revenue work relies on it.
-- `F09-T02` is the named migration boundary; future execution must preserve a single writer for Prisma/schema/migrations.
-- `F09-T05` and `F09-T06` jointly touch checkout/order snapshot and inventory integrity but retain their distinct authoritative boundaries; their shared transactional surface must be coordinated, not merged.
-- `F09-T08` owns adapter and signed/idempotent webhook; browser callback remains non-authoritative.
-- `F09-T09` owns lifecycle/reconciliation; `F09-T10`–`F09-T11` must consume real authoritative order/payment/refund sources.
-- `F09-T12` owns OpenAPI/client, tests, mock removal, and evidence; generated-client work has one future owner after contracts are frozen.
+None are declared by default. The authoritative batch map uses one task per batch because Prisma, commerce
+module wiring, transaction state, generated client, dashboard Home and the shared PostgreSQL test lifecycle
+overlap. A future coordinator may introduce parallel checkpoints only after freezing non-overlapping owned
+paths; roadmap task IDs and final task commits remain unchanged.
 
-## Parallel Opportunities
+## Implementation strategy
 
-None declared. Any future parallelism is a coordinator decision after policy, ownership, contract, transaction-boundary, generated-client, and verification review.
+1. Complete the active contract-finalization batch only (`F09-B01` / `F09-T01`).
+2. Keep Sadad fail-closed until its acceptance facts are confirmed; do not turn `UNCONFIRMED` into a unit or
+   infer a conversion.
+3. Complete and commit each roadmap task independently before claiming its successor.
+4. Endpoint-owning tasks update their OpenAPI/client slice through the generated workflow; `F09-T12` performs
+   final freshness, mock and integrated evidence review.
+5. Never commit the confidential Sadad PDF/full legacy sample, real provider credentials, generated crypto
+   secrets, full callback payloads, or cardholder PII.
 
-## Notes
+## Format validation
 
-- `plan/` wins on any conflict.
-- Do not modify `apps/app/src/components/home/slider-data.ts` or `justforcheck.md`.
+- 12 checklist tasks map one-to-one to `F09-T01`–`F09-T12`.
+- Every task includes an exact planned path; only `F09-T01` is currently claimed and it remains unchecked
+  until evidence and review pass.
+- Story labels map to US1–US4; foundational tasks intentionally have no story label.
+- No `[P]` task is declared because the default execution map is serialized.

@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 13:15 +03:30`
-- Milestone فعال: `Milestone C — DONE (CLOSED)`
-- فاز فعال: `ندارد؛ Phase 08 بسته شده و Phase 09 هنوز شروع نشده است.`
-- وضعیت فاز فعال: `ندارد`
+- آخرین به‌رورسانی: `2026-09-10 04:36 +03:30`
+- Milestone فعال: `Milestone D — IN_PROGRESS`
+- فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `none`
 - task فعال: `none`
-- blocker فعال: `none`
+- blocker فعال: `SADAD_GO_LIVE_BLOCKED — Sadad enablement/real calls, acceptance validation and Phase 09 closure await merchant confirmations; provider-neutral implementation may continue.`
 
 ## پیشرفت کلان
 
@@ -50,7 +50,31 @@
 
 ## handoff فاز فعال
 
-Phase 08 migration-history remediation passed. The branch-local unreleased history now replays cleanly from Phase 07 to the final Phase 08 schema; preserved local development data was reconstructed into a verified candidate database without changing the original. Phase 08 remains `DONE (CLOSED)`. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
+`F09-B01/F09-T01` is `DONE`. The commerce/payment-provider contract is frozen with tax-inclusive TOMAN,
+receipt-only, pickup/courier snapshots, audited manual refund and credential crypto-shredding policies. Sadad
+remains `UNCONFIRMED`: its acceptance facts are `SADAD_GO_LIVE_BLOCKED`, so it cannot be enabled/default or
+contacted. Evidence: [`logs/phase-09.md`](logs/phase-09.md). `F09-B02/F09-T02` is eligible but unclaimed.
+
+## آخرین batch — F09-B01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 04:25 +03:30`
+Completed at: `2026-09-10 04:36 +03:30`
+Phase: `Phase 09 — Commerce, Inventory & Payments`
+Batch status: `DONE`
+Contract baseline: owner decisions supplied for `F09-T01`; Sadad production enablement remains fail-closed
+
+Tasks:
+
+- Task ID: `F09-T01`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: owner policy decisions — `DONE`
+  Scope: freeze the catalog/SKU/price/tax/shipping/order/payment/refund and provider-neutral/Sadad-first contract; move unresolved Sadad acceptance facts to the explicit go-live gate; synchronize Phase 09 planning/specification documents and record task evidence only.
+  Owned paths: `plan/{STATUS.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md,contracts/sadad-ipg-v1.md,decisions/ADR-0009-multi-provider-payment-architecture.md,logs/phase-09.md}`, `specs/007-adopt-phase-09/**`
+  Shared/exclusive resource: Phase 09 contract baseline and lifecycle/error/authorization/endpoint/money/capability matrices
+  Do not change: `apps/**`, `packages/**`, Prisma schema/migrations, OpenAPI/generated client, the confidential Sadad PDF/.NET sample directory, credentials, or callback payloads.
+  Result: accepted; cross-document policy traceability, frozen-matrix completeness, no-secret/no-sample diff review, `git diff --check`, and Spec Kit/constitution review passed. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
 
 ## آخرین batch — F08-MR
 
@@ -749,7 +773,10 @@ snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md
 
 - [ ] متن و الزامات حقوقی consent/retention پیش از release عمومی Phase 02؛ مدل versioned consent در خود Phase 02 اجباری است.
 - [ ] تعیین سرویس SMS/OTP پیش از فعال‌سازی کانال پیامکی در `Phase 08`؛ in-app notification مستقل است.
-- [ ] تعیین درگاه پرداخت و قرارداد webhook/تسویه پیش از شروع `Phase 09`.
+- [ ] `Phase 09`: policy تجاری `F09-T01` freeze شده است. Amount/formula، نسخه/محیط، redirect،
+  callback/date transport، egress IP/domain و credential سداد `SADAD_GO_LIVE_BLOCKED` هستند؛ تا تأیید
+  کتبی Sadad enabled/default یا متصل واقعی نمی‌شود و sandbox/inquiry/webhook/refund/partial-refund
+  capability ندارد.
 - [ ] تعیین provider و policy ویدئو پیش از قابلیت ویدئویی `Phase 10`؛ chat متنی می‌تواند مستقل اجرا شود.
 - [ ] تعیین deployment provider، RPO/RTO و secret manager در release planning فاز `Phase 12`.
 
