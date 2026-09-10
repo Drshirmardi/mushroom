@@ -22,9 +22,8 @@ import {
 import { ARTICLES } from "@/lib/data/articles";
 import { DEFAULT_MEZAJ } from "@/lib/data/mezaj";
 import { NOTIFICATIONS } from "@/lib/data/catalog";
-import { formatPrice, toP } from "@/lib/format";
+import { toP } from "@/lib/format";
 import { TAB_ROOT_SCREENS, useScreenNavigation } from "@/lib/navigation";
-import { PRODUCTS } from "@/lib/data/catalog";
 
 export default function HomePage() {
   const navigateScreen = useScreenNavigation();
@@ -96,77 +95,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Mood-based product suggestions */}
-          <div className="mt-4 overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 to-red-500 shadow-md" dir="rtl">
-            <div className="flex h-[290px]">
-              <div className="flex w-[150px] shrink-0 flex-col items-center justify-between px-4 py-6">
-                <div className="flex flex-col items-center gap-5">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full text-3xl" />
-                  <h2 className="text-center text-sm font-black leading-6 text-white">
-                    محصولات
-                    <br />
-                    پیشنهادی مزاج شما
-                  </h2>
-                </div>
-                <button
-                  onClick={() => navigateScreen("StoreMain")}
-                  className="w-full rounded-xl bg-white py-2.5 text-xs font-bold text-red-500 transition hover:bg-gray-100 active:scale-95"
-                >
-                  مشاهده همه
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-hidden py-4">
-                <div className="flex h-full gap-3 overflow-x-auto pr-3 scrollbar-hide">
-                  {PRODUCTS
-                    .filter((p) => p.doctor)
-                    .map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => navigateScreen("ProductDetail", { productId: p.id })}
-                        className="group flex h-full w-[164px] shrink-0 flex-col overflow-hidden rounded-xl bg-white text-right shadow-sm transition hover:shadow-lg"
-                      >
-                        <div className="relative flex h-[150px] items-center justify-center bg-gray-50 p-3">
-                          <img
-                            src={
-                              p.img.includes("http")
-                                ? p.img
-                                : `https://dkstatics-public.digikala.com/digikala-products/4c4f54bac1a1ce34861061a7cf1ba65a97dedb0d_1675624081.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_80/format,webp`
-                            }
-                            alt={p.name}
-                            className="h-full w-full object-contain mix-blend-multiply transition duration-300 group-hover:scale-105"
-                          />
-                          <span className="absolute right-2 top-2 rounded-full bg-red-100 px-2 py-1 text-[10px] font-bold text-red-700">
-                            توصیه دکتر
-                          </span>
-                        </div>
-
-                        <div className="flex flex-1 flex-col justify-between p-3">
-                          <div>
-                            <p className="line-clamp-2 text-[13px] font-medium leading-5 text-gray-800">{p.name}</p>
-                            <p className="mt-1 line-clamp-1 text-[11px] text-gray-400">{p.cat}</p>
-                          </div>
-                          <div className="border-t border-gray-100 pt-2">
-                            <div className="flex items-center justify-end gap-1">
-                              <span className="text-base font-black text-gray-900">{formatPrice(p.price)}</span>
-                              <span className="text-[10px] text-gray-500">تومان</span>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-
-                  <button
-                    onClick={() => navigateScreen("StoreMain")}
-                    className="mr-2 flex w-36 shrink-0 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-white/60 bg-white/20 text-white transition hover:bg-white/30"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-red-500 text-xl">←</div>
-                    <span className="text-sm font-bold">مشاهده همه</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <section className="mt-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-500 p-5 text-white shadow-md" dir="rtl">
+            <h2 className="text-sm font-black">محصولات سلامت</h2>
+            <p className="mt-2 text-xs leading-6 text-white/85">فهرست، قیمت و دسترس‌پذیری محصولات مستقیماً از فروشگاه دریافت می‌شود.</p>
+            <button onClick={() => navigateScreen("StoreMain")} className="mt-4 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-red-500">مشاهده فروشگاه</button>
+          </section>
 
           {/* Latest notifications */}
           <div>

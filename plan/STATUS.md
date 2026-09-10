@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-10 20:05 +03:30`
+- آخرین به‌رورسانی: `2026-09-10 21:17 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,10 +50,33 @@
 
 ## handoff فاز فعال
 
-`F09-B03/F09-T03` is `DONE` pending its isolated task commit. The ADMIN-authorized and audited
-catalog/category/product/SKU/price/inventory API, real dashboard states and task-owned OpenAPI/client slice
-passed review. Sadad remains `UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`; it is outside this provider-neutral
-task. Next eligible batch is `F09-B04/F09-T04`; do not claim it in this task.
+`F09-B04/F09-T04` is `DONE` after its review gate. Patient catalog browse/search/detail and persisted,
+patient-scoped wishlist/cart now use the accepted catalog persistence and real app API states. Sadad remains
+`UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`; it is outside this provider-neutral task. The next eligible
+single-task batch is `F09-B05/F09-T05`; it is not claimed or started here.
+
+## آخرین batch — F09-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 20:52:27 +03:30`
+Completed at: `2026-09-10 21:17 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; payment persistence at `fa1aec4`; dashboard catalog at `858246d`
+
+- `F09-T04` — `DONE`
+  Dependencies: `F09-T03` DONE at `858246d`; no active batch existed when claimed.
+  Scope: authenticated patient catalog browse/search/detail plus persisted, patient-scoped wishlist and cart.
+  Owned paths: `apps/api/src/modules/commerce/catalog/**`, `apps/api/src/modules/commerce/cart/**`, `apps/api/test/patient-commerce-catalog.integration.spec.ts`, `apps/api/test/patient-cart.authorization.spec.ts`, `apps/api/test/openapi-contract.spec.ts`, `apps/app/src/app/(app)/{page.tsx,store/**}`, `apps/app/src/stores/cart.ts`, `apps/app/src/stores/wishlist.ts`, `apps/app/src/lib/data/catalog.ts`, `apps/app/src/lib/commerce-catalog-api.ts`, `apps/app/src/lib/commerce-catalog-api.spec.ts`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, `specs/007-adopt-phase-09/**`.
+  Contract: preserve integer TOMAN, active product plus active SKU visibility, patient isolation, and no stock reservation on cart mutation. Do not implement checkout, address/shipping, order, discount, payment, provider, or Sadad behavior.
+  Verification: real-PostgreSQL catalog/cart/wishlist integration and isolation tests; API/app/client checks;
+  OpenAPI/client freshness; production app build; migration-ledger drift check; diff review; preservation of
+  unrelated and confidential Sadad paths — PASS.
+  Review gate: `PASS` — only claimed API/app/client/generated/status/evidence/spec paths are included. Integer
+  TOMAN remains string-serialized at the boundary; cart mutations do not reserve stock or write the ledger;
+  no checkout/order/discount/payment/Sadad behavior, schema/migration, credential, sample/PDF or user-owned
+  `.gitignore` change is included.
+  Next eligible batch: `F09-B05 / F09-T05` — do not claim or start in this task.
 
 ## آخرین batch — F09-B03
 

@@ -8758,6 +8758,243 @@
           "Admin Commerce Catalog"
         ]
       }
+    },
+    "/v1/commerce/products": {
+      "get": {
+        "operationId": "patientCommerceProductsList",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 24,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceProductPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List active commerce products with active SKUs in the patient clinic",
+        "tags": [
+          "Patient Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/commerce/products/{productId}": {
+      "get": {
+        "operationId": "patientCommerceProductGet",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceProductDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product is not active or was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an active commerce product with active SKUs in the patient clinic",
+        "tags": [
+          "Patient Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/patients/me/cart": {
+      "get": {
+        "operationId": "patientCommerceCartGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCartDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the signed-in patient cart",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "put": {
+        "operationId": "patientCommerceCartUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCartDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Set a cart SKU quantity without reserving stock",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/wishlist": {
+      "get": {
+        "operationId": "patientCommerceWishlistGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientWishlistDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the signed-in patient wishlist",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "put": {
+        "operationId": "patientCommerceWishlistUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientWishlistDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientWishlistDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save or remove an active SKU for the signed-in patient",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
     }
   },
   "info": {
@@ -14948,6 +15185,218 @@
           "skuId",
           "onHandQuantity",
           "reservedQuantity"
+        ]
+      },
+      "PatientCommerceCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "PatientCommerceSkuDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentPriceToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "currentTaxToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "currentPriceToman",
+          "currentTaxToman"
+        ]
+      },
+      "PatientCommerceProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "$ref": "#/components/schemas/PatientCommerceCategoryDto"
+          },
+          "skus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommerceSkuDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "category",
+          "skus"
+        ]
+      },
+      "PatientCommerceProductPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommerceProductDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "PatientCartItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "sku": {
+            "$ref": "#/components/schemas/PatientCommerceSkuDto"
+          },
+          "product": {
+            "$ref": "#/components/schemas/PatientCommerceProductDto"
+          }
+        },
+        "required": [
+          "id",
+          "quantity",
+          "sku",
+          "product"
+        ]
+      },
+      "PatientCartDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCartItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdatePatientCartDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "skuId",
+          "quantity"
+        ]
+      },
+      "PatientWishlistItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "$ref": "#/components/schemas/PatientCommerceSkuDto"
+          },
+          "product": {
+            "$ref": "#/components/schemas/PatientCommerceProductDto"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "product"
+        ]
+      },
+      "PatientWishlistDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientWishlistItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdatePatientWishlistDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "saved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "skuId",
+          "saved"
         ]
       }
     }

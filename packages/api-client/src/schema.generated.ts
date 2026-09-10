@@ -2258,6 +2258,76 @@ export interface paths {
         patch: operations["adminCommerceInventoryUpdate"];
         trace?: never;
     };
+    "/v1/commerce/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active commerce products with active SKUs in the patient clinic */
+        get: operations["patientCommerceProductsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/commerce/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an active commerce product with active SKUs in the patient clinic */
+        get: operations["patientCommerceProductGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the signed-in patient cart */
+        get: operations["patientCommerceCartGet"];
+        /** Set a cart SKU quantity without reserving stock */
+        put: operations["patientCommerceCartUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the signed-in patient wishlist */
+        get: operations["patientCommerceWishlistGet"];
+        /** Save or remove an active SKU for the signed-in patient */
+        put: operations["patientCommerceWishlistUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3995,6 +4065,61 @@ export interface components {
             skuId: string;
             onHandQuantity: number;
             reservedQuantity: number;
+        };
+        PatientCommerceCategoryDto: {
+            id: string;
+            name: string;
+            slug: string;
+        };
+        PatientCommerceSkuDto: {
+            id: string;
+            code: string;
+            title?: string | null;
+            /** @description Integer TOMAN. */
+            currentPriceToman: string;
+            /** @description Integer TOMAN. */
+            currentTaxToman: string;
+        };
+        PatientCommerceProductDto: {
+            id: string;
+            title: string;
+            slug: string;
+            description?: string | null;
+            category: components["schemas"]["PatientCommerceCategoryDto"];
+            skus: components["schemas"]["PatientCommerceSkuDto"][];
+        };
+        PatientCommerceProductPageDto: {
+            items: components["schemas"]["PatientCommerceProductDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PatientCartItemDto: {
+            id: string;
+            quantity: number;
+            sku: components["schemas"]["PatientCommerceSkuDto"];
+            product: components["schemas"]["PatientCommerceProductDto"];
+        };
+        PatientCartDto: {
+            items: components["schemas"]["PatientCartItemDto"][];
+        };
+        UpdatePatientCartDto: {
+            /** Format: uuid */
+            skuId: string;
+            quantity: number;
+        };
+        PatientWishlistItemDto: {
+            id: string;
+            sku: components["schemas"]["PatientCommerceSkuDto"];
+            product: components["schemas"]["PatientCommerceProductDto"];
+        };
+        PatientWishlistDto: {
+            items: components["schemas"]["PatientWishlistItemDto"][];
+        };
+        UpdatePatientWishlistDto: {
+            /** Format: uuid */
+            skuId: string;
+            saved: boolean;
         };
     };
     responses: never;
@@ -8888,6 +9013,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommerceInventoryResponseDto"];
+                };
+            };
+        };
+    };
+    patientCommerceProductsList: {
+        parameters: {
+            query?: {
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+                query?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceProductPageDto"];
+                };
+            };
+        };
+    };
+    patientCommerceProductGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceProductDto"];
+                };
+            };
+            /** @description Product is not active or was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCommerceCartGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCartDto"];
+                };
+            };
+        };
+    };
+    patientCommerceCartUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePatientCartDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCartDto"];
+                };
+            };
+        };
+    };
+    patientCommerceWishlistGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientWishlistDto"];
+                };
+            };
+        };
+    };
+    patientCommerceWishlistUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePatientWishlistDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientWishlistDto"];
                 };
             };
         };

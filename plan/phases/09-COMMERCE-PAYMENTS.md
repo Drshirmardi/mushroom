@@ -123,7 +123,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T02 DONE`
   - خروجی: admin API + dashboard با authorization/audit و stateهای loading/error/empty
   - پذیرش: catalog و موجودی seedشده از dashboard واقعی مدیریت شوند.
-- [ ] `F09-T04` — app browse/search/detail/wishlist/cart
+- [x] `F09-T04` — app browse/search/detail/wishlist/cart
   - Depends on: `F09-T03 DONE`
   - خروجی: patient API + app store surfaces بدون source-of-truth محلی
   - پذیرش: جستجو، جزئیات، wishlist و cart persisted و resource-scoped باشند.

@@ -146,3 +146,48 @@ Result:
 
 - `F09-T03` is accepted for the isolated commit `feat(F09-T03): connect dashboard catalog management`.
 - Next eligible batch: `F09-B04 / F09-T04`; it is not claimed or started here.
+
+## F09-T04 — patient catalog, wishlist and cart
+
+Task ID: F09-T04
+Completed at: 2026-09-10 21:17 +03:30
+Agent/Thread: Codex /root
+Batch ID: F09-B04
+Status: DONE — review gate passed
+
+Implementation:
+
+- Added PATIENT-only, permission-scoped catalog browse/search/detail endpoints and patient-clinic scoping;
+  only ACTIVE products with an active category and at least one active SKU are visible. Prices and taxes cross
+  the API boundary as integer TOMAN strings.
+- Added self-scoped persisted cart and wishlist reads/mutations. SKU validation is clinic-local and active;
+  cart quantities are idempotent set operations. Cart updates deliberately create no reservation and write no
+  inventory ledger entry.
+- Replaced in-scope app catalog, product detail, wishlist and cart source-of-truth data with authenticated
+  generated-client requests and truthful loading, error, empty and retry states. Checkout, orders, addresses,
+  shipping, discounts, payment/provider and Sadad work remain unmodified.
+- Exported and regenerated this endpoint slice in OpenAPI/API client; no Prisma schema or migration changed.
+
+Checks completed:
+
+- Real PostgreSQL API integration (`patient-commerce-catalog.integration.spec.ts`,
+  `patient-cart.authorization.spec.ts`) → PASS (2/2): authentication, active-catalog visibility, clinic and
+  patient isolation, persisted cart/wishlist mutation, invalid input and no stock reservation/ledger write.
+- API OpenAPI contract test, API typecheck, and API-client test/typecheck → PASS.
+- App commerce adapter test, app typecheck and production build → PASS.
+- `prisma generate`, `prisma migrate status` and `prisma migrate deploy` against repository PostgreSQL → PASS;
+  all 24 migrations are applied and the schema is up to date.
+- Manual controller/service/DTO/app/generated-diff review, in-scope local-catalog mock scan and
+  `git diff --check` → PASS.
+
+Review gate:
+
+- PASS — only task-owned patient-commerce API, app store source, generated client, test and Phase 09 planning
+  paths are included. No plaintext credential, `TOMAN × 10`, real provider invocation/enablement, Sadad sample
+  or PDF path, migration/schema, checkout/order/discount/reservation behavior, or user-owned `.gitignore`
+  change is included.
+
+Result:
+
+- `F09-T04` is accepted for the isolated commit `feat(F09-T04): connect patient commerce catalog`.
+- Next eligible batch: `F09-B05 / F09-T05`; it is not claimed or started here.
