@@ -43,6 +43,7 @@ export const PERMISSIONS = {
   PRESCRIPTION_ISSUE: 'prescription:issue',
   CONTENT_READ_SELF: 'content:read:self',
   CONTENT_MANAGE: 'content:manage',
+  COMMERCE_MANAGE: 'commerce:manage',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -82,6 +83,7 @@ const ROLE_PERMISSIONS: Readonly<Record<RoleCode, readonly Permission[]>> = {
     PERMISSIONS.SCHEDULING_MANAGE,
     PERMISSIONS.APPOINTMENTS_MANAGE,
     PERMISSIONS.CONTENT_MANAGE,
+    PERMISSIONS.COMMERCE_MANAGE,
   ],
 };
 

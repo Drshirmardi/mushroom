@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-10 06:20 +03:30`
+- آخرین به‌رورسانی: `2026-09-10 20:05 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `none`
-- task فعال: `none`
+- batch فعال: `ندارد`
+- task فعال: `ندارد`
 - blocker فعال: `SADAD_GO_LIVE_BLOCKED — Sadad enablement/real calls, acceptance validation and Phase 09 closure await merchant confirmations; provider-neutral implementation may continue.`
 
 ## پیشرفت کلان
@@ -50,10 +50,37 @@
 
 ## handoff فاز فعال
 
-`F09-B02/F09-T02` is `DONE`: the isolated real-PostgreSQL suite passed empty replay, seed idempotency,
-constraint coverage and final Phase 08→09 upgrade; schema/migration drift is zero. Sadad remains
-`UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`; no provider enablement or real call occurred. The next eligible
-batch is `F09-B03 / F09-T03`, but it is not claimed by this task.
+`F09-B03/F09-T03` is `DONE` pending its isolated task commit. The ADMIN-authorized and audited
+catalog/category/product/SKU/price/inventory API, real dashboard states and task-owned OpenAPI/client slice
+passed review. Sadad remains `UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`; it is outside this provider-neutral
+task. Next eligible batch is `F09-B04/F09-T04`; do not claim it in this task.
+
+## آخرین batch — F09-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 06:35 +03:30`
+Completed at: `2026-09-10 20:05 +03:30`
+Phase: `Phase 09 — Commerce, Inventory & Payments`
+Batch status: `DONE`
+Contract baseline: accepted `F09-T01` at `750d53f`; persistence baseline `F09-T02` at `fa1aec4`
+
+Tasks:
+
+- Task ID: `F09-T03`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F09-T02 DONE` — verified at `fa1aec4`
+  Scope: ADMIN-only catalog/category/product/SKU/price/inventory API and audit, response DTOs/stable errors/pagination, dashboard `/store` and `/store-builder` real data states, and this endpoint slice's OpenAPI/generated client.
+  Owned paths: `apps/api/{src/modules/commerce/**,src/app.module.ts,src/common/auth/authorization.policy.ts,src/common/errors/api-error.ts,test/admin-commerce-catalog.integration.spec.ts,test/openapi-contract.spec.ts}`, `apps/dashboard/{src/features/store/**,src/features/store-builder/**,src/data/store.ts,src/lib/commerce-catalog-api.ts,src/lib/commerce-catalog-api.spec.ts,src/app/(app)/store/**,src/app/(app)/store-builder/**}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, `specs/007-adopt-phase-09/**`
+  Shared/exclusive resource: commerce module wiring, task-owned OpenAPI export/generated API-client slice and dashboard commerce source of truth
+  Do not change: `.gitignore` (user-owned), `apps/app/**`, Prisma schema/migrations/seed, payment/discount/order/refund/revenue/reservation/ledger behavior, non-commerce dashboard surfaces, Sadad adapter/configuration/network, or confidential Sadad PDF/.NET sample.
+  Verification: PostgreSQL API integration for authorization/audit/validation/lifecycle/constraints/pagination,
+  dashboard API-client loading/error/empty/retry and mutation coverage, OpenAPI runtime/checked-in freshness,
+  API/dashboard/client typecheck/test/build, scope review and `git diff --check` — PASS.
+  Review gate: `PASS` — only task-owned API/dashboard/client/generated/status/evidence/spec paths are included;
+  no Prisma migration, app/cart/checkout/order/discount/reservation/provider/Sadad behavior, credential, sample
+  or PDF path is included. The user-owned `.gitignore` remains unstaged.
+  Next eligible batch: `F09-B04 / F09-T04` — do not claim or start in this task.
 
 ## آخرین batch — F09-B02
 

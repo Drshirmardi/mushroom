@@ -13,8 +13,8 @@ description: "Actionable one-to-one execution map for authoritative Phase 09 roa
 evidence and commit identities. Every checklist item below maps one-to-one to one roadmap task; implementation
 may use checkpoints but must retain that roadmap ID and one final task-level commit.
 
-**Execution status**: `F09-B01/F09-T01` is claimed in `plan/STATUS.md`. The commercial contract is being
-frozen; Sadad acceptance facts are `SADAD_GO_LIVE_BLOCKED`, not a start blocker.
+**Execution status**: `F09-B03/F09-T03` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
+`SADAD_GO_LIVE_BLOCKED`, not a provider-neutral catalog blocker.
 
 **Tests**: Tests are required because the phase specification explicitly requires financial idempotency,
 inventory concurrency, authorization, redaction, migration, contract and browser evidence.
@@ -32,7 +32,7 @@ that `UNCONFIRMED` Sadad cannot be enabled/default. Migration and plaintext-secr
   lifecycle/error/authorization/endpoint matrices. Record Sadad amount/version/environment/redirect/callback/
   date/IP-domain/credential uncertainty as `SADAD_GO_LIVE_BLOCKED`, reject enabled/default while
   `providerUnit=UNCONFIRMED`, and freeze unsupported capabilities in the task-owned plan/contracts/spec docs.
-- [ ] T002 F09-T02 Implement and verify catalog, SKU, inventory, cart, wishlist, address, order snapshot, discount, provider-config revision, encrypted credential version, payment-attempt, payment and refund persistence in `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<phase-09-foundation>/migration.sql`, `apps/api/prisma/seed.ts`, and `apps/api/test/migrations.integration.spec.ts`
+- [x] T002 F09-T02 Implement and verify catalog, SKU, inventory, cart, wishlist, address, order snapshot, discount, provider-config revision, encrypted credential version, payment-attempt, payment and refund persistence in `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<phase-09-foundation>/migration.sql`, `apps/api/prisma/seed.ts`, and `apps/api/test/migrations.integration.spec.ts`
 
 **Checkpoint**: Contract is frozen and Phase 08→09 plus empty-database migrations replay without drift.
 
@@ -45,7 +45,7 @@ that `UNCONFIRMED` Sadad cannot be enabled/default. Migration and plaintext-secr
 **Independent test**: A product/SKU created by an authorized dashboard user is searchable in the patient app;
 wishlist/cart survive reload and unauthorized cross-patient access fails.
 
-- [ ] T003 [US1] F09-T03 Implement authorized/audited category, product, SKU, price and inventory-management API plus dashboard loading/error/empty flows in `apps/api/src/modules/commerce/catalog/**`, `apps/api/test/admin-commerce-catalog.integration.spec.ts`, `apps/dashboard/src/features/store/**`, `apps/dashboard/src/features/store-builder/**`, `apps/dashboard/src/data/store.ts`, and the task-owned generated slice in `packages/api-client/**`
+- [x] T003 [US1] F09-T03 Implement authorized/audited category, product, SKU, price and inventory-management API plus dashboard loading/error/empty flows in `apps/api/src/modules/commerce/catalog/**`, `apps/api/test/admin-commerce-catalog.integration.spec.ts`, `apps/dashboard/src/features/store/**`, `apps/dashboard/src/features/store-builder/**`, `apps/dashboard/src/data/store.ts`, and the task-owned generated slice in `packages/api-client/**`
 - [ ] T004 [US1] F09-T04 Implement patient catalog browse/search/detail, persisted wishlist and cart APIs and replace local app sources in `apps/api/src/modules/commerce/catalog/**`, `apps/api/src/modules/commerce/cart/**`, `apps/api/test/patient-commerce-catalog.integration.spec.ts`, `apps/api/test/patient-cart.authorization.spec.ts`, `apps/app/src/app/(app)/store/**`, `apps/app/src/stores/cart.ts`, `apps/app/src/stores/wishlist.ts`, `apps/app/src/lib/data/catalog.ts`, and the task-owned generated slice in `packages/api-client/**`
 
 **Checkpoint**: User Story 1 is independently usable with real catalog/cart data and no in-scope local source

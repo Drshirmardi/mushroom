@@ -119,7 +119,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T01 DONE`
   - خروجی: schema/migration/seed برای commerce، config/credential revision، attempt/payment/refund
   - پذیرش: fresh replay، constraintهای money/idempotency/uniqueness و عدم ذخیره secret خام پاس شوند.
-- [ ] `F09-T03` — dashboard catalog/category/product/SKU/inventory management
+- [x] `F09-T03` — dashboard catalog/category/product/SKU/inventory management
   - Depends on: `F09-T02 DONE`
   - خروجی: admin API + dashboard با authorization/audit و stateهای loading/error/empty
   - پذیرش: catalog و موجودی seedشده از dashboard واقعی مدیریت شوند.

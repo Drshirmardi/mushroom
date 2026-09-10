@@ -105,3 +105,44 @@ Result:
 
 - `F09-T02` is accepted and ready for the isolated task commit `feat(F09-T02): add commerce payment persistence`.
 - Next eligible batch after that commit: `F09-B03 / F09-T03`; it is not claimed or started here.
+
+## F09-T03 — dashboard catalog management
+
+Task ID: F09-T03
+Completed at: 2026-09-10 20:05 +03:30
+Agent/Thread: Codex /root
+Batch ID: F09-B03
+Status: DONE — review gate passed
+
+Implementation:
+
+- ADMIN-only, audited category/product/SKU/price/inventory API with pagination, DTOs and stable commerce
+  errors; product lifecycle is limited to `DRAFT → ACTIVE → ARCHIVED`.
+- Integer TOMAN SKU price/tax inputs and string DTO outputs preserve the F09-T01 money boundary; no medical
+  service or appointment IRR value is interpreted or changed.
+- `/store` loads and mutates only the real catalog API, including loading, error, empty and retry states;
+  `/store-builder` now previews only real active catalog data. Scoped local product/banner source-of-truth data
+  was removed, while unsupported store-presentation behavior remains outside this task.
+- The task-owned OpenAPI document, generated client types and client adapter were exported from the runtime
+  document; inventory mutation now has an explicit response DTO.
+
+Checks completed:
+
+- PostgreSQL API integration (`admin-commerce-catalog.integration.spec.ts`) → PASS: STAFF rejection, ADMIN
+  category/product/SKU/inventory mutations, invalid lifecycle and inventory validation, pagination and audit
+  events. The test removes only its UUID-suffixed data after every run.
+- Dashboard commerce adapter tests → PASS (4/4): real category/product loading, valid empty state, forbidden
+  and unavailable state separation, bearer-authenticated generated mutation bodies and truthful failures.
+- API OpenAPI runtime-versus-checked-in contract plus catalog integration tests → PASS (6/6).
+- `pnpm --filter @sabz-zendegi/api-client test` and generated-client freshness → PASS.
+- API typecheck, dashboard typecheck and dashboard production build (including `/store` and `/store-builder`)
+  → PASS.
+- Manual API/controller/DTO/OpenAPI and dashboard source-of-truth review, `git diff --check`, scoped mock scan
+  and final ownership review → PASS. No plaintext credential, `TOMAN × 10`, provider activation/call, Sadad
+  sample/PDF path, Prisma migration, app/cart/checkout/order/discount/reservation behavior or user-owned
+  `.gitignore` change is in the task candidate.
+
+Result:
+
+- `F09-T03` is accepted for the isolated commit `feat(F09-T03): connect dashboard catalog management`.
+- Next eligible batch: `F09-B04 / F09-T04`; it is not claimed or started here.

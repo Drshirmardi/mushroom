@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-09-commerce-inventory-payments`
 **Created**: 2026-09-09
-**Status**: `F09-B01/F09-T01` is in progress; live execution state remains in `plan/STATUS.md`.
+**Status**: `F09-B03/F09-T03` is DONE; live execution state remains in `plan/STATUS.md`.
 **Input**: Prepare the authoritative Phase 09 roadmap for implementation, including the owner-approved
 multi-provider architecture, Sadad-first integration, dashboard-managed provider configuration, and the
 official Sadad purchase protocol, without activating or claiming the phase.
