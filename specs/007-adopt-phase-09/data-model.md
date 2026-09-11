@@ -40,6 +40,12 @@ Discount ──> usage limit
   scope.
 - Existing medical-service and appointment prices remain IRR and outside Phase 09 migration; shared money UI
   must render the explicit domain currency rather than assume all project amounts are TOMAN.
+- `onHandQuantity` is physical stock and `reservedQuantity` is committed stock; sellable inventory is their
+  non-negative difference. Checkout writes one active reservation per order/SKU atomically with a global-idempotent
+  `RESERVATION` ledger entry. `RELEASE` reverses only reserved stock, `CONSUMPTION` removes both buckets, and
+  `RECEIPT`/`ADJUSTMENT` alter physical stock. The injected-clock, bounded `SKIP LOCKED` worker expires once after
+  a configurable 20-minute default; it does not release stock or cancel a pending order while an attempt is
+  verifying or requires reconciliation.
 - A browser callback is not authoritative. Sadad uses callback followed by Verify; sandbox, webhook, inquiry,
   refund and partial-refund are unsupported. Its provider unit is `UNCONFIRMED`, so all real Sadad calls and
   enabled/default state remain `SADAD_GO_LIVE_BLOCKED` until acceptance confirmation.

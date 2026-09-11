@@ -19,6 +19,7 @@ describe('admin commerce catalog (PostgreSQL API integration)', () => {
     const inventory = skuIds.length ? await prisma.inventoryItem.findMany({ where: { skuId: { in: skuIds } }, select: { id: true } }) : [];
     const cleanupSubjectIds = [...subjectIds, ...productIds, ...skuIds, ...inventory.map((item) => item.id)];
     if (cleanupSubjectIds.length) await prisma.auditEvent.deleteMany({ where: { subjectId: { in: cleanupSubjectIds }, action: { startsWith: 'COMMERCE_' } } });
+    if (inventory.length) await prisma.inventoryLedgerEntry.deleteMany({ where: { inventoryItemId: { in: inventory.map((item) => item.id) } } });
     if (skuIds.length) await prisma.inventoryItem.deleteMany({ where: { skuId: { in: skuIds } } });
     if (productIds.length) await prisma.commerceSku.deleteMany({ where: { productId: { in: productIds } } });
     if (productIds.length) await prisma.commerceProduct.deleteMany({ where: { id: { in: productIds } } });
@@ -49,6 +50,8 @@ describe('admin commerce catalog (PostgreSQL API integration)', () => {
     expect(list.statusCode).toBe(200); expect(list.json()).toMatchObject({ page: 1, pageSize: 1 });
     const inventoryRecord = await prisma.inventoryItem.findUniqueOrThrow({ where: { skuId }, select: { id: true } });
     subjectIds.add(inventoryRecord.id);
+    const ledger = await prisma.inventoryLedgerEntry.findMany({ where: { inventoryItemId: inventoryRecord.id }, orderBy: { createdAt: 'asc' }, select: { entryType: true, quantityDelta: true } });
+    expect(ledger).toEqual([{ entryType: 'RECEIPT', quantityDelta: 5 }, { entryType: 'ADJUSTMENT', quantityDelta: 4 }]);
     const audit = await prisma.auditEvent.findMany({ where: { subjectId: { in: [categoryId, productId, skuId, inventoryRecord.id] }, action: { startsWith: 'COMMERCE_' } } });
     expect(audit.map((event) => event.action)).toEqual(expect.arrayContaining(['COMMERCE_CATEGORY_CREATED', 'COMMERCE_PRODUCT_CREATED', 'COMMERCE_SKU_CREATED', 'COMMERCE_INVENTORY_UPDATED']));
   });

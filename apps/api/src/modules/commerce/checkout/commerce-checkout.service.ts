@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
+import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
 import type { CheckoutCommerceOrderDto, CreateCommerceAddressDto, UpdateCommerceAddressDto, UpdateCourierShippingRateDto } from './commerce-checkout.dto';
 
 type AuditContext = { actorUserId: string; actorSessionId: string; requestId: string; ipAddress: string };
@@ -25,7 +26,7 @@ const text = (value: string, field: string, max: number) => {
 
 @Injectable()
 export class CommerceCheckoutService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly inventory: CommerceInventoryService) {}
 
   async listAddresses(userId: string) {
     const patient = await this.patient(userId);
@@ -118,6 +119,7 @@ export class CommerceCheckoutService {
         const tax = lines.reduce((sum, line) => sum + line.unitTaxToman * BigInt(line.quantity), 0n);
         const payload = { version: 1, lines: lines.map((line) => ({ skuId: line.skuId, skuCode: line.skuCodeSnapshot, productTitle: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), unitTaxToman: line.unitTaxToman.toString(), discountAmountToman: '0', lineTotalToman: line.lineTotalToman.toString() })), shipping: { method: body.shippingMethod, amountToman: shipping.amountToman.toString(), address: shipping.address }, totals: { subtotalAmountToman: subtotal.toString(), taxAmountToman: tax.toString(), discountAmountToman: '0', shippingAmountToman: shipping.amountToman.toString(), totalAmountToman: (subtotal + tax + shipping.amountToman).toString() } };
         const order = await tx.commerceOrder.create({ data: { clinicId: patient.clinicId, patientId: patient.id, idempotencyKey: key, shippingMethod: body.shippingMethod, shippingAddressSnapshot: shipping.address === null ? Prisma.DbNull : shipping.address as Prisma.InputJsonValue, shippingDetailSnapshot: { sourceAddressId: shipping.address?.id ?? null, shippingRateId: shipping.rateId, method: body.shippingMethod }, subtotalAmountToman: subtotal, taxAmountToman: tax, discountAmountToman: 0n, shippingAmountToman: shipping.amountToman, totalAmountToman: subtotal + tax + shipping.amountToman, lines: { create: lines }, snapshot: { create: { subtotalAmountToman: subtotal, taxAmountToman: tax, discountAmountToman: 0n, shippingAmountToman: shipping.amountToman, totalAmountToman: subtotal + tax + shipping.amountToman, payload: payload as Prisma.InputJsonValue, integrityHash: createHash('sha256').update(JSON.stringify(payload)).digest('hex') } }, }, include: this.orderInclude });
+        await this.inventory.reserveCheckout(tx, { clinicId: patient.clinicId, orderId: order.id, lines: lines.map((line) => ({ skuId: line.skuId!, quantity: line.quantity })) });
         await tx.commerceCartItem.deleteMany({ where: { cartId: cart.id } });
         await this.audit(tx, 'COMMERCE_ORDER_CHECKED_OUT', 'COMMERCE_ORDER', order.id, context, { shippingMethod: body.shippingMethod, totalAmountToman: order.totalAmountToman.toString(), lineCount: order.lines.length });
         return this.order(order);

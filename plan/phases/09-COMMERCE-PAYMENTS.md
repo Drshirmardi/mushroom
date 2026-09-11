@@ -137,10 +137,15 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T04 DONE`
   - خروجی: idempotent checkout، address/shipping selection و snapshot اقلام/قیمت/tax/discount/shipping
   - پذیرش: تغییر catalog بعدی هیچ order تاریخی را تغییر ندهد.
-- [ ] `F09-T06` — stock ledger/reservation/expiry و concurrency
+- [x] `F09-T06` — stock ledger/reservation/expiry و concurrency
   - Depends on: `F09-T05 DONE`
-  - خروجی: atomic reservation/consume/release و expiry worker
-  - پذیرش: رقابت هم‌زمان stock منفی یا oversell ایجاد نکند و retry تکراری اثر دوباره نداشته باشد.
+  - خروجی: checkout reservation اتمیک، ledger append-only و idempotent، consume/release داخلی، expiry worker
+    bounded با `SKIP LOCKED` و clock تزریقی، و inventory adjustment ادمین از مسیر ledger
+  - پذیرش: `onHandQuantity` فیزیکی و `reservedQuantity` رزروشده است؛ sellable برابر تفاضل آن‌هاست. رقابت
+    هم‌زمان stock منفی/oversell ایجاد نمی‌کند، shortfall کل checkout/cart/reservation/ledger را rollback می‌کند،
+    retry اثر دوباره ندارد، expiry فقط یک‌بار آزاد می‌کند و تا attempt مبهم یا reconciliation هیچ stockی آزاد/Orderی
+    cancel نمی‌شود. default TTL قابل‌پیکربندی و ۲۰ دقیقه است؛ Verify موفق آینده تنها در transaction داخلی
+    reservation را consume خواهد کرد.
 - [ ] `F09-T07` — discount eligibility و usage limits
   - Depends on: `F09-T05 DONE`, `F09-T06 DONE`
   - خروجی: discount rules/limits/reservation با محاسبه server-side

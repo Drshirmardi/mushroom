@@ -8,5 +8,8 @@ import { PatientCommerceCartService } from '../cart/patient-commerce-cart.servic
 import { AdminCommerceShippingController } from '../checkout/admin-commerce-shipping.controller';
 import { PatientCommerceCheckoutController, PatientCommerceOrdersController } from '../checkout/patient-commerce-checkout.controller';
 import { CommerceCheckoutService } from '../checkout/commerce-checkout.service';
-@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceCheckoutService] })
+import { CommerceClock } from '../inventory/commerce-clock';
+import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
+import { InventoryReservationExpiryWorker } from '../inventory/inventory-reservation-expiry.worker';
+@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService], exports: [CommerceInventoryService] })
 export class AdminCommerceCatalogModule {}

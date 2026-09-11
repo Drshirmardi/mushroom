@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-11 14:32 +03:30`
+- آخرین به‌رورسانی: `2026-09-11 15:02 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,10 +50,39 @@
 
 ## handoff فاز فعال
 
-`F09-B05/F09-T05` is DONE after the frozen F09-T01 contract, the owner-confirmed clinic-scoped courier-rate
-decision, PostgreSQL integration/migration/drift verification, and review gate. Sadad remains `UNCONFIRMED`
-and `SADAD_GO_LIVE_BLOCKED`; it is outside this checkout task. The next eligible serialized task is
-`F09-B06 / F09-T06`; it is not claimed or started.
+`F09-B06/F09-T06` is accepted and closed. Inventory reservation/ledger semantics are now implemented and verified;
+Sadad remains `UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`. The next eligible serialized work is `F09-B07/F09-T07`,
+which is not claimed or started.
+
+## آخرین batch — F09-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 14:40 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Completed at: `2026-09-11 15:02 +03:30`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; checkout snapshots at `3e20784`; owner-confirmed inventory/reservation semantics dated `2026-09-11`
+
+- `F09-T06` — `DONE`
+  Dependencies: `F09-T05 DONE` at `3e20784`; no active batch existed when claimed.
+  Scope: atomic checkout reservation, deterministic/global inventory ledger entries, internal idempotent
+  reserve/release/consume operations, a bounded concurrency-safe expiry worker with injected clock and
+  configurable 20-minute default TTL, system cancellation only after safe expiry conditions, and routing the
+  existing ADMIN inventory adjustment through the ledger.
+  Owned paths: `apps/api/{src/modules/commerce/{catalog/admin-commerce-catalog.service.ts,checkout/commerce-checkout.service.ts,inventory/**},src/common/errors/api-error.ts,test/{commerce-checkout.integration.spec.ts,inventory-concurrency.integration.spec.ts,inventory-reservation-expiry.integration.spec.ts,admin-commerce-catalog.integration.spec.ts,migrations.integration.spec.ts},prisma/{schema.prisma,migrations/20260911150000_phase_09_inventory_reservations/**}}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: commerce checkout/inventory transaction boundary, Prisma schema/migration if required, API error contract, test PostgreSQL databases and catalog inventory mutation.
+  Do not change: accepted migrations through F09-T05; `.gitignore` (user-owned); Sadad sample/PDF/credentials;
+  discount eligibility; provider/Sadad/callback/Verify; public cancellation/fulfillment/refund; app/dashboard/
+  OpenAPI/generated client absent an unavoidable accepted inventory-contract change; and F09-T07 or later work.
+  Required verification: PostgreSQL checkout contention/rollback/idempotency, reserve/release/consume ledger
+  consistency, expiry/recovery/retry and expiry-consume race with injected clock, ADMIN lower-than-reserved
+  rejection, previous checkout/outbox regressions, migration/drift/diff and scoped review.
+  Review gate: `PASS` — checkout uses atomic conditional reservation and full rollback; ledger mutations are
+  global-idempotent; expiry is bounded, clock-driven and reconciliation-safe; consume remains internal for future
+  Verify. PostgreSQL tests cover contention, rollback, replay and race behavior. No accepted migration was changed,
+  and no provider/Sadad/outbox/UI/OpenAPI work or user-owned `.gitignore` is included.
+  Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B07 / F09-T07` — do not claim or start in this task.
 
 ## آخرین batch — F09-B05
 

@@ -70,6 +70,20 @@ casing callback، فرمت/timezone تاریخ‌ها، static egress IP، callb
 Order، PaymentAttempt، Payment و Refund aggregateهای جدا هستند. یک Payment موفق فقط پس از Verify، در همان
 transaction داخلی، reservation را consume و Order را `PAID` می‌کند. Refund دستی Payment را mutate نمی‌کند.
 
+## invariants موجودی و reservation
+
+- `onHandQuantity` فقط stock فیزیکی و `reservedQuantity` فقط stock رزروشده است؛ sellable همیشه
+  `onHandQuantity - reservedQuantity` است و هیچ‌کدام منفی یا بزرگ‌تر از on-hand نمی‌شوند.
+- checkout در همان transaction snapshot/order، برای هر SKU order یک reservation `ACTIVE` و ledger entry
+  `RESERVATION (+quantity)` می‌سازد. کمبود هر SKU کل transaction، از جمله order و پاک‌سازی cart را rollback می‌کند.
+- ledger global-idempotent و append-only است: `RESERVATION +q` و `RELEASE -q` bucket رزروشده را تغییر می‌دهند؛
+  `CONSUMPTION -q` هم physical و هم reserved را کم می‌کند؛ `RECEIPT` و `ADJUSTMENT` فقط physical را تغییر می‌دهند.
+- TTL reservation از config خوانده می‌شود و default ایمن آن ۲۰ دقیقه است. worker clock-injected، bounded و
+  `SKIP LOCKED` است؛ `ACTIVE → EXPIRED` دقیقاً یک release می‌نویسد. فقط وقتی هیچ reservation `ACTIVE` و هیچ
+  PaymentAttempt فعال/مبهم/reconciliation وجود ندارد، Order `PENDING_PAYMENT` system-cancel می‌شود.
+- `REQUIRES_RECONCILIATION` یا Verify مبهم هرگز توسط expiry worker stock آزاد نمی‌کند. consume فقط internal و
+  idempotent است و به `F09-T08` تعلق دارد؛ این task هیچ Payment یا Order `PAID`ی ایجاد نمی‌کند.
+
 ## Provider port
 
 قرارداد پایه:
@@ -168,6 +182,7 @@ Order بیمار را نمی‌گیرند؛ patient فقط resourceهای خود
 | Code | وضعیت امن |
 |---|---|
 | `COMMERCE_MONEY_UNIT_INVALID` | amount غیرinteger، currency نادرست یا provider conversion مبهم رد می‌شود. |
+| `COMMERCE_INVENTORY_NOT_FOUND` / `COMMERCE_INVENTORY_INSUFFICIENT` / `COMMERCE_RESERVATION_STATE_INVALID` | inventory clinic-local، shortfall checkout، یا transition reservation نامعتبر بدون اثر جزئی رد می‌شود. |
 | `SHIPPING_METHOD_UNAVAILABLE` / `FULFILLMENT_TRACKING_URL_INVALID` | روش خارج از policy یا `COURIER` بدون نرخ فعال، و نیز URL نامعتبر رد می‌شود. |
 | `ORDER_STATE_CONFLICT` / `ORDER_NOT_CANCELLABLE` | transition lifecycle نامجاز هیچ اثر مالی/موجودی ندارد. |
 | `REFUND_SELF_SERVICE_UNSUPPORTED` / `REFUND_MANUAL_EVIDENCE_REQUIRED` | بیمار refund نمی‌سازد و ADMIN بدون evidence غیرحساس آن را complete نمی‌کند. |

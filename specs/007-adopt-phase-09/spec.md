@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-09-commerce-inventory-payments`
 **Created**: 2026-09-09
-**Status**: `F09-B03/F09-T03` is DONE; live execution state remains in `plan/STATUS.md`.
+**Status**: `F09-B06/F09-T06` is DONE; live execution state remains in `plan/STATUS.md`.
 **Input**: Prepare the authoritative Phase 09 roadmap for implementation, including the owner-approved
 multi-provider architecture, Sadad-first integration, dashboard-managed provider configuration, and the
 official Sadad purchase protocol, without activating or claiming the phase.
@@ -156,7 +156,9 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
   encrypted configuration history used by attempts.
 - **PaymentAttempt**: One idempotent provider-bound payment try containing both commerce TOMAN and exact
   provider amount/unit snapshots.
-- **Inventory Ledger and Reservation**: Inventory accountability and availability concepts named by `F09-T06`.
+- **Inventory Ledger and Reservation**: `onHandQuantity` is physical stock, `reservedQuantity` is committed stock,
+  and their non-negative difference is sellable. `F09-T06` atomically reserves checkout inventory, records
+  global-idempotent ledger entries, and expires/retries safely without releasing a reconciling payment.
 - **Discount**: A commercial offer subject to the `F09-T07` usage-limit boundary.
 - **Fulfillment, Tracking, Return, Refund, and Reconciliation**: The order-after-payment concepts named by `F09-T09`.
 

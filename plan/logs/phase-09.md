@@ -1,5 +1,51 @@
 # Phase 09 Execution Evidence
 
+## F09-T06 — atomic inventory reservations and ledger
+
+Task ID: F09-T06
+Completed at: 2026-09-11 15:02 +03:30
+Agent/Thread: Codex /root
+Batch ID: F09-B06
+Status: DONE — review gate passed
+
+Implementation:
+
+- Checkout now reserves every order SKU in its existing PostgreSQL transaction. The conditional stock update makes
+  sellable inventory (`onHandQuantity - reservedQuantity`) atomic; a short SKU rolls back the order, snapshot,
+  reservations, ledger and cart clearing together.
+- Added append-only, globally idempotent `RECEIPT`, `ADJUSTMENT`, `RESERVATION`, `RELEASE` and `CONSUMPTION`
+  ledger operations. Existing ADMIN on-hand adjustment is serialized through this ledger and rejects a target below
+  current reservation. Initial ADMIN SKU stock receives one receipt entry.
+- Added internal idempotent release/consume operations and a bounded, clock-injected `SKIP LOCKED` expiry worker.
+  The configurable TTL safely defaults to 20 minutes. Expiry releases exactly once and system-cancels only a safe
+  `PENDING_PAYMENT` order; a verifying/reconciliation attempt stays fail-safe without release or cancellation.
+- No schema or migration change was needed: F09-T02 already supplied the required reservation, ledger, FK, unique
+  and stock check constraints. No provider, Sadad, outbox event, public cancellation, OpenAPI/client or UI behavior
+  was added.
+
+Checks completed:
+
+- Real PostgreSQL `inventory-concurrency.integration.spec.ts` and
+  `inventory-reservation-expiry.integration.spec.ts` → PASS (6/6): multi-checkout contention/no oversell,
+  multi-SKU full rollback, idempotent release/consume and ledger entries, injected-clock expiry replay/recovery,
+  ambiguous payment hold, and expiry/consume race with one terminal movement.
+- Real PostgreSQL `admin-commerce-catalog.integration.spec.ts` and
+  `commerce-checkout.integration.spec.ts` → PASS (2/2): initial receipt/admin adjustment audit, lower-than-reserved
+  rejection, checkout snapshot/idempotency regression and atomic reservation.
+- Real PostgreSQL `outbox.integration.spec.ts` → PASS (2/2): existing outbox behavior remains unchanged.
+- Real PostgreSQL `migrations.integration.spec.ts` → PASS (3/3): empty replay, seed twice and final Phase 08 to
+  Phase 09 upgrade. `prisma migrate status`, `prisma validate`, `prisma generate`, API typecheck/build and a
+  disposable shadow-database `prisma migrate diff --from-migrations --to-schema` → PASS; drift is zero.
+- Manual transaction/schema/migration/contract review, confidential-path and prohibited `TOMAN × 10` scan, and
+  `git diff --check` → PASS. Accepted migrations, `providerUnit=UNCONFIRMED` and
+  `SADAD_GO_LIVE_BLOCKED` remain unchanged; no credential, Sadad call, sample/PDF or user-owned `.gitignore` change
+  is included.
+
+Result:
+
+- `F09-T06` is accepted for the isolated task commit `feat(F09-T06): add atomic inventory reservations`.
+- Next eligible batch: `F09-B07 / F09-T07`; it is not claimed or started here.
+
 ## F09-T05 — idempotent checkout, shipping and immutable order snapshots
 
 Task ID: F09-T05
