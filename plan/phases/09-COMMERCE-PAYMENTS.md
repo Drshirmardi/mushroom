@@ -27,9 +27,11 @@
 
 - قیمت فروشگاه final و tax-inclusive است؛ `taxAmountToman=0` در نسخهٔ اول روی Order snapshot صریح است و
   فاکتور رسمی مالیاتی خارج از scope است. رسید امن سفارش/پرداخت جایگزین آن نیست.
-- ارسال فقط `PICKUP` (صفر تومان) یا `COURIER` (هزینهٔ ثابت TOMAN تعیین‌شده توسط ADMIN) است. روش، هزینه،
-  address و اطلاعات تجاری ارسال immutable snapshot می‌شوند. tracking دستی ADMIN با carrier، code و URL
-  HTTPS معتبر است؛ integration شرکت حمل‌ونقل خارج از scope است.
+- ارسال فقط `PICKUP` (همیشه صفر تومان) یا `COURIER` است. نرخ courier یک config clinic-scoped در PostgreSQL
+  است که ADMIN از API/dashboard با authorization و audit مدیریت می‌کند؛ seed/config اولیه فقط `25,000 TOMAN`
+  است و در code/UI hardcode نمی‌شود. نبود نرخ فعال courier آن روش را fail-closed غیرفعال می‌کند. روش، هزینه،
+  address و اطلاعات تجاری ارسال immutable snapshot می‌شوند و تغییر نرخ فقط checkout جدید را اثر می‌دهد.
+  tracking دستی ADMIN با carrier، code و URL HTTPS معتبر است؛ integration شرکت حمل‌ونقل خارج از scope است.
 - پیش از پرداخت موفق، لغو reservation را آزاد می‌کند و Refund نمی‌سازد. پس از پرداخت، فقط ADMIN می‌تواند
   cancellation/return/refund case-by-case و audited را ثبت/approve/reject کند. refund پس از انتقال دستی
   بانکی و evidence/reference غیرحساس `COMPLETED` می‌شود؛ بیمار self-service refund ندارد.
@@ -77,6 +79,10 @@ callback domain و credential/test environment. تا تأیید کتبی، `prov
 | ADMIN | `GET` | `/v1/admin/commerce/payment-providers` | `F09-T08` |
 | ADMIN | `POST` | `/v1/admin/commerce/payment-providers/{providerCode}/config-revisions` | `F09-T08` |
 | ADMIN | `PATCH` | `/v1/admin/commerce/payment-providers/{providerCode}` | `F09-T08` |
+| ADMIN | `GET/PATCH` | `/v1/admin/commerce/shipping-rates/courier` | `F09-T05` |
+| PATIENT | `GET/POST/PATCH/DELETE` | `/v1/patients/me/commerce/addresses/**` | `F09-T05` |
+| PATIENT | `GET` | `/v1/patients/me/commerce/shipping-options` | `F09-T05` |
+| PATIENT | `POST/GET` | `/v1/patients/me/orders/**` | `F09-T05` |
 | PATIENT | `POST` | `/v1/patients/me/orders/{orderId}/payment-attempts` | `F09-T08` |
 | PATIENT | `GET` | `/v1/patients/me/payment-attempts/{attemptId}` | `F09-T08` |
 | SADAD browser POST | `POST` | `/v1/payments/providers/sadad/callback` | `F09-T08` |
@@ -127,7 +133,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T03 DONE`
   - خروجی: patient API + app store surfaces بدون source-of-truth محلی
   - پذیرش: جستجو، جزئیات، wishlist و cart persisted و resource-scoped باشند.
-- [ ] `F09-T05` — checkout، shipping و immutable order snapshot
+- [x] `F09-T05` — checkout، shipping و immutable order snapshot
   - Depends on: `F09-T04 DONE`
   - خروجی: idempotent checkout، address/shipping selection و snapshot اقلام/قیمت/tax/discount/shipping
   - پذیرش: تغییر catalog بعدی هیچ order تاریخی را تغییر ندهد.

@@ -26,9 +26,12 @@
 - قیمت فروشگاه نهایی و `tax-inclusive` است. تمام moneyهای commerce integer `TOMAN` هستند؛
   `taxAmountToman` در snapshot صریح است و در نسخهٔ اول مقدار پیش‌فرض آن `0` است.
 - Phase 09 فاکتور رسمی مالیاتی تولید نمی‌کند؛ فقط رسید امن سفارش و پرداخت را ارائه می‌دهد.
-- روش‌های ارسال نسخهٔ اول فقط `PICKUP` با هزینهٔ صفر و `COURIER` با هزینهٔ ثابت TOMAN هستند. ADMIN
-  هزینهٔ courier را تعیین می‌کند. روش، هزینه، address و اطلاعات تجاری ارسال در زمان checkout immutable
-  snapshot می‌شوند.
+- روش‌های ارسال نسخهٔ اول فقط `PICKUP` با هزینهٔ صفر و `COURIER` با هزینهٔ ثابت TOMAN هستند. نرخ
+  `COURIER` در PostgreSQL، clinic-scoped و فقط توسط ADMIN مجاز از API/dashboard مدیریت می‌شود؛ هر mutation
+  authorization و audit دارد. seed/config اولیه فقط `25,000 TOMAN` است و مقدار code/UI نیست. `PICKUP`
+  rate قابل‌تغییر ندارد و همیشه صفر است. نبود نرخ فعال `COURIER`، این روش را با
+  `SHIPPING_METHOD_UNAVAILABLE` fail-closed می‌کند. روش، fee، address و اطلاعات تجاری ارسال در checkout
+  immutable snapshot می‌شوند؛ تغییر نرخ فقط checkoutهای بعدی را اثر می‌دهد.
 - tracking دستی است: ADMIN فقط carrier name، tracking code و tracking URL معتبر را ثبت می‌کند؛ اتصال
   مستقیم شرکت حمل‌ونقل خارج از scope است. URL باید HTTPS باشد و هرگز provider endpoint نیست.
 - پیش از Payment موفق، لغو Order reservation را آزاد می‌کند و Refund نمی‌سازد. بیمار در Phase 09 مسیر
@@ -147,9 +150,11 @@ createdAt, updatedAt
 | Actor | Surface/endpoint خانواده | مجوز و قاعده |
 |---|---|---|
 | PATIENT | `GET /v1/commerce/products`, `GET /v1/commerce/products/{productId}`, `GET/PUT /v1/patients/me/{cart,wishlist}` | فقط catalog فعال و resourceهای خود بیمار. |
-| PATIENT | `POST /v1/patients/me/orders`, `GET /v1/patients/me/orders/{orderId}` | checkout idempotent؛ فقط Order خود بیمار و snapshot immutable. |
+| PATIENT | `GET/POST/PATCH/DELETE /v1/patients/me/commerce/addresses` | address فقط clinic/patient-owner است؛ checkout courier فقط از همان address استفاده می‌کند. |
+| PATIENT | `GET /v1/patients/me/commerce/shipping-options`, `POST /v1/patients/me/orders`, `GET /v1/patients/me/orders`, `GET /v1/patients/me/orders/{orderId}` | option و checkout server-priced/idempotent هستند؛ فقط Order خود بیمار و snapshot immutable. |
 | PATIENT | `POST /v1/patients/me/orders/{orderId}/payment-attempts`, `GET /v1/patients/me/payment-attempts/{attemptId}` | owner-scoped؛ redirect/status امن، بدون secret یا raw provider detail. |
-| ADMIN | `/v1/admin/commerce/{categories,products,skus,inventory,shipping-rates}` | مدیریت catalog/inventory/shipping با authorization و audit؛ mutationهای مالی و inventory audit می‌شوند. |
+| ADMIN | `GET/PATCH /v1/admin/commerce/shipping-rates/courier` | نرخ clinic-scoped courier با `COMMERCE_MANAGE` و audit؛ PATCH هرگز snapshotهای Order را mutate نمی‌کند. |
+| ADMIN | `/v1/admin/commerce/{categories,products,skus,inventory}` | مدیریت catalog/inventory با authorization و audit؛ mutationهای مالی و inventory audit می‌شوند. |
 | ADMIN | `/v1/admin/commerce/orders/{orderId}/{fulfillment,tracking,cancellation,returns,refunds}` | فقط lifecycleهای جدول بالا، audited؛ refund self-service ندارد. |
 | ADMIN | `/v1/admin/commerce/payment-providers/**` | config/revision write-only و audited؛ enable/default Sadad با gate کنترل می‌شود. |
 | Public Sadad callback | `POST /v1/payments/providers/sadad/callback` | cookie/session بیمار خوانده نمی‌شود؛ body محدود، rate-limited و redacted است؛ فقط transport تأییدشدهٔ پذیرندگی پذیرفته می‌شود و پاسخ `303` فقط code-owned است. |
@@ -163,7 +168,7 @@ Order بیمار را نمی‌گیرند؛ patient فقط resourceهای خود
 | Code | وضعیت امن |
 |---|---|
 | `COMMERCE_MONEY_UNIT_INVALID` | amount غیرinteger، currency نادرست یا provider conversion مبهم رد می‌شود. |
-| `SHIPPING_METHOD_UNAVAILABLE` / `FULFILLMENT_TRACKING_URL_INVALID` | روش یا URL خارج از policy رد می‌شود. |
+| `SHIPPING_METHOD_UNAVAILABLE` / `FULFILLMENT_TRACKING_URL_INVALID` | روش خارج از policy یا `COURIER` بدون نرخ فعال، و نیز URL نامعتبر رد می‌شود. |
 | `ORDER_STATE_CONFLICT` / `ORDER_NOT_CANCELLABLE` | transition lifecycle نامجاز هیچ اثر مالی/موجودی ندارد. |
 | `REFUND_SELF_SERVICE_UNSUPPORTED` / `REFUND_MANUAL_EVIDENCE_REQUIRED` | بیمار refund نمی‌سازد و ADMIN بدون evidence غیرحساس آن را complete نمی‌کند. |
 | `PAYMENT_PROVIDER_NOT_CONFIGURED` / `PAYMENT_PROVIDER_DISABLED` | attempt جدید provider معتبر/default ندارد. |

@@ -179,6 +179,14 @@ try {
       clinic_id = EXCLUDED.clinic_id, sku_id = EXCLUDED.sku_id, on_hand_quantity = EXCLUDED.on_hand_quantity,
       reserved_quantity = EXCLUDED.reserved_quantity, updated_at = CURRENT_TIMESTAMP
   `, [clinicId]);
+  await client.query(`
+    INSERT INTO commerce_shipping_rates (id, clinic_id, method, amount_toman, is_active, updated_at)
+    SELECT gen_random_uuid(), $1::uuid, 'COURIER', 25000, TRUE, CURRENT_TIMESTAMP
+    WHERE NOT EXISTS (
+      SELECT 1 FROM commerce_shipping_rates
+      WHERE clinic_id = $1::uuid AND method = 'COURIER'
+    )
+  `, [clinicId]);
   if (developmentAdminPhone && developmentAdminPassword) {
     const passwordHash = await hash(developmentAdminPassword, {
       type: argon2id,

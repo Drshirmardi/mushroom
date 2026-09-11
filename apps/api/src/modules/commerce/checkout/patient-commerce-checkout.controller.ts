@@ -1,0 +1,25 @@
+import { Body, Controller, Delete, Get, Headers, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
+import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
+import { PERMISSIONS } from '../../../common/auth/authorization.policy';
+import { CheckoutCommerceOrderDto, CommerceAddressDto, CommerceOrderDto, CommerceShippingOptionDto, CreateCommerceAddressDto, UpdateCommerceAddressDto } from './commerce-checkout.dto';
+import { CommerceCheckoutService } from './commerce-checkout.service';
+
+@ApiTags('Patient Commerce') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @Controller('patients/me/commerce')
+export class PatientCommerceCheckoutController {
+  constructor(private readonly commerce: CommerceCheckoutService) {}
+  @Get('addresses') @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceAddressesList', summary: 'List the signed-in patient checkout addresses' }) @ApiOkResponse({ type: CommerceAddressDto, isArray: true }) addresses(@Req() request: AuthenticatedRequest) { return this.commerce.listAddresses(request.auth.userId); }
+  @Post('addresses') @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceAddressesCreate', summary: 'Create a signed-in patient checkout address' }) @ApiCreatedResponse({ type: CommerceAddressDto }) createAddress(@Req() request: AuthenticatedRequest, @Body() body: CreateCommerceAddressDto) { return this.commerce.createAddress(request.auth.userId, body); }
+  @Patch('addresses/:addressId') @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceAddressesUpdate', summary: 'Update a signed-in patient checkout address' }) @ApiOkResponse({ type: CommerceAddressDto }) updateAddress(@Req() request: AuthenticatedRequest, @Param('addressId', new ParseUUIDPipe({ version: '4' })) addressId: string, @Body() body: UpdateCommerceAddressDto) { return this.commerce.updateAddress(request.auth.userId, addressId, body); }
+  @Delete('addresses/:addressId') @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ operationId: 'patientCommerceAddressesDelete', summary: 'Delete a signed-in patient checkout address' }) @ApiNoContentResponse() async deleteAddress(@Req() request: AuthenticatedRequest, @Param('addressId', new ParseUUIDPipe({ version: '4' })) addressId: string) { await this.commerce.deleteAddress(request.auth.userId, addressId); }
+  @Get('shipping-options') @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceShippingOptionsList', summary: 'List server-priced shipping options for the signed-in patient clinic' }) @ApiOkResponse({ type: CommerceShippingOptionDto, isArray: true }) shippingOptions(@Req() request: AuthenticatedRequest) { return this.commerce.shippingOptions(request.auth.userId); }
+}
+
+@ApiTags('Patient Commerce') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @Controller('patients/me/orders')
+export class PatientCommerceOrdersController {
+  constructor(private readonly commerce: CommerceCheckoutService) {}
+  @Post() @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceOrdersCheckout', summary: 'Create an idempotent server-priced commerce order snapshot' }) @ApiCreatedResponse({ type: CommerceOrderDto }) checkout(@Req() request: AuthenticatedRequest, @Headers('idempotency-key') idempotencyKey: string | undefined, @Body() body: CheckoutCommerceOrderDto) { return this.commerce.checkout(request.auth.userId, idempotencyKey, body, { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip }); }
+  @Get() @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceOrdersList', summary: 'List signed-in patient commerce orders' }) @ApiOkResponse({ type: CommerceOrderDto, isArray: true }) orders(@Req() request: AuthenticatedRequest) { return this.commerce.listOrders(request.auth.userId); }
+  @Get(':orderId') @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceOrdersGet', summary: 'Get an immutable signed-in patient commerce order snapshot' }) @ApiOkResponse({ type: CommerceOrderDto }) order(@Req() request: AuthenticatedRequest, @Param('orderId', new ParseUUIDPipe({ version: '4' })) orderId: string) { return this.commerce.getOrder(request.auth.userId, orderId); }
+}

@@ -1,5 +1,48 @@
 # Phase 09 Execution Evidence
 
+## F09-T05 — idempotent checkout, shipping and immutable order snapshots
+
+Task ID: F09-T05
+Completed at: 2026-09-11 14:32 +03:30
+Agent/Thread: Codex /root
+Batch ID: F09-B05
+Status: DONE — review gate passed
+
+Implementation:
+
+- Added an additive `commerce_shipping_rates` migration and idempotent non-sensitive seed of the owner-approved
+  `25,000 TOMAN` initial `COURIER` rate. It is clinic-scoped PostgreSQL configuration; `PICKUP` has no mutable
+  rate and remains server-priced at zero.
+- Added ADMIN-authorized, audited courier-rate API/dashboard management. A missing or inactive courier rate
+  removes the option and checkout rejects it fail-closed; changes affect only newly created immutable order
+  snapshots.
+- Added patient-owned address CRUD, server-priced shipping options, idempotent checkout and patient order
+  retrieval. Checkout snapshots line/product/price/tax/discount/shipping/address/commercial data and audits the
+  accepted checkout; it neither reserves nor mutates inventory/ledger, which remains F09-T06 scope.
+- Added the task-owned OpenAPI and generated client slice plus app checkout/order loading, empty, error and
+  retry behavior. Neither the API nor UI sends a client-selected checkout amount.
+
+Checks completed:
+
+- Real PostgreSQL `commerce-checkout.integration.spec.ts` → PASS: ADMIN authorization/audit, patient address
+  ownership, server-priced options, COURIER and free PICKUP checkout, idempotency/reuse conflict, historical
+  snapshot integrity after catalog/address mutation, immutable snapshot trigger, no reservation/ledger mutation,
+  empty cart and inactive-rate fail-closed behavior.
+- Real PostgreSQL `migrations.integration.spec.ts` → PASS (3/3): clean migration replay, idempotent seed and
+  Phase 08 baseline upgrade with the new additive migration and rate constraint coverage.
+- `prisma validate`, `prisma generate`, migration deploy/status and a temporary shadow-database
+  `prisma migrate diff --from-migrations --to-schema` → PASS; schema/migration drift is zero.
+- API build/typecheck, API-client generated freshness/build/test, app and dashboard typecheck/test/production
+  build → PASS. App tests: 11 files / 32 tests; dashboard tests: 12 files / 39 tests.
+- Manual migration/schema/controller/OpenAPI/client/document review, credential/`TOMAN × 10` scan and
+  `git diff --check` → PASS. F09-T02 migration is unmodified; no plaintext credential, real provider call,
+  `.gitignore` change or Sadad sample/PDF path is included.
+
+Result:
+
+- `F09-T05` is accepted for the isolated task commit `feat(F09-T05): add immutable commerce checkout`.
+- Next eligible batch: `F09-B06 / F09-T06`; it is not claimed or started here.
+
 ## F09-T01 — freeze قرارداد commerce و payment-provider
 
 Task ID: F09-T01

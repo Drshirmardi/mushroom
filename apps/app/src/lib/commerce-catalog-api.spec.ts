@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("./api", () => ({ apiClient: { GET: vi.fn(), PUT: vi.fn() } }));
+vi.mock("./api", () => ({ apiClient: { GET: vi.fn(), PUT: vi.fn(), POST: vi.fn() } }));
 
 import { apiClient } from "./api";
-import { CommerceRequestError, commerceErrorMessage, listCommerceProducts, updateCommerceCart } from "./commerce-catalog-api";
+import { CommerceRequestError, checkoutCommerceOrder, commerceErrorMessage, listCommerceProducts, updateCommerceCart } from "./commerce-catalog-api";
 
 describe("commerce catalog API adapter", () => {
   afterEach(() => vi.clearAllMocks());
@@ -20,5 +20,11 @@ describe("commerce catalog API adapter", () => {
     await expect(updateCommerceCart("access-token", "33333333-3333-4333-8333-333333333333", 2)).rejects.toEqual(new CommerceRequestError(404, "COMMERCE_SKU_NOT_FOUND"));
     expect(apiClient.PUT).toHaveBeenCalledWith("/v1/patients/me/cart", { headers: { authorization: "Bearer access-token" }, body: { skuId: "33333333-3333-4333-8333-333333333333", quantity: 2 } });
     expect(commerceErrorMessage(new CommerceRequestError(404))).toBe("این محصول دیگر در دسترس نیست.");
+  });
+
+  it("submits only the shipping selection with an idempotency key; amount is never client input", async () => {
+    vi.mocked(apiClient.POST).mockResolvedValue({ data: { id: "11111111-1111-4111-8111-111111111111" }, response: new Response(null, { status: 201 }) } as never);
+    await checkoutCommerceOrder("access-token", "checkout-key", { shippingMethod: "PICKUP" });
+    expect(apiClient.POST).toHaveBeenCalledWith("/v1/patients/me/orders", { headers: { authorization: "Bearer access-token", "idempotency-key": "checkout-key" }, body: { shippingMethod: "PICKUP" } });
   });
 });

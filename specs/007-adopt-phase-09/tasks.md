@@ -13,7 +13,7 @@ description: "Actionable one-to-one execution map for authoritative Phase 09 roa
 evidence and commit identities. Every checklist item below maps one-to-one to one roadmap task; implementation
 may use checkpoints but must retain that roadmap ID and one final task-level commit.
 
-**Execution status**: `F09-B03/F09-T03` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
+**Execution status**: `F09-B05/F09-T05` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
 `SADAD_GO_LIVE_BLOCKED`, not a provider-neutral catalog blocker.
 
 **Tests**: Tests are required because the phase specification explicitly requires financial idempotency,
@@ -60,7 +60,7 @@ of truth.
 **Independent test**: A cart checks out idempotently; later catalog mutation does not alter the order; competing
 reservations never oversell or exceed discount limits.
 
-- [ ] T005 [US2] F09-T05 Implement idempotent checkout, patient address/shipping selection and immutable line/price/tax/discount/shipping snapshots in `apps/api/src/modules/commerce/checkout/**`, `apps/api/src/modules/commerce/orders/**`, `apps/api/test/checkout-order-snapshot.integration.spec.ts`, `apps/app/src/app/(app)/store/checkout/page.tsx`, `apps/app/src/app/(app)/store/orders/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+- [x] T005 [US2] F09-T05 Implement idempotent checkout, patient address/shipping selection and immutable line/price/tax/discount/shipping snapshots in `apps/api/src/modules/commerce/checkout/**`, `apps/api/src/modules/commerce/orders/**`, `apps/api/test/checkout-order-snapshot.integration.spec.ts`, `apps/app/src/app/(app)/store/checkout/page.tsx`, `apps/app/src/app/(app)/store/orders/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
 - [ ] T006 [US2] F09-T06 Implement inventory ledger, atomic reservation/consume/release, expiry/retry jobs and PostgreSQL concurrency coverage in `apps/api/src/modules/commerce/inventory/**`, `apps/api/src/modules/outbox/**` only where the accepted commerce event contract requires it, `apps/api/test/inventory-concurrency.integration.spec.ts`, `apps/api/test/inventory-reservation-expiry.integration.spec.ts`, and `apps/api/test/outbox.integration.spec.ts`
 - [ ] T007 [US2] F09-T07 Implement server-authoritative discount eligibility, reservation and global/per-patient usage limits with dashboard management in `apps/api/src/modules/commerce/discounts/**`, `apps/api/test/discount-usage-concurrency.integration.spec.ts`, `apps/dashboard/src/features/discounts/**`, `apps/dashboard/src/app/(app)/discounts/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
 

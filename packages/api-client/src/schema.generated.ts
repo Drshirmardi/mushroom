@@ -2328,6 +2328,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/commerce/shipping-rates/courier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the active clinic courier shipping rate configuration */
+        get: operations["adminCommerceCourierShippingRateGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the clinic courier rate without changing historical order snapshots */
+        patch: operations["adminCommerceCourierShippingRateUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the signed-in patient checkout addresses */
+        get: operations["patientCommerceAddressesList"];
+        put?: never;
+        /** Create a signed-in patient checkout address */
+        post: operations["patientCommerceAddressesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/addresses/{addressId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a signed-in patient checkout address */
+        delete: operations["patientCommerceAddressesDelete"];
+        options?: never;
+        head?: never;
+        /** Update a signed-in patient checkout address */
+        patch: operations["patientCommerceAddressesUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/shipping-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List server-priced shipping options for the signed-in patient clinic */
+        get: operations["patientCommerceShippingOptionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List signed-in patient commerce orders */
+        get: operations["patientCommerceOrdersList"];
+        put?: never;
+        /** Create an idempotent server-priced commerce order snapshot */
+        post: operations["patientCommerceOrdersCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an immutable signed-in patient commerce order snapshot */
+        get: operations["patientCommerceOrdersGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2357,7 +2463,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "SHIPPING_METHOD_UNAVAILABLE" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -4120,6 +4226,90 @@ export interface components {
             /** Format: uuid */
             skuId: string;
             saved: boolean;
+        };
+        CommerceCourierShippingRateDto: {
+            /** @enum {string} */
+            method: "COURIER";
+            /** @description Integer TOMAN when configured. */
+            amountToman?: string | null;
+            isActive: boolean;
+            isConfigured: boolean;
+        };
+        UpdateCourierShippingRateDto: {
+            /** @description Integer TOMAN. */
+            amountToman: number;
+            isActive: boolean;
+        };
+        CommerceAddressDto: {
+            id: string;
+            label: string;
+            recipientName: string;
+            phone: string;
+            province: string;
+            city: string;
+            postalCode?: Record<string, never> | null;
+            line1: string;
+            line2?: Record<string, never> | null;
+            isDefault: boolean;
+        };
+        CreateCommerceAddressDto: {
+            label: string;
+            recipientName: string;
+            phone: string;
+            province: string;
+            city: string;
+            line1: string;
+            postalCode?: string;
+            line2?: string;
+            isDefault?: boolean;
+        };
+        UpdateCommerceAddressDto: {
+            label?: string;
+            recipientName?: string;
+            phone?: string;
+            province?: string;
+            city?: string;
+            line1?: string;
+            postalCode?: Record<string, never> | null;
+            line2?: Record<string, never> | null;
+            isDefault?: boolean;
+        };
+        CommerceShippingOptionDto: {
+            /** @enum {string} */
+            method: "PICKUP" | "COURIER";
+            /** @description Integer TOMAN. */
+            amountToman: string;
+        };
+        CheckoutCommerceOrderDto: {
+            /** @enum {string} */
+            shippingMethod: "PICKUP" | "COURIER";
+            /** Format: uuid */
+            addressId?: string | null;
+        };
+        CommerceOrderLineDto: {
+            skuCode: string;
+            productTitle: string;
+            quantity: number;
+            unitPriceToman: string;
+            unitTaxToman: string;
+            discountAmountToman: string;
+            lineTotalToman: string;
+        };
+        CommerceOrderDto: {
+            /** Format: uuid */
+            id: string;
+            orderNumber: string;
+            status: string;
+            /** @enum {string} */
+            shippingMethod: "PICKUP" | "COURIER";
+            shippingAddress?: components["schemas"]["CommerceAddressDto"] | null;
+            subtotalAmountToman: string;
+            taxAmountToman: string;
+            discountAmountToman: string;
+            shippingAmountToman: string;
+            totalAmountToman: string;
+            lines: components["schemas"]["CommerceOrderLineDto"][];
+            createdAt: string;
         };
     };
     responses: never;
@@ -9151,6 +9341,216 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientWishlistDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCourierShippingRateGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCourierShippingRateDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCourierShippingRateUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCourierShippingRateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCourierShippingRateDto"];
+                };
+            };
+        };
+    };
+    patientCommerceAddressesList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceAddressDto"][];
+                };
+            };
+        };
+    };
+    patientCommerceAddressesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommerceAddressDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceAddressDto"];
+                };
+            };
+        };
+    };
+    patientCommerceAddressesDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patientCommerceAddressesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommerceAddressDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceAddressDto"];
+                };
+            };
+        };
+    };
+    patientCommerceShippingOptionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceShippingOptionDto"][];
+                };
+            };
+        };
+    };
+    patientCommerceOrdersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceOrderDto"][];
+                };
+            };
+        };
+    };
+    patientCommerceOrdersCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutCommerceOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceOrderDto"];
+                };
+            };
+        };
+    };
+    patientCommerceOrdersGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceOrderDto"];
                 };
             };
         };

@@ -8,6 +8,7 @@ export type CommerceCategory = components["schemas"]["CommerceCategoryResponseDt
 export type CommerceProduct = components["schemas"]["CommerceProductResponseDto"];
 export type CommerceSku = components["schemas"]["CommerceSkuResponseDto"];
 export type CommerceCatalogData = { categories: CommerceCategory[]; products: CommerceProduct[] };
+export type CommerceCourierShippingRate = components["schemas"]["CommerceCourierShippingRateDto"];
 export type CommerceCatalogState =
   | { status: "ready"; data: CommerceCatalogData }
   | { status: "unauthorized" }
@@ -63,3 +64,9 @@ export const updateCommerceSku = (accessToken: string, skuId: string, body: comp
   dataOrThrow<CommerceSku>(apiClient.PATCH("/v1/admin/commerce/skus/{skuId}", { headers: authorization(accessToken), params: { path: { skuId } }, body }));
 export const updateCommerceInventory = (accessToken: string, skuId: string, onHandQuantity: number) =>
   dataOrThrow<{ skuId: string; onHandQuantity: number; reservedQuantity: number }>(apiClient.PATCH("/v1/admin/commerce/skus/{skuId}/inventory", { headers: authorization(accessToken), params: { path: { skuId } }, body: { onHandQuantity } }));
+
+export const getCommerceCourierShippingRate = (accessToken: string) =>
+  dataOrThrow<CommerceCourierShippingRate>(apiClient.GET("/v1/admin/commerce/shipping-rates/courier", { headers: authorization(accessToken) }));
+
+export const updateCommerceCourierShippingRate = (accessToken: string, body: components["schemas"]["UpdateCourierShippingRateDto"]) =>
+  dataOrThrow<CommerceCourierShippingRate>(apiClient.PATCH("/v1/admin/commerce/shipping-rates/courier", { headers: authorization(accessToken), body }));

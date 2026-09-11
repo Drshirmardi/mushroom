@@ -8995,6 +8995,337 @@
           "Patient Commerce"
         ]
       }
+    },
+    "/v1/admin/commerce/shipping-rates/courier": {
+      "get": {
+        "operationId": "adminCommerceCourierShippingRateGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCourierShippingRateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the active clinic courier shipping rate configuration",
+        "tags": [
+          "Admin Commerce"
+        ]
+      },
+      "patch": {
+        "operationId": "adminCommerceCourierShippingRateUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCourierShippingRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCourierShippingRateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update the clinic courier rate without changing historical order snapshots",
+        "tags": [
+          "Admin Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/addresses": {
+      "get": {
+        "operationId": "patientCommerceAddressesList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceAddressDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the signed-in patient checkout addresses",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "post": {
+        "operationId": "patientCommerceAddressesCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceAddressDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a signed-in patient checkout address",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/addresses/{addressId}": {
+      "patch": {
+        "operationId": "patientCommerceAddressesUpdate",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceAddressDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a signed-in patient checkout address",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "delete": {
+        "operationId": "patientCommerceAddressesDelete",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a signed-in patient checkout address",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/shipping-options": {
+      "get": {
+        "operationId": "patientCommerceShippingOptionsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceShippingOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List server-priced shipping options for the signed-in patient clinic",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/orders": {
+      "post": {
+        "operationId": "patientCommerceOrdersCheckout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutCommerceOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceOrderDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an idempotent server-priced commerce order snapshot",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "get": {
+        "operationId": "patientCommerceOrdersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceOrderDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List signed-in patient commerce orders",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/orders/{orderId}": {
+      "get": {
+        "operationId": "patientCommerceOrdersGet",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceOrderDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an immutable signed-in patient commerce order snapshot",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
     }
   },
   "info": {
@@ -9165,6 +9496,11 @@
               "COMMERCE_NAME_CONFLICT",
               "COMMERCE_LIFECYCLE_INVALID",
               "COMMERCE_INVENTORY_INVALID",
+              "COMMERCE_ADDRESS_NOT_FOUND",
+              "COMMERCE_CART_EMPTY",
+              "COMMERCE_ORDER_NOT_FOUND",
+              "COMMERCE_ORDER_INPUT_INVALID",
+              "SHIPPING_METHOD_UNAVAILABLE",
               "HTTP_ERROR",
               "INTERNAL_SERVER_ERROR"
             ],
@@ -15397,6 +15733,331 @@
         "required": [
           "skuId",
           "saved"
+        ]
+      },
+      "CommerceCourierShippingRateDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "COURIER"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "nullable": true,
+            "description": "Integer TOMAN when configured."
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isConfigured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "method",
+          "isActive",
+          "isConfigured"
+        ]
+      },
+      "UpdateCourierShippingRateDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer TOMAN."
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "amountToman",
+          "isActive"
+        ]
+      },
+      "CommerceAddressDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "province": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "object",
+            "nullable": true
+          },
+          "line1": {
+            "type": "string"
+          },
+          "line2": {
+            "type": "object",
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "recipientName",
+          "phone",
+          "province",
+          "city",
+          "line1",
+          "isDefault"
+        ]
+      },
+      "CreateCommerceAddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "recipientName": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "province": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "line1": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "postalCode": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "line2": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "recipientName",
+          "phone",
+          "province",
+          "city",
+          "line1"
+        ]
+      },
+      "UpdateCommerceAddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "recipientName": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "province": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "line1": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "postalCode": {
+            "type": "object",
+            "maxLength": 32,
+            "nullable": true
+          },
+          "line2": {
+            "type": "object",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CommerceShippingOptionDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "COURIER"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          }
+        },
+        "required": [
+          "method",
+          "amountToman"
+        ]
+      },
+      "CheckoutCommerceOrderDto": {
+        "type": "object",
+        "properties": {
+          "shippingMethod": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "COURIER"
+            ]
+          },
+          "addressId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "shippingMethod"
+        ]
+      },
+      "CommerceOrderLineDto": {
+        "type": "object",
+        "properties": {
+          "skuCode": {
+            "type": "string"
+          },
+          "productTitle": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitPriceToman": {
+            "type": "string"
+          },
+          "unitTaxToman": {
+            "type": "string"
+          },
+          "discountAmountToman": {
+            "type": "string"
+          },
+          "lineTotalToman": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "skuCode",
+          "productTitle",
+          "quantity",
+          "unitPriceToman",
+          "unitTaxToman",
+          "discountAmountToman",
+          "lineTotalToman"
+        ]
+      },
+      "CommerceOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "shippingMethod": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "COURIER"
+            ]
+          },
+          "shippingAddress": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommerceAddressDto"
+              }
+            ]
+          },
+          "subtotalAmountToman": {
+            "type": "string"
+          },
+          "taxAmountToman": {
+            "type": "string"
+          },
+          "discountAmountToman": {
+            "type": "string"
+          },
+          "shippingAmountToman": {
+            "type": "string"
+          },
+          "totalAmountToman": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceOrderLineDto"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "orderNumber",
+          "status",
+          "shippingMethod",
+          "subtotalAmountToman",
+          "taxAmountToman",
+          "discountAmountToman",
+          "shippingAmountToman",
+          "totalAmountToman",
+          "lines",
+          "createdAt"
         ]
       }
     }

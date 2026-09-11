@@ -671,6 +671,7 @@ model Clinic {
   inventoryItems           InventoryItem[]
   inventoryLedgerEntries   InventoryLedgerEntry[]
   commerceDiscounts        CommerceDiscount[]
+  commerceShippingRates    CommerceShippingRate[]
   commerceCarts            CommerceCart[]
   commerceOrders           CommerceOrder[]
   paymentProviderConfigs   PaymentProviderConfig[]
@@ -902,11 +903,28 @@ model CommerceDiscount {
   @@map("commerce_discounts")
 }
 
+// PICKUP is permanently free and intentionally has no mutable rate record.
+// COURIER is clinic-scoped, ADMIN-managed configuration; checkout snapshots it.
+model CommerceShippingRate {
+  id          String                 @id @default(uuid()) @db.Uuid
+  clinicId    String                 @map("clinic_id") @db.Uuid
+  method      CommerceShippingMethod @default(COURIER)
+  amountToman BigInt                 @map("amount_toman")
+  isActive    Boolean                @default(true) @map("is_active")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic      Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+
+  @@unique([clinicId, method], map: "commerce_shipping_rates_clinic_method_key")
+  @@index([clinicId, method, isActive], map: "commerce_shipping_rates_clinic_method_active_idx")
+  @@map("commerce_shipping_rates")
+}
+
 model CommerceOrder {
   id                      String                 @id @default(uuid()) @db.Uuid
   clinicId                String                 @map("clinic_id") @db.Uuid
   patientId               String                 @map("patient_id") @db.Uuid
-  orderNumber             BigInt                 @unique(map: "commerce_orders_order_number_key") @map("order_number")
+  orderNumber             BigInt                 @default(autoincrement()) @unique(map: "commerce_orders_order_number_key") @map("order_number")
   status                  CommerceOrderStatus    @default(PENDING_PAYMENT)
   idempotencyKey          String                 @map("idempotency_key") @db.VarChar(240)
   shippingMethod          CommerceShippingMethod @map("shipping_method")

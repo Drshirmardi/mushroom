@@ -1,7 +1,7 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CommerceCatalogApiError, createCommerceCategory, createCommerceProduct, createCommerceSku, loadCommerceCatalog, updateCommerceCategory, updateCommerceInventory, updateCommerceProduct, updateCommerceSku } from "./commerce-catalog-api";
+import { CommerceCatalogApiError, createCommerceCategory, createCommerceProduct, createCommerceSku, loadCommerceCatalog, updateCommerceCategory, updateCommerceCourierShippingRate, updateCommerceInventory, updateCommerceProduct, updateCommerceSku } from "./commerce-catalog-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock }) }));
@@ -38,11 +38,13 @@ describe("commerce catalog dashboard API", () => {
     await createCommerceSku("token", product.id, { code: "SKU-1", currentPriceToman: 125000, currentTaxToman: 0, initialOnHandQuantity: 4 });
     await updateCommerceSku("token", "sku-1", { currentPriceToman: 130000 });
     await updateCommerceInventory("token", "sku-1", 8);
+    await updateCommerceCourierShippingRate("token", { amountToman: 25000, isActive: true });
     const requests = fetchMock.mock.calls.map(([request]) => request as Request);
-    expect(requests.map((request) => [request.method, new URL(request.url).pathname])).toEqual([["POST", "/v1/admin/commerce/categories"], ["PATCH", `/v1/admin/commerce/categories/${category.id}`], ["POST", "/v1/admin/commerce/products"], ["PATCH", `/v1/admin/commerce/products/${product.id}`], ["POST", `/v1/admin/commerce/products/${product.id}/skus`], ["PATCH", "/v1/admin/commerce/skus/sku-1"], ["PATCH", "/v1/admin/commerce/skus/sku-1/inventory"]]);
+    expect(requests.map((request) => [request.method, new URL(request.url).pathname])).toEqual([["POST", "/v1/admin/commerce/categories"], ["PATCH", `/v1/admin/commerce/categories/${category.id}`], ["POST", "/v1/admin/commerce/products"], ["PATCH", `/v1/admin/commerce/products/${product.id}`], ["POST", `/v1/admin/commerce/products/${product.id}/skus`], ["PATCH", "/v1/admin/commerce/skus/sku-1"], ["PATCH", "/v1/admin/commerce/skus/sku-1/inventory"], ["PATCH", "/v1/admin/commerce/shipping-rates/courier"]]);
     expect(requests.every((request) => request.headers.get("authorization") === "Bearer token")).toBe(true);
     await expect(requests[4]?.json()).resolves.toMatchObject({ currentPriceToman: 125000, currentTaxToman: 0 });
     await expect(requests[6]?.json()).resolves.toEqual({ onHandQuantity: 8 });
+    await expect(requests[7]?.json()).resolves.toEqual({ amountToman: 25000, isActive: true });
   });
 
   it("preserves a mutation failure for truthful UI handling", async () => {

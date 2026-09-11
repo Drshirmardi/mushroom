@@ -8,6 +8,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const databaseUrl = process.env.DATABASE_URL;
 const databaseName = `sabz_zendegi_smoke_${randomUUID().replaceAll('-', '')}`;
+const seedEnvironment = { ...process.env };
+delete seedEnvironment.DEV_DASHBOARD_ADMIN_PHONE;
+delete seedEnvironment.DEV_DASHBOARD_ADMIN_PASSWORD;
 let adminClient: Client;
 
 const createDatabaseUrl = (name = databaseName): string => {
@@ -112,7 +115,7 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         ['prisma/seed.mjs'],
         {
           cwd: process.cwd(),
-          env: { ...process.env, DATABASE_URL: createDatabaseUrl() },
+          env: { ...seedEnvironment, DATABASE_URL: createDatabaseUrl(), DEV_DASHBOARD_ADMIN_PHONE: '', DEV_DASHBOARD_ADMIN_PASSWORD: '' },
           encoding: 'utf8',
         },
       );
@@ -994,11 +997,22 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         'commerce_categories', 'commerce_products', 'commerce_skus', 'inventory_items',
         'inventory_ledger_entries', 'inventory_reservations', 'commerce_carts',
         'commerce_cart_items', 'wishlist_items', 'commerce_addresses', 'commerce_discounts',
+        'commerce_shipping_rates',
         'commerce_orders', 'commerce_order_lines', 'commerce_order_snapshots',
         'payment_provider_configs', 'payment_provider_config_revisions',
         'payment_provider_credential_versions', 'payment_attempts', 'payments', 'refunds',
       ]]);
-      expect(commerceTables.rows).toHaveLength(20);
+      expect(commerceTables.rows).toHaveLength(21);
+
+      const courierSeed = await smokeClient.query<{ amount_toman: string; is_active: boolean }>(`
+        SELECT amount_toman::text, is_active FROM commerce_shipping_rates
+        WHERE method = 'COURIER'
+      `);
+      expect(courierSeed.rows).toEqual([{ amount_toman: '25000', is_active: true }]);
+      await expect(smokeClient.query(`
+        INSERT INTO commerce_shipping_rates (id, clinic_id, method, amount_toman, is_active, updated_at)
+        SELECT gen_random_uuid(), id, 'PICKUP', 0, TRUE, CURRENT_TIMESTAMP FROM clinics LIMIT 1
+      `)).rejects.toMatchObject({ code: '23514' });
 
       const commerceProduct = await smokeClient.query<{ sku_id: string; inventory_id: string }>(`
         SELECT commerce_skus.id AS sku_id, inventory_items.id AS inventory_id
@@ -1251,11 +1265,14 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       await upgradeClient.query(readFileSync(resolve(
         process.cwd(), 'prisma/migrations/20260910050000_phase_09_commerce_foundation/migration.sql',
       ), 'utf8'));
+      await upgradeClient.query(readFileSync(resolve(
+        process.cwd(), 'prisma/migrations/20260911140000_phase_09_commerce_shipping_rates/migration.sql',
+      ), 'utf8'));
       const result = await upgradeClient.query<{ count: string }>(`
         SELECT count(*)::text AS count FROM information_schema.tables
-        WHERE table_schema = 'public' AND table_name = 'payment_attempts'
+        WHERE table_schema = 'public' AND table_name = ANY(ARRAY['payment_attempts', 'commerce_shipping_rates'])
       `);
-      expect(result.rows[0]?.count).toBe('1');
+      expect(result.rows[0]?.count).toBe('2');
     } finally {
       await upgradeClient.end();
       await adminClient.query(`DROP DATABASE IF EXISTS "${upgradeDatabaseName}"`);

@@ -33,8 +33,11 @@ Discount ──> usage limit
 ```
 
 - Commerce money is integer TOMAN, tax-inclusive, with `taxAmountToman=0` in the first release. Order
-  snapshots retain final price, tax, shipping method/fee/address/commercial details; `PICKUP` is free and
-  `COURIER` has an ADMIN-managed fixed TOMAN fee. Formal tax invoice generation is out of scope.
+  snapshots retain final price, tax, shipping method/fee/address/commercial details; `PICKUP` is always free.
+  The fixed `COURIER` fee is a persisted, clinic-scoped ADMIN-managed rate with authorization/audit; its
+  initial seed/config is `25,000 TOMAN`, it is never code/UI hardcoded, and no active rate disables courier
+  fail-closed. A changed rate applies only to new checkout snapshots. Formal tax invoice generation is out of
+  scope.
 - Existing medical-service and appointment prices remain IRR and outside Phase 09 migration; shared money UI
   must render the explicit domain currency rather than assume all project amounts are TOMAN.
 - A browser callback is not authoritative. Sadad uses callback followed by Verify; sandbox, webhook, inquiry,

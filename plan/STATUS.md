@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-10 21:17 +03:30`
+- آخرین به‌رورسانی: `2026-09-11 14:32 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,10 +50,30 @@
 
 ## handoff فاز فعال
 
-`F09-B04/F09-T04` is `DONE` after its review gate. Patient catalog browse/search/detail and persisted,
-patient-scoped wishlist/cart now use the accepted catalog persistence and real app API states. Sadad remains
-`UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`; it is outside this provider-neutral task. The next eligible
-single-task batch is `F09-B05/F09-T05`; it is not claimed or started here.
+`F09-B05/F09-T05` is DONE after the frozen F09-T01 contract, the owner-confirmed clinic-scoped courier-rate
+decision, PostgreSQL integration/migration/drift verification, and review gate. Sadad remains `UNCONFIRMED`
+and `SADAD_GO_LIVE_BLOCKED`; it is outside this checkout task. The next eligible serialized task is
+`F09-B06 / F09-T06`; it is not claimed or started.
+
+## آخرین batch — F09-B05
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 14:00 +03:30`
+Completed at: `2026-09-11 14:32 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; commerce persistence at `fa1aec4`; patient catalog/cart at `8a96539`; owner-confirmed courier-rate policy dated `2026-09-11`
+
+- `F09-T05` — `DONE`
+  Dependencies: `F09-T04 DONE` at `8a96539`; no active batch existed when claimed.
+  Scope: a new additive PostgreSQL migration for clinic-scoped courier rates and the non-sensitive initial seed; ADMIN rate API/dashboard with authorization/audit; patient address management and selection; server-priced idempotent checkout; immutable order/line/address/shipping/commercial snapshots; patient checkout/order surfaces; and the task-owned OpenAPI/generated-client slice.
+  Owned paths: `apps/api/{prisma/schema.prisma,prisma/seed.mjs,prisma/migrations/20260911140000_phase_09_commerce_shipping_rates/migration.sql,src/common/errors/api-error.ts,src/modules/commerce/{catalog/admin-commerce-catalog.module.ts,shipping/**,checkout/**,orders/**},test/{admin-commerce-shipping-rate.integration.spec.ts,commerce-checkout.integration.spec.ts,openapi-contract.spec.ts,migrations.integration.spec.ts}}`, `apps/dashboard/{src/lib/commerce-catalog-api.ts,src/lib/commerce-catalog-api.spec.ts,src/features/store/store-page.tsx}`, `apps/app/{src/app/(app)/store/{checkout/**,orders/**},src/lib/commerce-catalog-api.ts,src/lib/commerce-catalog-api.spec.ts}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md,decisions/ADR-0009-multi-provider-payment-architecture.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: Prisma schema/migration/seed, commerce module wiring, checkout/order route family, and this task's OpenAPI/generated-client slice.
+  Do not change: accepted F09-T02 migration; `.gitignore` (user-owned); Sadad sample/PDF/credentials; payment/provider/Sadad behavior; discount eligibility; reservation/ledger/expiry/stock mutation; fulfillment/refund; and F09-T06 or later implementation.
+  Required verification: PostgreSQL clean replay and baseline upgrade with the additive migration, seed idempotency and rate constraints; authorization/audit/address ownership/idempotency/immutable-snapshot integration; OpenAPI/client freshness; API/app/dashboard/client tests/builds; drift/diff/review and user-change/confidential-path preservation.
+  Review gate: `PASS` — only claimed checkout/shipping/migration/API/app/dashboard/generated-client/planning paths are included. The new additive migration preserves F09-T02; `PICKUP` is server-priced at zero, `COURIER` is fail-closed with no active clinic rate, and no provider/Sadad path is activated. User-owned `.gitignore` and confidential sample/PDF paths remain unstaged.
+  Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B06 / F09-T06` — do not claim or start in this task.
 
 ## آخرین batch — F09-B04
 

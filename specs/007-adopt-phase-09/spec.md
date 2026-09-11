@@ -149,7 +149,7 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
 ### Key Entities *(include if feature involves data)*
 
 - **Catalog, Category, Product, and SKU**: The sellable-commerce information named by the roadmap.
-- **Price, Tax, and Shipping**: Commercial values governed by the `F09-T01` contract and preserved by the applicable order snapshot.
+- **Price, Tax, and Shipping**: Commercial values governed by the `F09-T01` contract and preserved by the applicable order snapshot. `PICKUP` is permanently free; `COURIER` uses an ADMIN-authorized and audited clinic-scoped persisted rate (initial seed/config: `25,000 TOMAN`), never a code/UI constant, and is unavailable without an active rate.
 - **Cart and Address**: Patient checkout inputs named by the `F09-T02` migration task.
 - **Order and Payment**: The purchase record and its authoritative payment information.
 - **PaymentProviderConfig / Revision / CredentialVersion**: Clinic-owned provider selection and immutable,

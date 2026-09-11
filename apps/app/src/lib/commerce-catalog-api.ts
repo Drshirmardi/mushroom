@@ -5,6 +5,9 @@ import { apiClient } from "./api";
 export type CommerceProduct = components["schemas"]["PatientCommerceProductDto"];
 export type CommerceCart = components["schemas"]["PatientCartDto"];
 export type CommerceWishlist = components["schemas"]["PatientWishlistDto"];
+export type CommerceAddress = components["schemas"]["CommerceAddressDto"];
+export type CommerceShippingOption = components["schemas"]["CommerceShippingOptionDto"];
+export type CommerceOrder = components["schemas"]["CommerceOrderDto"];
 
 export class CommerceRequestError extends Error {
   constructor(public readonly status: number, public readonly code: string | null = null) {
@@ -43,6 +46,21 @@ export const getCommerceWishlist = (accessToken: string) =>
 
 export const updateCommerceWishlist = (accessToken: string, skuId: string, saved: boolean) =>
   expectData<CommerceWishlist>(apiClient.PUT("/v1/patients/me/wishlist", { headers: authorization(accessToken), body: { skuId, saved } }));
+
+export const getCommerceAddresses = (accessToken: string) =>
+  expectData<CommerceAddress[]>(apiClient.GET("/v1/patients/me/commerce/addresses", { headers: authorization(accessToken) }));
+
+export const createCommerceAddress = (accessToken: string, body: components["schemas"]["CreateCommerceAddressDto"]) =>
+  expectData<CommerceAddress>(apiClient.POST("/v1/patients/me/commerce/addresses", { headers: authorization(accessToken), body }));
+
+export const getCommerceShippingOptions = (accessToken: string) =>
+  expectData<CommerceShippingOption[]>(apiClient.GET("/v1/patients/me/commerce/shipping-options", { headers: authorization(accessToken) }));
+
+export const checkoutCommerceOrder = (accessToken: string, idempotencyKey: string, body: components["schemas"]["CheckoutCommerceOrderDto"]) =>
+  expectData<CommerceOrder>(apiClient.POST("/v1/patients/me/orders", { headers: { ...authorization(accessToken), "idempotency-key": idempotencyKey }, body }));
+
+export const getCommerceOrders = (accessToken: string) =>
+  expectData<CommerceOrder[]>(apiClient.GET("/v1/patients/me/orders", { headers: authorization(accessToken) }));
 
 export function commerceErrorMessage(error: unknown) {
   if (!(error instanceof CommerceRequestError) || error.status === 0) return "سرویس فروشگاه در دسترس نیست؛ دوباره تلاش کنید.";

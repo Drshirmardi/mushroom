@@ -46,8 +46,10 @@ idempotency یا persistence قابل اتکا ندارد. این رفتارها
 10. `PaymentAttempt`، `Payment` و `Refund` lifecycle مستقل از Order lifecycle دارند. اثر مالی موفق در
     transaction و با unique/idempotency constraints حداکثر یک بار اعمال می‌شود.
 11. قیمت store final و tax-inclusive است؛ `taxAmountToman=0` در نسخهٔ اول Order snapshot می‌شود و فاکتور
-    رسمی مالیاتی خارج از scope است. `PICKUP` رایگان و `COURIER` با fee ثابت TOMAN ADMIN-managed، address و
-    shipping snapshot immutable هستند؛ tracking دستی ADMIN است.
+    رسمی مالیاتی خارج از scope است. `PICKUP` همواره رایگان است؛ fee ثابت `COURIER` به‌صورت rate
+    clinic-scoped در PostgreSQL و با authorization/audit توسط ADMIN مدیریت می‌شود. seed/config اولیه فقط
+    `25,000 TOMAN` است، نه مقدار code/UI. نبود rate فعال courier را fail-closed می‌کند و تغییر آن snapshot
+    تاریخی را mutate نمی‌کند؛ address و shipping snapshot immutable و tracking دستی ADMIN است.
 12. پیش از payment موفق، cancel فقط reservation را آزاد می‌کند. پس از payment، cancellation/return/refund
     فقط case-by-case و audited توسط ADMIN است؛ refund تا انتقال دستی بانکی و evidence/reference غیرحساس
     completed نمی‌شود و patient self-service refund ندارد.
