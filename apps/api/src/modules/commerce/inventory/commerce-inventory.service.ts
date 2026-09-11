@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InventoryReservationStatus, Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { CommerceClock } from './commerce-clock';
+import { CommerceDiscountService } from '../discounts/commerce-discount.service';
 
 type Transaction = Prisma.TransactionClient;
 type ReservationRow = { id: string; inventory_item_id: string; order_id: string; quantity: number; clinic_id: string };
@@ -16,7 +17,7 @@ const inventoryMissing = () => new NotFoundException({ code: 'COMMERCE_INVENTORY
 
 @Injectable()
 export class CommerceInventoryService {
-  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private readonly clock: CommerceClock) {}
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private readonly clock: CommerceClock, private readonly discounts: CommerceDiscountService) {}
 
   reservationTtlMs(): number {
     const minutes = this.config.get<number>('COMMERCE_RESERVATION_TTL_MINUTES', DEFAULT_RESERVATION_TTL_MINUTES);
@@ -24,13 +25,13 @@ export class CommerceInventoryService {
   }
 
   async reserveCheckout(tx: Transaction, input: { clinicId: string; orderId: string; lines: Array<{ skuId: string; quantity: number }> }) {
-    const existing = await tx.inventoryReservation.findMany({ where: { orderId: input.orderId }, select: { id: true } });
+    const existing = await tx.inventoryReservation.findMany({ where: { orderId: input.orderId }, select: { id: true, expiresAt: true } });
     if (existing.length) return existing;
     const now = this.clock.now();
     const expiresAt = new Date(now.getTime() + this.reservationTtlMs());
     const quantities = new Map<string, number>();
     for (const line of input.lines) quantities.set(line.skuId, (quantities.get(line.skuId) ?? 0) + line.quantity);
-    const reservations: Array<{ id: string }> = [];
+    const reservations: Array<{ id: string; expiresAt: Date | null }> = [];
     for (const [skuId, quantity] of [...quantities.entries()].sort(([left], [right]) => left.localeCompare(right))) {
       const rows = await tx.$queryRaw<InventoryRow[]>(Prisma.sql`
         UPDATE inventory_items
@@ -44,7 +45,7 @@ export class CommerceInventoryService {
       if (!item) throw insufficient();
       const reservation = await tx.inventoryReservation.create({ data: { inventoryItemId: item.id, orderId: input.orderId, quantity, expiresAt } });
       await this.ledger(tx, { clinicId: item.clinic_id, inventoryItemId: item.id, entryType: 'RESERVATION', quantityDelta: quantity, referenceType: 'INVENTORY_RESERVATION', referenceId: reservation.id, idempotencyKey: `inventory:reservation:${reservation.id}` });
-      reservations.push({ id: reservation.id });
+      reservations.push({ id: reservation.id, expiresAt: reservation.expiresAt });
     }
     return reservations;
   }
@@ -53,6 +54,7 @@ export class CommerceInventoryService {
     const rows = await this.lockOrderReservations(tx, orderId);
     let released = 0;
     for (const row of rows) if (await this.releaseLocked(tx, row, InventoryReservationStatus.RELEASED)) released += 1;
+    if (released) await this.discounts.releaseOrderReservation(tx, orderId);
     return released;
   }
 
@@ -74,6 +76,7 @@ export class CommerceInventoryService {
       await this.ledger(tx, { clinicId: item.clinic_id, inventoryItemId: item.id, entryType: 'CONSUMPTION', quantityDelta: -row.quantity, referenceType: 'INVENTORY_RESERVATION', referenceId: row.id, idempotencyKey: `inventory:consumption:${row.id}` });
       consumed += 1;
     }
+    if (consumed) await this.discounts.consumeOrderReservation(tx, orderId);
     return consumed;
   }
 
@@ -96,6 +99,8 @@ export class CommerceInventoryService {
         if (await this.hasAmbiguousPayment(tx, row.order_id)) continue;
         if (await this.releaseLocked(tx, row, InventoryReservationStatus.EXPIRED)) {
           expired += 1;
+          const active = await tx.inventoryReservation.count({ where: { orderId: row.order_id, status: InventoryReservationStatus.ACTIVE } });
+          if (!active) await this.discounts.expireOrderReservation(tx, row.order_id);
           if (await this.cancelExpiredPendingOrder(tx, row.order_id, now)) cancelled += 1;
         }
       }

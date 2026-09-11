@@ -146,7 +146,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
     retry اثر دوباره ندارد، expiry فقط یک‌بار آزاد می‌کند و تا attempt مبهم یا reconciliation هیچ stockی آزاد/Orderی
     cancel نمی‌شود. default TTL قابل‌پیکربندی و ۲۰ دقیقه است؛ Verify موفق آینده تنها در transaction داخلی
     reservation را consume خواهد کرد.
-- [ ] `F09-T07` — discount eligibility و usage limits
+- [x] `F09-T07` — discount eligibility و usage limits
   - Depends on: `F09-T05 DONE`, `F09-T06 DONE`
   - خروجی: discount rules/limits/reservation با محاسبه server-side
   - پذیرش: concurrent/repeated use از limit عبور نکند و order snapshot تخفیف را حفظ کند.

@@ -996,13 +996,24 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       `, [[
         'commerce_categories', 'commerce_products', 'commerce_skus', 'inventory_items',
         'inventory_ledger_entries', 'inventory_reservations', 'commerce_carts',
-        'commerce_cart_items', 'wishlist_items', 'commerce_addresses', 'commerce_discounts',
+        'commerce_cart_items', 'wishlist_items', 'commerce_addresses', 'commerce_discounts', 'commerce_discount_reservations',
         'commerce_shipping_rates',
         'commerce_orders', 'commerce_order_lines', 'commerce_order_snapshots',
         'payment_provider_configs', 'payment_provider_config_revisions',
         'payment_provider_credential_versions', 'payment_attempts', 'payments', 'refunds',
       ]]);
-      expect(commerceTables.rows).toHaveLength(21);
+      expect(commerceTables.rows).toHaveLength(22);
+
+      const seededDiscount = await smokeClient.query<{ id: string }>(`
+        INSERT INTO commerce_discounts (id, clinic_id, code, title, kind, amount_toman, updated_at)
+        SELECT gen_random_uuid(), id, 'SAVE_100', 'تخفیف تست', 'FIXED_AMOUNT', 100, CURRENT_TIMESTAMP
+        FROM clinics LIMIT 1 RETURNING id
+      `);
+      await expect(smokeClient.query(`
+        INSERT INTO commerce_discounts (id, clinic_id, code, title, kind, amount_toman, updated_at)
+        SELECT gen_random_uuid(), id, 'bad code', 'نامعتبر', 'FIXED_AMOUNT', 100, CURRENT_TIMESTAMP
+        FROM clinics LIMIT 1
+      `)).rejects.toMatchObject({ code: '23514' });
 
       const courierSeed = await smokeClient.query<{ amount_toman: string; is_active: boolean }>(`
         SELECT amount_toman::text, is_active FROM commerce_shipping_rates
@@ -1038,6 +1049,17 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       `, [patientId]);
       const commerceOrderId = commerceOrder.rows[0]?.id;
       expect(commerceOrderId).toBeDefined();
+      const discountReservation = await smokeClient.query<{ id: string }>(`
+        INSERT INTO commerce_discount_reservations (id, discount_id, patient_id, order_id, discount_amount_toman, expires_at, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, $3, 100, CURRENT_TIMESTAMP + INTERVAL '20 minutes', CURRENT_TIMESTAMP) RETURNING id
+      `, [seededDiscount.rows[0]?.id, patientId, commerceOrderId]);
+      await expect(smokeClient.query(`
+        INSERT INTO commerce_discount_reservations (id, discount_id, patient_id, order_id, discount_amount_toman, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, $3, 0, CURRENT_TIMESTAMP)
+      `, [seededDiscount.rows[0]?.id, patientId, commerceOrderId])).rejects.toMatchObject({ code: '23514' });
+      await expect(smokeClient.query(`
+        UPDATE commerce_discount_reservations SET discount_amount_toman = 0 WHERE id = $1
+      `, [discountReservation.rows[0]?.id])).rejects.toMatchObject({ code: '23514' });
 
       await smokeClient.query(`
         INSERT INTO commerce_order_lines (
@@ -1268,11 +1290,14 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       await upgradeClient.query(readFileSync(resolve(
         process.cwd(), 'prisma/migrations/20260911140000_phase_09_commerce_shipping_rates/migration.sql',
       ), 'utf8'));
+      await upgradeClient.query(readFileSync(resolve(
+        process.cwd(), 'prisma/migrations/20260911152000_phase_09_discount_reservations/migration.sql',
+      ), 'utf8'));
       const result = await upgradeClient.query<{ count: string }>(`
         SELECT count(*)::text AS count FROM information_schema.tables
-        WHERE table_schema = 'public' AND table_name = ANY(ARRAY['payment_attempts', 'commerce_shipping_rates'])
+        WHERE table_schema = 'public' AND table_name = ANY(ARRAY['payment_attempts', 'commerce_shipping_rates', 'commerce_discount_reservations'])
       `);
-      expect(result.rows[0]?.count).toBe('2');
+      expect(result.rows[0]?.count).toBe('3');
     } finally {
       await upgradeClient.end();
       await adminClient.query(`DROP DATABASE IF EXISTS "${upgradeDatabaseName}"`);

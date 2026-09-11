@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-11 15:02 +03:30`
+- آخرین به‌رورسانی: `2026-09-11 19:16 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,9 +50,34 @@
 
 ## handoff فاز فعال
 
-`F09-B06/F09-T06` is accepted and closed. Inventory reservation/ledger semantics are now implemented and verified;
-Sadad remains `UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`. The next eligible serialized work is `F09-B07/F09-T07`,
-which is not claimed or started.
+`F09-B07/F09-T07` passed review with an additive reservation migration, server-authoritative checkout pricing,
+ADMIN discount management and generated client/dashboard integration. Sadad remains `UNCONFIRMED` and
+`SADAD_GO_LIVE_BLOCKED`; no provider work was performed.
+
+## آخرین batch — F09-B07
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 15:10 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Completed at: `2026-09-11 19:16 +03:30`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; checkout/inventory at `dd3d108`; owner-confirmed discount policy dated `2026-09-11`
+
+- `F09-T07` — `DONE`
+  Dependencies: `F09-T05 DONE` at `3e20784`; `F09-T06 DONE` at `dd3d108`; no active batch existed when claimed.
+  Scope: additive discount-reservation persistence; one-code server-authoritative checkout pricing and immutable
+  snapshot; transactional global/per-patient limits; internal release/consume/expiry coordination; ADMIN-only
+  audited discount API; real dashboard `/discounts`; this endpoint slice's OpenAPI/generated client and tests.
+  Owned paths: `apps/api/{prisma/{schema.prisma,migrations/20260911152000_phase_09_discount_reservations/**},src/{common/errors/api-error.ts,modules/commerce/{catalog/admin-commerce-catalog.module.ts,checkout/**,discounts/**,inventory/**}},test/{commerce-discount.integration.spec.ts,discount-usage-concurrency.integration.spec.ts,commerce-checkout.integration.spec.ts,inventory-reservation-expiry.integration.spec.ts,migrations.integration.spec.ts,openapi-contract.spec.ts}}`, `apps/dashboard/{src/{app/(app)/discounts/**,features/discounts/**,lib/commerce-discount-api.ts,lib/commerce-discount-api.spec.ts}}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: Prisma/schema migration, checkout-discount transaction boundary, commerce module wiring,
+  API error contract, OpenAPI/client generation, dashboard discounts source of truth and PostgreSQL test databases.
+  Do not change: accepted migrations; user-owned `.gitignore`; Sadad sample/PDF/credentials; provider/callback/Verify;
+  fulfillment/public cancellation/refund; unrelated app behavior; F09-T08 or later work.
+  Review: PASS — PostgreSQL empty replay/Phase-08 upgrade and idempotent seed; SQL constraints for code/amount/order
+  uniqueness; atomic server-priced checkout plus discount snapshot/reservation and canonical idempotency; API ADMIN
+  authorization/audit; OpenAPI/client freshness; API/dashboard typechecks and dashboard build. `git diff --check`
+  and scope/secret/Sadad review passed. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B08 / F09-T08` — do not claim or start in this task.
 
 ## آخرین batch — F09-B06
 

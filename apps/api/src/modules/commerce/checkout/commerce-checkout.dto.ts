@@ -31,6 +31,7 @@ export class UpdateCommerceAddressDto {
 export class CheckoutCommerceOrderDto {
   @ApiProperty({ enum: shippingMethods }) @IsIn(shippingMethods) shippingMethod!: (typeof shippingMethods)[number];
   @ApiPropertyOptional({ format: 'uuid', nullable: true }) @IsOptional() @IsUUID('4') addressId?: string;
+  @ApiPropertyOptional({ minLength: 3, maxLength: 40, description: 'Optional commerce discount code; the server canonicalizes and prices it.' }) @IsOptional() @IsString() @MaxLength(80) discountCode?: string;
 }
 
 export class UpdateCourierShippingRateDto {

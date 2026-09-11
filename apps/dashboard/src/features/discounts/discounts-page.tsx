@@ -1,44 +1,30 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import { p } from "@/lib/utils";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, RefreshCw, ShieldAlert } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { CommerceDiscountApiError, createCommerceDiscount, listCommerceDiscounts, updateCommerceDiscount, type CommerceDiscount } from "@/lib/commerce-discount-api";
 
-interface Coupon {
-  code: string;
-  type: string;
-  value: string;
-  used: number;
-  limit: number;
-  expiry: string;
-  active: boolean;
+const field = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
+const button = "inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50";
+const toman = (value: string) => `${BigInt(value).toLocaleString("fa-IR")} تومان`;
+
+function DiscountCard({ discount, accessToken, refresh }: { discount: CommerceDiscount; accessToken: string; refresh: () => Promise<void> }) {
+  const [saving, setSaving] = useState(false);
+  const toggle = async () => { setSaving(true); try { await updateCommerceDiscount(accessToken, discount.id, { isActive: !discount.isActive }); await refresh(); } finally { setSaving(false); } };
+  const value = discount.kind === "FIXED_AMOUNT" ? toman(discount.amountToman ?? "0") : `${((discount.percentageBasisPoints ?? 0) / 100).toLocaleString("fa-IR", { maximumFractionDigits: 2 })}٪`;
+  const usage = discount.reservedCount + discount.consumedCount; const globalCapacity = discount.remainingGlobalCapacity ?? null; const patientCapacity = discount.perPatientUsageLimit ?? null;
+  return <article className="rounded-2xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div><div className="inline-block rounded-lg bg-primary/10 px-3 py-1 font-mono text-sm font-bold text-primary">{discount.code}</div><h2 className="mt-3 font-bold">{discount.title}</h2></div><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${discount.isActive ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>{discount.isActive ? "فعال" : "غیرفعال"}</span></div><p className="mt-3 text-2xl font-bold">{value}</p><dl className="mt-4 space-y-2 text-xs text-muted-foreground"><div className="flex justify-between"><dt>رزرو / مصرف</dt><dd className="font-semibold text-foreground">{usage.toLocaleString("fa-IR")} ({discount.reservedCount.toLocaleString("fa-IR")} رزرو، {discount.consumedCount.toLocaleString("fa-IR")} مصرف)</dd></div><div className="flex justify-between"><dt>ظرفیت کلی</dt><dd className="font-semibold text-foreground">{globalCapacity === null ? "نامحدود" : globalCapacity.toLocaleString("fa-IR")}</dd></div><div className="flex justify-between"><dt>هر بیمار</dt><dd className="font-semibold text-foreground">{patientCapacity === null ? "نامحدود" : patientCapacity.toLocaleString("fa-IR")}</dd></div><div className="flex justify-between"><dt>پایان</dt><dd className="font-semibold text-foreground">{discount.endsAt ? new Date(discount.endsAt).toLocaleString("fa-IR") : "بدون انقضا"}</dd></div></dl><button type="button" disabled={saving} onClick={() => void toggle()} className="mt-5 text-xs font-bold text-primary hover:underline disabled:opacity-50">{saving ? "در حال ذخیره…" : discount.isActive ? "غیرفعال‌سازی" : "فعال‌سازی"}</button></article>;
 }
 
 export function DiscountsPage() {
-  const coupons: Coupon[] = [
-    { code: "WELCOME20", type: "درصدی", value: "۲۰٪", used: 12, limit: 50, expiry: "۱۴۰۳/۰۶/۳۱", active: true },
-    { code: "ACUPUNEW", type: "مبلغ ثابت", value: "۵۰,۰۰۰ت", used: 5, limit: 20, expiry: "۱۴۰۳/۰۵/۱۵", active: true },
-    { code: "SUMMER15", type: "درصدی", value: "۱۵٪", used: 20, limit: 20, expiry: "۱۴۰۳/۰۴/۳۱", active: false },
-  ];
-  return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
-      <div className="flex justify-end"><button className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold"><Plus size={16} />کد تخفیف جدید</button></div>
-      <div className="grid grid-cols-3 gap-5">
-        {coupons.map(c => (
-          <div key={c.code} className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-mono text-sm font-bold">{c.code}</div>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>{c.active ? "فعال" : "غیرفعال"}</span>
-            </div>
-            <div className="text-2xl font-bold mb-1">{c.value}</div>
-            <p className="text-xs text-muted-foreground mb-4">{c.type}</p>
-            <div className="space-y-1.5 text-xs text-muted-foreground">
-              <div className="flex justify-between"><span>استفاده:</span><span className="font-semibold text-foreground">{p(c.used)} / {p(c.limit)}</span></div>
-              <div className="flex justify-between"><span>انقضا:</span><span className="font-semibold text-foreground">{c.expiry}</span></div>
-            </div>
-            <div className="h-1.5 bg-secondary rounded-full mt-3 overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${(c.used / c.limit) * 100}%` }} /></div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const { authentication } = useDashboardSession();
+  const [discounts, setDiscounts] = useState<CommerceDiscount[] | null>(null); const [state, setState] = useState<"loading" | "forbidden" | "error">("loading"); const [saving, setSaving] = useState(false);
+  const [code, setCode] = useState(""); const [title, setTitle] = useState(""); const [kind, setKind] = useState<"FIXED_AMOUNT" | "PERCENTAGE">("FIXED_AMOUNT"); const [value, setValue] = useState(""); const [usageLimit, setUsageLimit] = useState(""); const [patientLimit, setPatientLimit] = useState(""); const [endsAt, setEndsAt] = useState("");
+  const refresh = useCallback(async () => { setState("loading"); try { setDiscounts(await listCommerceDiscounts(authentication.accessToken)); } catch (error) { setState(error instanceof CommerceDiscountApiError && (error.status === 401 || error.status === 403) ? "forbidden" : "error"); } }, [authentication.accessToken]);
+  useEffect(() => { void refresh(); }, [refresh]);
+  const create = async () => { const numeric = Number(value); const global = usageLimit ? Number(usageLimit) : null; const perPatient = patientLimit ? Number(patientLimit) : null; if (!code.trim() || !title.trim() || !Number.isSafeInteger(numeric) || numeric <= 0 || (global !== null && (!Number.isInteger(global) || global < 1)) || (perPatient !== null && (!Number.isInteger(perPatient) || perPatient < 1))) return; setSaving(true); try { await createCommerceDiscount(authentication.accessToken, { code: code.trim(), title: title.trim(), kind, amountToman: kind === "FIXED_AMOUNT" ? String(numeric) : null, percentageBasisPoints: kind === "PERCENTAGE" ? numeric : null, usageLimit: global, perPatientUsageLimit: perPatient, endsAt: endsAt ? new Date(endsAt).toISOString() : null }); setCode(""); setTitle(""); setValue(""); setUsageLimit(""); setPatientLimit(""); setEndsAt(""); await refresh(); } finally { setSaving(false); } };
+  if (state === "loading" && !discounts) return <div className="flex-1 p-7 text-sm text-muted-foreground" role="status">در حال دریافت کدهای تخفیف…</div>;
+  if (state !== "loading" && !discounts) return <div className="flex-1 p-7"><div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950" role="alert"><div className="flex items-center gap-2 font-bold"><ShieldAlert size={18} />{state === "forbidden" ? "دسترسی مجاز نیست" : "دریافت کدهای تخفیف ناموفق بود"}</div><p className="mt-2 text-sm">هیچ دادهٔ محلی جایگزین نشده است.</p>{state === "error" && <button onClick={() => void refresh()} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold"><RefreshCw size={15} />تلاش دوباره</button>}</div></div>;
+  return <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5"><div><h1 className="text-xl font-bold">کدهای تخفیف</h1><p className="mt-1 text-sm text-muted-foreground">یک کد برای هر سفارش؛ تخفیف فقط روی جمع کالا اعمال می‌شود و مقدار آن فقط در سرور محاسبه می‌گردد.</p></div><form className="rounded-2xl border border-border bg-card p-4 shadow-sm" onSubmit={(event) => { event.preventDefault(); void create(); }}><div className="mb-3 flex items-center gap-2 font-bold"><Plus size={18} />کد تخفیف جدید</div><div className="grid gap-3 md:grid-cols-4"><input className={field} value={code} onChange={(event) => setCode(event.target.value)} placeholder="کد انگلیسی" aria-label="کد تخفیف" /><input className={field} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="عنوان" aria-label="عنوان تخفیف" /><select className={field} value={kind} onChange={(event) => setKind(event.target.value as typeof kind)} aria-label="نوع تخفیف"><option value="FIXED_AMOUNT">مبلغ ثابت TOMAN</option><option value="PERCENTAGE">درصد (bps)</option></select><input className={field} type="number" min="1" max={kind === "PERCENTAGE" ? 10000 : undefined} value={value} onChange={(event) => setValue(event.target.value)} placeholder={kind === "PERCENTAGE" ? "bps، مثال 2500" : "مبلغ TOMAN"} aria-label="مقدار تخفیف" /><input className={field} type="number" min="1" value={usageLimit} onChange={(event) => setUsageLimit(event.target.value)} placeholder="سقف کلی (اختیاری)" aria-label="سقف کلی" /><input className={field} type="number" min="1" value={patientLimit} onChange={(event) => setPatientLimit(event.target.value)} placeholder="سقف هر بیمار (اختیاری)" aria-label="سقف هر بیمار" /><input className={field} type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} aria-label="زمان پایان" /><button className={button} disabled={saving}>{saving ? "در حال ثبت…" : "ثبت کد"}</button></div></form><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{discounts?.map((discount) => <DiscountCard key={discount.id} discount={discount} accessToken={authentication.accessToken} refresh={refresh} />)}</div>{discounts?.length === 0 && <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">هنوز کد تخفیفی ثبت نشده است.</p>}</div>;
 }

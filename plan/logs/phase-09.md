@@ -1,5 +1,42 @@
 # Phase 09 Execution Evidence
 
+## F09-T07 — discount eligibility and usage limits
+
+Task ID: F09-T07
+Completed at: 2026-09-11 19:16 +03:30
+Agent/Thread: Codex /root
+Batch ID: F09-B07
+Status: DONE — review gate passed
+
+Implementation:
+
+- Added one clinic-scoped, immutable-code discount model and additive PostgreSQL migration for immutable order-linked
+  reservations. Code is NFKC/trim/uppercase canonicalized, follows `[A-Z0-9_-]{3,40}`, and fixed TOMAN or bps pricing
+  is server-calculated with integer arithmetic only.
+- Checkout accepts one optional canonical code, locks discount capacity with the order transaction, snapshots line/order
+  discount amounts and payload, and creates its ACTIVE discount reservation only with the inventory reservation.
+  Global/per-patient active-or-consumed limits, expiry, release and later consume hooks remain transactional.
+- Added ADMIN-only audited list/create/update/activation endpoints, generated OpenAPI/client support, and converted
+  dashboard `/discounts` from hard-coded cards to the authenticated API source of truth.
+- No provider, Sadad call, amount conversion, credential, cancellation/refund/fulfillment endpoint or user-owned
+  `.gitignore` change was included.
+
+Checks completed:
+
+- PostgreSQL migration integration → PASS (3/3): empty-database replay, idempotent non-sensitive seed and Phase-08
+  upgrade through the additive migration; SQL table, code, positive-amount and order uniqueness constraints pass.
+- PostgreSQL checkout integration → PASS: ADMIN authorization/audit, canonical fixed-TOMAN code, transactional
+  inventory/discount reservation, immutable discounted order snapshot and canonical idempotency behavior.
+- Prisma validate/generate, API typecheck, OpenAPI export/client generation and client build → PASS.
+- Dashboard typecheck and production build (including `/discounts`) → PASS.
+- Manual migration/schema/controller/service/diff scope review and `git diff --check` → PASS; no plaintext credentials,
+  TOMAN×10 conversion, provider activation/network call, or Sadad sample/PDF path found.
+
+Result:
+
+- `F09-T07` is accepted for the isolated commit `feat(F09-T07): enforce commerce discount limits`.
+- Next eligible batch: `F09-B08 / F09-T08`; it is not claimed or started here.
+
 ## F09-T06 — atomic inventory reservations and ledger
 
 Task ID: F09-T06

@@ -11,5 +11,7 @@ import { CommerceCheckoutService } from '../checkout/commerce-checkout.service';
 import { CommerceClock } from '../inventory/commerce-clock';
 import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
 import { InventoryReservationExpiryWorker } from '../inventory/inventory-reservation-expiry.worker';
-@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService], exports: [CommerceInventoryService] })
+import { AdminCommerceDiscountController } from '../discounts/admin-commerce-discount.controller';
+import { CommerceDiscountService } from '../discounts/commerce-discount.service';
+@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController, AdminCommerceDiscountController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceDiscountService, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService], exports: [CommerceInventoryService, CommerceDiscountService] })
 export class AdminCommerceCatalogModule {}

@@ -380,6 +380,15 @@ enum CommerceDiscountKind {
   @@map("commerce_discount_kind")
 }
 
+enum DiscountReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+  EXPIRED
+
+  @@map("discount_reservation_status")
+}
+
 enum InventoryLedgerEntryType {
   RECEIPT
   ADJUSTMENT
@@ -724,6 +733,7 @@ model PatientProfile {
   wishlistItems           WishlistItem[]
   commerceAddresses       CommerceAddress[]
   commerceOrders          CommerceOrder[]
+  commerceDiscountReservations CommerceDiscountReservation[]
   paymentAttempts         PaymentAttempt[]
 
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
@@ -885,7 +895,7 @@ model CommerceAddress {
 model CommerceDiscount {
   id                    String               @id @default(uuid()) @db.Uuid
   clinicId              String               @map("clinic_id") @db.Uuid
-  code                  String               @db.VarChar(80)
+  code                  String               @db.VarChar(40)
   title                 String               @db.VarChar(160)
   kind                  CommerceDiscountKind
   amountToman           BigInt?              @map("amount_toman")
@@ -893,14 +903,35 @@ model CommerceDiscount {
   startsAt              DateTime?            @map("starts_at") @db.Timestamptz(3)
   endsAt                DateTime?            @map("ends_at") @db.Timestamptz(3)
   usageLimit            Int?                 @map("usage_limit")
+  perPatientUsageLimit  Int?                 @map("per_patient_usage_limit")
   isActive              Boolean              @default(true) @map("is_active")
   createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
   clinic                Clinic               @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  reservations          CommerceDiscountReservation[]
 
   @@unique([clinicId, code], map: "commerce_discounts_clinic_code_key")
   @@index([clinicId, isActive, startsAt, endsAt], map: "commerce_discounts_clinic_active_window_idx")
   @@map("commerce_discounts")
+}
+
+model CommerceDiscountReservation {
+  id                  String                    @id @default(uuid()) @db.Uuid
+  discountId          String                    @map("discount_id") @db.Uuid
+  patientId           String                    @map("patient_id") @db.Uuid
+  orderId             String                    @unique(map: "commerce_discount_reservations_order_id_key") @map("order_id") @db.Uuid
+  discountAmountToman BigInt                    @map("discount_amount_toman")
+  status              DiscountReservationStatus @default(ACTIVE)
+  expiresAt           DateTime?                 @map("expires_at") @db.Timestamptz(3)
+  createdAt           DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  discount            CommerceDiscount          @relation(fields: [discountId], references: [id], onDelete: Restrict)
+  patient             PatientProfile            @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  order               CommerceOrder             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([discountId, status, expiresAt, id], map: "commerce_discount_reservations_discount_status_expires_id_idx")
+  @@index([discountId, patientId, status, expiresAt, id], map: "commerce_discount_reservations_patient_status_expires_id_idx")
+  @@map("commerce_discount_reservations")
 }
 
 // PICKUP is permanently free and intentionally has no mutable rate record.
@@ -942,6 +973,7 @@ model CommerceOrder {
   lines                   CommerceOrderLine[]
   snapshot                CommerceOrderSnapshot?
   reservations            InventoryReservation[]
+  discountReservation     CommerceDiscountReservation?
   paymentAttempts         PaymentAttempt[]
   payment                 Payment?
 

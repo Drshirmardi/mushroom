@@ -9326,6 +9326,118 @@
           "Patient Commerce"
         ]
       }
+    },
+    "/v1/admin/commerce/discounts": {
+      "get": {
+        "operationId": "adminCommerceDiscountsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceDiscountResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic-scoped commerce discounts and usage",
+        "tags": [
+          "Admin Commerce Discounts"
+        ]
+      },
+      "post": {
+        "operationId": "adminCommerceDiscountsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceDiscountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceDiscountResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a clinic-scoped commerce discount",
+        "tags": [
+          "Admin Commerce Discounts"
+        ]
+      }
+    },
+    "/v1/admin/commerce/discounts/{discountId}": {
+      "patch": {
+        "operationId": "adminCommerceDiscountsUpdate",
+        "parameters": [
+          {
+            "name": "discountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceDiscountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceDiscountResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update or activate a commerce discount without changing its code",
+        "tags": [
+          "Admin Commerce Discounts"
+        ]
+      }
     }
   },
   "info": {
@@ -9496,6 +9608,16 @@
               "COMMERCE_NAME_CONFLICT",
               "COMMERCE_LIFECYCLE_INVALID",
               "COMMERCE_INVENTORY_INVALID",
+              "COMMERCE_INVENTORY_NOT_FOUND",
+              "COMMERCE_INVENTORY_INSUFFICIENT",
+              "COMMERCE_RESERVATION_STATE_INVALID",
+              "COMMERCE_DISCOUNT_NOT_FOUND",
+              "COMMERCE_DISCOUNT_INPUT_INVALID",
+              "COMMERCE_DISCOUNT_UNAVAILABLE",
+              "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED",
+              "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED",
+              "COMMERCE_DISCOUNT_CODE_CONFLICT",
+              "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE",
               "COMMERCE_ADDRESS_NOT_FOUND",
               "COMMERCE_CART_EMPTY",
               "COMMERCE_ORDER_NOT_FOUND",
@@ -15951,6 +16073,12 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          },
+          "discountCode": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40,
+            "description": "Optional commerce discount code; the server canonicalizes and prices it."
           }
         },
         "required": [
@@ -16059,6 +16187,185 @@
           "lines",
           "createdAt"
         ]
+      },
+      "CommerceDiscountResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FIXED_AMOUNT",
+              "PERCENTAGE"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "nullable": true
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usageLimit": {
+            "type": "number",
+            "nullable": true
+          },
+          "perPatientUsageLimit": {
+            "type": "number",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "reservedCount": {
+            "type": "number"
+          },
+          "consumedCount": {
+            "type": "number"
+          },
+          "remainingGlobalCapacity": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "title",
+          "kind",
+          "isActive",
+          "reservedCount",
+          "consumedCount"
+        ]
+      },
+      "CreateCommerceDiscountDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FIXED_AMOUNT",
+              "PERCENTAGE"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "nullable": true,
+            "description": "Positive integer TOMAN for FIXED_AMOUNT only."
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "nullable": true,
+            "description": "Basis points for PERCENTAGE only."
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "perPatientUsageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "kind"
+        ]
+      },
+      "UpdateCommerceDiscountDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FIXED_AMOUNT",
+              "PERCENTAGE"
+            ]
+          },
+          "amountToman": {
+            "type": "string"
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "nullable": true
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "perPatientUsageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }
