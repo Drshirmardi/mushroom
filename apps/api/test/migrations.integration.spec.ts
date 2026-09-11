@@ -1293,11 +1293,19 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
       await upgradeClient.query(readFileSync(resolve(
         process.cwd(), 'prisma/migrations/20260911152000_phase_09_discount_reservations/migration.sql',
       ), 'utf8'));
+      await upgradeClient.query(readFileSync(resolve(
+        process.cwd(), 'prisma/migrations/20260911212000_phase_09_payment_config_idempotency/migration.sql',
+      ), 'utf8'));
       const result = await upgradeClient.query<{ count: string }>(`
         SELECT count(*)::text AS count FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = ANY(ARRAY['payment_attempts', 'commerce_shipping_rates', 'commerce_discount_reservations'])
       `);
       expect(result.rows[0]?.count).toBe('3');
+      const idempotencyIndex = await upgradeClient.query<{ indexname: string }>(`
+        SELECT indexname FROM pg_indexes WHERE schemaname = 'public'
+          AND indexname = 'payment_provider_config_revisions_config_idempotency_key'
+      `);
+      expect(idempotencyIndex.rows).toHaveLength(1);
     } finally {
       await upgradeClient.end();
       await adminClient.query(`DROP DATABASE IF EXISTS "${upgradeDatabaseName}"`);

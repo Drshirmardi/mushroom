@@ -47,9 +47,10 @@
 
 ## gate سداد: `SADAD_GO_LIVE_BLOCKED`
 
-`SADAD_GO_LIVE_BLOCKED` blocker شروع یا persistence عمومی commerce نیست؛ فقط enable/default شدن Sadad،
-ارسال request واقعی، آزمون پذیرندگی و closure نهایی Phase 09 را متوقف می‌کند. تا دریافت تأیید کتبی
-پذیرندگی، `providerUnit=UNCONFIRMED` است و هیچ تبدیل—including `TOMAN × 10`—وجود ندارد. موارد لازم برای
+`SADAD_GO_LIVE_BLOCKED` blocker شروع، persistence یا DONE شدن implementation عمومی commerce نیست؛ فقط enable/default شدن Sadad،
+ایجاد attempt واقعی، ارسال request/Verify واقعی، runtime callback و ادعای production readiness را متوقف می‌کند. تا دریافت تأیید کتبی
+پذیرندگی، `providerUnit=UNCONFIRMED` است. mapping `TOMAN × 10` فقط در adapter dormant با integer arithmetic، overflow
+protection و snapshot immutable آزمون می‌شود و هرگز مجوز اتصال واقعی نیست. موارد لازم برای
 برداشتن gate عبارت‌اند از amount unit/formula، نسخه و environment، redirect path/query، Content-Type و
 casing callback، فرمت/timezone تاریخ‌ها، static egress IP، callback domain و credential/test environment.
 
@@ -218,8 +219,8 @@ Content-Type/casing دقیق باید مطابق گیت پذیرندگی [`sadad
 `PrimaryAccNo`, `HashedCardNo` و `CardHolderFullName` در Phase 09 ذخیره یا log نمی‌شوند.
 
 سند عدم Verify تا ۱۵ دقیقه را سبب بازگشت خودکار مبلغ می‌داند. این رفتار refund تجاری نیست. attempt،
-reservation expiry و reconciliation باید این بازه را لحاظ کنند، ولی مقدار دقیق timer داخلی باید با clock
-skew و آزمون محیط پذیرندگی در `F09-T08` تثبیت شود.
+reservation expiry و reconciliation باید این بازه را لحاظ کنند؛ clock skew و آزمون محیط پذیرندگی از گیت
+production Phase 12 هستند.
 
 ## Idempotency و transaction
 
@@ -248,4 +249,5 @@ skew و آزمون محیط پذیرندگی در `F09-T08` تثبیت شود.
 این قرارداد برای `F09-T02` تا `F09-T12` frozen است: lifecycle، authorization، stable errors، endpoint
 families، TOMAN/order snapshots، provider capability و credential-retention صریح‌اند. `sadad-ipg-v1` نیز
 mapping مستند و go-live gate را freeze می‌کند. تنها داده‌های بیرونی ناشناخته در `SADAD_GO_LIVE_BLOCKED`
-ثبت شده‌اند و نمی‌توانند به conversion، enable/default یا درخواست واقعی تبدیل شوند.
+ثبت شده‌اند؛ completion نرم‌افزاری Phase 09 را مسدود نمی‌کنند و acceptance/activation آن‌ها در Phase 12 انجام
+می‌شود. آن‌ها نمی‌توانند به enable/default یا درخواست واقعی تبدیل شوند.

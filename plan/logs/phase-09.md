@@ -317,3 +317,89 @@ Result:
 
 - `F09-T04` is accepted for the isolated commit `feat(F09-T04): connect patient commerce catalog`.
 - Next eligible batch: `F09-B05 / F09-T05`; it is not claimed or started here.
+
+## F09-T08 — provider-neutral payment orchestration
+
+Task ID: F09-T08
+Reviewed at: 2026-09-12 03:21 +03:30
+Batch ID: F09-B08
+Status: DONE — accepted for the isolated task commit
+
+Safe work completed:
+
+- Provider-neutral port/registry and an isolated dormant Sadad adapter declare the frozen capability matrix; a
+  fake provider exists only inside the contract suite and is never registered by the production module.
+  The two frozen server-to-server Sadad endpoints are code-owned allowlist constants; no generic provider URL,
+  redirect shape or transport is exposed or enabled.
+  `SADAD_GO_LIVE_BLOCKED` rejects enable/default, provider calls and the unauthenticated callback endpoint.
+- ADMIN-only provider configuration revisions are immutable, idempotent and audited; credentials use AES-256-GCM
+  with a random nonce and store only ciphertext, nonce, authentication tag and external key-version identifier.
+  Responses and audit metadata remain write-only/redacted.
+- The provider settings dashboard and generated API slice expose only configured state, revision, capability and
+  status; no editable endpoint or raw secret is exposed.
+- The additive idempotency-key migration was added without rewriting accepted Phase 09 migrations.
+- Credential rotation retires the prior encrypted version without changing its immutable revision. A daily,
+  unref'ed retention worker crypto-shreds only retired material older than 90 days when every dependent revision
+  is inactive and all of its attempts are terminal; active or reconciliation-dependent material remains intact.
+
+Checks completed:
+
+- `prisma validate`, `prisma generate`, API typecheck and dashboard typecheck → PASS.
+- PostgreSQL migration replay/empty database, Phase 08→09 upgrade, idempotent seed and constraint suite → PASS.
+- `payment-provider-contract.spec.ts` and PostgreSQL `payment-provider-config.integration.spec.ts` → PASS;
+  combined suite `migrations.integration`, provider contract and config integration: 9/9 PASS.
+- `payment-credential-retention.spec.ts` and the configuration rotation integration check → PASS: status changes
+  from `ACTIVE` to `RETIRED`, and the shred query permits only terminal dependencies before it nulls encrypted
+  material and marks `CRYPTO_SHREDDED`.
+- PostgreSQL concurrent rotation check → PASS: transaction-scoped advisory locking yields adjacent immutable
+  revision numbers and exactly one current credential, without leaking either synthetic credential value.
+- PostgreSQL synthetic-provider verification regression → PASS: injected internal `0` followed by `100` creates
+  exactly one Payment, consumes exactly one inventory reservation, transitions the Order once to `PAID`, and
+  never reaches the dormant Sadad adapter or performs a network request.
+- Owner/PHP-sample evidence added to `sadad-ipg-v1`: RIAL conversion is adapter-only and overflow-guarded;
+  JSON request/Verify, Tehran clock formatting, Form Data callback allowlist and all conflicting redirect
+  profiles have synthetic contract coverage. These are protocol-profile evidence only; no merchant acceptance,
+  transport, enabled/default provider or operational credential was added.
+- Additive PostgreSQL sequence migration and concurrent allocator integration test → PASS: provider-order IDs are
+  positive numeric, durable and unique under concurrent transactions, with no UUID/client-derived value.
+- Synthetic Verify outcome policy coverage → PASS: `-1` records FAILED, `101` records EXPIRED and timeout records
+  REQUIRES_RECONCILIATION without a Payment, PAID transition or provider failover.
+- Current re-review (`2026-09-12`) → PASS: `prisma validate/generate/migrate status`, 6 targeted test files
+  (16/16), OpenAPI export plus generated-client freshness/typecheck, API/dashboard typecheck, dashboard build and
+  `git diff --check` all pass. Patient payment-attempt creation was called twice with one idempotency key while
+  blocked: both returned `SADAD_GO_LIVE_BLOCKED` and persisted zero attempts. The confirmed adapter-only `TOMAN ×
+  10` mapping has integer/overflow tests; no real Sadad request, provider enablement, plaintext credential,
+  secret response/log/audit value, or confidential Sadad sample/PDF path exists in task-owned changes.
+- Transport-injected orchestration re-review (`2026-09-12`) → PASS on real PostgreSQL: concurrent identical
+  synthetic creates acquire a transaction-scoped advisory lock, allocate one durable numeric provider OrderId and
+  call the synthetic transport once; duplicate callback and Verify `0` then `100` produce exactly one Payment and
+  one inventory consume. This service has no route to invoke it and cannot activate Sadad; the public payment
+  attempt and callback routes still return `SADAD_GO_LIVE_BLOCKED`.
+- Callback mismatch regression (`2026-09-12`) → PASS: the reconciliation transition commits before the stable
+  mismatch error is returned, so no transaction rollback can erase it; no Payment is created. Targeted PostgreSQL
+  test and API typecheck pass after this correction.
+- Verify guard regression (`2026-09-12`) → PASS: only `VERIFYING` attempts without an existing Payment may create
+  a financial effect. A reconciliation attempt with mismatched provider OrderId/Amount is rejected and leaves the
+  order without a Payment; PostgreSQL contract coverage and API typecheck pass.
+- Synthetic non-success orchestration regression (`2026-09-12`) → PASS on real PostgreSQL: injected Verify
+  `-1`, `101` and timeout results finish as `FAILED`, `EXPIRED` and `REQUIRES_RECONCILIATION` respectively,
+  with no Payment, `PAID` transition or inventory consumption.
+- Full blocked-batch verification (`2026-09-12 00:37 +03:30`) → PASS: Prisma validate/generate/migrate status;
+  empty-database migration replay and Phase 08→09 upgrade/seed checks; all six targeted real-PostgreSQL suites
+  (16/16); API typecheck and OpenAPI export; generated-client freshness/typecheck; dashboard typecheck/build;
+  and `git diff --check`. The migration smoke runner requires its repository `DATABASE_URL` to be forwarded to
+  the test process; with that normal local configuration it passes and did not expose a migration defect.
+
+Owner decision and remaining production gate:
+
+- On `2026-09-12`, the owner explicitly separated merchant onboarding/acceptance from software completion.
+  This task is DONE because its dormant/provider-neutral criteria are evidenced above. `SADAD_GO_LIVE_BLOCKED`
+  still prohibits enable/default, a real Sadad attempt, PaymentRequest/Verify transport, runtime callback and any
+  production-readiness claim.
+- Phase 12 now owns the unresolved current environment/endpoint profile, static egress IP, HTTPS callback
+  domain/path, merchant/test credentials outside Git, controlled acceptance transaction, observed callback
+  Content-Type/casing, Amount/redirect/Verify validation, monitoring/alerting and production sign-off.
+  `TransactionDate` is optional/tolerant and has no financial-effect dependency.
+- Final T08 re-review PASS: 6 targeted real-PostgreSQL suites (16/16), empty-database replay and Phase 08→09
+  upgrade/seed, Prisma validate/generate/migrate status, API/OpenAPI, generated-client/dashboard typechecks,
+  dashboard build and `git diff --check`. The Verify Token-signature fixture uses only a synthetic key.

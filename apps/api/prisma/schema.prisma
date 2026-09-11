@@ -1082,6 +1082,7 @@ model PaymentProviderConfigRevision {
   capabilitySnapshot  Json                              @default("{}") @map("capability_snapshot")
   credentialVersionId String?                           @map("credential_version_id") @db.Uuid
   createdByUserId     String?                           @map("created_by_user_id") @db.Uuid
+  idempotencyKey      String?                           @map("idempotency_key") @db.VarChar(240)
   createdAt           DateTime                          @default(now()) @map("created_at") @db.Timestamptz(3)
   config              PaymentProviderConfig             @relation("PaymentProviderConfigRevisions", fields: [configId], references: [id], onDelete: Restrict)
   credentialVersion   PaymentProviderCredentialVersion? @relation(fields: [credentialVersionId], references: [id], onDelete: Restrict)
@@ -1090,6 +1091,7 @@ model PaymentProviderConfigRevision {
   paymentAttempts     PaymentAttempt[]
 
   @@unique([configId, revisionNumber], map: "payment_provider_config_revisions_config_revision_key")
+  @@unique([configId, idempotencyKey], map: "payment_provider_config_revisions_config_idempotency_key")
   @@map("payment_provider_config_revisions")
 }
 

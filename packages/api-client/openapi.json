@@ -9438,6 +9438,215 @@
           "Admin Commerce Discounts"
         ]
       }
+    },
+    "/v1/admin/commerce/payment-providers": {
+      "get": {
+        "operationId": "adminCommercePaymentProvidersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentProviderConfigDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List code-owned clinic payment provider configurations without credentials",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}/config-revisions": {
+      "post": {
+        "operationId": "adminCommercePaymentProviderRevisionCreate",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentProviderRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProviderConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an idempotent write-only encrypted provider configuration revision",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}": {
+      "patch": {
+        "operationId": "adminCommercePaymentProviderUpdate",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentProviderConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProviderConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a provider enabled/default state subject to its go-live gate",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/patients/me/orders/{orderId}/payment-attempts": {
+      "post": {
+        "operationId": "patientPaymentAttemptCreate",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a provider-bound payment attempt when a go-live-ready provider is available",
+        "tags": [
+          "Patient Payments"
+        ]
+      }
+    },
+    "/v1/patients/me/payment-attempts/{attemptId}": {
+      "get": {
+        "operationId": "patientPaymentAttemptGet",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a signed-in patient payment attempt",
+        "tags": [
+          "Patient Payments"
+        ]
+      }
+    },
+    "/v1/payments/providers/sadad/callback": {
+      "post": {
+        "operationId": "sadadPaymentCallback",
+        "parameters": [],
+        "responses": {
+          "503": {
+            "description": ""
+          }
+        },
+        "summary": "Dormant Sadad callback endpoint; transport activation awaits merchant acceptance evidence",
+        "tags": [
+          "Provider Callbacks"
+        ]
+      }
     }
   },
   "info": {
@@ -9623,6 +9832,16 @@
               "COMMERCE_ORDER_NOT_FOUND",
               "COMMERCE_ORDER_INPUT_INVALID",
               "SHIPPING_METHOD_UNAVAILABLE",
+              "PAYMENT_PROVIDER_NOT_FOUND",
+              "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED",
+              "PAYMENT_PROVIDER_CONFIGURATION_INVALID",
+              "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE",
+              "SADAD_GO_LIVE_BLOCKED",
+              "PAYMENT_ATTEMPT_NOT_FOUND",
+              "PAYMENT_ATTEMPT_NOT_PAYABLE",
+              "PAYMENT_VERIFICATION_FAILED",
+              "PAYMENT_VERIFICATION_MISMATCH",
+              "PAYMENT_RECONCILIATION_REQUIRED",
               "HTTP_ERROR",
               "INTERNAL_SERVER_ERROR"
             ],
@@ -16366,6 +16585,120 @@
             "type": "boolean"
           }
         }
+      },
+      "PaymentProviderConfigDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "providerUnit": {
+            "type": "string"
+          },
+          "goLiveReady": {
+            "type": "boolean"
+          },
+          "activeRevisionNumber": {
+            "type": "number",
+            "nullable": true
+          },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "displayName",
+          "configured",
+          "enabled",
+          "isDefault",
+          "providerUnit",
+          "goLiveReady",
+          "capabilities"
+        ]
+      },
+      "CreatePaymentProviderRevisionDto": {
+        "type": "object",
+        "properties": {
+          "credential": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Write-only secret values; never returned."
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdatePaymentProviderConfigDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaymentAttemptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "providerOrderId": {
+            "type": "string"
+          },
+          "providerCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "commerceAmountToman": {
+            "type": "string"
+          },
+          "providerAmount": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerUnit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "providerOrderId",
+          "providerCode",
+          "status",
+          "commerceAmountToman",
+          "providerUnit"
+        ]
       }
     }
   }

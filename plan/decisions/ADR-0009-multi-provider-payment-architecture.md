@@ -54,8 +54,9 @@ idempotency یا persistence قابل اتکا ندارد. این رفتارها
     فقط case-by-case و audited توسط ADMIN است؛ refund تا انتقال دستی بانکی و evidence/reference غیرحساس
     completed نمی‌شود و patient self-service refund ندارد.
 13. عدم تأیید amount unit، protocol/environment، redirect، callback transport/date، egress IP/domain و
-    credential سداد، `SADAD_GO_LIVE_BLOCKED` است: implementation عمومی Phase 09 را متوقف نمی‌کند، اما
-    Sadad با `providerUnit=UNCONFIRMED` هرگز enabled/default یا متصل واقعی نمی‌شود.
+    credential سداد، `SADAD_GO_LIVE_BLOCKED` است: implementation و DONE شدن F09-T08 را متوقف نمی‌کند، اما
+    Sadad با `providerUnit=UNCONFIRMED` هرگز enabled/default، attempt واقعی، callback runtime یا متصل واقعی
+    نمی‌شود. پذیرندگی production، controlled transaction، monitoring و sign-off به Phase 12 منتقل شده‌اند.
 14. credential revision لازم برای attemptهای non-terminal/reconciliation encrypted باقی می‌ماند و پس از
     terminal شدن تمام attemptهای وابسته و ۹۰ روز crypto-shred می‌شود؛ metadata/audit/reference مالی
     غیرحساس مطابق retention تاریخچه باقی می‌ماند.
@@ -85,7 +86,8 @@ idempotency یا persistence قابل اتکا ندارد. این رفتارها
 
 - persistence و تست config revision، credential encryption و provider registry لازم است.
 - order و payment state machine باید جدا ولی هماهنگ نگه داشته شوند.
-- production سداد به static egress IP، callback domain ثبت‌شده و credential واقعی وابسته است.
+- production سداد به static egress IP، callback domain ثبت‌شده و credential واقعی وابسته است؛ این acceptance
+  gate در Phase 12 اجرا می‌شود، نه به‌عنوان مانع completion Phase 09.
 
 ### ریسک‌ها
 

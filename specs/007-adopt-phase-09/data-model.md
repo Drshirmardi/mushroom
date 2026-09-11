@@ -47,8 +47,9 @@ Discount ──> usage limit
   a configurable 20-minute default; it does not release stock or cancel a pending order while an attempt is
   verifying or requires reconciliation.
 - A browser callback is not authoritative. Sadad uses callback followed by Verify; sandbox, webhook, inquiry,
-  refund and partial-refund are unsupported. Its provider unit is `UNCONFIRMED`, so all real Sadad calls and
-  enabled/default state remain `SADAD_GO_LIVE_BLOCKED` until acceptance confirmation.
+  refund and partial-refund are unsupported. Its provider unit is `UNCONFIRMED`, so all real Sadad calls,
+  runtime callback and enabled/default state remain `SADAD_GO_LIVE_BLOCKED` until Phase 12 acceptance; this does
+  not block F09-T08 implementation completion.
 - Any inventory mutation must satisfy the existing ledger-or-atomic-update rule; any external effect must occur only after the primary transaction commits.
 - Generated client output is not a data-model authority and remains `F09-T12`-owned for Phase 09.
 

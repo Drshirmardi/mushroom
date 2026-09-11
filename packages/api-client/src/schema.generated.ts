@@ -2469,6 +2469,108 @@ export interface paths {
         patch: operations["adminCommerceDiscountsUpdate"];
         trace?: never;
     };
+    "/v1/admin/commerce/payment-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List code-owned clinic payment provider configurations without credentials */
+        get: operations["adminCommercePaymentProvidersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}/config-revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an idempotent write-only encrypted provider configuration revision */
+        post: operations["adminCommercePaymentProviderRevisionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a provider enabled/default state subject to its go-live gate */
+        patch: operations["adminCommercePaymentProviderUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/orders/{orderId}/payment-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a provider-bound payment attempt when a go-live-ready provider is available */
+        post: operations["patientPaymentAttemptCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/payment-attempts/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a signed-in patient payment attempt */
+        get: operations["patientPaymentAttemptGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/providers/sadad/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dormant Sadad callback endpoint; transport activation awaits merchant acceptance evidence */
+        post: operations["sadadPaymentCallback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2498,7 +2600,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "SHIPPING_METHOD_UNAVAILABLE" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -4398,6 +4500,41 @@ export interface components {
             usageLimit?: number | null;
             perPatientUsageLimit?: number | null;
             isActive?: boolean;
+        };
+        PaymentProviderConfigDto: {
+            code: string;
+            displayName: string;
+            configured: boolean;
+            enabled: boolean;
+            isDefault: boolean;
+            providerUnit: string;
+            goLiveReady: boolean;
+            activeRevisionNumber?: number | null;
+            capabilities: {
+                [key: string]: string;
+            };
+            updatedAt?: string | null;
+        };
+        CreatePaymentProviderRevisionDto: {
+            /** @description Write-only secret values; never returned. */
+            credential?: {
+                [key: string]: string;
+            };
+            enable?: boolean;
+            isDefault?: boolean;
+        };
+        UpdatePaymentProviderConfigDto: {
+            enabled?: boolean;
+            isDefault?: boolean;
+        };
+        PaymentAttemptDto: {
+            id: string;
+            providerOrderId: string;
+            providerCode: string;
+            status: string;
+            commerceAmountToman: string;
+            providerAmount?: string | null;
+            providerUnit: string;
         };
     };
     responses: never;
@@ -9707,6 +9844,134 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CommerceDiscountResponseDto"];
                 };
+            };
+        };
+    };
+    adminCommercePaymentProvidersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProviderConfigDto"][];
+                };
+            };
+        };
+    };
+    adminCommercePaymentProviderRevisionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePaymentProviderRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProviderConfigDto"];
+                };
+            };
+        };
+    };
+    adminCommercePaymentProviderUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePaymentProviderConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProviderConfigDto"];
+                };
+            };
+        };
+    };
+    patientPaymentAttemptCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptDto"];
+                };
+            };
+        };
+    };
+    patientPaymentAttemptGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptDto"];
+                };
+            };
+        };
+    };
+    sadadPaymentCallback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

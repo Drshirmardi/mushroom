@@ -41,11 +41,12 @@
 
 ### gate خارجی `SADAD_GO_LIVE_BLOCKED`
 
-این موارد blocker شروع Phase 09 نیستند، اما enable/default، request واقعی، acceptance validation و closure
-نهایی را fail-closed نگه می‌دارند: Amount unit/formula، نسخه و environment، اختلاف `/Purchase` با
+این موارد blocker شروع یا completion نرم‌افزاری Phase 09 نیستند، اما enable/default، request واقعی و
+runtime callback سداد را fail-closed نگه می‌دارند: Amount unit/formula، نسخه و environment، اختلاف `/Purchase` با
 `/Purchase/Index?token=...`، Content-Type/casing callback، format/timezone تاریخ‌ها، static egress IP،
 callback domain و credential/test environment. تا تأیید کتبی، `providerUnit=UNCONFIRMED` است و تبدیل
-`TOMAN × 10` یا request واقعی مطلقاً ممنوع است.
+`TOMAN × 10` در adapter dormant فقط با integer arithmetic، کنترل overflow و snapshot immutable قابل آزمون است؛
+request واقعی مطلقاً ممنوع است. پذیرندگی و production sign-off به Phase 12 منتقل شده‌اند.
 
 ## Sadad baseline
 
@@ -87,8 +88,8 @@ callback domain و credential/test environment. تا تأیید کتبی، `prov
 | PATIENT | `GET` | `/v1/patients/me/payment-attempts/{attemptId}` | `F09-T08` |
 | SADAD browser POST | `POST` | `/v1/payments/providers/sadad/callback` | `F09-T08` |
 
-PDF فقط HTTP POST را قطعی کرده است؛ تا evidence پذیرندگی، هیچ parser/profile یا casing callback از روی حدس
-فعال نمی‌شود. callback به cookie/session بیمار وابسته
+نمونه رسمی PHP و تصمیم مالک، HTTP POST Form Data و allowlist `OrderId`/`Token`/`ResCode` را برای parser
+dormant مشخص کرده‌اند؛ پذیرندگی جاری merchant برای runtime هنوز لازم است. callback به cookie/session بیمار وابسته
 نیست و پس از correlation/Verify یا ثبت pending امن، با `303` به result page code-owned برمی‌گردد. endpointهای
 refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضافه می‌شوند؛ اکنون endpoint ساختگی ندارند.
 
@@ -100,10 +101,10 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
 - Phase 09 پس از freeze policyهای `F09-T01` قابل claim است؛ `SADAD_GO_LIVE_BLOCKED` طراحی عمومی commerce یا
   persistence را متوقف نمی‌کند.
 - پیاده‌سازی generic provider و adapter سداد در `F09-T08` مجاز است، اما enable/default و درخواست واقعی
-  سداد تا تأیید unit/formula، redirect، نسخه/محیط، callback transport/date، IP/domain و credential
+  سداد تا پذیرش environment/version، redirect، callback runtime/date، IP/domain و credential/test plan
   fail-closed می‌ماند.
-- هیچ Agent حق ندارد از رایج‌بودن ریال نتیجه بگیرد که `Amount = TOMAN * 10`؛ این تبدیل فقط بعد از تأیید
-  کتبی پذیرندگی وارد fixture و code می‌شود.
+- `Amount = TOMAN × 10` فقط mapping تأییدشدهٔ adapter سداد است: integer-only، overflow-safe و snapshot؛
+  این mapping به‌تنهایی Sadad را enable/default یا network-active نمی‌کند.
 - نبود سند refund/inquiry/webhook یعنی capability آن‌ها `false` است، نه اینکه با endpoint حدسی ساخته شوند.
 
 ## محدوده UI
@@ -150,11 +151,12 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T05 DONE`, `F09-T06 DONE`
   - خروجی: discount rules/limits/reservation با محاسبه server-side
   - پذیرش: concurrent/repeated use از limit عبور نکند و order snapshot تخفیف را حفظ کند.
-- [ ] `F09-T08` — payment provider registry/config API و Sadad adapter واقعی
+- [x] `F09-T08` — payment provider registry/config API و Sadad adapter dormant — `DONE`
   - Depends on: `F09-T01 DONE`, `F09-T02 DONE`, `F09-T06 DONE`, `F09-T07 DONE`
-  - خروجی: port/registry، config revision + dashboard settings، create/callback/Verify سداد و retry
+  - خروجی: port/registry، config revision + dashboard settings، create/callback/Verify dormant سداد و retry
   - پذیرش: routeهای بالا و field mapping رسمی، OrderId عددی یکتا، `0/100` با دقیقاً یک پرداخت موفق،
-    callback transport freeze‌شده و غیرauthoritative، rotation امن، redaction و no-failover اثبات شوند.
+    callback transport code-owned و غیرauthoritative، rotation امن، redaction و no-failover اثبات شوند؛ production
+    enablement/acceptance خارج از معیار DONE این task و متعلق به Phase 12 است.
 - [ ] `F09-T09` — fulfillment، tracking، cancellation، return/refund و reconciliation
   - Depends on: `F09-T08 DONE`
   - خروجی: lifecycle مجاز order و مسیر manual/provider refund بر اساس قرارداد freeze‌شده

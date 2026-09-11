@@ -106,7 +106,7 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
 - **FR-006 (`F09-T06`)**: Stock ledger/reservation/expiry and concurrency behavior MUST remain exactly within the authoritative `F09-T06` boundary.
 - **FR-007 (`F09-T07`)**: Discount usage limits MUST remain exactly within the authoritative `F09-T07` boundary.
 - **FR-008 (`F09-T08`)**: The provider port/registry, versioned configuration API/dashboard settings,
-  fake-provider contract test, and real Sadad create/callback/Verify adapter MUST remain within `F09-T08`.
+  fake-provider contract test, and dormant Sadad create/callback/Verify adapter MUST remain within `F09-T08`.
   Sadad MUST NOT be described as having webhook, inquiry, refund, partial-refund, or sandbox capability
   without additional provider documentation. Exact endpoints, fields, redirect uncertainty, response-code
   policy and enablement gates are governed by `plan/contracts/sadad-ipg-v1.md`.
@@ -142,7 +142,8 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
   freeze its actual Content-Type/casing from acceptance evidence, correlate only to a persisted attempt,
   redact cardholder fields, and return a safe code-owned redirect.
 - **PA-011**: Production enablement MUST remain fail-closed until the guide/sample redirect discrepancy,
-  protocol version, date formats, amount unit, registered IP/domain and acceptance environment are confirmed.
+  protocol version, date formats, amount unit, registered IP/domain and acceptance environment are confirmed in
+  Phase 12; these facts do not block Phase 09 implementation completion.
 - **PA-012**: Phase 09 TOMAN semantics apply only to store/commerce money and MUST NOT reinterpret or migrate
   the existing medical-service/appointment IRR contract from completed phases.
 
@@ -189,8 +190,9 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
   its authoritative phase file now records explicit dependencies and a conservative serialized batch map.
 - Commerce policy is frozen as tax-inclusive TOMAN, receipt-only, pickup/courier snapshots, audited manual
   refund and 90-day credential crypto-shred. Sadad amount unit, protocol/environment, redirect, callback/date
-  transport, IP/domain and credentials are `SADAD_GO_LIVE_BLOCKED` only; they cannot enable Sadad or close the
-  phase but do not block `F09-T01` or provider-neutral commerce work.
+  transport, IP/domain and credentials are `SADAD_GO_LIVE_BLOCKED` only; they cannot enable Sadad, but do not
+  block provider-neutral commerce work or Phase 09 implementation completion. Production acceptance belongs to
+  Phase 12.
 - Provider configuration and payment entity fields are frozen by the active documentation-only `F09-T01`
   claim and remain subject to `F09-T02` migration review; this specification does not authorize product code.
 - Current patient-store and dashboard-commerce local data are pre-existing UI placeholders. Their replacement is not authorized by this preparation and remains within the authoritative task boundaries, including `F09-T12` for mock removal.

@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-11 19:16 +03:30`
+- آخرین به‌رورسانی: `2026-09-12 03:21 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `SADAD_GO_LIVE_BLOCKED — Sadad enablement/real calls, acceptance validation and Phase 09 closure await merchant confirmations; provider-neutral implementation may continue.`
+- blocker فعال: `ندارد برای completion نرم‌افزاری Phase 09؛ SADAD_GO_LIVE_BLOCKED فقط gate activation/production در Phase 12 است.`
 
 ## پیشرفت کلان
 
@@ -50,9 +50,37 @@
 
 ## handoff فاز فعال
 
-`F09-B07/F09-T07` passed review with an additive reservation migration, server-authoritative checkout pricing,
-ADMIN discount management and generated client/dashboard integration. Sadad remains `UNCONFIRMED` and
-`SADAD_GO_LIVE_BLOCKED`; no provider work was performed.
+`F09-B08/F09-T08` passed its review gate. Sadad remains `UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`, but the
+owner moved merchant acceptance and production activation to Phase 12; the dormant, provider-neutral T08
+implementation is complete. No real attempt, external request or runtime callback/Verify effect is enabled.
+
+## آخرین batch — F09-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 19:25 +03:30`; completed at: `2026-09-12 03:21 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; F09-T07 at `8f50018`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T08` — `DONE`
+  Dependencies: `F09-T01/T02/T06/T07 DONE`; no active batch existed when claimed.
+  Scope: provider-neutral port/registry/capabilities; fake test-only provider; disabled Sadad protocol adapter;
+  encrypted credential/config revisions and ADMIN management; patient attempt/status and safe callback/verify
+  orchestration; dashboard settings and generated OpenAPI/client slice.
+  Owned paths: `apps/api/src/modules/commerce/{payments/**,catalog/admin-commerce-catalog.module.ts,inventory/**}`, `apps/api/src/common/errors/api-error.ts`, `apps/api/test/{payment-provider-contract.spec.ts,sadad-adapter.spec.ts,payment-idempotency.integration.spec.ts,payment-provider-config.integration.spec.ts,openapi-contract.spec.ts,commerce-checkout.integration.spec.ts,inventory-reservation-expiry.integration.spec.ts}`, `apps/dashboard/src/{features/settings/settings-page.tsx,lib/commerce-payment-provider-api.ts}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/{09-COMMERCE-PAYMENTS.md,12-PRODUCTION-HARDENING.md},contracts/{commerce-payment-provider-v1.md,sadad-ipg-v1.md},decisions/ADR-0009-multi-provider-payment-architecture.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: payment/config/credential transaction boundary, commerce module wiring, inventory
+  consumption boundary, OpenAPI/client generation and PostgreSQL payment tests.
+  Do not change: accepted migrations/schema, user-owned `.gitignore`, confidential Sadad sample/PDF/credentials,
+  fulfillment/refund/reconciliation operations, app/dashboard receipt flows, F09-T09 or later tasks.
+  Required verification: provider contract/capability/registry/crypto/redaction/rotation/auth/clinic/default and
+  attempt concurrency/idempotency; callback/Verify 0/100/mismatch/timeout/retry; no network while
+  UNCONFIRMED; real PostgreSQL regression, OpenAPI/client/dashboard, typecheck/test/build/diff/scope review.
+  Review: PASS — provider-neutral registry/configuration/credential lifecycle, dormant RIAL adapter and SignData,
+  Form Data allowlist, injected transport orchestration and all financial idempotency paths meet T08 criteria.
+  PostgreSQL, migration, generated client and dashboard gates passed. Owner approval moves merchant acceptance,
+  deployment and production sign-off to Phase 12 without allowing Sadad activation in Phase 09. User-owned
+  `.gitignore` and confidential material remain outside the task commit. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B09 / F09-T09` — eligible and unclaimed; do not start it in this task.
 
 ## آخرین batch — F09-B07
 

@@ -13,5 +13,17 @@ import { CommerceInventoryService } from '../inventory/commerce-inventory.servic
 import { InventoryReservationExpiryWorker } from '../inventory/inventory-reservation-expiry.worker';
 import { AdminCommerceDiscountController } from '../discounts/admin-commerce-discount.controller';
 import { CommerceDiscountService } from '../discounts/commerce-discount.service';
-@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController, AdminCommerceDiscountController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceDiscountService, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService], exports: [CommerceInventoryService, CommerceDiscountService] })
+import { AdminPaymentProviderController } from '../payments/admin-payment-provider.controller';
+import { PaymentCredentialCryptoService } from '../payments/payment-credential-crypto.service';
+import { PaymentProviderConfigService } from '../payments/payment-provider-config.service';
+import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
+import { SadadPaymentProviderAdapter } from '../payments/sadad-payment-provider.adapter';
+import { PatientPaymentAttemptController, SadadCallbackController } from '../payments/patient-payment-attempt.controller';
+import { PaymentAttemptService } from '../payments/payment-attempt.service';
+import { PaymentVerificationService } from '../payments/payment-verification.service';
+import { PaymentCredentialRetentionService } from '../payments/payment-credential-retention.service';
+import { PaymentCredentialRetentionWorker } from '../payments/payment-credential-retention.worker';
+import { PaymentProviderOrderIdService } from '../payments/payment-provider-order-id.service';
+import { PaymentAttemptOrchestrationService } from '../payments/payment-attempt-orchestration.service';
+@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController, AdminCommerceDiscountController, AdminPaymentProviderController, PatientPaymentAttemptController, SadadCallbackController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceDiscountService, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService, PaymentProviderRegistry, SadadPaymentProviderAdapter, PaymentCredentialCryptoService, PaymentCredentialRetentionService, PaymentCredentialRetentionWorker, PaymentProviderOrderIdService, PaymentProviderConfigService, PaymentAttemptService, PaymentVerificationService, PaymentAttemptOrchestrationService], exports: [CommerceInventoryService, CommerceDiscountService] })
 export class AdminCommerceCatalogModule {}

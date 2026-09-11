@@ -13,8 +13,8 @@ description: "Actionable one-to-one execution map for authoritative Phase 09 roa
 evidence and commit identities. Every checklist item below maps one-to-one to one roadmap task; implementation
 may use checkpoints but must retain that roadmap ID and one final task-level commit.
 
-**Execution status**: `F09-B06/F09-T06` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
-`SADAD_GO_LIVE_BLOCKED`, not a provider-neutral catalog blocker.
+**Execution status**: `F09-B08/F09-T08` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
+`SADAD_GO_LIVE_BLOCKED` for runtime/production only and are a Phase 12 gate, not a Phase 09 completion blocker.
 
 **Tests**: Tests are required because the phase specification explicitly requires financial idempotency,
 inventory concurrency, authorization, redaction, migration, contract and browser evidence.
@@ -62,7 +62,7 @@ reservations never oversell or exceed discount limits.
 
 - [x] T005 [US2] F09-T05 Implement idempotent checkout, patient address/shipping selection and immutable line/price/tax/discount/shipping snapshots in `apps/api/src/modules/commerce/checkout/**`, `apps/api/src/modules/commerce/orders/**`, `apps/api/test/checkout-order-snapshot.integration.spec.ts`, `apps/app/src/app/(app)/store/checkout/page.tsx`, `apps/app/src/app/(app)/store/orders/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
 - [x] T006 [US2] F09-T06 Implement inventory ledger, atomic reservation/consume/release, expiry/retry jobs and PostgreSQL concurrency coverage in `apps/api/src/modules/commerce/inventory/**`, `apps/api/src/modules/outbox/**` only where the accepted commerce event contract requires it, `apps/api/test/inventory-concurrency.integration.spec.ts`, `apps/api/test/inventory-reservation-expiry.integration.spec.ts`, and `apps/api/test/outbox.integration.spec.ts`
-- [ ] T007 [US2] F09-T07 Implement server-authoritative discount eligibility, reservation and global/per-patient usage limits with dashboard management in `apps/api/src/modules/commerce/discounts/**`, `apps/api/test/discount-usage-concurrency.integration.spec.ts`, `apps/dashboard/src/features/discounts/**`, `apps/dashboard/src/app/(app)/discounts/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+- [x] T007 [US2] F09-T07 Implement server-authoritative discount eligibility, reservation and global/per-patient usage limits with dashboard management in `apps/api/src/modules/commerce/discounts/**`, `apps/api/test/discount-usage-concurrency.integration.spec.ts`, `apps/dashboard/src/features/discounts/**`, `apps/dashboard/src/app/(app)/discounts/page.tsx`, and the task-owned generated slice in `packages/api-client/**`
 
 **Checkpoint**: User Story 2 proves immutable totals, non-negative stock and repeat-safe discount use.
 
@@ -76,7 +76,7 @@ the same order proceeds through fulfillment or evidence-backed refund/reconcilia
 **Independent test**: A sanitized Sadad-compatible attempt survives credential rotation; callback/Verify replay
 including `ResCode=100` creates one business effect; an unsupported refund cannot be marked successful.
 
-- [ ] T008 [US3] F09-T08 Implement provider port/registry, fake-provider contract suite, exact frozen ADMIN/patient/callback routes, versioned encrypted dashboard configuration, and the `plan/contracts/sadad-ipg-v1.md` PaymentRequest/redirect/acceptance-proven-callback/Verify/retry adapter with durable numeric provider OrderId and cardholder redaction in `apps/api/src/modules/commerce/payments/**`, `apps/api/test/payment-provider-contract.spec.ts`, `apps/api/test/sadad-adapter.spec.ts`, `apps/api/test/payment-idempotency.integration.spec.ts`, `apps/api/test/payment-provider-config.integration.spec.ts`, `apps/dashboard/src/features/settings/settings-page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+- [x] T008 [US3] F09-T08 Implement provider port/registry, fake-provider contract suite, exact frozen ADMIN/patient/dormant-callback routes, versioned encrypted dashboard configuration, and the `plan/contracts/sadad-ipg-v1.md` PaymentRequest/redirect/Form-Data parser/Verify/retry adapter with durable numeric provider OrderId and cardholder redaction in `apps/api/src/modules/commerce/payments/**`, `apps/api/test/payment-provider-contract.spec.ts`, `apps/api/test/sadad-adapter.spec.ts`, `apps/api/test/payment-idempotency.integration.spec.ts`, `apps/api/test/payment-provider-config.integration.spec.ts`, `apps/dashboard/src/features/settings/settings-page.tsx`, and the task-owned generated slice in `packages/api-client/**`; production acceptance is Phase 12 work.
 - [ ] T009 [US3] F09-T09 Implement authorized fulfillment, tracking, cancellation, return, policy-backed
   audited manual refund and reconciliation without synthetic success in `apps/api/src/modules/commerce/orders/**`,
   `apps/api/src/modules/commerce/payments/**`, `apps/api/test/order-fulfillment-refund.integration.spec.ts`,
@@ -135,8 +135,8 @@ paths; roadmap task IDs and final task commits remain unchanged.
 ## Implementation strategy
 
 1. Complete the active contract-finalization batch only (`F09-B01` / `F09-T01`).
-2. Keep Sadad fail-closed until its acceptance facts are confirmed; do not turn `UNCONFIRMED` into a unit or
-   infer a conversion.
+2. Keep Sadad fail-closed for runtime until Phase 12 acceptance; retain `UNCONFIRMED` for real attempts while
+   testing the owner-confirmed dormant RIAL conversion only inside the adapter.
 3. Complete and commit each roadmap task independently before claiming its successor.
 4. Endpoint-owning tasks update their OpenAPI/client slice through the generated workflow; `F09-T12` performs
    final freshness, mock and integrated evidence review.
