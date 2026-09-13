@@ -5,6 +5,7 @@ import { RequirePermissions, RequireRoles } from '../../../common/auth/authoriza
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { CheckoutCommerceOrderDto, CommerceAddressDto, CommerceOrderDto, CommerceShippingOptionDto, CreateCommerceAddressDto, UpdateCommerceAddressDto } from './commerce-checkout.dto';
 import { CommerceCheckoutService } from './commerce-checkout.service';
+import { CommerceOrderOperationsService } from '../orders/commerce-order-operations.service';
 
 @ApiTags('Patient Commerce') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @Controller('patients/me/commerce')
 export class PatientCommerceCheckoutController {
@@ -18,8 +19,9 @@ export class PatientCommerceCheckoutController {
 
 @ApiTags('Patient Commerce') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @Controller('patients/me/orders')
 export class PatientCommerceOrdersController {
-  constructor(private readonly commerce: CommerceCheckoutService) {}
+  constructor(private readonly commerce: CommerceCheckoutService, private readonly operations: CommerceOrderOperationsService) {}
   @Post() @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceOrdersCheckout', summary: 'Create an idempotent server-priced commerce order snapshot' }) @ApiCreatedResponse({ type: CommerceOrderDto }) checkout(@Req() request: AuthenticatedRequest, @Headers('idempotency-key') idempotencyKey: string | undefined, @Body() body: CheckoutCommerceOrderDto) { return this.commerce.checkout(request.auth.userId, idempotencyKey, body, { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip }); }
   @Get() @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceOrdersList', summary: 'List signed-in patient commerce orders' }) @ApiOkResponse({ type: CommerceOrderDto, isArray: true }) orders(@Req() request: AuthenticatedRequest) { return this.commerce.listOrders(request.auth.userId); }
   @Get(':orderId') @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceOrdersGet', summary: 'Get an immutable signed-in patient commerce order snapshot' }) @ApiOkResponse({ type: CommerceOrderDto }) order(@Req() request: AuthenticatedRequest, @Param('orderId', new ParseUUIDPipe({ version: '4' })) orderId: string) { return this.commerce.getOrder(request.auth.userId, orderId); }
+  @Post(':orderId/cancel') @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceOrderCancelPendingPayment', summary: 'Cancel an owned pending-payment order only when payment state is safe' }) cancel(@Req() request: AuthenticatedRequest, @Param('orderId', new ParseUUIDPipe({ version: '4' })) orderId: string, @Headers('idempotency-key') key: string | undefined) { return this.operations.cancelBeforePayment(request.auth.userId, orderId, key, { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip }, false); }
 }

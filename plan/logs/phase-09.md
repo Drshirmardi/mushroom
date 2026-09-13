@@ -403,3 +403,27 @@ Owner decision and remaining production gate:
 - Final T08 re-review PASS: 6 targeted real-PostgreSQL suites (16/16), empty-database replay and Phase 08→09
   upgrade/seed, Prisma validate/generate/migrate status, API/OpenAPI, generated-client/dashboard typechecks,
   dashboard build and `git diff --check`. The Verify Token-signature fixture uses only a synthetic key.
+
+## F09-T09 — commerce fulfillment and refunds
+
+Task ID: F09-T09
+Reviewed at: 2026-09-12 23:56 +03:30
+Batch ID: F09-B09
+Status: DONE — accepted for the isolated task commit
+
+Worktree-preserving verification record:
+
+- `prisma validate`, `prisma generate`, API typecheck, generated-client freshness/typecheck, dashboard typecheck,
+  `prisma migrate deploy`, `prisma migrate status`, and a direct repository-database `SELECT 1` passed.
+- The additive `20260912034000_phase_09_order_operations` migration applied successfully to the repository
+  PostgreSQL target; no accepted migration was rewritten.
+- The mandatory isolated migration replay did not start: `test/migrations.integration.spec.ts` connects to the
+  repository-derived administrative `/postgres` endpoint to create its disposable database, then receives
+  `read ECONNRESET`; its cleanup reports `Connection terminated unexpectedly`. The same failure recurred when
+  the smoke suite was run alone. A combined PostgreSQL suite consequently failed downstream after the reset.
+- PostgreSQL/Docker recovery review (`2026-09-13`) → PASS: the isolated empty replay, Phase 08→09 upgrade and
+  idempotent seed checks pass (3/3); migration status is current. The commerce regression suite passes (16/16),
+  including inventory reservation/expiry concurrency and synthetic Verify exactly-once protection. API
+  typecheck/OpenAPI export, generated-client freshness/build, dashboard typecheck/build and `git diff --check`
+  pass. The migration uses additive enum/table/field changes only, no provider refund route or transport exists,
+  and the user-owned `.gitignore` remains excluded.

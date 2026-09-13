@@ -419,6 +419,14 @@ enum CommerceOrderStatus {
   PENDING_PAYMENT
   PAYMENT_PROCESSING
   PAID
+  FULFILLMENT_PENDING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELLATION_REQUESTED
+  RETURN_REQUESTED
+  CANCELLATION_REJECTED
+  RETURN_REJECTED
   FULFILLING
   FULFILLED
   CANCELLED
@@ -456,6 +464,7 @@ enum PaymentStatus {
 enum RefundStatus {
   REQUESTED
   APPROVED
+  MANUAL_EXECUTION_PENDING
   COMPLETED
   REJECTED
   CANCELLED
@@ -966,6 +975,10 @@ model CommerceOrder {
   discountAmountToman     BigInt                 @default(0) @map("discount_amount_toman")
   shippingAmountToman     BigInt                 @default(0) @map("shipping_amount_toman")
   totalAmountToman        BigInt                 @map("total_amount_toman")
+  carrierName             String?                @map("carrier_name") @db.VarChar(160)
+  trackingCode            String?                @map("tracking_code") @db.VarChar(160)
+  trackingUrl             String?                @map("tracking_url") @db.VarChar(2048)
+  trackingUpdatedAt       DateTime?              @map("tracking_updated_at") @db.Timestamptz(3)
   createdAt               DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt               DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
   clinic                  Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
@@ -976,10 +989,24 @@ model CommerceOrder {
   discountReservation     CommerceDiscountReservation?
   paymentAttempts         PaymentAttempt[]
   payment                 Payment?
+  operations              CommerceOrderOperation[]
 
   @@unique([patientId, idempotencyKey], map: "commerce_orders_patient_idempotency_key")
   @@index([clinicId, status, createdAt, id], map: "commerce_orders_clinic_status_created_id_idx")
   @@map("commerce_orders")
+}
+
+model CommerceOrderOperation {
+  id             String        @id @default(uuid()) @db.Uuid
+  orderId        String        @map("order_id") @db.Uuid
+  action         String        @db.VarChar(64)
+  idempotencyKey String        @map("idempotency_key") @db.VarChar(240)
+  payload        Json          @default("{}")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  order          CommerceOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, action, idempotencyKey], map: "commerce_order_operations_order_action_key")
+  @@map("commerce_order_operations")
 }
 
 model CommerceOrderLine {
@@ -1111,6 +1138,8 @@ model PaymentAttempt {
   providerResultCode       String?                       @map("provider_result_code") @db.VarChar(32)
   callbackReceivedAt       DateTime?                     @map("callback_received_at") @db.Timestamptz(3)
   verifiedAt               DateTime?                     @map("verified_at") @db.Timestamptz(3)
+  reconciliationEvidenceReference String?                @map("reconciliation_evidence_reference") @db.VarChar(512)
+  reconciledAt             DateTime?                     @map("reconciled_at") @db.Timestamptz(3)
   createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
   clinic                   Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
@@ -1151,6 +1180,8 @@ model Refund {
   idempotencyKey    String       @unique(map: "refunds_idempotency_key") @map("idempotency_key") @db.VarChar(240)
   completedAt       DateTime?    @map("completed_at") @db.Timestamptz(3)
   evidenceReference String?      @map("evidence_reference") @db.VarChar(512)
+  approvedAt        DateTime?    @map("approved_at") @db.Timestamptz(3)
+  rejectedAt        DateTime?    @map("rejected_at") @db.Timestamptz(3)
   createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
   payment           Payment      @relation(fields: [paymentId], references: [id], onDelete: Restrict)

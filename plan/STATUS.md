@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-12 03:21 +03:30`
+- آخرین به‌رورسانی: `2026-09-13 20:41 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,9 +50,43 @@
 
 ## handoff فاز فعال
 
-`F09-B08/F09-T08` passed its review gate. Sadad remains `UNCONFIRMED` and `SADAD_GO_LIVE_BLOCKED`, but the
-owner moved merchant acceptance and production activation to Phase 12; the dormant, provider-neutral T08
-implementation is complete. No real attempt, external request or runtime callback/Verify effect is enabled.
+`F09-B09/F09-T09` passed its review gate. PostgreSQL/Docker recovery restored isolated migration replay,
+Phase 08→09 upgrade and idempotent seed verification. The order-operations implementation remains provider
+neutral: Sadad is neither enabled nor called, and no synthetic provider refund exists.
+
+## batch فعال — F09-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-12 03:34 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; provider-neutral payment foundation at `4b23bb1`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T09` — `DONE`
+  Dependencies: `F09-T01` through `F09-T08` are `DONE`; the active-batch check was clear before this claim.
+  Scope: transactional ADMIN fulfillment and manual tracking; owner/ADMIN-only pre-payment cancellation with
+  exactly-once reservation release; ADMIN cancellation/return requests and manually evidenced TOMAN refunds;
+  safe reconciliation of ambiguous attempts through the existing verification boundary; the corresponding
+  ADMIN API, real dashboard `/orders`, OpenAPI/generated client, PostgreSQL integration tests, and task
+  documentation/evidence.
+  Owned paths: `apps/api/{prisma/{schema.prisma,migrations/20260912034000_phase_09_order_operations/**},src/{common/errors/api-error.ts,modules/commerce/{catalog/admin-commerce-catalog.module.ts,checkout/**,discounts/**,inventory/**,orders/**,payments/payment-verification.service.ts}},test/{commerce-order-operations.integration.spec.ts,commerce-checkout.integration.spec.ts,openapi-contract.spec.ts,migrations.integration.spec.ts}}`, `apps/dashboard/src/{app/(app)/orders/**,features/orders/**,lib/commerce-orders-api.ts,lib/commerce-orders-api.spec.ts}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md}`, and `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: order/payment/refund/inventory/discount transaction boundary, additive Prisma
+  migration, commerce module wiring, API error contract, OpenAPI/client generation and PostgreSQL lifecycle tests.
+  Do not change: accepted migrations; the accepted Sadad adapter/callback/Verify flow except an unavoidable
+  reconciliation boundary change; `.gitignore` (user-owned); Sadad sample/PDF/credential paths; provider
+  activation/defaulting or network calls; revenue (F09-T11), patient receipt/result/tracking UI (F09-T10), or
+  any later task.
+  Required verification: PostgreSQL lifecycle, authorization/clinic isolation, idempotency/audit, exactly-once
+  cancellation release, concurrent over-refund prevention, manual-evidence enforcement, no synthetic
+  provider-refund, reconciliation concurrency/exactly-once payment effect, HTTPS tracking URL validation,
+  migration/drift, OpenAPI/client/API/dashboard checks and production dashboard build.
+  Review: PASS — the additive order-operations persistence preserves immutable commercial snapshots and only
+  exposes ADMIN operations (apart from owner-scoped pending-payment cancellation). Fulfillment reads immutable
+  shipping method; manual tracking accepts HTTPS only; refunds are TOMAN-only, manual/evidenced and bounded by
+  a locked Payment; reconciliation is conditional and enters the accepted verification boundary exactly once.
+  PostgreSQL replay/upgrade/seed, migration status, API/client/dashboard checks and production dashboard build
+  passed. User-owned `.gitignore` remains outside the task commit. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B10 / F09-T10` — eligible and unclaimed; do not start it in this task.
 
 ## آخرین batch — F09-B08
 

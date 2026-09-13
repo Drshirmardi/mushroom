@@ -157,7 +157,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - پذیرش: routeهای بالا و field mapping رسمی، OrderId عددی یکتا، `0/100` با دقیقاً یک پرداخت موفق،
     callback transport code-owned و غیرauthoritative، rotation امن، redaction و no-failover اثبات شوند؛ production
     enablement/acceptance خارج از معیار DONE این task و متعلق به Phase 12 است.
-- [ ] `F09-T09` — fulfillment، tracking، cancellation، return/refund و reconciliation
+- [x] `F09-T09` — fulfillment، tracking، cancellation، return/refund و reconciliation
   - Depends on: `F09-T08 DONE`
   - خروجی: lifecycle مجاز order و مسیر manual/provider refund بر اساس قرارداد freeze‌شده
   - پذیرش: موفقیت refund ساختگی ثبت نشود و dashboard همان order را تا نتیجه نهایی مدیریت کند.

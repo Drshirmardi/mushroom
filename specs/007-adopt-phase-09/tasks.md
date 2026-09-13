@@ -77,7 +77,7 @@ the same order proceeds through fulfillment or evidence-backed refund/reconcilia
 including `ResCode=100` creates one business effect; an unsupported refund cannot be marked successful.
 
 - [x] T008 [US3] F09-T08 Implement provider port/registry, fake-provider contract suite, exact frozen ADMIN/patient/dormant-callback routes, versioned encrypted dashboard configuration, and the `plan/contracts/sadad-ipg-v1.md` PaymentRequest/redirect/Form-Data parser/Verify/retry adapter with durable numeric provider OrderId and cardholder redaction in `apps/api/src/modules/commerce/payments/**`, `apps/api/test/payment-provider-contract.spec.ts`, `apps/api/test/sadad-adapter.spec.ts`, `apps/api/test/payment-idempotency.integration.spec.ts`, `apps/api/test/payment-provider-config.integration.spec.ts`, `apps/dashboard/src/features/settings/settings-page.tsx`, and the task-owned generated slice in `packages/api-client/**`; production acceptance is Phase 12 work.
-- [ ] T009 [US3] F09-T09 Implement authorized fulfillment, tracking, cancellation, return, policy-backed
+- [x] T009 [US3] F09-T09 Implement authorized fulfillment, tracking, cancellation, return, policy-backed
   audited manual refund and reconciliation without synthetic success in `apps/api/src/modules/commerce/orders/**`,
   `apps/api/src/modules/commerce/payments/**`, `apps/api/test/order-fulfillment-refund.integration.spec.ts`,
   `apps/dashboard/src/features/orders/**`, `apps/dashboard/src/app/(app)/orders/page.tsx`, and the task-owned

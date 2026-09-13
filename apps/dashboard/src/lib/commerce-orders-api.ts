@@ -1,0 +1,9 @@
+import { withRequestTimeout } from "@sabz-zendegi/api-client";
+import { apiClient } from "@/lib/api";
+export type CommerceOrder = { id: string; orderNumber: string; status: string; shippingMethod: "PICKUP" | "COURIER"; totalAmountToman: string; patientPhone: string | null; carrierName: string | null; trackingCode: string | null; trackingUrl: string | null; createdAt: string; payment: { id: string; status: string; commerceAmountToman: string; refunds: Array<{ id: string; amountToman: string; status: string }> } | null };
+export class CommerceOrdersApiError extends Error { constructor(public readonly status: number) { super("Commerce order request failed."); } }
+const headers = (token: string, key?: string) => ({ authorization: `Bearer ${token}`, ...(key ? { "idempotency-key": key } : {}) });
+async function result<T>(request: Promise<{ data?: T; response: Response }>) { try { const { data, response } = await withRequestTimeout(request); if (!response.ok || !data) throw new CommerceOrdersApiError(response.status); return data; } catch (error) { if (error instanceof CommerceOrdersApiError) throw error; throw new CommerceOrdersApiError(0); } }
+export const listCommerceOrders = (token: string) => result<CommerceOrder[]>(apiClient.GET("/v1/admin/commerce/orders", { headers: headers(token) }));
+export const transitionCommerceOrder = (token: string, orderId: string, status: "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED") => result<CommerceOrder>(apiClient.PATCH("/v1/admin/commerce/orders/{orderId}/fulfillment", { headers: headers(token, crypto.randomUUID()), params: { path: { orderId } }, body: { status } }));
+export const updateCommerceTracking = (token: string, orderId: string, body: { carrierName: string; trackingCode: string; trackingUrl?: string }) => result<CommerceOrder>(apiClient.PATCH("/v1/admin/commerce/orders/{orderId}/tracking", { headers: headers(token, crypto.randomUUID()), params: { path: { orderId } }, body }));

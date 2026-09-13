@@ -9327,6 +9327,35 @@
         ]
       }
     },
+    "/v1/patients/me/orders/{orderId}/cancel": {
+      "post": {
+        "operationId": "patientCommerceOrderCancelPendingPayment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel an owned pending-payment order only when payment state is safe",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
     "/v1/admin/commerce/discounts": {
       "get": {
         "operationId": "adminCommerceDiscountsList",
@@ -9647,6 +9676,404 @@
           "Provider Callbacks"
         ]
       }
+    },
+    "/v1/admin/commerce/orders": {
+      "get": {
+        "operationId": "adminCommerceOrdersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic commerce orders",
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/reconciliation": {
+      "get": {
+        "operationId": "adminCommerceReconciliationList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List payment attempts requiring manual reconciliation",
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/fulfillment": {
+      "patch": {
+        "operationId": "AdminCommerceOrderOperationsController_fulfillment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderTransitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/tracking": {
+      "patch": {
+        "operationId": "AdminCommerceOrderOperationsController_tracking",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderTrackingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/cancel-before-payment": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_cancelBeforePayment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/cancellation-requests": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_cancellation",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/return-requests": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_returns",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/cancellation-rejections": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_rejection",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/return-rejections": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_returnRejection",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/refunds": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_refund",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/refunds/{refundId}/{action}": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_refundAction",
+        "parameters": [
+          {
+            "name": "action",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refundId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundCompleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/payment-attempts/{attemptId}/reconcile": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_reconcile",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconciliationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
     }
   },
   "info": {
@@ -9842,6 +10269,14 @@
               "PAYMENT_VERIFICATION_FAILED",
               "PAYMENT_VERIFICATION_MISMATCH",
               "PAYMENT_RECONCILIATION_REQUIRED",
+              "COMMERCE_ORDER_TRANSITION_INVALID",
+              "COMMERCE_ORDER_CANCELLATION_BLOCKED",
+              "COMMERCE_TRACKING_URL_INVALID",
+              "COMMERCE_REFUND_NOT_FOUND",
+              "COMMERCE_REFUND_AMOUNT_INVALID",
+              "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT",
+              "REFUND_MANUAL_EVIDENCE_REQUIRED",
+              "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED",
               "HTTP_ERROR",
               "INTERNAL_SERVER_ERROR"
             ],
@@ -16698,6 +17133,101 @@
           "status",
           "commerceAmountToman",
           "providerUnit"
+        ]
+      },
+      "OrderTransitionDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "FULFILLMENT_PENDING",
+              "READY_FOR_PICKUP",
+              "SHIPPED",
+              "DELIVERED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "OrderTrackingDto": {
+        "type": "object",
+        "properties": {
+          "carrierName": {
+            "type": "string",
+            "example": "Post"
+          },
+          "trackingCode": {
+            "type": "string",
+            "example": "PK-123"
+          },
+          "trackingUrl": {
+            "type": "string",
+            "example": "https://carrier.example/track/PK-123"
+          }
+        },
+        "required": [
+          "carrierName",
+          "trackingCode"
+        ]
+      },
+      "OrderRequestDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Customer requested cancellation"
+          }
+        }
+      },
+      "RefundRequestDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "string",
+            "example": "25000",
+            "description": "Positive integer TOMAN"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amountToman"
+        ]
+      },
+      "RefundCompleteDto": {
+        "type": "object",
+        "properties": {
+          "evidenceReference": {
+            "type": "string",
+            "description": "Non-sensitive bank-transfer reference or evidence locator"
+          }
+        },
+        "required": [
+          "evidenceReference"
+        ]
+      },
+      "ReconciliationDto": {
+        "type": "object",
+        "properties": {
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "FAILED"
+            ]
+          },
+          "evidenceReference": {
+            "type": "string",
+            "description": "Non-sensitive reviewed evidence locator"
+          }
+        },
+        "required": [
+          "resolution",
+          "evidenceReference"
         ]
       }
     }
