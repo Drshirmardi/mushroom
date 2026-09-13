@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-13 21:07 +03:30`
+- آخرین به‌رورسانی: `2026-09-13 21:24 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,9 +50,35 @@
 
 ## handoff فاز فعال
 
-`F09-B10/F09-T10` is complete. The patient experience now reads only patient-owned persisted orders, attempts
-and verified receipts; dashboard operations and Home widgets read the accepted T09 APIs. Sadad remains
-fail-closed: `SADAD_GO_LIVE_BLOCKED` is rendered truthfully and was not bypassed.
+No batch is active. `F09-B12/F09-T12` is the next eligible serialized batch; it owns final Phase 09
+cross-surface verification and closure preparation. Sadad remains fail-closed and no provider activation belongs
+to Phase 09 completion work.
+
+## آخرین batch — F09-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-13 21:15 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; accepted commerce experience at `6298181`
+
+- `F09-T11` — `DONE`
+  Dependencies: `F09-T01` through `F09-T10` are `DONE`; no active batch existed when claimed.
+  Scope: clinic-scoped direct PostgreSQL revenue read model from authoritative Payment and completed Refund only;
+  ADMIN API/OpenAPI-client/dashboard revenue surface, task-owned integrations and documentation/evidence.
+  Owned paths: `apps/api/src/modules/commerce/reporting/**`, `apps/api/src/modules/commerce/catalog/admin-commerce-catalog.module.ts`,
+  `apps/api/test/commerce-revenue.integration.spec.ts`, `apps/dashboard/src/{features/revenue/**,app/(app)/revenue/**,lib/commerce-revenue-api.ts,lib/commerce-revenue-api.spec.ts,features/dashboard/dashboard-page.tsx,data/revenue.ts}`,
+  `packages/api-client/**`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, and
+  `specs/007-adopt-phase-09/**`.
+  Do not change: existing Payment/Refund data or their T08/T09 mutation boundaries; `.gitignore` (user-owned);
+  confidential Sadad paths/credentials; provider activation/network; patient payment experience; or F09-T12 work.
+  Review: PASS — the bounded direct query reads only `Payment.commerceAmountToman` with a verified Payment
+  aggregate and `Refund.amountToman` at `COMPLETED`; payment provider amount/unit, callbacks, attempts, unpaid
+  orders and catalog values are not revenue sources. Clinic-local Tehran boundaries, ISO-week/month buckets,
+  ADMIN-only access, inactive-clinic isolation, safe integer serialization and real `/revenue` loading/empty/
+  error/forbidden/retry states are covered. No migration, provider activation or network transport was added.
+  Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B12 / F09-T12` — eligible and unclaimed; do not start it in this task.
 
 ## آخرین batch — F09-B10
 

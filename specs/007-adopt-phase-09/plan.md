@@ -28,8 +28,8 @@ Sadad is the only real Phase 09 provider; callback is non-authoritative; Verify 
 provider/config cannot change during an attempt; automatic failover is forbidden; inventory uses a ledger or
 atomic update; secrets are versioned/write-only/encrypted/redacted; provider hosts are allowlisted; shared
 migrations, contracts, generated client, module wiring, and test DB have one owner per batch.
-**Scale/Scope**: Twelve stable tasks, `F09-T01`–`F09-T12`; `F09-B01/F09-T01` is the active single-task
-contract-freeze batch. Phase 02 and required Phase 08 job infrastructure are phase prerequisites.
+**Scale/Scope**: Twelve stable tasks, `F09-T01`–`F09-T12`; `F09-T11` is DONE and `F09-B12/F09-T12` is the next
+eligible serialized batch. Phase 02 and required Phase 08 job infrastructure are phase prerequisites.
 
 ## Constitution Check
 
@@ -97,8 +97,8 @@ Sadad guide and legacy .NET sample remain external inputs and are not product so
 12. `F09-T12` — OpenAPI/client، tests، حذف mock و evidence.
 
 The detailed dependencies and default serialized batch map now live in
-`plan/phases/09-COMMERCE-PAYMENTS.md`. `F09-B01/F09-T01` is the active single-task contract claim; no
-successor task is claimed.
+`plan/phases/09-COMMERCE-PAYMENTS.md`. No successor task is claimed after accepted `F09-T11`; only
+`F09-B12/F09-T12` is eligible.
 
 ## Dependency and Boundary Risks
 

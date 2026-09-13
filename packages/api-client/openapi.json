@@ -10110,6 +10110,68 @@
           "Admin Commerce Orders"
         ]
       }
+    },
+    "/v1/admin/commerce/revenue": {
+      "get": {
+        "operationId": "adminCommerceRevenueGet",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Clinic-local inclusive ISO date.",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DAY",
+              "type": "string",
+              "enum": [
+                "DAY",
+                "WEEK",
+                "MONTH"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Clinic-local inclusive ISO date.",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceRevenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read authoritative commerce revenue from verified payments and completed refunds",
+        "tags": [
+          "Admin Commerce Revenue"
+        ]
+      }
     }
   },
   "info": {
@@ -17330,6 +17392,82 @@
         "required": [
           "resolution",
           "evidenceReference"
+        ]
+      },
+      "CommerceRevenueSeriesPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "grossCapturedToman": {
+            "type": "string"
+          },
+          "completedRefundToman": {
+            "type": "string"
+          },
+          "netRevenueToman": {
+            "type": "string"
+          },
+          "successfulPaymentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "grossCapturedToman",
+          "completedRefundToman",
+          "netRevenueToman",
+          "successfulPaymentCount"
+        ]
+      },
+      "CommerceRevenueDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "TOMAN"
+            ]
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "grossCapturedToman": {
+            "type": "string"
+          },
+          "completedRefundToman": {
+            "type": "string"
+          },
+          "netRevenueToman": {
+            "type": "string"
+          },
+          "successfulPaymentCount": {
+            "type": "number"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceRevenueSeriesPointDto"
+            }
+          }
+        },
+        "required": [
+          "currency",
+          "timeZone",
+          "from",
+          "to",
+          "grossCapturedToman",
+          "completedRefundToman",
+          "netRevenueToman",
+          "successfulPaymentCount",
+          "series"
         ]
       }
     }

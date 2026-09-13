@@ -451,3 +451,26 @@ Status: DONE — accepted for the isolated task commit
   upgrade/seed smoke (3/3), API typecheck, OpenAPI export/client generate/build and OpenAPI contract (6/6),
   PostgreSQL commerce checkout integration (2/2), app tests (33/33), dashboard tests (41/41), app/dashboard
   typechecks and production builds, plus `git diff --check`.
+
+## F09-T11 — commerce revenue reporting
+
+Task ID: F09-T11
+Reviewed at: 2026-09-13 21:24 +03:30
+Batch ID: F09-B11
+Status: DONE — accepted for the isolated task commit
+
+- The ADMIN revenue API is a bounded (maximum 367 clinic-local days) direct PostgreSQL read: gross is the sum of
+  `Payment.commerceAmountToman` in the persisted verified-payment aggregate; refunds subtract only when their
+  own status is `COMPLETED` and their actual `completedAt` lies in the selected interval. It serializes exact
+  integer TOMAN values as strings and returns the authoritative clinic timezone. It neither reads nor exposes
+  callback payloads, PaymentAttempt, provider amount/unit, unpaid orders, carts, catalog prices, or credentials.
+- PostgreSQL API integration → PASS (2/2): empty ranges return zero rather than synthetic revenue; two Payment records across the Asia/Tehran midnight boundary count once;
+  inactive-clinic data and an unpaid order do not count; `REQUESTED`, `APPROVED`, `MANUAL_EXECUTION_PENDING` and
+  `REJECTED` refunds do not subtract; two completed partial refunds subtract exactly once; ADMIN succeeds and
+  STAFF is denied. Day and month bucket assertions and invalid-range rejection pass.
+- `/revenue` now consumes the generated ADMIN API client and presents loading, empty, forbidden, error/retry and
+  persisted chart states. The previous local revenue data source was removed; dashboard Home remains unchanged
+  because it intentionally has no accepted revenue source in this task.
+- Verification PASS: API and dashboard typechecks; targeted PostgreSQL integration (2/2); dashboard adapter
+  tests (2/2); runtime OpenAPI export; generated client generation and check/build. No migration was needed and
+  no Sadad provider was enabled, defaulted, contacted, or given credentials.

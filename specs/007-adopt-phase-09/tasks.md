@@ -13,7 +13,7 @@ description: "Actionable one-to-one execution map for authoritative Phase 09 roa
 evidence and commit identities. Every checklist item below maps one-to-one to one roadmap task; implementation
 may use checkpoints but must retain that roadmap ID and one final task-level commit.
 
-**Execution status**: `F09-B08/F09-T08` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
+**Execution status**: `F09-B11/F09-T11` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
 `SADAD_GO_LIVE_BLOCKED` for runtime/production only and are a Phase 12 gate, not a Phase 09 completion blocker.
 
 **Tests**: Tests are required because the phase specification explicitly requires financial idempotency,
@@ -97,7 +97,7 @@ authoritative payments/refunds.
 same order and payment/refund-driven widgets/revenue.
 
 - [x] T010 [US4] F09-T10 Connect patient payment/result/receipt/tracking and dashboard commerce/order/Home widgets with truthful states in `apps/app/src/app/(app)/store/payment/page.tsx`, `apps/app/src/app/(app)/store/order-success/page.tsx`, `apps/app/src/app/(app)/store/order-tracking/page.tsx`, `apps/dashboard/src/features/orders/**`, `apps/dashboard/src/features/dashboard/dashboard-page.tsx`, and frontend connection tests adjacent to those features. The patient receipt is strictly Payment-backed and redacted; `SADAD_GO_LIVE_BLOCKED` has no fake redirect or success; operational widgets exclude revenue.
-- [ ] T011 [US4] F09-T11 Implement documented revenue formulas/read models from verified Payment minus accepted Refund only, with clinic timezone/currency boundaries and dashboard views in `apps/api/src/modules/commerce/reporting/**`, `apps/api/test/commerce-revenue.integration.spec.ts`, `apps/dashboard/src/features/revenue/**`, `apps/dashboard/src/app/(app)/revenue/page.tsx`, `apps/dashboard/src/data/revenue.ts`, `apps/dashboard/src/features/dashboard/dashboard-page.tsx`, and the task-owned generated slice in `packages/api-client/**`
+- [x] T011 [US4] F09-T11 Implement documented revenue formulas/read models from verified Payment minus accepted Refund only, with clinic timezone/currency boundaries and dashboard views in `apps/api/src/modules/commerce/reporting/**`, `apps/api/test/commerce-revenue.integration.spec.ts`, `apps/dashboard/src/features/revenue/**`, `apps/dashboard/src/app/(app)/revenue/page.tsx`, `apps/dashboard/src/data/revenue.ts`, `apps/dashboard/src/features/dashboard/dashboard-page.tsx`, and the task-owned generated slice in `packages/api-client/**`
 
 **Checkpoint**: User Story 4 exposes no mock order/revenue totals and no callback/unpaid order counts as income.
 

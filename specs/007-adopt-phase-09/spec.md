@@ -114,7 +114,7 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
 - **FR-010 (`F09-T10`)**: App/dashboard connection MUST include checkout initiation, provider redirect,
   non-authoritative return handling, authoritative status/receipt display, order operations, and Dashboard
   Home commerce widgets.
-- **FR-011 (`F09-T11`)**: Revenue from real payment/refund information MUST remain exactly within the authoritative `F09-T11` boundary.
+- **FR-011 (`F09-T11`)**: Revenue MUST be a clinic-scoped direct read of authoritative verified `Payment.commerceAmountToman` minus only `Refund.amountToman` with `status=COMPLETED`; it MUST return explicit `TOMAN` and clinic timezone, group local day/ISO week/month boundaries from persisted timestamps, and never derive income from callbacks, attempts, unpaid orders, catalog prices, or provider amounts.
 - **FR-012 (`F09-T12`)**: OpenAPI/client, tests, mock removal, and evidence MUST remain exactly within the authoritative `F09-T12` boundary.
 
 ### Payment Architecture Requirements

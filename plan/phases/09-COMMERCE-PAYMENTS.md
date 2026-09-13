@@ -165,10 +165,10 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T03` through `F09-T09 DONE`
   - خروجی: checkout/redirect/result/receipt/order tracking بیمار و operations/widgetهای dashboard
   - پذیرش: مسیر cross-surface از catalog تا delivery/refund فقط داده واقعی نشان دهد.
-- [ ] `F09-T11` — revenue از payment/refund واقعی
+- [x] `F09-T11` — revenue از payment/refund واقعی
   - Depends on: `F09-T09 DONE`, `F09-T10 DONE`
-  - خروجی: revenue read model با formula/source/timezone/currency روشن
-  - پذیرش: callback، catalog price یا order پرداخت‌نشده درآمد محسوب نشود.
+  - خروجی: revenue read model مستقیم و clinic-scoped از Payment verified و Refund completed، با TOMAN و timezone روشن
+  - پذیرش: callback، PaymentAttempt، catalog price یا order پرداخت‌نشده درآمد محسوب نشود؛ Refund فقط در زمان COMPLETED و بر پایهٔ completedAt کسر شود.
 - [ ] `F09-T12` — OpenAPI/client freshness، tests، حذف mock و evidence
   - Depends on: `F09-T01` through `F09-T11 DONE`
   - خروجی: final generated client، full contract/concurrency/security/browser gates و phase evidence
