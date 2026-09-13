@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-13 20:41 +03:30`
+- آخرین به‌رورسانی: `2026-09-13 21:07 +03:30`
 - Milestone فعال: `Milestone D — IN_PROGRESS`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -50,9 +50,34 @@
 
 ## handoff فاز فعال
 
-`F09-B09/F09-T09` passed its review gate. PostgreSQL/Docker recovery restored isolated migration replay,
-Phase 08→09 upgrade and idempotent seed verification. The order-operations implementation remains provider
-neutral: Sadad is neither enabled nor called, and no synthetic provider refund exists.
+`F09-B10/F09-T10` is complete. The patient experience now reads only patient-owned persisted orders, attempts
+and verified receipts; dashboard operations and Home widgets read the accepted T09 APIs. Sadad remains
+fail-closed: `SADAD_GO_LIVE_BLOCKED` is rendered truthfully and was not bypassed.
+
+## آخرین batch — F09-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-13 20:45 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; T09 at `cdf23cc`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T10` — `DONE`
+  Dependencies: `F09-T01` through `F09-T09` are `DONE`; no active batch existed when claimed.
+  Scope: patient-scoped payment initiation/status/result/receipt/tracking with no client-authoritative callback;
+  real dashboard order operations and source-backed operational widgets; minimal safe read DTO/API only if
+  existing endpoints cannot support that UI; task-owned client/tests/docs.
+  Owned paths: `apps/{api/src/modules/commerce/{payments/**,checkout/**,orders/**,catalog/admin-commerce-catalog.module.ts},app/src/{app/(app)/store/{payment/**,order-success/**,order-tracking/**,orders/**,checkout/**},lib/commerce-catalog-api.ts,lib/commerce-catalog-api.spec.ts},dashboard/src/{features/{orders/**,dashboard/**},app/(app)/{orders/**,dashboard/**},lib/commerce-orders-api.ts,data/store.ts}}`, `packages/api-client/**`, `apps/api/test/{commerce-payment-experience.integration.spec.ts,openapi-contract.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, and `specs/007-adopt-phase-09/**`.
+  Do not change: accepted migrations unless a minimal additive read-model migration is unavoidable; user-owned
+  `.gitignore`; confidential Sadad paths/credentials; provider enable/default/network transport; revenue/reporting
+  (F09-T11), Phase-wide cleanup (F09-T12), or unrelated app/dashboard mock surfaces.
+  Review: PASS — checkout now hands its persisted order to payment; the patient page uses a stable idempotency
+  key and shows `SADAD_GO_LIVE_BLOCKED` without a fake attempt, token, redirect or success. Result, receipt and
+  tracking re-read owner-scoped API data; receipt is unavailable without an authoritative Payment and exposes no
+  provider token, credentials or raw callback data. The API exposes a minimal redacted tracking/refund read model.
+  Dashboard operations call existing authorized lifecycle endpoints, and Home renders source-backed operational
+  counts only (no revenue). Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B11 / F09-T11` — eligible and unclaimed; do not start it in this task.
 
 ## batch فعال — F09-B09
 

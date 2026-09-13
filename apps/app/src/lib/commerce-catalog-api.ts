@@ -8,6 +8,8 @@ export type CommerceWishlist = components["schemas"]["PatientWishlistDto"];
 export type CommerceAddress = components["schemas"]["CommerceAddressDto"];
 export type CommerceShippingOption = components["schemas"]["CommerceShippingOptionDto"];
 export type CommerceOrder = components["schemas"]["CommerceOrderDto"];
+export type CommerceReceipt = components["schemas"]["PatientCommerceReceiptDto"];
+export type PaymentAttempt = components["schemas"]["PaymentAttemptDto"];
 
 export class CommerceRequestError extends Error {
   constructor(public readonly status: number, public readonly code: string | null = null) {
@@ -61,6 +63,18 @@ export const checkoutCommerceOrder = (accessToken: string, idempotencyKey: strin
 
 export const getCommerceOrders = (accessToken: string) =>
   expectData<CommerceOrder[]>(apiClient.GET("/v1/patients/me/orders", { headers: authorization(accessToken) }));
+
+export const getCommerceOrder = (accessToken: string, orderId: string) =>
+  expectData<CommerceOrder>(apiClient.GET("/v1/patients/me/orders/{orderId}", { headers: authorization(accessToken), params: { path: { orderId } } }));
+
+export const getCommerceReceipt = (accessToken: string, orderId: string) =>
+  expectData<CommerceReceipt>(apiClient.GET("/v1/patients/me/orders/{orderId}/receipt", { headers: authorization(accessToken), params: { path: { orderId } } }));
+
+export const createPaymentAttempt = (accessToken: string, orderId: string, idempotencyKey: string) =>
+  expectData<PaymentAttempt>(apiClient.POST("/v1/patients/me/orders/{orderId}/payment-attempts", { headers: { ...authorization(accessToken), "idempotency-key": idempotencyKey }, params: { path: { orderId } } }));
+
+export const getPaymentAttempt = (accessToken: string, attemptId: string) =>
+  expectData<PaymentAttempt>(apiClient.GET("/v1/patients/me/payment-attempts/{attemptId}", { headers: authorization(accessToken), params: { path: { attemptId } } }));
 
 export function commerceErrorMessage(error: unknown) {
   if (!(error instanceof CommerceRequestError) || error.status === 0) return "سرویس فروشگاه در دسترس نیست؛ دوباره تلاش کنید.";

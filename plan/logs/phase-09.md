@@ -427,3 +427,27 @@ Worktree-preserving verification record:
   typecheck/OpenAPI export, generated-client freshness/build, dashboard typecheck/build and `git diff --check`
   pass. The migration uses additive enum/table/field changes only, no provider refund route or transport exists,
   and the user-owned `.gitignore` remains excluded.
+
+## F09-T10 — connected commerce payment experience
+
+Task ID: F09-T10
+Reviewed at: 2026-09-13 21:07 +03:30
+Batch ID: F09-B10
+Status: DONE — accepted for the isolated task commit
+
+- Patient checkout now sends the persisted order ID to the payment page. Payment creation uses an idempotency
+  key and no client-supplied amount/provider; `SADAD_GO_LIVE_BLOCKED` visibly stops the flow without a fake
+  token, redirect, callback or successful result.
+- Result, receipt and tracking re-read patient-owned API state. The minimal commerce order read model includes
+  redacted tracking and refund statuses; a receipt exists only after a Payment aggregate is created by the
+  accepted verification boundary and excludes provider tokens, credentials and raw callback fields.
+- PostgreSQL API integration → PASS: synthetic verified payment produces the owner receipt once, a second
+  patient receives 404, and the serialized receipt has no provider token. Existing blocked-attempt coverage
+  confirms two Sadad attempts return `SADAD_GO_LIVE_BLOCKED` and persist no attempt.
+- Dashboard `/orders` calls existing ADMIN lifecycle, tracking, cancellation/return/refund and reconciliation
+  endpoints. Home uses only persisted order/reconciliation operational counts and intentionally contains no
+  revenue calculation.
+- Verification PASS: `prisma generate`, `migrate deploy/status`, idempotent seed, empty replay plus Phase 08→09
+  upgrade/seed smoke (3/3), API typecheck, OpenAPI export/client generate/build and OpenAPI contract (6/6),
+  PostgreSQL commerce checkout integration (2/2), app tests (33/33), dashboard tests (41/41), app/dashboard
+  typechecks and production builds, plus `git diff --check`.

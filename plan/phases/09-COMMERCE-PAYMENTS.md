@@ -161,7 +161,7 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T08 DONE`
   - خروجی: lifecycle مجاز order و مسیر manual/provider refund بر اساس قرارداد freeze‌شده
   - پذیرش: موفقیت refund ساختگی ثبت نشود و dashboard همان order را تا نتیجه نهایی مدیریت کند.
-- [ ] `F09-T10` — اتصال app/dashboard و Dashboard Home commerce widgets
+- [x] `F09-T10` — اتصال app/dashboard و Dashboard Home commerce widgets
   - Depends on: `F09-T03` through `F09-T09 DONE`
   - خروجی: checkout/redirect/result/receipt/order tracking بیمار و operations/widgetهای dashboard
   - پذیرش: مسیر cross-surface از catalog تا delivery/refund فقط داده واقعی نشان دهد.

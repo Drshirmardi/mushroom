@@ -17,12 +17,14 @@ import {
 import { loadDirectorySettings, type DirectorySettingsState } from "@/lib/directory-settings-api";
 import { projectDashboardScheduleReadiness } from "@/lib/dashboard-schedule-readiness";
 import { dashboardAppointmentError, loadDashboardAppointmentSummary, type DashboardAppointmentSummary } from "@/lib/appointment-api";
+import { CommerceOrdersApiError, loadCommerceOperationsSummary, type CommerceOperationsSummary } from "@/lib/commerce-orders-api";
 import { p } from "@/lib/utils";
 
 type SummaryViewState = DashboardOnboardingSummaryState | { status: "loading" };
 type AssessmentViewState = DashboardAssessmentSummaryState | { status: "loading" };
 type ScheduleViewState = DirectorySettingsState | { status: "loading" };
 type AppointmentViewState = { status: "loading" } | { status: "ready"; summary: DashboardAppointmentSummary } | { status: "error"; message: string };
+type CommerceViewState = { status: "loading" } | { status: "ready"; summary: CommerceOperationsSummary } | { status: "unavailable" };
 
 function formatAsOf(asOf: string, timeZone: string) {
   return new Intl.DateTimeFormat("fa-IR", {
@@ -38,22 +40,26 @@ export function DashboardPage() {
   const [assessmentState, setAssessmentState] = useState<AssessmentViewState>({ status: "loading" });
   const [scheduleState, setScheduleState] = useState<ScheduleViewState>({ status: "loading" });
   const [appointmentState, setAppointmentState] = useState<AppointmentViewState>({ status: "loading" });
+  const [commerceState, setCommerceState] = useState<CommerceViewState>({ status: "loading" });
 
   const refresh = useCallback(async () => {
     setState({ status: "loading" });
     setAssessmentState({ status: "loading" });
     setScheduleState({ status: "loading" });
     setAppointmentState({ status: "loading" });
-    const [onboarding, assessment, schedule, appointments] = await Promise.all([
+    setCommerceState({ status: "loading" });
+    const [onboarding, assessment, schedule, appointments, commerce] = await Promise.all([
       loadDashboardOnboardingSummary(apiClient, authentication.accessToken),
       loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
       loadDirectorySettings(apiClient, authentication.accessToken),
       loadDashboardAppointmentSummary(authentication.accessToken).then((summary) => ({ status: "ready" as const, summary })).catch((error) => ({ status: "error" as const, message: dashboardAppointmentError(error) })),
+      loadCommerceOperationsSummary(authentication.accessToken).then((summary) => ({ status: "ready" as const, summary })).catch((error) => ({ status: "unavailable" as const, forbidden: error instanceof CommerceOrdersApiError && [401, 403].includes(error.status) })),
     ]);
     setState(onboarding);
     setAssessmentState(assessment);
     setScheduleState(schedule);
     setAppointmentState(appointments);
+    setCommerceState(commerce);
   }, [authentication.accessToken]);
 
   useEffect(() => {
@@ -63,8 +69,9 @@ export function DashboardPage() {
       loadDashboardAssessmentSummary(apiClient, authentication.accessToken),
       loadDirectorySettings(apiClient, authentication.accessToken),
       loadDashboardAppointmentSummary(authentication.accessToken).then((summary) => ({ status: "ready" as const, summary })).catch((error) => ({ status: "error" as const, message: dashboardAppointmentError(error) })),
+      loadCommerceOperationsSummary(authentication.accessToken).then((summary) => ({ status: "ready" as const, summary })).catch(() => ({ status: "unavailable" as const })),
     ]).then(
-      ([nextState, nextAssessmentState, nextScheduleState, nextAppointmentState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); setScheduleState(nextScheduleState); setAppointmentState(nextAppointmentState); } },
+      ([nextState, nextAssessmentState, nextScheduleState, nextAppointmentState, nextCommerceState]) => { if (!cancelled) { setState(nextState); setAssessmentState(nextAssessmentState); setScheduleState(nextScheduleState); setAppointmentState(nextAppointmentState); setCommerceState(nextCommerceState); } },
     );
     return () => { cancelled = true; };
   }, [authentication.accessToken]);
@@ -112,6 +119,8 @@ export function DashboardPage() {
           </p>
         </>
       )}
+
+      {commerceState.status === "ready" && <section className="space-y-4"><div><h2 className="text-lg font-bold text-foreground">عملیات فروشگاه</h2><p className="mt-1 text-sm text-muted-foreground">فقط شمارنده‌های عملیاتی سفارش‌های ثبت‌شده نمایش داده می‌شوند؛ درآمد یا فروش مالی در این صفحه محاسبه نمی‌شود.</p></div><div className="grid gap-4 md:grid-cols-4"><KpiCard title="در انتظار آماده‌سازی" value={p(commerceState.summary.fulfillmentPending)} icon={ClipboardList} iconBg="bg-amber-100 text-amber-700" /><KpiCard title="ارسال‌شده" value={p(commerceState.summary.shipped)} icon={CalendarDays} iconBg="bg-blue-100 text-blue-700" /><KpiCard title="بازپرداخت در انتظار" value={p(commerceState.summary.refundPending)} icon={AlertCircle} iconBg="bg-violet-100 text-violet-700" /><KpiCard title="نیازمند تطبیق" value={p(commerceState.summary.reconciliationRequired)} icon={ShieldAlert} iconBg="bg-red-100 text-red-700" /></div></section>}
 
       <section className="space-y-4">
         <div><h2 className="text-lg font-bold text-foreground">عملیات نوبت‌های امروز</h2><p className="mt-1 text-sm text-muted-foreground">همهٔ شاخص‌ها و برنامه از زمان محلی کلینیک محاسبه می‌شوند.</p></div>

@@ -9291,6 +9291,42 @@
         ]
       }
     },
+    "/v1/patients/me/orders/{orderId}/receipt": {
+      "get": {
+        "operationId": "patientCommerceOrderReceiptGet",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceReceiptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a verified-payment receipt only for an owned order",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
     "/v1/patients/me/orders/{orderId}": {
       "get": {
         "operationId": "patientCommerceOrdersGet",
@@ -10258,6 +10294,7 @@
               "COMMERCE_CART_EMPTY",
               "COMMERCE_ORDER_NOT_FOUND",
               "COMMERCE_ORDER_INPUT_INVALID",
+              "COMMERCE_RECEIPT_NOT_AVAILABLE",
               "SHIPPING_METHOD_UNAVAILABLE",
               "PAYMENT_PROVIDER_NOT_FOUND",
               "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED",
@@ -16824,6 +16861,30 @@
               "$ref": "#/components/schemas/CommerceOrderLineDto"
             }
           },
+          "carrierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "refundStatuses": {
+            "description": "Read-only refund lifecycle statuses for a verified order payment.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "createdAt": {
             "type": "string"
           }
@@ -16839,7 +16900,48 @@
           "shippingAmountToman",
           "totalAmountToman",
           "lines",
+          "refundStatuses",
           "createdAt"
+        ]
+      },
+      "PatientCommerceReceiptDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "totalAmountToman": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": "string"
+          },
+          "providerReferenceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerTraceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/CommerceOrderDto"
+          }
+        },
+        "required": [
+          "orderId",
+          "orderNumber",
+          "totalAmountToman",
+          "status",
+          "verifiedAt",
+          "order"
         ]
       },
       "CommerceDiscountResponseDto": {

@@ -70,9 +70,19 @@ export class CommerceOrderDto {
   @ApiProperty({ type: String }) subtotalAmountToman!: string; @ApiProperty({ type: String }) taxAmountToman!: string;
   @ApiProperty({ type: String }) discountAmountToman!: string; @ApiProperty({ type: String }) shippingAmountToman!: string;
   @ApiProperty({ type: String }) totalAmountToman!: string; @ApiProperty({ type: CommerceOrderLineDto, isArray: true }) lines!: CommerceOrderLineDto[];
+  @ApiPropertyOptional({ type: String, nullable: true }) carrierName!: string | null; @ApiPropertyOptional({ type: String, nullable: true }) trackingCode!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'uri' }) trackingUrl!: string | null; @ApiPropertyOptional({ type: String, nullable: true }) paymentStatus!: string | null;
+  @ApiProperty({ type: String, isArray: true, description: 'Read-only refund lifecycle statuses for a verified order payment.' }) refundStatuses!: string[];
   @ApiProperty() createdAt!: string;
 }
 
 export class CommerceOrderPageDto {
   @ApiProperty({ type: CommerceOrderDto, isArray: true }) items!: CommerceOrderDto[];
+}
+
+export class PatientCommerceReceiptDto {
+  @ApiProperty({ format: 'uuid' }) orderId!: string; @ApiProperty({ type: String }) orderNumber!: string;
+  @ApiProperty({ type: String }) totalAmountToman!: string; @ApiProperty() status!: string; @ApiProperty() verifiedAt!: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) providerReferenceId!: string | null; @ApiPropertyOptional({ type: String, nullable: true }) providerTraceNumber!: string | null;
+  @ApiProperty({ type: CommerceOrderDto }) order!: CommerceOrderDto;
 }
