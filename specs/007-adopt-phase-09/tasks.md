@@ -13,8 +13,9 @@ description: "Actionable one-to-one execution map for authoritative Phase 09 roa
 evidence and commit identities. Every checklist item below maps one-to-one to one roadmap task; implementation
 may use checkpoints but must retain that roadmap ID and one final task-level commit.
 
-**Execution status**: `F09-B11/F09-T11` is DONE in `plan/STATUS.md`. Sadad acceptance facts remain
-`SADAD_GO_LIVE_BLOCKED` for runtime/production only and are a Phase 12 gate, not a Phase 09 completion blocker.
+**Execution status**: `F09-CLOSE` is DONE in `plan/STATUS.md`; all `F09-T01`–`F09-T12` are accepted and Phase 09
+is `DONE (CLOSED)`. Sadad acceptance facts remain `SADAD_GO_LIVE_BLOCKED` for runtime/production only and are a
+Phase 12 gate, not a Phase 09 completion blocker.
 
 **Tests**: Tests are required because the phase specification explicitly requires financial idempotency,
 inventory concurrency, authorization, redaction, migration, contract and browser evidence.

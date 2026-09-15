@@ -1,6 +1,6 @@
 # Phase 09 — Commerce, Inventory & Payments
 
-- وضعیت نهایی اجرا: `READY_FOR_REVIEW` — همهٔ taskهای `F09-T01` تا `F09-T12` DONE هستند؛ closure مستقل هنوز انجام نشده است.
+- وضعیت نهایی اجرا: `DONE (CLOSED)` — همهٔ taskهای `F09-T01` تا `F09-T12` و review مستقل `F09-CLOSE` DONE هستند.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 02 DONE` و job/outbox infrastructure لازم از `Phase 08`
 - تصمیم معماری: [`ADR-0009 — معماری چنددرگاهی با شروع از سداد`](../decisions/ADR-0009-multi-provider-payment-architecture.md)
@@ -176,6 +176,14 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
 
 Endpoint-owning taskها OpenAPI/client همان slice را با single-writer به‌روز می‌کنند؛ `F09-T12` مالک final
 freshness و evidence است و generated output هرگز دستی ویرایش نمی‌شود.
+
+## closure مستقل — `F09-CLOSE`
+
+`DONE (CLOSED)` در `2026-09-15`: baseline `b5d3eda` و تمام commitهای `F09-T01` تا `F09-T12` مستقل بازبینی
+شدند. migration/seed/drift، suiteهای PostgreSQL commerce، API/OpenAPI/client، app/dashboard/web و Chrome
+localhost E2E دوباره PASS شدند. `SADAD_GO_LIVE_BLOCKED` همچنان enable/default، attempt/request/Verify و callback
+runtime واقعی را fail-closed نگه می‌دارد، اما مطابق ADR-0009 و Phase 12 مانع closure نرم‌افزاری این فاز نیست.
+هیچ provider، credential یا transport واقعی فعال نشده است.
 
 ## Batch map پیشنهادی
 

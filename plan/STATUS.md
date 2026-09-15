@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-15 18:41 +03:30`
-- Milestone فعال: `Milestone D — READY_FOR_REVIEW`
-- فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-15 20:05 +03:30`
+- Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
+- فاز فعال: `Phase 10 — Chat & Online Consultation`
+- وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ فقط independent Phase 09 closure review باقی مانده است.`
+- blocker فعال: `ندارد برای Phase 09؛ Phase 10 هنوز claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -42,7 +42,7 @@
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
-- [x] `Phase 09` — Commerce, Inventory & Payments — `READY_FOR_REVIEW`
+- [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
@@ -50,8 +50,30 @@
 
 ## handoff فاز فعال
 
-`F09-B12/F09-T12` is complete and Phase 09 is awaiting its independent closure review only. Sadad remains
-fail-closed; no provider activation belongs to that review.
+`Phase 09` is independently closed at `b5d3eda` plus the closure documentation commit. Sadad remains
+fail-closed: Phase 12 owns merchant onboarding, production acceptance and any enable/default decision. `Phase 10`
+is `NOT_STARTED`; its first eligible batch is `F10-B01 / F10-T01`, unclaimed.
+
+## closure review — F09-CLOSE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-15 19:05 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Completed at: `2026-09-15 20:05 +03:30`
+Status: `DONE (CLOSED)`
+Baseline: `b5d3eda test(F09-T12): verify commerce payment phase`
+
+- Scope: independent evidence/code/contract review and fresh Phase 09 verification only.
+- Owned paths: `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}` and
+  `specs/007-adopt-phase-09/{spec.md,plan.md,tasks.md}` only when final synchronization is required.
+- Do not change: product code, migrations, generated artifacts, tests, `.gitignore` (user-owned), confidential
+  Sadad materials, provider activation/network transport, or Phase 10.
+- Result: PASS — task/commit isolation for `F09-T01` through `F09-T12`, frozen contracts, source boundaries,
+  migration/seed/drift, PostgreSQL commerce suites, full API suite (72 files/320 tests), OpenAPI/client,
+  app/dashboard/web checks, Chrome localhost E2E and disposable-data cleanup all passed. One historical Spec Kit
+  phrase incorrectly implied that `SADAD_GO_LIVE_BLOCKED` blocked closure; it was synchronized with the frozen
+  contract/ADR/Phase 12 decision. No product finding or convergence task remains.
+- Next eligible batch: `F10-B01 / F10-T01` only, `NOT_STARTED` and unclaimed.
 
 ## batch فعال — F09-B12
 

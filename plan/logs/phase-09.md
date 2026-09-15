@@ -572,3 +572,41 @@ Status: DONE — accepted for the isolated task commit
 - Verification PASS: API and dashboard typechecks; targeted PostgreSQL integration (2/2); dashboard adapter
   tests (2/2); runtime OpenAPI export; generated client generation and check/build. No migration was needed and
   no Sadad provider was enabled, defaulted, contacted, or given credentials.
+
+## F09-CLOSE — independent Phase 09 closure review
+
+Reviewed at: 2026-09-15 20:05 +03:30
+Baseline: `b5d3eda test(F09-T12): verify commerce payment phase`
+Status: DONE (CLOSED)
+
+- Independent commit/evidence review verified the ordered, isolated `F09-T01` through `F09-T12` commits and
+  their frozen commerce TOMAN versus medical-service IRR boundary. The commercial snapshot, server-authoritative
+  checkout/discount/shipping policy, inventory ledger/reservation/expiry safeguards, immutable provider revision,
+  redacted encrypted credential lifecycle, Verify-only exactly-once financial effect, fulfillment/refund/
+  reconciliation, owner/clinic authorization, receipt and verified-payment-minus-completed-refund revenue paths
+  are covered by the fresh PostgreSQL and browser evidence below.
+- Fresh verification PASS: PostgreSQL healthy; `prisma validate`, `prisma generate`, `prisma migrate status`, empty
+  replay plus Phase 08→09 upgrade/idempotent seed (3/3), and an isolated disposable-shadow `migrate diff` with no
+  difference. Full API suite: 72 files / 320 tests PASS. Targeted real-PostgreSQL commerce/payment/inventory/
+  refund/revenue suite: 6 files / 19 tests PASS.
+- Fresh integration/client/UI PASS: OpenAPI export and generated-client freshness/test/build; API/app/dashboard/web
+  typechecks; API/app/dashboard/web production builds; app/dashboard/web tests (34/44/9). A fresh system-Chrome,
+  localhost-only Phase 09 Playwright journey PASS (1/1): secure context/native `crypto.randomUUID`, Patient A/B
+  isolation, truthful `503 SADAD_GO_LIVE_BLOCKED` with zero attempts/payments, ADMIN Dashboard cancellation,
+  exactly-one reservation release/ledger effect, unchanged revenue and run-scoped cleanup.
+- Post-run database assertion PASS: zero `f09e2e-*` category/product/inventory artifacts and zero enabled/default
+  Sadad config. Source/artifact review found no tracked Sadad PDF/sample/credential, test trace/video/HAR/
+  storage state, or active Sadad network transport. Removing the former remote web font left the verified journey
+  without non-localhost requests; unrelated legacy remote assets outside this Phase 09 route are not commerce
+  source-of-truth or a provider path.
+- Spec Kit analyze/converge PASS: all 12 requirements map to accepted tasks and no convergence task was appended.
+  A historical statement in `specs/007-adopt-phase-09/plan.md` incorrectly said that
+  `SADAD_GO_LIVE_BLOCKED` blocked closure; it is now synchronized with the frozen contract, ADR and Phase 12:
+  it blocks only enable/default, real request/Verify/callback runtime and production readiness. Merchant
+  onboarding, static egress IP, HTTPS callback domain, credentials outside Git and controlled acceptance remain
+  Phase 12 gates, not a Phase 09 closure blocker.
+- Worktree review PASS: only this closure documentation and the user-owned `.gitignore` were dirty; `.gitignore`
+  was neither edited nor staged. No product code, migration, generated artifact, provider activation or Phase 10
+  change was made by closure review.
+
+Next eligible work: `F10-B01 / F10-T01` only; it remains `NOT_STARTED` and unclaimed.

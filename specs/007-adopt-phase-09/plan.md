@@ -28,8 +28,8 @@ Sadad is the only real Phase 09 provider; callback is non-authoritative; Verify 
 provider/config cannot change during an attempt; automatic failover is forbidden; inventory uses a ledger or
 atomic update; secrets are versioned/write-only/encrypted/redacted; provider hosts are allowlisted; shared
 migrations, contracts, generated client, module wiring, and test DB have one owner per batch.
-**Scale/Scope**: Twelve stable tasks, `F09-T01`–`F09-T12`; all are DONE and Phase 09 is awaiting independent
-closure review only. Phase 02 and required Phase 08 job infrastructure are phase prerequisites.
+**Scale/Scope**: Twelve stable tasks, `F09-T01`–`F09-T12`, plus independent `F09-CLOSE`; all are DONE and
+Phase 09 is closed. Phase 02 and required Phase 08 job infrastructure are phase prerequisites.
 
 ## Constitution Check
 
@@ -45,8 +45,9 @@ closure review only. Phase 02 and required Phase 08 job infrastructure are phase
   TOMAN commerce boundary, no-failover routing, and authoritative Verify. Exact persistence and code remain
   task-owned.
 - Commerce policy is frozen. Sadad amount unit/current protocol/version/environment, redirect, callback/date
-  transport, IP/domain and credentials are `SADAD_GO_LIVE_BLOCKED`: they block real enablement and closure,
-  not the `F09-T01` contract or provider-neutral work.
+  transport, IP/domain and credentials are `SADAD_GO_LIVE_BLOCKED`: they block only real enablement, runtime
+  transport/callback and production readiness. They do not block Phase 09 implementation or closure; merchant
+  acceptance and production sign-off are Phase 12 work.
 
 Post-design re-check: passed. The design artifacts add only owner-approved/source-derived boundaries and
 future task detail. They do not claim the phase, write implementation, migrate data, generate the client, or
