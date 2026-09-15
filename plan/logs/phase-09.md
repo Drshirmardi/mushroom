@@ -610,3 +610,24 @@ Status: DONE (CLOSED)
   change was made by closure review.
 
 Next eligible work: `F10-B01 / F10-T01` only; it remains `NOT_STARTED` and unclaimed.
+
+## F09-CI01 — Phase 09 PR preflight remediation
+
+Reviewed at: 2026-09-15 23:31 +03:30
+Baseline: `984579c docs(F09-CLOSE): close commerce payments phase`
+Status: DONE — accepted for isolated remediation commit
+
+- Root PR preflight exposed five `react-hooks/set-state-in-effect` errors in Phase 09 Dashboard pages that the
+  closure checks had not exercised through the root lint entrypoint. The five initial reads now run directly from
+  cancellable asynchronous effects; interactive refresh behavior remains API-backed and no data fallback, payment
+  activation, provider transport, contract, migration or generated artifact changed.
+- Verification PASS: root lint has zero errors and only the two pre-existing out-of-scope patient-workspace
+  warnings; Dashboard tests 44/44, typecheck and production build; root typecheck; database-backed root tests with
+  API 72/72 files and 320/320 tests plus app/dashboard/web 34/44/9; root production build; `git diff --check`.
+- Environment note: the first database-backed root test invocation omitted `DATABASE_URL` and correctly failed
+  only its two required PostgreSQL suites; rerunning with the repository's local API environment passed the full
+  suite. The checked-in GitHub workflow also exposes `NODE_ENV=test` to `pnpm build`; local reproduction of a
+  non-production Next build failed during prerender, while `NODE_ENV=production` passed. This pre-existing workflow
+  risk is left unchanged for confirmation on the live PR rather than bypassing a CI check.
+- The user-owned `.gitignore`, the two pre-existing lint warnings, confidential Sadad sample/PDF material, Phase 10
+  and all real-provider activation/network paths remained untouched.

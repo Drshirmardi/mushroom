@@ -185,6 +185,13 @@ localhost E2E دوباره PASS شدند. `SADAD_GO_LIVE_BLOCKED` همچنان e
 runtime واقعی را fail-closed نگه می‌دارد، اما مطابق ADR-0009 و Phase 12 مانع closure نرم‌افزاری این فاز نیست.
 هیچ provider، credential یا transport واقعی فعال نشده است.
 
+## PR preflight remediation — `F09-CI01`
+
+`DONE` در `2026-09-15`: پنج خطای Phase 09 در گیت root lint به‌صورت محدود در effectهای asynchronous و
+cancellable داشبورد اصلاح شدند. root lint بدون error، تست کامل API `320/320`، تست‌های app/dashboard/web،
+typecheckها و production build همه PASS هستند. هشدارهای قدیمی خارج از فاز، `.gitignore` کاربر، قراردادها،
+migrationها، generated artifacts و مرز fail-closed سداد تغییری نکردند. Phase 09 همچنان `DONE (CLOSED)` است.
+
 ## Batch map پیشنهادی
 
 به‌دلیل schema، transaction، generated client و commerce module مشترک، ترتیب پیش‌فرض serialized است:

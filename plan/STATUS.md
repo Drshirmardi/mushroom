@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-15 20:05 +03:30`
+- آخرین به‌رورسانی: `2026-09-15 23:31 +03:30`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد برای Phase 09؛ Phase 10 هنوز claim نشده است.`
+- blocker فعال: `ندارد برای Phase 09؛ PR باید CI و review گیت‌هاب را پیش از merge پاس کند.`
 
 ## پیشرفت کلان
 
@@ -50,9 +50,34 @@
 
 ## handoff فاز فعال
 
-`Phase 09` is independently closed at `b5d3eda` plus the closure documentation commit. Sadad remains
-fail-closed: Phase 12 owns merchant onboarding, production acceptance and any enable/default decision. `Phase 10`
-is `NOT_STARTED`; its first eligible batch is `F10-B01 / F10-T01`, unclaimed.
+`Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
+PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
+acceptance and any enable/default decision. `Phase 10` is `NOT_STARTED`; `F10-B01 / F10-T01` remains unclaimed.
+
+## batch فعال — F09-CI01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-15 20:40 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Status: `DONE — accepted for isolated remediation commit`
+Baseline: `984579c docs(F09-CLOSE): close commerce payments phase`
+
+- Scope: correct only the five Phase 09 `react-hooks/set-state-in-effect` errors exposed by the repository root
+  `pnpm lint` PR gate, rerun the local CI-aligned verification, synchronize Phase 09 evidence/status, and prepare
+  the existing branch for a pull request to `main`.
+- Owned paths: `apps/dashboard/src/features/{discounts/discounts-page.tsx,orders/orders-page.tsx,revenue/revenue-page.tsx,settings/payment-provider-settings.tsx,store/store-page.tsx}` and
+  `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`.
+- Do not change: the two pre-existing patient-workspace lint warnings; `.gitignore` (user-owned); product
+  contracts, migrations, generated artifacts, confidential Sadad material, provider activation, or Phase 10.
+- Result: the five Phase 09 Dashboard effects now start their initial asynchronous reads directly and cancel
+  stale completions on unmount; user-triggered refresh callbacks remain available. Root `pnpm lint` passes with
+  zero errors (the two pre-existing patient-workspace warnings remain untouched). Dashboard tests `44/44`,
+  Dashboard typecheck/build, root typecheck, the complete database-backed root test suite (API `72/72` files,
+  `320/320` tests; app/dashboard/web `34/44/9`) and root production build all pass. `git diff --check` passes.
+- PR note: the repository workflow currently exports `NODE_ENV=test` globally into its Next production-build
+  step; local reproduction proves that non-production value can fail Next prerendering, while the same root build
+  with `NODE_ENV=production` passes. This is a pre-existing CI configuration risk to confirm from the live PR;
+  no workflow/config bypass was added to this Phase 09 remediation.
 
 ## closure review — F09-CLOSE
 
