@@ -452,6 +452,104 @@ Status: DONE — accepted for the isolated task commit
   PostgreSQL commerce checkout integration (2/2), app tests (33/33), dashboard tests (41/41), app/dashboard
   typechecks and production builds, plus `git diff --check`.
 
+## F09-T12 — final verification gate (BLOCKED)
+
+Task ID: F09-T12
+Reviewed at: 2026-09-14 20:13 +03:30
+Batch ID: F09-B12
+Status: BLOCKED — no task commit
+
+- PASS: PostgreSQL migration smoke (empty replay, Phase 08→09 upgrade and idempotent seed), `prisma validate`,
+  `migrate status`, and a disposable-shadow `migrate diff` all passed with zero drift.
+- PASS: all 10 targeted PostgreSQL commerce regressions (23/23) and new lifecycle coverage exercise ADMIN
+  fulfillment, idempotent manual refund, completion-only evidence, audit redaction, receipt status, synthetic
+  payment Verify, Sadad fail-closed behavior, provider configuration/order ids, inventory and catalog boundaries.
+- PASS: API/app/dashboard typechecks; app tests (33/33), dashboard tests (43/43); API OpenAPI export and generated
+  client generate/check/build/test; API and app production builds. The generated OpenAPI/client reflects the
+  completion-only refund evidence contract.
+- Fix verified in scope: refund action DTO now permits no evidence for approve/manual-execution; the service still
+  rejects completion without `REFUND_MANUAL_EVIDENCE_REQUIRED`.
+- BLOCKER: a temporary LAN-origin runtime let a disposable patient register, log in, read the persisted catalog,
+  add a real seeded SKU to the cart, and reach checkout with persisted PICKUP/Courier choices. At checkout the UI
+  reported its transport error and the API saw no order POST. The in-app browser cannot reach localhost, while
+  its only reachable LAN origin is HTTP; this is consistent with the client-side `crypto.randomUUID()` idempotency
+  key being unavailable in an insecure context. This is an environment limitation, not authorization to weaken
+  production idempotency or fabricate browser evidence. Temporary configuration was restored; no provider was
+  enabled or contacted.
+- Chrome continuation (`2026-09-14 03:22 +03:30`): all standard repository ports are healthy (`localhost:3000`,
+  `3001`, `3002`, and API `3003`; API `/v1/health/live` returns 200). Local Chrome is installed and running, but
+  the available browser-automation provider lists only the in-app browser and rejects its `chrome` target. Thus
+  no Chrome localhost navigation, secure-context/`crypto.randomUUID()` inspection, or Chrome console/network
+  capture was possible. No LAN configuration, security control, fallback or fabricated success was added.
+- Owner-provided Chrome evidence (`2026-09-14`): a manual localhost run confirmed a secure context and native
+  `crypto.randomUUID`, then reached `POST /v1/patients/me/orders` with `PICKUP` and a valid idempotency key. The
+  sanitized diagnosis found its cart also contained two stale disposable `EXP-*` test SKUs with zero available
+  quantity; neither had an ACTIVE reservation, so the reported 409 is confirmed as
+  `COMMERCE_INVENTORY_INSUFFICIENT`, not an expiry-worker or checkout transaction defect. Exact test-only cart,
+  inventory, SKU, product and category artifacts were removed after read-only verification; no production inventory
+  was changed or fabricated.
+- Fix verification: checkout retains a cryptographically generated idempotency key for the same effective payload,
+  rotates it only when shipping/address changes, and discards it only after a successful order. Stable checkout
+  error codes now render explicit Persian messages; cart clearing remains success-only. Targeted real-PostgreSQL
+  checkout/inventory/expiry/cart suites passed (9/9); app adapter tests passed (5/5), full app tests passed (34/34),
+  app typecheck and `git diff --check` passed. The expiry worker's clock-controlled regression re-ran and left no
+  `EXP-*` fixture inventory behind.
+- Owner payment-boundary evidence (`2026-09-14`): a fresh retry of checkout succeeded and navigated to the
+  persisted order's payment page. Its `POST /v1/patients/me/orders/{orderId}/payment-attempts` returned the
+  expected `503 SADAD_GO_LIVE_BLOCKED` with no eligible provider. The app truthfully displayed that the gateway is
+  not activated for acceptance and that no payment or transfer occurred. No Sadad token, redirect, successful
+  Payment, provider transport, credential, cookie, raw header or personal identifier was captured in evidence.
+  This is PASS for the Phase 09 fail-closed payment boundary, not a defect.
+- Automated-browser groundwork (`2026-09-14`): root test-only `@playwright/test` and a Chrome-channel config were
+  added without a bundled-browser download, traces, videos, HAR, storage state or screenshots. The first localhost
+  test passes against system Chrome (1/1), proving hostname `localhost`, secure context and native
+  `crypto.randomUUID`. The disposable multi-context patient/admin lifecycle remains required before acceptance.
+- Console report: the supplied `reportAllChanges` stack lacks a project source map/path and is consistent with
+  extension/DevTools instrumentation. Pending the owner's Guest/Incognito reproduction with extensions disabled,
+  it is treated as third-party browser-tooling noise; no project source was changed for it.
+- Safe next action: await the owner's remaining disposable localhost evidence for persistence/session refresh,
+  patient-history/isolation, Dashboard cancellation-release and Console attribution. Then perform final review,
+  evidence/status synchronization and the isolated `fix(F09-T12): complete commerce browser verification` commit.
+
+## F09-T12 — final verification gate (DONE)
+
+Task ID: F09-T12
+Reviewed at: 2026-09-15 18:41 +03:30
+Batch ID: F09-B12
+Status: DONE — Phase 09 is `READY_FOR_REVIEW`, not closed
+
+- Chrome-channel Playwright ran the complete localhost-only journey twice consecutively with independent Patient A,
+  Patient B and ADMIN browser contexts and real PostgreSQL. Each run used a fresh run-scoped category/product/SKU/
+  inventory fixture, real patient register/login, server-backed catalog/cart/checkout and a persisted Courier rate.
+  It asserted `localhost`, `isSecureContext`, native `crypto.randomUUID`, cart reload, one `201` PICKUP order and
+  the stable payment-page number/amount across reload and a new patient session.
+- The payment boundary returned the expected `503 SADAD_GO_LIVE_BLOCKED`; the UI showed the truthful blocked message.
+  Database assertions proved zero PaymentAttempt and Payment rows, with no token, redirect or non-localhost request.
+  Sadad was not enabled, defaulted or contacted.
+- Patient B saw no Patient A history and received `404` for direct order, receipt and payment-attempt access.
+  ADMIN saw the same order in the real `/orders` UI, cancelled it through that UI, and the browser observed neither
+  overlay nor project page/console error. Database assertions proved exactly one ACTIVE reservation and RESERVATION
+  ledger effect after checkout, then exactly one RELEASED reservation and RELEASE effect with reserved quantity back
+  to baseline after cancellation. PaymentAttempt/Payment remained zero; Patient A subsequently saw `CANCELLED`.
+  The same authorized revenue query before and after was byte-for-byte unchanged.
+- Fixture teardown runs in `finally`, validates exact run identity before each deletion, removes only exact
+  disposable rows in FK order, and asserts no user/category/product/SKU/inventory/cart/address/order/reservation/
+  ledger/payment/audit artifact remains. The two final sequential runs and a post-run database check passed; a
+  separately validated orphan from an earlier failed run was also removed by exact IDs before final evidence.
+- Verification PASS: `prisma validate`, `prisma generate`, `prisma migrate status`; empty replay, Phase 08→09
+  upgrade and idempotent seed smoke (3/3); disposable-shadow migration diff (no difference); complete API suite
+  (72 files, 320 tests); targeted real-PostgreSQL commerce/payment/inventory/expiry/catalog/revenue suites;
+  app/dashboard/web tests (34/44/9), API/app/dashboard/web typechecks, API/app/dashboard/web production builds;
+  OpenAPI export plus API-client generate/check/test/build; Chrome E2E twice; mock/secret/artifact review; and
+  `git diff --check`.
+- Review PASS: updated dashboard action handlers preserve structured status/code, render controlled Persian errors,
+  refresh authoritative data on success/conflict/error, and do not allow an unhandled handler rejection to become a
+  Next overlay. Refund completion remains service-enforced by `REFUND_MANUAL_EVIDENCE_REQUIRED`; the DTO only makes
+  evidence optional for earlier lifecycle actions. The user-owned `.gitignore`, confidential Sadad sample/PDF/
+  credential material and all provider activation/network paths remain outside the task commit.
+- Spec Kit analyze/converge: no actionable Phase 09 implementation gap was found; no convergence tasks were added.
+  Next action: `independent Phase 09 closure review` only.
+
 ## F09-T11 — commerce revenue reporting
 
 Task ID: F09-T11

@@ -17367,12 +17367,9 @@
         "properties": {
           "evidenceReference": {
             "type": "string",
-            "description": "Non-sensitive bank-transfer reference or evidence locator"
+            "description": "Non-sensitive bank-transfer reference or evidence locator; required only when completing a refund"
           }
-        },
-        "required": [
-          "evidenceReference"
-        ]
+        }
       },
       "ReconciliationDto": {
         "type": "object",

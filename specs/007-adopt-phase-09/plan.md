@@ -28,8 +28,8 @@ Sadad is the only real Phase 09 provider; callback is non-authoritative; Verify 
 provider/config cannot change during an attempt; automatic failover is forbidden; inventory uses a ledger or
 atomic update; secrets are versioned/write-only/encrypted/redacted; provider hosts are allowlisted; shared
 migrations, contracts, generated client, module wiring, and test DB have one owner per batch.
-**Scale/Scope**: Twelve stable tasks, `F09-T01`–`F09-T12`; `F09-T11` is DONE and `F09-B12/F09-T12` is the next
-eligible serialized batch. Phase 02 and required Phase 08 job infrastructure are phase prerequisites.
+**Scale/Scope**: Twelve stable tasks, `F09-T01`–`F09-T12`; all are DONE and Phase 09 is awaiting independent
+closure review only. Phase 02 and required Phase 08 job infrastructure are phase prerequisites.
 
 ## Constitution Check
 
@@ -97,8 +97,8 @@ Sadad guide and legacy .NET sample remain external inputs and are not product so
 12. `F09-T12` — OpenAPI/client، tests، حذف mock و evidence.
 
 The detailed dependencies and default serialized batch map now live in
-`plan/phases/09-COMMERCE-PAYMENTS.md`. No successor task is claimed after accepted `F09-T11`; only
-`F09-B12/F09-T12` is eligible.
+`plan/phases/09-COMMERCE-PAYMENTS.md`. `F09-B12/F09-T12` is accepted; no successor task is claimed before
+independent Phase 09 closure review.
 
 ## Dependency and Boundary Risks
 
@@ -122,5 +122,5 @@ The detailed dependencies and default serialized batch map now live in
 - **Current UI placeholder surface**: Store/cart/wishlist and dashboard store/order/revenue data currently include local placeholder state. `F09-T04`, `F09-T10`, `F09-T11`, and `F09-T12` have adjoining scopes; contract readiness and non-overlapping write sets must be frozen before source replacement. This preparation does not alter those files.
 - **Order and revenue source-of-truth risk**: `F09-T10` dashboard widgets and `F09-T11` revenue must follow real payment/refund records, while `F09-T09` owns fulfillment/cancellation/return/refund/reconciliation. Browser callback data must not become authoritative, and historical price must remain immutable after mutation of catalog values.
 
-These are accepted/source-derived coordination rules. The only current authorization is the documentation-only
-`F09-T01` claim recorded in `plan/STATUS.md`.
+These are accepted/source-derived coordination rules. The active authorization is the final verification-only
+`F09-T12` claim recorded in `plan/STATUS.md`; it cannot expand product scope.

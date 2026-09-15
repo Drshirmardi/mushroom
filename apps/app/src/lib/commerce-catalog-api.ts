@@ -78,6 +78,11 @@ export const getPaymentAttempt = (accessToken: string, attemptId: string) =>
 
 export function commerceErrorMessage(error: unknown) {
   if (!(error instanceof CommerceRequestError) || error.status === 0) return "سرویس فروشگاه در دسترس نیست؛ دوباره تلاش کنید.";
+  if (error.code === "COMMERCE_INVENTORY_INSUFFICIENT") return "موجودی یک یا چند کالای سبد کافی نیست؛ سبد را بررسی کنید.";
+  if (error.code === "COMMERCE_CART_EMPTY") return "سبد خرید شما خالی است.";
+  if (error.code === "COMMERCE_SKU_NOT_FOUND") return "یکی از کالاهای سبد دیگر در دسترس نیست؛ سبد را بررسی کنید.";
+  if (error.code === "SHIPPING_METHOD_UNAVAILABLE") return "روش ارسال انتخاب‌شده در دسترس نیست.";
+  if (error.code === "IDEMPOTENCY_KEY_REUSED") return "این درخواست با اطلاعات دیگری قبلاً ثبت شده است؛ صفحه را تازه‌سازی کنید.";
   if (error.status === 401 || error.status === 403) return "اجازهٔ دسترسی به فروشگاه را ندارید.";
   if (error.status === 404) return "این محصول دیگر در دسترس نیست.";
   if (error.status === 422) return "مقدار واردشده معتبر نیست.";

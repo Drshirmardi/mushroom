@@ -4824,8 +4824,8 @@ export interface components {
             reason?: string;
         };
         RefundCompleteDto: {
-            /** @description Non-sensitive bank-transfer reference or evidence locator */
-            evidenceReference: string;
+            /** @description Non-sensitive bank-transfer reference or evidence locator; required only when completing a refund */
+            evidenceReference?: string;
         };
         ReconciliationDto: {
             /** @enum {string} */

@@ -1,6 +1,6 @@
 # Phase 09 — Commerce, Inventory & Payments
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی اجرا: `READY_FOR_REVIEW` — همهٔ taskهای `F09-T01` تا `F09-T12` DONE هستند؛ closure مستقل هنوز انجام نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 02 DONE` و job/outbox infrastructure لازم از `Phase 08`
 - تصمیم معماری: [`ADR-0009 — معماری چنددرگاهی با شروع از سداد`](../decisions/ADR-0009-multi-provider-payment-architecture.md)
@@ -169,10 +169,10 @@ refund/reconciliation در `F09-T09` و فقط پس از freeze policy اضاف�
   - Depends on: `F09-T09 DONE`, `F09-T10 DONE`
   - خروجی: revenue read model مستقیم و clinic-scoped از Payment verified و Refund completed، با TOMAN و timezone روشن
   - پذیرش: callback، PaymentAttempt، catalog price یا order پرداخت‌نشده درآمد محسوب نشود؛ Refund فقط در زمان COMPLETED و بر پایهٔ completedAt کسر شود.
-- [ ] `F09-T12` — OpenAPI/client freshness، tests، حذف mock و evidence
+- [x] `F09-T12` — OpenAPI/client freshness، tests، حذف mock و evidence
   - Depends on: `F09-T01` through `F09-T11 DONE`
   - خروجی: final generated client، full contract/concurrency/security/browser gates و phase evidence
-  - پذیرش: همه exit criteria پاس، mockهای scope حذف و Phase 09 آماده review مستقل باشد.
+  - پذیرش: PASS — همه exit criteria پاس، mockهای scope حذف و Phase 09 آماده review مستقل است.
 
 Endpoint-owning taskها OpenAPI/client همان slice را با single-writer به‌روز می‌کنند؛ `F09-T12` مالک final
 freshness و evidence است و generated output هرگز دستی ویرایش نمی‌شود.

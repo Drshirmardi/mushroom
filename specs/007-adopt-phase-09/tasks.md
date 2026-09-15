@@ -107,7 +107,7 @@ same order and payment/refund-driven widgets/revenue.
 
 **Goal**: Prove the complete Phase 09 vertical slice and prepare it for independent phase closure review.
 
-- [ ] T012 [US4] F09-T12 Export and verify final OpenAPI/generated client, remove remaining in-scope commerce mocks, run migration/authorization/concurrency/provider/redaction/retry/browser gates, and record evidence in `packages/api-client/**`, `apps/api/test/openapi-contract.spec.ts`, `apps/api/test/**`, `apps/app/src/**`, `apps/dashboard/src/**`, `plan/logs/phase-09.md`, `plan/STATUS.md`, `plan/phases/09-COMMERCE-PAYMENTS.md`, and `specs/007-adopt-phase-09/**`
+- [x] T012 [US4] F09-T12 Export and verify final OpenAPI/generated client, remove remaining in-scope commerce mocks, run migration/authorization/concurrency/provider/redaction/retry/browser gates, and record evidence in `packages/api-client/**`, `apps/api/test/openapi-contract.spec.ts`, `apps/api/test/**`, `apps/app/src/**`, `apps/dashboard/src/**`, `plan/logs/phase-09.md`, `plan/STATUS.md`, `plan/phases/09-COMMERCE-PAYMENTS.md`, and `specs/007-adopt-phase-09/**`
 
 ## Dependencies & execution order
 
@@ -146,7 +146,7 @@ paths; roadmap task IDs and final task commits remain unchanged.
 ## Format validation
 
 - 12 checklist tasks map one-to-one to `F09-T01`–`F09-T12`.
-- Every task includes an exact planned path; only `F09-T01` is currently claimed and it remains unchecked
-  until evidence and review pass.
+- Every task includes an exact planned path; `F09-T12` is accepted after its cross-surface evidence and review
+  pass, while Phase 09 remains `READY_FOR_REVIEW` until independent closure review.
 - Story labels map to US1–US4; foundational tasks intentionally have no story label.
 - No `[P]` task is declared because the default execution map is serialized.

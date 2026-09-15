@@ -28,6 +28,14 @@ describe("commerce catalog API adapter", () => {
     expect(apiClient.POST).toHaveBeenCalledWith("/v1/patients/me/orders", { headers: { authorization: "Bearer access-token", "idempotency-key": "checkout-key" }, body: { shippingMethod: "PICKUP" } });
   });
 
+  it("maps stable checkout failures to actionable patient messages", () => {
+    expect(commerceErrorMessage(new CommerceRequestError(409, "COMMERCE_INVENTORY_INSUFFICIENT"))).toBe("موجودی یک یا چند کالای سبد کافی نیست؛ سبد را بررسی کنید.");
+    expect(commerceErrorMessage(new CommerceRequestError(409, "COMMERCE_CART_EMPTY"))).toBe("سبد خرید شما خالی است.");
+    expect(commerceErrorMessage(new CommerceRequestError(409, "COMMERCE_SKU_NOT_FOUND"))).toBe("یکی از کالاهای سبد دیگر در دسترس نیست؛ سبد را بررسی کنید.");
+    expect(commerceErrorMessage(new CommerceRequestError(409, "SHIPPING_METHOD_UNAVAILABLE"))).toBe("روش ارسال انتخاب‌شده در دسترس نیست.");
+    expect(commerceErrorMessage(new CommerceRequestError(409, "IDEMPOTENCY_KEY_REUSED"))).toBe("این درخواست با اطلاعات دیگری قبلاً ثبت شده است؛ صفحه را تازه‌سازی کنید.");
+  });
+
   it("uses owned-order endpoints for payment and receipt without sending provider data", async () => {
     const orderId = "11111111-1111-4111-8111-111111111111";
     vi.mocked(apiClient.POST).mockResolvedValue({ error: { code: "SADAD_GO_LIVE_BLOCKED" }, response: new Response(null, { status: 503 }) } as never);

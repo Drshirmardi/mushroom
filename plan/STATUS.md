@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-13 21:24 +03:30`
-- Milestone فعال: `Milestone D — IN_PROGRESS`
+- آخرین به‌رورسانی: `2026-09-15 18:41 +03:30`
+- Milestone فعال: `Milestone D — READY_FOR_REVIEW`
 - فاز فعال: `Phase 09 — Commerce, Inventory & Payments`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد برای completion نرم‌افزاری Phase 09؛ SADAD_GO_LIVE_BLOCKED فقط gate activation/production در Phase 12 است.`
+- blocker فعال: `ندارد؛ فقط independent Phase 09 closure review باقی مانده است.`
 
 ## پیشرفت کلان
 
@@ -42,7 +42,7 @@
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
-- [ ] `Phase 09` — Commerce, Inventory & Payments — `IN_PROGRESS`
+- [x] `Phase 09` — Commerce, Inventory & Payments — `READY_FOR_REVIEW`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
@@ -50,9 +50,36 @@
 
 ## handoff فاز فعال
 
-No batch is active. `F09-B12/F09-T12` is the next eligible serialized batch; it owns final Phase 09
-cross-surface verification and closure preparation. Sadad remains fail-closed and no provider activation belongs
-to Phase 09 completion work.
+`F09-B12/F09-T12` is complete and Phase 09 is awaiting its independent closure review only. Sadad remains
+fail-closed; no provider activation belongs to that review.
+
+## batch فعال — F09-B12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-14 00:10 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; accepted T11 at `8aa5fc9`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T12` — `DONE`
+  Dependencies: `F09-T01` through `F09-T11` are `DONE`; no active batch existed when claimed.
+  Scope: final migration/drift/OpenAPI/client/API/app/dashboard/PostgreSQL/browser verification; removal only of
+  proven in-scope local commerce source-of-truth remnants; Phase 09 evidence, checklist and closure-review handoff.
+  Owned paths: `apps/{api/test/**,api/scripts/**,app/src/**,dashboard/src/**,web/src/**}`, `packages/api-client/**`,
+  root `package.json`, `pnpm-lock.yaml`, `playwright.config.ts`, `tests/e2e/phase-09/**`,
+  `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, and `specs/007-adopt-phase-09/**`.
+  Do not change: accepted product architecture/contracts/migrations unless a demonstrated in-scope defect requires
+  the smallest fix; `.gitignore` (user-owned); confidential Sadad samples/PDF/credentials; provider enable/default/
+  network transport; or Phase 10.
+  Review: `PASS` — final Chrome-channel multi-context E2E ran twice on localhost using real PostgreSQL and
+  run-scoped disposable data. It proves secure context/native `crypto.randomUUID`, cart/order persistence,
+  persisted PICKUP/Courier prices, fail-closed `503 SADAD_GO_LIVE_BLOCKED` with no PaymentAttempt/Payment/token/
+  redirect/external request, patient isolation/404 direct access, ADMIN Dashboard cancellation, one reservation
+  release/ledger effect, unchanged revenue, controlled console/page errors, and exact cleanup. Full API (72 files,
+  320 tests), migration smoke (3/3), drift, Prisma, OpenAPI/client, app/dashboard/web tests/typechecks/builds and
+  scope/secret/artifact review pass. No provider was enabled, defaulted or contacted; user-owned `.gitignore` and
+  confidential Sadad material remain excluded. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next action: `independent Phase 09 closure review` only; do not start Phase 10.
 
 ## آخرین batch — F09-B11
 

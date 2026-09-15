@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/phase-09-commerce-inventory-payments`
 **Created**: 2026-09-09
-**Status**: `F09-B06/F09-T06` is DONE; live execution state remains in `plan/STATUS.md`.
+**Status**: `F09-B12/F09-T12` is DONE and Phase 09 is `READY_FOR_REVIEW`; live execution state remains in `plan/STATUS.md`.
 **Input**: Prepare the authoritative Phase 09 roadmap for implementation, including the owner-approved
 multi-provider architecture, Sadad-first integration, dashboard-managed provider configuration, and the
 official Sadad purchase protocol, without activating or claiming the phase.
@@ -121,8 +121,10 @@ The patient app, dashboard, Dashboard Home widgets, and revenue views use real P
 
 - **PA-001**: Sadad MUST be the first and only real provider implemented in Phase 09; a fake provider MAY
   be used only to prove the shared provider contract.
-- **PA-002**: Phase 09 MUST use one enabled, configured default provider and MUST NOT implement patient
-  selection, automatic failover, priority routing, or provider switching during an attempt.
+- **PA-002**: When a provider is permitted to be enabled after Phase 12 acceptance, routing MUST use only one
+  configured default provider and MUST NOT implement patient selection, automatic failover, priority routing, or
+  provider switching during an attempt. Until then, `SADAD_GO_LIVE_BLOCKED` prohibits enabled/default state and
+  any real provider attempt.
 - **PA-003**: Provider endpoints MUST be selected from adapter-owned allowlists; dashboard input MUST NOT
   supply an arbitrary provider host or URL.
 - **PA-004**: Provider credentials MUST be write-only, versioned, encrypted at rest with a key held outside
