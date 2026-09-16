@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-16 +03:30`
+- آخرین به‌رورسانی: `2026-09-16 +04:50`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T02 migration/persistence is next and must retain exclusive Prisma ownership.`
+- blocker فعال: `ندارد؛ F10-T03 REST/authorization is next and must retain exclusive common-auth/OpenAPI ownership.`
 
 ## پیشرفت کلان
 
@@ -52,8 +52,32 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `F10-T01` is accepted at the isolated contract commit; the next eligible
-batch is `F10-B02 / F10-T02` only, with exclusive Prisma schema/migration/seed ownership.
+acceptance and any enable/default decision. `F10-T01` and `F10-T02` are accepted at isolated commits; the next eligible
+batch is `F10-B03 / F10-T03` only, with exclusive REST/common-authorization/OpenAPI ownership.
+
+## batch فعال — F10-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-16 03:45 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `79e7979 docs(F10-T01): freeze chat consultation contract`
+
+- Scope: additive PostgreSQL/Prisma persistence only for the frozen appointment-bound text-chat contract: conversation,
+  participant, message/sequence/idempotency, receipt, report, block, moderation, retention/legal-hold and safe audit
+  boundaries; migration replay/Phase 09 upgrade/seed idempotency/schema-drift evidence.
+- Owned paths: `apps/api/prisma/{schema.prisma,migrations/20260916034500_phase_10_chat_persistence/migration.sql,seed.mjs}`,
+  `apps/api/test/{chat-migrations.integration.spec.ts,migrations.integration.spec.ts}` only when Phase 10 migration
+  coverage is necessary, and `plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}` plus
+  `specs/008-adopt-phase-10/tasks.md` for accepted-task synchronization.
+- Shared writer: `F10-T02` exclusively owns Prisma schema/migrations/seed. Do not add REST, authorization, OpenAPI,
+  generated client, Socket.IO, outbox handler, waiting-room runtime, app/dashboard, attachment, or video work.
+- Result: accepted persistence schema/migration stores only appointment-bound text-chat facts and preserves exclusive
+  Prisma ownership. It adds no runtime REST, Socket.IO, attachment/video, Redis/Centrifugo, generated client or UI work.
+- Verification: clean replay and Phase 09 upgrade/seed/invariant suite (4 tests) passed against disposable PostgreSQL;
+  `prisma migrate deploy/status`, migrations-to-schema drift and database-to-schema drift all passed; development seed
+  ran twice idempotently; Prisma validate/generate, API typecheck and `git diff --check` passed.
+- Next eligible batch: `F10-B03 / F10-T03` only; no task is claimed by this completion.
 
 ## batch فعال — F09-CI01
 

@@ -22,7 +22,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Goal**: Create the only durable source of truth and its invariant tests.
 
-- [ ] T002 F10-T02 Implement conversation/participant/message/sequence/client-message-id/receipt/report/block/moderation/retention-hold persistence, constraints, indexes, seed and migration smoke in `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<phase-10-chat-foundation>/migration.sql`, `apps/api/prisma/seed.ts`, and `apps/api/test/chat-migrations.integration.spec.ts`; this task is sole Prisma/migration writer and must verify clean replay, upgrade and no drift.
+- [x] T002 F10-T02 Implement conversation/participant/message/sequence/client-message-id/receipt/report/block/moderation/retention-hold persistence, constraints, indexes, seed and migration smoke in `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<phase-10-chat-foundation>/migration.sql`, `apps/api/prisma/seed.ts`, and `apps/api/test/chat-migrations.integration.spec.ts`; this task is sole Prisma/migration writer and must verify clean replay, upgrade and no drift.
 
 ## Phase 3: User Story 1 — appointment-bound durable text chat (P1)
 

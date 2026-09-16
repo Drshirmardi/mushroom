@@ -14,7 +14,7 @@
 ## Taskها
 
 - [x] `F10-T01` — retention، participant، edit/delete، report/block و attachment policy
-- [ ] `F10-T02` — migration conversation/message/receipt
+- [x] `F10-T02` — migration conversation/message/receipt
 - [ ] `F10-T03` — REST list/history و create message deduplicated
 - [ ] `F10-T04` — WebSocket authentication/authorization و reconnect sync
 - [ ] `F10-T05` — delivery/read receipt و notification
