@@ -17,7 +17,7 @@
 - [x] `F10-T02` — migration conversation/message/receipt
 - [x] `F10-T03` — REST list/history و create message deduplicated
 - [x] `F10-T04` — WebSocket authentication/authorization و reconnect sync
-- [ ] `F10-T05` — delivery/read receipt و notification
+- [x] `F10-T05` — delivery/read receipt و notification
 - [ ] `F10-T06` — private attachment و malware/validation pipeline در صورت نیاز
 - [ ] `F10-T07` — appointment waiting room و presence
 - [ ] `F10-T08` — app/dashboard integration و حذف mock

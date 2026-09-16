@@ -8,7 +8,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Roadmap boundary**: `T001`–`T011` are SpecKit labels only. `F10-T01`–`F10-T11` remain the authoritative claim, evidence, checklist, and task-commit identities; they are not renumbered or replaced.
 
-**Execution status**: `F10-T01` through `F10-T04` are accepted in isolated commits; no task is currently claimed. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
+**Execution status**: `F10-T01` through `F10-T05` are accepted in isolated commits; no task is currently claimed. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
 
 ## Phase 1: Contract foundation
 
@@ -41,7 +41,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 **Independent Test**: A reconnecting participant synchronizes sequence/receipt backlog without a durable gap or duplicate; stale/blocked/expired access cannot join or publish.
 
 - [x] T004 [US2] F10-T04 Add exactly pinned Socket.IO/NestJS gateway dependencies, lockfile and module wiring; implement handshake-auth-only gateway, backend-owned room authorization, token-expiry close, three-connection cap, high-water reconnect sync and post-commit at-least-once signaling in `apps/api/package.json`, `pnpm-lock.yaml`, `apps/api/src/app.module.ts`, `apps/api/src/modules/communications/chat/realtime/**`, and `apps/api/test/chat-realtime.gateway.spec.ts`; this task is sole Socket.IO/lockfile/realtime-wiring owner and proves no URL token or arbitrary room access.
-- [ ] T005 [US2] F10-T05 Implement monotonic delivery/read receipts, safe chat notification/outbox event handling and post-commit fan-out recovery in `apps/api/src/modules/communications/chat/receipts/**`, `apps/api/src/modules/communications/chat/notifications/**`, `apps/api/src/modules/outbox/**`, `apps/api/src/modules/assessments/notifications/**`, and `apps/api/test/chat-receipts-notifications.integration.spec.ts`; prove restricted text never leaks via preview/body and fan-out failure never rolls back a committed message.
+- [x] T005 [US2] F10-T05 Implement monotonic delivery/read receipts, safe chat notification/outbox event handling and post-commit fan-out recovery in `apps/api/src/modules/communications/chat/receipts/**`, `apps/api/src/modules/communications/chat/notifications/**`, `apps/api/src/modules/outbox/**`, `apps/api/src/modules/assessments/notifications/**`, and `apps/api/test/chat-receipts-notifications.integration.spec.ts`; prove restricted text never leaks via preview/body and fan-out failure never rolls back a committed message.
 
 ## Phase 5: Waiting room and consciously deferred media
 

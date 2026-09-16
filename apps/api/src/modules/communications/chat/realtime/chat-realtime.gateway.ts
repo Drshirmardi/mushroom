@@ -7,6 +7,7 @@ import { ChatService } from '../chat.service';
 import { ChatRealtimePublisher } from './chat-realtime.publisher';
 
 type JoinRequest = { conversationId?: string; lastSequence?: string };
+type ReceiptRequest = { conversationId?: string; lastDeliveredSequence?: string; lastReadSequence?: string };
 type RealtimeSocket = Socket & { data: { chatPrincipal?: AccessTokenPrincipal; expiryTimer?: NodeJS.Timeout } };
 
 @WebSocketGateway({ namespace: '/chat', transports: ['websocket'] })
@@ -59,6 +60,15 @@ export class ChatRealtimeGateway {
     if (!principal || typeof input?.conversationId !== 'string') return { ok: false, code: 'CHAT_FORBIDDEN' };
     try { return { ok: true, ...(await this.chat.realtimeSync(principal, input.conversationId, this.sequence(input.lastSequence))) }; }
     catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
+  }
+
+  @SubscribeMessage('receipt:ack')
+  async receipt(@ConnectedSocket() client: RealtimeSocket, @MessageBody() input: ReceiptRequest) {
+    const principal = client.data.chatPrincipal;
+    if (!principal || typeof input?.conversationId !== 'string') return { ok: false, code: 'CHAT_FORBIDDEN' };
+    try {
+      return { ok: true, ...(await this.chat.acknowledgeReceipt(principal, input.conversationId, this.sequence(input.lastDeliveredSequence), this.sequence(input.lastReadSequence))) };
+    } catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
   }
 
   private sequence(value: unknown) { if (value === undefined) return 0n; if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new Error('invalid sequence'); return BigInt(value); }

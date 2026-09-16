@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-17 +03:10`
+- آخرین به‌رورسانی: `2026-09-17 +03:30`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T05 پس از commit پذیرفته‌شدهٔ F10-T04 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T06 deferred-media evidence is next.`
 
 ## پیشرفت کلان
 
@@ -53,7 +53,27 @@
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
 acceptance and any enable/default decision. `F10-T01` تا `F10-T03` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست و `F10-B05 / F10-T05` تنها batch بعدی واجد شروع است.
+فعال نیست و `F10-B06 / F10-T06` تنها batch بعدی واجد شروع است.
+
+## batch فعال — F10-B05
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-17 03:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `51d8716 feat(F10-T04): add authenticated chat realtime gateway`
+
+- Scope: participant-scoped monotonic receipt acknowledgement and safe post-commit chat outbox/notification handling.
+- Owned paths: `apps/api/src/modules/communications/chat/{receipts,notifications}/**`, task-required chat service/gateway
+  extensions, `apps/api/src/modules/outbox/**`, `apps/api/src/modules/assessments/notifications/**`,
+  `apps/api/test/chat-receipts-notifications.integration.spec.ts`, and task evidence/status.
+- Do not change: Prisma schema/migration, REST/OpenAPI/generated client ownership, Socket.IO dependency/lockfile,
+  waiting-room/presence, app/dashboard UI, media, `.gitignore`, or Phase 12 plan.
+- Result: receipts are authenticated, participant-scoped and monotonic; chat outbox records only opaque identifiers and
+  is safely consumed without a text preview or a user-visible notification unsupported by the current category model.
+- Verification: PostgreSQL Socket.IO receipt acknowledgement and outbox privacy integration suites passed; API typechecks
+  and `git diff --check` passed. No task stage includes user-owned files.
+- Next eligible batch: `F10-B06 / F10-T06` only; no task is claimed by this completion.
 
 ## batch فعال — F10-B04
 

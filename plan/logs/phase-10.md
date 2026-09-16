@@ -178,3 +178,33 @@ Verification:
   - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` excluded from stage/commit.
 Next batch:
   - F10-B05 / F10-T05 only
+
+## F10-T05 — receipts and safe chat outbox
+
+Task ID: F10-T05
+Completed at: 2026-09-17 +03:30
+Batch ID: F10-B05
+Status: ACCEPTED — isolated task commit pending
+Changed files:
+  - apps/api/src/modules/communications/chat/chat.service.ts
+  - apps/api/src/modules/communications/chat/realtime/**
+  - apps/api/src/modules/outbox/outbox.worker.ts
+  - apps/api/test/chat-realtime.gateway.spec.ts
+  - apps/api/test/chat-receipts-notifications.integration.spec.ts
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - specs/008-adopt-phase-10/tasks.md
+Accepted boundary:
+  - authenticated receipt acknowledgements are participant-scoped, never move high-water marks backward, cannot exceed
+    committed sequence and recheck current membership, block and appointment eligibility.
+  - chat commit writes an idempotent durable outbox event in the same PostgreSQL transaction. The event includes only
+    identifiers; no body, preview, restricted text or medical content is retained or emitted by the worker.
+  - worker failure or realtime fan-out failure cannot roll back the committed message. Current notification categories
+    do not invent a chat notification; a future user-visible channel requires a separate frozen contract.
+Verification:
+  - `vitest run test/chat-receipts-notifications.integration.spec.ts test/chat-realtime.gateway.spec.ts --no-file-parallelism` → PASS (2 files, 4 tests).
+  - API production/test typechecks and `git diff --check` → PASS.
+  - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` excluded from stage/commit.
+Next batch:
+  - F10-B06 / F10-T06 only

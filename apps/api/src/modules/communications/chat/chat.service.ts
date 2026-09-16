@@ -99,6 +99,24 @@ export class ChatService {
     };
   }
 
+  async acknowledgeReceipt(principal: AccessTokenPrincipal, conversationId: string, delivered: bigint, read: bigint) {
+    if (delivered < 0n || read < 0n || read > delivered) throw new BadRequestException({ code: 'CHAT_SEQUENCE_INVALID', message: 'Receipt high-water marks are invalid.', details: {} });
+    const receipt = await this.prisma.$transaction(async (tx) => {
+      const conversation = await this.conversation(conversationId, tx);
+      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      this.assertSendEligibility(conversation.appointment); await this.assertNotBlocked(tx, conversation, actor);
+      const max = await tx.chatMessage.aggregate({ where: { conversationId }, _max: { sequence: true } });
+      if (delivered > (max._max.sequence ?? 0n)) throw new BadRequestException({ code: 'CHAT_SEQUENCE_INVALID', message: 'Receipt exceeds committed history.', details: {} });
+      const existing = await tx.chatReceipt.findUnique({ where: { conversationId_userId: { conversationId, userId: actor.userId } } });
+      const nextDelivered = existing && existing.lastDeliveredSequence > delivered ? existing.lastDeliveredSequence : delivered;
+      const nextRead = existing && existing.lastReadSequence > read ? existing.lastReadSequence : read;
+      return tx.chatReceipt.upsert({ where: { conversationId_userId: { conversationId, userId: actor.userId } }, create: { clinicId: conversation.clinicId, conversationId, userId: actor.userId, lastDeliveredSequence: nextDelivered, lastReadSequence: nextRead }, update: { lastDeliveredSequence: nextDelivered, lastReadSequence: nextRead } });
+    });
+    const response = { userId: receipt.userId, lastDeliveredSequence: String(receipt.lastDeliveredSequence), lastReadSequence: String(receipt.lastReadSequence) };
+    this.publisher.receiptUpdated(conversationId, response);
+    return response;
+  }
+
   async send(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto) {
     const body = input.body.normalize('NFC').trim();
     if (!body) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A text message cannot be empty.', details: {} });
@@ -129,6 +147,14 @@ export class ChatService {
         senderUserId: actor.userId, senderKind: actor.kind, clientMessageId: input.clientMessageId, requestPayloadHash, body,
       } });
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.MESSAGE_CREATED, 'MESSAGE', message.id);
+      await tx.outboxEvent.upsert({
+        where: { idempotencyKey: `chat-message:${message.id}` },
+        create: {
+          eventType: 'CHAT_MESSAGE_COMMITTED', aggregateType: 'CHAT_CONVERSATION', aggregateId: conversation.id,
+          idempotencyKey: `chat-message:${message.id}`,
+          payload: { conversationId: conversation.id, messageId: message.id, clinicId: conversation.clinicId },
+        }, update: {},
+      });
       return { message: this.messageResponse(message, actor.isAdmin), committed: true, conversationId: conversation.id };
     }, { maxWait: 30_000, timeout: 30_000 });
     if (outcome.committed) this.publisher.messageCommitted(outcome.conversationId, outcome.message);

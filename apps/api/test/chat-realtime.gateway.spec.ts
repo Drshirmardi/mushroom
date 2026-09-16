@@ -49,6 +49,10 @@ describe('chat realtime Socket.IO integration', () => {
     const sent = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversation.json().id}/messages`, headers: auth(fixture.tokens.patient), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000003', body: 'realtime durable message' } });
     expect(sent.statusCode).toBe(201);
     await expect(committed).resolves.toMatchObject({ id: sent.json().id, sequence: '1', body: 'realtime durable message' });
+    const receipt = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('receipt:ack', { conversationId: conversation.json().id, lastDeliveredSequence: '1', lastReadSequence: '1' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(receipt).toMatchObject({ ok: true, lastDeliveredSequence: '1', lastReadSequence: '1' });
+    const stale = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('receipt:ack', { conversationId: conversation.json().id, lastDeliveredSequence: '0', lastReadSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(stale).toMatchObject({ ok: true, lastDeliveredSequence: '1', lastReadSequence: '1' });
   }, 30_000);
 
   afterEach(async () => { socket?.disconnect(); socket = undefined; if (fixture) await destroyChatFixture(fixture); fixture = undefined; await app?.close(); });
