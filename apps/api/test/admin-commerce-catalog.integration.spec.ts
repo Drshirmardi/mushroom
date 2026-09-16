@@ -1,0 +1,58 @@
+import { randomUUID } from 'node:crypto';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { createApiApplication } from '../src/app.factory';
+import { AccessTokenService } from '../src/common/auth/access-token.service';
+import { PrismaService } from '../src/database/prisma/prisma.service';
+
+describe('admin commerce catalog (PostgreSQL API integration)', () => {
+  let app: NestFastifyApplication; let prisma: PrismaService; let adminToken: string; let staffToken: string;
+  const suffix = randomUUID().slice(0, 8);
+  const subjectIds = new Set<string>();
+  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); const tokens = app.get(AccessTokenService); adminToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] }); staffToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] }); }, 30_000);
+  afterAll(async () => { await app.close(); });
+  afterEach(async () => {
+    const products = await prisma.commerceProduct.findMany({ where: { slug: `product-${suffix}` }, select: { id: true } });
+    const productIds = products.map((product) => product.id);
+    const skus = productIds.length ? await prisma.commerceSku.findMany({ where: { productId: { in: productIds } }, select: { id: true } }) : [];
+    const skuIds = skus.map((sku) => sku.id);
+    const inventory = skuIds.length ? await prisma.inventoryItem.findMany({ where: { skuId: { in: skuIds } }, select: { id: true } }) : [];
+    const cleanupSubjectIds = [...subjectIds, ...productIds, ...skuIds, ...inventory.map((item) => item.id)];
+    if (cleanupSubjectIds.length) await prisma.auditEvent.deleteMany({ where: { subjectId: { in: cleanupSubjectIds }, action: { startsWith: 'COMMERCE_' } } });
+    if (inventory.length) await prisma.inventoryLedgerEntry.deleteMany({ where: { inventoryItemId: { in: inventory.map((item) => item.id) } } });
+    if (skuIds.length) await prisma.inventoryItem.deleteMany({ where: { skuId: { in: skuIds } } });
+    if (productIds.length) await prisma.commerceSku.deleteMany({ where: { productId: { in: productIds } } });
+    if (productIds.length) await prisma.commerceProduct.deleteMany({ where: { id: { in: productIds } } });
+    await prisma.commerceCategory.deleteMany({ where: { slug: `catalog-${suffix}` } });
+    subjectIds.clear();
+  });
+  const headers = (token = adminToken) => ({ authorization: `Bearer ${token}`, origin: 'http://localhost:3000' });
+  it('requires ADMIN and manages audited category, draft-active-archived product, TOMAN SKU and inventory', async () => {
+    const denied = await app.inject({ method: 'GET', url: '/v1/admin/commerce/products', headers: headers(staffToken) });
+    expect(denied.statusCode).toBe(403); expect(denied.json().code).toBe('FORBIDDEN');
+    const category = await app.inject({ method: 'POST', url: '/v1/admin/commerce/categories', headers: headers(), payload: { name: `دسته ${suffix}`, slug: `catalog-${suffix}` } });
+    expect(category.statusCode).toBe(201); const categoryId = category.json().id as string; subjectIds.add(categoryId);
+    const product = await app.inject({ method: 'POST', url: '/v1/admin/commerce/products', headers: headers(), payload: { categoryId, title: `محصول ${suffix}`, slug: `product-${suffix}` } });
+    expect(product.statusCode).toBe(201); expect(product.json().status).toBe('DRAFT'); const productId = product.json().id as string; subjectIds.add(productId);
+    const invalidTransition = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(), payload: { status: 'ARCHIVED' } });
+    expect(invalidTransition.statusCode).toBe(409); expect(invalidTransition.json().code).toBe('COMMERCE_LIFECYCLE_INVALID');
+    const active = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(), payload: { status: 'ACTIVE' } });
+    expect(active.statusCode).toBe(200); expect(active.json().status).toBe('ACTIVE');
+    const sku = await app.inject({ method: 'POST', url: `/v1/admin/commerce/products/${productId}/skus`, headers: headers(), payload: { code: `SKU-${suffix}`, currentPriceToman: 125000, currentTaxToman: 0, initialOnHandQuantity: 5 } });
+    expect(sku.statusCode).toBe(201); expect(sku.json()).toMatchObject({ currentPriceToman: '125000', onHandQuantity: 5 }); const skuId = sku.json().id as string; subjectIds.add(skuId);
+    const invalidInventory = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/skus/${skuId}/inventory`, headers: headers(), payload: { onHandQuantity: -1 } });
+    expect(invalidInventory.statusCode).toBe(400);
+    const inventory = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/skus/${skuId}/inventory`, headers: headers(), payload: { onHandQuantity: 9 } });
+    expect(inventory.statusCode).toBe(200); expect(inventory.json().onHandQuantity).toBe(9);
+    const archived = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(), payload: { status: 'ARCHIVED' } });
+    expect(archived.statusCode).toBe(200); expect(archived.json().status).toBe('ARCHIVED');
+    const list = await app.inject({ method: 'GET', url: '/v1/admin/commerce/products?page=1&pageSize=1', headers: headers() });
+    expect(list.statusCode).toBe(200); expect(list.json()).toMatchObject({ page: 1, pageSize: 1 });
+    const inventoryRecord = await prisma.inventoryItem.findUniqueOrThrow({ where: { skuId }, select: { id: true } });
+    subjectIds.add(inventoryRecord.id);
+    const ledger = await prisma.inventoryLedgerEntry.findMany({ where: { inventoryItemId: inventoryRecord.id }, orderBy: { createdAt: 'asc' }, select: { entryType: true, quantityDelta: true } });
+    expect(ledger).toEqual([{ entryType: 'RECEIPT', quantityDelta: 5 }, { entryType: 'ADJUSTMENT', quantityDelta: 4 }]);
+    const audit = await prisma.auditEvent.findMany({ where: { subjectId: { in: [categoryId, productId, skuId, inventoryRecord.id] }, action: { startsWith: 'COMMERCE_' } } });
+    expect(audit.map((event) => event.action)).toEqual(expect.arrayContaining(['COMMERCE_CATEGORY_CREATED', 'COMMERCE_PRODUCT_CREATED', 'COMMERCE_SKU_CREATED', 'COMMERCE_INVENTORY_UPDATED']));
+  });
+});

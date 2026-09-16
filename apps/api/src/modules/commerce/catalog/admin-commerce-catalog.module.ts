@@ -1,0 +1,33 @@
+import { Module } from '@nestjs/common';
+import { AdminCommerceCatalogController } from './admin-commerce-catalog.controller';
+import { AdminCommerceCatalogService } from './admin-commerce-catalog.service';
+import { PatientCommerceCatalogController } from './patient-commerce-catalog.controller';
+import { PatientCommerceCatalogService } from './patient-commerce-catalog.service';
+import { PatientCommerceCartController } from '../cart/patient-commerce-cart.controller';
+import { PatientCommerceCartService } from '../cart/patient-commerce-cart.service';
+import { AdminCommerceShippingController } from '../checkout/admin-commerce-shipping.controller';
+import { PatientCommerceCheckoutController, PatientCommerceOrdersController } from '../checkout/patient-commerce-checkout.controller';
+import { CommerceCheckoutService } from '../checkout/commerce-checkout.service';
+import { CommerceClock } from '../inventory/commerce-clock';
+import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
+import { InventoryReservationExpiryWorker } from '../inventory/inventory-reservation-expiry.worker';
+import { AdminCommerceDiscountController } from '../discounts/admin-commerce-discount.controller';
+import { CommerceDiscountService } from '../discounts/commerce-discount.service';
+import { AdminPaymentProviderController } from '../payments/admin-payment-provider.controller';
+import { PaymentCredentialCryptoService } from '../payments/payment-credential-crypto.service';
+import { PaymentProviderConfigService } from '../payments/payment-provider-config.service';
+import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
+import { SadadPaymentProviderAdapter } from '../payments/sadad-payment-provider.adapter';
+import { PatientPaymentAttemptController, SadadCallbackController } from '../payments/patient-payment-attempt.controller';
+import { PaymentAttemptService } from '../payments/payment-attempt.service';
+import { PaymentVerificationService } from '../payments/payment-verification.service';
+import { PaymentCredentialRetentionService } from '../payments/payment-credential-retention.service';
+import { PaymentCredentialRetentionWorker } from '../payments/payment-credential-retention.worker';
+import { PaymentProviderOrderIdService } from '../payments/payment-provider-order-id.service';
+import { PaymentAttemptOrchestrationService } from '../payments/payment-attempt-orchestration.service';
+import { AdminCommerceOrderOperationsController } from '../orders/admin-commerce-order-operations.controller';
+import { CommerceOrderOperationsService } from '../orders/commerce-order-operations.service';
+import { AdminCommerceRevenueController } from '../reporting/admin-commerce-revenue.controller';
+import { CommerceRevenueService } from '../reporting/commerce-revenue.service';
+@Module({ controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController, AdminCommerceDiscountController, AdminPaymentProviderController, PatientPaymentAttemptController, SadadCallbackController, AdminCommerceOrderOperationsController, AdminCommerceRevenueController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceDiscountService, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService, PaymentProviderRegistry, SadadPaymentProviderAdapter, PaymentCredentialCryptoService, PaymentCredentialRetentionService, PaymentCredentialRetentionWorker, PaymentProviderOrderIdService, PaymentProviderConfigService, PaymentAttemptService, PaymentVerificationService, PaymentAttemptOrchestrationService, CommerceOrderOperationsService, CommerceRevenueService], exports: [CommerceInventoryService, CommerceDiscountService] })
+export class AdminCommerceCatalogModule {}

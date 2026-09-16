@@ -150,4 +150,21 @@ describe('identity OpenAPI contract', () => {
       'FORBIDDEN',
     );
   });
+
+  it('publishes the frozen patient-commerce paths with bearer protection', () => {
+    const paths = document.paths;
+    for (const [path, method] of [
+      ['/v1/commerce/products', 'get'],
+      ['/v1/commerce/products/{productId}', 'get'],
+      ['/v1/patients/me/cart', 'get'],
+      ['/v1/patients/me/cart', 'put'],
+      ['/v1/patients/me/wishlist', 'get'],
+      ['/v1/patients/me/wishlist', 'put'],
+    ]) {
+      expect(paths[path][method].security).toEqual([{ bearerAuth: [] }]);
+    }
+    expect(paths['/v1/commerce/products'].get.operationId).toBe('patientCommerceProductsList');
+    expect(paths['/v1/patients/me/cart'].put.operationId).toBe('patientCommerceCartUpdate');
+    expect(document.components.schemas.PatientCommerceSkuDto.properties.currentPriceToman.description).toBe('Integer TOMAN.');
+  });
 });

@@ -2137,6 +2137,685 @@ export interface paths {
         patch: operations["ContentController_updateBanner"];
         trace?: never;
     };
+    "/v1/admin/commerce/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List commerce products */
+        get: operations["adminCommerceProductsList"];
+        put?: never;
+        /** Create a draft commerce product */
+        post: operations["adminCommerceProductsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List commerce categories */
+        get: operations["adminCommerceCategoriesList"];
+        put?: never;
+        /** Create a commerce category */
+        post: operations["adminCommerceCategoriesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a commerce category */
+        patch: operations["adminCommerceCategoriesUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update or advance product lifecycle */
+        patch: operations["adminCommerceProductsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/products/{productId}/skus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create SKU with integer TOMAN price and inventory */
+        post: operations["adminCommerceSkusCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/skus/{skuId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update SKU price or metadata */
+        patch: operations["adminCommerceSkusUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/skus/{skuId}/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set on-hand inventory without reservation processing */
+        patch: operations["adminCommerceInventoryUpdate"];
+        trace?: never;
+    };
+    "/v1/commerce/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active commerce products with active SKUs in the patient clinic */
+        get: operations["patientCommerceProductsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/commerce/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an active commerce product with active SKUs in the patient clinic */
+        get: operations["patientCommerceProductGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the signed-in patient cart */
+        get: operations["patientCommerceCartGet"];
+        /** Set a cart SKU quantity without reserving stock */
+        put: operations["patientCommerceCartUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the signed-in patient wishlist */
+        get: operations["patientCommerceWishlistGet"];
+        /** Save or remove an active SKU for the signed-in patient */
+        put: operations["patientCommerceWishlistUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/shipping-rates/courier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the active clinic courier shipping rate configuration */
+        get: operations["adminCommerceCourierShippingRateGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the clinic courier rate without changing historical order snapshots */
+        patch: operations["adminCommerceCourierShippingRateUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the signed-in patient checkout addresses */
+        get: operations["patientCommerceAddressesList"];
+        put?: never;
+        /** Create a signed-in patient checkout address */
+        post: operations["patientCommerceAddressesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/addresses/{addressId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a signed-in patient checkout address */
+        delete: operations["patientCommerceAddressesDelete"];
+        options?: never;
+        head?: never;
+        /** Update a signed-in patient checkout address */
+        patch: operations["patientCommerceAddressesUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/shipping-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List server-priced shipping options for the signed-in patient clinic */
+        get: operations["patientCommerceShippingOptionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List signed-in patient commerce orders */
+        get: operations["patientCommerceOrdersList"];
+        put?: never;
+        /** Create an idempotent server-priced commerce order snapshot */
+        post: operations["patientCommerceOrdersCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/orders/{orderId}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a verified-payment receipt only for an owned order */
+        get: operations["patientCommerceOrderReceiptGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an immutable signed-in patient commerce order snapshot */
+        get: operations["patientCommerceOrdersGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/orders/{orderId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel an owned pending-payment order only when payment state is safe */
+        post: operations["patientCommerceOrderCancelPendingPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/discounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic-scoped commerce discounts and usage */
+        get: operations["adminCommerceDiscountsList"];
+        put?: never;
+        /** Create a clinic-scoped commerce discount */
+        post: operations["adminCommerceDiscountsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/discounts/{discountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update or activate a commerce discount without changing its code */
+        patch: operations["adminCommerceDiscountsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List code-owned clinic payment provider configurations without credentials */
+        get: operations["adminCommercePaymentProvidersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}/config-revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an idempotent write-only encrypted provider configuration revision */
+        post: operations["adminCommercePaymentProviderRevisionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a provider enabled/default state subject to its go-live gate */
+        patch: operations["adminCommercePaymentProviderUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/orders/{orderId}/payment-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a provider-bound payment attempt when a go-live-ready provider is available */
+        post: operations["patientPaymentAttemptCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/payment-attempts/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a signed-in patient payment attempt */
+        get: operations["patientPaymentAttemptGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/providers/sadad/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dormant Sadad callback endpoint; transport activation awaits merchant acceptance evidence */
+        post: operations["sadadPaymentCallback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic commerce orders */
+        get: operations["adminCommerceOrdersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List payment attempts requiring manual reconciliation */
+        get: operations["adminCommerceReconciliationList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/fulfillment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCommerceOrderOperationsController_fulfillment"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/tracking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCommerceOrderOperationsController_tracking"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/cancel-before-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_cancelBeforePayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/cancellation-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_cancellation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/return-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_returns"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/cancellation-rejections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_rejection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/return-rejections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_returnRejection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_refund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/refunds/{refundId}/{action}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_refundAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/payment-attempts/{attemptId}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCommerceOrderOperationsController_reconcile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/revenue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read authoritative commerce revenue from verified payments and completed refunds */
+        get: operations["adminCommerceRevenueGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2166,7 +2845,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -3788,6 +4467,390 @@ export interface components {
             /** @enum {string} */
             publicationStatus?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
             media?: components["schemas"]["MediaDto"];
+        };
+        CommerceCategoryResponseDto: {
+            id: string;
+            name: string;
+            slug: string;
+            isActive: boolean;
+            productCount: number;
+        };
+        CommerceSkuResponseDto: {
+            id: string;
+            code: string;
+            title?: string | null;
+            /** @description Integer TOMAN. */
+            currentPriceToman: string;
+            currentTaxToman: string;
+            isActive: boolean;
+            onHandQuantity: number;
+            reservedQuantity: number;
+        };
+        CommerceProductResponseDto: {
+            id: string;
+            title: string;
+            slug: string;
+            description?: string | null;
+            /** @enum {string} */
+            status: "DRAFT" | "ACTIVE" | "ARCHIVED";
+            category: components["schemas"]["CommerceCategoryResponseDto"];
+            skus: components["schemas"]["CommerceSkuResponseDto"][];
+        };
+        CommercePageResponseDto: {
+            items: components["schemas"]["CommerceProductResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CreateCommerceCategoryDto: {
+            name: string;
+            slug: string;
+            isActive?: boolean;
+        };
+        UpdateCommerceCategoryDto: {
+            name?: string;
+            slug?: string;
+            isActive?: boolean;
+        };
+        CreateCommerceProductDto: {
+            /** Format: uuid */
+            categoryId: string;
+            title: string;
+            slug: string;
+            description?: string;
+        };
+        UpdateCommerceProductDto: {
+            /** Format: uuid */
+            categoryId?: string;
+            title?: string;
+            slug?: string;
+            description?: string | null;
+            /** @enum {string} */
+            status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
+        };
+        CreateCommerceSkuDto: {
+            code: string;
+            title?: string;
+            /** @description Integer TOMAN. */
+            currentPriceToman: number;
+            /** @default 0 */
+            currentTaxToman?: number;
+            isActive?: boolean;
+            /** @default 0 */
+            initialOnHandQuantity?: number;
+        };
+        UpdateCommerceSkuDto: {
+            code?: string;
+            title?: string | null;
+            currentPriceToman?: number;
+            currentTaxToman?: number;
+            isActive?: boolean;
+        };
+        UpdateInventoryDto: {
+            onHandQuantity: number;
+        };
+        CommerceInventoryResponseDto: {
+            skuId: string;
+            onHandQuantity: number;
+            reservedQuantity: number;
+        };
+        PatientCommerceCategoryDto: {
+            id: string;
+            name: string;
+            slug: string;
+        };
+        PatientCommerceSkuDto: {
+            id: string;
+            code: string;
+            title?: string | null;
+            /** @description Integer TOMAN. */
+            currentPriceToman: string;
+            /** @description Integer TOMAN. */
+            currentTaxToman: string;
+        };
+        PatientCommerceProductDto: {
+            id: string;
+            title: string;
+            slug: string;
+            description?: string | null;
+            category: components["schemas"]["PatientCommerceCategoryDto"];
+            skus: components["schemas"]["PatientCommerceSkuDto"][];
+        };
+        PatientCommerceProductPageDto: {
+            items: components["schemas"]["PatientCommerceProductDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PatientCartItemDto: {
+            id: string;
+            quantity: number;
+            sku: components["schemas"]["PatientCommerceSkuDto"];
+            product: components["schemas"]["PatientCommerceProductDto"];
+        };
+        PatientCartDto: {
+            items: components["schemas"]["PatientCartItemDto"][];
+        };
+        UpdatePatientCartDto: {
+            /** Format: uuid */
+            skuId: string;
+            quantity: number;
+        };
+        PatientWishlistItemDto: {
+            id: string;
+            sku: components["schemas"]["PatientCommerceSkuDto"];
+            product: components["schemas"]["PatientCommerceProductDto"];
+        };
+        PatientWishlistDto: {
+            items: components["schemas"]["PatientWishlistItemDto"][];
+        };
+        UpdatePatientWishlistDto: {
+            /** Format: uuid */
+            skuId: string;
+            saved: boolean;
+        };
+        CommerceCourierShippingRateDto: {
+            /** @enum {string} */
+            method: "COURIER";
+            /** @description Integer TOMAN when configured. */
+            amountToman?: string | null;
+            isActive: boolean;
+            isConfigured: boolean;
+        };
+        UpdateCourierShippingRateDto: {
+            /** @description Integer TOMAN. */
+            amountToman: number;
+            isActive: boolean;
+        };
+        CommerceAddressDto: {
+            id: string;
+            label: string;
+            recipientName: string;
+            phone: string;
+            province: string;
+            city: string;
+            postalCode?: Record<string, never> | null;
+            line1: string;
+            line2?: Record<string, never> | null;
+            isDefault: boolean;
+        };
+        CreateCommerceAddressDto: {
+            label: string;
+            recipientName: string;
+            phone: string;
+            province: string;
+            city: string;
+            line1: string;
+            postalCode?: string;
+            line2?: string;
+            isDefault?: boolean;
+        };
+        UpdateCommerceAddressDto: {
+            label?: string;
+            recipientName?: string;
+            phone?: string;
+            province?: string;
+            city?: string;
+            line1?: string;
+            postalCode?: Record<string, never> | null;
+            line2?: Record<string, never> | null;
+            isDefault?: boolean;
+        };
+        CommerceShippingOptionDto: {
+            /** @enum {string} */
+            method: "PICKUP" | "COURIER";
+            /** @description Integer TOMAN. */
+            amountToman: string;
+        };
+        CheckoutCommerceOrderDto: {
+            /** @enum {string} */
+            shippingMethod: "PICKUP" | "COURIER";
+            /** Format: uuid */
+            addressId?: string | null;
+            /** @description Optional commerce discount code; the server canonicalizes and prices it. */
+            discountCode?: string;
+        };
+        CommerceOrderLineDto: {
+            skuCode: string;
+            productTitle: string;
+            quantity: number;
+            unitPriceToman: string;
+            unitTaxToman: string;
+            discountAmountToman: string;
+            lineTotalToman: string;
+        };
+        CommerceOrderDto: {
+            /** Format: uuid */
+            id: string;
+            orderNumber: string;
+            status: string;
+            /** @enum {string} */
+            shippingMethod: "PICKUP" | "COURIER";
+            shippingAddress?: components["schemas"]["CommerceAddressDto"] | null;
+            subtotalAmountToman: string;
+            taxAmountToman: string;
+            discountAmountToman: string;
+            shippingAmountToman: string;
+            totalAmountToman: string;
+            lines: components["schemas"]["CommerceOrderLineDto"][];
+            carrierName?: string | null;
+            trackingCode?: string | null;
+            /** Format: uri */
+            trackingUrl?: string | null;
+            paymentStatus?: string | null;
+            /** @description Read-only refund lifecycle statuses for a verified order payment. */
+            refundStatuses: string[];
+            createdAt: string;
+        };
+        PatientCommerceReceiptDto: {
+            /** Format: uuid */
+            orderId: string;
+            orderNumber: string;
+            totalAmountToman: string;
+            status: string;
+            verifiedAt: string;
+            providerReferenceId?: string | null;
+            providerTraceNumber?: string | null;
+            order: components["schemas"]["CommerceOrderDto"];
+        };
+        CommerceDiscountResponseDto: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            title: string;
+            /** @enum {string} */
+            kind: "FIXED_AMOUNT" | "PERCENTAGE";
+            amountToman?: string | null;
+            percentageBasisPoints?: number | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            usageLimit?: number | null;
+            perPatientUsageLimit?: number | null;
+            isActive: boolean;
+            reservedCount: number;
+            consumedCount: number;
+            remainingGlobalCapacity?: number | null;
+        };
+        CreateCommerceDiscountDto: {
+            code: string;
+            title: string;
+            /** @enum {string} */
+            kind: "FIXED_AMOUNT" | "PERCENTAGE";
+            /** @description Positive integer TOMAN for FIXED_AMOUNT only. */
+            amountToman?: string | null;
+            /** @description Basis points for PERCENTAGE only. */
+            percentageBasisPoints?: number | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            usageLimit?: number | null;
+            perPatientUsageLimit?: number | null;
+            isActive?: boolean;
+        };
+        UpdateCommerceDiscountDto: {
+            title?: string;
+            /** @enum {string} */
+            kind?: "FIXED_AMOUNT" | "PERCENTAGE";
+            amountToman?: string;
+            percentageBasisPoints?: number | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            usageLimit?: number | null;
+            perPatientUsageLimit?: number | null;
+            isActive?: boolean;
+        };
+        PaymentProviderConfigDto: {
+            code: string;
+            displayName: string;
+            configured: boolean;
+            enabled: boolean;
+            isDefault: boolean;
+            providerUnit: string;
+            goLiveReady: boolean;
+            activeRevisionNumber?: number | null;
+            capabilities: {
+                [key: string]: string;
+            };
+            updatedAt?: string | null;
+        };
+        CreatePaymentProviderRevisionDto: {
+            /** @description Write-only secret values; never returned. */
+            credential?: {
+                [key: string]: string;
+            };
+            enable?: boolean;
+            isDefault?: boolean;
+        };
+        UpdatePaymentProviderConfigDto: {
+            enabled?: boolean;
+            isDefault?: boolean;
+        };
+        PaymentAttemptDto: {
+            id: string;
+            providerOrderId: string;
+            providerCode: string;
+            status: string;
+            commerceAmountToman: string;
+            providerAmount?: string | null;
+            providerUnit: string;
+        };
+        OrderTransitionDto: {
+            /** @enum {string} */
+            status: "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED";
+        };
+        OrderTrackingDto: {
+            /** @example Post */
+            carrierName: string;
+            /** @example PK-123 */
+            trackingCode: string;
+            /** @example https://carrier.example/track/PK-123 */
+            trackingUrl?: string;
+        };
+        OrderRequestDto: {
+            /** @example Customer requested cancellation */
+            reason?: string;
+        };
+        RefundRequestDto: {
+            /**
+             * @description Positive integer TOMAN
+             * @example 25000
+             */
+            amountToman: string;
+            reason?: string;
+        };
+        RefundCompleteDto: {
+            /** @description Non-sensitive bank-transfer reference or evidence locator; required only when completing a refund */
+            evidenceReference?: string;
+        };
+        ReconciliationDto: {
+            /** @enum {string} */
+            resolution: "VERIFIED" | "FAILED";
+            /** @description Non-sensitive reviewed evidence locator */
+            evidenceReference: string;
+        };
+        CommerceRevenueSeriesPointDto: {
+            date: string;
+            grossCapturedToman: string;
+            completedRefundToman: string;
+            netRevenueToman: string;
+            successfulPaymentCount: number;
+        };
+        CommerceRevenueDto: {
+            /** @enum {string} */
+            currency: "TOMAN";
+            timeZone: string;
+            from: string;
+            to: string;
+            grossCapturedToman: string;
+            completedRefundToman: string;
+            netRevenueToman: string;
+            successfulPaymentCount: number;
+            series: components["schemas"]["CommerceRevenueSeriesPointDto"][];
         };
     };
     responses: never;
@@ -8458,6 +9521,1091 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminCommerceProductsList: {
+        parameters: {
+            query?: {
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommercePageResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceProductsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommerceProductDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceProductResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCategoriesList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCategoryResponseDto"][];
+                };
+            };
+        };
+    };
+    adminCommerceCategoriesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommerceCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCategoryResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCategoriesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommerceCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCategoryResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceProductsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommerceProductDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceProductResponseDto"];
+                };
+            };
+            /** @description Invalid lifecycle transition. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceSkusCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommerceSkuDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceSkuResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceSkusUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skuId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommerceSkuDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceSkuResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceInventoryUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skuId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateInventoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceInventoryResponseDto"];
+                };
+            };
+        };
+    };
+    patientCommerceProductsList: {
+        parameters: {
+            query?: {
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+                query?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceProductPageDto"];
+                };
+            };
+        };
+    };
+    patientCommerceProductGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceProductDto"];
+                };
+            };
+            /** @description Product is not active or was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCommerceCartGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCartDto"];
+                };
+            };
+        };
+    };
+    patientCommerceCartUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePatientCartDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCartDto"];
+                };
+            };
+        };
+    };
+    patientCommerceWishlistGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientWishlistDto"];
+                };
+            };
+        };
+    };
+    patientCommerceWishlistUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePatientWishlistDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientWishlistDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCourierShippingRateGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCourierShippingRateDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCourierShippingRateUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCourierShippingRateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCourierShippingRateDto"];
+                };
+            };
+        };
+    };
+    patientCommerceAddressesList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceAddressDto"][];
+                };
+            };
+        };
+    };
+    patientCommerceAddressesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommerceAddressDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceAddressDto"];
+                };
+            };
+        };
+    };
+    patientCommerceAddressesDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patientCommerceAddressesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommerceAddressDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceAddressDto"];
+                };
+            };
+        };
+    };
+    patientCommerceShippingOptionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceShippingOptionDto"][];
+                };
+            };
+        };
+    };
+    patientCommerceOrdersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceOrderDto"][];
+                };
+            };
+        };
+    };
+    patientCommerceOrdersCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutCommerceOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceOrderDto"];
+                };
+            };
+        };
+    };
+    patientCommerceOrderReceiptGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceReceiptDto"];
+                };
+            };
+        };
+    };
+    patientCommerceOrdersGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceOrderDto"];
+                };
+            };
+        };
+    };
+    patientCommerceOrderCancelPendingPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminCommerceDiscountsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceDiscountResponseDto"][];
+                };
+            };
+        };
+    };
+    adminCommerceDiscountsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommerceDiscountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceDiscountResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceDiscountsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                discountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommerceDiscountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceDiscountResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommercePaymentProvidersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProviderConfigDto"][];
+                };
+            };
+        };
+    };
+    adminCommercePaymentProviderRevisionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePaymentProviderRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProviderConfigDto"];
+                };
+            };
+        };
+    };
+    adminCommercePaymentProviderUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePaymentProviderConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProviderConfigDto"];
+                };
+            };
+        };
+    };
+    patientPaymentAttemptCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptDto"];
+                };
+            };
+        };
+    };
+    patientPaymentAttemptGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptDto"];
+                };
+            };
+        };
+    };
+    sadadPaymentCallback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminCommerceOrdersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminCommerceReconciliationList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_fulfillment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderTransitionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_tracking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderTrackingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_cancelBeforePayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_cancellation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_returns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_rejection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_returnRejection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_refund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_refundAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action: string;
+                refundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCommerceOrderOperationsController_reconcile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminCommerceRevenueGet: {
+        parameters: {
+            query?: {
+                /** @description Clinic-local inclusive ISO date. */
+                from?: string;
+                granularity?: "DAY" | "WEEK" | "MONTH";
+                /** @description Clinic-local inclusive ISO date. */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceRevenueDto"];
+                };
             };
         };
     };

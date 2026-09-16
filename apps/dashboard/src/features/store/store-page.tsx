@@ -1,99 +1,68 @@
 "use client";
 
-import { useState } from "react";
-import { AlertTriangle, Check, Edit, Plus, Trash2 } from "lucide-react";
-import { PRODUCTS } from "@/data/store";
-import { StatusBadge } from "@/components/shared";
-import { fm, p } from "@/lib/utils";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertTriangle, PackagePlus, Plus, RefreshCw, ShieldAlert } from "lucide-react";
+
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { apiClient } from "@/lib/api";
+import { CommerceCatalogApiError, createCommerceCategory, createCommerceProduct, createCommerceSku, getCommerceCourierShippingRate, loadCommerceCatalog, updateCommerceCategory, updateCommerceCourierShippingRate, updateCommerceInventory, updateCommerceProduct, updateCommerceSku, type CommerceCatalogData, type CommerceCatalogState, type CommerceCourierShippingRate, type CommerceProduct } from "@/lib/commerce-catalog-api";
+
+type ViewState = CommerceCatalogState | { status: "loading" };
+type MutationState = { status: "idle" } | { status: "saving" } | { status: "success"; message: string } | { status: "validation"; message: string } | { status: "forbidden" } | { status: "unavailable" } | { status: "error" };
+
+const field = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
+const button = "inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50";
+const lifecycleLabel = { DRAFT: "پیش‌نویس", ACTIVE: "فعال", ARCHIVED: "بایگانی" } as const;
+const lifecycleClass = { DRAFT: "bg-slate-100 text-slate-700", ACTIVE: "bg-emerald-100 text-emerald-800", ARCHIVED: "bg-amber-100 text-amber-800" } as const;
+const toman = (value: string) => `${BigInt(value).toLocaleString("fa-IR")} تومان`;
+
+function Notice({ state, onRetry }: { state: Exclude<ViewState["status"], "ready" | "loading">; onRetry: () => void }) {
+  const title = state === "unauthorized" ? "دسترسی مجاز نیست" : state === "unavailable" ? "سرویس در دسترس نیست" : "دریافت کاتالوگ ناموفق بود";
+  const body = state === "unauthorized" ? "حساب شما اجازهٔ مدیریت کاتالوگ فروشگاه را ندارد." : state === "unavailable" ? "اتصال به API برقرار نشد؛ هیچ دادهٔ محلی جایگزین نشده است." : "داده‌ای نمایش داده نشد؛ دوباره تلاش کنید.";
+  return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950" role="alert"><div className="flex items-center gap-2 font-bold"><ShieldAlert size={18} />{title}</div><p className="mt-2 text-sm">{body}</p>{state !== "unauthorized" && <button onClick={onRetry} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold"><RefreshCw size={15} />تلاش دوباره</button>}</div>;
+}
+
+function MutationNotice({ state }: { state: MutationState }) {
+  if (state.status === "idle" || state.status === "saving") return null;
+  const message = state.status === "success" ? state.message : state.status === "validation" ? state.message : state.status === "forbidden" ? "اجازهٔ انجام این تغییر را ندارید." : state.status === "unavailable" ? "سرویس در دسترس نیست؛ تغییر ذخیره نشد." : "ذخیره‌سازی ناموفق بود؛ دادهٔ نمایش‌داده‌شده تغییر نکرد.";
+  return <p className={`rounded-xl px-3 py-2 text-sm ${state.status === "success" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`} role={state.status === "success" ? "status" : "alert"}>{message}</p>;
+}
+
+function ProductLifecycle({ product, accessToken, submit }: { product: CommerceProduct; accessToken: string; submit: (work: () => Promise<unknown>, success: string) => Promise<void> }) {
+  if (product.status === "ARCHIVED") return null;
+  const next = product.status === "DRAFT" ? "ACTIVE" : "ARCHIVED";
+  return <button onClick={() => void submit(() => updateCommerceProduct(accessToken, product.id, { status: next }), `${product.title} ${next === "ACTIVE" ? "فعال شد" : "بایگانی شد"}.`)} className="text-xs font-bold text-primary hover:underline">{next === "ACTIVE" ? "فعال‌سازی" : "بایگانی"}</button>;
+}
+
+function ProductCard({ product, accessToken, submit }: { product: CommerceProduct; accessToken: string; submit: (work: () => Promise<unknown>, success: string) => Promise<void> }) {
+  const [price, setPrice] = useState(product.skus[0]?.currentPriceToman ?? "0");
+  const [stock, setStock] = useState(product.skus[0]?.onHandQuantity.toString() ?? "0");
+  const sku = product.skus[0];
+  return <article className="rounded-2xl border border-border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><h3 className="font-bold text-sm">{product.title}</h3><p className="mt-1 text-xs text-muted-foreground">{product.category.name} · {product.slug}</p></div><span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${lifecycleClass[product.status]}`}>{lifecycleLabel[product.status]}</span></div><p className="mt-3 min-h-5 text-xs text-muted-foreground">{typeof product.description === "string" ? product.description : "بدون توضیح"}</p>{sku ? <div className="mt-4 space-y-3 border-t border-border pt-3"><div className="flex items-center justify-between text-xs"><span>{sku.code}{sku.title ? ` · ${sku.title}` : ""}</span><span className="font-bold text-primary">{toman(sku.currentPriceToman)}</span></div><div className="grid gap-2 sm:grid-cols-2"><label className="text-xs text-muted-foreground">قیمت TOMAN<input aria-label={`قیمت ${product.title}`} className={`${field} mt-1`} type="number" min="0" value={price} onChange={(event) => setPrice(event.target.value)} /></label><label className="text-xs text-muted-foreground">موجودی قابل فروش<input aria-label={`موجودی ${product.title}`} className={`${field} mt-1`} type="number" min="0" value={stock} onChange={(event) => setStock(event.target.value)} /></label></div><div className="flex gap-3"><button className="text-xs font-bold text-primary hover:underline" onClick={() => void submit(() => updateCommerceSku(accessToken, sku.id, { currentPriceToman: Number(price) }), "قیمت TOMAN ذخیره شد.")}>ذخیره قیمت</button><button className="text-xs font-bold text-primary hover:underline" onClick={() => void submit(() => updateCommerceInventory(accessToken, sku.id, Number(stock)), "موجودی ذخیره شد.")}>ذخیره موجودی</button><ProductLifecycle product={product} accessToken={accessToken} submit={submit} /></div></div> : <p className="mt-4 rounded-xl bg-secondary/50 p-3 text-xs text-muted-foreground">برای این محصول هنوز SKU ثبت نشده است.</p>}</article>;
+}
+
+function StoreManagement({ data, accessToken, refresh }: { data: CommerceCatalogData; accessToken: string; refresh: () => Promise<void> }) {
+  const [tab, setTab] = useState<"products" | "categories" | "inventory">("products"); const [selectedCategory, setSelectedCategory] = useState("all"); const [mutation, setMutation] = useState<MutationState>({ status: "idle" });
+  const [categoryName, setCategoryName] = useState(""); const [categorySlug, setCategorySlug] = useState(""); const [title, setTitle] = useState(""); const [slug, setSlug] = useState(""); const [categoryId, setCategoryId] = useState(data.categories[0]?.id ?? ""); const [description, setDescription] = useState(""); const [skuProductId, setSkuProductId] = useState(data.products[0]?.id ?? ""); const [skuCode, setSkuCode] = useState(""); const [skuPrice, setSkuPrice] = useState("0"); const [skuStock, setSkuStock] = useState("0");
+  const products = useMemo(() => selectedCategory === "all" ? data.products : data.products.filter((product) => product.category.id === selectedCategory), [data.products, selectedCategory]);
+  const submit = async (work: () => Promise<unknown>, success: string) => { setMutation({ status: "saving" }); try { await work(); await refresh(); setMutation({ status: "success", message: success }); } catch (error) { const status = error instanceof CommerceCatalogApiError ? error.status : 0; setMutation(status === 401 || status === 403 ? { status: "forbidden" } : status === 400 || status === 409 || status === 422 ? { status: "validation", message: "ورودی، lifecycle یا موجودی معتبر نیست." } : status === 0 || status === 503 || status === 504 ? { status: "unavailable" } : { status: "error" }); } };
+  return <div className="space-y-5"><MutationNotice state={mutation} /><div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-sm">{([ ["products", "محصولات"], ["categories", "دسته‌بندی‌ها"], ["inventory", "انبار"] ] as const).map(([id, label]) => <button key={id} onClick={() => setTab(id)} className={`rounded-xl px-4 py-2 text-sm font-bold ${tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{label}</button>)}</div>
+    {tab === "products" && <div className="space-y-4"><form className="rounded-2xl border border-border bg-card p-4" onSubmit={(event) => { event.preventDefault(); if (title.trim() && slug.trim() && categoryId) void submit(async () => { const product = await createCommerceProduct(accessToken, { title: title.trim(), slug: slug.trim(), categoryId, ...(description.trim() ? { description: description.trim() } : {}) }); setTitle(""); setSlug(""); setDescription(""); setSkuProductId(product.id); }, "محصول پیش‌نویس ایجاد شد."); }}><div className="mb-3 flex items-center gap-2 font-bold"><PackagePlus size={18} />محصول جدید</div><div className="grid gap-3 md:grid-cols-4"><input className={field} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="نام محصول" aria-label="نام محصول" /><input className={field} value={slug} onChange={(event) => setSlug(event.target.value)} placeholder="slug انگلیسی" aria-label="slug محصول" /><select className={field} value={categoryId} onChange={(event) => setCategoryId(event.target.value)} aria-label="دسته محصول"><option value="">دسته‌بندی</option>{data.categories.filter((category) => category.isActive).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><button className={button} disabled={!title.trim() || !slug.trim() || !categoryId || mutation.status === "saving"}><Plus size={16} />ایجاد پیش‌نویس</button></div><input className={`${field} mt-3`} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="توضیح اختیاری" aria-label="توضیح محصول" /></form><div className="flex flex-wrap gap-2">{[{ id: "all", name: "همه" }, ...data.categories].map((category) => <button key={category.id} onClick={() => setSelectedCategory(category.id)} className={`rounded-xl px-3 py-1.5 text-xs font-semibold ${selectedCategory === category.id ? "bg-primary text-primary-foreground" : "border border-border bg-card text-muted-foreground"}`}>{category.name}</button>)}</div>{products.some((product) => product.skus.some((sku) => sku.onHandQuantity > 0 && sku.onHandQuantity <= 5)) && <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"><AlertTriangle size={18} />حداقل یک SKU موجودی کم دارد؛ مقدار واقعی آن را در بخش انبار به‌روزرسانی کنید.</div>}{products.length === 0 ? <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">محصولی در این فیلتر وجود ندارد.</p> : <div className="grid gap-4 lg:grid-cols-3">{products.map((product) => <ProductCard key={product.id} product={product} accessToken={accessToken} submit={submit} />)}</div>}</div>}
+    {tab === "categories" && <div className="space-y-4"><form className="rounded-2xl border border-border bg-card p-4" onSubmit={(event) => { event.preventDefault(); if (categoryName.trim() && categorySlug.trim()) void submit(async () => { await createCommerceCategory(accessToken, { name: categoryName.trim(), slug: categorySlug.trim() }); setCategoryName(""); setCategorySlug(""); }, "دسته‌بندی ایجاد شد."); }}><div className="mb-3 flex items-center gap-2 font-bold"><Plus size={18} />دسته‌بندی جدید</div><div className="grid gap-3 md:grid-cols-3"><input className={field} value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="نام دسته" aria-label="نام دسته" /><input className={field} value={categorySlug} onChange={(event) => setCategorySlug(event.target.value)} placeholder="slug انگلیسی" aria-label="slug دسته" /><button className={button} disabled={!categoryName.trim() || !categorySlug.trim() || mutation.status === "saving"}>ثبت دسته</button></div></form>{data.categories.length === 0 ? <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">هنوز دسته‌بندی ثبت نشده است.</p> : <div className="grid gap-4 md:grid-cols-3">{data.categories.map((category) => <div key={category.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm"><h3 className="font-bold">{category.name}</h3><p className="mt-1 text-xs text-muted-foreground">{category.productCount.toLocaleString("fa-IR")} محصول · {category.slug}</p><button onClick={() => void submit(() => updateCommerceCategory(accessToken, category.id, { isActive: !category.isActive }), category.isActive ? "دسته‌بندی غیرفعال شد." : "دسته‌بندی فعال شد.")} className="mt-4 text-xs font-bold text-primary hover:underline">{category.isActive ? "غیرفعال‌سازی" : "فعال‌سازی"}</button></div>)}</div>}</div>}
+    {tab === "inventory" && <div className="space-y-4"><form className="rounded-2xl border border-border bg-card p-4" onSubmit={(event) => { event.preventDefault(); if (skuProductId && skuCode.trim()) void submit(async () => { await createCommerceSku(accessToken, skuProductId, { code: skuCode.trim(), currentPriceToman: Number(skuPrice), currentTaxToman: 0, initialOnHandQuantity: Number(skuStock) }); setSkuCode(""); setSkuPrice("0"); setSkuStock("0"); }, "SKU و موجودی اولیه ثبت شد."); }}><div className="mb-3 flex items-center gap-2 font-bold"><Plus size={18} />SKU جدید</div><div className="grid gap-3 md:grid-cols-5"><select className={field} value={skuProductId} onChange={(event) => setSkuProductId(event.target.value)} aria-label="محصول SKU"><option value="">محصول</option>{data.products.filter((product) => product.status !== "ARCHIVED").map((product) => <option key={product.id} value={product.id}>{product.title}</option>)}</select><input className={field} value={skuCode} onChange={(event) => setSkuCode(event.target.value)} placeholder="کد SKU" aria-label="کد SKU" /><input className={field} type="number" min="0" value={skuPrice} onChange={(event) => setSkuPrice(event.target.value)} placeholder="قیمت TOMAN" aria-label="قیمت SKU TOMAN" /><input className={field} type="number" min="0" value={skuStock} onChange={(event) => setSkuStock(event.target.value)} placeholder="موجودی" aria-label="موجودی اولیه SKU" /><button className={button} disabled={!skuProductId || !skuCode.trim() || mutation.status === "saving"}>ثبت SKU</button></div></form><div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm"><table className="w-full"><thead><tr className="border-b border-border bg-secondary/30">{["محصول", "SKU", "قیمت TOMAN", "موجودی", "رزرو", "وضعیت"].map((label) => <th key={label} className="px-5 py-3 text-right text-xs font-bold text-muted-foreground">{label}</th>)}</tr></thead><tbody>{data.products.flatMap((product) => product.skus.map((sku) => <tr key={sku.id} className="border-b border-border last:border-0"><td className="px-5 py-4 text-sm font-semibold">{product.title}</td><td className="px-5 py-4 text-xs text-muted-foreground">{sku.code}</td><td className="px-5 py-4 text-sm text-primary">{toman(sku.currentPriceToman)}</td><td className="px-5 py-4 text-sm">{sku.onHandQuantity.toLocaleString("fa-IR")}</td><td className="px-5 py-4 text-sm text-muted-foreground">{sku.reservedQuantity.toLocaleString("fa-IR")}</td><td className="px-5 py-4">{sku.onHandQuantity === 0 ? <span className="text-xs font-bold text-red-600">ناموجود</span> : sku.onHandQuantity <= 5 ? <span className="text-xs font-bold text-amber-700">رو به اتمام</span> : <span className="text-xs font-bold text-emerald-700">موجود</span>}</td></tr>))}</tbody></table>{data.products.every((product) => product.skus.length === 0) && <p className="p-6 text-sm text-muted-foreground">هنوز SKU یا موجودی ثبت نشده است.</p>}</div></div>}
+  </div>;
+}
+
+function CourierRateManager({ accessToken }: { accessToken: string }) {
+  const [rate, setRate] = useState<CommerceCourierShippingRate | null>(null); const [amount, setAmount] = useState(""); const [active, setActive] = useState(true); const [state, setState] = useState<"loading" | "ready" | "saving" | "error">("loading");
+  const load = useCallback(async () => { try { const next = await getCommerceCourierShippingRate(accessToken); setRate(next); setAmount(next.amountToman ?? ""); setActive(next.isActive); setState("ready"); } catch { setState("error"); } }, [accessToken]);
+  useEffect(() => { let cancelled = false; void getCommerceCourierShippingRate(accessToken).then((next) => { if (!cancelled) { setRate(next); setAmount(next.amountToman ?? ""); setActive(next.isActive); setState("ready"); } }).catch(() => { if (!cancelled) setState("error"); }); return () => { cancelled = true; }; }, [accessToken]);
+  const save = async () => { const parsed = Number(amount); if (!Number.isSafeInteger(parsed) || parsed < 0) return; setState("saving"); try { const next = await updateCommerceCourierShippingRate(accessToken, { amountToman: parsed, isActive: active }); setRate(next); setAmount(next.amountToman ?? ""); setState("ready"); } catch { setState("error"); } };
+  return <section className="rounded-2xl border border-border bg-card p-4 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-bold">نرخ ارسال با پیک</h2><p className="mt-1 text-xs text-muted-foreground">نرخ clinic-scoped است؛ فقط checkoutهای جدید را اثر می‌دهد. دریافت حضوری همیشه رایگان است.</p></div>{state === "loading" ? <span className="text-xs text-muted-foreground">در حال دریافت…</span> : state === "error" ? <button type="button" onClick={() => void load()} className="text-xs font-bold text-red-700">تلاش دوباره</button> : <div className="flex flex-wrap items-center gap-2"><input aria-label="نرخ پیک TOMAN" className={`${field} w-40`} type="number" min="0" value={amount} onChange={(event) => setAmount(event.target.value)} /><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} />فعال</label><button type="button" disabled={state === "saving" || !amount} onClick={() => void save()} className={button}>{state === "saving" ? "در حال ذخیره…" : "ذخیره نرخ"}</button></div>}</div>{rate && !rate.isActive && <p className="mt-3 text-xs text-amber-800">پیک غیرفعال است؛ checkout فقط دریافت حضوری را ارائه می‌کند.</p>}</section>;
+}
 
 export function StorePage() {
-  const [storeTab, setStoreTab] = useState<"products" | "categories" | "inventory" | "featured">("products");
-  const [catFilter, setCatFilter] = useState("همه");
-  const categories = ["همه", "مکمل", "تجهیزات", "گیاهی"];
-  const filtered = catFilter === "همه" ? PRODUCTS : PRODUCTS.filter(p => p.cat === catFilter);
-  return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5">
-      <div className="flex items-center gap-2 bg-card border border-border rounded-2xl p-1.5 w-fit shadow-sm">
-        {([["products", "محصولات"], ["categories", "دسته‌بندی‌ها"], ["inventory", "انبار"], ["featured", "ویژه"]] as const).map(([id, label]) => (
-          <button key={id} onClick={() => setStoreTab(id)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${storeTab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{label}</button>
-        ))}
-      </div>
-      {storeTab === "products" && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            {categories.map(c => <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${catFilter === c ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground"}`}>{c}</button>)}
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold mr-auto"><Plus size={16} />محصول جدید</button>
-          </div>
-          {PRODUCTS.some(p => p.stock <= 5 && p.stock > 0) && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
-              <AlertTriangle size={18} className="text-amber-600 flex-shrink-0" />
-              <p className="text-sm text-amber-800 font-medium">هشدار موجودی کم: پچ حرارتی کمردرد (۳ عدد) نیاز به سفارش دارد</p>
-              <button className="mr-auto text-xs text-amber-700 font-bold hover:underline">سفارش دهید</button>
-            </div>
-          )}
-          <div className="grid grid-cols-3 gap-5">
-            {filtered.map(prod => (
-              <div key={prod.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
-                <div className="h-36 bg-secondary/50 flex items-center justify-center text-5xl relative group-hover:bg-secondary transition-colors">
-                  {prod.img}
-                  {prod.featured && <span className="absolute top-2 right-2 text-[0.6rem] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">ویژه</span>}
-                  {prod.recommended && <span className="absolute top-2 left-2 text-[0.6rem] font-bold bg-primary text-white px-2 py-0.5 rounded-full">پزشک</span>}
-                </div>
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-1"><h3 className="font-bold text-sm">{prod.name}</h3><StatusBadge status={prod.status} /></div>
-                  <p className="text-[0.7rem] text-muted-foreground mb-3">{prod.cat}</p>
-                  <div className="flex items-center justify-between mb-3"><span className="text-base font-bold text-primary">{fm(prod.price)}</span><span className="text-xs text-muted-foreground">موجودی: <span className={prod.stock === 0 ? "text-red-600 font-bold" : prod.stock <= 5 ? "text-amber-600 font-bold" : ""}>{p(prod.stock)}</span></span></div>
-                  <div className="flex gap-2"><button className="flex-1 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-secondary"><Edit size={12} className="inline ml-1" />ویرایش</button><button className="p-2 border border-border rounded-xl hover:bg-red-50"><Trash2 size={13} className="text-muted-foreground" /></button></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {storeTab === "categories" && (
-        <div className="grid grid-cols-4 gap-4">
-          {[{ name: "مکمل", icon: "💊", count: 2, color: "bg-violet-100 text-violet-700" }, { name: "تجهیزات", icon: "🩺", count: 2, color: "bg-blue-100 text-blue-700" }, { name: "گیاهی", icon: "🌿", count: 1, color: "bg-emerald-100 text-emerald-700" }, { name: "آموزشی", icon: "📚", count: 0, color: "bg-amber-100 text-amber-700" }].map(cat => (
-            <div key={cat.name} className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md cursor-pointer transition-shadow">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3 ${cat.color}`}>{cat.icon}</div>
-              <h3 className="font-bold">{cat.name}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{p(cat.count)} محصول</p>
-            </div>
-          ))}
-          <button className="bg-card border-2 border-dashed border-border rounded-2xl p-5 flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary cursor-pointer"><Plus size={24} className="mb-2" />دسته جدید</button>
-        </div>
-      )}
-      {storeTab === "inventory" && (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-          <table className="w-full">
-            <thead><tr className="border-b border-border bg-secondary/30">{["محصول", "موجودی", "حداقل", "وضعیت", "اقدام"].map(h => <th key={h} className="text-right px-5 py-3.5 text-xs font-bold text-muted-foreground">{h}</th>)}</tr></thead>
-            <tbody>
-              {PRODUCTS.map(prod => (
-                <tr key={prod.id} className="border-b border-border last:border-0 hover:bg-secondary/20">
-                  <td className="px-5 py-4"><div className="flex items-center gap-3"><span className="text-xl">{prod.img}</span><div><p className="text-sm font-semibold">{prod.name}</p><p className="text-xs text-muted-foreground">{prod.cat}</p></div></div></td>
-                  <td className="px-5 py-4"><span className={`text-sm font-bold ${prod.stock === 0 ? "text-red-600" : prod.stock <= 5 ? "text-amber-600" : "text-foreground"}`}>{p(prod.stock)}</span></td>
-                  <td className="px-5 py-4 text-sm text-muted-foreground">{p(5)}</td>
-                  <td className="px-5 py-4"><StatusBadge status={prod.status} /></td>
-                  <td className="px-5 py-4"><button className="text-xs text-primary font-semibold hover:underline">سفارش مجدد</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {storeTab === "featured" && (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">محصولات ویژه در صفحه اصلی فروشگاه نمایش داده می‌شوند</p>
-          <div className="grid grid-cols-3 gap-4">
-            {PRODUCTS.map(prod => (
-              <div key={prod.id} className={`bg-card border-2 rounded-2xl p-4 shadow-sm flex items-center gap-4 cursor-pointer ${prod.featured ? "border-primary" : "border-border hover:border-primary/30"}`}>
-                <span className="text-3xl">{prod.img}</span>
-                <div className="flex-1"><p className="text-sm font-bold">{prod.name}</p><p className="text-xs text-muted-foreground">{fm(prod.price)}</p></div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${prod.featured ? "bg-primary border-primary" : "border-border"}`}>{prod.featured && <Check size={11} className="text-white" />}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  const { authentication } = useDashboardSession(); const [state, setState] = useState<ViewState>({ status: "loading" }); const refresh = useCallback(async () => setState(await loadCommerceCatalog(apiClient, authentication.accessToken)), [authentication.accessToken]);
+  useEffect(() => { let cancelled = false; void loadCommerceCatalog(apiClient, authentication.accessToken).then((next) => { if (!cancelled) setState(next); }); return () => { cancelled = true; }; }, [authentication.accessToken]);
+  return <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-5"><div><h1 className="text-xl font-bold">مدیریت کاتالوگ فروشگاه</h1><p className="mt-1 text-sm text-muted-foreground">دسته، محصول، SKU، قیمت صحیح TOMAN و موجودی مستقیماً از API مدیریت می‌شوند.</p></div><CourierRateManager accessToken={authentication.accessToken} />{state.status === "loading" ? <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground" role="status">در حال دریافت کاتالوگ…</p> : state.status === "ready" ? <StoreManagement data={state.data} accessToken={authentication.accessToken} refresh={refresh} /> : <Notice state={state.status} onRetry={() => void refresh()} />}</div>;
 }

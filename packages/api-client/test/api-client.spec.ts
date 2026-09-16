@@ -29,4 +29,18 @@ describe('generated API client', () => {
       'Bearer access-token',
     );
   });
+
+  it('exposes generated patient-commerce paths', async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ items: [] }), { status: 200, headers: { 'content-type': 'application/json' } }),
+    );
+    const client = createApiClient({ baseUrl: 'https://api.example.test', fetch });
+    await client.PUT('/v1/patients/me/cart', {
+      headers: { authorization: 'Bearer access-token' },
+      body: { skuId: '11111111-1111-4111-8111-111111111111', quantity: 2 },
+    });
+    const request = fetch.mock.calls[0]?.[0] as Request;
+    expect(request.url).toBe('https://api.example.test/v1/patients/me/cart');
+    expect(request.method).toBe('PUT');
+  });
 });

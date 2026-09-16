@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-05 13:15 +03:30`
-- Milestone فعال: `Milestone C — DONE (CLOSED)`
-- فاز فعال: `ندارد؛ Phase 08 بسته شده و Phase 09 هنوز شروع نشده است.`
-- وضعیت فاز فعال: `ندارد`
-- batch فعال: `none`
-- task فعال: `none`
-- blocker فعال: `none`
+- آخرین به‌رورسانی: `2026-09-15 23:31 +03:30`
+- Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
+- فاز فعال: `Phase 10 — Chat & Online Consultation`
+- وضعیت فاز فعال: `NOT_STARTED`
+- batch فعال: `ندارد`
+- task فعال: `ندارد`
+- blocker فعال: `ندارد برای Phase 09؛ PR باید CI و review گیت‌هاب را پیش از merge پاس کند.`
 
 ## پیشرفت کلان
 
@@ -42,7 +42,7 @@
 - [x] `Phase 06` — Encounter & Clinical Workspace — `DONE (CLOSED)`
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
-- [ ] `Phase 09` — Commerce, Inventory & Payments — `NOT_STARTED`
+- [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
 - [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
@@ -50,7 +50,365 @@
 
 ## handoff فاز فعال
 
-Phase 08 migration-history remediation passed. The branch-local unreleased history now replays cleanly from Phase 07 to the final Phase 08 schema; preserved local development data was reconstructed into a verified candidate database without changing the original. Phase 08 remains `DONE (CLOSED)`. Phase 09 remains `NOT_STARTED`; no Phase 09 task has been claimed or started.
+`Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
+PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
+acceptance and any enable/default decision. `Phase 10` is `NOT_STARTED`; `F10-B01 / F10-T01` remains unclaimed.
+
+## batch فعال — F09-CI01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-15 20:40 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Status: `DONE — accepted for isolated remediation commit`
+Baseline: `984579c docs(F09-CLOSE): close commerce payments phase`
+
+- Scope: correct only the five Phase 09 `react-hooks/set-state-in-effect` errors exposed by the repository root
+  `pnpm lint` PR gate, rerun the local CI-aligned verification, synchronize Phase 09 evidence/status, and prepare
+  the existing branch for a pull request to `main`.
+- Owned paths: `apps/dashboard/src/features/{discounts/discounts-page.tsx,orders/orders-page.tsx,revenue/revenue-page.tsx,settings/payment-provider-settings.tsx,store/store-page.tsx}` and
+  `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`.
+- Do not change: the two pre-existing patient-workspace lint warnings; `.gitignore` (user-owned); product
+  contracts, migrations, generated artifacts, confidential Sadad material, provider activation, or Phase 10.
+- Result: the five Phase 09 Dashboard effects now start their initial asynchronous reads directly and cancel
+  stale completions on unmount; user-triggered refresh callbacks remain available. Root `pnpm lint` passes with
+  zero errors (the two pre-existing patient-workspace warnings remain untouched). Dashboard tests `44/44`,
+  Dashboard typecheck/build, root typecheck, the complete database-backed root test suite (API `72/72` files,
+  `320/320` tests; app/dashboard/web `34/44/9`) and root production build all pass. `git diff --check` passes.
+- PR note: the repository workflow currently exports `NODE_ENV=test` globally into its Next production-build
+  step; local reproduction proves that non-production value can fail Next prerendering, while the same root build
+  with `NODE_ENV=production` passes. This is a pre-existing CI configuration risk to confirm from the live PR;
+  no workflow/config bypass was added to this Phase 09 remediation.
+
+## closure review — F09-CLOSE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-15 19:05 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Completed at: `2026-09-15 20:05 +03:30`
+Status: `DONE (CLOSED)`
+Baseline: `b5d3eda test(F09-T12): verify commerce payment phase`
+
+- Scope: independent evidence/code/contract review and fresh Phase 09 verification only.
+- Owned paths: `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}` and
+  `specs/007-adopt-phase-09/{spec.md,plan.md,tasks.md}` only when final synchronization is required.
+- Do not change: product code, migrations, generated artifacts, tests, `.gitignore` (user-owned), confidential
+  Sadad materials, provider activation/network transport, or Phase 10.
+- Result: PASS — task/commit isolation for `F09-T01` through `F09-T12`, frozen contracts, source boundaries,
+  migration/seed/drift, PostgreSQL commerce suites, full API suite (72 files/320 tests), OpenAPI/client,
+  app/dashboard/web checks, Chrome localhost E2E and disposable-data cleanup all passed. One historical Spec Kit
+  phrase incorrectly implied that `SADAD_GO_LIVE_BLOCKED` blocked closure; it was synchronized with the frozen
+  contract/ADR/Phase 12 decision. No product finding or convergence task remains.
+- Next eligible batch: `F10-B01 / F10-T01` only, `NOT_STARTED` and unclaimed.
+
+## batch فعال — F09-B12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-14 00:10 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; accepted T11 at `8aa5fc9`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T12` — `DONE`
+  Dependencies: `F09-T01` through `F09-T11` are `DONE`; no active batch existed when claimed.
+  Scope: final migration/drift/OpenAPI/client/API/app/dashboard/PostgreSQL/browser verification; removal only of
+  proven in-scope local commerce source-of-truth remnants; Phase 09 evidence, checklist and closure-review handoff.
+  Owned paths: `apps/{api/test/**,api/scripts/**,app/src/**,dashboard/src/**,web/src/**}`, `packages/api-client/**`,
+  root `package.json`, `pnpm-lock.yaml`, `playwright.config.ts`, `tests/e2e/phase-09/**`,
+  `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, and `specs/007-adopt-phase-09/**`.
+  Do not change: accepted product architecture/contracts/migrations unless a demonstrated in-scope defect requires
+  the smallest fix; `.gitignore` (user-owned); confidential Sadad samples/PDF/credentials; provider enable/default/
+  network transport; or Phase 10.
+  Review: `PASS` — final Chrome-channel multi-context E2E ran twice on localhost using real PostgreSQL and
+  run-scoped disposable data. It proves secure context/native `crypto.randomUUID`, cart/order persistence,
+  persisted PICKUP/Courier prices, fail-closed `503 SADAD_GO_LIVE_BLOCKED` with no PaymentAttempt/Payment/token/
+  redirect/external request, patient isolation/404 direct access, ADMIN Dashboard cancellation, one reservation
+  release/ledger effect, unchanged revenue, controlled console/page errors, and exact cleanup. Full API (72 files,
+  320 tests), migration smoke (3/3), drift, Prisma, OpenAPI/client, app/dashboard/web tests/typechecks/builds and
+  scope/secret/artifact review pass. No provider was enabled, defaulted or contacted; user-owned `.gitignore` and
+  confidential Sadad material remain excluded. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next action: `independent Phase 09 closure review` only; do not start Phase 10.
+
+## آخرین batch — F09-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-13 21:15 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; accepted commerce experience at `6298181`
+
+- `F09-T11` — `DONE`
+  Dependencies: `F09-T01` through `F09-T10` are `DONE`; no active batch existed when claimed.
+  Scope: clinic-scoped direct PostgreSQL revenue read model from authoritative Payment and completed Refund only;
+  ADMIN API/OpenAPI-client/dashboard revenue surface, task-owned integrations and documentation/evidence.
+  Owned paths: `apps/api/src/modules/commerce/reporting/**`, `apps/api/src/modules/commerce/catalog/admin-commerce-catalog.module.ts`,
+  `apps/api/test/commerce-revenue.integration.spec.ts`, `apps/dashboard/src/{features/revenue/**,app/(app)/revenue/**,lib/commerce-revenue-api.ts,lib/commerce-revenue-api.spec.ts,features/dashboard/dashboard-page.tsx,data/revenue.ts}`,
+  `packages/api-client/**`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, and
+  `specs/007-adopt-phase-09/**`.
+  Do not change: existing Payment/Refund data or their T08/T09 mutation boundaries; `.gitignore` (user-owned);
+  confidential Sadad paths/credentials; provider activation/network; patient payment experience; or F09-T12 work.
+  Review: PASS — the bounded direct query reads only `Payment.commerceAmountToman` with a verified Payment
+  aggregate and `Refund.amountToman` at `COMPLETED`; payment provider amount/unit, callbacks, attempts, unpaid
+  orders and catalog values are not revenue sources. Clinic-local Tehran boundaries, ISO-week/month buckets,
+  ADMIN-only access, inactive-clinic isolation, safe integer serialization and real `/revenue` loading/empty/
+  error/forbidden/retry states are covered. No migration, provider activation or network transport was added.
+  Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B12 / F09-T12` — eligible and unclaimed; do not start it in this task.
+
+## آخرین batch — F09-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-13 20:45 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; T09 at `cdf23cc`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T10` — `DONE`
+  Dependencies: `F09-T01` through `F09-T09` are `DONE`; no active batch existed when claimed.
+  Scope: patient-scoped payment initiation/status/result/receipt/tracking with no client-authoritative callback;
+  real dashboard order operations and source-backed operational widgets; minimal safe read DTO/API only if
+  existing endpoints cannot support that UI; task-owned client/tests/docs.
+  Owned paths: `apps/{api/src/modules/commerce/{payments/**,checkout/**,orders/**,catalog/admin-commerce-catalog.module.ts},app/src/{app/(app)/store/{payment/**,order-success/**,order-tracking/**,orders/**,checkout/**},lib/commerce-catalog-api.ts,lib/commerce-catalog-api.spec.ts},dashboard/src/{features/{orders/**,dashboard/**},app/(app)/{orders/**,dashboard/**},lib/commerce-orders-api.ts,data/store.ts}}`, `packages/api-client/**`, `apps/api/test/{commerce-payment-experience.integration.spec.ts,openapi-contract.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, and `specs/007-adopt-phase-09/**`.
+  Do not change: accepted migrations unless a minimal additive read-model migration is unavoidable; user-owned
+  `.gitignore`; confidential Sadad paths/credentials; provider enable/default/network transport; revenue/reporting
+  (F09-T11), Phase-wide cleanup (F09-T12), or unrelated app/dashboard mock surfaces.
+  Review: PASS — checkout now hands its persisted order to payment; the patient page uses a stable idempotency
+  key and shows `SADAD_GO_LIVE_BLOCKED` without a fake attempt, token, redirect or success. Result, receipt and
+  tracking re-read owner-scoped API data; receipt is unavailable without an authoritative Payment and exposes no
+  provider token, credentials or raw callback data. The API exposes a minimal redacted tracking/refund read model.
+  Dashboard operations call existing authorized lifecycle endpoints, and Home renders source-backed operational
+  counts only (no revenue). Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B11 / F09-T11` — eligible and unclaimed; do not start it in this task.
+
+## batch فعال — F09-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-12 03:34 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; provider-neutral payment foundation at `4b23bb1`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T09` — `DONE`
+  Dependencies: `F09-T01` through `F09-T08` are `DONE`; the active-batch check was clear before this claim.
+  Scope: transactional ADMIN fulfillment and manual tracking; owner/ADMIN-only pre-payment cancellation with
+  exactly-once reservation release; ADMIN cancellation/return requests and manually evidenced TOMAN refunds;
+  safe reconciliation of ambiguous attempts through the existing verification boundary; the corresponding
+  ADMIN API, real dashboard `/orders`, OpenAPI/generated client, PostgreSQL integration tests, and task
+  documentation/evidence.
+  Owned paths: `apps/api/{prisma/{schema.prisma,migrations/20260912034000_phase_09_order_operations/**},src/{common/errors/api-error.ts,modules/commerce/{catalog/admin-commerce-catalog.module.ts,checkout/**,discounts/**,inventory/**,orders/**,payments/payment-verification.service.ts}},test/{commerce-order-operations.integration.spec.ts,commerce-checkout.integration.spec.ts,openapi-contract.spec.ts,migrations.integration.spec.ts}}`, `apps/dashboard/src/{app/(app)/orders/**,features/orders/**,lib/commerce-orders-api.ts,lib/commerce-orders-api.spec.ts}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md}`, and `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: order/payment/refund/inventory/discount transaction boundary, additive Prisma
+  migration, commerce module wiring, API error contract, OpenAPI/client generation and PostgreSQL lifecycle tests.
+  Do not change: accepted migrations; the accepted Sadad adapter/callback/Verify flow except an unavoidable
+  reconciliation boundary change; `.gitignore` (user-owned); Sadad sample/PDF/credential paths; provider
+  activation/defaulting or network calls; revenue (F09-T11), patient receipt/result/tracking UI (F09-T10), or
+  any later task.
+  Required verification: PostgreSQL lifecycle, authorization/clinic isolation, idempotency/audit, exactly-once
+  cancellation release, concurrent over-refund prevention, manual-evidence enforcement, no synthetic
+  provider-refund, reconciliation concurrency/exactly-once payment effect, HTTPS tracking URL validation,
+  migration/drift, OpenAPI/client/API/dashboard checks and production dashboard build.
+  Review: PASS — the additive order-operations persistence preserves immutable commercial snapshots and only
+  exposes ADMIN operations (apart from owner-scoped pending-payment cancellation). Fulfillment reads immutable
+  shipping method; manual tracking accepts HTTPS only; refunds are TOMAN-only, manual/evidenced and bounded by
+  a locked Payment; reconciliation is conditional and enters the accepted verification boundary exactly once.
+  PostgreSQL replay/upgrade/seed, migration status, API/client/dashboard checks and production dashboard build
+  passed. User-owned `.gitignore` remains outside the task commit. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B10 / F09-T10` — eligible and unclaimed; do not start it in this task.
+
+## آخرین batch — F09-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 19:25 +03:30`; completed at: `2026-09-12 03:21 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; F09-T07 at `8f50018`; `SADAD_GO_LIVE_BLOCKED`
+
+- `F09-T08` — `DONE`
+  Dependencies: `F09-T01/T02/T06/T07 DONE`; no active batch existed when claimed.
+  Scope: provider-neutral port/registry/capabilities; fake test-only provider; disabled Sadad protocol adapter;
+  encrypted credential/config revisions and ADMIN management; patient attempt/status and safe callback/verify
+  orchestration; dashboard settings and generated OpenAPI/client slice.
+  Owned paths: `apps/api/src/modules/commerce/{payments/**,catalog/admin-commerce-catalog.module.ts,inventory/**}`, `apps/api/src/common/errors/api-error.ts`, `apps/api/test/{payment-provider-contract.spec.ts,sadad-adapter.spec.ts,payment-idempotency.integration.spec.ts,payment-provider-config.integration.spec.ts,openapi-contract.spec.ts,commerce-checkout.integration.spec.ts,inventory-reservation-expiry.integration.spec.ts}`, `apps/dashboard/src/{features/settings/settings-page.tsx,lib/commerce-payment-provider-api.ts}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/{09-COMMERCE-PAYMENTS.md,12-PRODUCTION-HARDENING.md},contracts/{commerce-payment-provider-v1.md,sadad-ipg-v1.md},decisions/ADR-0009-multi-provider-payment-architecture.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: payment/config/credential transaction boundary, commerce module wiring, inventory
+  consumption boundary, OpenAPI/client generation and PostgreSQL payment tests.
+  Do not change: accepted migrations/schema, user-owned `.gitignore`, confidential Sadad sample/PDF/credentials,
+  fulfillment/refund/reconciliation operations, app/dashboard receipt flows, F09-T09 or later tasks.
+  Required verification: provider contract/capability/registry/crypto/redaction/rotation/auth/clinic/default and
+  attempt concurrency/idempotency; callback/Verify 0/100/mismatch/timeout/retry; no network while
+  UNCONFIRMED; real PostgreSQL regression, OpenAPI/client/dashboard, typecheck/test/build/diff/scope review.
+  Review: PASS — provider-neutral registry/configuration/credential lifecycle, dormant RIAL adapter and SignData,
+  Form Data allowlist, injected transport orchestration and all financial idempotency paths meet T08 criteria.
+  PostgreSQL, migration, generated client and dashboard gates passed. Owner approval moves merchant acceptance,
+  deployment and production sign-off to Phase 12 without allowing Sadad activation in Phase 09. User-owned
+  `.gitignore` and confidential material remain outside the task commit. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B09 / F09-T09` — eligible and unclaimed; do not start it in this task.
+
+## آخرین batch — F09-B07
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 15:10 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Completed at: `2026-09-11 19:16 +03:30`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; checkout/inventory at `dd3d108`; owner-confirmed discount policy dated `2026-09-11`
+
+- `F09-T07` — `DONE`
+  Dependencies: `F09-T05 DONE` at `3e20784`; `F09-T06 DONE` at `dd3d108`; no active batch existed when claimed.
+  Scope: additive discount-reservation persistence; one-code server-authoritative checkout pricing and immutable
+  snapshot; transactional global/per-patient limits; internal release/consume/expiry coordination; ADMIN-only
+  audited discount API; real dashboard `/discounts`; this endpoint slice's OpenAPI/generated client and tests.
+  Owned paths: `apps/api/{prisma/{schema.prisma,migrations/20260911152000_phase_09_discount_reservations/**},src/{common/errors/api-error.ts,modules/commerce/{catalog/admin-commerce-catalog.module.ts,checkout/**,discounts/**,inventory/**}},test/{commerce-discount.integration.spec.ts,discount-usage-concurrency.integration.spec.ts,commerce-checkout.integration.spec.ts,inventory-reservation-expiry.integration.spec.ts,migrations.integration.spec.ts,openapi-contract.spec.ts}}`, `apps/dashboard/{src/{app/(app)/discounts/**,features/discounts/**,lib/commerce-discount-api.ts,lib/commerce-discount-api.spec.ts}}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: Prisma/schema migration, checkout-discount transaction boundary, commerce module wiring,
+  API error contract, OpenAPI/client generation, dashboard discounts source of truth and PostgreSQL test databases.
+  Do not change: accepted migrations; user-owned `.gitignore`; Sadad sample/PDF/credentials; provider/callback/Verify;
+  fulfillment/public cancellation/refund; unrelated app behavior; F09-T08 or later work.
+  Review: PASS — PostgreSQL empty replay/Phase-08 upgrade and idempotent seed; SQL constraints for code/amount/order
+  uniqueness; atomic server-priced checkout plus discount snapshot/reservation and canonical idempotency; API ADMIN
+  authorization/audit; OpenAPI/client freshness; API/dashboard typechecks and dashboard build. `git diff --check`
+  and scope/secret/Sadad review passed. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B08 / F09-T08` — do not claim or start in this task.
+
+## آخرین batch — F09-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 14:40 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Completed at: `2026-09-11 15:02 +03:30`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; checkout snapshots at `3e20784`; owner-confirmed inventory/reservation semantics dated `2026-09-11`
+
+- `F09-T06` — `DONE`
+  Dependencies: `F09-T05 DONE` at `3e20784`; no active batch existed when claimed.
+  Scope: atomic checkout reservation, deterministic/global inventory ledger entries, internal idempotent
+  reserve/release/consume operations, a bounded concurrency-safe expiry worker with injected clock and
+  configurable 20-minute default TTL, system cancellation only after safe expiry conditions, and routing the
+  existing ADMIN inventory adjustment through the ledger.
+  Owned paths: `apps/api/{src/modules/commerce/{catalog/admin-commerce-catalog.service.ts,checkout/commerce-checkout.service.ts,inventory/**},src/common/errors/api-error.ts,test/{commerce-checkout.integration.spec.ts,inventory-concurrency.integration.spec.ts,inventory-reservation-expiry.integration.spec.ts,admin-commerce-catalog.integration.spec.ts,migrations.integration.spec.ts},prisma/{schema.prisma,migrations/20260911150000_phase_09_inventory_reservations/**}}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: commerce checkout/inventory transaction boundary, Prisma schema/migration if required, API error contract, test PostgreSQL databases and catalog inventory mutation.
+  Do not change: accepted migrations through F09-T05; `.gitignore` (user-owned); Sadad sample/PDF/credentials;
+  discount eligibility; provider/Sadad/callback/Verify; public cancellation/fulfillment/refund; app/dashboard/
+  OpenAPI/generated client absent an unavoidable accepted inventory-contract change; and F09-T07 or later work.
+  Required verification: PostgreSQL checkout contention/rollback/idempotency, reserve/release/consume ledger
+  consistency, expiry/recovery/retry and expiry-consume race with injected clock, ADMIN lower-than-reserved
+  rejection, previous checkout/outbox regressions, migration/drift/diff and scoped review.
+  Review gate: `PASS` — checkout uses atomic conditional reservation and full rollback; ledger mutations are
+  global-idempotent; expiry is bounded, clock-driven and reconciliation-safe; consume remains internal for future
+  Verify. PostgreSQL tests cover contention, rollback, replay and race behavior. No accepted migration was changed,
+  and no provider/Sadad/outbox/UI/OpenAPI work or user-owned `.gitignore` is included.
+  Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B07 / F09-T07` — do not claim or start in this task.
+
+## آخرین batch — F09-B05
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-11 14:00 +03:30`
+Completed at: `2026-09-11 14:32 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; commerce persistence at `fa1aec4`; patient catalog/cart at `8a96539`; owner-confirmed courier-rate policy dated `2026-09-11`
+
+- `F09-T05` — `DONE`
+  Dependencies: `F09-T04 DONE` at `8a96539`; no active batch existed when claimed.
+  Scope: a new additive PostgreSQL migration for clinic-scoped courier rates and the non-sensitive initial seed; ADMIN rate API/dashboard with authorization/audit; patient address management and selection; server-priced idempotent checkout; immutable order/line/address/shipping/commercial snapshots; patient checkout/order surfaces; and the task-owned OpenAPI/generated-client slice.
+  Owned paths: `apps/api/{prisma/schema.prisma,prisma/seed.mjs,prisma/migrations/20260911140000_phase_09_commerce_shipping_rates/migration.sql,src/common/errors/api-error.ts,src/modules/commerce/{catalog/admin-commerce-catalog.module.ts,shipping/**,checkout/**,orders/**},test/{admin-commerce-shipping-rate.integration.spec.ts,commerce-checkout.integration.spec.ts,openapi-contract.spec.ts,migrations.integration.spec.ts}}`, `apps/dashboard/{src/lib/commerce-catalog-api.ts,src/lib/commerce-catalog-api.spec.ts,src/features/store/store-page.tsx}`, `apps/app/{src/app/(app)/store/{checkout/**,orders/**},src/lib/commerce-catalog-api.ts,src/lib/commerce-catalog-api.spec.ts}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md,decisions/ADR-0009-multi-provider-payment-architecture.md}`, `specs/007-adopt-phase-09/{spec.md,data-model.md,tasks.md}`.
+  Shared/exclusive resource: Prisma schema/migration/seed, commerce module wiring, checkout/order route family, and this task's OpenAPI/generated-client slice.
+  Do not change: accepted F09-T02 migration; `.gitignore` (user-owned); Sadad sample/PDF/credentials; payment/provider/Sadad behavior; discount eligibility; reservation/ledger/expiry/stock mutation; fulfillment/refund; and F09-T06 or later implementation.
+  Required verification: PostgreSQL clean replay and baseline upgrade with the additive migration, seed idempotency and rate constraints; authorization/audit/address ownership/idempotency/immutable-snapshot integration; OpenAPI/client freshness; API/app/dashboard/client tests/builds; drift/diff/review and user-change/confidential-path preservation.
+  Review gate: `PASS` — only claimed checkout/shipping/migration/API/app/dashboard/generated-client/planning paths are included. The new additive migration preserves F09-T02; `PICKUP` is server-priced at zero, `COURIER` is fail-closed with no active clinic rate, and no provider/Sadad path is activated. User-owned `.gitignore` and confidential sample/PDF paths remain unstaged.
+  Evidence: [`logs/phase-09.md`](logs/phase-09.md).
+  Next eligible batch: `F09-B06 / F09-T06` — do not claim or start in this task.
+
+## آخرین batch — F09-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 20:52:27 +03:30`
+Completed at: `2026-09-10 21:17 +03:30`
+Phase: `09-COMMERCE-PAYMENTS`
+Batch status: `DONE`
+Contract baseline: F09-T01 FROZEN at `750d53f`; payment persistence at `fa1aec4`; dashboard catalog at `858246d`
+
+- `F09-T04` — `DONE`
+  Dependencies: `F09-T03` DONE at `858246d`; no active batch existed when claimed.
+  Scope: authenticated patient catalog browse/search/detail plus persisted, patient-scoped wishlist and cart.
+  Owned paths: `apps/api/src/modules/commerce/catalog/**`, `apps/api/src/modules/commerce/cart/**`, `apps/api/test/patient-commerce-catalog.integration.spec.ts`, `apps/api/test/patient-cart.authorization.spec.ts`, `apps/api/test/openapi-contract.spec.ts`, `apps/app/src/app/(app)/{page.tsx,store/**}`, `apps/app/src/stores/cart.ts`, `apps/app/src/stores/wishlist.ts`, `apps/app/src/lib/data/catalog.ts`, `apps/app/src/lib/commerce-catalog-api.ts`, `apps/app/src/lib/commerce-catalog-api.spec.ts`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, `specs/007-adopt-phase-09/**`.
+  Contract: preserve integer TOMAN, active product plus active SKU visibility, patient isolation, and no stock reservation on cart mutation. Do not implement checkout, address/shipping, order, discount, payment, provider, or Sadad behavior.
+  Verification: real-PostgreSQL catalog/cart/wishlist integration and isolation tests; API/app/client checks;
+  OpenAPI/client freshness; production app build; migration-ledger drift check; diff review; preservation of
+  unrelated and confidential Sadad paths — PASS.
+  Review gate: `PASS` — only claimed API/app/client/generated/status/evidence/spec paths are included. Integer
+  TOMAN remains string-serialized at the boundary; cart mutations do not reserve stock or write the ledger;
+  no checkout/order/discount/payment/Sadad behavior, schema/migration, credential, sample/PDF or user-owned
+  `.gitignore` change is included.
+  Next eligible batch: `F09-B05 / F09-T05` — do not claim or start in this task.
+
+## آخرین batch — F09-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 06:35 +03:30`
+Completed at: `2026-09-10 20:05 +03:30`
+Phase: `Phase 09 — Commerce, Inventory & Payments`
+Batch status: `DONE`
+Contract baseline: accepted `F09-T01` at `750d53f`; persistence baseline `F09-T02` at `fa1aec4`
+
+Tasks:
+
+- Task ID: `F09-T03`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F09-T02 DONE` — verified at `fa1aec4`
+  Scope: ADMIN-only catalog/category/product/SKU/price/inventory API and audit, response DTOs/stable errors/pagination, dashboard `/store` and `/store-builder` real data states, and this endpoint slice's OpenAPI/generated client.
+  Owned paths: `apps/api/{src/modules/commerce/**,src/app.module.ts,src/common/auth/authorization.policy.ts,src/common/errors/api-error.ts,test/admin-commerce-catalog.integration.spec.ts,test/openapi-contract.spec.ts}`, `apps/dashboard/{src/features/store/**,src/features/store-builder/**,src/data/store.ts,src/lib/commerce-catalog-api.ts,src/lib/commerce-catalog-api.spec.ts,src/app/(app)/store/**,src/app/(app)/store-builder/**}`, `packages/api-client/{openapi.json,src/schema.generated.ts,src/index.ts,test/api-client.spec.ts,README.md}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, `specs/007-adopt-phase-09/**`
+  Shared/exclusive resource: commerce module wiring, task-owned OpenAPI export/generated API-client slice and dashboard commerce source of truth
+  Do not change: `.gitignore` (user-owned), `apps/app/**`, Prisma schema/migrations/seed, payment/discount/order/refund/revenue/reservation/ledger behavior, non-commerce dashboard surfaces, Sadad adapter/configuration/network, or confidential Sadad PDF/.NET sample.
+  Verification: PostgreSQL API integration for authorization/audit/validation/lifecycle/constraints/pagination,
+  dashboard API-client loading/error/empty/retry and mutation coverage, OpenAPI runtime/checked-in freshness,
+  API/dashboard/client typecheck/test/build, scope review and `git diff --check` — PASS.
+  Review gate: `PASS` — only task-owned API/dashboard/client/generated/status/evidence/spec paths are included;
+  no Prisma migration, app/cart/checkout/order/discount/reservation/provider/Sadad behavior, credential, sample
+  or PDF path is included. The user-owned `.gitignore` remains unstaged.
+  Next eligible batch: `F09-B04 / F09-T04` — do not claim or start in this task.
+
+## آخرین batch — F09-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 04:50 +03:30`
+Phase: `Phase 09 — Commerce, Inventory & Payments`
+Completed at: `2026-09-10 06:20 +03:30`
+Batch status: `DONE`
+Contract baseline: accepted `F09-T01` commit `750d53f`; Phase 08 final schema and migration ledger
+
+Tasks:
+
+- Task ID: `F09-T02`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: `F09-T01 DONE` — verified at `750d53f`
+  Scope: persist the frozen commerce/catalog/SKU/inventory/cart/wishlist/address/discount/order/payment-provider/payment/refund foundation, one coherent Phase 09 migration, non-sensitive idempotent seed and PostgreSQL-backed migration/constraint coverage only.
+  Owned paths: `apps/api/{prisma/schema.prisma,prisma/seed.mjs,prisma/migrations/20260910050000_phase_09_commerce_foundation/migration.sql,test/migrations.integration.spec.ts}`, `plan/{STATUS.md,logs/phase-09.md,phases/09-COMMERCE-PAYMENTS.md}`, `specs/007-adopt-phase-09/**`
+  Shared/exclusive resource: Prisma schema, Phase 09 migration ledger, seed and local PostgreSQL migration-test databases
+  Do not change: `apps/api/src/**`, `apps/{app,dashboard}/**`, `packages/**`, OpenAPI/generated client, prior migrations, payment-provider implementation, credentials, network configuration, or the confidential Sadad PDF/.NET sample directory.
+  Verification: Prisma validate/generate, TypeScript migration-test compile, manual SQL/constraint review, credential/plaintext and TOMAN×10 scan, `git diff --check`, a real PostgreSQL empty replay with seed twice, Phase 08→09 upgrade and a shadow-database migration/schema drift check all passed.
+  Review gate: `PASS` — only owned paths changed; no credential, provider call, Sadad sample/PDF path, API/UI or generated output is included.
+  Next eligible batch: `F09-B03 / F09-T03` — do not claim or start in this task.
+
+## آخرین batch — F09-B01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-10 04:25 +03:30`
+Completed at: `2026-09-10 04:36 +03:30`
+Phase: `Phase 09 — Commerce, Inventory & Payments`
+Batch status: `DONE`
+Contract baseline: owner decisions supplied for `F09-T01`; Sadad production enablement remains fail-closed
+
+Tasks:
+
+- Task ID: `F09-T01`
+  Agent/Thread: `Codex /root`
+  Status: `DONE`
+  Depends on: owner policy decisions — `DONE`
+  Scope: freeze the catalog/SKU/price/tax/shipping/order/payment/refund and provider-neutral/Sadad-first contract; move unresolved Sadad acceptance facts to the explicit go-live gate; synchronize Phase 09 planning/specification documents and record task evidence only.
+  Owned paths: `plan/{STATUS.md,phases/09-COMMERCE-PAYMENTS.md,contracts/commerce-payment-provider-v1.md,contracts/sadad-ipg-v1.md,decisions/ADR-0009-multi-provider-payment-architecture.md,logs/phase-09.md}`, `specs/007-adopt-phase-09/**`
+  Shared/exclusive resource: Phase 09 contract baseline and lifecycle/error/authorization/endpoint/money/capability matrices
+  Do not change: `apps/**`, `packages/**`, Prisma schema/migrations, OpenAPI/generated client, the confidential Sadad PDF/.NET sample directory, credentials, or callback payloads.
+  Result: accepted; cross-document policy traceability, frozen-matrix completeness, no-secret/no-sample diff review, `git diff --check`, and Spec Kit/constitution review passed. Evidence: [`logs/phase-09.md`](logs/phase-09.md).
 
 ## آخرین batch — F08-MR
 
@@ -749,7 +1107,10 @@ snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md
 
 - [ ] متن و الزامات حقوقی consent/retention پیش از release عمومی Phase 02؛ مدل versioned consent در خود Phase 02 اجباری است.
 - [ ] تعیین سرویس SMS/OTP پیش از فعال‌سازی کانال پیامکی در `Phase 08`؛ in-app notification مستقل است.
-- [ ] تعیین درگاه پرداخت و قرارداد webhook/تسویه پیش از شروع `Phase 09`.
+- [ ] `Phase 09`: policy تجاری `F09-T01` freeze شده است. Amount/formula، نسخه/محیط، redirect،
+  callback/date transport، egress IP/domain و credential سداد `SADAD_GO_LIVE_BLOCKED` هستند؛ تا تأیید
+  کتبی Sadad enabled/default یا متصل واقعی نمی‌شود و sandbox/inquiry/webhook/refund/partial-refund
+  capability ندارد.
 - [ ] تعیین provider و policy ویدئو پیش از قابلیت ویدئویی `Phase 10`؛ chat متنی می‌تواند مستقل اجرا شود.
 - [ ] تعیین deployment provider، RPO/RTO و secret manager در release planning فاز `Phase 12`.
 

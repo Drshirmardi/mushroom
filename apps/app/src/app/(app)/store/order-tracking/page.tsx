@@ -1,29 +1,15 @@
 "use client";
-
-import { useRouter } from "next/navigation";
-import { Check, Truck } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ExternalLink, RefreshCw, Truck } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { commerceErrorMessage, getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api";
 import { toP } from "@/lib/format";
-
-const STEPS = [
-  { label: "ثبت سفارش", done: true, date: "امروز ۱۰:۳۰" },
-  { label: "تأیید و آماده‌سازی", done: true, date: "امروز ۱۱:۰۰" },
-  { label: "تحویل به پست", done: false, date: "فردا" },
-  { label: "در مسیر تحویل", done: false, date: "۲ روز دیگر" },
-  { label: "تحویل داده شد", done: false, date: "۳-۵ روز دیگر" },
-];
-
+const orderLabel = (status: string) => ({ PENDING_PAYMENT: "در انتظار پرداخت", PAID: "پرداخت تأیید شده", FULFILLMENT_PENDING: "در انتظار آماده‌سازی", READY_FOR_PICKUP: "آمادهٔ دریافت حضوری", SHIPPED: "ارسال شده", DELIVERED: "تحویل داده شده", CANCELLATION_REQUESTED: "درخواست لغو ثبت شده", RETURN_REQUESTED: "درخواست مرجوعی ثبت شده", REFUND_PENDING: "در انتظار بازپرداخت", CANCELLATION_REJECTED: "درخواست لغو رد شده", RETURN_REJECTED: "درخواست مرجوعی رد شده", CANCELLED: "لغو شده" }[status] ?? status);
+const refundLabel = (status: string) => ({ REQUESTED: "درخواست بازپرداخت", APPROVED: "بازپرداخت تأیید شده", MANUAL_EXECUTION_PENDING: "در انتظار انتقال بانکی", COMPLETED: "بازپرداخت تکمیل شده", REJECTED: "بازپرداخت رد شده", CANCELLED: "بازپرداخت لغو شده" }[status] ?? status);
 export default function OrderTrackingPage() {
-  const router = useRouter();
-  return (
-    <div>
-      <PageHeader title="پیگیری سفارش" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4"><div className="flex justify-between mb-3"><span className="text-sm text-muted-foreground">کد سفارش</span><span className="text-sm font-black text-primary">{toP("ORD-10024")}</span></div><div className="bg-amber-50 rounded-xl p-3 flex items-center gap-2"><Truck size={16} className="text-amber-600" /><span className="text-sm font-semibold text-amber-700">در حال آماده‌سازی</span></div></div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4"><p className="text-sm font-bold text-foreground mb-4">وضعیت سفارش</p>
-          {STEPS.map((step, i) => <div key={i} className="flex gap-3 pb-4 last:pb-0"><div className="flex flex-col items-center"><div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${step.done ? "bg-primary" : "bg-muted border-2 border-border"}`}>{step.done ? <Check size={14} className="text-white" strokeWidth={3} /> : <div className="w-2 h-2 bg-border rounded-full" />}</div>{i < STEPS.length - 1 && <div className={`w-0.5 flex-1 mt-1 min-h-[16px] ${step.done ? "bg-primary" : "bg-border"}`} />}</div><div className="pt-1"><p className={`text-sm font-semibold ${step.done ? "text-foreground" : "text-muted-foreground"}`}>{step.label}</p><p className="text-xs text-muted-foreground mt-0.5">{step.date}</p></div></div>)}
-        </div>
-      </div>
-    </div>
-  );
+  const { authentication } = useAuthSession(); const router = useRouter(); const params = useSearchParams(); const orderId = params.get("orderId"); const [order, setOrder] = useState<CommerceOrder | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null);
+  const load = useCallback(async () => { if (!orderId) { setError("شناسهٔ سفارش معتبر نیست."); setLoading(false); return; } setLoading(true); setError(null); try { setOrder(await getCommerceOrder(authentication.accessToken, orderId)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setLoading(false); } }, [authentication.accessToken, orderId]); useEffect(() => { void load(); }, [load]);
+  return <div><PageHeader title="پیگیری سفارش" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{loading && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت سفارش…</p>}{error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}<button onClick={() => void load()} className="mr-3 font-bold underline">تلاش دوباره</button></div>}{order && <><section className="rounded-2xl border border-border bg-white p-4 shadow-sm"><div className="flex justify-between"><span className="text-sm text-muted-foreground">کد سفارش</span><span className="font-black text-primary">{toP(order.orderNumber)}</span></div><div className="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-sm font-bold text-amber-800"><Truck size={16}/>{orderLabel(order.status)}</div></section><section className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="font-bold">روش دریافت</p>{order.shippingMethod === "PICKUP" ? <p className="mt-2 text-sm text-muted-foreground">دریافت حضوری است. پس از آماده‌سازی، وضعیت «آمادهٔ دریافت حضوری» نمایش داده می‌شود.</p> : <div className="mt-2 text-sm text-muted-foreground"><p>ارسال با پیک</p>{order.carrierName && <p className="mt-2">حامل: {order.carrierName}</p>}{order.trackingCode && <p className="mt-1">کد رهگیری: {order.trackingCode}</p>}{order.trackingUrl && <a href={order.trackingUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 font-bold text-primary">رهگیری نزد حامل <ExternalLink size={14}/></a>}{!order.trackingCode && <p className="mt-2">اطلاعات رهگیری هنوز ثبت نشده است.</p>}</div>}</section>{order.refundStatuses.length > 0 && <section className="rounded-2xl border border-border bg-white p-4 text-sm shadow-sm"><p className="font-bold">وضعیت بازپرداخت</p>{order.refundStatuses.map((status, index) => <p key={`${status}-${index}`} className="mt-2 text-muted-foreground">{refundLabel(status)}</p>)}</section>}<button onClick={() => void load()} className="w-full rounded-2xl border py-3 text-sm font-bold"><RefreshCw size={15} className="ml-2 inline"/>تازه‌سازی</button></>}</div></div>;
 }

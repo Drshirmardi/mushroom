@@ -1,34 +1,14 @@
 "use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
-import { Check, CreditCard, RotateCcw, Wallet } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { CommerceRequestError, createPaymentAttempt, getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api";
 import { formatPrice } from "@/lib/format";
-import { useScreenNavigation } from "@/lib/navigation";
-import { cartTotal, useCartStore } from "@/stores/cart";
-
 export default function PaymentPage() {
-  const router = useRouter();
-  const navigateScreen = useScreenNavigation();
-  const total = cartTotal(useCartStore((s) => s.items));
-  const clear = useCartStore((s) => s.clear);
-  const [method, setMethod] = useState("wallet");
-  const [loading, setLoading] = useState(false);
-  const pay = () => { setLoading(true); setTimeout(() => { setLoading(false); clear(); navigateScreen("OrderSuccess"); }, 2000); };
-  return (
-    <div>
-      <PageHeader title="پرداخت" onBack={() => router.back()} />
-      <div className="px-4 space-y-4 pb-4">
-        <div className="bg-primary/5 rounded-2xl p-4 text-center border border-primary/20"><p className="text-sm text-muted-foreground mb-1">مبلغ قابل پرداخت</p><p className="text-3xl font-black text-primary">{formatPrice(total)} <span className="text-base font-semibold">تومان</span></p></div>
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-4"><p className="text-sm font-bold text-foreground mb-3">روش پرداخت</p>
-          {[{ id: "wallet", icon: Wallet, label: "کیف پول", sub: "موجودی: ۵۰۰,۰۰۰ تومان" }, { id: "card", icon: CreditCard, label: "کارت بانکی", sub: "درگاه شاپرک" }].map(m => <button key={m.id} onClick={() => setMethod(m.id)} className={`w-full flex items-center gap-3 p-3 rounded-xl border mb-2 last:mb-0 transition-all ${method === m.id ? "bg-accent border-primary/30" : "border-border"}`}><div className={`w-10 h-10 rounded-xl flex items-center justify-center ${method === m.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}><m.icon size={18} /></div><div className="flex-1 text-right"><p className="text-sm font-bold text-foreground">{m.label}</p><p className="text-xs text-muted-foreground">{m.sub}</p></div>{method === m.id && <Check size={16} className="text-primary" strokeWidth={2.5} />}</button>)}
-        </div>
-        <button onClick={pay} disabled={loading} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2">
-          {loading ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><RotateCcw size={18} /></motion.div> : `پرداخت ${formatPrice(total)} تومان`}
-        </button>
-      </div>
-    </div>
-  );
+  const { authentication } = useAuthSession(); const router = useRouter(); const params = useSearchParams(); const orderId = params.get("orderId"); const key = useRef(crypto.randomUUID()); const [order, setOrder] = useState<CommerceOrder | null>(null); const [state, setState] = useState<"loading" | "blocked" | "error" | "ready">("loading"); const [busy, setBusy] = useState(false);
+  const load = useCallback(async () => { if (!orderId) { setState("error"); return; } setState("loading"); try { const next = await getCommerceOrder(authentication.accessToken, orderId); setOrder(next); setState(next.status === "PENDING_PAYMENT" ? "ready" : "error"); } catch { setState("error"); } }, [authentication.accessToken, orderId]); useEffect(() => { void load(); }, [load]);
+  const pay = async () => { if (!orderId || busy) return; setBusy(true); try { await createPaymentAttempt(authentication.accessToken, orderId, key.current); router.replace(`/store/order-success?orderId=${encodeURIComponent(orderId)}`); } catch (error) { if (error instanceof CommerceRequestError && error.code === "SADAD_GO_LIVE_BLOCKED") setState("blocked"); else setState("error"); } finally { setBusy(false); } };
+  return <div><PageHeader title="پرداخت" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{state === "loading" && <p role="status" className="rounded-2xl border p-4 text-sm text-muted-foreground">در حال دریافت سفارش…</p>}{order && <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center"><p className="text-sm text-muted-foreground">مبلغ قابل پرداخت</p><p className="mt-1 text-3xl font-black text-primary">{formatPrice(Number(order.totalAmountToman))} تومان</p><p className="mt-2 text-xs text-muted-foreground">شماره سفارش {order.orderNumber}</p></div>}{state === "blocked" && <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">درگاه پرداخت هنوز برای پذیرندگی فعال نیست. هیچ پرداخت یا انتقالی انجام نشده است.<button onClick={() => void pay()} className="mr-3 font-bold underline">تلاش دوباره</button></div>}{state === "error" && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">وضعیت قابل پرداخت سفارش در دسترس نیست یا سفارش دیگر قابل پرداخت نیست.<button onClick={() => void load()} className="mr-3 font-bold underline">تازه‌سازی</button></div>}{state === "ready" && <button onClick={() => void pay()} disabled={busy} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white disabled:opacity-50">{busy ? <><RotateCcw className="ml-2 inline animate-spin" size={17}/>در حال بررسی درگاه…</> : "شروع پرداخت امن"}</button>}</div></div>;
 }

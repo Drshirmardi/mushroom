@@ -342,9 +342,11 @@ enum NotificationCategory {
   CONTENT
   SYSTEM
 }
+
 enum NotificationDeliveryChannel {
   IN_APP
 }
+
 enum NotificationDeliveryStatus {
   DELIVERED
 }
@@ -361,36 +363,154 @@ enum PatientAccessAction {
   @@map("patient_access_action")
 }
 
+// All commerce money columns are integer TOMAN. Medical service and appointment
+// tariffs remain the pre-existing IRR fields and are intentionally unrelated.
+enum CommerceProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+
+  @@map("commerce_product_status")
+}
+
+enum CommerceDiscountKind {
+  FIXED_AMOUNT
+  PERCENTAGE
+
+  @@map("commerce_discount_kind")
+}
+
+enum DiscountReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+  EXPIRED
+
+  @@map("discount_reservation_status")
+}
+
+enum InventoryLedgerEntryType {
+  RECEIPT
+  ADJUSTMENT
+  RESERVATION
+  RELEASE
+  CONSUMPTION
+
+  @@map("inventory_ledger_entry_type")
+}
+
+enum InventoryReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+  EXPIRED
+
+  @@map("inventory_reservation_status")
+}
+
+enum CommerceShippingMethod {
+  PICKUP
+  COURIER
+
+  @@map("commerce_shipping_method")
+}
+
+enum CommerceOrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_PROCESSING
+  PAID
+  FULFILLMENT_PENDING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELLATION_REQUESTED
+  RETURN_REQUESTED
+  CANCELLATION_REJECTED
+  RETURN_REJECTED
+  FULFILLING
+  FULFILLED
+  CANCELLED
+  PAYMENT_FAILED
+  REQUIRES_RECONCILIATION
+  REFUND_PENDING
+  REFUNDED
+
+  @@map("commerce_order_status")
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  REDIRECT_READY
+  CALLBACK_RECEIVED
+  VERIFYING
+  VERIFIED
+  FAILED
+  EXPIRED
+  REQUIRES_RECONCILIATION
+  CANCELLED
+
+  @@map("payment_attempt_status")
+}
+
+enum PaymentStatus {
+  VERIFIED
+  REFUND_PENDING
+  PARTIALLY_REFUNDED
+  REFUNDED
+
+  @@map("payment_status")
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  MANUAL_EXECUTION_PENDING
+  COMPLETED
+  REJECTED
+  CANCELLED
+
+  @@map("refund_status")
+}
+
+enum CredentialVersionStatus {
+  ACTIVE
+  RETIRED
+  CRYPTO_SHREDDED
+
+  @@map("credential_version_status")
+}
+
 model User {
-  id                             String                         @id @default(uuid()) @db.Uuid
-  phone                          String                         @unique(map: "users_phone_key") @db.VarChar(13)
-  status                         UserStatus                     @default(ACTIVE)
-  createdAt                      DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                      DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                             String                          @id @default(uuid()) @db.Uuid
+  phone                          String                          @unique(map: "users_phone_key") @db.VarChar(13)
+  status                         UserStatus                      @default(ACTIVE)
+  createdAt                      DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime                        @updatedAt @map("updated_at") @db.Timestamptz(3)
   credential                     Credential?
   sessions                       Session[]
-  roles                          UserRole[]                     @relation("UserRoleUser")
-  assignedRoles                  UserRole[]                     @relation("UserRoleAssignedBy")
+  roles                          UserRole[]                      @relation("UserRoleUser")
+  assignedRoles                  UserRole[]                      @relation("UserRoleAssignedBy")
   loginAttempts                  LoginAttempt[]
-  auditEvents                    AuditEvent[]                   @relation("AuditEventActor")
+  auditEvents                    AuditEvent[]                    @relation("AuditEventActor")
   userProfile                    UserProfile?
   patientProfile                 PatientProfile?
   doctorProfile                  DoctorProfile?
-  recordedIntakeRevisions        PatientMedicalIntakeRevision[] @relation("IntakeRevisionRecordedBy")
-  acceptedConsentRecords         PatientConsentRecord[]         @relation("ConsentAcceptedBy")
-  withdrawnConsentRecords        PatientConsentRecord[]         @relation("ConsentWithdrawnBy")
-  publishedConsentPolicies       ConsentPolicyVersion[]         @relation("ConsentPolicyPublishedBy")
-  publishedAssessmentVersions    AssessmentVersion[]            @relation("AssessmentVersionPublishedBy")
-  encountersStarted              Encounter[]                    @relation("EncounterStartedBy")
-  encountersCompleted            Encounter[]                    @relation("EncounterCompletedBy")
-  clinicalNoteRevisionAuthors    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionAuthoredBy")
-  clinicalNoteRevisionSigners    ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionSignedBy")
-  clinicalNoteRevisionPublishers ClinicalNoteRevision[]         @relation("ClinicalNoteRevisionPublishedBy")
-  clinicalRecordRevisionAuthors  ClinicalRecordRevision[]       @relation("ClinicalRecordRevisionAuthoredBy")
-  clinicalRecordRevisionSigners  ClinicalRecordRevision[]       @relation("ClinicalRecordRevisionSignedBy")
-  patientAccessAudits            PatientAccessAudit[]           @relation("PatientAccessAuditActor")
+  recordedIntakeRevisions        PatientMedicalIntakeRevision[]  @relation("IntakeRevisionRecordedBy")
+  acceptedConsentRecords         PatientConsentRecord[]          @relation("ConsentAcceptedBy")
+  withdrawnConsentRecords        PatientConsentRecord[]          @relation("ConsentWithdrawnBy")
+  publishedConsentPolicies       ConsentPolicyVersion[]          @relation("ConsentPolicyPublishedBy")
+  publishedAssessmentVersions    AssessmentVersion[]             @relation("AssessmentVersionPublishedBy")
+  encountersStarted              Encounter[]                     @relation("EncounterStartedBy")
+  encountersCompleted            Encounter[]                     @relation("EncounterCompletedBy")
+  clinicalNoteRevisionAuthors    ClinicalNoteRevision[]          @relation("ClinicalNoteRevisionAuthoredBy")
+  clinicalNoteRevisionSigners    ClinicalNoteRevision[]          @relation("ClinicalNoteRevisionSignedBy")
+  clinicalNoteRevisionPublishers ClinicalNoteRevision[]          @relation("ClinicalNoteRevisionPublishedBy")
+  clinicalRecordRevisionAuthors  ClinicalRecordRevision[]        @relation("ClinicalRecordRevisionAuthoredBy")
+  clinicalRecordRevisionSigners  ClinicalRecordRevision[]        @relation("ClinicalRecordRevisionSignedBy")
+  patientAccessAudits            PatientAccessAudit[]            @relation("PatientAccessAuditActor")
   clinicalClinicAccesses         ClinicalClinicAccess[]
   notifications                  Notification[]
+  paymentProviderConfigRevisions PaymentProviderConfigRevision[] @relation("PaymentProviderConfigRevisionCreatedBy")
 
   @@map("users")
 }
@@ -431,12 +551,12 @@ model Session {
 }
 
 model Role {
-  id          String     @id @default(uuid()) @db.Uuid
-  code        RoleCode   @unique(map: "roles_code_key")
-  description String?    @db.VarChar(255)
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
-  users       UserRole[]
+  id                  String                   @id @default(uuid()) @db.Uuid
+  code                RoleCode                 @unique(map: "roles_code_key")
+  description         String?                  @db.VarChar(255)
+  createdAt           DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  users               UserRole[]
   clinicalPermissions ClinicalRolePermission[]
 
   @@map("roles")
@@ -563,6 +683,17 @@ model Clinic {
   patientAccessAudits      PatientAccessAudit[]
   prescriptions            Prescription[]
   treatmentPlans           TreatmentPlan[]
+  commerceCategories       CommerceCategory[]
+  commerceProducts         CommerceProduct[]
+  commerceSkus             CommerceSku[]
+  inventoryItems           InventoryItem[]
+  inventoryLedgerEntries   InventoryLedgerEntry[]
+  commerceDiscounts        CommerceDiscount[]
+  commerceShippingRates    CommerceShippingRate[]
+  commerceCarts            CommerceCart[]
+  commerceOrders           CommerceOrder[]
+  paymentProviderConfigs   PaymentProviderConfig[]
+  paymentAttempts          PaymentAttempt[]
 
   @@map("clinics")
 }
@@ -607,20 +738,466 @@ model PatientProfile {
   prescriptions           Prescription[]
   treatmentPlans          TreatmentPlan[]
   healthObservations      HealthObservation[]
+  commerceCart            CommerceCart?
+  wishlistItems           WishlistItem[]
+  commerceAddresses       CommerceAddress[]
+  commerceOrders          CommerceOrder[]
+  commerceDiscountReservations CommerceDiscountReservation[]
+  paymentAttempts         PaymentAttempt[]
 
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
   @@map("patient_profiles")
 }
 
+model CommerceCategory {
+  id        String            @id @default(uuid()) @db.Uuid
+  clinicId  String            @map("clinic_id") @db.Uuid
+  name      String            @db.VarChar(120)
+  slug      String            @db.VarChar(140)
+  isActive  Boolean           @default(true) @map("is_active")
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic            @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  products  CommerceProduct[]
+
+  @@unique([clinicId, slug], map: "commerce_categories_clinic_slug_key")
+  @@map("commerce_categories")
+}
+
+model CommerceProduct {
+  id          String                @id @default(uuid()) @db.Uuid
+  clinicId    String                @map("clinic_id") @db.Uuid
+  categoryId  String                @map("category_id") @db.Uuid
+  title       String                @db.VarChar(240)
+  slug        String                @db.VarChar(260)
+  description String?               @db.Text
+  status      CommerceProductStatus @default(DRAFT)
+  createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic      Clinic                @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  category    CommerceCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  skus        CommerceSku[]
+
+  @@unique([clinicId, slug], map: "commerce_products_clinic_slug_key")
+  @@index([clinicId, status, id], map: "commerce_products_clinic_status_id_idx")
+  @@map("commerce_products")
+}
+
+model CommerceSku {
+  id                String              @id @default(uuid()) @db.Uuid
+  clinicId          String              @map("clinic_id") @db.Uuid
+  productId         String              @map("product_id") @db.Uuid
+  code              String              @db.VarChar(80)
+  title             String?             @db.VarChar(240)
+  currentPriceToman BigInt              @map("current_price_toman")
+  currentTaxToman   BigInt              @default(0) @map("current_tax_toman")
+  isActive          Boolean             @default(true) @map("is_active")
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic              @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  product           CommerceProduct     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  inventoryItem     InventoryItem?
+  cartItems         CommerceCartItem[]
+  wishlistItems     WishlistItem[]
+  orderLines        CommerceOrderLine[]
+
+  @@unique([clinicId, code], map: "commerce_skus_clinic_code_key")
+  @@index([productId, isActive, id], map: "commerce_skus_product_active_id_idx")
+  @@map("commerce_skus")
+}
+
+model InventoryItem {
+  id               String                 @id @default(uuid()) @db.Uuid
+  clinicId         String                 @map("clinic_id") @db.Uuid
+  skuId            String                 @unique(map: "inventory_items_sku_id_key") @map("sku_id") @db.Uuid
+  onHandQuantity   Int                    @default(0) @map("on_hand_quantity")
+  reservedQuantity Int                    @default(0) @map("reserved_quantity")
+  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic           Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  sku              CommerceSku            @relation(fields: [skuId], references: [id], onDelete: Restrict)
+  ledgerEntries    InventoryLedgerEntry[]
+  reservations     InventoryReservation[]
+
+  @@index([clinicId, id], map: "inventory_items_clinic_id_idx")
+  @@map("inventory_items")
+}
+
+model InventoryLedgerEntry {
+  id              String                   @id @default(uuid()) @db.Uuid
+  clinicId        String                   @map("clinic_id") @db.Uuid
+  inventoryItemId String                   @map("inventory_item_id") @db.Uuid
+  entryType       InventoryLedgerEntryType @map("entry_type")
+  quantityDelta   Int                      @map("quantity_delta")
+  referenceType   String                   @map("reference_type") @db.VarChar(80)
+  referenceId     String                   @map("reference_id") @db.Uuid
+  idempotencyKey  String                   @unique(map: "inventory_ledger_entries_idempotency_key") @map("idempotency_key") @db.VarChar(240)
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic          Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  inventoryItem   InventoryItem            @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+
+  @@index([inventoryItemId, createdAt, id], map: "inventory_ledger_entries_item_created_id_idx")
+  @@index([referenceType, referenceId], map: "inventory_ledger_entries_reference_idx")
+  @@map("inventory_ledger_entries")
+}
+
+model CommerceCart {
+  id        String             @id @default(uuid()) @db.Uuid
+  clinicId  String             @map("clinic_id") @db.Uuid
+  patientId String             @unique(map: "commerce_carts_patient_id_key") @map("patient_id") @db.Uuid
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic             @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient   PatientProfile     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  items     CommerceCartItem[]
+
+  @@map("commerce_carts")
+}
+
+model CommerceCartItem {
+  id        String       @id @default(uuid()) @db.Uuid
+  cartId    String       @map("cart_id") @db.Uuid
+  skuId     String       @map("sku_id") @db.Uuid
+  quantity  Int
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  cart      CommerceCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  sku       CommerceSku  @relation(fields: [skuId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, skuId], map: "commerce_cart_items_cart_sku_key")
+  @@map("commerce_cart_items")
+}
+
+model WishlistItem {
+  id        String         @id @default(uuid()) @db.Uuid
+  patientId String         @map("patient_id") @db.Uuid
+  skuId     String         @map("sku_id") @db.Uuid
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  sku       CommerceSku    @relation(fields: [skuId], references: [id], onDelete: Restrict)
+
+  @@unique([patientId, skuId], map: "wishlist_items_patient_sku_key")
+  @@map("wishlist_items")
+}
+
+model CommerceAddress {
+  id            String         @id @default(uuid()) @db.Uuid
+  patientId     String         @map("patient_id") @db.Uuid
+  label         String         @db.VarChar(100)
+  recipientName String         @map("recipient_name") @db.VarChar(160)
+  phone         String         @db.VarChar(32)
+  province      String         @db.VarChar(100)
+  city          String         @db.VarChar(100)
+  postalCode    String?        @map("postal_code") @db.VarChar(32)
+  line1         String         @db.VarChar(500)
+  line2         String?        @db.VarChar(500)
+  isDefault     Boolean        @default(false) @map("is_default")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patient       PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, createdAt, id], map: "commerce_addresses_patient_created_id_idx")
+  @@map("commerce_addresses")
+}
+
+model CommerceDiscount {
+  id                    String               @id @default(uuid()) @db.Uuid
+  clinicId              String               @map("clinic_id") @db.Uuid
+  code                  String               @db.VarChar(40)
+  title                 String               @db.VarChar(160)
+  kind                  CommerceDiscountKind
+  amountToman           BigInt?              @map("amount_toman")
+  percentageBasisPoints Int?                 @map("percentage_basis_points")
+  startsAt              DateTime?            @map("starts_at") @db.Timestamptz(3)
+  endsAt                DateTime?            @map("ends_at") @db.Timestamptz(3)
+  usageLimit            Int?                 @map("usage_limit")
+  perPatientUsageLimit  Int?                 @map("per_patient_usage_limit")
+  isActive              Boolean              @default(true) @map("is_active")
+  createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                Clinic               @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  reservations          CommerceDiscountReservation[]
+
+  @@unique([clinicId, code], map: "commerce_discounts_clinic_code_key")
+  @@index([clinicId, isActive, startsAt, endsAt], map: "commerce_discounts_clinic_active_window_idx")
+  @@map("commerce_discounts")
+}
+
+model CommerceDiscountReservation {
+  id                  String                    @id @default(uuid()) @db.Uuid
+  discountId          String                    @map("discount_id") @db.Uuid
+  patientId           String                    @map("patient_id") @db.Uuid
+  orderId             String                    @unique(map: "commerce_discount_reservations_order_id_key") @map("order_id") @db.Uuid
+  discountAmountToman BigInt                    @map("discount_amount_toman")
+  status              DiscountReservationStatus @default(ACTIVE)
+  expiresAt           DateTime?                 @map("expires_at") @db.Timestamptz(3)
+  createdAt           DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  discount            CommerceDiscount          @relation(fields: [discountId], references: [id], onDelete: Restrict)
+  patient             PatientProfile            @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  order               CommerceOrder             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([discountId, status, expiresAt, id], map: "commerce_discount_reservations_discount_status_expires_id_idx")
+  @@index([discountId, patientId, status, expiresAt, id], map: "commerce_discount_reservations_patient_status_expires_id_idx")
+  @@map("commerce_discount_reservations")
+}
+
+// PICKUP is permanently free and intentionally has no mutable rate record.
+// COURIER is clinic-scoped, ADMIN-managed configuration; checkout snapshots it.
+model CommerceShippingRate {
+  id          String                 @id @default(uuid()) @db.Uuid
+  clinicId    String                 @map("clinic_id") @db.Uuid
+  method      CommerceShippingMethod @default(COURIER)
+  amountToman BigInt                 @map("amount_toman")
+  isActive    Boolean                @default(true) @map("is_active")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic      Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+
+  @@unique([clinicId, method], map: "commerce_shipping_rates_clinic_method_key")
+  @@index([clinicId, method, isActive], map: "commerce_shipping_rates_clinic_method_active_idx")
+  @@map("commerce_shipping_rates")
+}
+
+model CommerceOrder {
+  id                      String                 @id @default(uuid()) @db.Uuid
+  clinicId                String                 @map("clinic_id") @db.Uuid
+  patientId               String                 @map("patient_id") @db.Uuid
+  orderNumber             BigInt                 @default(autoincrement()) @unique(map: "commerce_orders_order_number_key") @map("order_number")
+  status                  CommerceOrderStatus    @default(PENDING_PAYMENT)
+  idempotencyKey          String                 @map("idempotency_key") @db.VarChar(240)
+  shippingMethod          CommerceShippingMethod @map("shipping_method")
+  shippingAddressSnapshot Json?                  @map("shipping_address_snapshot")
+  shippingDetailSnapshot  Json                   @default("{}") @map("shipping_detail_snapshot")
+  subtotalAmountToman     BigInt                 @map("subtotal_amount_toman")
+  taxAmountToman          BigInt                 @default(0) @map("tax_amount_toman")
+  discountAmountToman     BigInt                 @default(0) @map("discount_amount_toman")
+  shippingAmountToman     BigInt                 @default(0) @map("shipping_amount_toman")
+  totalAmountToman        BigInt                 @map("total_amount_toman")
+  carrierName             String?                @map("carrier_name") @db.VarChar(160)
+  trackingCode            String?                @map("tracking_code") @db.VarChar(160)
+  trackingUrl             String?                @map("tracking_url") @db.VarChar(2048)
+  trackingUpdatedAt       DateTime?              @map("tracking_updated_at") @db.Timestamptz(3)
+  createdAt               DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                  Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                 PatientProfile         @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  lines                   CommerceOrderLine[]
+  snapshot                CommerceOrderSnapshot?
+  reservations            InventoryReservation[]
+  discountReservation     CommerceDiscountReservation?
+  paymentAttempts         PaymentAttempt[]
+  payment                 Payment?
+  operations              CommerceOrderOperation[]
+
+  @@unique([patientId, idempotencyKey], map: "commerce_orders_patient_idempotency_key")
+  @@index([clinicId, status, createdAt, id], map: "commerce_orders_clinic_status_created_id_idx")
+  @@map("commerce_orders")
+}
+
+model CommerceOrderOperation {
+  id             String        @id @default(uuid()) @db.Uuid
+  orderId        String        @map("order_id") @db.Uuid
+  action         String        @db.VarChar(64)
+  idempotencyKey String        @map("idempotency_key") @db.VarChar(240)
+  payload        Json          @default("{}")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  order          CommerceOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, action, idempotencyKey], map: "commerce_order_operations_order_action_key")
+  @@map("commerce_order_operations")
+}
+
+model CommerceOrderLine {
+  id                   String        @id @default(uuid()) @db.Uuid
+  orderId              String        @map("order_id") @db.Uuid
+  skuId                String?       @map("sku_id") @db.Uuid
+  position             Int
+  skuCodeSnapshot      String        @map("sku_code_snapshot") @db.VarChar(80)
+  productTitleSnapshot String        @map("product_title_snapshot") @db.VarChar(240)
+  quantity             Int
+  unitPriceToman       BigInt        @map("unit_price_toman")
+  unitTaxToman         BigInt        @default(0) @map("unit_tax_toman")
+  discountAmountToman  BigInt        @default(0) @map("discount_amount_toman")
+  lineTotalToman       BigInt        @map("line_total_toman")
+  createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  order                CommerceOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  sku                  CommerceSku?  @relation(fields: [skuId], references: [id], onDelete: SetNull)
+
+  @@unique([orderId, position], map: "commerce_order_lines_order_position_key")
+  @@map("commerce_order_lines")
+}
+
+model CommerceOrderSnapshot {
+  id                  String        @id @default(uuid()) @db.Uuid
+  orderId             String        @unique(map: "commerce_order_snapshots_order_id_key") @map("order_id") @db.Uuid
+  subtotalAmountToman BigInt        @map("subtotal_amount_toman")
+  taxAmountToman      BigInt        @default(0) @map("tax_amount_toman")
+  discountAmountToman BigInt        @default(0) @map("discount_amount_toman")
+  shippingAmountToman BigInt        @default(0) @map("shipping_amount_toman")
+  totalAmountToman    BigInt        @map("total_amount_toman")
+  payload             Json
+  integrityHash       String        @map("integrity_hash") @db.Char(64)
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  order               CommerceOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@map("commerce_order_snapshots")
+}
+
+model InventoryReservation {
+  id              String                     @id @default(uuid()) @db.Uuid
+  inventoryItemId String                     @map("inventory_item_id") @db.Uuid
+  orderId         String                     @map("order_id") @db.Uuid
+  quantity        Int
+  status          InventoryReservationStatus @default(ACTIVE)
+  expiresAt       DateTime?                  @map("expires_at") @db.Timestamptz(3)
+  createdAt       DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  inventoryItem   InventoryItem              @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+  order           CommerceOrder              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([inventoryItemId, orderId], map: "inventory_reservations_item_order_key")
+  @@index([status, expiresAt, id], map: "inventory_reservations_status_expires_id_idx")
+  @@map("inventory_reservations")
+}
+
+model PaymentProviderConfig {
+  id                 String                             @id @default(uuid()) @db.Uuid
+  clinicId           String                             @map("clinic_id") @db.Uuid
+  providerCode       String                             @map("provider_code") @db.VarChar(64)
+  providerUnit       String                             @default("UNCONFIRMED") @map("provider_unit") @db.VarChar(32)
+  goLiveReady        Boolean                            @default(false) @map("go_live_ready")
+  enabled            Boolean                            @default(false)
+  isDefault          Boolean                            @default(false) @map("is_default")
+  activeRevisionId   String?                            @unique(map: "payment_provider_configs_active_revision_id_key") @map("active_revision_id") @db.Uuid
+  createdAt          DateTime                           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic             Clinic                             @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  activeRevision     PaymentProviderConfigRevision?     @relation("PaymentProviderConfigActiveRevision", fields: [activeRevisionId], references: [id], onDelete: Restrict)
+  revisions          PaymentProviderConfigRevision[]    @relation("PaymentProviderConfigRevisions")
+  credentialVersions PaymentProviderCredentialVersion[]
+
+  @@unique([clinicId, providerCode], map: "payment_provider_configs_clinic_provider_code_key")
+  @@map("payment_provider_configs")
+}
+
+model PaymentProviderCredentialVersion {
+  id                   String                          @id @default(uuid()) @db.Uuid
+  configId             String                          @map("config_id") @db.Uuid
+  versionNumber        Int                             @map("version_number")
+  status               CredentialVersionStatus         @default(ACTIVE)
+  encryptedPayload     Bytes?                          @map("encrypted_payload")
+  encryptionNonce      Bytes?                          @map("encryption_nonce")
+  authenticationTag    Bytes?                          @map("authentication_tag")
+  encryptionKeyVersion String?                         @map("encryption_key_version") @db.VarChar(100)
+  cryptoShreddedAt     DateTime?                       @map("crypto_shredded_at") @db.Timestamptz(3)
+  createdAt            DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  config               PaymentProviderConfig           @relation(fields: [configId], references: [id], onDelete: Restrict)
+  revisions            PaymentProviderConfigRevision[]
+
+  @@unique([configId, versionNumber], map: "payment_provider_credential_versions_config_version_key")
+  @@map("payment_provider_credential_versions")
+}
+
+model PaymentProviderConfigRevision {
+  id                  String                            @id @default(uuid()) @db.Uuid
+  configId            String                            @map("config_id") @db.Uuid
+  revisionNumber      Int                               @map("revision_number")
+  providerUnit        String                            @default("UNCONFIRMED") @map("provider_unit") @db.VarChar(32)
+  goLiveReady         Boolean                           @default(false) @map("go_live_ready")
+  capabilitySnapshot  Json                              @default("{}") @map("capability_snapshot")
+  credentialVersionId String?                           @map("credential_version_id") @db.Uuid
+  createdByUserId     String?                           @map("created_by_user_id") @db.Uuid
+  idempotencyKey      String?                           @map("idempotency_key") @db.VarChar(240)
+  createdAt           DateTime                          @default(now()) @map("created_at") @db.Timestamptz(3)
+  config              PaymentProviderConfig             @relation("PaymentProviderConfigRevisions", fields: [configId], references: [id], onDelete: Restrict)
+  credentialVersion   PaymentProviderCredentialVersion? @relation(fields: [credentialVersionId], references: [id], onDelete: Restrict)
+  createdByUser       User?                             @relation("PaymentProviderConfigRevisionCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  activeForConfigs    PaymentProviderConfig[]           @relation("PaymentProviderConfigActiveRevision")
+  paymentAttempts     PaymentAttempt[]
+
+  @@unique([configId, revisionNumber], map: "payment_provider_config_revisions_config_revision_key")
+  @@unique([configId, idempotencyKey], map: "payment_provider_config_revisions_config_idempotency_key")
+  @@map("payment_provider_config_revisions")
+}
+
+model PaymentAttempt {
+  id                       String                        @id @default(uuid()) @db.Uuid
+  clinicId                 String                        @map("clinic_id") @db.Uuid
+  patientId                String                        @map("patient_id") @db.Uuid
+  orderId                  String                        @map("order_id") @db.Uuid
+  providerConfigRevisionId String                        @map("provider_config_revision_id") @db.Uuid
+  providerOrderId          BigInt                        @unique(map: "payment_attempts_provider_order_id_key") @map("provider_order_id")
+  commerceAmountToman      BigInt                        @map("commerce_amount_toman")
+  providerAmount           BigInt?                       @map("provider_amount")
+  providerUnit             String                        @default("UNCONFIRMED") @map("provider_unit") @db.VarChar(32)
+  status                   PaymentAttemptStatus          @default(CREATED)
+  idempotencyKey           String                        @map("idempotency_key") @db.VarChar(240)
+  providerToken            String?                       @unique(map: "payment_attempts_provider_token_key") @map("provider_token") @db.VarChar(512)
+  providerResultCode       String?                       @map("provider_result_code") @db.VarChar(32)
+  callbackReceivedAt       DateTime?                     @map("callback_received_at") @db.Timestamptz(3)
+  verifiedAt               DateTime?                     @map("verified_at") @db.Timestamptz(3)
+  reconciliationEvidenceReference String?                @map("reconciliation_evidence_reference") @db.VarChar(512)
+  reconciledAt             DateTime?                     @map("reconciled_at") @db.Timestamptz(3)
+  createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                   Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                  PatientProfile                @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  order                    CommerceOrder                 @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  providerConfigRevision   PaymentProviderConfigRevision @relation(fields: [providerConfigRevisionId], references: [id], onDelete: Restrict)
+  payment                  Payment?
+
+  @@unique([patientId, idempotencyKey], map: "payment_attempts_patient_idempotency_key")
+  @@index([orderId, createdAt, id], map: "payment_attempts_order_created_id_idx")
+  @@map("payment_attempts")
+}
+
+model Payment {
+  id                  String         @id @default(uuid()) @db.Uuid
+  orderId             String         @unique(map: "payments_order_id_key") @map("order_id") @db.Uuid
+  paymentAttemptId    String         @unique(map: "payments_payment_attempt_id_key") @map("payment_attempt_id") @db.Uuid
+  commerceAmountToman BigInt         @map("commerce_amount_toman")
+  providerAmount      BigInt         @map("provider_amount")
+  providerUnit        String         @map("provider_unit") @db.VarChar(32)
+  providerReferenceId String?        @unique(map: "payments_provider_reference_id_key") @map("provider_reference_id") @db.VarChar(128)
+  providerTraceNumber String?        @map("provider_trace_number") @db.VarChar(128)
+  status              PaymentStatus  @default(VERIFIED)
+  verifiedAt          DateTime       @map("verified_at") @db.Timestamptz(3)
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  order               CommerceOrder  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentAttempt      PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+  refunds             Refund[]
+
+  @@map("payments")
+}
+
+model Refund {
+  id                String       @id @default(uuid()) @db.Uuid
+  paymentId         String       @map("payment_id") @db.Uuid
+  amountToman       BigInt       @map("amount_toman")
+  status            RefundStatus @default(REQUESTED)
+  idempotencyKey    String       @unique(map: "refunds_idempotency_key") @map("idempotency_key") @db.VarChar(240)
+  completedAt       DateTime?    @map("completed_at") @db.Timestamptz(3)
+  evidenceReference String?      @map("evidence_reference") @db.VarChar(512)
+  approvedAt        DateTime?    @map("approved_at") @db.Timestamptz(3)
+  rejectedAt        DateTime?    @map("rejected_at") @db.Timestamptz(3)
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  payment           Payment      @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId, status, createdAt], map: "refunds_payment_status_created_idx")
+  @@map("refunds")
+}
+
 model ArticleCategory {
-  id        String   @id @default(uuid()) @db.Uuid
-  clinicId  String   @map("clinic_id") @db.Uuid
-  name      String   @db.VarChar(120)
-  slug      String   @db.VarChar(140)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  id        String    @id @default(uuid()) @db.Uuid
+  clinicId  String    @map("clinic_id") @db.Uuid
+  name      String    @db.VarChar(120)
+  slug      String    @db.VarChar(140)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic    Clinic    @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   articles  Article[]
 
   @@unique([clinicId, slug], map: "article_categories_clinic_slug_key")
@@ -628,22 +1205,22 @@ model ArticleCategory {
 }
 
 model Article {
-  id                    String                   @id @default(uuid()) @db.Uuid
-  clinicId              String                   @map("clinic_id") @db.Uuid
-  categoryId            String                   @map("category_id") @db.Uuid
-  slug                  String                   @db.VarChar(180)
-  title                 String                   @db.VarChar(240)
-  summary               String?                  @db.VarChar(500)
-  body                  String                   @db.Text
-  publicationStatus     ContentPublicationStatus @default(DRAFT) @map("publication_status")
-  publishedAt           DateTime?                @map("published_at") @db.Timestamptz(3)
-  coverObjectKey        String?                  @map("cover_object_key") @db.VarChar(512)
-  coverContentType      String?                  @map("cover_content_type") @db.VarChar(120)
-  coverSizeBytes        Int?                     @map("cover_size_bytes")
-  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  category              ArticleCategory          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  id                String                   @id @default(uuid()) @db.Uuid
+  clinicId          String                   @map("clinic_id") @db.Uuid
+  categoryId        String                   @map("category_id") @db.Uuid
+  slug              String                   @db.VarChar(180)
+  title             String                   @db.VarChar(240)
+  summary           String?                  @db.VarChar(500)
+  body              String                   @db.Text
+  publicationStatus ContentPublicationStatus @default(DRAFT) @map("publication_status")
+  publishedAt       DateTime?                @map("published_at") @db.Timestamptz(3)
+  coverObjectKey    String?                  @map("cover_object_key") @db.VarChar(512)
+  coverContentType  String?                  @map("cover_content_type") @db.VarChar(120)
+  coverSizeBytes    Int?                     @map("cover_size_bytes")
+  createdAt         DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  category          ArticleCategory          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   @@unique([clinicId, slug], map: "articles_clinic_slug_key")
   @@index([clinicId, publicationStatus, publishedAt, id], map: "articles_clinic_publication_published_idx")
@@ -651,75 +1228,79 @@ model Article {
 }
 
 model Banner {
-  id                    String                   @id @default(uuid()) @db.Uuid
-  clinicId              String                   @map("clinic_id") @db.Uuid
-  title                 String                   @db.VarChar(240)
-  destinationUrl        String?                  @map("destination_url") @db.VarChar(2048)
-  publicationStatus     ContentPublicationStatus @default(DRAFT) @map("publication_status")
-  publishedAt           DateTime?                @map("published_at") @db.Timestamptz(3)
-  mediaObjectKey        String?                  @map("media_object_key") @db.VarChar(512)
-  mediaContentType      String?                  @map("media_content_type") @db.VarChar(120)
-  mediaSizeBytes        Int?                     @map("media_size_bytes")
-  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  id                String                   @id @default(uuid()) @db.Uuid
+  clinicId          String                   @map("clinic_id") @db.Uuid
+  title             String                   @db.VarChar(240)
+  destinationUrl    String?                  @map("destination_url") @db.VarChar(2048)
+  publicationStatus ContentPublicationStatus @default(DRAFT) @map("publication_status")
+  publishedAt       DateTime?                @map("published_at") @db.Timestamptz(3)
+  mediaObjectKey    String?                  @map("media_object_key") @db.VarChar(512)
+  mediaContentType  String?                  @map("media_content_type") @db.VarChar(120)
+  mediaSizeBytes    Int?                     @map("media_size_bytes")
+  createdAt         DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic            Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
 
   @@index([clinicId, publicationStatus, publishedAt, id], map: "banners_clinic_publication_published_idx")
   @@map("banners")
 }
 
 model OutboxEvent {
-  id             String           @id @default(uuid()) @db.Uuid
-  eventType      String           @map("event_type") @db.VarChar(120)
-  aggregateType  String           @map("aggregate_type") @db.VarChar(100)
-  aggregateId    String           @map("aggregate_id") @db.Uuid
-  idempotencyKey String           @unique(map: "outbox_events_idempotency_key") @map("idempotency_key") @db.VarChar(240)
+  id             String            @id @default(uuid()) @db.Uuid
+  eventType      String            @map("event_type") @db.VarChar(120)
+  aggregateType  String            @map("aggregate_type") @db.VarChar(100)
+  aggregateId    String            @map("aggregate_id") @db.Uuid
+  idempotencyKey String            @unique(map: "outbox_events_idempotency_key") @map("idempotency_key") @db.VarChar(240)
   payload        Json
   status         OutboxEventStatus @default(PENDING)
-  availableAt    DateTime         @default(now()) @map("available_at") @db.Timestamptz(3)
-  lockedAt       DateTime?        @map("locked_at") @db.Timestamptz(3)
-  attempts       Int              @default(0)
-  lastError      String?          @map("last_error") @db.VarChar(500)
-  deliveredAt    DateTime?        @map("delivered_at") @db.Timestamptz(3)
-  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  availableAt    DateTime          @default(now()) @map("available_at") @db.Timestamptz(3)
+  lockedAt       DateTime?         @map("locked_at") @db.Timestamptz(3)
+  attempts       Int               @default(0)
+  lastError      String?           @map("last_error") @db.VarChar(500)
+  deliveredAt    DateTime?         @map("delivered_at") @db.Timestamptz(3)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
   @@index([status, availableAt, id], map: "outbox_events_status_available_idx")
   @@map("outbox_events")
 }
 
 model Notification {
-  id          String       @id @default(uuid()) @db.Uuid
-  clinicId    String       @map("clinic_id") @db.Uuid
-  recipientId String       @map("recipient_id") @db.Uuid
+  id          String                 @id @default(uuid()) @db.Uuid
+  clinicId    String                 @map("clinic_id") @db.Uuid
+  recipientId String                 @map("recipient_id") @db.Uuid
   category    NotificationCategory
-  title       String       @db.VarChar(255)
-  body        String       @db.Text
-  readAt      DateTime?    @map("read_at") @db.Timestamptz(3)
-  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  clinic      Clinic       @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  recipient   User         @relation(fields: [recipientId], references: [id], onDelete: Restrict)
+  title       String                 @db.VarChar(255)
+  body        String                 @db.Text
+  readAt      DateTime?              @map("read_at") @db.Timestamptz(3)
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic      Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  recipient   User                   @relation(fields: [recipientId], references: [id], onDelete: Restrict)
   deliveries  NotificationDelivery[]
+
   @@index([recipientId, readAt, createdAt, id], map: "notifications_recipient_read_created_idx")
   @@map("notifications")
 }
 
 model NotificationDelivery {
-  id             String                     @id @default(uuid()) @db.Uuid
-  notificationId String                     @map("notification_id") @db.Uuid
+  id             String                      @id @default(uuid()) @db.Uuid
+  notificationId String                      @map("notification_id") @db.Uuid
   channel        NotificationDeliveryChannel
   status         NotificationDeliveryStatus
-  deliveredAt    DateTime                   @default(now()) @map("delivered_at") @db.Timestamptz(3)
-  notification   Notification               @relation(fields: [notificationId], references: [id], onDelete: Restrict)
+  deliveredAt    DateTime                    @default(now()) @map("delivered_at") @db.Timestamptz(3)
+  notification   Notification                @relation(fields: [notificationId], references: [id], onDelete: Restrict)
+
   @@unique([notificationId, channel], map: "notification_deliveries_notification_channel_key")
   @@map("notification_deliveries")
 }
 
 model NotificationPreference {
-  patientId       String               @map("patient_id") @db.Uuid
-  category        NotificationCategory
-  inAppEnabled    Boolean              @default(true) @map("in_app_enabled")
-  updatedAt       DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  patient         PatientProfile       @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  patientId    String               @map("patient_id") @db.Uuid
+  category     NotificationCategory
+  inAppEnabled Boolean              @default(true) @map("in_app_enabled")
+  updatedAt    DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patient      PatientProfile       @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
   @@id([patientId, category])
   @@map("notification_preferences")
 }
@@ -1465,17 +2046,17 @@ model PatientAccessAudit {
 }
 
 model Prescription {
-  id                           String                 @id @default(uuid()) @db.Uuid
-  clinicId                     String                 @map("clinic_id") @db.Uuid
-  patientId                    String                 @map("patient_id") @db.Uuid
-  currentRevisionNumber        Int                    @default(0) @map("current_revision_number")
-  currentIssuedRevisionNumber  Int?                   @map("current_issued_revision_number")
-  latestIssuedRevisionNumber   Int?                   @map("latest_issued_revision_number")
-  createdAt                    DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                    DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                       Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  patient                      PatientProfile         @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
-  revisions                    PrescriptionRevision[]
+  id                          String                 @id @default(uuid()) @db.Uuid
+  clinicId                    String                 @map("clinic_id") @db.Uuid
+  patientId                   String                 @map("patient_id") @db.Uuid
+  currentRevisionNumber       Int                    @default(0) @map("current_revision_number")
+  currentIssuedRevisionNumber Int?                   @map("current_issued_revision_number")
+  latestIssuedRevisionNumber  Int?                   @map("latest_issued_revision_number")
+  createdAt                   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                      Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                     PatientProfile         @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  revisions                   PrescriptionRevision[]
 
   @@unique([id, clinicId], map: "prescriptions_id_clinic_key")
   @@index([clinicId, patientId, updatedAt, id], map: "prescriptions_patient_updated_idx")
@@ -1483,21 +2064,21 @@ model Prescription {
 }
 
 model PrescriptionRevision {
-  id                      String                    @id @default(uuid()) @db.Uuid
-  prescriptionId          String                    @map("prescription_id") @db.Uuid
-  revisionNumber          Int                       @map("revision_number")
-  previousRevisionId      String?                   @map("previous_revision_id") @db.Uuid
-  state                   PrescriptionRevisionState @default(DRAFT)
-  amendmentReasonCategory String?                   @map("amendment_reason_category") @db.VarChar(100)
-  integrityHash           String?                   @map("integrity_hash") @db.Char(64)
-  authoredAt              DateTime                  @default(now()) @map("authored_at") @db.Timestamptz(3)
-  authoredByUserId        String?                   @map("authored_by_user_id") @db.Uuid
-  issuedAt                DateTime?                 @map("issued_at") @db.Timestamptz(3)
-  issuedByUserId          String?                   @map("issued_by_user_id") @db.Uuid
-  createdAt               DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
-  prescription            Prescription              @relation(fields: [prescriptionId], references: [id], onDelete: Restrict)
-  previousRevision        PrescriptionRevision?     @relation("PrescriptionRevisionPredecessor", fields: [previousRevisionId], references: [id], onDelete: Restrict)
-  successorRevisions      PrescriptionRevision[]    @relation("PrescriptionRevisionPredecessor")
+  id                      String                              @id @default(uuid()) @db.Uuid
+  prescriptionId          String                              @map("prescription_id") @db.Uuid
+  revisionNumber          Int                                 @map("revision_number")
+  previousRevisionId      String?                             @map("previous_revision_id") @db.Uuid
+  state                   PrescriptionRevisionState           @default(DRAFT)
+  amendmentReasonCategory String?                             @map("amendment_reason_category") @db.VarChar(100)
+  integrityHash           String?                             @map("integrity_hash") @db.Char(64)
+  authoredAt              DateTime                            @default(now()) @map("authored_at") @db.Timestamptz(3)
+  authoredByUserId        String?                             @map("authored_by_user_id") @db.Uuid
+  issuedAt                DateTime?                           @map("issued_at") @db.Timestamptz(3)
+  issuedByUserId          String?                             @map("issued_by_user_id") @db.Uuid
+  createdAt               DateTime                            @default(now()) @map("created_at") @db.Timestamptz(3)
+  prescription            Prescription                        @relation(fields: [prescriptionId], references: [id], onDelete: Restrict)
+  previousRevision        PrescriptionRevision?               @relation("PrescriptionRevisionPredecessor", fields: [previousRevisionId], references: [id], onDelete: Restrict)
+  successorRevisions      PrescriptionRevision[]              @relation("PrescriptionRevisionPredecessor")
   items                   PrescriptionItem[]
   safetyAcknowledgements  PrescriptionSafetyAcknowledgement[]
 
@@ -1538,20 +2119,20 @@ model PrescriptionSafetyAcknowledgement {
 }
 
 model TreatmentPlan {
-  id        String             @id @default(uuid()) @db.Uuid
-  clinicId  String             @map("clinic_id") @db.Uuid
-  patientId String             @map("patient_id") @db.Uuid
-  state     TreatmentPlanState @default(DRAFT)
-  title     String?            @db.VarChar(255)
-  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic    Clinic             @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  patient   PatientProfile     @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
-  medications TreatmentMedication[]
-  sessionPlans TreatmentSessionPlan[]
-  exercisePlans ExercisePlan[]
+  id             String                   @id @default(uuid()) @db.Uuid
+  clinicId       String                   @map("clinic_id") @db.Uuid
+  patientId      String                   @map("patient_id") @db.Uuid
+  state          TreatmentPlanState       @default(DRAFT)
+  title          String?                  @db.VarChar(255)
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic         Clinic                   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient        PatientProfile           @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  medications    TreatmentMedication[]
+  sessionPlans   TreatmentSessionPlan[]
+  exercisePlans  ExercisePlan[]
   nutritionPlans NutritionPlan[]
-  tasks     TreatmentTask[]
+  tasks          TreatmentTask[]
   progressEvents TreatmentProgressEvent[]
 
   @@unique([id, clinicId], map: "treatment_plans_id_clinic_key")
@@ -1576,15 +2157,15 @@ model TreatmentSessionPlan {
 }
 
 model TreatmentMedication {
-  id              String        @id @default(uuid()) @db.Uuid
-  treatmentPlanId String        @map("treatment_plan_id") @db.Uuid
-  name            String        @db.VarChar(255)
-  dosage          String?       @db.VarChar(255)
-  schedule        Json          @default("{}")
-  instructions    String?       @db.Text
-  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
-  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+  id              String                   @id @default(uuid()) @db.Uuid
+  treatmentPlanId String                   @map("treatment_plan_id") @db.Uuid
+  name            String                   @db.VarChar(255)
+  dosage          String?                  @db.VarChar(255)
+  schedule        Json                     @default("{}")
+  instructions    String?                  @db.Text
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan            @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
   adherenceLogs   MedicationAdherenceLog[]
 
   @@index([treatmentPlanId, createdAt, id], map: "treatment_medications_plan_created_idx")
@@ -1617,15 +2198,15 @@ model NutritionPlan {
 }
 
 model TreatmentTask {
-  id              String             @id @default(uuid()) @db.Uuid
-  treatmentPlanId String             @map("treatment_plan_id") @db.Uuid
-  kind            String             @db.VarChar(64)
-  scheduledFor    DateTime           @map("scheduled_for") @db.Timestamptz(3)
-  state           TreatmentTaskState @default(SCHEDULED)
-  completedAt     DateTime?          @map("completed_at") @db.Timestamptz(3)
-  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
-  treatmentPlan   TreatmentPlan      @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+  id              String                   @id @default(uuid()) @db.Uuid
+  treatmentPlanId String                   @map("treatment_plan_id") @db.Uuid
+  kind            String                   @db.VarChar(64)
+  scheduledFor    DateTime                 @map("scheduled_for") @db.Timestamptz(3)
+  state           TreatmentTaskState       @default(SCHEDULED)
+  completedAt     DateTime?                @map("completed_at") @db.Timestamptz(3)
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan            @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
   adherenceLogs   MedicationAdherenceLog[]
   progressEvents  TreatmentProgressEvent[]
 
@@ -1648,14 +2229,14 @@ model MedicationAdherenceLog {
 }
 
 model TreatmentProgressEvent {
-  id              String        @id @default(uuid()) @db.Uuid
-  treatmentPlanId String        @map("treatment_plan_id") @db.Uuid
-  treatmentTaskId String?       @map("treatment_task_id") @db.Uuid
-  eventType       String        @map("event_type") @db.VarChar(64)
-  occurredAt      DateTime      @default(now()) @map("occurred_at") @db.Timestamptz(3)
-  metadata        Json          @default("{}")
-  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
+  id              String         @id @default(uuid()) @db.Uuid
+  treatmentPlanId String         @map("treatment_plan_id") @db.Uuid
+  treatmentTaskId String?        @map("treatment_task_id") @db.Uuid
+  eventType       String         @map("event_type") @db.VarChar(64)
+  occurredAt      DateTime       @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  metadata        Json           @default("{}")
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  treatmentPlan   TreatmentPlan  @relation(fields: [treatmentPlanId], references: [id], onDelete: Restrict)
   treatmentTask   TreatmentTask? @relation(fields: [treatmentTaskId], references: [id], onDelete: Restrict)
 
   @@index([treatmentPlanId, occurredAt, id], map: "treatment_progress_events_plan_occurred_idx")

@@ -148,6 +148,45 @@ try {
       iso_weekday = EXCLUDED.iso_weekday, start_local_time = EXCLUDED.start_local_time,
       end_local_time = EXCLUDED.end_local_time, is_active = EXCLUDED.is_active, updated_at = CURRENT_TIMESTAMP
   `, [clinicId]);
+  await client.query(`
+    INSERT INTO commerce_categories (id, clinic_id, name, slug, is_active, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000101', $1::uuid, 'محصولات نمونه', 'sample-products', TRUE, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, name = EXCLUDED.name, slug = EXCLUDED.slug,
+      is_active = EXCLUDED.is_active, updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO commerce_products (id, clinic_id, category_id, title, slug, description, status, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000102', $1::uuid, '40000000-0000-4000-8000-000000000101', 'محصول نمونهٔ فروشگاه', 'sample-store-product', 'دادهٔ غیرحساس توسعه برای آزمون catalog.', 'ACTIVE', CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, category_id = EXCLUDED.category_id, title = EXCLUDED.title,
+      slug = EXCLUDED.slug, description = EXCLUDED.description, status = EXCLUDED.status,
+      updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO commerce_skus (id, clinic_id, product_id, code, title, current_price_toman, current_tax_toman, is_active, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000103', $1::uuid, '40000000-0000-4000-8000-000000000102', 'SAMPLE-COMMERCE-001', 'واحد نمونه', 125000, 0, TRUE, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, product_id = EXCLUDED.product_id, code = EXCLUDED.code,
+      title = EXCLUDED.title, current_price_toman = EXCLUDED.current_price_toman,
+      current_tax_toman = EXCLUDED.current_tax_toman, is_active = EXCLUDED.is_active,
+      updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO inventory_items (id, clinic_id, sku_id, on_hand_quantity, reserved_quantity, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000104', $1::uuid, '40000000-0000-4000-8000-000000000103', 25, 0, CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET
+      clinic_id = EXCLUDED.clinic_id, sku_id = EXCLUDED.sku_id, on_hand_quantity = EXCLUDED.on_hand_quantity,
+      reserved_quantity = EXCLUDED.reserved_quantity, updated_at = CURRENT_TIMESTAMP
+  `, [clinicId]);
+  await client.query(`
+    INSERT INTO commerce_shipping_rates (id, clinic_id, method, amount_toman, is_active, updated_at)
+    SELECT gen_random_uuid(), $1::uuid, 'COURIER', 25000, TRUE, CURRENT_TIMESTAMP
+    WHERE NOT EXISTS (
+      SELECT 1 FROM commerce_shipping_rates
+      WHERE clinic_id = $1::uuid AND method = 'COURIER'
+    )
+  `, [clinicId]);
   if (developmentAdminPhone && developmentAdminPassword) {
     const passwordHash = await hash(developmentAdminPassword, {
       type: argon2id,
@@ -181,7 +220,7 @@ try {
     `, [adminUserId]);
     await client.query('DELETE FROM login_attempts WHERE phone = $1', [developmentAdminPhone]);
   }
-  console.log('Development seed completed: identity roles, the active clinic, and deterministic Phase 04 directory and schedule records are available.');
+  console.log('Development seed completed: identity roles, clinic directory/schedule records, and non-sensitive Phase 09 catalog data are available.');
 } finally {
   await client.end();
 }

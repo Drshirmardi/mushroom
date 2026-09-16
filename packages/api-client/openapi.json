@@ -8333,6 +8333,1845 @@
           "Content"
         ]
       }
+    },
+    "/v1/admin/commerce/products": {
+      "get": {
+        "operationId": "adminCommerceProductsList",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "ACTIVE",
+                "ARCHIVED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommercePageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List commerce products",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      },
+      "post": {
+        "operationId": "adminCommerceProductsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceProductResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a draft commerce product",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/admin/commerce/categories": {
+      "post": {
+        "operationId": "adminCommerceCategoriesCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCategoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a commerce category",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      },
+      "get": {
+        "operationId": "adminCommerceCategoriesList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceCategoryResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List commerce categories",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/admin/commerce/categories/{categoryId}": {
+      "patch": {
+        "operationId": "adminCommerceCategoriesUpdate",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCategoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a commerce category",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/admin/commerce/products/{productId}": {
+      "patch": {
+        "operationId": "adminCommerceProductsUpdate",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceProductResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invalid lifecycle transition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update or advance product lifecycle",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/admin/commerce/products/{productId}/skus": {
+      "post": {
+        "operationId": "adminCommerceSkusCreate",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceSkuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceSkuResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create SKU with integer TOMAN price and inventory",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/admin/commerce/skus/{skuId}": {
+      "patch": {
+        "operationId": "adminCommerceSkusUpdate",
+        "parameters": [
+          {
+            "name": "skuId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceSkuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceSkuResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update SKU price or metadata",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/admin/commerce/skus/{skuId}/inventory": {
+      "patch": {
+        "operationId": "adminCommerceInventoryUpdate",
+        "parameters": [
+          {
+            "name": "skuId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInventoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceInventoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Set on-hand inventory without reservation processing",
+        "tags": [
+          "Admin Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/commerce/products": {
+      "get": {
+        "operationId": "patientCommerceProductsList",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 24,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceProductPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List active commerce products with active SKUs in the patient clinic",
+        "tags": [
+          "Patient Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/commerce/products/{productId}": {
+      "get": {
+        "operationId": "patientCommerceProductGet",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceProductDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product is not active or was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an active commerce product with active SKUs in the patient clinic",
+        "tags": [
+          "Patient Commerce Catalog"
+        ]
+      }
+    },
+    "/v1/patients/me/cart": {
+      "get": {
+        "operationId": "patientCommerceCartGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCartDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the signed-in patient cart",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "put": {
+        "operationId": "patientCommerceCartUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCartDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Set a cart SKU quantity without reserving stock",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/wishlist": {
+      "get": {
+        "operationId": "patientCommerceWishlistGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientWishlistDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the signed-in patient wishlist",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "put": {
+        "operationId": "patientCommerceWishlistUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientWishlistDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientWishlistDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save or remove an active SKU for the signed-in patient",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/admin/commerce/shipping-rates/courier": {
+      "get": {
+        "operationId": "adminCommerceCourierShippingRateGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCourierShippingRateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the active clinic courier shipping rate configuration",
+        "tags": [
+          "Admin Commerce"
+        ]
+      },
+      "patch": {
+        "operationId": "adminCommerceCourierShippingRateUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCourierShippingRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCourierShippingRateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update the clinic courier rate without changing historical order snapshots",
+        "tags": [
+          "Admin Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/addresses": {
+      "get": {
+        "operationId": "patientCommerceAddressesList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceAddressDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the signed-in patient checkout addresses",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "post": {
+        "operationId": "patientCommerceAddressesCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceAddressDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a signed-in patient checkout address",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/addresses/{addressId}": {
+      "patch": {
+        "operationId": "patientCommerceAddressesUpdate",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceAddressDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a signed-in patient checkout address",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "delete": {
+        "operationId": "patientCommerceAddressesDelete",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a signed-in patient checkout address",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/shipping-options": {
+      "get": {
+        "operationId": "patientCommerceShippingOptionsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceShippingOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List server-priced shipping options for the signed-in patient clinic",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/orders": {
+      "post": {
+        "operationId": "patientCommerceOrdersCheckout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutCommerceOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceOrderDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an idempotent server-priced commerce order snapshot",
+        "tags": [
+          "Patient Commerce"
+        ]
+      },
+      "get": {
+        "operationId": "patientCommerceOrdersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceOrderDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List signed-in patient commerce orders",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/orders/{orderId}/receipt": {
+      "get": {
+        "operationId": "patientCommerceOrderReceiptGet",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceReceiptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a verified-payment receipt only for an owned order",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/orders/{orderId}": {
+      "get": {
+        "operationId": "patientCommerceOrdersGet",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceOrderDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an immutable signed-in patient commerce order snapshot",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/patients/me/orders/{orderId}/cancel": {
+      "post": {
+        "operationId": "patientCommerceOrderCancelPendingPayment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel an owned pending-payment order only when payment state is safe",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
+    "/v1/admin/commerce/discounts": {
+      "get": {
+        "operationId": "adminCommerceDiscountsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceDiscountResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic-scoped commerce discounts and usage",
+        "tags": [
+          "Admin Commerce Discounts"
+        ]
+      },
+      "post": {
+        "operationId": "adminCommerceDiscountsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommerceDiscountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceDiscountResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a clinic-scoped commerce discount",
+        "tags": [
+          "Admin Commerce Discounts"
+        ]
+      }
+    },
+    "/v1/admin/commerce/discounts/{discountId}": {
+      "patch": {
+        "operationId": "adminCommerceDiscountsUpdate",
+        "parameters": [
+          {
+            "name": "discountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommerceDiscountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceDiscountResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update or activate a commerce discount without changing its code",
+        "tags": [
+          "Admin Commerce Discounts"
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers": {
+      "get": {
+        "operationId": "adminCommercePaymentProvidersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentProviderConfigDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List code-owned clinic payment provider configurations without credentials",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}/config-revisions": {
+      "post": {
+        "operationId": "adminCommercePaymentProviderRevisionCreate",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentProviderRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProviderConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an idempotent write-only encrypted provider configuration revision",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}": {
+      "patch": {
+        "operationId": "adminCommercePaymentProviderUpdate",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentProviderConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProviderConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a provider enabled/default state subject to its go-live gate",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/patients/me/orders/{orderId}/payment-attempts": {
+      "post": {
+        "operationId": "patientPaymentAttemptCreate",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a provider-bound payment attempt when a go-live-ready provider is available",
+        "tags": [
+          "Patient Payments"
+        ]
+      }
+    },
+    "/v1/patients/me/payment-attempts/{attemptId}": {
+      "get": {
+        "operationId": "patientPaymentAttemptGet",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a signed-in patient payment attempt",
+        "tags": [
+          "Patient Payments"
+        ]
+      }
+    },
+    "/v1/payments/providers/sadad/callback": {
+      "post": {
+        "operationId": "sadadPaymentCallback",
+        "parameters": [],
+        "responses": {
+          "503": {
+            "description": ""
+          }
+        },
+        "summary": "Dormant Sadad callback endpoint; transport activation awaits merchant acceptance evidence",
+        "tags": [
+          "Provider Callbacks"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders": {
+      "get": {
+        "operationId": "adminCommerceOrdersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic commerce orders",
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/reconciliation": {
+      "get": {
+        "operationId": "adminCommerceReconciliationList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List payment attempts requiring manual reconciliation",
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/fulfillment": {
+      "patch": {
+        "operationId": "AdminCommerceOrderOperationsController_fulfillment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderTransitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/tracking": {
+      "patch": {
+        "operationId": "AdminCommerceOrderOperationsController_tracking",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderTrackingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/cancel-before-payment": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_cancelBeforePayment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/cancellation-requests": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_cancellation",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/return-requests": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_returns",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/cancellation-rejections": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_rejection",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/return-rejections": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_returnRejection",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}/refunds": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_refund",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/refunds/{refundId}/{action}": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_refundAction",
+        "parameters": [
+          {
+            "name": "action",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refundId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundCompleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/payment-attempts/{attemptId}/reconcile": {
+      "post": {
+        "operationId": "AdminCommerceOrderOperationsController_reconcile",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconciliationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/revenue": {
+      "get": {
+        "operationId": "adminCommerceRevenueGet",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Clinic-local inclusive ISO date.",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DAY",
+              "type": "string",
+              "enum": [
+                "DAY",
+                "WEEK",
+                "MONTH"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Clinic-local inclusive ISO date.",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceRevenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read authoritative commerce revenue from verified payments and completed refunds",
+        "tags": [
+          "Admin Commerce Revenue"
+        ]
+      }
     }
   },
   "info": {
@@ -8495,6 +10334,48 @@
               "TREATMENT_TASK_STATE_INVALID",
               "TREATMENT_ADHERENCE_TASK_INVALID",
               "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN",
+              "COMMERCE_CATEGORY_NOT_FOUND",
+              "COMMERCE_PRODUCT_NOT_FOUND",
+              "COMMERCE_SKU_NOT_FOUND",
+              "COMMERCE_INVENTORY_NOT_FOUND",
+              "COMMERCE_INPUT_INVALID",
+              "COMMERCE_NAME_CONFLICT",
+              "COMMERCE_LIFECYCLE_INVALID",
+              "COMMERCE_INVENTORY_INVALID",
+              "COMMERCE_INVENTORY_NOT_FOUND",
+              "COMMERCE_INVENTORY_INSUFFICIENT",
+              "COMMERCE_RESERVATION_STATE_INVALID",
+              "COMMERCE_DISCOUNT_NOT_FOUND",
+              "COMMERCE_DISCOUNT_INPUT_INVALID",
+              "COMMERCE_DISCOUNT_UNAVAILABLE",
+              "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED",
+              "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED",
+              "COMMERCE_DISCOUNT_CODE_CONFLICT",
+              "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE",
+              "COMMERCE_ADDRESS_NOT_FOUND",
+              "COMMERCE_CART_EMPTY",
+              "COMMERCE_ORDER_NOT_FOUND",
+              "COMMERCE_ORDER_INPUT_INVALID",
+              "COMMERCE_RECEIPT_NOT_AVAILABLE",
+              "SHIPPING_METHOD_UNAVAILABLE",
+              "PAYMENT_PROVIDER_NOT_FOUND",
+              "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED",
+              "PAYMENT_PROVIDER_CONFIGURATION_INVALID",
+              "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE",
+              "SADAD_GO_LIVE_BLOCKED",
+              "PAYMENT_ATTEMPT_NOT_FOUND",
+              "PAYMENT_ATTEMPT_NOT_PAYABLE",
+              "PAYMENT_VERIFICATION_FAILED",
+              "PAYMENT_VERIFICATION_MISMATCH",
+              "PAYMENT_RECONCILIATION_REQUIRED",
+              "COMMERCE_ORDER_TRANSITION_INVALID",
+              "COMMERCE_ORDER_CANCELLATION_BLOCKED",
+              "COMMERCE_TRACKING_URL_INVALID",
+              "COMMERCE_REFUND_NOT_FOUND",
+              "COMMERCE_REFUND_AMOUNT_INVALID",
+              "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT",
+              "REFUND_MANUAL_EVIDENCE_REQUIRED",
+              "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED",
               "HTTP_ERROR",
               "INTERNAL_SERVER_ERROR"
             ],
@@ -14197,6 +16078,1394 @@
             "$ref": "#/components/schemas/MediaDto"
           }
         }
+      },
+      "CommerceCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "productCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "isActive",
+          "productCount"
+        ]
+      },
+      "CommerceSkuResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentPriceToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "currentTaxToman": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "onHandQuantity": {
+            "type": "number"
+          },
+          "reservedQuantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "currentPriceToman",
+          "currentTaxToman",
+          "isActive",
+          "onHandQuantity",
+          "reservedQuantity"
+        ]
+      },
+      "CommerceProductResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "ARCHIVED"
+            ]
+          },
+          "category": {
+            "$ref": "#/components/schemas/CommerceCategoryResponseDto"
+          },
+          "skus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceSkuResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "status",
+          "category",
+          "skus"
+        ]
+      },
+      "CommercePageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceProductResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "CreateCommerceCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 140
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "UpdateCommerceCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 140
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateCommerceProductDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 260
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "categoryId",
+          "title",
+          "slug"
+        ]
+      },
+      "UpdateCommerceProductDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 260
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "ARCHIVED"
+            ]
+          }
+        }
+      },
+      "CreateCommerceSkuDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "currentPriceToman": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Integer TOMAN."
+          },
+          "currentTaxToman": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "initialOnHandQuantity": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          }
+        },
+        "required": [
+          "code",
+          "currentPriceToman"
+        ]
+      },
+      "UpdateCommerceSkuDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 240
+          },
+          "currentPriceToman": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currentTaxToman": {
+            "type": "number",
+            "minimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateInventoryDto": {
+        "type": "object",
+        "properties": {
+          "onHandQuantity": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "onHandQuantity"
+        ]
+      },
+      "CommerceInventoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string"
+          },
+          "onHandQuantity": {
+            "type": "number"
+          },
+          "reservedQuantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "skuId",
+          "onHandQuantity",
+          "reservedQuantity"
+        ]
+      },
+      "PatientCommerceCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "PatientCommerceSkuDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentPriceToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "currentTaxToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "currentPriceToman",
+          "currentTaxToman"
+        ]
+      },
+      "PatientCommerceProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "$ref": "#/components/schemas/PatientCommerceCategoryDto"
+          },
+          "skus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommerceSkuDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "category",
+          "skus"
+        ]
+      },
+      "PatientCommerceProductPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommerceProductDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "PatientCartItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "sku": {
+            "$ref": "#/components/schemas/PatientCommerceSkuDto"
+          },
+          "product": {
+            "$ref": "#/components/schemas/PatientCommerceProductDto"
+          }
+        },
+        "required": [
+          "id",
+          "quantity",
+          "sku",
+          "product"
+        ]
+      },
+      "PatientCartDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCartItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdatePatientCartDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "skuId",
+          "quantity"
+        ]
+      },
+      "PatientWishlistItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "$ref": "#/components/schemas/PatientCommerceSkuDto"
+          },
+          "product": {
+            "$ref": "#/components/schemas/PatientCommerceProductDto"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "product"
+        ]
+      },
+      "PatientWishlistDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientWishlistItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdatePatientWishlistDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "saved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "skuId",
+          "saved"
+        ]
+      },
+      "CommerceCourierShippingRateDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "COURIER"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "nullable": true,
+            "description": "Integer TOMAN when configured."
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isConfigured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "method",
+          "isActive",
+          "isConfigured"
+        ]
+      },
+      "UpdateCourierShippingRateDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer TOMAN."
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "amountToman",
+          "isActive"
+        ]
+      },
+      "CommerceAddressDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "province": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "object",
+            "nullable": true
+          },
+          "line1": {
+            "type": "string"
+          },
+          "line2": {
+            "type": "object",
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "recipientName",
+          "phone",
+          "province",
+          "city",
+          "line1",
+          "isDefault"
+        ]
+      },
+      "CreateCommerceAddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "recipientName": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "province": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "line1": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "postalCode": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "line2": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "recipientName",
+          "phone",
+          "province",
+          "city",
+          "line1"
+        ]
+      },
+      "UpdateCommerceAddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "recipientName": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "province": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "line1": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "postalCode": {
+            "type": "object",
+            "maxLength": 32,
+            "nullable": true
+          },
+          "line2": {
+            "type": "object",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CommerceShippingOptionDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "COURIER"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          }
+        },
+        "required": [
+          "method",
+          "amountToman"
+        ]
+      },
+      "CheckoutCommerceOrderDto": {
+        "type": "object",
+        "properties": {
+          "shippingMethod": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "COURIER"
+            ]
+          },
+          "addressId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "discountCode": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40,
+            "description": "Optional commerce discount code; the server canonicalizes and prices it."
+          }
+        },
+        "required": [
+          "shippingMethod"
+        ]
+      },
+      "CommerceOrderLineDto": {
+        "type": "object",
+        "properties": {
+          "skuCode": {
+            "type": "string"
+          },
+          "productTitle": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitPriceToman": {
+            "type": "string"
+          },
+          "unitTaxToman": {
+            "type": "string"
+          },
+          "discountAmountToman": {
+            "type": "string"
+          },
+          "lineTotalToman": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "skuCode",
+          "productTitle",
+          "quantity",
+          "unitPriceToman",
+          "unitTaxToman",
+          "discountAmountToman",
+          "lineTotalToman"
+        ]
+      },
+      "CommerceOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "shippingMethod": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "COURIER"
+            ]
+          },
+          "shippingAddress": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommerceAddressDto"
+              }
+            ]
+          },
+          "subtotalAmountToman": {
+            "type": "string"
+          },
+          "taxAmountToman": {
+            "type": "string"
+          },
+          "discountAmountToman": {
+            "type": "string"
+          },
+          "shippingAmountToman": {
+            "type": "string"
+          },
+          "totalAmountToman": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceOrderLineDto"
+            }
+          },
+          "carrierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "refundStatuses": {
+            "description": "Read-only refund lifecycle statuses for a verified order payment.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "orderNumber",
+          "status",
+          "shippingMethod",
+          "subtotalAmountToman",
+          "taxAmountToman",
+          "discountAmountToman",
+          "shippingAmountToman",
+          "totalAmountToman",
+          "lines",
+          "refundStatuses",
+          "createdAt"
+        ]
+      },
+      "PatientCommerceReceiptDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "totalAmountToman": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": "string"
+          },
+          "providerReferenceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerTraceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/CommerceOrderDto"
+          }
+        },
+        "required": [
+          "orderId",
+          "orderNumber",
+          "totalAmountToman",
+          "status",
+          "verifiedAt",
+          "order"
+        ]
+      },
+      "CommerceDiscountResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FIXED_AMOUNT",
+              "PERCENTAGE"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "nullable": true
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usageLimit": {
+            "type": "number",
+            "nullable": true
+          },
+          "perPatientUsageLimit": {
+            "type": "number",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "reservedCount": {
+            "type": "number"
+          },
+          "consumedCount": {
+            "type": "number"
+          },
+          "remainingGlobalCapacity": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "title",
+          "kind",
+          "isActive",
+          "reservedCount",
+          "consumedCount"
+        ]
+      },
+      "CreateCommerceDiscountDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FIXED_AMOUNT",
+              "PERCENTAGE"
+            ]
+          },
+          "amountToman": {
+            "type": "string",
+            "nullable": true,
+            "description": "Positive integer TOMAN for FIXED_AMOUNT only."
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "nullable": true,
+            "description": "Basis points for PERCENTAGE only."
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "perPatientUsageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "kind"
+        ]
+      },
+      "UpdateCommerceDiscountDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FIXED_AMOUNT",
+              "PERCENTAGE"
+            ]
+          },
+          "amountToman": {
+            "type": "string"
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "nullable": true
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "perPatientUsageLimit": {
+            "type": "number",
+            "minimum": 1,
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaymentProviderConfigDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "providerUnit": {
+            "type": "string"
+          },
+          "goLiveReady": {
+            "type": "boolean"
+          },
+          "activeRevisionNumber": {
+            "type": "number",
+            "nullable": true
+          },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "displayName",
+          "configured",
+          "enabled",
+          "isDefault",
+          "providerUnit",
+          "goLiveReady",
+          "capabilities"
+        ]
+      },
+      "CreatePaymentProviderRevisionDto": {
+        "type": "object",
+        "properties": {
+          "credential": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Write-only secret values; never returned."
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdatePaymentProviderConfigDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaymentAttemptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "providerOrderId": {
+            "type": "string"
+          },
+          "providerCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "commerceAmountToman": {
+            "type": "string"
+          },
+          "providerAmount": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerUnit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "providerOrderId",
+          "providerCode",
+          "status",
+          "commerceAmountToman",
+          "providerUnit"
+        ]
+      },
+      "OrderTransitionDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "FULFILLMENT_PENDING",
+              "READY_FOR_PICKUP",
+              "SHIPPED",
+              "DELIVERED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "OrderTrackingDto": {
+        "type": "object",
+        "properties": {
+          "carrierName": {
+            "type": "string",
+            "example": "Post"
+          },
+          "trackingCode": {
+            "type": "string",
+            "example": "PK-123"
+          },
+          "trackingUrl": {
+            "type": "string",
+            "example": "https://carrier.example/track/PK-123"
+          }
+        },
+        "required": [
+          "carrierName",
+          "trackingCode"
+        ]
+      },
+      "OrderRequestDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Customer requested cancellation"
+          }
+        }
+      },
+      "RefundRequestDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "string",
+            "example": "25000",
+            "description": "Positive integer TOMAN"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amountToman"
+        ]
+      },
+      "RefundCompleteDto": {
+        "type": "object",
+        "properties": {
+          "evidenceReference": {
+            "type": "string",
+            "description": "Non-sensitive bank-transfer reference or evidence locator; required only when completing a refund"
+          }
+        }
+      },
+      "ReconciliationDto": {
+        "type": "object",
+        "properties": {
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "FAILED"
+            ]
+          },
+          "evidenceReference": {
+            "type": "string",
+            "description": "Non-sensitive reviewed evidence locator"
+          }
+        },
+        "required": [
+          "resolution",
+          "evidenceReference"
+        ]
+      },
+      "CommerceRevenueSeriesPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "grossCapturedToman": {
+            "type": "string"
+          },
+          "completedRefundToman": {
+            "type": "string"
+          },
+          "netRevenueToman": {
+            "type": "string"
+          },
+          "successfulPaymentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "grossCapturedToman",
+          "completedRefundToman",
+          "netRevenueToman",
+          "successfulPaymentCount"
+        ]
+      },
+      "CommerceRevenueDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "TOMAN"
+            ]
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "grossCapturedToman": {
+            "type": "string"
+          },
+          "completedRefundToman": {
+            "type": "string"
+          },
+          "netRevenueToman": {
+            "type": "string"
+          },
+          "successfulPaymentCount": {
+            "type": "number"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceRevenueSeriesPointDto"
+            }
+          }
+        },
+        "required": [
+          "currency",
+          "timeZone",
+          "from",
+          "to",
+          "grossCapturedToman",
+          "completedRefundToman",
+          "netRevenueToman",
+          "successfulPaymentCount",
+          "series"
+        ]
       }
     }
   }
