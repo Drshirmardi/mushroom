@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-15 23:31 +03:30`
+- آخرین به‌رورسانی: `2026-09-16 +03:30`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `NOT_STARTED`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد برای Phase 09؛ PR باید CI و review گیت‌هاب را پیش از merge پاس کند.`
+- blocker فعال: `ندارد؛ F10-T02 migration/persistence is next and must retain exclusive Prisma ownership.`
 
 ## پیشرفت کلان
 
@@ -43,7 +43,7 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
+- [ ] `Phase 10` — Chat & Online Consultation — `IN_PROGRESS`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
@@ -52,7 +52,8 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `Phase 10` is `NOT_STARTED`; `F10-B01 / F10-T01` remains unclaimed.
+acceptance and any enable/default decision. `F10-T01` is accepted at the isolated contract commit; the next eligible
+batch is `F10-B02 / F10-T02` only, with exclusive Prisma schema/migration/seed ownership.
 
 ## batch فعال — F09-CI01
 
