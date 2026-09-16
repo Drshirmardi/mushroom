@@ -144,3 +144,37 @@ Verification:
     from the task stage/commit.
 Next batch:
   - F10-B04 / F10-T04 only
+
+## F10-T04 — Socket.IO authenticated recovery boundary
+
+Task ID: F10-T04
+Completed at: 2026-09-17 +03:10
+Batch ID: F10-B04
+Status: ACCEPTED — isolated task commit pending
+Changed files:
+  - apps/api/package.json
+  - pnpm-lock.yaml
+  - apps/api/src/modules/communications/chat/chat.module.ts
+  - apps/api/src/modules/communications/chat/chat.service.ts
+  - apps/api/src/modules/communications/chat/realtime/**
+  - apps/api/test/chat-realtime.gateway.spec.ts
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - specs/008-adopt-phase-10/tasks.md
+Accepted boundary:
+  - pinned NestJS Socket.IO gateway dependencies; no Redis, Centrifugo or external realtime service.
+  - handshake accepts access token only in `auth`; token-like URL query is rejected and token is never logged.
+  - each join/sync rechecks appointment-bound authorization, current eligibility and block state; the server alone joins
+    the authorized room. Three live connections per user are enforced and token expiry closes the connection.
+  - PostgreSQL high-water sync is bounded and authoritative. REST transaction completion triggers best-effort,
+    at-least-once `message:committed`; signaling failure cannot roll back the durable message.
+Verification:
+  - `vitest run test/chat-realtime.gateway.spec.ts --no-file-parallelism` → PASS (3 tests), including live Socket.IO
+    handshake/join and REST post-commit signal against PostgreSQL.
+  - API production/test TypeScript typechecks and `git diff --check` → PASS.
+  - `pnpm audit --prod --json` dependency review: no Socket.IO/Nest websocket advisory; existing unrelated findings
+    remain outside this task's scope.
+  - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` excluded from stage/commit.
+Next batch:
+  - F10-B05 / F10-T05 only

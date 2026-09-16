@@ -28,6 +28,7 @@ import type {
   ResolveChatReportDto,
   SendChatMessageDto,
 } from './chat.dto';
+import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 
 type Db = PrismaService | Prisma.TransactionClient;
 type ChatActor = { userId: string; kind: ChatParticipantKind; isAdmin: boolean };
@@ -50,7 +51,7 @@ const ACTIVE_BLOCKS = [ChatBlockStatus.PENDING_REVIEW, ChatBlockStatus.CONFIRMED
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly publisher: ChatRealtimePublisher) {}
 
   async appointmentConversation(principal: AccessTokenPrincipal, appointmentId: string) {
     const appointment = await this.appointment(appointmentId);
@@ -79,13 +80,32 @@ export class ChatService {
     };
   }
 
+  async realtimeSync(principal: AccessTokenPrincipal, conversationId: string, lastSequence = 0n, limit = 100) {
+    const conversation = await this.conversation(conversationId);
+    const actor = await this.actorFor(principal, conversation.appointment);
+    this.assertSendEligibility(conversation.appointment);
+    await this.assertNotBlocked(this.prisma, conversation, actor);
+    const highWater = await this.prisma.chatMessage.aggregate({ where: { conversationId: conversation.id }, _max: { sequence: true } });
+    const highWaterSequence = highWater._max.sequence ?? 0n;
+    const records = await this.prisma.chatMessage.findMany({
+      where: { conversationId: conversation.id, sequence: { gt: lastSequence, lte: highWaterSequence } },
+      orderBy: { sequence: 'asc' }, take: limit + 1,
+    });
+    const items = records.slice(0, limit);
+    return {
+      items: items.map((message) => this.messageResponse(message, actor.isAdmin)),
+      nextCursor: records.length > limit && items.length ? this.cursor(conversation.id, items.at(-1)!.sequence) : null,
+      highWaterSequence: String(highWaterSequence),
+    };
+  }
+
   async send(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto) {
     const body = input.body.normalize('NFC').trim();
     if (!body) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A text message cannot be empty.', details: {} });
     if (Array.from(body).length > 4_000) throw tooLong();
     const requestPayloadHash = createHash('sha256').update(JSON.stringify({ body })).digest('hex');
 
-    return this.prisma.$transaction(async (tx) => {
+    const outcome = await this.prisma.$transaction(async (tx) => {
       const conversation = await this.conversation(conversationId, tx);
       const actor = await this.actorFor(principal, conversation.appointment, tx);
       await this.lock(tx, `chat:user:${actor.userId}`);
@@ -93,7 +113,7 @@ export class ChatService {
       const existing = await tx.chatMessage.findUnique({ where: { conversationId_senderUserId_clientMessageId: { conversationId: conversation.id, senderUserId: actor.userId, clientMessageId: input.clientMessageId } } });
       if (existing) {
         if (existing.requestPayloadHash !== requestPayloadHash) throw idempotencyConflict();
-        return this.messageResponse(existing, actor.isAdmin);
+        return { message: this.messageResponse(existing, actor.isAdmin), committed: false, conversationId: conversation.id };
       }
       this.assertSendEligibility(conversation.appointment);
       await this.assertNotBlocked(tx, conversation, actor);
@@ -109,8 +129,10 @@ export class ChatService {
         senderUserId: actor.userId, senderKind: actor.kind, clientMessageId: input.clientMessageId, requestPayloadHash, body,
       } });
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.MESSAGE_CREATED, 'MESSAGE', message.id);
-      return this.messageResponse(message, actor.isAdmin);
+      return { message: this.messageResponse(message, actor.isAdmin), committed: true, conversationId: conversation.id };
     }, { maxWait: 30_000, timeout: 30_000 });
+    if (outcome.committed) this.publisher.messageCommitted(outcome.conversationId, outcome.message);
+    return outcome.message;
   }
 
   async report(principal: AccessTokenPrincipal, messageId: string, input: CreateChatReportDto) {

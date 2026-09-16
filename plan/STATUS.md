@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-17 +02:50`
+- آخرین به‌رورسانی: `2026-09-17 +03:10`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T04 پس از commit پذیرفته‌شدهٔ F10-T03 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T05 پس از commit پذیرفته‌شدهٔ F10-T04 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -53,7 +53,32 @@
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
 acceptance and any enable/default decision. `F10-T01` تا `F10-T03` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست و `F10-B04 / F10-T04` تنها batch بعدی واجد شروع است.
+فعال نیست و `F10-B05 / F10-T05` تنها batch بعدی واجد شروع است.
+
+## batch فعال — F10-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-17 03:00 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `ffa06cf feat(F10-T03): add appointment chat REST API`
+
+- Scope: pinned Socket.IO/Nest gateway dependency and lockfile, handshake-authenticated connection lifecycle,
+  backend-authorized conversation join/reconnect/sync, token expiry and three-live-connection boundary, and targeted
+  gateway tests only.
+- Owned paths: `apps/api/package.json`, `pnpm-lock.yaml`, `apps/api/src/app.module.ts`,
+  `apps/api/src/modules/communications/chat/realtime/**`, task-required extension points under
+  `apps/api/src/modules/communications/chat/**`, `apps/api/test/chat-realtime.gateway.spec.ts`, and task status/evidence.
+- Do not change: Prisma schema/migrations/seed, REST/OpenAPI/generated client surface, receipt/outbox runtime,
+  waiting-room/presence runtime, app/dashboard UI, attachment/video runtime, `.gitignore`, or Phase 12 plan.
+- Acceptance focus: auth payload only (never URL), no client-selected arbitrary room/publish, server-side rechecks on
+  join/reconnect/sync, expiry close, bounded reconnect high-water recovery and at-least-once signal semantics.
+- Result: Socket.IO remains an in-process signaling/connection layer only. REST remains the sole persist path; a
+  committed message is emitted only after the PostgreSQL transaction returns successfully.
+- Verification: pinned dependency advisory scan found no Socket.IO/Nest websocket finding; targeted unit plus live
+  Socket.IO/PostgreSQL integration tests and API typecheck passed. Repository-wide audit findings are pre-existing,
+  out-of-scope Next/Fastify/Prisma dependencies and are not masked by this task.
+- Next eligible batch: `F10-B05 / F10-T05` only; no task is claimed by this completion.
 
 ## batch فعال — F10-B03
 
