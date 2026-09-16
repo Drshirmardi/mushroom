@@ -97,3 +97,50 @@ Verification:
   - coordinator review confirmed no user-owned `.gitignore` or Phase 12 file was staged or included.
 Next batch:
   - F10-B03 / F10-T03 only
+
+## F10-T03 — appointment-bound REST chat boundary
+
+Task ID: F10-T03
+Completed at: 2026-09-17 +02:50
+Agent/Thread: Codex /root
+Batch ID: F10-B03
+Status: ACCEPTED — isolated task commit pending
+Changed files:
+  - apps/api/src/app.module.ts
+  - apps/api/src/common/auth/authorization.policy.ts
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/src/modules/communications/chat/**
+  - apps/api/test/chat-test-support.ts
+  - apps/api/test/chat-rest.integration.spec.ts
+  - apps/api/test/chat-authorization.integration.spec.ts
+  - apps/api/test/chat-moderation.integration.spec.ts
+  - apps/api/test/openapi-contract.spec.ts
+  - packages/api-client/openapi.json
+  - packages/api-client/src/schema.generated.ts
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - specs/008-adopt-phase-10/tasks.md
+Accepted boundary:
+  - REST-only chat endpoints enforce authenticated role permission plus active clinic, online Appointment and exact
+    conversation membership server-side. STAFF and an assigned DoctorProfile without a linked User cannot access it;
+    ADMIN acts only as clinic/operator and never as a doctor.
+  - PostgreSQL remains authoritative: messages receive a transactional sequence, send retries use the frozen
+    `(conversation, sender, clientMessageId)` identity, history uses an opaque validated cursor, and rate/window/block
+    failures return stable API errors. This task emits no realtime or notification signal.
+  - Immutable report, restricted-message tombstone/review, scoped pending block and ADMIN moderation paths are audited;
+    ordinary history cannot reveal restricted body content.
+  - OpenAPI and the generated client include the new REST slice. Socket.IO, receipt/outbox, presence/waiting room,
+    app/dashboard UI, attachment and video remain expressly out of scope.
+Verification:
+  - `vitest run test/chat-rest.integration.spec.ts --no-file-parallelism` → PASS (1 file, 1 test).
+  - `vitest run test/chat-authorization.integration.spec.ts --no-file-parallelism` → PASS (1 file, 2 tests).
+  - `vitest run test/chat-moderation.integration.spec.ts --no-file-parallelism` → PASS (1 file, 1 test).
+  - `vitest run test/openapi-contract.spec.ts` → PASS (1 file, 7 tests).
+  - API production and test TypeScript typechecks → PASS.
+  - OpenAPI export and generated API-client typecheck → PASS.
+  - `git diff --check` → PASS.
+  - Coordinator review confirmed `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are user-owned and excluded
+    from the task stage/commit.
+Next batch:
+  - F10-B04 / F10-T04 only

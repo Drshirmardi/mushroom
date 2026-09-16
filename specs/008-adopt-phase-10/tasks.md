@@ -8,7 +8,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Roadmap boundary**: `T001`–`T011` are SpecKit labels only. `F10-T01`–`F10-T11` remain the authoritative claim, evidence, checklist, and task-commit identities; they are not renumbered or replaced.
 
-**Execution status**: No Phase 10 task is claimed or done. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
+**Execution status**: `F10-T01` through `F10-T03` are accepted in isolated commits; no task is currently claimed. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
 
 ## Phase 1: Contract foundation
 
@@ -30,7 +30,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Independent Test**: The patient owner, linked assigned doctor, and authorized clinic/operator ADMIN receive only their matching history; invalid actor/state/window/block receives no metadata or send effect; idempotent retry yields one committed message.
 
-- [ ] T003 [US1] F10-T03 Implement the communications chat authorization service, appointment-scoped REST conversation/history/cursor/send/report/moderation/block endpoints, PostgreSQL sequence allocation/idempotency/rate checks, stable errors, OpenAPI export/client slice, and integration/authorization tests in `apps/api/src/modules/communications/chat/**`, `apps/api/test/chat-rest.integration.spec.ts`, `apps/api/test/chat-authorization.integration.spec.ts`, `apps/api/test/chat-moderation.integration.spec.ts`, `apps/api/test/openapi-contract.spec.ts`, and `packages/api-client/**`; serialize common auth/error/client changes under this task owner.
+- [x] T003 [US1] F10-T03 Implement the communications chat authorization service, appointment-scoped REST conversation/history/cursor/send/report/moderation/block endpoints, PostgreSQL sequence allocation/idempotency/rate checks, stable errors, OpenAPI export/client slice, and integration/authorization tests in `apps/api/src/modules/communications/chat/**`, `apps/api/test/chat-rest.integration.spec.ts`, `apps/api/test/chat-authorization.integration.spec.ts`, `apps/api/test/chat-moderation.integration.spec.ts`, `apps/api/test/openapi-contract.spec.ts`, and `packages/api-client/**`; serialize common auth/error/client changes under this task owner.
 
 **Checkpoint**: User Story 1 works through REST with durable ordered history and no in-scope mock authority.
 

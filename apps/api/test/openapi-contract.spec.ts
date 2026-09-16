@@ -167,4 +167,26 @@ describe('identity OpenAPI contract', () => {
     expect(paths['/v1/patients/me/cart'].put.operationId).toBe('patientCommerceCartUpdate');
     expect(document.components.schemas.PatientCommerceSkuDto.properties.currentPriceToman.description).toBe('Integer TOMAN.');
   });
+
+  it('publishes the appointment-bound chat REST contract with bearer protection and stable errors', () => {
+    const paths = document.paths;
+    const chatOperations = [
+      ['/v1/chat/appointments/{appointmentId}/conversation', 'get', 'chatAppointmentConversationGet'],
+      ['/v1/chat/conversations/{conversationId}/messages', 'get', 'chatConversationHistory'],
+      ['/v1/chat/conversations/{conversationId}/messages', 'post', 'chatConversationMessageSend'],
+      ['/v1/chat/messages/{messageId}/reports', 'post', 'chatMessageReportCreate'],
+      ['/v1/chat/messages/{messageId}/visibility', 'post', 'chatMessageVisibilityChange'],
+      ['/v1/chat/messages/{messageId}/restricted-content', 'get', 'chatRestrictedContentReview'],
+      ['/v1/chat/reports/{reportId}/resolve', 'post', 'chatReportResolve'],
+    ] as const;
+    for (const [path, method, operationId] of chatOperations) {
+      expect(paths[path][method].operationId).toBe(operationId);
+      expect(paths[path][method].security).toEqual([{ bearerAuth: [] }]);
+    }
+    const errors = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
+    expect(errors).toEqual(expect.arrayContaining([
+      'CHAT_FORBIDDEN', 'CHAT_BLOCKED', 'CHAT_IDEMPOTENCY_CONFLICT',
+      'CHAT_CURSOR_INVALID', 'CHAT_RATE_LIMITED', 'CHAT_MESSAGE_TOO_LONG',
+    ]));
+  });
 });

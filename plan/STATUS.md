@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-16 +04:50`
+- آخرین به‌رورسانی: `2026-09-17 +02:50`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T03 REST/authorization is next and must retain exclusive common-auth/OpenAPI ownership.`
+- blocker فعال: `ندارد؛ F10-T04 پس از commit پذیرفته‌شدهٔ F10-T03 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -52,8 +52,36 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `F10-T01` and `F10-T02` are accepted at isolated commits; the next eligible
-batch is `F10-B03 / F10-T03` only, with exclusive REST/common-authorization/OpenAPI ownership.
+acceptance and any enable/default decision. `F10-T01` تا `F10-T03` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
+فعال نیست و `F10-B04 / F10-T04` تنها batch بعدی واجد شروع است.
+
+## batch فعال — F10-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-16 05:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `62f2921 feat(F10-T02): persist chat consultation records`
+
+- Scope: appointment-bound chat REST authorization, conversation/history/cursor/send/report/moderation/block endpoints,
+  PostgreSQL-backed sequence/idempotency/rate checks, stable errors, OpenAPI and generated client slice, and targeted
+  integration/authorization/moderation tests only.
+- Owned paths: `apps/api/src/modules/communications/chat/**`, `apps/api/src/common/{auth,errors}/**` only where the frozen
+  contract requires a common capability, `apps/api/src/app.module.ts`, `apps/api/test/{chat-rest.integration.spec.ts,
+  chat-authorization.integration.spec.ts,chat-moderation.integration.spec.ts,openapi-contract.spec.ts}`, `packages/api-client/**`,
+  and `plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}` plus `specs/008-adopt-phase-10/tasks.md`.
+- Do not change: Prisma schema/migrations/seed, Socket.IO dependencies or lockfile, receipt/outbox runtime, waiting-room/
+  presence runtime, app/dashboard UI, attachment/video runtime, `.gitignore`, or Phase 12 plan.
+- Acceptance focus: server-side permission + clinic + appointment/conversation membership checks; no STAFF or unlinked-doctor
+  access; REST-only committed send with stable idempotency/order/error behavior; moderation/block audit boundaries; generated
+  OpenAPI/client consistency. No realtime, receipt, waiting-room, attachment, or video implementation is claimed.
+- Result: REST-only, PostgreSQL-backed appointment chat authorization, history/cursor, idempotent ordered send, report,
+  moderation and scoped-block APIs are accepted with stable errors and generated OpenAPI client coverage. Socket.IO,
+  receipts/outbox, presence/waiting-room, UI and media remain unclaimed.
+- Verification: targeted REST, authorization and moderation integration tests passed against PostgreSQL; OpenAPI contract,
+  API/test/client TypeScript checks, export/generation and `git diff --check` passed. Coordinator review excluded
+  user-owned `.gitignore` and Phase 12 changes.
+- Next eligible batch: `F10-B04 / F10-T04` only; no task is claimed by this completion.
 
 ## batch فعال — F10-B02
 

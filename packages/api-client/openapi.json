@@ -10172,6 +10172,366 @@
           "Admin Commerce Revenue"
         ]
       }
+    },
+    "/v1/chat/appointments/{appointmentId}/conversation": {
+      "get": {
+        "operationId": "chatAppointmentConversationGet",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatConversationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The appointment conversation is unavailable to this account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get or create the authorized appointment-bound conversation",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/messages": {
+      "get": {
+        "operationId": "chatConversationHistory",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque, versioned server cursor.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatHistoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read an authorized bounded ascending message history page",
+        "tags": [
+          "Chat consultation"
+        ]
+      },
+      "post": {
+        "operationId": "chatConversationMessageSend",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChatMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Persist an idempotent appointment-bound text message",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/messages/{messageId}/reports": {
+      "post": {
+        "operationId": "chatMessageReportCreate",
+        "parameters": [
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an authorized idempotent moderation report",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/reports": {
+      "get": {
+        "operationId": "chatConversationReportsList",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List own report status or clinic-admin moderation reports",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/messages/{messageId}/visibility": {
+      "post": {
+        "operationId": "chatMessageVisibilityChange",
+        "parameters": [
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeChatVisibilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Restrict or restore a message under clinic moderation policy",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/messages/{messageId}/restricted-content": {
+      "get": {
+        "operationId": "chatRestrictedContentReview",
+        "parameters": [
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Explicitly review restricted content as a clinic administrator",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/reports/{reportId}/resolve": {
+      "post": {
+        "operationId": "chatReportResolve",
+        "parameters": [
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveChatReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Resolve an internal moderation report and apply an allowed action",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
     }
   },
   "info": {
@@ -10368,6 +10728,19 @@
               "PAYMENT_VERIFICATION_FAILED",
               "PAYMENT_VERIFICATION_MISMATCH",
               "PAYMENT_RECONCILIATION_REQUIRED",
+              "CHAT_FORBIDDEN",
+              "CHAT_APPOINTMENT_NOT_ELIGIBLE",
+              "CHAT_WINDOW_CLOSED",
+              "CHAT_BLOCKED",
+              "CHAT_IDEMPOTENCY_CONFLICT",
+              "CHAT_CURSOR_INVALID",
+              "CHAT_CURSOR_FORBIDDEN",
+              "CHAT_SEQUENCE_INVALID",
+              "CHAT_TOKEN_EXPIRED",
+              "CHAT_CONNECTION_LIMITED",
+              "CHAT_RATE_LIMITED",
+              "CHAT_MESSAGE_TOO_LONG",
+              "CHAT_MODERATION_FORBIDDEN",
               "COMMERCE_ORDER_TRANSITION_INVALID",
               "COMMERCE_ORDER_CANCELLATION_BLOCKED",
               "COMMERCE_TRACKING_URL_INVALID",
@@ -17465,6 +17838,239 @@
           "netRevenueToman",
           "successfulPaymentCount",
           "series"
+        ]
+      },
+      "ChatConversationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "appointmentId",
+          "clinicId",
+          "patientId",
+          "doctorId",
+          "createdAt"
+        ]
+      },
+      "ChatMessageResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "string"
+          },
+          "senderKind": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "DOCTOR",
+              "CLINIC_OPERATOR"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "VISIBLE",
+              "RESTRICTED"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "restrictedReasonCategory": {
+            "type": "string",
+            "enum": [
+              "ABUSE_OR_HARASSMENT",
+              "THREAT_OR_SAFETY",
+              "SENSITIVE_DATA_EXPOSURE",
+              "SPAM_OR_SCAM",
+              "MALICIOUS_CONTENT",
+              "OTHER"
+            ]
+          },
+          "tombstone": {
+            "type": "string",
+            "description": "Safe tombstone shown instead of restricted text."
+          }
+        },
+        "required": [
+          "id",
+          "sequence",
+          "senderKind",
+          "createdAt",
+          "visibility"
+        ]
+      },
+      "ChatHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object"
+          },
+          "highWaterSequence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "highWaterSequence"
+        ]
+      },
+      "SendChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "clientMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client-generated idempotency identifier."
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "clientMessageId",
+          "body"
+        ]
+      },
+      "CreateChatReportDto": {
+        "type": "object",
+        "properties": {
+          "reasonCategory": {
+            "type": "string",
+            "enum": [
+              "ABUSE_OR_HARASSMENT",
+              "THREAT_OR_SAFETY",
+              "SENSITIVE_DATA_EXPOSURE",
+              "SPAM_OR_SCAM",
+              "MALICIOUS_CONTENT",
+              "OTHER"
+            ]
+          },
+          "reporterNote": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Optional non-sensitive note; never message or medical text."
+          },
+          "requestImmediateBlock": {
+            "type": "boolean",
+            "description": "Request an effective pending-review conversation-scoped block."
+          },
+          "blockScope": {
+            "type": "string",
+            "enum": [
+              "PATIENT_DOCTOR",
+              "PATIENT_CLINIC_OPERATOR"
+            ],
+            "description": "ADMIN-only explicit block scope."
+          }
+        },
+        "required": [
+          "reasonCategory"
+        ]
+      },
+      "ChangeChatVisibilityDto": {
+        "type": "object",
+        "properties": {
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "RESTRICTED",
+              "VISIBLE"
+            ]
+          },
+          "reasonCategory": {
+            "type": "string",
+            "enum": [
+              "ABUSE_OR_HARASSMENT",
+              "THREAT_OR_SAFETY",
+              "SENSITIVE_DATA_EXPOSURE",
+              "SPAM_OR_SCAM",
+              "MALICIOUS_CONTENT",
+              "OTHER"
+            ]
+          },
+          "safeNote": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Non-sensitive administrative note."
+          }
+        },
+        "required": [
+          "visibility"
+        ]
+      },
+      "ResolveChatReportDto": {
+        "type": "object",
+        "properties": {
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "DISMISSED_NO_VIOLATION",
+              "UPHELD_POLICY_VIOLATION",
+              "INSUFFICIENT_EVIDENCE",
+              "ESCALATED_SAFETY_OR_LEGAL"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "NO_ADDITIONAL_ACTION",
+              "RESTRICT_MESSAGE",
+              "RECORD_WARNING",
+              "CONFIRM_PATIENT_DOCTOR_BLOCK",
+              "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK",
+              "LIFT_TEMPORARY_BLOCK"
+            ]
+          },
+          "safeNote": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Non-sensitive administrative note."
+          }
+        },
+        "required": [
+          "resolution",
+          "action"
         ]
       }
     }
