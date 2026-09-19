@@ -19,7 +19,7 @@
 - [x] `F10-T04` — WebSocket authentication/authorization و reconnect sync
 - [x] `F10-T05` — delivery/read receipt و notification
 - [x] `F10-T06` — DEFERRED / NOT_APPLICABLE FOR MVP — attachment
-- [ ] `F10-T07` — appointment waiting room و presence
+- [x] `F10-T07` — appointment waiting room و presence
 - [ ] `F10-T08` — app/dashboard integration و حذف mock
 - [ ] `F10-T09` — ordering، reconnect، abuse، authorization و load tests
 - [ ] `F10-T10` — video adapter فقط با requirement تأییدشده

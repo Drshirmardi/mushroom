@@ -61,6 +61,24 @@ export class ChatService {
     return this.conversationResponse(conversation);
   }
 
+  /**
+   * Returns only the current, server-evaluated readiness for an appointment-bound
+   * text consultation. This deliberately does not create a clinical session or
+   * change any Appointment/Encounter state.
+   */
+  async waitingRoom(principal: AccessTokenPrincipal, appointmentId: string) {
+    const appointment = await this.appointment(appointmentId);
+    const actor = await this.actorFor(principal, appointment);
+    this.assertSendEligibility(appointment);
+    const conversation = await this.ensureConversation(appointment, actor);
+    return {
+      appointmentId: appointment.id,
+      conversationId: conversation.id,
+      heartbeatSeconds: 15,
+      leaseSeconds: 45,
+    };
+  }
+
   async history(principal: AccessTokenPrincipal, conversationId: string, cursorRaw?: string, limit = 50) {
     const conversation = await this.conversation(conversationId);
     const actor = await this.actorFor(principal, conversation.appointment);

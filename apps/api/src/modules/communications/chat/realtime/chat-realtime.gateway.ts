@@ -8,12 +8,14 @@ import { ChatRealtimePublisher } from './chat-realtime.publisher';
 
 type JoinRequest = { conversationId?: string; lastSequence?: string };
 type ReceiptRequest = { conversationId?: string; lastDeliveredSequence?: string; lastReadSequence?: string };
+type PresenceRequest = { conversationId?: string; lastSequence?: string };
 type RealtimeSocket = Socket & { data: { chatPrincipal?: AccessTokenPrincipal; expiryTimer?: NodeJS.Timeout } };
 
 @WebSocketGateway({ namespace: '/chat', transports: ['websocket'] })
 export class ChatRealtimeGateway {
   @WebSocketServer() server!: Server;
   private readonly socketsByUser = new Map<string, Set<string>>();
+  private readonly presenceLeases = new Map<string, NodeJS.Timeout>();
 
   constructor(private readonly tokens: AccessTokenService, private readonly chat: ChatService, private readonly publisher: ChatRealtimePublisher) {}
 
@@ -41,6 +43,13 @@ export class ChatRealtimeGateway {
     const userId = client.data.chatPrincipal?.userId;
     const sockets = userId ? this.socketsByUser.get(userId) : undefined;
     sockets?.delete(client.id); if (sockets?.size === 0 && userId) this.socketsByUser.delete(userId);
+    for (const [key, lease] of this.presenceLeases) {
+      if (!key.endsWith(`:${client.id}`)) continue;
+      clearTimeout(lease);
+      this.presenceLeases.delete(key);
+      const conversationId = key.slice(0, -(client.id.length + 1));
+      if (userId) client.to(`conversation:${conversationId}`).emit('presence:updated', { userId, state: 'OFFLINE' });
+    }
   }
 
   @SubscribeMessage('conversation:join')
@@ -50,6 +59,7 @@ export class ChatRealtimeGateway {
     try {
       const sync = await this.chat.realtimeSync(principal, input.conversationId, this.sequence(input.lastSequence));
       await client.join(`conversation:${input.conversationId}`);
+      this.renewPresence(client, input.conversationId);
       return { ok: true, ...sync };
     } catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
   }
@@ -71,5 +81,20 @@ export class ChatRealtimeGateway {
     } catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
   }
 
+  @SubscribeMessage('presence:heartbeat')
+  async heartbeat(@ConnectedSocket() client: RealtimeSocket, @MessageBody() input: PresenceRequest) {
+    const principal = client.data.chatPrincipal;
+    if (!principal || typeof input?.conversationId !== 'string') return { ok: false, code: 'CHAT_FORBIDDEN' };
+    try { await this.chat.realtimeSync(principal, input.conversationId, this.sequence(input.lastSequence)); this.renewPresence(client, input.conversationId); return { ok: true, leaseSeconds: 45 }; }
+    catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
+  }
+
   private sequence(value: unknown) { if (value === undefined) return 0n; if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new Error('invalid sequence'); return BigInt(value); }
+
+  private renewPresence(client: RealtimeSocket, conversationId: string) {
+    const principal = client.data.chatPrincipal!; const key = `${conversationId}:${client.id}`;
+    const previous = this.presenceLeases.get(key); if (previous) clearTimeout(previous);
+    client.to(`conversation:${conversationId}`).emit('presence:updated', { userId: principal.userId, state: 'ONLINE' });
+    this.presenceLeases.set(key, setTimeout(() => { this.presenceLeases.delete(key); client.to(`conversation:${conversationId}`).emit('presence:updated', { userId: principal.userId, state: 'OFFLINE' }); }, 45_000));
+  }
 }

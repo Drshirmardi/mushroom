@@ -8,7 +8,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Roadmap boundary**: `T001`–`T011` are SpecKit labels only. `F10-T01`–`F10-T11` remain the authoritative claim, evidence, checklist, and task-commit identities; they are not renumbered or replaced.
 
-**Execution status**: `F10-T01` through `F10-T06` are accepted in isolated commits; no task is currently claimed. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
+**Execution status**: `F10-T01` through `F10-T07` are accepted in isolated commits; no task is currently claimed. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
 
 ## Phase 1: Contract foundation
 
@@ -48,7 +48,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 **Goal**: Provide appointment-gated readiness/presence without creating attachment or video systems.
 
 - [x] T006 F10-T06 Record attachment as `DEFERRED / NOT_APPLICABLE FOR MVP`; remove/hide only attachment/image/file/audio mock controls in `apps/app/src/app/(app)/chat/**`, `apps/dashboard/src/{app/(app)/messages,features/**/messages}/**`, and `apps/*/test/**`; verify no storage, upload endpoint, model, object key, malware pipeline, attachment mock text/name, or dependency exists.
-- [ ] T007 [US2] F10-T07 Implement UTC appointment-window eligibility, server-side recheck, lease-based presence and waiting-room APIs/events in `apps/api/src/modules/communications/chat/waiting-room/**`, `apps/api/test/waiting-room.integration.spec.ts`, and `apps/api/test/chat-presence.gateway.spec.ts`; prove 15/45-second lease, hard cap, reschedule recomputation, terminal read-only behavior, and no appointment/encounter mutation.
+- [x] T007 [US2] F10-T07 Implement UTC appointment-window eligibility, server-side recheck, lease-based presence and waiting-room APIs/events in `apps/api/src/modules/communications/chat/waiting-room/**`, `apps/api/test/waiting-room.integration.spec.ts`, and `apps/api/test/chat-presence.gateway.spec.ts`; prove 15/45-second lease, hard cap, reschedule recomputation, terminal read-only behavior, and no appointment/encounter mutation.
 
 ## Phase 6: User Story 3 — connected patient and clinic experience (P3)
 

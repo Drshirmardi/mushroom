@@ -236,3 +236,29 @@ Verification:
   - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` excluded from stage/commit.
 Next batch:
   - F10-B07 / F10-T07 only
+
+## F10-T07 — appointment waiting room and presence
+
+Task ID: F10-T07
+Completed at: 2026-09-19 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-B07
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/communications/chat/{chat.module.ts,chat.service.ts,realtime/chat-realtime.gateway.ts,waiting-room/waiting-room.controller.ts}
+  - apps/api/test/{chat-realtime.gateway.spec.ts,chat-presence.gateway.spec.ts,waiting-room.integration.spec.ts}
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - specs/008-adopt-phase-10/tasks.md
+Verification:
+  - `vitest run test/waiting-room.integration.spec.ts test/chat-presence.gateway.spec.ts test/chat-realtime.gateway.spec.ts --no-file-parallelism` → PASS (3 files, 6 tests) against PostgreSQL.
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `git diff --check` → PASS.
+Result:
+  - Waiting-room readiness is authenticated and appointment/resource scoped; it re-evaluates ONLINE lifecycle and UTC window on every request without changing Appointment or Encounter.
+  - PENDING, terminal, out-of-window confirmed, and operational appointments beyond the four-hour hard cap fail closed; CHECKED_IN/QUEUED/IN_PROGRESS retain only the permitted delayed-operation extension.
+  - Presence is ephemeral: gateway join and every heartbeat re-run authoritative eligibility, renew a 45-second lease, emit online/offline state, and clean up on disconnect. No lease state is persisted.
+  - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and excluded from the task commit.
+Next batch:
+  - F10-B08 / F10-T08 only

@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-19 +09:10`
+- آخرین به‌رورسانی: `2026-09-19 +22:55`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T07 waiting-room/presence is next.`
+- blocker فعال: `ندارد؛ F10-T08 app/dashboard integration next.`
 
 ## پیشرفت کلان
 
@@ -52,8 +52,8 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `F10-T01` تا `F10-T03` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست و `F10-B07 / F10-T07` تنها batch بعدی واجد شروع است.
+acceptance and any enable/default decision. `F10-T01` تا `F10-T07` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
+فعال نیست و `F10-B08 / F10-T08` تنها batch بعدی واجد شرایط است.
 
 ## batch فعال — F10-B06
 

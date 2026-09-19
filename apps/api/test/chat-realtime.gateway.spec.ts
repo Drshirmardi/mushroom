@@ -14,7 +14,7 @@ describe('chat realtime gateway', () => {
     const realtimeSync = vi.fn().mockResolvedValue({ items: [], highWaterSequence: '0', nextCursor: null });
     const gateway = new ChatRealtimeGateway({ verify } as never, { realtimeSync } as never, { bind: vi.fn() } as never);
     const disconnect = vi.fn(); const join = vi.fn();
-    const client = { id: 'socket-1', handshake: { query: {}, auth: { token: 'opaque-token' } }, data: {}, disconnect, join };
+    const client = { id: 'socket-1', handshake: { query: {}, auth: { token: 'opaque-token' } }, data: {}, disconnect, join, to: () => ({ emit: vi.fn() }) };
     gateway.server = { sockets: { sockets: new Map() } } as never;
     await gateway.handleConnection(client as never);
     expect(verify).toHaveBeenCalledWith('opaque-token');
@@ -53,6 +53,8 @@ describe('chat realtime Socket.IO integration', () => {
     expect(receipt).toMatchObject({ ok: true, lastDeliveredSequence: '1', lastReadSequence: '1' });
     const stale = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('receipt:ack', { conversationId: conversation.json().id, lastDeliveredSequence: '0', lastReadSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
     expect(stale).toMatchObject({ ok: true, lastDeliveredSequence: '1', lastReadSequence: '1' });
+    const heartbeat = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('presence:heartbeat', { conversationId: conversation.json().id, lastSequence: '1' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(heartbeat).toMatchObject({ ok: true, leaseSeconds: 45 });
   }, 30_000);
 
   afterEach(async () => { socket?.disconnect(); socket = undefined; if (fixture) await destroyChatFixture(fixture); fixture = undefined; await app?.close(); });
