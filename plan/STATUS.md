@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-17 +03:30`
+- آخرین به‌رورسانی: `2026-09-19 +09:10`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T06 deferred-media evidence is next.`
+- blocker فعال: `ندارد؛ F10-T07 waiting-room/presence is next.`
 
 ## پیشرفت کلان
 
@@ -53,7 +53,26 @@
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
 acceptance and any enable/default decision. `F10-T01` تا `F10-T03` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست و `F10-B06 / F10-T06` تنها batch بعدی واجد شروع است.
+فعال نیست و `F10-B07 / F10-T07` تنها batch بعدی واجد شروع است.
+
+## batch فعال — F10-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-19 09:00 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `8d9c4a1 feat(F10-T05): add chat receipts and safe outbox`
+
+- Scope: remove/hide in-scope app/dashboard text-chat attachment, image, file and audio mocks; record deferred absence.
+- Owned paths: `apps/app/src/app/(app)/chat/**`, `apps/dashboard/src/features/messages/**`, `apps/dashboard/src/data/messages.ts`, task-owned absence tests,
+  and Phase 10 status/evidence only.
+- Do not change: API/schema/migrations, uploads/object storage/malware pipeline, media dependencies, realtime, app/dashboard
+  chat runtime beyond attachment mock controls, `.gitignore`, or Phase 12 plan.
+- Result: `DEFERRED / NOT_APPLICABLE FOR MVP`. Chat surfaces expose text-only composition; attachment/image/file/audio
+  mocks and fake filenames are absent. No storage, upload, attachment schema, scanner, object lifecycle or dependency exists.
+- Verification: scoped absence scan, app/dashboard typechecks and `git diff --check` passed. Video/voice call controls are
+  intentionally retained for the separately owned F10-T10 deferral task.
+- Next eligible batch: `F10-B07 / F10-T07` only; no task is claimed by this completion.
 
 ## batch فعال — F10-B05
 

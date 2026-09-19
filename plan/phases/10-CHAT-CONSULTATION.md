@@ -18,7 +18,7 @@
 - [x] `F10-T03` — REST list/history و create message deduplicated
 - [x] `F10-T04` — WebSocket authentication/authorization و reconnect sync
 - [x] `F10-T05` — delivery/read receipt و notification
-- [ ] `F10-T06` — private attachment و malware/validation pipeline در صورت نیاز
+- [x] `F10-T06` — DEFERRED / NOT_APPLICABLE FOR MVP — attachment
 - [ ] `F10-T07` — appointment waiting room و presence
 - [ ] `F10-T08` — app/dashboard integration و حذف mock
 - [ ] `F10-T09` — ordering، reconnect، abuse، authorization و load tests

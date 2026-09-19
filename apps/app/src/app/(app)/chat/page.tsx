@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
-  Mic,
-  Paperclip,
   Phone,
   Send,
   Video,
@@ -43,9 +41,7 @@ export default function ChatPage() {
       </div>
       <div className="px-4 py-3 bg-white border-t border-border">
         <div className="flex items-center gap-2 bg-muted rounded-2xl px-3 py-2">
-          <button><Paperclip size={18} className="text-muted-foreground" /></button>
           <input value={msg} onChange={e => setMsg(e.target.value)} placeholder="پیام بنویسید..." className="flex-1 bg-transparent text-sm outline-none text-right placeholder:text-muted-foreground" dir="rtl" />
-          <button><Mic size={18} className="text-muted-foreground" /></button>
           <button onClick={() => setMsg("")} className={`w-8 h-8 bg-primary rounded-xl flex items-center justify-center ${!msg ? "opacity-50" : ""}`}><Send size={14} className="text-white" style={{ transform: "rotate(180deg)" }} /></button>
         </div>
       </div>

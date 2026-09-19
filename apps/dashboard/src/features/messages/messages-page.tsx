@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  ImageIcon, Mic, MoreVertical, Paperclip, Phone, Pin, Search, Send, Video,
+  MoreVertical, Phone, Pin, Search, Send, Video,
 } from "lucide-react";
 import { CHAT, MESSAGES_LIST } from "@/data/messages";
 import type { Conversation } from "@/data/messages";
@@ -36,7 +36,7 @@ export function MessagesPage() {
         <div className="px-6 py-4 border-b border-border bg-card flex items-center gap-3 flex-shrink-0">
           <Avatar letter={active.avatar} size="sm" />
           <div><p className="font-bold text-sm">{active.patient}</p><p className="text-xs text-emerald-600 font-medium">آنلاین</p></div>
-          <div className="mr-auto flex gap-1">{[Phone, Video, Paperclip, MoreVertical].map((Ic, i) => <button key={i} className="p-2 rounded-xl hover:bg-secondary"><Ic size={16} className="text-muted-foreground" /></button>)}</div>
+          <div className="mr-auto flex gap-1">{[Phone, Video, MoreVertical].map((Ic, i) => <button key={i} className="p-2 rounded-xl hover:bg-secondary"><Ic size={16} className="text-muted-foreground" /></button>)}</div>
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {CHAT.map(c => (
@@ -44,7 +44,7 @@ export function MessagesPage() {
               {c.from === "patient" && <Avatar letter={active.avatar} size="xs" />}
               {c.from === "doctor" && <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[0.6rem] font-bold flex-shrink-0">ا</div>}
               <div className={`max-w-xs px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${c.from === "doctor" ? "bg-primary text-primary-foreground rounded-tl-sm" : "bg-card border border-border text-foreground rounded-tr-sm"}`}>
-                {c.type === "file" ? <div className="flex items-center gap-2"><Paperclip size={13} />{c.text}</div> : c.text}
+                {c.text}
                 <p className={`text-[0.6rem] mt-1 ${c.from === "doctor" ? "text-white/60" : "text-muted-foreground"}`}>{c.time}</p>
               </div>
             </div>
@@ -52,11 +52,10 @@ export function MessagesPage() {
         </div>
         <div className="p-4 border-t border-border bg-card flex-shrink-0">
           <div className="flex items-center gap-2 bg-secondary rounded-2xl px-4 py-2">
-            {[Paperclip, Mic, ImageIcon].map((Ic, i) => <button key={i} className="text-muted-foreground hover:text-foreground"><Ic size={17} /></button>)}
             <input value={msg} onChange={e => setMsg(e.target.value)} placeholder="پیام خود را بنویسید..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 mr-2" />
             <button className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center hover:bg-primary/90 flex-shrink-0"><Send size={15} className="text-white" /></button>
           </div>
-          <div className="flex items-center gap-3 mt-2 px-2 text-xs text-muted-foreground"><span>📎 فایل پزشکی</span><span>📋 ارسال نسخه</span><span>📝 یادداشت داخلی</span></div>
+          <div className="mt-2 px-2 text-xs text-muted-foreground">در MVP فقط پیام متنی پشتیبانی می‌شود.</div>
         </div>
       </div>
     </div>

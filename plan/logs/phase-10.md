@@ -208,3 +208,31 @@ Verification:
   - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` excluded from stage/commit.
 Next batch:
   - F10-B06 / F10-T06 only
+
+## F10-T06 — attachment deferred MVP boundary
+
+Task ID: F10-T06
+Completed at: 2026-09-19 +09:10
+Batch ID: F10-B06
+Status: ACCEPTED — intentionally DEFERRED / NOT_APPLICABLE FOR MVP
+Changed files:
+  - apps/app/src/app/(app)/chat/page.tsx
+  - apps/dashboard/src/features/messages/messages-page.tsx
+  - apps/dashboard/src/data/messages.ts
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - specs/008-adopt-phase-10/tasks.md
+Accepted absence:
+  - app and dashboard chat composition are text-only; attachment, file, image and audio controls are hidden/removed.
+  - in-scope fake upload language and a fake PDF conversation entry are removed. No attachment storage, upload API,
+    attachment model, object key, scanner/quarantine pipeline, lifecycle job or dependency is added.
+  - future attachment activation remains contingent on an independently approved contract for file policy, scanning,
+    private access, retention/legal hold and cleanup.
+Verification:
+  - scoped source absence scan for attachment/file/image/audio controls and mock filenames → PASS.
+  - `pnpm --filter @sabz/app typecheck` and `pnpm --filter @sabz/dashboard typecheck` → PASS.
+  - `git diff --check` → PASS.
+  - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` excluded from stage/commit.
+Next batch:
+  - F10-B07 / F10-T07 only
