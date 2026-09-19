@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-19 +22:55`
+- آخرین به‌رورسانی: `2026-09-19 +23:15`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T08 app/dashboard integration next.`
+- blocker فعال: `ندارد؛ F10-T09 تنها batch بعدی واجد شرایط است.`
 
 ## پیشرفت کلان
 
@@ -52,8 +52,31 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `F10-T01` تا `F10-T07` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست و `F10-B08 / F10-T08` تنها batch بعدی واجد شرایط است.
+acceptance and any enable/default decision. `F10-T01` تا `F10-T08` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
+فعال نیست و `F10-B09 / F10-T09` تنها batch بعدی واجد شرایط است؛ آن را در این task شروع نکن.
+
+## آخرین batch — F10-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-19 23:00 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Completed at: `2026-09-19 23:15 +03:30`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `092c5ca feat(F10-T07): add waiting room presence`
+
+- Scope: app/dashboard use the generated REST client and Socket.IO adapter for authorized text consultations;
+  remove in-scope mock conversation and unsupported phone/video UI.
+- Owned paths: `apps/app/{src/app/(app)/{chat,appointments/waiting-room}/**,src/lib/chat-api.*,package.json}`,
+  `apps/dashboard/{src/{app/(app)/messages,features/messages,lib/chat-api.ts,data/messages.ts},package.json}`, the
+  already-frozen Socket.IO-client lockfile entries, task-owned UI tests, and Phase 10 status/evidence.
+- Do not change: API/schema/migration/OpenAPI client, Socket.IO version selection (T04 baseline remains `4.8.1`),
+  appointment/encounter state, attachment, video provider/SDK, `.gitignore`, or Phase 12 plan.
+- Review: PASS — patient chat and dashboard use the generated REST client for authoritative history/send and the
+  authenticated Socket.IO adapter only for realtime/presence. Reconnect joins with the latest applied sequence;
+  REST remains the sole write path. Loading, offline/reconnecting, forbidden, tombstone and read-only states are
+  explicit; STAFF is denied locally and the server remains authoritative for clinic/appointment/linked-doctor checks.
+  Mock conversation data and phone/video controls are absent from both surfaces. Evidence: [`logs/phase-10.md`](logs/phase-10.md).
+- Next eligible batch: `F10-B09 / F10-T09` only; do not claim it in this task.
 
 ## batch فعال — F10-B06
 

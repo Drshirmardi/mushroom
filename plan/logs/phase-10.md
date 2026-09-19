@@ -262,3 +262,35 @@ Result:
   - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and excluded from the task commit.
 Next batch:
   - F10-B08 / F10-T08 only
+
+## F10-T08 — app/dashboard chat integration and mock removal
+
+Task ID: F10-T08
+Completed at: 2026-09-19 23:15 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-B08
+Reviewed by: Codex /root
+Changed files:
+  - apps/app/{package.json,src/app/(app)/{chat,appointments/waiting-room}/page.tsx,src/lib/chat-api.ts,src/lib/chat-api.spec.ts}
+  - apps/dashboard/{package.json,src/{features/messages/messages-page.tsx,lib/chat-api.ts}}
+  - apps/dashboard/src/data/messages.ts (removed mock source)
+  - pnpm-lock.yaml
+  - plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}
+  - specs/008-adopt-phase-10/tasks.md
+Verification:
+  - `pnpm --filter @sabz/app typecheck` → PASS.
+  - `pnpm --filter @sabz/dashboard typecheck` → PASS.
+  - `pnpm --filter @sabz/app test` → PASS (12 files, 36 tests), including generated REST and Socket.IO auth/reconnect adapter coverage.
+  - `pnpm --filter @sabz/dashboard test` → PASS (14 files, 44 tests).
+  - `pnpm --filter @sabz/app build` → PASS.
+  - `pnpm --filter @sabz/dashboard build` → PASS.
+  - scoped source absence scan for legacy mock conversation, phone/video and attachment/upload controls → PASS.
+  - `git diff --check` → PASS.
+Result:
+  - Both UIs use generated REST operations for conversation/history/send; send remains REST-only and retains client message idempotency.
+  - The pinned `socket.io-client` 4.8.1 consumer uses handshake auth (not URL token), websocket transport, bounded jittered reconnect and latest-sequence join; UI explicitly reports loading, offline/reconnecting and read-only states.
+  - Restricted messages use their server-provided tombstone; patient, linked doctor and clinic operator scopes remain server-authorized, while STAFF has no dashboard chat route.
+  - Waiting room truthfully exposes text-chat access only; attachment and video controls/mock sources are absent.
+  - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and excluded from the task commit.
+Next batch:
+  - F10-B09 / F10-T09 only

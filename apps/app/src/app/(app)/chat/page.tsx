@@ -1,50 +1,60 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ChevronLeft,
-  Phone,
-  Send,
-  Video,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, Send } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { connectChat, loadChat, sendChat, type ChatMessage } from "@/lib/chat-api";
 
-const MESSAGES = [
-  { from: "doctor", text: "سلام مریم جان، حالتون چطوره؟", time: "۱۰:۳۰" },
-  { from: "patient", text: "ممنون دکتر، کمرم کمی بهتر شده ولی هنوز دردی دارم.", time: "۱۰:۳۲" },
-  { from: "doctor", text: "خوبه که بهتر شدید. دارو رو طبق دستور مصرف می‌کنید؟", time: "۱۰:۳۳" },
-  { from: "patient", text: "بله، هر شب موقع خواب.", time: "۱۰:۳۴" },
-  { from: "doctor", text: "عالیه. برای جلسه بعد تمرین‌های کششی رو هم اضافه کنید.", time: "۱۰:۳۵" },
-];
+type LoadedChat = Awaited<ReturnType<typeof loadChat>>;
+type ConnectionState = "loading" | "connected" | "reconnecting" | "offline" | "read-only";
+
+function mergeMessage(messages: ChatMessage[], next: ChatMessage) {
+  return [...messages.filter((message) => message.id !== next.id), next]
+    .sort((left, right) => BigInt(left.sequence) < BigInt(right.sequence) ? -1 : BigInt(left.sequence) > BigInt(right.sequence) ? 1 : 0);
+}
 
 export default function ChatPage() {
   const router = useRouter();
-  const [msg, setMsg] = useState("");
-  return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 100px)" }}>
-      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-border sticky top-0 z-10">
-        <button onClick={() => router.back()} className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center"><ChevronLeft size={20} style={{ transform: "rotate(180deg)" }} /></button>
-        <div className="w-10 h-10 rounded-full overflow-hidden"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=80&h=80&fit=crop" alt="دکتر" className="w-full h-full object-cover" /></div>
-        <div className="flex-1"><p className="text-sm font-bold text-foreground">دکتر سید ابوالفتح شیرمردی</p><p className="text-xs text-green-600 font-semibold">آنلاین</p></div>
-        <button><Phone size={20} className="text-primary" /></button>
-        <button><Video size={20} className="text-primary" /></button>
-      </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide bg-[#f5f8f5]">
-        {MESSAGES.map((m, i) => (
-          <div key={i} className={`flex ${m.from === "patient" ? "justify-start" : "justify-end"}`}>
-            <div className={`max-w-[72%] px-4 py-2.5 rounded-2xl ${m.from === "patient" ? "bg-white border border-border rounded-tr-sm" : "bg-primary text-white rounded-tl-sm"}`}>
-              <p className={`text-sm leading-6 ${m.from === "patient" ? "text-foreground" : "text-white"}`}>{m.text}</p>
-              <p className={`text-[9px] mt-1 ${m.from === "patient" ? "text-muted-foreground" : "text-white/60"}`}>{m.time}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="px-4 py-3 bg-white border-t border-border">
-        <div className="flex items-center gap-2 bg-muted rounded-2xl px-3 py-2">
-          <input value={msg} onChange={e => setMsg(e.target.value)} placeholder="پیام بنویسید..." className="flex-1 bg-transparent text-sm outline-none text-right placeholder:text-muted-foreground" dir="rtl" />
-          <button onClick={() => setMsg("")} className={`w-8 h-8 bg-primary rounded-xl flex items-center justify-center ${!msg ? "opacity-50" : ""}`}><Send size={14} className="text-white" style={{ transform: "rotate(180deg)" }} /></button>
-        </div>
-      </div>
-    </div>
-  );
+  const appointmentId = useSearchParams().get("appointmentId");
+  const { authentication } = useAuthSession();
+  const [chat, setChat] = useState<LoadedChat | null>(null);
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [connection, setConnection] = useState<ConnectionState>("loading");
+  const lastSequence = useRef("0");
+
+  useEffect(() => {
+    if (!appointmentId) { setError("نوبت گفتگو مشخص نیست."); return; }
+    let active = true;
+    let disconnect = () => undefined;
+    setChat(null); setError(null); setConnection("loading");
+    void loadChat(authentication.accessToken, appointmentId).then((loaded) => {
+      if (!active) return;
+      lastSequence.current = loaded.messages.at(-1)?.sequence ?? "0";
+      setChat(loaded);
+      const socket = connectChat(authentication.accessToken, loaded.conversation.id, () => lastSequence.current, (message) => {
+        if (active) setChat((current) => { if (!current) return current; const messages = mergeMessage(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; });
+      }, (state) => { if (active) setConnection(state); });
+      const heartbeat = window.setInterval(() => socket.emit("presence:heartbeat", { conversationId: loaded.conversation.id, lastSequence: lastSequence.current }), 15_000);
+      disconnect = () => { window.clearInterval(heartbeat); socket.disconnect(); };
+    }, () => { if (active) { setError("گفتگو در دسترس نیست."); setConnection("read-only"); } });
+    return () => { active = false; disconnect(); };
+  }, [appointmentId, authentication.accessToken]);
+
+  const send = async () => {
+    if (!chat || !text.trim() || connection === "read-only") return;
+    try {
+      const message = await sendChat(authentication.accessToken, chat.conversation.id, text.trim());
+      const messages = mergeMessage(chat.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; setChat({ ...chat, messages }); setText("");
+    } catch { setError("ارسال پیام ممکن نیست؛ گفتگو فقط‌خواندنی است یا اتصال را دوباره بررسی کنید."); setConnection("read-only"); }
+  };
+  const canSend = Boolean(chat) && connection === "connected";
+  const stateLabel = connection === "connected" ? "متصل" : connection === "reconnecting" ? "در حال اتصال مجدد…" : connection === "offline" ? "آفلاین؛ در حال تلاش مجدد…" : connection === "read-only" ? "فقط‌خواندنی" : "در حال اتصال…";
+
+  return <div className="flex flex-col" style={{ height: "calc(100vh - 100px)" }}>
+    <header className="flex items-center gap-3 border-b border-border bg-white px-4 py-3"><button aria-label="بازگشت" onClick={() => router.back()} className="rounded-xl bg-muted p-2"><ChevronLeft size={20} /></button><div><p className="text-sm font-bold">گفتگوی مشاوره</p><p className="text-xs text-muted-foreground">{stateLabel} · فقط پیام متنی در نوبت معتبر</p></div></header>
+    <main className="flex-1 space-y-3 overflow-y-auto bg-[#f5f8f5] p-4">{!chat && !error && <p role="status">در حال دریافت گفتگو…</p>}{error && <p role="alert" className="text-sm text-red-700">{error}</p>}{chat?.messages.length === 0 && <p className="text-sm text-muted-foreground">هنوز پیامی ثبت نشده است.</p>}{chat?.messages.map((message) => <article key={message.id} className="rounded-2xl border border-border bg-white p-3 text-sm"><p>{message.body ?? message.tombstone ?? "محتوای این پیام بر اساس سیاست گفتگو محدود شده است."}</p><small className="text-muted-foreground">{message.createdAt}</small></article>)}</main>
+    <footer className="flex gap-2 border-t border-border bg-white p-3"><input value={text} onChange={(event) => setText(event.target.value)} maxLength={4000} disabled={!canSend} placeholder={canSend ? "پیام متنی…" : "ارسال پیام در دسترس نیست"} className="flex-1 rounded-xl bg-muted px-3"/><button aria-label="ارسال پیام" disabled={!canSend || !text.trim()} onClick={() => void send()} className="rounded-xl bg-primary p-3 text-white"><Send size={16}/></button></footer>
+  </div>;
 }

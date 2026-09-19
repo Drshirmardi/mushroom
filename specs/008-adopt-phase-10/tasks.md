@@ -56,7 +56,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Independent Test**: App and dashboard consume generated API/realtime adapters, show offline/reconnecting/tombstone/forbidden states, and expose no attachment/video/UI mock path.
 
-- [ ] T008 [US3] F10-T08 Connect `apps/app/src/app/(app)/chat/**`, `apps/app/src/app/(app)/appointments/waiting-room/**`, `apps/dashboard/src/app/(app)/messages/**`, `apps/dashboard/src/features/**/messages/**`, and adjacent task-owned tests to generated `packages/api-client/**`; remove in-scope conversation/mock/audio/video/attachment sources and prove real patient/admin/doctor authorization states.
+- [x] T008 [US3] F10-T08 Connect `apps/app/src/app/(app)/chat/**`, `apps/app/src/app/(app)/appointments/waiting-room/**`, `apps/dashboard/src/app/(app)/messages/**`, `apps/dashboard/src/features/**/messages/**`, and adjacent task-owned tests to generated `packages/api-client/**`; remove in-scope conversation/mock/audio/video/attachment sources and prove real patient/admin/doctor authorization states.
 
 ## Phase 7: Cross-cutting proof and deferred video
 

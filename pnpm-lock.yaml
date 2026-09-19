@@ -135,6 +135,9 @@ importers:
       recharts:
         specifier: 2.15.2
         version: 2.15.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      socket.io-client:
+        specifier: 4.8.1
+        version: 4.8.1
       swiper:
         specifier: ^14.0.7
         version: 14.1.0
@@ -190,6 +193,9 @@ importers:
       recharts:
         specifier: ^2.15.2
         version: 2.15.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      socket.io-client:
+        specifier: 4.8.1
+        version: 4.8.1
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.3.3
