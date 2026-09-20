@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-19 +23:15`
+- آخرین به‌رورسانی: `2026-09-20 +03:30`
 - Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T09 تنها batch بعدی واجد شرایط است.`
+- blocker فعال: `ندارد؛ F10-T10 تنها task بعدی واجد شرایط است.`
 
 ## پیشرفت کلان
 
@@ -53,7 +53,29 @@
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
 acceptance and any enable/default decision. `F10-T01` تا `F10-T08` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست و `F10-B09 / F10-T09` تنها batch بعدی واجد شرایط است؛ آن را در این task شروع نکن.
+فعال نیست؛ `F10-T09` پس از evidence کامل PostgreSQL/gateway/load پذیرفته شد و `F10-T10` تنها task بعدی واجد شرایط است.
+
+## batch فعال — F10-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-19 23:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `e9a3523 feat(F10-T08): connect chat consultation interfaces`
+
+- Scope: task-owned PostgreSQL/gateway ordering, reconnect, abuse/authorization, rate and capacity/load proof with
+  only synthetic data; the narrowly scoped Prisma Pg pool remediation required by the demonstrated throughput defect;
+  evidence/status after all acceptance gates pass.
+- Owned paths: `apps/api/src/database/prisma/prisma.service.ts`,
+  `apps/api/test/{chat-ordering.integration.spec.ts,chat-reconnect-load.spec.ts,chat-abuse-authorization.integration.spec.ts,chat-rate-limit.integration.spec.ts,chat-capacity.load.spec.ts,chat-test-support.ts}`, task-owned load scripts/config, and Phase 10 status/evidence.
+- Shared/exclusive resource: serialized PostgreSQL test database, local Socket.IO gateway and load environment.
+- Do not change: production chat/API implementation, Prisma schema/migrations, OpenAPI/client, app/dashboard source,
+  dependencies/lockfile, `.gitignore`, or Phase 12 plan.
+- Result: Docker PostgreSQL healthy; disposable migration/seed database creation and cleanup passed. Ordering,
+  idempotency, authorization, moderation, block, rate-limit and reconnect suites passed (6 tests). Capacity proof
+  passed with 100 consultations, 300 authenticated participants, 600 Socket.IO connections, 95% signal delivery
+  within two seconds, a 300-participant reconnect storm under 60 seconds, 20 committed messages/second for 30 minutes,
+  and 50 committed messages/second for five minutes; durable message count/sequence reconciliation passed.
 
 ## آخرین batch — F10-B08
 

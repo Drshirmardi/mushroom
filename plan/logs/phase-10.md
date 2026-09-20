@@ -1,5 +1,24 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 — security and capacity proof
+
+Task ID: F10-T09
+Completed at: 2026-09-20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-B09
+Verification:
+  - Docker PostgreSQL healthy; disposable database create/connect/cleanup → PASS.
+  - ordering, idempotency, authorization, moderation, block, rate-limit and reconnect suites → PASS (4 files, 6 tests).
+  - `chat-capacity.load.spec.ts` → PASS (2 tests, 2203.32s): 100 consultations, 300 participants, 600 connections,
+    95% realtime signal within two seconds, 300 reconnects under 60 seconds, 20 committed messages/second for 30 minutes
+    and 50 committed messages/second for five minutes; PostgreSQL count/sequence reconciliation found no durable gap or duplicate.
+  - API typecheck and `git diff --check` → PASS.
+Result:
+  - Prisma Pg uses a bounded 20-connection pool for the single-instance MVP acceptance boundary; no new dependency,
+    datastore or distributed topology was introduced.
+  - All test data is synthetic and each disposable database was cleaned. User-owned `.gitignore` and Phase 12 plan
+    remain excluded from the task commit.
+
 ## F10-T01 — freeze chat consultation contract
 
 Task ID: F10-T01
