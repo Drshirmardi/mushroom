@@ -23,7 +23,7 @@
 - [x] `F10-T08` — app/dashboard integration و حذف mock
 - [x] `F10-T09` — ordering، reconnect، abuse، authorization و load tests
 - [x] `F10-T10` — DEFERRED / NOT_APPLICABLE FOR MVP — video adapter فقط با requirement تأییدشده
-- [ ] `F10-T11` — evidence Milestone D
+- [x] `F10-T11` — evidence Milestone D
 
 ## قرارداد اجرایی freeze‌شده
 

@@ -7,12 +7,12 @@
 ## وضعیت کلی
 
 - آخرین به‌رورسانی: `2026-09-20 +03:30`
-- Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T11 تنها task بعدی واجد شرایط است.`
+- blocker فعال: `ندارد؛ review مستقل Phase 10 پیش از DONE (CLOSED).`
 
 ## پیشرفت کلان
 
@@ -28,7 +28,7 @@
 - [x] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [x] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
-- [ ] چت واقعی شده است.
+- [x] چت واقعی شده است.
 - [ ] production readiness تأیید شده است.
 
 ## وضعیت فازها
@@ -43,7 +43,7 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `IN_PROGRESS`
+- [ ] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
@@ -52,8 +52,25 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `F10-T01` تا `F10-T08` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست؛ `F10-T10` آگاهانه DEFERRED / NOT_APPLICABLE FOR MVP ثبت شد و `F10-T11` تنها task بعدی واجد شرایط است.
+acceptance and any enable/default decision. `F10-T01` تا `F10-T11` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
+فعال نیست؛ Phase 10 فقط منتظر review مستقل پیش از `DONE (CLOSED)` است.
+
+## آخرین batch — F10-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Completed at: `2026-09-20 +03:30`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `24bbe75 docs(F10-T10): defer video consultation for MVP`
+
+- Scope: final Phase 10 migration/API/realtime/UI/browser/privacy/deferred-media verification and closure evidence.
+- Owned paths: task-owned final tests/config and Phase 10 status/evidence/checklists only.
+- Do not change: product runtime/schema/migrations/OpenAPI client/dependencies, `.gitignore`, or Phase 12 plan.
+- Result: real PostgreSQL migration/status/validate, authoritative API/gateway/lifecycle/moderation/reconnect suites,
+  app/dashboard tests and builds, deferred-media/privacy scans, and an isolated Chrome patient browser journey all
+  passed. The synthetic browser journey registers and authenticates a patient, opens an eligible online appointment
+  chat, sends a committed text message, and proves no audio/video control, external messenger request, or token URL.
 
 ## batch فعال — F10-B10
 

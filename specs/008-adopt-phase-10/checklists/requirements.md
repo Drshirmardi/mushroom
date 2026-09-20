@@ -28,6 +28,7 @@
 - [x] User scenarios cover primary flows
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
+- [x] Final cross-surface evidence and the two intentional MVP deferrals are recorded against their authoritative roadmap tasks.
 
 ## Notes
 

@@ -327,3 +327,31 @@ Result:
   - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and excluded from the task commit.
 Next batch:
   - F10-B09 / F10-T09 only
+
+## F10-T11 — final Phase 10 cross-surface evidence
+
+Task ID: F10-T11
+Completed at: 2026-09-20 +03:30
+Batch ID: F10-B11
+Status: ACCEPTED — Phase 10 `READY_FOR_REVIEW`
+Changed files:
+  - playwright.phase10.config.ts
+  - tests/e2e/phase-10/{chat-browser.fixture.ts,chat-browser.spec.ts}
+  - plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}
+  - specs/008-adopt-phase-10/{spec.md,tasks.md,checklists/requirements.md}
+Verification:
+  - `prisma migrate status --config prisma.config.ts` → PASS (31 migrations applied); `prisma validate` and generated API typecheck → PASS.
+  - targeted authoritative PostgreSQL suite for migrations, REST, authorization, moderation, gateway, presence, waiting room, ordering, reconnect, abuse authorization and rate limit → PASS (11 files, 17 tests).
+  - `pnpm --filter @sabz/app test` → PASS (12 files, 36 tests); `pnpm --filter @sabz/dashboard test` → PASS (14 files, 44 tests); both typechecks and production builds → PASS.
+  - Phase 10 Chrome browser E2E → PASS (1 test): synthetic registration/login, session bootstrap, eligible appointment chat, persisted text send, no audio/video controls, no external request, and no token in a request URL.
+  - F10-T09 PostgreSQL capacity evidence remains accepted: 100 consultations, 300 participants, 600 connections, 20 committed messages/second for 30 minutes, 50/second for five minutes, and 300-participant reconnect storm under 60 seconds with gap-free, no-durable-duplicate reconciliation.
+  - scoped attachment/video/runtime/provider/token URL scan and `git diff --check` → PASS.
+  - review preserved user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md`; neither is staged or committed.
+Result:
+  - PostgreSQL/history remains authoritative; REST is the idempotent write path and Socket.IO is authenticated,
+    post-commit, at-least-once signaling only. Text-only chat, appointment window, resource-scoped authorization,
+    receipts, moderation, blocks and lease presence are covered by the relevant accepted task evidence.
+  - Attachments (`F10-T06`) and video (`F10-T10`) remain intentionally `DEFERRED / NOT_APPLICABLE FOR MVP`; no
+    storage, upload, media provider, SDK, token, room or simulated media control was introduced.
+Next eligible action:
+  - independent Phase 10 closure review; do not begin Phase 11 from this task.

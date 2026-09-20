@@ -8,7 +8,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Roadmap boundary**: `T001`–`T011` are SpecKit labels only. `F10-T01`–`F10-T11` remain the authoritative claim, evidence, checklist, and task-commit identities; they are not renumbered or replaced.
 
-**Execution status**: `F10-T01` through `F10-T07` are accepted in isolated commits; no task is currently claimed. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries that must be evidenced as absent, not implemented.
+**Execution status**: `F10-T01` through `F10-T11` are accepted in isolated commits. `F10-T06` and `F10-T10` are intentional `DEFERRED / NOT_APPLICABLE FOR MVP` boundaries evidenced as absent, not implemented.
 
 ## Phase 1: Contract foundation
 
@@ -69,7 +69,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 
 **Goal**: Validate the entire Phase 10 vertical slice and its intentional deferrals.
 
-- [ ] T011 F10-T11 Export/check final OpenAPI/generated client, run migration/auth/realtime/reconnect/moderation/rate/load/app/dashboard/browser checks, review mock/secret/deferred-media boundaries, and record evidence in `plan/logs/phase-10.md`, `plan/STATUS.md`, `plan/phases/10-CHAT-CONSULTATION.md`, `specs/008-adopt-phase-10/**`, `packages/api-client/**`, and task-owned test files.
+- [x] T011 F10-T11 Export/check final OpenAPI/generated client, run migration/auth/realtime/reconnect/moderation/rate/load/app/dashboard/browser checks, review mock/secret/deferred-media boundaries, and record evidence in `plan/logs/phase-10.md`, `plan/STATUS.md`, `plan/phases/10-CHAT-CONSULTATION.md`, `specs/008-adopt-phase-10/**`, `packages/api-client/**`, and task-owned test files.
 
 ## Dependencies and batch order
 
