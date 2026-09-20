@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T10 تنها task بعدی واجد شرایط است.`
+- blocker فعال: `ندارد؛ F10-T11 تنها task بعدی واجد شرایط است.`
 
 ## پیشرفت کلان
 
@@ -53,7 +53,23 @@
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
 acceptance and any enable/default decision. `F10-T01` تا `F10-T08` در commitهای مستقل پذیرفته شده‌اند. هیچ batchی
-فعال نیست؛ `F10-T09` پس از evidence کامل PostgreSQL/gateway/load پذیرفته شد و `F10-T10` تنها task بعدی واجد شرایط است.
+فعال نیست؛ `F10-T10` آگاهانه DEFERRED / NOT_APPLICABLE FOR MVP ثبت شد و `F10-T11` تنها task بعدی واجد شرایط است.
+
+## batch فعال — F10-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `8ba6687 test(F10-T09): prove chat security and capacity`
+
+- Scope: prove the MVP video/voice deferral only; record absence of provider, SDK, token, room, join URL, callback,
+  credential, environment, migration, external request and app/dashboard join control.
+- Owned paths: Phase 10 status/evidence/checklist and task-owned absence verification only.
+- Do not change: chat runtime/API/schema/migrations, app/dashboard implementation, dependencies/lockfile, `.gitignore`,
+  or Phase 12 plan.
+- Result: `DEFERRED / NOT_APPLICABLE FOR MVP`. Scoped runtime/manifest scans found no WebRTC/STUN/TURN/provider SDK,
+  room/token/join/callback/credential/environment configuration or audio/video join control. No implementation added.
 
 ## batch فعال — F10-B09
 

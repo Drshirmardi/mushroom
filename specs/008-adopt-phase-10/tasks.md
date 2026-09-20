@@ -63,7 +63,7 @@ description: "Dependency-ordered execution map for authoritative Phase 10 roadma
 **Goal**: Demonstrate frozen ordering, security and capacity behavior while keeping unsupported media absent.
 
 - [x] T009 F10-T09 Implement and run PostgreSQL/gateway/browser/load coverage in `apps/api/test/chat-ordering.integration.spec.ts`, `apps/api/test/chat-reconnect-load.spec.ts`, `apps/api/test/chat-abuse-authorization.integration.spec.ts`, `apps/api/test/chat-rate-limit.integration.spec.ts`, `apps/api/test/chat-capacity.load.spec.ts`, and task-owned browser test/config files; prove the 100/300/600, 20/50, reconnect-storm, rate-limit, no-loss/no-durable-duplicate, authorization, audit and no-external-messenger criteria.
-- [ ] T010 F10-T10 Record video as `DEFERRED / NOT_APPLICABLE FOR MVP` in `plan/phases/10-CHAT-CONSULTATION.md`, `specs/008-adopt-phase-10/**`, and task evidence; verify app/dashboard expose no audio/video join control and repository creates no provider/SDK/token/room/URL/callback/credential/env/migration/external request.
+- [x] T010 F10-T10 Record video as `DEFERRED / NOT_APPLICABLE FOR MVP` in `plan/phases/10-CHAT-CONSULTATION.md`, `specs/008-adopt-phase-10/**`, and task evidence; verify app/dashboard expose no audio/video join control and repository creates no provider/SDK/token/room/URL/callback/credential/env/migration/external request.
 
 ## Phase 8: Final evidence
 

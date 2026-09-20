@@ -1,5 +1,19 @@
 # Phase 10 Execution Evidence
 
+## F10-T10 — video deferral
+
+Task ID: F10-T10
+Completed at: 2026-09-20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-B10
+Verification:
+  - scoped runtime and manifest scan for WebRTC/STUN/TURN, video provider/SDK, token/room/join URL/callback,
+    credential/environment and external messenger infrastructure → PASS.
+  - scoped app/dashboard source scan found no audio/video join control → PASS.
+  - `git diff --check` → PASS.
+Result: `DEFERRED / NOT_APPLICABLE FOR MVP`; text-only waiting room/chat has no video provider, SDK, token, room,
+join URL, callback, credential, environment, migration or external request. `.gitignore` and Phase 12 plan are excluded.
+
 ## F10-T09 — security and capacity proof
 
 Task ID: F10-T09
