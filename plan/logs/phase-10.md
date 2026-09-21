@@ -1,5 +1,40 @@
 # Phase 10 Execution Evidence
 
+## F10-T08 REWORK — bounded reconnect-gap pagination
+
+Task ID: F10-T08 REWORK
+Completed at: 2026-09-22 00:20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R17-RECONNECT-PAGINATION
+Reviewed by: Codex /root
+Changed files:
+  - apps/app/src/lib/chat-api.ts
+  - apps/app/src/lib/chat-api.spec.ts
+  - apps/dashboard/src/lib/chat-api.ts
+  - apps/dashboard/src/lib/chat-api.spec.ts
+  - plan/STATUS.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - plan/logs/phase-10.md
+Migrations:
+  - none
+Tests run:
+  - pnpm --filter @sabz/app test -- src/lib/chat-api.spec.ts → PASS (8 tests)
+  - pnpm --filter @sabz/dashboard test -- src/lib/chat-api.spec.ts → PASS (5 tests)
+  - pnpm --filter @sabz/app typecheck → PASS
+  - pnpm --filter @sabz/dashboard typecheck → PASS
+  - git diff --check → PASS
+Result:
+  - After a successful join, both adapters apply the first Socket.IO page then fetch authorized REST history pages
+    from the opaque cursor only through the immutable join high-water. Cursor reuse, stale generation, disconnect,
+    and malformed sequence values stop recovery safely.
+  - The regressions prove a 151-message disconnect gap is ordered and deduplicated in cache after the first 100-item
+    realtime sync page, and that an in-flight REST page cannot change state after disconnect.
+  - Restriction/restore events retain their existing body-safe Socket.IO and REST-reconciliation behavior.
+Known limitations:
+  - none
+Next batch:
+  - F10-T09 REVALIDATION
+
 ## F10-T11 REVALIDATION — failed-join revocation closure gates
 
 Task ID: F10-T11 REVALIDATION

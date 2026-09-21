@@ -30,6 +30,39 @@ describe("dashboard chat realtime adapter", () => {
     expect(JSON.stringify(reconciled)).not.toContain("dashboard direct source body");
   });
 
+  it("recovers a reconnect gap larger than 150 messages through bounded authorized REST pages", async () => {
+    const cached = Array.from({ length: 50 }, (_, index) => ({ id: `message-${index + 1}`, sequence: String(index + 1), visibility: "VISIBLE", body: "before disconnect" })) as ChatMessage[];
+    const syncItems = Array.from({ length: 100 }, (_, index) => ({ id: `message-${index + 51}`, sequence: String(index + 51), visibility: "VISIBLE", body: "socket first page" }));
+    const restItems = Array.from({ length: 51 }, (_, index) => ({ id: `message-${index + 151}`, sequence: String(index + 151), visibility: "VISIBLE", body: "postgres recovery" }));
+    get.mockResolvedValueOnce({ data: { items: restItems, nextCursor: null } });
+    const received = vi.fn((message: ChatMessage) => { cached.splice(0, cached.length, ...reconcileChatMessages(cached, message)); });
+    connectChat("token", "conversation-1", () => "50", received, vi.fn());
+    const connect = socket.on.mock.calls.find(([event]) => event === "connect")?.[1] as () => void;
+    connect();
+    const join = socket.emit.mock.calls[0]?.[2] as (sync: unknown) => void;
+    join({ ok: true, items: syncItems, nextCursor: "opaque-after-150", highWaterSequence: "201" });
+    await vi.waitFor(() => expect(cached).toHaveLength(201));
+    expect(cached.map((message) => message.sequence)).toEqual(Array.from({ length: 201 }, (_, index) => String(index + 1)));
+    expect(new Set(cached.map((message) => message.id))).toHaveLength(201);
+    expect(get).toHaveBeenCalledWith("/v1/chat/conversations/{conversationId}/messages", expect.objectContaining({ params: { path: { conversationId: "conversation-1" }, query: { cursor: "opaque-after-150", limit: 100 } } }));
+  });
+
+  it("does not apply an in-flight reconnect page after disconnect", async () => {
+    let resolveHistory!: (value: unknown) => void;
+    get.mockReturnValueOnce(new Promise((resolve) => { resolveHistory = resolve; }));
+    const received = vi.fn(); connectChat("token", "conversation-1", () => "50", received, vi.fn());
+    const connect = socket.on.mock.calls.find(([event]) => event === "connect")?.[1] as () => void;
+    const disconnect = socket.on.mock.calls.find(([event]) => event === "disconnect")?.[1] as () => void;
+    connect();
+    const join = socket.emit.mock.calls[0]?.[2] as (sync: unknown) => void;
+    join({ ok: true, items: [], nextCursor: "opaque-after-150", highWaterSequence: "201" });
+    disconnect();
+    resolveHistory({ data: { items: [{ id: "message-151", sequence: "151", visibility: "VISIBLE", body: "stale recovery" }], nextCursor: null } });
+    await vi.waitFor(() => expect(get).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(received).not.toHaveBeenCalledWith(expect.objectContaining({ body: "stale recovery" }));
+  });
+
   it("cursor-paginates authorized REST history to restore a tombstone beyond the first page", async () => {
     const firstPage = Array.from({ length: 100 }, (_, index) => ({ id: `message-${index + 1}`, sequence: String(index + 1), visibility: "VISIBLE", body: "earlier history" }));
     const received = vi.fn(); get

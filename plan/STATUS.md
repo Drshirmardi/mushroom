@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-22 00:05 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-22 00:20 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ independent security/closure review تازه لازم است؛ Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ F10-T08 reconnect-pagination remediation پذیرفته شده و F10-T09 revalidation بعدی است؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -50,9 +50,9 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: the confirmed P1 failed-join revocation was remediated, then its PostgreSQL/Socket.IO
-revalidation and final Prisma/OpenAPI/client/app/dashboard/Chrome E2E gates passed. A new independent security/closure
-review is required before any closure decision. `Phase 11` remains `NOT_STARTED`, unclaimed and unmodified.
+`Phase 10` remains `REWORK`: F10-T08 now recovers the full bounded PostgreSQL history gap after join and safely ignores
+stale pages. F10-T09 real PostgreSQL/Socket.IO revalidation is next, followed by F10-T11 final gates. `Phase 11` remains
+`NOT_STARTED`, unclaimed and unmodified.
 
 ## آخرین batch — F10-R16-CLOSURE-GATES
 

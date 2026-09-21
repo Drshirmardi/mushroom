@@ -33,7 +33,7 @@ export async function sendChat(accessToken: string, conversationId: string, body
   return result.data;
 }
 
-type RealtimeSync = { ok: boolean; items?: ChatMessage[]; nextCursor?: string | null };
+type RealtimeSync = { ok: boolean; items?: ChatMessage[]; nextCursor?: string | null; highWaterSequence?: string };
 export type ChatMessage = Awaited<ReturnType<typeof sendChat>>;
 
 export function reconcileChatMessages(messages: ChatMessage[], next: ChatMessage) {
@@ -47,6 +47,33 @@ export function connectChat(accessToken: string, conversationId: string, lastSeq
   let visibilityCursor: string | undefined;
   const pendingRestores = new Map<string, RestoreVisibilityEvent>();
   const reconciling = new Set<string>();
+
+  const recoverJoinGap = (initialCursor: string | null | undefined, highWaterRaw: unknown, generation: number) => void (async () => {
+    if (typeof initialCursor !== "string" || typeof highWaterRaw !== "string" || !/^\d+$/u.test(highWaterRaw)) return;
+    const highWater = BigInt(highWaterRaw);
+    let cursor: string | undefined = initialCursor;
+    const seenCursors = new Set<string>();
+    for (let page = 0; page < 100; page += 1) {
+      if (generation !== connectionGeneration || !cursor || seenCursors.has(cursor)) return;
+      seenCursors.add(cursor);
+      const history = await withRequestTimeout(apiClient.GET("/v1/chat/conversations/{conversationId}/messages", {
+        headers: headers(accessToken),
+        params: { path: { conversationId }, query: { cursor, limit: HISTORY_PAGE_SIZE as never } },
+      }));
+      if (generation !== connectionGeneration || !history.data) return;
+      let reachedHighWater = false;
+      history.data.items.forEach((message) => {
+        if (!/^\d+$/u.test(message.sequence)) return;
+        const sequence = BigInt(message.sequence);
+        if (sequence <= highWater) onMessage(message as ChatMessage);
+        if (sequence >= highWater) reachedHighWater = true;
+      });
+      if (reachedHighWater) return;
+      const nextCursor: unknown = history.data.nextCursor;
+      if (typeof nextCursor !== "string") return;
+      cursor = nextCursor;
+    }
+  })().catch(() => undefined);
 
   const reconcileRestore = (event: RestoreVisibilityEvent, generation: number) => {
     if (reconciling.has(event.messageId) || !/^\d+$/u.test(event.sequence)) return;
@@ -89,14 +116,16 @@ export function connectChat(accessToken: string, conversationId: string, lastSeq
     }
   })().catch(() => undefined);
 
-  const join = () => socket.emit("conversation:join", { conversationId, lastSequence: lastSequence() }, (sync: RealtimeSync) => {
+  const join = (generation: number) => socket.emit("conversation:join", { conversationId, lastSequence: lastSequence() }, (sync: RealtimeSync) => {
+    if (generation !== connectionGeneration) return;
     if (!sync.ok) { onState("read-only"); return; }
     sync.items?.forEach(onMessage);
+    recoverJoinGap(sync.nextCursor, sync.highWaterSequence, generation);
     onState("connected");
     for (const event of pendingRestores.values()) reconcileRestore(event, connectionGeneration);
     reconcileVisibility(connectionGeneration);
   });
-  socket.on("connect", () => { connectionGeneration += 1; join(); });
+  socket.on("connect", () => { connectionGeneration += 1; join(connectionGeneration); });
   socket.on("message:committed", onMessage);
   socket.on("message:visibility-changed", (event: RestoreVisibilityEvent | ChatMessage) => {
     if (event.visibility === "VISIBLE" && "messageId" in event) {
