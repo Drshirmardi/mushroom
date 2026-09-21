@@ -41,4 +41,20 @@ describe("chat API adapter", () => {
     expect(reconcileChatMessages(afterBacklog, older).map((message) => message.id)).toEqual(["message-0", "message-1"]);
     expect(afterBacklog).toHaveLength(1);
   });
+
+  it("replaces cached visible bodies with tombstones for direct and report-resolution restriction events", () => {
+    const received = vi.fn();
+    connectChat("token", "conversation-1", () => "2", received, vi.fn());
+    const visibilityChanged = socket.on.mock.calls.find(([event]) => event === "message:visibility-changed")?.[1] as (message: Awaited<ReturnType<typeof sendChat>>) => void;
+    const visible = { id: "message-1", sequence: "1", body: "direct source body", visibility: "VISIBLE" } as Awaited<ReturnType<typeof sendChat>>;
+    const directTombstone = { id: "message-1", sequence: "1", visibility: "RESTRICTED", restrictedReasonCategory: "ABUSE_OR_HARASSMENT", tombstone: "Conversation content has been restricted under policy." } as Awaited<ReturnType<typeof sendChat>>;
+    const resolutionTombstone = { id: "message-2", sequence: "2", visibility: "RESTRICTED", restrictedReasonCategory: "SPAM_OR_SCAM", tombstone: "Conversation content has been restricted under policy." } as Awaited<ReturnType<typeof sendChat>>;
+    visibilityChanged(directTombstone); visibilityChanged(resolutionTombstone);
+    expect(received).toHaveBeenNthCalledWith(1, directTombstone);
+    expect(received).toHaveBeenNthCalledWith(2, resolutionTombstone);
+    const reconciled = reconcileChatMessages(reconcileChatMessages([visible], directTombstone), resolutionTombstone);
+    expect(reconciled).toEqual([directTombstone, resolutionTombstone]);
+    expect(reconciled[0].body).toBeUndefined();
+    expect(JSON.stringify(reconciled)).not.toContain("direct source body");
+  });
 });

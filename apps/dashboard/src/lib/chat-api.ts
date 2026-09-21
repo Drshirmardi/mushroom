@@ -22,10 +22,16 @@ export async function sendChat(accessToken: string, conversationId: string, body
 type RealtimeSync = { ok: boolean; items?: ChatMessage[] };
 export type ChatMessage = Awaited<ReturnType<typeof sendChat>>;
 
+export function reconcileChatMessages(messages: ChatMessage[], next: ChatMessage) {
+  return [...messages.filter((message) => message.id !== next.id), next]
+    .sort((left, right) => BigInt(left.sequence) < BigInt(right.sequence) ? -1 : BigInt(left.sequence) > BigInt(right.sequence) ? 1 : 0);
+}
+
 export function connectChat(accessToken: string, conversationId: string, lastSequence: () => string, onMessage: (message: ChatMessage) => void, onState: (state: "connected" | "reconnecting" | "offline" | "read-only") => void): Socket {
   const socket = io(`${apiBaseUrl}/chat`, { auth: { token: accessToken }, transports: ["websocket"], reconnectionDelay: 1_000, reconnectionDelayMax: 30_000, randomizationFactor: 0.5 });
   socket.on("connect", () => socket.emit("conversation:join", { conversationId, lastSequence: lastSequence() }, (sync: RealtimeSync) => { if (!sync.ok) { onState("read-only"); return; } sync.items?.forEach(onMessage); onState("connected"); }));
   socket.on("message:committed", onMessage);
+  socket.on("message:visibility-changed", onMessage);
   socket.on("reconnect_attempt", () => onState("reconnecting"));
   socket.on("disconnect", () => onState("offline"));
   socket.on("connect_error", () => onState("offline"));

@@ -48,6 +48,7 @@ export function connectChat(
   });
   socket.on("connect", join);
   socket.on("message:committed", onMessage);
+  socket.on("message:visibility-changed", onMessage);
   socket.on("reconnect_attempt", () => onState("reconnecting"));
   socket.on("disconnect", () => onState("offline"));
   socket.on("connect_error", () => onState("offline"));

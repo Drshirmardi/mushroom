@@ -3,14 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
-import { connectChat, loadChat, sendChat, type ChatMessage } from "@/lib/chat-api";
+import { connectChat, loadChat, reconcileChatMessages, sendChat } from "@/lib/chat-api";
 
 type LoadedChat = Awaited<ReturnType<typeof loadChat>>;
 type Connection = "idle" | "connected" | "reconnecting" | "offline" | "read-only";
-
-function merge(messages: ChatMessage[], next: ChatMessage) {
-  return [...messages.filter((message) => message.id !== next.id), next].sort((left, right) => BigInt(left.sequence) < BigInt(right.sequence) ? -1 : BigInt(left.sequence) > BigInt(right.sequence) ? 1 : 0);
-}
 
 export function MessagesPage() {
   const { authentication } = useDashboardSession();
@@ -25,7 +21,7 @@ export function MessagesPage() {
   useEffect(() => {
     if (!chat) return;
     lastSequence.current = chat.messages.at(-1)?.sequence ?? "0";
-    const socket = connectChat(authentication.accessToken, chat.conversation.id, () => lastSequence.current, (message) => setChat((current) => { if (!current) return current; const messages = merge(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; }), setConnection);
+    const socket = connectChat(authentication.accessToken, chat.conversation.id, () => lastSequence.current, (message) => setChat((current) => { if (!current) return current; const messages = reconcileChatMessages(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; }), setConnection);
     const heartbeat = window.setInterval(() => socket.emit("presence:heartbeat", { conversationId: chat.conversation.id, lastSequence: lastSequence.current }), 15_000);
     return () => { window.clearInterval(heartbeat); socket.disconnect(); };
   }, [authentication.accessToken, chat?.conversation.id]);
@@ -39,7 +35,7 @@ export function MessagesPage() {
   };
   const send = async () => {
     if (!chat || !text.trim() || connection !== "connected") return;
-    try { const message = await sendChat(authentication.accessToken, chat.conversation.id, text.trim()); const messages = merge(chat.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; setChat({ ...chat, messages }); setText(""); }
+    try { const message = await sendChat(authentication.accessToken, chat.conversation.id, text.trim()); const messages = reconcileChatMessages(chat.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; setChat({ ...chat, messages }); setText(""); }
     catch { setError("ارسال پیام در وضعیت فعلی نوبت مجاز نیست."); setConnection("read-only"); }
   };
   const title = authentication.user.roles.includes("ADMIN") ? "کلینیک / اپراتور" : "پزشک تخصیص‌یافته";

@@ -407,6 +407,32 @@ Result:
 Next eligible action:
   - F10-T08 REWORK only, after this task's isolated commit; do not start Phase 11.
 
+## F10-T08 REWORK — reconcile visibility tombstones in clients
+
+Task ID: F10-T08 REWORK
+Completed at: 2026-09-21 +04:15
+Batch ID: F10-R08-VISIBILITY-CACHE
+Status: ACCEPTED — isolated remediation commit pending
+Changed files:
+  - apps/app/src/lib/{chat-api.ts,chat-api.spec.ts}
+  - apps/dashboard/src/lib/{chat-api.ts,chat-api.spec.ts}
+  - apps/dashboard/src/features/messages/messages-page.tsx
+  - plan/{STATUS.md,logs/phase-10.md}
+Verification:
+  - App adapter test → PASS (4 tests), and dashboard adapter test → PASS (1 test). Both subscribe to the new event,
+    apply a direct-moderation tombstone and a report-resolution tombstone by message ID/sequence, and prove the
+    replaced cache object contains no former visible body.
+  - Normal app/dashboard rendering already selects `body` only when it exists and otherwise selects `tombstone`; the
+    replacement invariant therefore prevents the former message text from rendering after the realtime update.
+  - `pnpm --filter @sabz/app typecheck`, `pnpm --filter @sabz/dashboard typecheck`, and `git diff --check` → PASS.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - The normal application caches, including connected ADMIN/DOCTOR dashboard use, immediately replace the complete
+    stale message object with the body-free authoritative tombstone. This does not claim to erase browser history or
+    external screenshots.
+Next eligible action:
+  - F10-T09 REVALIDATION only, after this task's isolated commit; do not start Phase 11.
+
 ## F10-T03 REWORK — restricted moderated-message visibility
 
 Task ID: F10-T03 REWORK
