@@ -247,8 +247,7 @@ export class ChatService {
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.MESSAGE_RESTORED, 'MESSAGE', message.id);
       return { response: this.messageResponse(updated), restrictedTransition: null };
     });
-    // The transition is deliberately retained only after the transaction
-    // commits. F10-T04 publishes this safe fact to connected participants.
+    if (outcome.restrictedTransition) this.publisher.messageVisibilityChanged(outcome.restrictedTransition.conversationId, outcome.restrictedTransition.message);
     return outcome.response;
   }
 
@@ -282,8 +281,7 @@ export class ChatService {
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.REPORT_RESOLVED, 'REPORT', report.id, input.resolution);
       return { response: { id: decision.id, resolution: decision.resolution, action: decision.action, decidedAt: decision.decidedAt }, restrictedTransition };
     });
-    // F10-T04 may publish outcome.restrictedTransition only from this
-    // post-commit boundary; no pre-commit observer can see the transition.
+    if (outcome.restrictedTransition) this.publisher.messageVisibilityChanged(outcome.restrictedTransition.conversationId, outcome.restrictedTransition.message);
     return outcome.response;
   }
 

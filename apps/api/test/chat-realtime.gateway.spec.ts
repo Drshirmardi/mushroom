@@ -93,5 +93,47 @@ describe('chat realtime Socket.IO integration', () => {
     expect(reconciled).toEqual([expect.objectContaining({ sequence: '1', body: 'fenced durable message' })]);
   }, 30_000);
 
+  it('delivers a body-free post-commit tombstone to joined participants for direct and report-resolution restriction', async () => {
+    app = await createApiApplication();
+    await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id;
+    socket = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'] });
+    await new Promise<void>((resolve, reject) => { socket!.once('connect', resolve); socket!.once('connect_error', reject); });
+    const joined = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(joined).toMatchObject({ ok: true });
+
+    const expectTombstone = (messageId: string, sequence: string, sourceBody: string) => new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('visibility update was not delivered')), 5_000);
+      socket!.once('message:visibility-changed', (event) => {
+        clearTimeout(timeout);
+        try {
+          expect(event).toMatchObject({ id: messageId, sequence, visibility: 'RESTRICTED', tombstone: expect.any(String) });
+          expect(event.body).toBeUndefined();
+          expect(event.preview).toBeUndefined();
+          expect(JSON.stringify(event)).not.toContain(sourceBody);
+          resolve();
+        } catch (error) { reject(error); }
+      });
+    });
+
+    const directMessage = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000005', body: 'connected direct source body' } });
+    expect(directMessage.statusCode).toBe(201);
+    const directEvent = expectTombstone(directMessage.json().id, '1', 'connected direct source body');
+    const direct = await app.inject({ method: 'POST', url: `/v1/chat/messages/${directMessage.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'ABUSE_OR_HARASSMENT', safeNote: 'reviewed' } });
+    expect(direct.statusCode).toBe(201);
+    await directEvent;
+
+    const resolvedMessage = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000006', body: 'connected resolution source body' } });
+    expect(resolvedMessage.statusCode).toBe(201);
+    const report = await app.inject({ method: 'POST', url: `/v1/chat/messages/${resolvedMessage.json().id}/reports`, headers: auth(fixture.tokens.patient), payload: { reasonCategory: 'ABUSE_OR_HARASSMENT', requestImmediateBlock: false } });
+    expect(report.statusCode).toBe(201);
+    const resolutionEvent = expectTombstone(resolvedMessage.json().id, '2', 'connected resolution source body');
+    const resolved = await app.inject({ method: 'POST', url: `/v1/chat/reports/${report.json().id}/resolve`, headers: auth(fixture.tokens.admin), payload: { resolution: 'UPHELD_POLICY_VIOLATION', action: 'RESTRICT_MESSAGE', safeNote: 'reviewed' } });
+    expect(resolved.statusCode).toBe(200);
+    await resolutionEvent;
+  }, 30_000);
+
   afterEach(async () => { socket?.disconnect(); socket = undefined; if (fixture) await destroyChatFixture(fixture); fixture = undefined; await app?.close(); });
 });

@@ -381,6 +381,32 @@ Result:
 Next eligible action:
   - F10-T04 REWORK only, after this task's isolated commit; do not start Phase 11.
 
+## F10-T04 REWORK — publish safe visibility tombstones
+
+Task ID: F10-T04 REWORK
+Completed at: 2026-09-21 +04:00
+Batch ID: F10-R04-VISIBILITY-EVENT
+Status: ACCEPTED — isolated remediation commit pending
+Changed files:
+  - apps/api/src/modules/communications/chat/chat.service.ts
+  - apps/api/src/modules/communications/chat/realtime/chat-realtime.publisher.ts
+  - apps/api/test/chat-realtime.gateway.spec.ts
+  - plan/{STATUS.md,logs/phase-10.md}
+Verification:
+  - Real PostgreSQL and Socket.IO gateway integration → PASS (1 file, 5 tests). A joined patient first receives each
+    visible doctor message, then receives `message:visibility-changed` after direct ADMIN restriction and separately
+    after report resolution. Each event preserves ID/sequence/sender/timestamp/category and tombstone but contains no
+    body or preview and does not serialize either source body.
+  - Existing gateway authorization-before-room-join and join-before-sync fence coverage remains green; publication is
+    to the already authorized `conversation:<id>` room only.
+  - `pnpm --filter api typecheck` (including Prisma generate) and `git diff --check` → PASS.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - The authoritative PostgreSQL transaction remains the state transition. Socket.IO merely signals the durable,
+    body-free replacement after commit; it neither stores messages nor makes moderation decisions.
+Next eligible action:
+  - F10-T08 REWORK only, after this task's isolated commit; do not start Phase 11.
+
 ## F10-T03 REWORK — restricted moderated-message visibility
 
 Task ID: F10-T03 REWORK

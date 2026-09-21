@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 +03:45`
+- آخرین به‌رورسانی: `2026-09-21 +04:00`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
-- task فعال: `ندارد؛ F10-T04 REWORK پس از commit مستقل F10-T03 واجد شرایط است.`
-- blocker فعال: `ندارد؛ remediation visibility transition برای F10-T03 پذیرفته شده است.`
+- task فعال: `ندارد؛ F10-T08 REWORK پس از commit مستقل F10-T04 واجد شرایط است.`
+- blocker فعال: `ندارد؛ event visibility امن برای F10-T04 پذیرفته شده است.`
 
 ## پیشرفت کلان
 
@@ -53,8 +53,31 @@
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
 acceptance and any enable/default decision. Phase 10 is in serialized closure-review remediation; `F10-T03 REWORK`
-برای هر دو مسیر moderation transition امن و پایدار را پذیرفته است. `F10-T04 REWORK` تنها task واجد شرایط بعدی است;
-Phase 11 remains `NOT_STARTED`.
+برای هر دو مسیر moderation transition امن و پایدار را پذیرفته و `F10-T04 REWORK` آن را پس از commit فقط به room
+مجاز منتشر کرده است. `F10-T08 REWORK` تنها task واجد شرایط بعدی است; Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R04-VISIBILITY-EVENT
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:50`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `f2c8c45 fix(F10-T03): persist safe moderation transitions`
+
+- Task: `F10-T04 REWORK`
+- Scope: publish a body-free `message:visibility-changed` fact only after the direct or report-resolution PostgreSQL
+  transaction commits; prove authorized room-only Socket.IO delivery for connected ordinary participants.
+- Owned paths: chat service post-commit publisher call, realtime publisher/gateway tests, and Phase 10
+  status/evidence/checklists.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, schema/migrations, dependencies,
+  OpenAPI/public REST contract, or app/dashboard source.
+- Result: Socket.IO now emits `message:visibility-changed` only to the server-authorized conversation room, and only
+  after the direct-moderation or report-resolution transaction committed. Its payload is the canonical tombstone fact
+  with no body or preview.
+- Verification: real PostgreSQL/Socket.IO gateway integration covers an already delivered visible message, then direct
+  restriction and report-resolution restriction while the patient remains joined → PASS (1 file, 5 tests); API
+  typecheck and `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
 
 ## آخرین batch — F10-R03-VISIBILITY
 
