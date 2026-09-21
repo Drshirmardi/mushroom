@@ -1,5 +1,17 @@
 # Phase 10 Execution Evidence
 
+## F10-T04 REWORK — revoke failed reauthorization join
+
+Task ID: F10-T04 REWORK
+Completed at: 2026-09-22 00:01 +03:30
+
+- `conversation:join` now invokes standard `revoke(client)` before returning its forbidden failure path.
+- Real PostgreSQL + Socket.IO regression: authorized socket joins, account is disabled, repeated join fails by disconnect,
+  and a later room `message:committed` fan-out is not received.
+- `pnpm --filter @sabz-zendegi/api exec vitest run test/chat-realtime.gateway.spec.ts --no-file-parallelism` — PASS (7 tests).
+
+Next task: F10-T09 REVALIDATION
+
 ## F10-T11 REVALIDATION — final four-P1 closure gates
 
 Task ID: F10-T11 REVALIDATION

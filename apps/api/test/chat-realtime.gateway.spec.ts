@@ -169,7 +169,7 @@ describe('chat realtime Socket.IO integration', () => {
     socket.on('message:committed', (event) => received.push(event));
     const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
     await fixture.prisma.user.update({ where: { id: fixture.users.patient.id }, data: { status: 'DISABLED' } });
-    socket.emit('presence:heartbeat', { conversationId, lastSequence: '0' });
+    socket.emit('conversation:join', { conversationId, lastSequence: '0' });
     await disconnected;
     const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000007', body: 'must not reach revoked socket' } });
     expect(published.statusCode).toBe(201);

@@ -65,7 +65,7 @@ export class ChatRealtimeGateway {
       catch (error) { await client.leave(room); throw error; }
       this.renewPresence(client, input.conversationId);
       return { ok: true, ...sync };
-    } catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
+    } catch { this.revoke(client); return { ok: false, code: 'CHAT_FORBIDDEN' }; }
   }
 
   @SubscribeMessage('conversation:sync')

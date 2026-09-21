@@ -7,12 +7,12 @@
 ## وضعیت کلی
 
 - آخرین به‌رورسانی: `2026-09-21 22:05 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ چهار P1 رفع و revalidated شدند؛ independent security/closure review جدید لازم است؛ Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ join authorization revocation remediation در حال اجراست؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -43,14 +43,14 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
+- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: the four P1 findings (durable visibility recovery, socket revocation, send-only
+`Phase 10` is `REWORK` for one confirmed P1 join-revocation finding. The four P1 findings (durable visibility recovery, socket revocation, send-only
 block policy, and long-history recovery) have passed serialized F10-T03 → T04 → T08 → T09 → T11 remediation and
 verification. A new independent security/closure review is required before any closure decision. `Phase 11` remains
 `NOT_STARTED`, unclaimed and unmodified.
