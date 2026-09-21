@@ -33,6 +33,23 @@ import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 type Db = PrismaService | Prisma.TransactionClient;
 type ChatActor = { userId: string; kind: ChatParticipantKind; isAdmin: boolean };
 type Conversation = Awaited<ReturnType<ChatService['conversation']>>;
+/**
+ * The post-commit fact consumed by realtime delivery. It intentionally has no
+ * message body: a visibility transition must be safe even if it is delivered
+ * to a stale client or written to transport diagnostics.
+ */
+type RestrictedMessageTransition = {
+  conversationId: string;
+  message: {
+    id: string;
+    sequence: string;
+    senderKind: ChatParticipantKind;
+    createdAt: Date;
+    visibility: 'RESTRICTED';
+    restrictedReasonCategory: string;
+    tombstone: string;
+  };
+};
 
 const forbidden = () => new ForbiddenException({ code: 'CHAT_FORBIDDEN', message: 'The conversation is not available to this account.', details: {} });
 const moderationForbidden = () => new ForbiddenException({ code: 'CHAT_MODERATION_FORBIDDEN', message: 'Moderation access is not available to this account.', details: {} });
@@ -212,7 +229,7 @@ export class ChatService {
   }
 
   async changeVisibility(principal: AccessTokenPrincipal, messageId: string, input: ChangeChatVisibilityDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const outcome = await this.prisma.$transaction(async (tx) => {
       const message = await tx.chatMessage.findUnique({ where: { id: messageId } });
       if (!message) throw moderationForbidden();
       const conversation = await this.conversation(message.conversationId, tx);
@@ -220,16 +237,19 @@ export class ChatService {
       if (!actor.isAdmin) throw moderationForbidden();
       if (input.visibility === 'RESTRICTED' && !input.reasonCategory) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A restriction reason is required.', details: {} });
       if (input.reasonCategory === 'OTHER' && !this.safeNote(input.safeNote)) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A non-sensitive note is required for OTHER.', details: {} });
-      if ((input.visibility === 'RESTRICTED' && message.visibility === ChatMessageVisibility.RESTRICTED && message.restrictedReasonCategory === input.reasonCategory) || input.visibility === 'VISIBLE' && message.visibility === ChatMessageVisibility.VISIBLE) return this.messageResponse(message);
-      const updated = await tx.chatMessage.update({ where: { id: message.id }, data: input.visibility === 'RESTRICTED'
-        ? { visibility: ChatMessageVisibility.RESTRICTED, restrictedReasonCategory: input.reasonCategory, restrictedAt: new Date() }
-        : { visibility: ChatMessageVisibility.VISIBLE, restrictedReasonCategory: null, restrictedAt: null },
-      });
-      const action = input.visibility === 'RESTRICTED' ? ChatMessageModerationActionType.RESTRICT_MESSAGE : ChatMessageModerationActionType.RESTORE_MESSAGE;
-      await tx.chatMessageModerationAction.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, messageId: message.id, actorUserId: actor.userId, action, reasonCategory: input.visibility === 'RESTRICTED' ? input.reasonCategory : null, safeNote: this.safeNote(input.safeNote) } });
-      await this.audit(tx, conversation, actor.userId, input.visibility === 'RESTRICTED' ? ChatAuditAction.MESSAGE_RESTRICTED : ChatAuditAction.MESSAGE_RESTORED, 'MESSAGE', message.id, input.reasonCategory);
-      return this.messageResponse(updated);
+      if ((input.visibility === 'RESTRICTED' && message.visibility === ChatMessageVisibility.RESTRICTED && message.restrictedReasonCategory === input.reasonCategory) || input.visibility === 'VISIBLE' && message.visibility === ChatMessageVisibility.VISIBLE) return { response: this.messageResponse(message), restrictedTransition: null };
+      if (input.visibility === 'RESTRICTED') {
+        const restricted = await this.restrictMessage(tx, conversation, message, actor.userId, input.reasonCategory!, this.safeNote(input.safeNote));
+        return { response: this.messageResponse(restricted.message), restrictedTransition: restricted.transition };
+      }
+      const updated = await tx.chatMessage.update({ where: { id: message.id }, data: { visibility: ChatMessageVisibility.VISIBLE, restrictedReasonCategory: null, restrictedAt: null } });
+      await tx.chatMessageModerationAction.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, messageId: message.id, actorUserId: actor.userId, action: ChatMessageModerationActionType.RESTORE_MESSAGE, reasonCategory: null, safeNote: this.safeNote(input.safeNote) } });
+      await this.audit(tx, conversation, actor.userId, ChatAuditAction.MESSAGE_RESTORED, 'MESSAGE', message.id);
+      return { response: this.messageResponse(updated), restrictedTransition: null };
     });
+    // The transition is deliberately retained only after the transaction
+    // commits. F10-T04 publishes this safe fact to connected participants.
+    return outcome.response;
   }
 
   async restrictedContent(principal: AccessTokenPrincipal, messageId: string) {
@@ -245,7 +265,7 @@ export class ChatService {
   }
 
   async resolveReport(principal: AccessTokenPrincipal, reportId: string, input: ResolveChatReportDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const outcome = await this.prisma.$transaction(async (tx) => {
       const report = await tx.chatModerationReport.findUnique({ where: { id: reportId }, include: { message: true } });
       if (!report) throw moderationForbidden();
       const conversation = await this.conversation(report.conversationId, tx);
@@ -255,13 +275,16 @@ export class ChatService {
       const existing = await tx.chatModerationReportDecision.findUnique({ where: { reportId: report.id } });
       if (existing) {
         if (existing.resolution !== input.resolution || existing.action !== input.action) throw idempotencyConflict();
-        return { id: existing.id, resolution: existing.resolution, action: existing.action, decidedAt: existing.decidedAt };
+        return { response: { id: existing.id, resolution: existing.resolution, action: existing.action, decidedAt: existing.decidedAt }, restrictedTransition: null };
       }
       const decision = await tx.chatModerationReportDecision.create({ data: { clinicId: conversation.clinicId, reportId: report.id, actorUserId: actor.userId, resolution: input.resolution, action: input.action, safeNote: this.safeNote(input.safeNote) } });
-      await this.applyResolutionAction(tx, conversation, report, actor.userId, input);
+      const restrictedTransition = await this.applyResolutionAction(tx, conversation, report, actor.userId, input);
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.REPORT_RESOLVED, 'REPORT', report.id, input.resolution);
-      return { id: decision.id, resolution: decision.resolution, action: decision.action, decidedAt: decision.decidedAt };
+      return { response: { id: decision.id, resolution: decision.resolution, action: decision.action, decidedAt: decision.decidedAt }, restrictedTransition };
     });
+    // F10-T04 may publish outcome.restrictedTransition only from this
+    // post-commit boundary; no pre-commit observer can see the transition.
+    return outcome.response;
   }
 
   private async ensureConversation(appointment: Awaited<ReturnType<ChatService['appointment']>>, actor: ChatActor) {
@@ -359,13 +382,13 @@ export class ChatService {
     if (input.resolution === 'INSUFFICIENT_EVIDENCE' && irreversible) throw moderationForbidden();
   }
 
-  private async applyResolutionAction(tx: Db, conversation: Conversation, report: { id: string; message: { id: string; senderKind: ChatParticipantKind }; reporterUserId: string; reasonCategory: any }, actorUserId: string, input: ResolveChatReportDto) {
+  private async applyResolutionAction(tx: Db, conversation: Conversation, report: { id: string; message: { id: string; senderKind: ChatParticipantKind }; reporterUserId: string; reasonCategory: any }, actorUserId: string, input: ResolveChatReportDto): Promise<RestrictedMessageTransition | null> {
+    let restrictedTransition: RestrictedMessageTransition | null = null;
     if (input.action === 'RESTRICT_MESSAGE') {
       const message = await tx.chatMessage.findUniqueOrThrow({ where: { id: report.message.id } });
       if (message.visibility !== ChatMessageVisibility.RESTRICTED) {
-        await tx.chatMessage.update({ where: { id: message.id }, data: { visibility: ChatMessageVisibility.RESTRICTED, restrictedReasonCategory: report.reasonCategory, restrictedAt: new Date() } });
-        await tx.chatMessageModerationAction.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, messageId: message.id, actorUserId, action: ChatMessageModerationActionType.RESTRICT_MESSAGE, reasonCategory: report.reasonCategory, safeNote: this.safeNote(input.safeNote) } });
-        await this.audit(tx, conversation, actorUserId, ChatAuditAction.MESSAGE_RESTRICTED, 'MESSAGE', message.id, report.reasonCategory);
+        const restricted = await this.restrictMessage(tx, conversation, message, actorUserId, report.reasonCategory, this.safeNote(input.safeNote));
+        restrictedTransition = restricted.transition;
       }
     }
     const scope = input.action === 'CONFIRM_PATIENT_DOCTOR_BLOCK' ? ChatBlockScope.PATIENT_DOCTOR : input.action === 'CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK' ? ChatBlockScope.PATIENT_CLINIC_OPERATOR : null;
@@ -391,6 +414,14 @@ export class ChatService {
         await this.audit(tx, conversation, actorUserId, ChatAuditAction.BLOCK_LIFTED, 'BLOCK', block.id, scope);
       }
     }
+    return restrictedTransition;
+  }
+
+  private async restrictMessage(tx: Db, conversation: Conversation, message: { id: string }, actorUserId: string, reasonCategory: string, safeNote: string | null) {
+    const updated = await tx.chatMessage.update({ where: { id: message.id }, data: { visibility: ChatMessageVisibility.RESTRICTED, restrictedReasonCategory: reasonCategory as any, restrictedAt: new Date() } });
+    await tx.chatMessageModerationAction.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, messageId: message.id, actorUserId, action: ChatMessageModerationActionType.RESTRICT_MESSAGE, reasonCategory: reasonCategory as any, safeNote } });
+    await this.audit(tx, conversation, actorUserId, ChatAuditAction.MESSAGE_RESTRICTED, 'MESSAGE', message.id, reasonCategory);
+    return { message: updated, transition: this.restrictionTransition(conversation, updated) };
   }
 
   private async audit(tx: Db, conversation: { id: string; clinicId: string }, actorUserId: string | null, action: ChatAuditAction, targetType: string, targetId: string, safeCategory?: string) {
@@ -399,6 +430,22 @@ export class ChatService {
 
   private messageResponse(message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; body: string; visibility: ChatMessageVisibility; restrictedReasonCategory: any; createdAt: Date }) {
     return { id: message.id, sequence: String(message.sequence), senderKind: message.senderKind, createdAt: message.createdAt, visibility: message.visibility, ...(message.visibility === ChatMessageVisibility.VISIBLE ? { body: message.body } : { restrictedReasonCategory: message.restrictedReasonCategory, tombstone: 'Conversation content has been restricted under policy.' }) };
+  }
+
+  private restrictionTransition(conversation: { id: string }, message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; createdAt: Date; visibility: ChatMessageVisibility; restrictedReasonCategory: string | null }): RestrictedMessageTransition {
+    if (message.visibility !== ChatMessageVisibility.RESTRICTED || !message.restrictedReasonCategory) throw new Error('A restricted transition requires a persisted restricted message.');
+    return {
+      conversationId: conversation.id,
+      message: {
+        id: message.id,
+        sequence: String(message.sequence),
+        senderKind: message.senderKind,
+        createdAt: message.createdAt,
+        visibility: 'RESTRICTED',
+        restrictedReasonCategory: message.restrictedReasonCategory,
+        tombstone: 'Conversation content has been restricted under policy.',
+      },
+    };
   }
 
   private conversationResponse(conversation: { id: string; appointmentId: string; clinicId: string; patientId: string; doctorId: string; createdAt: Date }) { return conversation; }

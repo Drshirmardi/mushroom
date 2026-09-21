@@ -356,6 +356,31 @@ Result:
 Next eligible action:
   - independent Phase 10 closure review; do not begin Phase 11 from this task.
 
+## F10-T03 REWORK — durable safe visibility transition
+
+Task ID: F10-T03 REWORK
+Completed at: 2026-09-21 +03:45
+Batch ID: F10-R03-VISIBILITY
+Status: ACCEPTED — isolated remediation commit pending
+Changed files:
+  - apps/api/src/modules/communications/chat/chat.service.ts
+  - apps/api/test/chat-moderation.integration.spec.ts
+  - plan/{STATUS.md,logs/phase-10.md}
+Verification:
+  - Real PostgreSQL API integration → PASS (1 file, 1 test). It persists two separate doctor messages, restricts one
+    through direct ADMIN moderation and the other through report resolution, and proves ordinary history and
+    cursor/realtime sync for patient, doctor and ADMIN contain only tombstones—never either original body.
+  - The only body-returning route remained explicit ADMIN restricted-content review; each review wrote precisely one
+    `RESTRICTED_CONTENT_REVIEWED` audit event. Outbox and audit serializations contain neither source body.
+  - `pnpm --filter api typecheck` (including Prisma generate) and `git diff --check` → PASS.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - Direct restriction and report-resolution restriction now use one canonical persisted transition builder. Its
+    post-commit fact carries only identity, sequence, sender role, timestamp, restricted visibility, broad category
+    and tombstone; it deliberately cannot carry message body. `F10-T04 REWORK` owns publishing that safe fact.
+Next eligible action:
+  - F10-T04 REWORK only, after this task's isolated commit; do not start Phase 11.
+
 ## F10-T03 REWORK — restricted moderated-message visibility
 
 Task ID: F10-T03 REWORK

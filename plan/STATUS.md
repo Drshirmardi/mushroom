@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 +03:30`
+- آخرین به‌رورسانی: `2026-09-21 +03:45`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
-- task فعال: `ندارد`
-- blocker فعال: `ندارد؛ independent Phase 10 closure review دوم پیش از DONE (CLOSED).`
+- task فعال: `ندارد؛ F10-T04 REWORK پس از commit مستقل F10-T03 واجد شرایط است.`
+- blocker فعال: `ندارد؛ remediation visibility transition برای F10-T03 پذیرفته شده است.`
 
 ## پیشرفت کلان
 
@@ -52,8 +52,32 @@
 
 `Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
 PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. Phase 10 is in serialized closure-review remediation; Phase 11 remains
-`NOT_STARTED`.
+acceptance and any enable/default decision. Phase 10 is in serialized closure-review remediation; `F10-T03 REWORK`
+برای هر دو مسیر moderation transition امن و پایدار را پذیرفته است. `F10-T04 REWORK` تنها task واجد شرایط بعدی است;
+Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R03-VISIBILITY
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `e9efe7d test(F10-T11): revalidate phase 10 closure`
+
+- Task: `F10-T03 REWORK`
+- Scope: canonical, safe visibility-transition facts for direct moderation and report-resolution restriction;
+  PostgreSQL-only persistence proof. Socket.IO publication and UI cache handling are deferred to the succeeding
+  serialized `F10-T04 REWORK` and `F10-T08 REWORK` tasks.
+- Owned paths: chat service/REST moderation transition, T03 PostgreSQL tests, and Phase 10 status/evidence/checklists.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, schema/migrations, dependencies,
+  gateway/runtime publication, or app/dashboard source.
+- Result: direct ADMIN restriction and report-resolution restriction share the same PostgreSQL-persisted, body-free
+  transition fact. The fact exists only after transaction commit; Socket.IO publication is intentionally deferred to
+  `F10-T04 REWORK`.
+- Verification: PostgreSQL moderation integration proof covers both paths, REST history and cursor/realtime sync for
+  patient, doctor and ADMIN, and explicit-audited review only → PASS (1 file, 1 test); API typecheck and
+  `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
 
 ## آخرین batch — F10-R03
 
