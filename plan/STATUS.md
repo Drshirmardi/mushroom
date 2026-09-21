@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 21:51 +03:30`
-- Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
-- فاز فعال: `ندارد؛ Phase 11 فقط next eligible work است.`
-- وضعیت فاز فعال: `NOT_STARTED`
+- آخرین به‌رورسانی: `2026-09-21 22:05 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- فاز فعال: `Phase 10 — Chat & Online Consultation`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ Phase 10 در independent closure review پنجم PASS و رسمی CLOSED شد؛ Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ چهار finding امنیتی P1 پس از closure پنجم در حال رفع serialized هستند؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -43,18 +43,37 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
+- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is formally `DONE (CLOSED)` after the fifth independent closure review passed. All `F10-T01` through
-`F10-T11`, including the restricted-content, sync-fence, restore-visibility and paginated-restore remediations and
-their revalidations, are accepted. PostgreSQL, Socket.IO, frozen capacity, authorized cursor recovery, app/dashboard,
-Chrome E2E, deferred-media absence and commit isolation are recorded in [`logs/phase-10.md`](logs/phase-10.md).
-Milestone D is complete. `Phase 11` is the next eligible work but remains `NOT_STARTED`, unclaimed and unmodified.
+`Phase 10` is `REWORK` for four P1 security findings found after the fifth closure review: durable visibility recovery,
+socket revocation after authorization loss, block policy limited to send, and long-history client recovery. The prior
+accepted F10 work remains evidence, but the phase cannot be closed until the serialized F10-T03 → T04 → T08 → T09 →
+T11 rework passes a new independent security/closure review. `Phase 11` remains `NOT_STARTED`, unclaimed and
+unmodified.
+
+## آخرین batch — F10-R12-VISIBILITY-RECONCILIATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 22:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1` and `ADR-0010`; PostgreSQL remains authority and Socket.IO is body-free signaling.
+
+- Task ID: `F10-T03 REWORK`
+  - Status: `DONE`
+  - Depends on: accepted `F10-T01/T02`; no new persistence migration required because immutable moderation actions are durable.
+  - Scope: authorized REST visibility reconciliation independent of message sequence; block enforcement only on human send.
+  - Owned paths: chat REST/service/DTO/OpenAPI slice, focused PostgreSQL/API tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: common chat authorization and PostgreSQL test DB.
+  - Expected verification: real PostgreSQL history/reconciliation/block regression, API typecheck, OpenAPI freshness, diff/isolation.
+
+- Result: F10-T03 REWORK passed. Durable moderation actions reconcile current authorized visibility using a server-bound
+  checkpoint independent of message sequence; block remains send-only. Next eligible task is F10-T04 REWORK, not yet claimed.
 
 ## آخرین batch — F10-CLOSE
 

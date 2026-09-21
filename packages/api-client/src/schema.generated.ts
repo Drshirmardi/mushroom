@@ -2851,6 +2851,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chat/conversations/{conversationId}/visibility-reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconcile durable, body-safe moderation visibility transitions */
+        get: operations["chatConversationVisibilityReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/messages/{messageId}/reports": {
         parameters: {
             query?: never;
@@ -5023,6 +5040,19 @@ export interface components {
             items: components["schemas"]["ChatMessageResponseDto"][];
             nextCursor?: Record<string, never>;
             highWaterSequence: string;
+        };
+        ChatVisibilityReconciliationItemDto: {
+            /** @description Opaque durable moderation transition identity. */
+            revision: string;
+            message: components["schemas"]["ChatMessageResponseDto"];
+        };
+        ChatVisibilityReconciliationResponseDto: {
+            items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
+            nextCursor?: Record<string, never>;
+            /** @description Opaque checkpoint to persist after applying this page. */
+            checkpointCursor?: Record<string, never>;
+            /** @description Opaque high-water revision identity. */
+            highWaterRevision?: Record<string, never>;
         };
         SendChatMessageDto: {
             /**
@@ -10894,6 +10924,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatMessageResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationVisibilityReconciliation: {
+        parameters: {
+            query?: {
+                /** @description Opaque, server-bound cursor for durable visibility transitions. */
+                cursor?: string;
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatVisibilityReconciliationResponseDto"];
                 };
             };
         };

@@ -1,8 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت نهایی: `DONE (CLOSED)` — independent closure review پنجم `PASS` در `2026-09-21`; closure documentation:
-  `F10-CLOSE`.
+- وضعیت فعلی: `REWORK` — چهار finding امنیتی P1 پس از closure review پنجم؛ Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -26,6 +25,14 @@
 - [x] `F10-T09` — ordering، reconnect، abuse، authorization و load tests
 - [x] `F10-T10` — DEFERRED / NOT_APPLICABLE FOR MVP — video adapter فقط با requirement تأییدشده
 - [x] `F10-T11` — evidence Milestone D
+
+## Security rework tracking
+
+- [x] `F10-T03 REWORK` — durable authorized visibility reconciliation and send-only block policy
+- [ ] `F10-T04 REWORK` — revoke room membership immediately after current authorization loss
+- [ ] `F10-T08 REWORK` — bounded app/dashboard long-history and reconciliation pagination
+- [ ] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
+- [ ] `F10-T11 REVALIDATION` — final build/E2E/freshness closure gates
 
 ## قرارداد اجرایی freeze‌شده
 

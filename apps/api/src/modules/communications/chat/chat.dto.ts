@@ -50,6 +50,14 @@ export class ChatHistoryQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 50;
 }
 
+export class ChatVisibilityReconciliationQueryDto {
+  @ApiPropertyOptional({ description: 'Opaque, server-bound cursor for durable visibility transitions.' })
+  @IsOptional() @IsString() @MaxLength(512) cursor?: string;
+
+  @ApiPropertyOptional({ minimum: 1, maximum: 100, default: 50 })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 50;
+}
+
 export class SendChatMessageDto {
   @ApiProperty({ format: 'uuid', description: 'Client-generated idempotency identifier.' })
   @IsUUID('4') clientMessageId!: string;
@@ -118,4 +126,16 @@ export class ChatHistoryResponseDto {
   @ApiProperty({ type: ChatMessageResponseDto, isArray: true }) items!: ChatMessageResponseDto[];
   @ApiPropertyOptional() nextCursor?: string | null;
   @ApiProperty() highWaterSequence!: string;
+}
+
+export class ChatVisibilityReconciliationItemDto {
+  @ApiProperty({ description: 'Opaque durable moderation transition identity.' }) revision!: string;
+  @ApiProperty({ type: ChatMessageResponseDto }) message!: ChatMessageResponseDto;
+}
+
+export class ChatVisibilityReconciliationResponseDto {
+  @ApiProperty({ type: ChatVisibilityReconciliationItemDto, isArray: true }) items!: ChatVisibilityReconciliationItemDto[];
+  @ApiPropertyOptional() nextCursor?: string | null;
+  @ApiPropertyOptional({ description: 'Opaque checkpoint to persist after applying this page.' }) checkpointCursor?: string | null;
+  @ApiPropertyOptional({ description: 'Opaque high-water revision identity.' }) highWaterRevision?: string | null;
 }

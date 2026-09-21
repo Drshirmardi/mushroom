@@ -86,6 +86,30 @@ describe('chat moderation and conversation-scoped blocks (PostgreSQL API integra
     expect(await fixture.prisma.chatAuditEvent.count({ where: { conversationId: conversation.json().id, targetId: message.json().id, action: 'MESSAGE_RESTORED' } })).toBe(1);
   });
 
+  it('recovers durable visibility changes after a missed publish without leaking restricted text', async () => {
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id as string;
+    const message = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'c1000000-0000-4000-8000-000000000004', body: 'missed publish private text' } });
+    expect(message.statusCode).toBe(201);
+    expect((await app.inject({ method: 'POST', url: `/v1/chat/messages/${message.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'SPAM_OR_SCAM', safeNote: 'reviewed' } })).statusCode).toBe(201);
+
+    const restricted = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/visibility-reconciliation`, headers: auth(fixture.tokens.patient) });
+    expect(restricted.statusCode).toBe(200);
+    expect(restricted.json()).toMatchObject({ items: [expect.objectContaining({ message: expect.objectContaining({ id: message.json().id, visibility: 'RESTRICTED', tombstone: expect.any(String) }) })], checkpointCursor: expect.any(String) });
+    expect(JSON.stringify(restricted.json())).not.toContain('missed publish private text');
+    const checkpoint = restricted.json().checkpointCursor as string;
+
+    expect((await app.inject({ method: 'POST', url: `/v1/chat/messages/${message.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'VISIBLE', safeNote: 'restored' } })).statusCode).toBe(201);
+    const restored = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/visibility-reconciliation?cursor=${encodeURIComponent(checkpoint)}`, headers: auth(fixture.tokens.patient) });
+    expect(restored.statusCode).toBe(200);
+    expect(restored.json()).toMatchObject({ items: [expect.objectContaining({ message: expect.objectContaining({ id: message.json().id, visibility: 'VISIBLE', body: 'missed publish private text' }) })], checkpointCursor: expect.any(String) });
+
+    const outsider = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/visibility-reconciliation`, headers: auth(fixture.tokens.outsider) });
+    expect(outsider.statusCode).toBe(403);
+    expect(JSON.stringify(outsider.json())).not.toContain('missed publish private text');
+  });
+
   it('serves an authorized restored message beyond the first cursor page without leaking it to an outsider', async () => {
     fixture = await createChatFixture(app);
     const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });

@@ -1,5 +1,46 @@
 # Phase 10 Execution Evidence
 
+## F10-T03 REWORK — durable visibility reconciliation and send-only block policy
+
+Task ID: F10-T03 REWORK
+Completed at: 2026-09-21 23:05 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R12-VISIBILITY-RECONCILIATION
+Reviewed by: Codex /root
+
+Changed files:
+
+- `apps/api/src/modules/communications/chat/chat.service.ts`
+- `apps/api/src/modules/communications/chat/chat.controller.ts`
+- `apps/api/src/modules/communications/chat/chat.dto.ts`
+- `apps/api/test/chat-moderation.integration.spec.ts`
+- `apps/api/test/chat-abuse-authorization.integration.spec.ts`
+- `packages/api-client/openapi.json` and `packages/api-client/src/schema.generated.ts`
+
+Result:
+
+- No F10-T02 migration was necessary: immutable PostgreSQL `ChatMessageModerationAction` records the durable
+  `RESTRICT_MESSAGE` and `RESTORE_MESSAGE` facts. The authorized endpoint pages those facts with a server-bound
+  timestamp/id cursor and checkpoint independent of immutable message sequence.
+- A restricted transition reconciles only a tombstone; a later restore reconciles the currently authorized REST message.
+  Foreign accounts fail without content disclosure.
+- `assertNotBlocked` remains only in human `send`; history, realtime sync/subscription and receipt acknowledgement
+  retain their current authorization and appointment-window checks but are no longer blocked.
+
+Tests run:
+
+- `pnpm --filter @sabz-zendegi/api exec vitest run test/chat-moderation.integration.spec.ts test/chat-abuse-authorization.integration.spec.ts --no-file-parallelism` — PASS (2 files, 6 PostgreSQL integration tests)
+- `pnpm --filter @sabz-zendegi/api openapi:export` — PASS
+- `pnpm --filter @sabz-zendegi/api typecheck` — PASS
+- `pnpm --filter @sabz-zendegi/api-client generate && pnpm --filter @sabz-zendegi/api-client typecheck` — PASS
+- `git diff --check` — PASS
+
+Known limitations:
+
+- Socket authorization revocation and disconnect-between-commit-and-publish proof remain F10-T04 REWORK. Client pagination remains F10-T08 REWORK.
+
+Next task: F10-T04 REWORK
+
 ## F10-CLOSE — formal Phase 10 closure
 
 Task ID: F10-CLOSE

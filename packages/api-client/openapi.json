@@ -10323,6 +10323,66 @@
         ]
       }
     },
+    "/v1/chat/conversations/{conversationId}/visibility-reconciliation": {
+      "get": {
+        "operationId": "chatConversationVisibilityReconciliation",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque, server-bound cursor for durable visibility transitions.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatVisibilityReconciliationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reconcile durable, body-safe moderation visibility transitions",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
     "/v1/chat/messages/{messageId}/reports": {
       "post": {
         "operationId": "chatMessageReportCreate",
@@ -17988,6 +18048,47 @@
         "required": [
           "items",
           "highWaterSequence"
+        ]
+      },
+      "ChatVisibilityReconciliationItemDto": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string",
+            "description": "Opaque durable moderation transition identity."
+          },
+          "message": {
+            "$ref": "#/components/schemas/ChatMessageResponseDto"
+          }
+        },
+        "required": [
+          "revision",
+          "message"
+        ]
+      },
+      "ChatVisibilityReconciliationResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatVisibilityReconciliationItemDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object"
+          },
+          "checkpointCursor": {
+            "type": "object",
+            "description": "Opaque checkpoint to persist after applying this page."
+          },
+          "highWaterRevision": {
+            "type": "object",
+            "description": "Opaque high-water revision identity."
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "SendChatMessageDto": {

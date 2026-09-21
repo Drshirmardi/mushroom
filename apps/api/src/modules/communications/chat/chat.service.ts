@@ -122,9 +122,8 @@ export class ChatService {
 
   async realtimeSync(principal: AccessTokenPrincipal, conversationId: string, lastSequence = 0n, limit = 100) {
     const conversation = await this.conversation(conversationId);
-    const actor = await this.actorFor(principal, conversation.appointment);
+    await this.actorFor(principal, conversation.appointment);
     this.assertSendEligibility(conversation.appointment);
-    await this.assertNotBlocked(this.prisma, conversation, actor);
     const highWater = await this.prisma.chatMessage.aggregate({ where: { conversationId: conversation.id }, _max: { sequence: true } });
     const highWaterSequence = highWater._max.sequence ?? 0n;
     const records = await this.prisma.chatMessage.findMany({
@@ -141,9 +140,8 @@ export class ChatService {
 
   async authorizeRealtimeSubscription(principal: AccessTokenPrincipal, conversationId: string) {
     const conversation = await this.conversation(conversationId);
-    const actor = await this.actorFor(principal, conversation.appointment);
+    await this.actorFor(principal, conversation.appointment);
     this.assertSendEligibility(conversation.appointment);
-    await this.assertNotBlocked(this.prisma, conversation, actor);
   }
 
   async acknowledgeReceipt(principal: AccessTokenPrincipal, conversationId: string, delivered: bigint, read: bigint) {
@@ -151,7 +149,7 @@ export class ChatService {
     const receipt = await this.prisma.$transaction(async (tx) => {
       const conversation = await this.conversation(conversationId, tx);
       const actor = await this.actorFor(principal, conversation.appointment, tx);
-      this.assertSendEligibility(conversation.appointment); await this.assertNotBlocked(tx, conversation, actor);
+      this.assertSendEligibility(conversation.appointment);
       const max = await tx.chatMessage.aggregate({ where: { conversationId }, _max: { sequence: true } });
       if (delivered > (max._max.sequence ?? 0n)) throw new BadRequestException({ code: 'CHAT_SEQUENCE_INVALID', message: 'Receipt exceeds committed history.', details: {} });
       const existing = await tx.chatReceipt.findUnique({ where: { conversationId_userId: { conversationId, userId: actor.userId } } });
@@ -162,6 +160,45 @@ export class ChatService {
     const response = { userId: receipt.userId, lastDeliveredSequence: String(receipt.lastDeliveredSequence), lastReadSequence: String(receipt.lastReadSequence) };
     this.publisher.receiptUpdated(conversationId, response);
     return response;
+  }
+
+  /**
+   * PostgreSQL-authoritative recovery for moderation state changes whose message
+   * sequence is intentionally immutable. Socket.IO may signal this work, but a
+   * reconnect always recovers it from the immutable moderation-action ledger.
+   */
+  async visibilityReconciliation(principal: AccessTokenPrincipal, conversationId: string, cursorRaw?: string, limit = 50) {
+    const conversation = await this.conversation(conversationId);
+    await this.actorFor(principal, conversation.appointment);
+    const cursor = cursorRaw ? this.parseVisibilityCursor(cursorRaw, conversation.id) : null;
+    const transitionWhere = { conversationId: conversation.id, action: { in: [ChatMessageModerationActionType.RESTRICT_MESSAGE, ChatMessageModerationActionType.RESTORE_MESSAGE] } };
+    const highWater = await this.prisma.chatMessageModerationAction.findFirst({ where: transitionWhere, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true, createdAt: true } });
+    if (!highWater) return { items: [], nextCursor: null, checkpointCursor: cursorRaw ?? null, highWaterRevision: null };
+    const afterCursor = cursor ? {
+      OR: [
+        { createdAt: { gt: cursor.createdAt } },
+        { createdAt: cursor.createdAt, id: { gt: cursor.id } },
+      ],
+    } : {};
+    const throughHighWater = {
+      OR: [
+        { createdAt: { lt: highWater.createdAt } },
+        { createdAt: highWater.createdAt, id: { lte: highWater.id } },
+      ],
+    };
+    const records = await this.prisma.chatMessageModerationAction.findMany({
+      where: { ...transitionWhere, AND: [afterCursor, throughHighWater] },
+      include: { message: true },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      take: limit + 1,
+    });
+    const items = records.slice(0, limit);
+    return {
+      items: items.map((action) => ({ revision: action.id, message: this.messageResponse(action.message) })),
+      nextCursor: records.length > limit && items.length ? this.visibilityCursor(conversation.id, items.at(-1)!) : null,
+      checkpointCursor: items.length ? this.visibilityCursor(conversation.id, items.at(-1)!) : cursorRaw ?? null,
+      highWaterRevision: highWater.id,
+    };
   }
 
   async send(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto) {
@@ -462,5 +499,7 @@ export class ChatService {
   private safeNote(note?: string) { const normalized = note?.normalize('NFC').trim(); return normalized || null; }
   private cursor(conversationId: string, sequence: bigint) { return Buffer.from(JSON.stringify({ v: 1, c: conversationId, s: String(sequence) })).toString('base64url'); }
   private parseCursor(raw: string, conversationId: string) { try { const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')) as { v?: unknown; c?: unknown; s?: unknown }; if (parsed.v !== 1 || typeof parsed.c !== 'string' || typeof parsed.s !== 'string' || !/^\d+$/.test(parsed.s)) throw cursorInvalid(); if (parsed.c !== conversationId) throw cursorForbidden(); return BigInt(parsed.s); } catch (error) { if (error instanceof ForbiddenException || error instanceof BadRequestException) throw error; throw cursorInvalid(); } }
+  private visibilityCursor(conversationId: string, action: { id: string; createdAt: Date }) { return Buffer.from(JSON.stringify({ v: 1, c: conversationId, t: action.createdAt.toISOString(), i: action.id })).toString('base64url'); }
+  private parseVisibilityCursor(raw: string, conversationId: string) { try { const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')) as { v?: unknown; c?: unknown; t?: unknown; i?: unknown }; const createdAt = typeof parsed.t === 'string' ? new Date(parsed.t) : null; if (parsed.v !== 1 || typeof parsed.c !== 'string' || typeof parsed.i !== 'string' || !createdAt || Number.isNaN(createdAt.valueOf())) throw cursorInvalid(); if (parsed.c !== conversationId) throw cursorForbidden(); return { id: parsed.i, createdAt }; } catch (error) { if (error instanceof ForbiddenException || error instanceof BadRequestException) throw error; throw cursorInvalid(); } }
   private async lock(tx: Db, key: string) { await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))::text AS locked`; }
 }

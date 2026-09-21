@@ -11,6 +11,8 @@ import {
   ChatHistoryQueryDto,
   ChatHistoryResponseDto,
   ChatMessageResponseDto,
+  ChatVisibilityReconciliationQueryDto,
+  ChatVisibilityReconciliationResponseDto,
   CreateChatReportDto,
   ResolveChatReportDto,
   SendChatMessageDto,
@@ -38,6 +40,14 @@ export class ChatController {
   @ApiOkResponse({ type: ChatHistoryResponseDto })
   history(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) conversationId: string, @Query() query: ChatHistoryQueryDto, @Req() request: AuthenticatedRequest) {
     return this.chat.history(request.auth, conversationId, query.cursor, query.limit);
+  }
+
+  @Get('conversations/:conversationId/visibility-reconciliation')
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  @ApiOperation({ operationId: 'chatConversationVisibilityReconciliation', summary: 'Reconcile durable, body-safe moderation visibility transitions' })
+  @ApiOkResponse({ type: ChatVisibilityReconciliationResponseDto })
+  visibilityReconciliation(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) conversationId: string, @Query() query: ChatVisibilityReconciliationQueryDto, @Req() request: AuthenticatedRequest) {
+    return this.chat.visibilityReconciliation(request.auth, conversationId, query.cursor, query.limit);
   }
 
   @Post('conversations/:conversationId/messages')
