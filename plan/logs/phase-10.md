@@ -1,5 +1,14 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — join revocation regression
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-22 00:02 +03:30
+
+- PostgreSQL authorization/moderation plus real Socket.IO failed-join revocation regression passed: 3 files, 13 tests.
+
+Next task: F10-T11 REVALIDATION
+
 ## F10-T04 REWORK — revoke failed reauthorization join
 
 Task ID: F10-T04 REWORK
