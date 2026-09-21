@@ -1,5 +1,17 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — four-P1 PostgreSQL and Socket.IO proof
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-21 23:48 +03:30
+
+- PostgreSQL ordering/idempotency passed (1 file, 1 test).
+- PostgreSQL authorization, moderation, send-only block/read-sync-receipt regression passed (3 files, 8 tests).
+- Rate-limit, receipt, Socket.IO deactivation revocation, missed visibility publication recovery, and reconnect-load passed (4 files, 11 tests; 74.38s).
+- All four P1 paths therefore have real PostgreSQL/Socket.IO coverage; no new capacity claim is made beyond the existing frozen evidence.
+
+Next task: F10-T11 REVALIDATION
+
 ## F10-T08 REWORK — client cursor pagination and durable visibility recovery
 
 Task ID: F10-T08 REWORK

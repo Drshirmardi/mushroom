@@ -56,6 +56,16 @@ accepted F10 work remains evidence, but the phase cannot be closed until the ser
 T11 rework passes a new independent security/closure review. `Phase 11` remains `NOT_STARTED`, unclaimed and
 unmodified.
 
+## آخرین batch — F10-R15-SECURITY-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+
+- Task ID: `F10-T09 REVALIDATION`
+  - Status: `DONE`
+  - Result: all real PostgreSQL/Socket.IO P1 regression gates passed; F10-T11 is next eligible and not yet claimed.
+
 ## آخرین batch — F10-R14-CLIENT-PAGINATION
 
 Coordinator/Thread: `Codex /root`
