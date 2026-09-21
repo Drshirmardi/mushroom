@@ -16,9 +16,15 @@ type RestoreVisibilityEvent = {
 export async function loadChat(accessToken: string, appointmentId: string) {
   const conversation = await withRequestTimeout(apiClient.GET("/v1/chat/appointments/{appointmentId}/conversation", { headers: headers(accessToken), params: { path: { appointmentId } } }));
   if (!conversation.data) throw new Error("CHAT_FORBIDDEN");
-  const history = await withRequestTimeout(apiClient.GET("/v1/chat/conversations/{conversationId}/messages", { headers: headers(accessToken), params: { path: { conversationId: conversation.data.id } } }));
-  if (!history.data) throw new Error("CHAT_UNAVAILABLE");
-  return { conversation: conversation.data, messages: history.data.items };
+  let cursor: string | undefined; const messages: ChatMessage[] = [];
+  for (let page = 0; page < 100; page += 1) {
+    const history = await withRequestTimeout(apiClient.GET("/v1/chat/conversations/{conversationId}/messages", { headers: headers(accessToken), params: { path: { conversationId: conversation.data.id }, query: { cursor, limit: HISTORY_PAGE_SIZE as never } } }));
+    if (!history.data) throw new Error("CHAT_UNAVAILABLE");
+    messages.push(...history.data.items as ChatMessage[]);
+    if (typeof history.data.nextCursor !== "string") return { conversation: conversation.data, messages: messages.reduce(reconcileChatMessages, []) };
+    cursor = history.data.nextCursor;
+  }
+  throw new Error("CHAT_HISTORY_LIMIT");
 }
 
 export async function sendChat(accessToken: string, conversationId: string, body: string) {
@@ -27,7 +33,7 @@ export async function sendChat(accessToken: string, conversationId: string, body
   return result.data;
 }
 
-type RealtimeSync = { ok: boolean; items?: ChatMessage[] };
+type RealtimeSync = { ok: boolean; items?: ChatMessage[]; nextCursor?: string | null };
 export type ChatMessage = Awaited<ReturnType<typeof sendChat>>;
 
 export function reconcileChatMessages(messages: ChatMessage[], next: ChatMessage) {
@@ -38,6 +44,7 @@ export function reconcileChatMessages(messages: ChatMessage[], next: ChatMessage
 export function connectChat(accessToken: string, conversationId: string, lastSequence: () => string, onMessage: (message: ChatMessage) => void, onState: (state: "connected" | "reconnecting" | "offline" | "read-only") => void): Socket {
   const socket = io(`${apiBaseUrl}/chat`, { auth: { token: accessToken }, transports: ["websocket"], reconnectionDelay: 1_000, reconnectionDelayMax: 30_000, randomizationFactor: 0.5 });
   let connectionGeneration = 0;
+  let visibilityCursor: string | undefined;
   const pendingRestores = new Map<string, RestoreVisibilityEvent>();
   const reconciling = new Set<string>();
 
@@ -70,11 +77,24 @@ export function connectChat(accessToken: string, conversationId: string, lastSeq
     });
   };
 
+  const reconcileVisibility = (generation: number) => void (async () => {
+    let cursor = visibilityCursor;
+    for (let page = 0; page < 100; page += 1) {
+      const result = await withRequestTimeout(apiClient.GET("/v1/chat/conversations/{conversationId}/visibility-reconciliation", { headers: headers(accessToken), params: { path: { conversationId }, query: { cursor, limit: HISTORY_PAGE_SIZE as never } } }));
+      if (generation !== connectionGeneration || !result.data) return;
+      result.data.items.forEach((item) => onMessage(item.message as ChatMessage));
+      if (typeof result.data.checkpointCursor === "string") visibilityCursor = result.data.checkpointCursor;
+      if (typeof result.data.nextCursor !== "string") return;
+      cursor = result.data.nextCursor;
+    }
+  })().catch(() => undefined);
+
   const join = () => socket.emit("conversation:join", { conversationId, lastSequence: lastSequence() }, (sync: RealtimeSync) => {
     if (!sync.ok) { onState("read-only"); return; }
     sync.items?.forEach(onMessage);
     onState("connected");
     for (const event of pendingRestores.values()) reconcileRestore(event, connectionGeneration);
+    reconcileVisibility(connectionGeneration);
   });
   socket.on("connect", () => { connectionGeneration += 1; join(); });
   socket.on("message:committed", onMessage);

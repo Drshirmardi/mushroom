@@ -30,7 +30,7 @@
 
 - [x] `F10-T03 REWORK` — durable authorized visibility reconciliation and send-only block policy
 - [x] `F10-T04 REWORK` — revoke room membership immediately after current authorization loss
-- [ ] `F10-T08 REWORK` — bounded app/dashboard long-history and reconciliation pagination
+- [x] `F10-T08 REWORK` — bounded app/dashboard long-history and reconciliation pagination
 - [ ] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
 - [ ] `F10-T11 REVALIDATION` — final build/E2E/freshness closure gates
 

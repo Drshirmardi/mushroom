@@ -56,6 +56,24 @@ accepted F10 work remains evidence, but the phase cannot be closed until the ser
 T11 rework passes a new independent security/closure review. `Phase 11` remains `NOT_STARTED`, unclaimed and
 unmodified.
 
+## آخرین batch — F10-R14-CLIENT-PAGINATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 23:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `7d8fe59`, and `975bc25`.
+
+- Task ID: `F10-T08 REWORK`
+  - Status: `DONE`
+  - Depends on: F10-T03/T04 REWORK
+  - Scope: bounded, cancellable app/dashboard history and reconnect pagination through authorized REST high-water; Socket.IO remains body-free signaling.
+  - Owned paths: app/dashboard chat adapters and focused tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: app/dashboard source and test suites.
+  - Expected verification: >150-message reconnect pagination, stale-disconnect safety, app/dashboard tests/typechecks/builds, diff/isolation.
+
+- Result: F10-T08 REWORK passed. Next eligible task is F10-T09 REVALIDATION, not yet claimed.
+
 ## آخرین batch — F10-R13-SOCKET-REVOCATION
 
 Coordinator/Thread: `Codex /root`

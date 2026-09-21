@@ -1,5 +1,17 @@
 # Phase 10 Execution Evidence
 
+## F10-T08 REWORK — client cursor pagination and durable visibility recovery
+
+Task ID: F10-T08 REWORK
+Completed at: 2026-09-21 23:20 +03:30
+
+- App and dashboard load authorized history in deduplicated pages of 100 (bounded at 100 pages), covering conversations beyond 150 messages.
+- Reconnect consumes bounded history backlog and the durable authorized visibility-reconciliation REST endpoint; async responses are discarded when the socket generation changes.
+- Socket.IO visibility payloads remain signaling only; rendered message content comes from authorized REST.
+- `pnpm --filter @sabz-zendegi/api-client build`, app/dashboard typechecks, and focused app/dashboard chat adapter tests — PASS.
+
+Next task: F10-T09 REVALIDATION
+
 ## F10-T04 REWORK — Socket.IO revocation and missed-signal recovery
 
 Task ID: F10-T04 REWORK
