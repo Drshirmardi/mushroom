@@ -1,5 +1,14 @@
 # Phase 10 Execution Evidence
 
+## F10-T08 REWORK — reconcile restored visibility from REST
+
+Task ID: F10-T08 REWORK
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - App adapter tests → PASS (5), dashboard adapter tests → PASS (2); both prove VISIBLE visibility event triggers
+    authorized REST history retrieval and restored body is never accepted from Socket.IO.
+  - App/dashboard typechecks and `git diff --check` → PASS.
+
 ## F10-T04 REWORK — restore visibility realtime event
 
 Task ID: F10-T04 REWORK

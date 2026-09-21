@@ -19,6 +19,11 @@ export async function sendChat(accessToken: string, conversationId: string, body
   return result.data;
 }
 
+async function refreshConversation(accessToken: string, conversationId: string, onMessage: (message: ChatMessage) => void) {
+  const history = await withRequestTimeout(apiClient.GET("/v1/chat/conversations/{conversationId}/messages", { headers: headers(accessToken), params: { path: { conversationId } } }));
+  history.data?.items.forEach((message) => onMessage(message as ChatMessage));
+}
+
 type RealtimeSync = { ok: boolean; items?: ChatMessage[] };
 export type ChatMessage = Awaited<ReturnType<typeof sendChat>>;
 
@@ -31,7 +36,10 @@ export function connectChat(accessToken: string, conversationId: string, lastSeq
   const socket = io(`${apiBaseUrl}/chat`, { auth: { token: accessToken }, transports: ["websocket"], reconnectionDelay: 1_000, reconnectionDelayMax: 30_000, randomizationFactor: 0.5 });
   socket.on("connect", () => socket.emit("conversation:join", { conversationId, lastSequence: lastSequence() }, (sync: RealtimeSync) => { if (!sync.ok) { onState("read-only"); return; } sync.items?.forEach(onMessage); onState("connected"); }));
   socket.on("message:committed", onMessage);
-  socket.on("message:visibility-changed", onMessage);
+  socket.on("message:visibility-changed", (event: { visibility?: string }) => {
+    if (event.visibility === "VISIBLE") void refreshConversation(accessToken, conversationId, onMessage);
+    else onMessage(event as ChatMessage);
+  });
   socket.on("reconnect_attempt", () => onState("reconnecting"));
   socket.on("disconnect", () => onState("offline"));
   socket.on("connect_error", () => onState("offline"));

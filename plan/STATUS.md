@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T08 REWORK پس از commit مستقل F10-T04 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T09 REVALIDATION پس از commit مستقل F10-T08 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -84,6 +84,17 @@ Baseline: `dade0b7 fix(F10-T03): publish restore visibility transition`
 - Scope: publish authorized body-free `message:visibility-changed` restore events to the conversation room only.
 - Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
 - Result: a joined, authorized recipient gets one body-free restore event only from the same conversation room.
+
+## آخرین batch — F10-R08-RESTORE-RECONCILIATION
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `6fe0c2c fix(F10-T04): publish restore visibility event`
+
+- Task: `F10-T08 REWORK`
+- Result: app and dashboard ignore body-free restore event content and refresh the authoritative authorized REST history.
+- Verification: app adapter (5 tests), dashboard adapter (2 tests), app/dashboard typechecks and `git diff --check` → PASS.
 
 ## آخرین batch — F10-R11-VISIBILITY-CLOSURE
 

@@ -19,6 +19,11 @@ export async function sendChat(accessToken: string, conversationId: string, body
   return result.data;
 }
 
+async function refreshConversation(accessToken: string, conversationId: string, onMessage: (message: ChatMessage) => void) {
+  const history = await withRequestTimeout(apiClient.GET("/v1/chat/conversations/{conversationId}/messages", { headers: headers(accessToken), params: { path: { conversationId } } }));
+  history.data?.items.forEach((message) => onMessage(message as ChatMessage));
+}
+
 export type ChatMessage = Awaited<ReturnType<typeof sendChat>>;
 type RealtimeSync = { ok: boolean; code?: string; items?: ChatMessage[] };
 
@@ -48,7 +53,10 @@ export function connectChat(
   });
   socket.on("connect", join);
   socket.on("message:committed", onMessage);
-  socket.on("message:visibility-changed", onMessage);
+  socket.on("message:visibility-changed", (event: { visibility?: string }) => {
+    if (event.visibility === "VISIBLE") void refreshConversation(accessToken, conversationId, onMessage);
+    else onMessage(event as ChatMessage);
+  });
   socket.on("reconnect_attempt", () => onState("reconnecting"));
   socket.on("disconnect", () => onState("offline"));
   socket.on("connect_error", () => onState("offline"));
