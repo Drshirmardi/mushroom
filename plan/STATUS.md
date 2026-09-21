@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T08 reconnect-pagination remediation پذیرفته شده و F10-T09 revalidation بعدی است؛ Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ F10-T09 reconnect-pagination revalidation پذیرفته شده و F10-T11 final gates بعدی است؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -50,9 +50,8 @@
 
 ## handoff فاز فعال
 
-`Phase 10` remains `REWORK`: F10-T08 now recovers the full bounded PostgreSQL history gap after join and safely ignores
-stale pages. F10-T09 real PostgreSQL/Socket.IO revalidation is next, followed by F10-T11 final gates. `Phase 11` remains
-`NOT_STARTED`, unclaimed and unmodified.
+`Phase 10` remains `REWORK`: F10-T08 client recovery and F10-T09 PostgreSQL/Socket.IO revalidation passed the
+151-message reconnect contract. F10-T11 final gates are next. `Phase 11` remains `NOT_STARTED`, unclaimed and unmodified.
 
 ## آخرین batch — F10-R16-CLOSURE-GATES
 

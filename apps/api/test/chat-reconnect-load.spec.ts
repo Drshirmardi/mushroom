@@ -15,6 +15,29 @@ describe('chat reconnect recovery (PostgreSQL and Socket.IO integration)', () =>
 
   afterEach(async () => { socket?.disconnect(); socket = undefined; if (fixture) await destroyChatFixture(fixture); fixture = undefined; await app?.close(); });
 
+  it('exposes a >150-message reconnect gap as a bounded Socket.IO page plus authorized PostgreSQL cursor continuation', async () => {
+    app = await createApiApplication(); await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const id = conversation.json().id as string;
+    await fixture.prisma.chatMessage.createMany({ data: Array.from({ length: 151 }, (_, index) => ({
+      clinicId: fixture!.clinic.id, conversationId: id, sequence: BigInt(index + 1), senderUserId: fixture!.users.patient.id,
+      senderKind: 'PATIENT', clientMessageId: `reconnect-gap-${index + 1}`, requestPayloadHash: 'a'.repeat(64), body: `durable reconnect ${index + 1}`,
+    })) });
+
+    socket = await connect(await app.getUrl(), fixture.tokens.doctor);
+    const first = await emit<{ ok: boolean; items: Array<{ id: string; sequence: string }>; nextCursor: string | null; highWaterSequence: string }>(socket, 'conversation:join', { conversationId: id, lastSequence: '0' });
+    expect(first).toMatchObject({ ok: true, highWaterSequence: '151', nextCursor: expect.any(String) });
+    expect(first.items).toHaveLength(100);
+    expect(first.items.map((message) => message.sequence)).toEqual(Array.from({ length: 100 }, (_, index) => String(index + 1)));
+
+    const continuation = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${id}/messages?limit=100&cursor=${encodeURIComponent(first.nextCursor!)}`, headers: auth(fixture.tokens.doctor) });
+    expect(continuation.statusCode).toBe(200);
+    expect(continuation.json()).toMatchObject({ highWaterSequence: '151', nextCursor: null });
+    const allSequences = [...first.items.map((message) => message.sequence), ...continuation.json().items.map((message: { sequence: string }) => message.sequence)];
+    expect(allSequences).toEqual(Array.from({ length: 151 }, (_, index) => String(index + 1)));
+  }, 30_000);
+
   it('recovers the committed sequence after a new authenticated connection without durable duplicates or restricted bodies', async () => {
     app = await createApiApplication(); await app.listen({ host: '127.0.0.1', port: 0 });
     fixture = await createChatFixture(app);

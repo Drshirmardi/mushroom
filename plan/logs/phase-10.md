@@ -1,5 +1,32 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — PostgreSQL/Socket.IO reconnect pagination
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-22 00:30 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R18-RECONNECT-POSTGRESQL-REVALIDATION
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/test/chat-reconnect-load.spec.ts
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+Migrations:
+  - none
+Tests run:
+  - pnpm --filter @sabz-zendegi/api test -- chat-reconnect-load.spec.ts → PASS (PostgreSQL/Socket.IO, 2 tests)
+  - pnpm --filter @sabz-zendegi/api typecheck → PASS
+  - git diff --check → PASS
+Result:
+  - A real authenticated doctor reconnect receives exactly the 100-record bounded Socket.IO first page and a
+    PostgreSQL-authorized REST cursor continuation through the fixed 151-message high-water, with all sequences
+    present once and ordered.
+  - No backend contract, authorization limit, event payload, or persistence behavior changed.
+Known limitations:
+  - none
+Next batch:
+  - F10-T11 REVALIDATION
+
 ## F10-T08 REWORK — bounded reconnect-gap pagination
 
 Task ID: F10-T08 REWORK
