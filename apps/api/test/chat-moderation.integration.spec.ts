@@ -70,4 +70,19 @@ describe('chat moderation and conversation-scoped blocks (PostgreSQL API integra
     const audit = await fixture.prisma.chatAuditEvent.findMany({ where: { conversationId: id } });
     expect(JSON.stringify(audit)).not.toContain('sensitive original body');
   });
+
+  it('persists and audits a restricted-to-visible restore without putting body into the transition boundary', async () => {
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const message = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversation.json().id}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'c1000000-0000-4000-8000-000000000003', body: 'restorable body' } });
+    const restricted = await app.inject({ method: 'POST', url: `/v1/chat/messages/${message.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'SPAM_OR_SCAM', safeNote: 'reviewed' } });
+    expect(restricted.statusCode).toBe(201);
+    const restored = await app.inject({ method: 'POST', url: `/v1/chat/messages/${message.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'VISIBLE', safeNote: 'restored' } });
+    expect(restored.statusCode).toBe(201);
+    expect(restored.json()).toMatchObject({ id: message.json().id, sequence: '1', visibility: 'VISIBLE', body: 'restorable body' });
+    const persisted = await fixture.prisma.chatMessage.findUniqueOrThrow({ where: { id: message.json().id } });
+    expect(persisted).toMatchObject({ visibility: 'VISIBLE', restrictedReasonCategory: null, restrictedAt: null });
+    expect(await fixture.prisma.chatMessageModerationAction.count({ where: { messageId: message.json().id, action: 'RESTORE_MESSAGE' } })).toBe(1);
+    expect(await fixture.prisma.chatAuditEvent.count({ where: { conversationId: conversation.json().id, targetId: message.json().id, action: 'MESSAGE_RESTORED' } })).toBe(1);
+  });
 });

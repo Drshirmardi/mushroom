@@ -9,10 +9,10 @@
 - آخرین به‌رورسانی: `2026-09-21 +05:05`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
-- task فعال: `ندارد؛ independent closure review سوم لازم است.`
-- blocker فعال: `ندارد؛ فقط closure review مستقل سوم باقی مانده است.`
+- task فعال: `ندارد`
+- blocker فعال: `ندارد؛ F10-T04 REWORK پس از commit مستقل F10-T03 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -58,6 +58,20 @@ acceptance and any enable/default decision. Phase 10 is in serialized closure-re
 `F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
 مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و third independent closure review لازم دارد;
 Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R03-RESTORE-TRANSITION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +05:05`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `e9efe7d test(F10-T11): revalidate phase 10 closure`
+
+- Task: `F10-T03 REWORK`
+- Scope: durable, audited `RESTRICTED → VISIBLE` transition yields an opaque post-commit publication fact; no body or preview.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: restore creates a durable, audited opaque transition fact containing conversation/message identity, sequence
+  and `VISIBLE` only; it contains no body or preview.
 
 ## آخرین batch — F10-R11-VISIBILITY-CLOSURE
 

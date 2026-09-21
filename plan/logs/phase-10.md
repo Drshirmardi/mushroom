@@ -1,5 +1,16 @@
 # Phase 10 Execution Evidence
 
+## F10-T03 REWORK — restore visibility publication fact
+
+Task ID: F10-T03 REWORK
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - PostgreSQL moderation integration → PASS (2 tests), including `RESTRICTED → VISIBLE` persistence,
+    `RESTORE_MESSAGE` moderation action and `MESSAGE_RESTORED` audit.
+  - API typecheck and `git diff --check` → PASS.
+Result:
+  - Restore retains authorization and audit while yielding an opaque post-commit transition boundary with no body or preview.
+
 ## F10-T10 — video deferral
 
 Task ID: F10-T10

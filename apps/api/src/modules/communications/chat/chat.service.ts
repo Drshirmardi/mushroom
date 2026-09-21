@@ -51,6 +51,13 @@ type RestrictedMessageTransition = {
   };
 };
 
+type VisibilityTransition = {
+  conversationId: string;
+  messageId: string;
+  sequence: string;
+  visibility: 'RESTRICTED' | 'VISIBLE';
+};
+
 const forbidden = () => new ForbiddenException({ code: 'CHAT_FORBIDDEN', message: 'The conversation is not available to this account.', details: {} });
 const moderationForbidden = () => new ForbiddenException({ code: 'CHAT_MODERATION_FORBIDDEN', message: 'Moderation access is not available to this account.', details: {} });
 const ineligible = () => new ForbiddenException({ code: 'CHAT_APPOINTMENT_NOT_ELIGIBLE', message: 'The appointment is not eligible for chat activity.', details: {} });
@@ -237,15 +244,15 @@ export class ChatService {
       if (!actor.isAdmin) throw moderationForbidden();
       if (input.visibility === 'RESTRICTED' && !input.reasonCategory) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A restriction reason is required.', details: {} });
       if (input.reasonCategory === 'OTHER' && !this.safeNote(input.safeNote)) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A non-sensitive note is required for OTHER.', details: {} });
-      if ((input.visibility === 'RESTRICTED' && message.visibility === ChatMessageVisibility.RESTRICTED && message.restrictedReasonCategory === input.reasonCategory) || input.visibility === 'VISIBLE' && message.visibility === ChatMessageVisibility.VISIBLE) return { response: this.messageResponse(message), restrictedTransition: null };
+      if ((input.visibility === 'RESTRICTED' && message.visibility === ChatMessageVisibility.RESTRICTED && message.restrictedReasonCategory === input.reasonCategory) || input.visibility === 'VISIBLE' && message.visibility === ChatMessageVisibility.VISIBLE) return { response: this.messageResponse(message), restrictedTransition: null, visibilityTransition: null };
       if (input.visibility === 'RESTRICTED') {
         const restricted = await this.restrictMessage(tx, conversation, message, actor.userId, input.reasonCategory!, this.safeNote(input.safeNote));
-        return { response: this.messageResponse(restricted.message), restrictedTransition: restricted.transition };
+        return { response: this.messageResponse(restricted.message), restrictedTransition: restricted.transition, visibilityTransition: this.visibilityTransition(conversation, restricted.message) };
       }
       const updated = await tx.chatMessage.update({ where: { id: message.id }, data: { visibility: ChatMessageVisibility.VISIBLE, restrictedReasonCategory: null, restrictedAt: null } });
       await tx.chatMessageModerationAction.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, messageId: message.id, actorUserId: actor.userId, action: ChatMessageModerationActionType.RESTORE_MESSAGE, reasonCategory: null, safeNote: this.safeNote(input.safeNote) } });
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.MESSAGE_RESTORED, 'MESSAGE', message.id);
-      return { response: this.messageResponse(updated), restrictedTransition: null };
+      return { response: this.messageResponse(updated), restrictedTransition: null, visibilityTransition: this.visibilityTransition(conversation, updated) };
     });
     if (outcome.restrictedTransition) this.publisher.messageVisibilityChanged(outcome.restrictedTransition.conversationId, outcome.restrictedTransition.message);
     return outcome.response;
@@ -444,6 +451,10 @@ export class ChatService {
         tombstone: 'Conversation content has been restricted under policy.',
       },
     };
+  }
+
+  private visibilityTransition(conversation: { id: string }, message: { id: string; sequence: bigint; visibility: ChatMessageVisibility }): VisibilityTransition {
+    return { conversationId: conversation.id, messageId: message.id, sequence: String(message.sequence), visibility: message.visibility as 'RESTRICTED' | 'VISIBLE' };
   }
 
   private conversationResponse(conversation: { id: string; appointmentId: string; clinicId: string; patientId: string; doctorId: string; createdAt: Date }) { return conversation; }
