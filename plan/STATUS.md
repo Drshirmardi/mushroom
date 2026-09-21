@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-22 00:20 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- آخرین به‌رورسانی: `2026-09-22 01:10 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T09 reconnect-pagination revalidation پذیرفته شده و F10-T11 final gates بعدی است؛ Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ reconnect-pagination remediation و final gates پاس شده‌اند؛ independent closure review لازم است؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -50,8 +50,9 @@
 
 ## handoff فاز فعال
 
-`Phase 10` remains `REWORK`: F10-T08 client recovery and F10-T09 PostgreSQL/Socket.IO revalidation passed the
-151-message reconnect contract. F10-T11 final gates are next. `Phase 11` remains `NOT_STARTED`, unclaimed and unmodified.
+`Phase 10` is `READY_FOR_REVIEW`: F10-T08 bounded client recovery, F10-T09 real PostgreSQL/Socket.IO proof, and
+F10-T11 final freshness/test/build/Chrome gates passed. A new independent closure review is required before any closure
+decision. `Phase 11` remains `NOT_STARTED`, unclaimed and unmodified.
 
 ## آخرین batch — F10-R16-CLOSURE-GATES
 

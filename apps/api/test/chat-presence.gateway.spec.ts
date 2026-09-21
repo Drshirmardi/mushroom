@@ -28,8 +28,9 @@ describe('chat presence lease', () => {
   it('fails closed when the current server-side eligibility check fails', async () => {
     const emit = vi.fn();
     const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { realtimeSync: vi.fn().mockRejectedValue(new Error('closed')) } as never, { bind: vi.fn() } as never);
-    const client = { id: 'socket-2', data: { chatPrincipal: principal }, to: () => ({ emit }) };
+    const client = { id: 'socket-2', data: { chatPrincipal: principal }, disconnect: vi.fn(), to: () => ({ emit }) };
     await expect(gateway.heartbeat(client as never, { conversationId, lastSequence: '0' })).resolves.toEqual({ ok: false, code: 'CHAT_FORBIDDEN' });
+    expect(client.disconnect).toHaveBeenCalledWith(true);
     expect(emit).not.toHaveBeenCalled();
   });
 });

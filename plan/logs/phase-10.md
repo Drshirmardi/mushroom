@@ -1,5 +1,38 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — reconnect-pagination final gates
+
+Task ID: F10-T11 REVALIDATION
+Completed at: 2026-09-22 01:10 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R19-RECONNECT-CLOSURE-GATES
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/test/chat-presence.gateway.spec.ts
+  - plan/STATUS.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - plan/logs/phase-10.md
+Migrations:
+  - Prisma deploy → 31 applied, no pending migrations
+Tests run:
+  - Prisma generate, API OpenAPI export, generated-client refresh, and tracked client freshness → PASS
+  - API/app/dashboard typechecks → PASS
+  - app test → PASS (12 files, 42 tests); dashboard test → PASS (15 files, 49 tests)
+  - PostgreSQL/Socket.IO chat REST, authorization, moderation, realtime, presence, and reconnect suites → PASS (6 files, 18 tests)
+  - app/dashboard production builds → PASS
+  - Chrome Phase 10 browser E2E → PASS (1 test)
+  - source-safety scan, git diff --check, and Phase 10 commit-isolation review → PASS
+Result:
+  - The reconnect fix preserves PostgreSQL-authoritative history, bounded cursors, body-safe restricted-content
+    signaling, and all existing authorization/revocation behavior.
+  - The presence failure fixture now explicitly models the required revoke call; no runtime behavior changed.
+  - `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned, unstaged, and absent from every
+    Phase 10 commit in this remediation.
+Known limitations:
+  - Phase 10 is READY_FOR_REVIEW only; formal closure requires a new independent review.
+Next batch:
+  - independent Phase 10 closure review only; do not start Phase 11
+
 ## F10-T09 REVALIDATION — PostgreSQL/Socket.IO reconnect pagination
 
 Task ID: F10-T09 REVALIDATION
