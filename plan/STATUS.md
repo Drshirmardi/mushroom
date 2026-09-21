@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 +05:05`
+- آخرین به‌رورسانی: `2026-09-21 19:55 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T11 REVALIDATION پس از commit مستقل F10-T09 واجد شروع است.`
+- blocker فعال: `ندارد؛ Phase 10 فقط منتظر fourth independent closure review است و نباید CLOSED اعلام شود.`
 
 ## پیشرفت کلان
 
@@ -56,8 +56,23 @@ acceptance and any enable/default decision. Phase 10 is in serialized closure-re
 برای هر دو مسیر moderation transition امن و پایدار را پذیرفته و `F10-T04 REWORK` آن را پس از commit فقط به room
 مجاز منتشر کرده و `F10-T08 REWORK` cache و rendering هر دو UI را به tombstone همگام کرده است.
 `F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
-مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و third independent closure review لازم دارد;
+مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و fourth independent closure review لازم دارد;
 Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R11-RESTORE-CLOSURE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 19:55 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+Baseline: `fdb91c7 test(F10-T09): revalidate restored visibility`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final closure gates after the restore visibility remediation. The output state is `READY_FOR_REVIEW`, never
+  `DONE (CLOSED)`.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: Prisma migration status/validate, OpenAPI/client freshness, app/dashboard tests and builds, Chrome E2E,
+  source scans and diff/isolation checks all passed. A fourth independent closure review remains required.
 
 ## آخرین batch — F10-R03-RESTORE-TRANSITION
 

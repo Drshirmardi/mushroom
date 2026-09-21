@@ -1,5 +1,22 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — restore visibility closure gates
+
+Task ID: F10-T11 REVALIDATION
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - PostgreSQL Prisma migration status (31 applied) and schema validation → PASS.
+  - API OpenAPI export, generated-client refresh and API-client typecheck → PASS.
+  - App tests (12 files, 39 tests), dashboard tests (15 files, 46 tests), and app/dashboard production builds → PASS.
+  - Live Chrome Phase 10 browser E2E → PASS (1 test), after all three local origins were available.
+  - Scoped deferred-media and committed-secret-literal source scans → PASS; no WebRTC/STUN/TURN/provider runtime
+    references or apparent source secret literals found.
+  - `git diff --check` and rework commit-isolation review → PASS. User-owned `.gitignore` and
+    `plan/phases/12-PRODUCTION-HARDENING.md` remain modified but unstaged, outside this commit.
+Result:
+  - Phase 10 remains `READY_FOR_REVIEW`; it is not `DONE (CLOSED)`. Only a fourth independent closure review may
+    make a closure decision, and Phase 11 remains `NOT_STARTED`.
+
 ## F10-T09 REVALIDATION — restore visibility path
 
 Task ID: F10-T09 REVALIDATION
