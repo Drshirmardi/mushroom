@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 +04:45`
+- آخرین به‌رورسانی: `2026-09-21 +05:05`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
-- task فعال: `ندارد؛ F10-T11 REVALIDATION پس از commit مستقل F10-T09 واجد شرایط است.`
-- blocker فعال: `ندارد؛ revalidation مرتبط F10-T09 پذیرفته شده است.`
+- task فعال: `ندارد؛ independent closure review سوم لازم است.`
+- blocker فعال: `ندارد؛ فقط closure review مستقل سوم باقی مانده است.`
 
 ## پیشرفت کلان
 
@@ -55,8 +55,31 @@ PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns me
 acceptance and any enable/default decision. Phase 10 is in serialized closure-review remediation; `F10-T03 REWORK`
 برای هر دو مسیر moderation transition امن و پایدار را پذیرفته و `F10-T04 REWORK` آن را پس از commit فقط به room
 مجاز منتشر کرده و `F10-T08 REWORK` cache و rendering هر دو UI را به tombstone همگام کرده است.
-`F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی کرده؛ `F10-T11 REVALIDATION` تنها task
-واجد شرایط بعدی است. Phase 11 remains `NOT_STARTED`.
+`F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
+مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و third independent closure review لازم دارد;
+Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R11-VISIBILITY-CLOSURE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +04:50`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+Baseline: `a9be31d test(F10-T09): revalidate visibility transitions`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final related Prisma/API/OpenAPI/client/app/dashboard/browser/security/deferred-media/commit-isolation gates
+  after F10-T03/T04/T08/T09. The output state is `READY_FOR_REVIEW`, not `DONE (CLOSED)`.
+- Owned paths: final evidence/status/checklist and a focused verification-only regression if a gap is found.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, product feature/schema/migration,
+  dependency, client output, API or UI source unless a verification gap requires its owning remediation task instead.
+- Result: all related final gates passed. The phase returns to `READY_FOR_REVIEW`, never `DONE (CLOSED)`; only a third
+  independent closure review can authorize any closure decision.
+- Verification: Prisma migration status (31 applied), schema validate, API/app/dashboard/api-client typechecks,
+  OpenAPI export/generated-client freshness, app build, dashboard build, app tests (12/38), dashboard tests (15/45),
+  live Chrome Phase 10 browser E2E, scoped deferred-media/external-messenger scan, rework commit-isolation review and
+  `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
 
 ## آخرین batch — F10-R09-VISIBILITY-REVALIDATION
 

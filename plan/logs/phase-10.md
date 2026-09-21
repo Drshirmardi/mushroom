@@ -461,6 +461,29 @@ Result:
 Next eligible action:
   - F10-T11 REVALIDATION only, after this task's isolated commit; do not start Phase 11.
 
+## F10-T11 REVALIDATION — final visibility remediation gates
+
+Task ID: F10-T11 REVALIDATION
+Completed at: 2026-09-21 +05:05
+Batch ID: F10-R11-VISIBILITY-CLOSURE
+Status: ACCEPTED — isolated revalidation commit pending; Phase 10 `READY_FOR_REVIEW`
+Verification:
+  - PostgreSQL Prisma migration status → PASS (31 applied); Prisma schema validate and generated client → PASS.
+  - API, app, dashboard and generated API-client typechecks → PASS. OpenAPI export and client regeneration completed
+    with a zero tracked diff, proving contract/client freshness.
+  - App build and dashboard build → PASS. App tests → PASS (12 files, 38 tests); dashboard tests → PASS (15 files,
+    45 tests), including the new direct/report visibility-tombstone regressions.
+  - Chrome Phase 10 browser E2E against the local web/app/API and PostgreSQL → PASS (1 test): authenticated patient
+    text chat, persisted send, no media control, no external request and no token URL leakage.
+  - Scoped scan found no attachment/upload/video/WebRTC/STUN/TURN/Redis/Centrifugo/external-messenger artifacts in
+    Phase 10 chat runtime/UI scope. Rework-commit isolation confirms neither `.gitignore` nor
+    `plan/phases/12-PRODUCTION-HARDENING.md` appears in a Phase 10 rework commit. `git diff --check` → PASS.
+Result:
+  - The new post-commit tombstone signal, durable history/reconnect behavior and both application caches passed their
+    final related gates. Phase 10 remains `READY_FOR_REVIEW`, not `DONE (CLOSED)`.
+Next eligible action:
+  - third independent Phase 10 closure review only; do not start Phase 11.
+
 ## F10-T03 REWORK — restricted moderated-message visibility
 
 Task ID: F10-T03 REWORK
