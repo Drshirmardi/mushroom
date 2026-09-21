@@ -124,6 +124,20 @@ describe('chat realtime Socket.IO integration', () => {
     const direct = await app.inject({ method: 'POST', url: `/v1/chat/messages/${directMessage.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'ABUSE_OR_HARASSMENT', safeNote: 'reviewed' } });
     expect(direct.statusCode).toBe(201);
     await directEvent;
+    const restoreEvent = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('restore visibility update was not delivered')), 5_000);
+      socket!.once('message:visibility-changed', (event) => {
+        clearTimeout(timeout);
+        try {
+          expect(event).toEqual({ conversationId, messageId: directMessage.json().id, sequence: '1', visibility: 'VISIBLE' });
+          expect(event.body).toBeUndefined(); expect(event.preview).toBeUndefined();
+          resolve();
+        } catch (error) { reject(error); }
+      });
+    });
+    const restored = await app.inject({ method: 'POST', url: `/v1/chat/messages/${directMessage.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'VISIBLE', safeNote: 'restored' } });
+    expect(restored.statusCode).toBe(201);
+    await restoreEvent;
 
     const resolvedMessage = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000006', body: 'connected resolution source body' } });
     expect(resolvedMessage.statusCode).toBe(201);

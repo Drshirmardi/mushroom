@@ -255,6 +255,7 @@ export class ChatService {
       return { response: this.messageResponse(updated), restrictedTransition: null, visibilityTransition: this.visibilityTransition(conversation, updated) };
     });
     if (outcome.restrictedTransition) this.publisher.messageVisibilityChanged(outcome.restrictedTransition.conversationId, outcome.restrictedTransition.message);
+    else if (outcome.visibilityTransition) this.publisher.messageVisibilityChanged(outcome.visibilityTransition.conversationId, outcome.visibilityTransition);
     return outcome.response;
   }
 

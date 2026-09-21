@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T04 REWORK پس از commit مستقل F10-T03 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T08 REWORK پس از commit مستقل F10-T04 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -72,6 +72,18 @@ Baseline: `e9efe7d test(F10-T11): revalidate phase 10 closure`
 - Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
 - Result: restore creates a durable, audited opaque transition fact containing conversation/message identity, sequence
   and `VISIBLE` only; it contains no body or preview.
+
+## آخرین batch — F10-R04-RESTORE-EVENT
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `dade0b7 fix(F10-T03): publish restore visibility transition`
+
+- Task: `F10-T04 REWORK`
+- Scope: publish authorized body-free `message:visibility-changed` restore events to the conversation room only.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: a joined, authorized recipient gets one body-free restore event only from the same conversation room.
 
 ## آخرین batch — F10-R11-VISIBILITY-CLOSURE
 

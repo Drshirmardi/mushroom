@@ -1,5 +1,14 @@
 # Phase 10 Execution Evidence
 
+## F10-T04 REWORK — restore visibility realtime event
+
+Task ID: F10-T04 REWORK
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - PostgreSQL/Socket.IO gateway integration → PASS (5 tests). A connected recipient receives the direct restriction
+    tombstone, then restore event `{ conversationId, messageId, sequence, visibility: VISIBLE }` with no body/preview.
+  - API typecheck and `git diff --check` → PASS.
+
 ## F10-T03 REWORK — restore visibility publication fact
 
 Task ID: F10-T03 REWORK
