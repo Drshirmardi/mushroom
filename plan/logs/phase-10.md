@@ -1,5 +1,17 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — final four-P1 closure gates
+
+Task ID: F10-T11 REVALIDATION
+Completed at: 2026-09-21 23:52 +03:30
+
+- Minimal test-discovery repair: Playwright `testDir` now covers retained `tests/e2e/phase-09` and Phase 10; test listing confirms both suites are discovered.
+- Chrome Phase 10 E2E: `pnpm exec playwright test phase-10/chat-browser.spec.ts` — PASS (1 test, real text-chat flow; no media or token URL leakage).
+- Prisma deploy/validate, API/client/app/dashboard typechecks, app/dashboard tests (12/40 and 15/47), and both app/dashboard production builds passed in this closure-gate run.
+- Deferred-media/external-messenger and secret scans, `git diff --check`, and commit isolation passed. `.gitignore` and Phase 12 remain user-owned and absent from staged/Phase 10 task commits.
+
+Result: Phase 10 returns to READY_FOR_REVIEW. A new independent security/closure review is required; it is not DONE (CLOSED).
+
 ## F10-T09 REVALIDATION — four-P1 PostgreSQL and Socket.IO proof
 
 Task ID: F10-T09 REVALIDATION

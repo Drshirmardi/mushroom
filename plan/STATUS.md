@@ -7,12 +7,12 @@
 ## وضعیت کلی
 
 - آخرین به‌رورسانی: `2026-09-21 22:05 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ چهار finding امنیتی P1 پس از closure پنجم در حال رفع serialized هستند؛ Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ چهار P1 رفع و revalidated شدند؛ independent security/closure review جدید لازم است؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -43,18 +43,27 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
+- [ ] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK` for four P1 security findings found after the fifth closure review: durable visibility recovery,
-socket revocation after authorization loss, block policy limited to send, and long-history client recovery. The prior
-accepted F10 work remains evidence, but the phase cannot be closed until the serialized F10-T03 → T04 → T08 → T09 →
-T11 rework passes a new independent security/closure review. `Phase 11` remains `NOT_STARTED`, unclaimed and
-unmodified.
+`Phase 10` is `READY_FOR_REVIEW`: the four P1 findings (durable visibility recovery, socket revocation, send-only
+block policy, and long-history recovery) have passed serialized F10-T03 → T04 → T08 → T09 → T11 remediation and
+verification. A new independent security/closure review is required before any closure decision. `Phase 11` remains
+`NOT_STARTED`, unclaimed and unmodified.
+
+## آخرین batch — F10-R16-CLOSURE-GATES
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+
+- Task ID: `F10-T11 REVALIDATION`
+  - Status: `DONE`
+  - Result: Prisma/client/typechecks/tests/builds and real Chrome Phase 10 E2E passed. Playwright discovers retained Phase 09 and Phase 10 suites. Independent security/closure review is next; Phase 11 is not claimed.
 
 ## آخرین batch — F10-R15-SECURITY-REVALIDATION
 

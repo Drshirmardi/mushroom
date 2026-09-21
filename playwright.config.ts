@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 export default defineConfig({
-  testDir: "tests/e2e/phase-09",
+  testDir: "tests/e2e",
   fullyParallel: false,
   timeout: 120_000,
   reporter: "list",

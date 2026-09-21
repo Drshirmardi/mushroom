@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `REWORK` — چهار finding امنیتی P1 پس از closure review پنجم؛ Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `READY_FOR_REVIEW` — چهار finding امنیتی P1 رفع و revalidated شدند؛ Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -32,7 +32,7 @@
 - [x] `F10-T04 REWORK` — revoke room membership immediately after current authorization loss
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history and reconciliation pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
-- [ ] `F10-T11 REVALIDATION` — final build/E2E/freshness closure gates
+- [x] `F10-T11 REVALIDATION` — final build/E2E/freshness closure gates
 
 ## قرارداد اجرایی freeze‌شده
 
