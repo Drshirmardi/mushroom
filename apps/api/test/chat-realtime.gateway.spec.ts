@@ -5,6 +5,7 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { createApiApplication } from '../src/app.factory';
 import { ChatService } from '../src/modules/communications/chat/chat.service';
 import { ChatRealtimeGateway } from '../src/modules/communications/chat/realtime/chat-realtime.gateway';
+import { ChatRealtimePublisher } from '../src/modules/communications/chat/realtime/chat-realtime.publisher';
 import { auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
 
 const principal = { userId: '11111111-1111-4111-8111-111111111111', sessionId: '22222222-2222-4222-8222-222222222222', roles: ['PATIENT'] as const, tokenId: '33333333-3333-4333-8333-333333333333', issuedAt: 1, expiresAt: Math.floor(Date.now() / 1000) + 60 };
@@ -152,6 +153,56 @@ describe('chat realtime Socket.IO integration', () => {
     const resolved = await app.inject({ method: 'POST', url: `/v1/chat/reports/${report.json().id}/resolve`, headers: auth(fixture.tokens.admin), payload: { resolution: 'UPHELD_POLICY_VIOLATION', action: 'RESTRICT_MESSAGE', safeNote: 'reviewed' } });
     expect(resolved.statusCode).toBe(200);
     await resolutionEvent;
+  }, 30_000);
+
+  it('disconnects a deactivated participant before later room fan-out', async () => {
+    app = await createApiApplication();
+    await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id as string;
+    socket = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'] });
+    await new Promise<void>((resolve, reject) => { socket!.once('connect', resolve); socket!.once('connect_error', reject); });
+    const joined = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(joined).toMatchObject({ ok: true });
+    const received: unknown[] = [];
+    socket.on('message:committed', (event) => received.push(event));
+    const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
+    await fixture.prisma.user.update({ where: { id: fixture.users.patient.id }, data: { status: 'DISABLED' } });
+    socket.emit('presence:heartbeat', { conversationId, lastSequence: '0' });
+    await disconnected;
+    const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000007', body: 'must not reach revoked socket' } });
+    expect(published.statusCode).toBe(201);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(received).toEqual([]);
+  }, 30_000);
+
+  it('recovers a committed missed visibility signal through PostgreSQL after reconnect', async () => {
+    app = await createApiApplication();
+    await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id as string;
+    const message = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000008', body: 'disconnect-before-publish body' } });
+    socket = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'] });
+    await new Promise<void>((resolve, reject) => { socket!.once('connect', resolve); socket!.once('connect_error', reject); });
+    await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '1' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    const publisher = app.get(ChatRealtimePublisher);
+    const original = publisher.messageVisibilityChanged.bind(publisher);
+    const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
+    const publish = vi.spyOn(publisher, 'messageVisibilityChanged').mockImplementation((room, event) => { socket?.disconnect(); original(room, event); });
+    const restricted = await app.inject({ method: 'POST', url: `/v1/chat/messages/${message.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'SPAM_OR_SCAM', safeNote: 'reviewed' } });
+    expect(restricted.statusCode).toBe(201);
+    await disconnected;
+    publish.mockRestore();
+    socket = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'] });
+    await new Promise<void>((resolve, reject) => { socket!.once('connect', resolve); socket!.once('connect_error', reject); });
+    const rejoined = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '1' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(rejoined).toMatchObject({ ok: true, items: [] });
+    const recovered = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/visibility-reconciliation`, headers: auth(fixture.tokens.patient) });
+    expect(recovered.statusCode).toBe(200);
+    expect(recovered.json()).toMatchObject({ items: [expect.objectContaining({ message: expect.objectContaining({ id: message.json().id, visibility: 'RESTRICTED', tombstone: expect.any(String) }) })] });
+    expect(JSON.stringify(recovered.json())).not.toContain('disconnect-before-publish body');
   }, 30_000);
 
   afterEach(async () => { socket?.disconnect(); socket = undefined; if (fixture) await destroyChatFixture(fixture); fixture = undefined; await app?.close(); });

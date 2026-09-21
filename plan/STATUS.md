@@ -56,6 +56,24 @@ accepted F10 work remains evidence, but the phase cannot be closed until the ser
 T11 rework passes a new independent security/closure review. `Phase 11` remains `NOT_STARTED`, unclaimed and
 unmodified.
 
+## آخرین batch — F10-R13-SOCKET-REVOCATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 23:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and committed `7d8fe59`; Socket.IO is signaling only.
+
+- Task ID: `F10-T04 REWORK`
+  - Status: `DONE`
+  - Depends on: `F10-T03 REWORK`
+  - Scope: immediately revoke a socket after failed current authorization; prove missed visibility signaling reconciles through PostgreSQL.
+  - Owned paths: chat realtime gateway/publisher and real Socket.IO integration tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: Socket.IO gateway and PostgreSQL integration environment.
+  - Expected verification: real Socket.IO deactivation/revocation and disconnect-before-publish recovery, API typecheck and diff/isolation.
+
+- Result: F10-T04 REWORK passed. Next eligible task is F10-T08 REWORK, not yet claimed.
+
 ## آخرین batch — F10-R12-VISIBILITY-RECONCILIATION
 
 Coordinator/Thread: `Codex /root`

@@ -1,5 +1,22 @@
 # Phase 10 Execution Evidence
 
+## F10-T04 REWORK — Socket.IO revocation and missed-signal recovery
+
+Task ID: F10-T04 REWORK
+Completed at: 2026-09-21 23:10 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R13-SOCKET-REVOCATION
+
+- Failed current authorization during realtime sync, receipt acknowledgement or heartbeat now disconnects the socket,
+  removing all protected-room memberships before subsequent room fan-out.
+- Real PostgreSQL/Socket.IO tests prove a deactivated joined user receives no later `message:committed` event, and that
+  an intentional disconnect between committed restriction and publish recovers the body-free tombstone after reconnect
+  only from authorized PostgreSQL reconciliation.
+- `pnpm --filter @sabz-zendegi/api exec vitest run test/chat-realtime.gateway.spec.ts --no-file-parallelism` — PASS (1 file, 7 tests)
+- `pnpm --filter @sabz-zendegi/api typecheck` and `git diff --check` — PASS.
+
+Next task: F10-T08 REWORK
+
 ## F10-T03 REWORK — durable visibility reconciliation and send-only block policy
 
 Task ID: F10-T03 REWORK
