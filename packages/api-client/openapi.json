@@ -10532,6 +10532,42 @@
           "Chat consultation"
         ]
       }
+    },
+    "/v1/chat/waiting-room/appointments/{appointmentId}": {
+      "get": {
+        "operationId": "chatWaitingRoomGet",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get server-evaluated appointment waiting-room readiness",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
     }
   },
   "info": {

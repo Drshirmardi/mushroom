@@ -355,3 +355,32 @@ Result:
     storage, upload, media provider, SDK, token, room or simulated media control was introduced.
 Next eligible action:
   - independent Phase 10 closure review; do not begin Phase 11 from this task.
+
+## F10-T03 REWORK — restricted moderated-message visibility
+
+Task ID: F10-T03 REWORK
+Completed at: 2026-09-21 +03:30
+Batch ID: F10-R03
+Status: ACCEPTED — isolated remediation commit pending
+Changed files:
+  - apps/api/src/modules/communications/chat/chat.service.ts
+  - apps/api/test/chat-moderation.integration.spec.ts
+  - packages/api-client/{openapi.json,src/schema.generated.ts}
+  - plan/{STATUS.md,logs/phase-10.md}
+Verification:
+  - Docker PostgreSQL was confirmed through its published host port and from inside the container; no proxy, reset,
+    volume operation, repository connection-string change, or secret logging occurred.
+  - PostgreSQL API suite `chat-rest.integration`, `chat-authorization.integration`, `chat-moderation.integration` and
+    `openapi-contract` → PASS (4 files, 11 tests).
+  - The regression proves restricted content is tombstoned in ordinary REST history and cursor/realtime sync for
+    patient, doctor and ADMIN. It also proves the normal response/event mapper omits the body, and outbox/audit
+    serialization contains no original restricted text.
+  - Only the explicit ADMIN moderation-review endpoint returned the original body; it wrote exactly one
+    `RESTRICTED_CONTENT_REVIEWED` audit event for that message.
+  - `pnpm --filter @sabz-zendegi/api typecheck`, generated OpenAPI/client freshness, and `git diff --check` → PASS.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - All ordinary mapper paths now apply policy tombstones uniformly, including for ADMIN. The explicit audited review
+    endpoint is the sole permitted message-body retrieval route after moderation restriction.
+Next eligible action:
+  - F10-T04 REWORK only, after this task's isolated commit.

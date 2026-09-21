@@ -57,7 +57,6 @@ export class ChatService {
     const appointment = await this.appointment(appointmentId);
     const actor = await this.actorFor(principal, appointment);
     const conversation = await this.ensureConversation(appointment, actor);
-    if (actor.isAdmin) await this.audit(this.prisma, conversation, actor.userId, ChatAuditAction.RESTRICTED_CONTENT_REVIEWED, 'CONVERSATION', conversation.id, 'HISTORY_READ');
     return this.conversationResponse(conversation);
   }
 
@@ -90,9 +89,8 @@ export class ChatService {
     const hasMore = records.length > limit;
     const items = records.slice(0, limit);
     const highWater = await this.prisma.chatMessage.aggregate({ where: { conversationId: conversation.id }, _max: { sequence: true } });
-    if (actor.isAdmin) await this.audit(this.prisma, conversation, actor.userId, ChatAuditAction.RESTRICTED_CONTENT_REVIEWED, 'CONVERSATION', conversation.id, 'HISTORY_READ');
     return {
-      items: items.map((message) => this.messageResponse(message, actor.isAdmin)),
+      items: items.map((message) => this.messageResponse(message)),
       nextCursor: hasMore && items.length ? this.cursor(conversation.id, items.at(-1)!.sequence) : null,
       highWaterSequence: String(highWater._max.sequence ?? 0n),
     };
@@ -111,7 +109,7 @@ export class ChatService {
     });
     const items = records.slice(0, limit);
     return {
-      items: items.map((message) => this.messageResponse(message, actor.isAdmin)),
+      items: items.map((message) => this.messageResponse(message)),
       nextCursor: records.length > limit && items.length ? this.cursor(conversation.id, items.at(-1)!.sequence) : null,
       highWaterSequence: String(highWaterSequence),
     };
@@ -149,7 +147,7 @@ export class ChatService {
       const existing = await tx.chatMessage.findUnique({ where: { conversationId_senderUserId_clientMessageId: { conversationId: conversation.id, senderUserId: actor.userId, clientMessageId: input.clientMessageId } } });
       if (existing) {
         if (existing.requestPayloadHash !== requestPayloadHash) throw idempotencyConflict();
-        return { message: this.messageResponse(existing, actor.isAdmin), committed: false, conversationId: conversation.id };
+        return { message: this.messageResponse(existing), committed: false, conversationId: conversation.id };
       }
       this.assertSendEligibility(conversation.appointment);
       await this.assertNotBlocked(tx, conversation, actor);
@@ -173,7 +171,7 @@ export class ChatService {
           payload: { conversationId: conversation.id, messageId: message.id, clinicId: conversation.clinicId },
         }, update: {},
       });
-      return { message: this.messageResponse(message, actor.isAdmin), committed: true, conversationId: conversation.id };
+      return { message: this.messageResponse(message), committed: true, conversationId: conversation.id };
     }, { maxWait: 30_000, timeout: 30_000 });
     if (outcome.committed) this.publisher.messageCommitted(outcome.conversationId, outcome.message);
     return outcome.message;
@@ -203,7 +201,6 @@ export class ChatService {
     const actor = await this.actorFor(principal, conversation.appointment);
     const where = actor.isAdmin ? { conversationId } : { conversationId, reporterUserId: actor.userId };
     const reports = await this.prisma.chatModerationReport.findMany({ where, include: { decision: true }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
-    if (actor.isAdmin) await this.audit(this.prisma, conversation, actor.userId, ChatAuditAction.RESTRICTED_CONTENT_REVIEWED, 'CONVERSATION', conversation.id, 'REPORT_REVIEW');
     return { items: reports.map((report) => ({ id: report.id, messageId: report.messageId, reasonCategory: report.reasonCategory, createdAt: report.createdAt, decision: report.decision ? { resolution: report.decision.resolution, action: report.decision.action, decidedAt: report.decision.decidedAt } : null })) };
   }
 
@@ -216,7 +213,7 @@ export class ChatService {
       if (!actor.isAdmin) throw moderationForbidden();
       if (input.visibility === 'RESTRICTED' && !input.reasonCategory) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A restriction reason is required.', details: {} });
       if (input.reasonCategory === 'OTHER' && !this.safeNote(input.safeNote)) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A non-sensitive note is required for OTHER.', details: {} });
-      if ((input.visibility === 'RESTRICTED' && message.visibility === ChatMessageVisibility.RESTRICTED && message.restrictedReasonCategory === input.reasonCategory) || input.visibility === 'VISIBLE' && message.visibility === ChatMessageVisibility.VISIBLE) return this.messageResponse(message, true);
+      if ((input.visibility === 'RESTRICTED' && message.visibility === ChatMessageVisibility.RESTRICTED && message.restrictedReasonCategory === input.reasonCategory) || input.visibility === 'VISIBLE' && message.visibility === ChatMessageVisibility.VISIBLE) return this.messageResponse(message);
       const updated = await tx.chatMessage.update({ where: { id: message.id }, data: input.visibility === 'RESTRICTED'
         ? { visibility: ChatMessageVisibility.RESTRICTED, restrictedReasonCategory: input.reasonCategory, restrictedAt: new Date() }
         : { visibility: ChatMessageVisibility.VISIBLE, restrictedReasonCategory: null, restrictedAt: null },
@@ -224,7 +221,7 @@ export class ChatService {
       const action = input.visibility === 'RESTRICTED' ? ChatMessageModerationActionType.RESTRICT_MESSAGE : ChatMessageModerationActionType.RESTORE_MESSAGE;
       await tx.chatMessageModerationAction.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, messageId: message.id, actorUserId: actor.userId, action, reasonCategory: input.visibility === 'RESTRICTED' ? input.reasonCategory : null, safeNote: this.safeNote(input.safeNote) } });
       await this.audit(tx, conversation, actor.userId, input.visibility === 'RESTRICTED' ? ChatAuditAction.MESSAGE_RESTRICTED : ChatAuditAction.MESSAGE_RESTORED, 'MESSAGE', message.id, input.reasonCategory);
-      return this.messageResponse(updated, true);
+      return this.messageResponse(updated);
     });
   }
 
@@ -393,8 +390,7 @@ export class ChatService {
     await tx.chatAuditEvent.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, actorUserId, action, targetType, targetId, safeCategory } });
   }
 
-  private messageResponse(message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; body: string; visibility: ChatMessageVisibility; restrictedReasonCategory: any; createdAt: Date }, mayReadRestricted: boolean) {
-    if (message.visibility === ChatMessageVisibility.RESTRICTED && !mayReadRestricted) return { id: message.id, sequence: String(message.sequence), senderKind: message.senderKind, createdAt: message.createdAt, visibility: message.visibility, restrictedReasonCategory: message.restrictedReasonCategory, tombstone: 'Conversation content has been restricted under policy.' };
+  private messageResponse(message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; body: string; visibility: ChatMessageVisibility; restrictedReasonCategory: any; createdAt: Date }) {
     return { id: message.id, sequence: String(message.sequence), senderKind: message.senderKind, createdAt: message.createdAt, visibility: message.visibility, ...(message.visibility === ChatMessageVisibility.VISIBLE ? { body: message.body } : { restrictedReasonCategory: message.restrictedReasonCategory, tombstone: 'Conversation content has been restricted under policy.' }) };
   }
 
