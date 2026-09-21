@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 +04:15`
+- آخرین به‌رورسانی: `2026-09-21 +04:45`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
-- task فعال: `ندارد؛ F10-T09 REVALIDATION پس از commit مستقل F10-T08 واجد شرایط است.`
-- blocker فعال: `ندارد؛ cache tombstone امن برای F10-T08 پذیرفته شده است.`
+- task فعال: `ندارد؛ F10-T11 REVALIDATION پس از commit مستقل F10-T09 واجد شرایط است.`
+- blocker فعال: `ندارد؛ revalidation مرتبط F10-T09 پذیرفته شده است.`
 
 ## پیشرفت کلان
 
@@ -55,7 +55,30 @@ PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns me
 acceptance and any enable/default decision. Phase 10 is in serialized closure-review remediation; `F10-T03 REWORK`
 برای هر دو مسیر moderation transition امن و پایدار را پذیرفته و `F10-T04 REWORK` آن را پس از commit فقط به room
 مجاز منتشر کرده و `F10-T08 REWORK` cache و rendering هر دو UI را به tombstone همگام کرده است.
-`F10-T09 REVALIDATION` تنها task واجد شرایط بعدی است; Phase 11 remains `NOT_STARTED`.
+`F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی کرده؛ `F10-T11 REVALIDATION` تنها task
+واجد شرایط بعدی است. Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R09-VISIBILITY-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +04:20`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `bfcb1ae fix(F10-T08): reconcile restricted message tombstones`
+
+- Task: `F10-T09 REVALIDATION`
+- Scope: real PostgreSQL/Socket.IO validation for both connected restriction paths, history/cursor/reconnect safety,
+  authorization/clinic isolation and app/dashboard tombstone regressions affected by F10-T03/T04/T08.
+- Owned paths: revalidation-only test/evidence/status/checklist paths. No product feature, schema, migration,
+  dependency, OpenAPI/client or UI source work.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: current production paths revalidated against PostgreSQL and live Socket.IO include direct and
+  report-resolution tombstones while connected, and body-free history/sync/reconnect after restriction.
+- Verification: PostgreSQL API/gateway set → PASS (9 files, 16 tests): REST/ordering, authorization, abuse/block,
+  moderation, receipts, live Socket.IO direct+resolution event, presence, and reconnect. App adapter → PASS (4);
+  dashboard adapter → PASS (1); API typecheck and `git diff --check` → PASS. Existing accepted F10-T09 frozen
+  capacity evidence remains the authoritative 100/300/600, sustained/burst and reconnect-storm evidence.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
 
 ## آخرین batch — F10-R08-VISIBILITY-CACHE
 

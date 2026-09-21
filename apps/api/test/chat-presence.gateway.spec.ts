@@ -12,7 +12,8 @@ describe('chat presence lease', () => {
     vi.useFakeTimers();
     const emit = vi.fn();
     const realtimeSync = vi.fn().mockResolvedValue({ items: [], highWaterSequence: '0', nextCursor: null });
-    const gateway = new ChatRealtimeGateway({ verify: vi.fn().mockResolvedValue(principal) } as never, { realtimeSync } as never, { bind: vi.fn() } as never);
+    const authorizeRealtimeSubscription = vi.fn().mockResolvedValue(undefined);
+    const gateway = new ChatRealtimeGateway({ verify: vi.fn().mockResolvedValue(principal) } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never);
     const client = { id: 'socket-1', handshake: { query: {}, auth: { token: 'opaque-token' } }, data: {}, disconnect: vi.fn(), join: vi.fn(), to: () => ({ emit }) };
     gateway.server = { sockets: { sockets: new Map() } } as never;
     await gateway.handleConnection(client as never);
@@ -21,6 +22,7 @@ describe('chat presence lease', () => {
     await vi.advanceTimersByTimeAsync(45_000);
     expect(emit).toHaveBeenCalledWith('presence:updated', { userId: principal.userId, state: 'OFFLINE' });
     expect(realtimeSync).toHaveBeenCalledWith(principal, conversationId, 0n);
+    expect(authorizeRealtimeSubscription).toHaveBeenCalledWith(principal, conversationId);
   });
 
   it('fails closed when the current server-side eligibility check fails', async () => {

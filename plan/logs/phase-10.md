@@ -433,6 +433,34 @@ Result:
 Next eligible action:
   - F10-T09 REVALIDATION only, after this task's isolated commit; do not start Phase 11.
 
+## F10-T09 REVALIDATION — visibility-transition correctness
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-21 +04:45
+Batch ID: F10-R09-VISIBILITY-REVALIDATION
+Status: ACCEPTED — isolated revalidation commit pending
+Changed files:
+  - apps/api/test/{chat-presence.gateway.spec.ts,chat-reconnect-load.spec.ts}
+  - plan/{STATUS.md,logs/phase-10.md}
+Verification:
+  - Real PostgreSQL/Socket.IO suites → PASS (9 files, 16 tests): REST and sequence ordering, authorization,
+    report/block behavior, moderation, receipts, presence, reconnect and live Socket.IO. The live gateway test proves
+    both direct and report-resolution restrictions deliver body-free tombstones to an already connected participant.
+  - Reconnect now specifically proves the PostgreSQL backlog for a previously restricted message contains its sequence
+    and tombstone but not source text; a fresh authenticated connection with last sequence `1` has no durable
+    duplicate. The presence mock also revalidates the current authorization-before-room-join fence.
+  - App adapter → PASS (4 tests); dashboard adapter → PASS (1 test); both retain their direct/report tombstone cache
+    regressions. API typecheck (with Prisma generate) and `git diff --check` → PASS.
+  - The accepted prior F10-T09 load evidence remains unchanged and authoritative for frozen 100 consultations,
+    300 participants, 600 connections, sustained/burst throughput and reconnect storm; this remediation does not
+    alter send, connection or rate-limit paths.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - No ordinary path covered by the affected realtime/recovery stack reintroduces restricted message text. Existing
+    clinic/resource authorization, rate-limit, capacity and deferred-media evidence remains in force.
+Next eligible action:
+  - F10-T11 REVALIDATION only, after this task's isolated commit; do not start Phase 11.
+
 ## F10-T03 REWORK — restricted moderated-message visibility
 
 Task ID: F10-T03 REWORK
