@@ -1,5 +1,14 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — restore visibility path
+
+Task ID: F10-T09 REVALIDATION
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - PostgreSQL/Socket.IO suite → PASS (6 files, 12 tests): REST, ordering/idempotency, authorization, moderation
+    restore persistence, connected restore event, history/sync/reconnect and restriction→restore transition.
+  - API typecheck and `git diff --check` → PASS.
+
 ## F10-T08 REWORK — reconcile restored visibility from REST
 
 Task ID: F10-T08 REWORK

@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T09 REVALIDATION پس از commit مستقل F10-T08 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T11 REVALIDATION پس از commit مستقل F10-T09 واجد شروع است.`
 
 ## پیشرفت کلان
 
