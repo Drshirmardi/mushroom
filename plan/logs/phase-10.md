@@ -1,5 +1,20 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — failed-join revocation closure gates
+
+Task ID: F10-T11 REVALIDATION
+Completed at: 2026-09-22 00:05 +03:30
+
+- PostgreSQL migration status (31 applied), Prisma validation, API OpenAPI export, generated-client freshness, and
+  API/app/dashboard typechecks — PASS.
+- App tests (12 files, 40 tests), dashboard tests (15 files, 47 tests), and both production builds — PASS.
+- Playwright discovery retains both Phase 09 and Phase 10 suites; real Chrome Phase 10 text-chat E2E — PASS (1 test).
+- Deferred-media and scoped source-secret scans, `git diff --check`, and Phase 10 commit-isolation review — PASS.
+  `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned, unstaged, and absent from Phase 10 commits.
+
+Result: Phase 10 returns to `READY_FOR_REVIEW`. A new independent security/closure review is required; it is not
+`DONE (CLOSED)` and Phase 11 is not claimed.
+
 ## F10-T09 REVALIDATION — join revocation regression
 
 Task ID: F10-T09 REVALIDATION
