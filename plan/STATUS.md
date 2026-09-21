@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T09 REVALIDATION پس از commit مستقل F10-T04 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T11 REVALIDATION پس از commit مستقل F10-T09 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -101,6 +101,22 @@ Baseline: `ed5724f fix(F10-T03): restrict moderated message visibility`
   sequence ordering, making the permitted early-event/backlog duplicate harmless.
 - Verification: real PostgreSQL/Socket.IO gateway suite → PASS (4 tests, including deterministic sync/join race);
   app reconciliation unit suite → PASS (3 tests); API/app typechecks and `git diff --check` → PASS.
+
+## آخرین batch — F10-R09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `10bd7d0 fix(F10-T04): fence realtime sync and room join`
+
+- Task: `F10-T09 REVALIDATION`
+- Scope: rerun authoritative PostgreSQL correctness, authorization/moderation/block/rate-limit, reconnect/capacity and
+  new race verification affected by T03/T04. Do not start F10-T11 until accepted.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Verification: authoritative PostgreSQL correctness suite (ordering/idempotency, REST, authorization, moderation,
+  abuse/block, rate limit, reconnect and fenced gateway race) → PASS; frozen capacity/reconnect run completed at 20
+  msg/s × 30m then 50 msg/s × 5m with the 100-consultation/300-participant/600-connection storm scenario.
 
 ## آخرین batch — F10-B11
 

@@ -404,3 +404,22 @@ Result:
     fails. Handshake auth and connection expiry behavior remain unchanged.
 Next eligible action:
   - F10-T09 REVALIDATION only, after this task's isolated commit.
+
+## F10-T09 REVALIDATION — post-remediation PostgreSQL/realtime evidence
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-21 +03:30
+Batch ID: F10-R09
+Status: ACCEPTED — isolated revalidation commit pending
+Verification:
+  - PostgreSQL correctness/realtime suite rerun after T03/T04: ordering and idempotency, REST authorization,
+    moderation/restricted-content policy, abuse/block, rate limit, reconnect/sync, and the deterministic fenced
+    Socket.IO race → PASS.
+  - Frozen capacity run completed against disposable PostgreSQL: 100 consultations, 300 authenticated participants,
+    600 connections and reconnect storm, then 20 committed messages/second for 30 minutes and 50/second for five
+    minutes with durable sequence reconciliation.
+Result:
+  - The T03 policy mapper and T04 join-before-backlog fence retain ordering, idempotency, authorization, moderation,
+    block/rate-limit and reconnect correctness under the revalidated realtime load path.
+Next eligible action:
+  - F10-T11 REVALIDATION only, after this task's isolated commit.
