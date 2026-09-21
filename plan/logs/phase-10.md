@@ -384,3 +384,23 @@ Result:
     endpoint is the sole permitted message-body retrieval route after moderation restriction.
 Next eligible action:
   - F10-T04 REWORK only, after this task's isolated commit.
+
+## F10-T04 REWORK — fenced realtime subscription and sync
+
+Task ID: F10-T04 REWORK
+Completed at: 2026-09-21 +03:30
+Batch ID: F10-R04
+Status: ACCEPTED — isolated remediation commit pending
+Verification:
+  - PostgreSQL/Socket.IO gateway suite → PASS (4 tests). Its deterministic race test commits a doctor message only
+    after the patient socket enters the conversation room and before the join handler performs its sync. The response
+    has high-water `1` and backlog sequence `1`, while the subscribed client receives the same post-commit event.
+  - The client reconciliation test → PASS (3 app adapter tests): an early event and duplicate backlog item collapse by
+    message ID and retain sequence ordering, so no durable duplicate or gap reaches state.
+  - API and app typechecks, and `git diff --check` → PASS.
+Result:
+  - The gateway performs server authorization before joining, subscribes, then takes the authorized high-water/backlog
+    snapshot. The second authorization in sync protects reconnect/window/block changes and removes the room if it
+    fails. Handshake auth and connection expiry behavior remain unchanged.
+Next eligible action:
+  - F10-T09 REVALIDATION only, after this task's isolated commit.

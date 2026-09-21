@@ -9,7 +9,7 @@ vi.mock("@sabz-zendegi/api-client", () => ({ withRequestTimeout: (request: Promi
 vi.mock("socket.io-client", () => ({ io: ioMock }));
 vi.mock("@/lib/api", () => ({ apiBaseUrl: "https://api.example.test", apiClient: { GET: get, POST: post } }));
 
-import { connectChat, loadChat, sendChat } from "./chat-api";
+import { connectChat, loadChat, reconcileChatMessages, sendChat } from "./chat-api";
 
 describe("chat API adapter", () => {
   beforeEach(() => { get.mockReset(); post.mockReset(); ioMock.mockClear(); socket.on.mockClear(); socket.emit.mockClear(); });
@@ -31,5 +31,14 @@ describe("chat API adapter", () => {
     connect(); sequence = "8"; connect();
     expect(socket.emit).toHaveBeenNthCalledWith(1, "conversation:join", expect.objectContaining({ lastSequence: "4" }), expect.any(Function));
     expect(socket.emit).toHaveBeenNthCalledWith(2, "conversation:join", expect.objectContaining({ lastSequence: "8" }), expect.any(Function));
+  });
+
+  it("reconciles an early realtime event with its duplicated join backlog by id and sequence", () => {
+    const early = { id: "message-1", sequence: "2", body: "arrived early" } as Awaited<ReturnType<typeof sendChat>>;
+    const older = { id: "message-0", sequence: "1", body: "older" } as Awaited<ReturnType<typeof sendChat>>;
+    const afterEvent = reconcileChatMessages([], early);
+    const afterBacklog = reconcileChatMessages(afterEvent, early);
+    expect(reconcileChatMessages(afterBacklog, older).map((message) => message.id)).toEqual(["message-0", "message-1"]);
+    expect(afterBacklog).toHaveLength(1);
   });
 });

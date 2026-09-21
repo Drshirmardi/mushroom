@@ -4,15 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Send } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
-import { connectChat, loadChat, sendChat, type ChatMessage } from "@/lib/chat-api";
+import { connectChat, loadChat, reconcileChatMessages, sendChat, type ChatMessage } from "@/lib/chat-api";
 
 type LoadedChat = Awaited<ReturnType<typeof loadChat>>;
 type ConnectionState = "loading" | "connected" | "reconnecting" | "offline" | "read-only";
-
-function mergeMessage(messages: ChatMessage[], next: ChatMessage) {
-  return [...messages.filter((message) => message.id !== next.id), next]
-    .sort((left, right) => BigInt(left.sequence) < BigInt(right.sequence) ? -1 : BigInt(left.sequence) > BigInt(right.sequence) ? 1 : 0);
-}
 
 export default function ChatPage() {
   const router = useRouter();
@@ -34,7 +29,7 @@ export default function ChatPage() {
       lastSequence.current = loaded.messages.at(-1)?.sequence ?? "0";
       setChat(loaded);
       const socket = connectChat(authentication.accessToken, loaded.conversation.id, () => lastSequence.current, (message) => {
-        if (active) setChat((current) => { if (!current) return current; const messages = mergeMessage(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; });
+        if (active) setChat((current) => { if (!current) return current; const messages = reconcileChatMessages(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; });
       }, (state) => { if (active) setConnection(state); });
       const heartbeat = window.setInterval(() => socket.emit("presence:heartbeat", { conversationId: loaded.conversation.id, lastSequence: lastSequence.current }), 15_000);
       disconnect = () => { window.clearInterval(heartbeat); socket.disconnect(); };
@@ -46,7 +41,7 @@ export default function ChatPage() {
     if (!chat || !text.trim() || connection === "read-only") return;
     try {
       const message = await sendChat(authentication.accessToken, chat.conversation.id, text.trim());
-      const messages = mergeMessage(chat.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; setChat({ ...chat, messages }); setText("");
+      const messages = reconcileChatMessages(chat.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; setChat({ ...chat, messages }); setText("");
     } catch { setError("ارسال پیام ممکن نیست؛ گفتگو فقط‌خواندنی است یا اتصال را دوباره بررسی کنید."); setConnection("read-only"); }
   };
   const canSend = Boolean(chat) && connection === "connected";

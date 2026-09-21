@@ -115,6 +115,13 @@ export class ChatService {
     };
   }
 
+  async authorizeRealtimeSubscription(principal: AccessTokenPrincipal, conversationId: string) {
+    const conversation = await this.conversation(conversationId);
+    const actor = await this.actorFor(principal, conversation.appointment);
+    this.assertSendEligibility(conversation.appointment);
+    await this.assertNotBlocked(this.prisma, conversation, actor);
+  }
+
   async acknowledgeReceipt(principal: AccessTokenPrincipal, conversationId: string, delivered: bigint, read: bigint) {
     if (delivered < 0n || read < 0n || read > delivered) throw new BadRequestException({ code: 'CHAT_SEQUENCE_INVALID', message: 'Receipt high-water marks are invalid.', details: {} });
     const receipt = await this.prisma.$transaction(async (tx) => {

@@ -19,8 +19,13 @@ export async function sendChat(accessToken: string, conversationId: string, body
   return result.data;
 }
 
-type RealtimeSync = { ok: boolean; code?: string; items?: ChatMessage[] };
 export type ChatMessage = Awaited<ReturnType<typeof sendChat>>;
+type RealtimeSync = { ok: boolean; code?: string; items?: ChatMessage[] };
+
+export function reconcileChatMessages(messages: ChatMessage[], next: ChatMessage) {
+  return [...messages.filter((message) => message.id !== next.id), next]
+    .sort((left, right) => BigInt(left.sequence) < BigInt(right.sequence) ? -1 : BigInt(left.sequence) > BigInt(right.sequence) ? 1 : 0);
+}
 
 export function connectChat(
   accessToken: string,

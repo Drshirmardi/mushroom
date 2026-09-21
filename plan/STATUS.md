@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T04 REWORK پس از commit مستقل F10-T03 واجد شروع است.`
+- blocker فعال: `ندارد؛ F10-T09 REVALIDATION پس از commit مستقل F10-T04 واجد شروع است.`
 
 ## پیشرفت کلان
 
@@ -79,6 +79,28 @@ Baseline: `2335ee1 test(F10-T11): close chat consultation verification`
 - Verification: PostgreSQL API regression suite (REST, authorization, moderation and OpenAPI contract) → PASS
   (4 files, 11 tests); API typecheck → PASS; generated OpenAPI/client freshness → PASS; `git diff --check` → PASS.
 - Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were neither edited nor staged.
+
+## آخرین batch — F10-R04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `ed5724f fix(F10-T03): restrict moderated message visibility`
+
+- Task: `F10-T04 REWORK`
+- Depends on: accepted `F10-T03 REWORK`; closure-review HIGH sync-to-room subscription race finding.
+- Scope: use a server-authorized join-before-backlog fence and prove with deterministic PostgreSQL/Socket.IO integration
+  that a commit during the former sync/join interval reaches the reconciled client without a sequence gap or durable
+  duplicate.
+- Owned paths: chat realtime gateway, T04 gateway/client reconciliation tests, and task status/evidence/checklist only.
+- Shared/exclusive resource: serialized PostgreSQL integration database and local Socket.IO gateway.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: authorization is checked before room subscription, then sync re-authorizes and captures the post-subscription
+  high-water/backlog; a failed second check leaves the room. The app reconciliation uses message ID replacement and
+  sequence ordering, making the permitted early-event/backlog duplicate harmless.
+- Verification: real PostgreSQL/Socket.IO gateway suite → PASS (4 tests, including deterministic sync/join race);
+  app reconciliation unit suite → PASS (3 tests); API/app typechecks and `git diff --check` → PASS.
 
 ## آخرین batch — F10-B11
 

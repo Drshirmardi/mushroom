@@ -57,8 +57,12 @@ export class ChatRealtimeGateway {
     const principal = client.data.chatPrincipal;
     if (!principal || typeof input?.conversationId !== 'string') return { ok: false, code: 'CHAT_FORBIDDEN' };
     try {
-      const sync = await this.chat.realtimeSync(principal, input.conversationId, this.sequence(input.lastSequence));
-      await client.join(`conversation:${input.conversationId}`);
+      const room = `conversation:${input.conversationId}`;
+      await this.chat.authorizeRealtimeSubscription(principal, input.conversationId);
+      await client.join(room);
+      let sync;
+      try { sync = await this.chat.realtimeSync(principal, input.conversationId, this.sequence(input.lastSequence)); }
+      catch (error) { await client.leave(room); throw error; }
       this.renewPresence(client, input.conversationId);
       return { ok: true, ...sync };
     } catch { return { ok: false, code: 'CHAT_FORBIDDEN' }; }
