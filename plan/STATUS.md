@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 19:55 +03:30`
+- آخرین به‌رورسانی: `2026-09-21 21:10 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ Phase 10 فقط منتظر fourth independent closure review است و نباید CLOSED اعلام شود.`
+- blocker فعال: `ندارد؛ F10-T09 REVALIDATION برای مسیر restore pagination باقی مانده است.`
 
 ## پیشرفت کلان
 
@@ -58,6 +58,20 @@ acceptance and any enable/default decision. Phase 10 is in serialized closure-re
 `F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
 مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و fourth independent closure review لازم دارد;
 Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R08-RESTORE-PAGINATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 20:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `63befff test(F10-T11): revalidate restored visibility closure`
+
+- Task: `F10-T08 REWORK`
+- Scope: bounded, authorized cursor pagination for a body-free restore visibility event beyond the first history page.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: each client uses server event identity only to find the restored record across authorized REST pages; stale
+  requests cannot replace a newer safe state after disconnect, and duplicate fetches are coalesced per message.
 
 ## آخرین batch — F10-R11-RESTORE-CLOSURE
 

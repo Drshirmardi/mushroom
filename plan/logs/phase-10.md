@@ -1,5 +1,20 @@
 # Phase 10 Execution Evidence
 
+## F10-T08 REWORK — paginated restore reconciliation
+
+Task ID: F10-T08 REWORK
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - App adapter → PASS (6 tests); dashboard adapter → PASS (3 tests). Each regression puts the restored message at
+    sequence 101, follows the opaque cursor from the first 100-record page, and replaces the tombstone only with the
+    authorized REST payload.
+  - Both adapters verify that a stale REST response after disconnect does not replace the safe cache state.
+  - App/dashboard typechecks and `git diff --check` → PASS.
+Result:
+  - Restore events remain body-free. Pagination is bounded by the server-issued message sequence, coalesced by
+    message ID, and resumes only through an authorized reconnect; failed or unavailable REST history leaves the
+    tombstone untouched.
+
 ## F10-T11 REVALIDATION — restore visibility closure gates
 
 Task ID: F10-T11 REVALIDATION
