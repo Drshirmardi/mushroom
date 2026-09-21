@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 21:20 +03:30`
+- آخرین به‌رورسانی: `2026-09-21 21:35 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T11 REVALIDATION برای restore pagination باقی مانده است.`
+- blocker فعال: `ندارد؛ Phase 10 فقط منتظر fifth independent closure review است و نباید CLOSED اعلام شود.`
 
 ## پیشرفت کلان
 
@@ -56,8 +56,22 @@ acceptance and any enable/default decision. Phase 10 is in serialized closure-re
 برای هر دو مسیر moderation transition امن و پایدار را پذیرفته و `F10-T04 REWORK` آن را پس از commit فقط به room
 مجاز منتشر کرده و `F10-T08 REWORK` cache و rendering هر دو UI را به tombstone همگام کرده است.
 `F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
-مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و fourth independent closure review لازم دارد;
+مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و fifth independent closure review لازم دارد;
 Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R11-RESTORE-PAGINATION-CLOSURE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 21:25 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+Baseline: `a8e60b0 test(F10-T09): revalidate paginated restore visibility`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final closure gates after bounded restore pagination; output is `READY_FOR_REVIEW`, never `DONE (CLOSED)`.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: Prisma/OpenAPI/client, API/app/dashboard types/tests/builds, Chrome E2E, source scans, diff and commit
+  isolation passed. Only fifth independent closure review may decide formal closure.
 
 ## آخرین batch — F10-R09-RESTORE-PAGINATION-REVALIDATION
 

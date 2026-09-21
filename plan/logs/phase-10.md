@@ -1,5 +1,22 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — paginated restore closure gates
+
+Task ID: F10-T11 REVALIDATION
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - PostgreSQL Prisma migration status (31 applied) and schema validation → PASS.
+  - API OpenAPI export, generated-client refresh/typecheck, and API/app/dashboard typechecks → PASS.
+  - App tests (12 files, 40 tests), dashboard tests (15 files, 47 tests), and both production builds → PASS.
+  - Chrome Phase 10 browser E2E → PASS (1 test): authenticated text-chat flow with no media control, external request
+    or token URL leakage.
+  - Scoped deferred-media/external-messenger and source-secret scans → PASS; `git diff --check` and commit isolation
+    review → PASS. User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are modified but unstaged
+    and excluded from this commit.
+Result:
+  - Phase 10 remains `READY_FOR_REVIEW`, not `DONE (CLOSED)`. Only a fifth independent closure review may make the
+    formal closure decision; Phase 11 remains `NOT_STARTED`.
+
 ## F10-T09 REVALIDATION — paginated restore correctness
 
 Task ID: F10-T09 REVALIDATION
