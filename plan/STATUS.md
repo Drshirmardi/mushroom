@@ -9,10 +9,10 @@
 - آخرین به‌رورسانی: `2026-09-21 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T11 REVALIDATION پس از commit مستقل F10-T09 واجد شروع است.`
+- blocker فعال: `ندارد؛ independent Phase 10 closure review دوم پیش از DONE (CLOSED).`
 
 ## پیشرفت کلان
 
@@ -117,6 +117,21 @@ Baseline: `10bd7d0 fix(F10-T04): fence realtime sync and room join`
 - Verification: authoritative PostgreSQL correctness suite (ordering/idempotency, REST, authorization, moderation,
   abuse/block, rate limit, reconnect and fenced gateway race) → PASS; frozen capacity/reconnect run completed at 20
   msg/s × 30m then 50 msg/s × 5m with the 100-consultation/300-participant/600-connection storm scenario.
+
+## آخرین batch — F10-R11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `3a7147a test(F10-T09): revalidate chat realtime correctness`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final Prisma/API/app/dashboard/browser/realtime/privacy/OpenAPI/client/deferred-media/secret and commit-isolation
+  verification after T03/T04/T09; final state remains `READY_FOR_REVIEW`, never `DONE (CLOSED)`.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: all final gates passed after T03/T04/T09. Phase 10 is returned to `READY_FOR_REVIEW` only; Phase 11 remains
+  `NOT_STARTED` and a second independent closure review remains required.
 
 ## آخرین batch — F10-B11
 

@@ -423,3 +423,23 @@ Result:
     block/rate-limit and reconnect correctness under the revalidated realtime load path.
 Next eligible action:
   - F10-T11 REVALIDATION only, after this task's isolated commit.
+
+## F10-T11 REVALIDATION — final closure-review evidence
+
+Task ID: F10-T11 REVALIDATION
+Completed at: 2026-09-21 +03:30
+Batch ID: F10-R11
+Status: ACCEPTED — Phase 10 `READY_FOR_REVIEW`
+Verification:
+  - Prisma migration status (31 applied) and schema validate → PASS; API, app, dashboard and generated client
+    typechecks → PASS; OpenAPI export/client generation and freshness check → PASS.
+  - App tests → PASS (12 files, 37 tests); dashboard tests → PASS (14 files, 44 tests); both production builds → PASS.
+  - PostgreSQL authoritative chat REST/authorization/moderation/restricted-content/ordering/block/rate-limit/
+    reconnect/realtime/presence/waiting-room/OpenAPI suite and T04 fenced race coverage → PASS.
+  - Chrome browser E2E against local web/app/API and PostgreSQL → PASS: registration/login, authoritative eligible
+    appointment text chat, persisted send, no media controls, no external request and no token URL leak.
+  - Deferred-media and source secret scans, `git diff --check`, and commit-isolation review → PASS.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain unmodified by this task and unstaged.
+Result:
+  - Phase 10 is `READY_FOR_REVIEW`, not `DONE (CLOSED)`. A second independent closure review is required; Phase 11
+    remains `NOT_STARTED`.
