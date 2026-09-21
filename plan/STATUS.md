@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 21:35 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
-- فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-21 21:51 +03:30`
+- Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
+- فاز فعال: `ندارد؛ Phase 11 فقط next eligible work است.`
+- وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ Phase 10 فقط منتظر fifth independent closure review است و نباید CLOSED اعلام شود.`
+- blocker فعال: `ندارد؛ Phase 10 در independent closure review پنجم PASS و رسمی CLOSED شد؛ Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -43,21 +43,32 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
+- [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
-PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. Phase 10 is in serialized closure-review remediation; `F10-T03 REWORK`
-برای هر دو مسیر moderation transition امن و پایدار را پذیرفته و `F10-T04 REWORK` آن را پس از commit فقط به room
-مجاز منتشر کرده و `F10-T08 REWORK` cache و rendering هر دو UI را به tombstone همگام کرده است.
-`F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
-مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و fifth independent closure review لازم دارد;
-Phase 11 remains `NOT_STARTED`.
+`Phase 10` is formally `DONE (CLOSED)` after the fifth independent closure review passed. All `F10-T01` through
+`F10-T11`, including the restricted-content, sync-fence, restore-visibility and paginated-restore remediations and
+their revalidations, are accepted. PostgreSQL, Socket.IO, frozen capacity, authorized cursor recovery, app/dashboard,
+Chrome E2E, deferred-media absence and commit isolation are recorded in [`logs/phase-10.md`](logs/phase-10.md).
+Milestone D is complete. `Phase 11` is the next eligible work but remains `NOT_STARTED`, unclaimed and unmodified.
+
+## آخرین batch — F10-CLOSE
+
+Coordinator/Thread: `Codex /root`
+Completed at: `2026-09-21 21:51 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE (CLOSED)`
+Baseline: `8165d0b test(F10-T11): revalidate paginated restore closure`
+
+- Scope: documentation-only formal closure after the user-provided fifth independent closure-review PASS.
+- Result: all F10 tasks and accepted remediations/revalidations are closed; Milestone D is complete.
+- Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned, unstaged and absent from
+  every Phase 10 commit.
+- Next eligible work: `Phase 11 — Dashboard Reporting & Access Expansion`, `NOT_STARTED` and not claimed here.
 
 ## آخرین batch — F10-R11-RESTORE-PAGINATION-CLOSURE
 

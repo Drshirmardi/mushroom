@@ -1,5 +1,30 @@
 # Phase 10 Execution Evidence
 
+## F10-CLOSE — formal Phase 10 closure
+
+Task ID: F10-CLOSE
+Status: DONE (CLOSED)
+Completed at: 2026-09-21 21:51 +03:30
+Closure authority:
+  - Independent Phase 10 closure review #5 → PASS (user-provided review result).
+Accepted scope:
+  - `F10-T01` through `F10-T11`, plus all accepted restricted-content, sync-fence, restore-visibility and
+    paginated-restore remediation/revalidation commits.
+Final evidence summary:
+  - PostgreSQL persistence, ordered/idempotent REST history, authorization, moderation/audit, block/rate-limit,
+    cursor/reconnect and sequence-101 paginated restore correctness → PASS.
+  - Socket.IO post-commit, authorized-room and body-free restore signaling, plus frozen 100 consultation / 300
+    participant / 600 connection capacity and reconnect-storm evidence → PASS.
+  - App/dashboard authorized REST reconciliation, Chrome text-chat E2E, Prisma/OpenAPI/client freshness, typechecks,
+    tests and production builds → PASS.
+  - Attachment/video/media provider, Redis/Centrifugo and external-messenger MVP surface remains deferred/absent;
+    scoped secret and deferred-media scans → PASS.
+  - `git diff --check` and task-commit isolation → PASS. User-owned `.gitignore` and
+    `plan/phases/12-PRODUCTION-HARDENING.md` were never staged or included in any Phase 10 commit.
+Result:
+  - Phase 10 is `DONE (CLOSED)` and Milestone D is complete. Phase 11 is next eligible work only; it remains
+    `NOT_STARTED` and unclaimed.
+
 ## F10-T11 REVALIDATION — paginated restore closure gates
 
 Task ID: F10-T11 REVALIDATION

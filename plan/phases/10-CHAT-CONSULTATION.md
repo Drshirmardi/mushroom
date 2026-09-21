@@ -1,6 +1,8 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
+- وضعیت نهایی: `DONE (CLOSED)` — independent closure review پنجم `PASS` در `2026-09-21`; closure documentation:
+  `F10-CLOSE`.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -54,3 +56,11 @@ F10-T01 → F10-T02 → F10-T03 → F10-T04 → F10-T05 → F10-T06 → F10-T07 
 - reconnect پیام را گم یا duplicate نمی‌کند.
 - participant خارج conversation metadata دریافت نمی‌کند.
 - waiting room فقط برای appointment آنلاین معتبر فعال است.
+
+## Closure
+
+- همهٔ `F10-T01` تا `F10-T11`، remediationهای بعدی و revalidationهای آن‌ها پذیرفته شده‌اند.
+- PostgreSQL/Socket.IO correctness، capacity، restore pagination، app/dashboard، Chrome E2E، deferred-media absence و
+  commit isolation در [`logs/phase-10.md`](../logs/phase-10.md) ثبت شده‌اند.
+- `.gitignore` و `plan/phases/12-PRODUCTION-HARDENING.md` خارج از تمام commitهای Phase 10 باقی مانده‌اند.
+- Phase 11 فقط next eligible work است و با این closure شروع یا claim نشده است.
