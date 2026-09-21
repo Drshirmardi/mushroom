@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-21 21:10 +03:30`
+- آخرین به‌رورسانی: `2026-09-21 21:20 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ F10-T09 REVALIDATION برای مسیر restore pagination باقی مانده است.`
+- blocker فعال: `ندارد؛ F10-T11 REVALIDATION برای restore pagination باقی مانده است.`
 
 ## پیشرفت کلان
 
@@ -58,6 +58,21 @@ acceptance and any enable/default decision. Phase 10 is in serialized closure-re
 `F10-T09 REVALIDATION` مسیرهای متاثر را با PostgreSQL/Socket.IO بازآزمایی و `F10-T11 REVALIDATION` گیت‌های نهایی
 مرتبط را پاس کرده است. Phase 10 فقط `READY_FOR_REVIEW` است و fourth independent closure review لازم دارد;
 Phase 11 remains `NOT_STARTED`.
+
+## آخرین batch — F10-R09-RESTORE-PAGINATION-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 21:15 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `78c4f25 fix(F10-T08): reconcile paginated restored messages`
+
+- Task: `F10-T09 REVALIDATION`
+- Scope: PostgreSQL/Socket.IO confirmation that sequence 101 restore remains body-free, cursor-recoverable and
+  unauthorized to outsiders, plus affected adapter/reconnect/history correctness.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: all affected real database/gateway and client adapter checks passed; frozen capacity evidence remains
+  applicable because no gateway, send, rate-limit or throughput path changed.
 
 ## آخرین batch — F10-R08-RESTORE-PAGINATION
 

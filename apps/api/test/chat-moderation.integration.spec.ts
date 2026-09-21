@@ -85,4 +85,24 @@ describe('chat moderation and conversation-scoped blocks (PostgreSQL API integra
     expect(await fixture.prisma.chatMessageModerationAction.count({ where: { messageId: message.json().id, action: 'RESTORE_MESSAGE' } })).toBe(1);
     expect(await fixture.prisma.chatAuditEvent.count({ where: { conversationId: conversation.json().id, targetId: message.json().id, action: 'MESSAGE_RESTORED' } })).toBe(1);
   });
+
+  it('serves an authorized restored message beyond the first cursor page without leaking it to an outsider', async () => {
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id;
+    await fixture.prisma.chatMessage.createMany({ data: Array.from({ length: 100 }, (_, index) => ({
+      clinicId: fixture!.clinic.id, conversationId, sequence: BigInt(index + 1), senderUserId: fixture!.users.admin.id,
+      senderKind: 'CLINIC_OPERATOR', clientMessageId: `pagination-seed-${index + 1}`, requestPayloadHash: 'a'.repeat(64), body: `pagination seed ${index + 1}`,
+    })) });
+    const target = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'c1000000-0000-4000-8000-000000000101', body: 'restored beyond first page' } });
+    expect(target.statusCode).toBe(201); expect(target.json().sequence).toBe('101');
+    expect((await app.inject({ method: 'POST', url: `/v1/chat/messages/${target.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'SPAM_OR_SCAM', safeNote: 'reviewed' } })).statusCode).toBe(201);
+    expect((await app.inject({ method: 'POST', url: `/v1/chat/messages/${target.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'VISIBLE', safeNote: 'restored' } })).statusCode).toBe(201);
+    const first = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/messages?limit=100`, headers: auth(fixture.tokens.patient) });
+    expect(first.statusCode).toBe(200); expect(first.json().items).toHaveLength(100); expect(first.json().items.find((item: { id: string }) => item.id === target.json().id)).toBeUndefined();
+    const second = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/messages?limit=100&cursor=${encodeURIComponent(first.json().nextCursor)}`, headers: auth(fixture.tokens.patient) });
+    expect(second.statusCode).toBe(200); expect(second.json().items).toEqual([expect.objectContaining({ id: target.json().id, sequence: '101', visibility: 'VISIBLE', body: 'restored beyond first page' })]);
+    const outsider = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/messages?limit=100&cursor=${encodeURIComponent(first.json().nextCursor)}`, headers: auth(fixture.tokens.outsider) });
+    expect(outsider.statusCode).toBe(403); expect(JSON.stringify(outsider.json())).not.toContain('restored beyond first page');
+  });
 });

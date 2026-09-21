@@ -1,5 +1,22 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — paginated restore correctness
+
+Task ID: F10-T09 REVALIDATION
+Status: ACCEPTED — isolated task commit pending
+Verification:
+  - PostgreSQL/Socket.IO → PASS (6 files, 13 tests): ordering/idempotency, authorization, direct and
+    report-resolution moderation, reconnect/history, and an actual sequence-101 `VISIBLE → RESTRICTED → VISIBLE`
+    path. The connected participant receives the exact body-free restore event, while cursor page two supplies the
+    authorized restored body; an outsider receives 403 without body.
+  - App adapter → PASS (6 tests); dashboard adapter → PASS (3 tests). API/app/dashboard typechecks and
+    `git diff --check` → PASS.
+  - The frozen F10-T09 capacity evidence remains applicable: this task changes neither gateway/send/rate-limit nor
+    performance-sensitive realtime behavior.
+Result:
+  - Restore pagination, restricted-content safety, authorization, history/cursor and reconnect behavior are accepted
+    for final F10-T11 closure revalidation.
+
 ## F10-T08 REWORK — paginated restore reconciliation
 
 Task ID: F10-T08 REWORK

@@ -118,9 +118,14 @@ describe('chat realtime Socket.IO integration', () => {
       });
     });
 
+    await fixture.prisma.chatMessage.createMany({ data: Array.from({ length: 100 }, (_, index) => ({
+      clinicId: fixture!.clinic.id, conversationId, sequence: BigInt(index + 1), senderUserId: fixture!.users.admin.id,
+      senderKind: 'CLINIC_OPERATOR', clientMessageId: `realtime-pagination-seed-${index + 1}`, requestPayloadHash: 'b'.repeat(64), body: `realtime pagination seed ${index + 1}`,
+    })) });
+
     const directMessage = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000005', body: 'connected direct source body' } });
     expect(directMessage.statusCode).toBe(201);
-    const directEvent = expectTombstone(directMessage.json().id, '1', 'connected direct source body');
+    const directEvent = expectTombstone(directMessage.json().id, '101', 'connected direct source body');
     const direct = await app.inject({ method: 'POST', url: `/v1/chat/messages/${directMessage.json().id}/visibility`, headers: auth(fixture.tokens.admin), payload: { visibility: 'RESTRICTED', reasonCategory: 'ABUSE_OR_HARASSMENT', safeNote: 'reviewed' } });
     expect(direct.statusCode).toBe(201);
     await directEvent;
@@ -129,7 +134,7 @@ describe('chat realtime Socket.IO integration', () => {
       socket!.once('message:visibility-changed', (event) => {
         clearTimeout(timeout);
         try {
-          expect(event).toEqual({ conversationId, messageId: directMessage.json().id, sequence: '1', visibility: 'VISIBLE' });
+          expect(event).toEqual({ conversationId, messageId: directMessage.json().id, sequence: '101', visibility: 'VISIBLE' });
           expect(event.body).toBeUndefined(); expect(event.preview).toBeUndefined();
           resolve();
         } catch (error) { reject(error); }
@@ -143,7 +148,7 @@ describe('chat realtime Socket.IO integration', () => {
     expect(resolvedMessage.statusCode).toBe(201);
     const report = await app.inject({ method: 'POST', url: `/v1/chat/messages/${resolvedMessage.json().id}/reports`, headers: auth(fixture.tokens.patient), payload: { reasonCategory: 'ABUSE_OR_HARASSMENT', requestImmediateBlock: false } });
     expect(report.statusCode).toBe(201);
-    const resolutionEvent = expectTombstone(resolvedMessage.json().id, '2', 'connected resolution source body');
+    const resolutionEvent = expectTombstone(resolvedMessage.json().id, '102', 'connected resolution source body');
     const resolved = await app.inject({ method: 'POST', url: `/v1/chat/reports/${report.json().id}/resolve`, headers: auth(fixture.tokens.admin), payload: { resolution: 'UPHELD_POLICY_VIOLATION', action: 'RESTRICT_MESSAGE', safeNote: 'reviewed' } });
     expect(resolved.statusCode).toBe(200);
     await resolutionEvent;
