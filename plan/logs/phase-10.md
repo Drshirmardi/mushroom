@@ -1,5 +1,39 @@
 # Phase 10 Execution Evidence
 
+## F10-T08 REWORK — frozen high-water recovery and cancellation
+
+Task ID: F10-T08 REWORK
+Completed at: 2026-09-23 20:30 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R17-HIGH-WATER-RECOVERY
+Reviewed by: Codex /root
+Changed files:
+  - apps/app/src/app/(app)/chat/page.tsx
+  - apps/app/src/lib/chat-api.ts
+  - apps/app/src/lib/chat-api.spec.ts
+  - apps/dashboard/src/features/messages/messages-page.tsx
+  - apps/dashboard/src/lib/chat-api.ts
+  - apps/dashboard/src/lib/chat-api.spec.ts
+  - plan/STATUS.md
+  - plan/phases/10-CHAT-CONSULTATION.md
+  - plan/logs/phase-10.md
+Migrations:
+  - none
+Tests run:
+  - app chat adapter test → PASS (12 files, 45 tests)
+  - dashboard chat adapter test → PASS (15 files, 52 tests)
+  - app/dashboard typecheck → PASS
+  - app/dashboard production build → PASS
+  - git diff --check and task isolation review → PASS
+Result:
+  - Reconnect derives a finite page budget from the frozen join high-water and validates every contiguous sequence through it; an empty, stalled, missing, or non-progressing page transitions to `recovery-failed` before any `connected` state.
+  - App and dashboard cover a 10,200-message recovery (>100 REST pages) without gap/duplicate, unreachable high-water failure, stale restore cancellation, and resumption only after the following successful join.
+  - A generation change/disconnect clears join authority; no restore finally-retry or stale response can write to the cache.
+Known limitations:
+  - Phase 10 remains `REWORK` pending the user-required F10-T09 real PostgreSQL/Socket.IO revalidation and F10-T11 final gates.
+Next task:
+  - F10-T09 REVALIDATION only; do not start Phase 11.
+
 ## F10-T11 REVALIDATION — reconnect-pagination final gates
 
 Task ID: F10-T11 REVALIDATION

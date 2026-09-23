@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `READY_FOR_REVIEW` — independent closure review یک P1 در cursor pagination reconnect یافت؛ F10-T08/T09/T11 آن را رفع و revalidate کردند؛ Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `REWORK` — independent closure review سقف recovery پیش از high-water و retry restore پس از disconnect را یافت؛ فقط F10-T08 برای remediation claim شده است و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.

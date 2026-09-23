@@ -7,7 +7,7 @@ import { useAuthSession } from "@/components/auth/session-gate";
 import { connectChat, loadChat, reconcileChatMessages, sendChat, type ChatMessage } from "@/lib/chat-api";
 
 type LoadedChat = Awaited<ReturnType<typeof loadChat>>;
-type ConnectionState = "loading" | "connected" | "reconnecting" | "offline" | "read-only";
+type ConnectionState = "loading" | "connected" | "reconnecting" | "offline" | "read-only" | "recovery-failed";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function ChatPage() {
     } catch { setError("ارسال پیام ممکن نیست؛ گفتگو فقط‌خواندنی است یا اتصال را دوباره بررسی کنید."); setConnection("read-only"); }
   };
   const canSend = Boolean(chat) && connection === "connected";
-  const stateLabel = connection === "connected" ? "متصل" : connection === "reconnecting" ? "در حال اتصال مجدد…" : connection === "offline" ? "آفلاین؛ در حال تلاش مجدد…" : connection === "read-only" ? "فقط‌خواندنی" : "در حال اتصال…";
+  const stateLabel = connection === "connected" ? "متصل" : connection === "reconnecting" ? "در حال اتصال مجدد…" : connection === "offline" ? "آفلاین؛ در حال تلاش مجدد…" : connection === "read-only" ? "فقط‌خواندنی" : connection === "recovery-failed" ? "بازیابی گفتگو ناموفق بود" : "در حال اتصال…";
 
   return <div className="flex flex-col" style={{ height: "calc(100vh - 100px)" }}>
     <header className="flex items-center gap-3 border-b border-border bg-white px-4 py-3"><button aria-label="بازگشت" onClick={() => router.back()} className="rounded-xl bg-muted p-2"><ChevronLeft size={20} /></button><div><p className="text-sm font-bold">گفتگوی مشاوره</p><p className="text-xs text-muted-foreground">{stateLabel} · فقط پیام متنی در نوبت معتبر</p></div></header>

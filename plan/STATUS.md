@@ -7,12 +7,12 @@
 ## وضعیت کلی
 
 - آخرین به‌رورسانی: `2026-09-22 01:10 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ reconnect-pagination remediation و final gates پاس شده‌اند؛ independent closure review لازم است؛ Phase 11 claim نشده است.`
+- blocker فعال: `F10-T08 remediation پذیرفته و commit شده است؛ F10-T09 revalidation باید پیش از F10-T11 اجرا شود. Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -50,9 +50,26 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: F10-T08 bounded client recovery, F10-T09 real PostgreSQL/Socket.IO proof, and
-F10-T11 final freshness/test/build/Chrome gates passed. A new independent closure review is required before any closure
-decision. `Phase 11` remains `NOT_STARTED`, unclaimed and unmodified.
+`Phase 10` remains `REWORK`: `F10-T08 REWORK` now reaches the frozen join high-water or explicitly fails before
+`connected`, and a restore cannot retry until the next successful join. `F10-T09 REVALIDATION` is next eligible but
+unclaimed; Phase 11 remains `NOT_STARTED`, unclaimed and unmodified.
+
+## active batch — F10-R17-HIGH-WATER-RECOVERY
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-22 01:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and independent closure-review findings on `4d56ca5`.
+
+- Task ID: `F10-T08 REWORK`
+  - Status: `DONE`
+  - Depends on: accepted `F10-T03/T04`; remediation is limited to client recovery.
+  - Scope: app/dashboard high-water-bounded reconnect recovery, explicit failure before `connected`, and cancellation-safe restore retry only after a successful next join.
+  - Owned paths: `apps/app/src/lib/chat-api.ts`, `apps/app/src/lib/chat-api.spec.ts`, `apps/dashboard/src/lib/chat-api.ts`, `apps/dashboard/src/lib/chat-api.spec.ts`, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: app/dashboard chat adapters and focused test suites.
+  - Verification: app 45 tests and dashboard 52 tests, their typechecks and production builds, and `git diff --check` → PASS.
+  - Result: recovery page budget derives from frozen sequence distance, validates contiguous progress through high-water, reports `recovery-failed` rather than `connected` on any unreachable/stalled/empty page, and restore work resumes only after a later successful join.
 
 ## آخرین batch — F10-R16-CLOSURE-GATES
 
