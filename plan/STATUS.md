@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-22 01:10 +03:30`
+- آخرین به‌رورسانی: `2026-09-23 20:51 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T08 remediation پذیرفته و commit شده است؛ F10-T09 revalidation باید پیش از F10-T11 اجرا شود. Phase 11 claim نشده است.`
+- blocker فعال: `F10-T09 revalidation پذیرفته و commit می‌شود؛ F10-T11 final gates پیش از READY_FOR_REVIEW باید اجرا شود. Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -51,8 +51,29 @@
 ## handoff فاز فعال
 
 `Phase 10` remains `REWORK`: `F10-T08 REWORK` now reaches the frozen join high-water or explicitly fails before
-`connected`, and a restore cannot retry until the next successful join. `F10-T09 REVALIDATION` is next eligible but
-unclaimed; Phase 11 remains `NOT_STARTED`, unclaimed and unmodified.
+`connected`, and a restore cannot retry until the next successful join. `F10-T09 REVALIDATION` real
+PostgreSQL/Socket.IO confirmation passed; `F10-T11 REVALIDATION` is next eligible. Phase 11 remains `NOT_STARTED`,
+unclaimed and unmodified.
+
+## active batch — F10-R18-POST-RECOVERY-REALTIME
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-23 20:35 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and committed `9b760a3`.
+
+- Task ID: `F10-T09 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted `F10-T08 REWORK`.
+  - Scope: real PostgreSQL/Socket.IO reconnection, authorization/revocation, visibility/tombstone, block-policy, and high-water contract regression verification only.
+  - Owned paths: focused API realtime/integration tests if a coverage gap is found, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: serialized PostgreSQL and Socket.IO test environment.
+  - Expected verification: real gateway/reconnect/authorization/moderation/block suites, API typecheck, and diff isolation.
+  - Verification: PostgreSQL/Socket.IO reconnect, realtime/visibility/revocation, moderation/block, authorization,
+    ordering/presence and rate-limit suites → PASS (8 files, 22 tests); API typecheck → PASS.
+  - Result: real infrastructure confirms the high-water reconnect contract and every prior security remediation;
+    no product source change was required.
 
 ## active batch — F10-R17-HIGH-WATER-RECOVERY
 

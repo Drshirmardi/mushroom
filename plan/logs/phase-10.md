@@ -1,5 +1,34 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — post-F10-T08 real PostgreSQL/Socket.IO proof
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-23 20:51 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R18-POST-RECOVERY-REALTIME
+Reviewed by: Codex /root
+Changed files:
+  - plan/STATUS.md
+  - plan/logs/phase-10.md
+Migrations:
+  - none
+Tests run:
+  - real PostgreSQL/Socket.IO reconnect → PASS (1 file, 2 tests): 151-sequence high-water recovery from the 100-record Socket.IO page through authorized REST cursor continuation, with no gap or duplicate.
+  - real PostgreSQL/Socket.IO realtime, moderation and abuse authorization → PASS (3 files, 13 tests): body-free visibility tombstones, missed-event reconciliation, direct/report resolution, socket revocation, restricted-content access and send-only block policy.
+  - real PostgreSQL authorization, ordering/presence and rate-limit → PASS (4 files, 9 tests).
+  - API typecheck → PASS.
+Result:
+  - All 8 real infrastructure suites (22 tests) passed after the F10-T08 commit. PostgreSQL remains authoritative;
+    Socket.IO does not bypass current authorization, leak restricted body content, or allow a revoked socket to receive
+    a later room fan-out.
+  - The first package-script attempt was discarded because its wrapper did not forward the requested file filter and
+    began the broad API suite; every accepted result above came from the explicitly named Vitest files on the same
+    healthy local PostgreSQL and Socket.IO environment.
+Known limitations:
+  - Phase 10 remains `REWORK` until the user-required F10-T11 all-gates and Chrome E2E validation passes.
+Next task:
+  - F10-T11 REVALIDATION only; do not start Phase 11.
+
 ## F10-T08 REWORK — frozen high-water recovery and cancellation
 
 Task ID: F10-T08 REWORK
