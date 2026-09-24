@@ -109,17 +109,20 @@ import { MeController } from './presentation/http/me.controller';
         RefreshTokenManager,
         AccessTokenService,
         PublicAuthRateLimiter,
+        ChatSocketRegistry,
       ],
       useFactory: (
         sessions: SessionRepository,
         refreshTokens: RefreshTokenManager,
         accessTokens: AccessTokenService,
         rateLimiter: PublicAuthRateLimiter,
+        sockets: ChatSocketRegistry,
       ) => new RefreshSessionUseCase(
         sessions,
         refreshTokens,
         accessTokens,
         rateLimiter,
+        sockets,
       ),
     },
     {
@@ -136,11 +139,12 @@ import { MeController } from './presentation/http/me.controller';
     },
     {
       provide: ManageAccountUseCase,
-      inject: [AccountRepository, PasswordHasher],
+      inject: [AccountRepository, PasswordHasher, ChatSocketRegistry],
       useFactory: (
         accounts: AccountRepository,
         passwords: PasswordHasher,
-      ) => new ManageAccountUseCase(accounts, passwords),
+        sockets: ChatSocketRegistry,
+      ) => new ManageAccountUseCase(accounts, passwords, sockets),
     },
   ],
   exports: [

@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T04 باید race handshake/revoke و invalidation همهٔ revokeهای پایدار را رفع کند؛ Phase 10 تا revalidationهای جداگانه در REWORK می‌ماند.`
+- blocker فعال: `F10-T09 و سپس F10-T11 باید جداگانه بازاعتبارسنجی شوند؛ Phase 10 تا آن زمان REWORK است.`
 
 ## پیشرفت کلان
 
@@ -50,10 +50,26 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: F10-T03 now rejects a durable-revoked principal session across chat REST actor authorization.
-F10-T04 remains required for the concurrent Socket.IO handshake/revoke fence and every post-commit socket
-invalidation path; separate F10-T09/F10-T11 revalidations follow serially. Phase 11 remains `NOT_STARTED`, unclaimed
-and unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: F10-T03 rejects a durable-revoked principal session across chat REST actor authorization and
+F10-T04 serializes Socket.IO admission with revocation while notifying the local registry after each durable
+revocation path. Separate F10-T09/F10-T11 revalidations still follow serially. Phase 11 remains `NOT_STARTED`,
+unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R31-SOCKET-REVOCATION-FENCE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 01:38 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T04 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and independent P1 review.
+
+- Task ID: `F10-T04 REWORK (durable revocation fence)`
+  - Status: `DONE`
+  - Scope: serialize persisted session validation/registration against revocation and notify the local Socket.IO registry after every durable revocation path, with real PostgreSQL/Socket.IO barrier and refresh-reuse regressions.
+  - Owned paths: chat gateway/registry boundary, identity revocation use cases and focused gateway/identity tests, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: Socket.IO identity handshake and session lifecycle; serialized after F10-T03.
+  - Verification: API typecheck → PASS; focused identity unit tests → PASS (18); disposable PostgreSQL `chatRevalidation` → PASS (8 files, 27 tests); `git diff --check` → PASS.
+  - Result: the handshake locks the active session through registration, so a concurrent revoke either rejects it or disconnects it after commit. Logout, session management, logout-all, user deactivation, refresh reuse/disabled refresh, and password change all now reach local socket invalidation only after their durable change commits.
 
 ## active batch — F10-R30-REST-SESSION-AUTHORIZATION
 

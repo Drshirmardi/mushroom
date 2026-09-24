@@ -1,13 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Client } from 'pg';
 import { io, type Socket } from 'socket.io-client';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
+import { RefreshCookieService } from '../src/common/auth/refresh-cookie.service';
 import { ChatService } from '../src/modules/communications/chat/chat.service';
 import { ChatRealtimeGateway } from '../src/modules/communications/chat/realtime/chat-realtime.gateway';
 import { ChatRealtimePublisher } from '../src/modules/communications/chat/realtime/chat-realtime.publisher';
 import { ManageUserStatusUseCase } from '../src/modules/identity/application/manage-user-status.use-case';
+import { RefreshTokenManager } from '../src/modules/identity/application/ports/refresh-token-manager';
 import { auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
 
 const principal = { userId: '11111111-1111-4111-8111-111111111111', sessionId: '22222222-2222-4222-8222-222222222222', roles: ['PATIENT'] as const, tokenId: '33333333-3333-4333-8333-333333333333', issuedAt: 1, expiresAt: Math.floor(Date.now() / 1000) + 60 };
@@ -190,6 +193,89 @@ describe('chat realtime Socket.IO integration', () => {
     expect(revoked.statusCode).toBe(204);
     await disconnected;
     const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000007', body: 'must not reach revoked socket' } });
+    expect(published.statusCode).toBe(201);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(received).toEqual([]);
+  }, 30_000);
+
+  it('serializes a buffered handshake/join with a concurrent persisted session revocation', async () => {
+    app = await createApiApplication();
+    await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const principal = await app.get(AccessTokenService).verify(fixture.tokens.patient);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id as string;
+    const blocker = new Client({ connectionString: process.env.DATABASE_URL });
+    const racing = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'], reconnection: false, autoConnect: false });
+    const received: unknown[] = [];
+    racing.on('message:committed', (event) => received.push(event));
+    let connected = false;
+    racing.on('connect', () => { connected = true; });
+
+    try {
+      await blocker.connect();
+      await blocker.query('BEGIN');
+      await blocker.query('SELECT "id" FROM "sessions" WHERE "id" = $1 FOR UPDATE', [principal.sessionId]);
+
+      const terminal = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('racing session socket remained connected after revocation')), 5_000);
+        racing.once('connect_error', () => { clearTimeout(timeout); resolve(); });
+        racing.once('disconnect', () => { clearTimeout(timeout); resolve(); });
+      });
+      const joined = new Promise<{ error: Error | null; value: unknown }>((resolve) => racing.timeout(1_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => resolve({ error, value })));
+      racing.connect();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      // This is a PostgreSQL barrier, not a timing assertion: the handshake
+      // must be waiting on the session row's FOR SHARE lock.
+      expect(connected).toBe(false);
+
+      const revoke = app.inject({ method: 'DELETE', url: `/v1/auth/sessions/${principal.sessionId}`, headers: auth(fixture.tokens.patient) });
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      await blocker.query('COMMIT');
+      expect((await revoke).statusCode).toBe(204);
+      await terminal;
+      await expect(joined).resolves.not.toEqual(expect.objectContaining({ value: expect.objectContaining({ ok: true }) }));
+
+      const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000011', body: 'must not reach handshake race socket' } });
+      expect(published.statusCode).toBe(201);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(received).toEqual([]);
+    } finally {
+      await blocker.query('ROLLBACK').catch(() => undefined);
+      await blocker.end().catch(() => undefined);
+      racing.disconnect();
+    }
+  }, 30_000);
+
+  it('evicts a joined socket after refresh-token reuse commits without another client event', async () => {
+    app = await createApiApplication();
+    await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const principal = await app.get(AccessTokenService).verify(fixture.tokens.patient);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id as string;
+    socket = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'], reconnection: false });
+    await new Promise<void>((resolve, reject) => { socket!.once('connect', resolve); socket!.once('connect_error', reject); });
+    const joined = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(joined).toMatchObject({ ok: true });
+    const patientRole = await fixture.prisma.role.findUniqueOrThrow({ where: { code: 'PATIENT' } });
+    await fixture.prisma.userRole.create({ data: { userId: principal.userId, roleId: patientRole.id } });
+    const original = app.get(RefreshTokenManager).rotate(principal.sessionId);
+    await fixture.prisma.session.update({ where: { id: principal.sessionId }, data: { refreshTokenHash: original.tokenHash } });
+    const cookie = app.get(RefreshCookieService);
+    const headers = { origin: 'http://localhost:3000', cookie: `${cookie.name}=${original.rawToken}` };
+
+    const rotated = await app.inject({ method: 'POST', url: '/v1/auth/refresh', headers });
+    expect(rotated.statusCode).toBe(200);
+    const received: unknown[] = [];
+    socket.on('message:committed', (event) => received.push(event));
+    const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
+    const reused = await app.inject({ method: 'POST', url: '/v1/auth/refresh', headers });
+    expect(reused.statusCode).toBe(401);
+    await disconnected;
+    await expect(fixture.prisma.session.findUnique({ where: { id: principal.sessionId }, select: { revokedAt: true, revokedReason: true } })).resolves.toMatchObject({ revokedAt: expect.any(Date), revokedReason: 'REFRESH_REUSE_DETECTED' });
+
+    const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000012', body: 'must not reach refresh-reused socket' } });
     expect(published.statusCode).toBe(201);
     await new Promise((resolve) => setTimeout(resolve, 150));
     expect(received).toEqual([]);

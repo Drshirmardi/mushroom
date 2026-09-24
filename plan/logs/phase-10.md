@@ -1358,3 +1358,41 @@ Result:
     owned by `principal.sessionId`, in addition to ACTIVE user and existing participant authorization.
 Next eligible action:
   - F10-T04 handshake/revocation invalidation remediation only; do not begin the revalidations or Phase 11.
+
+# F10-T04 REWORK — durable session revocation fence and invalidation
+
+Task ID: F10-T04 REWORK (durable revocation fence)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R31-SOCKET-REVOCATION-FENCE
+Status: ACCEPTED — isolated remediation commit pending; Phase 10 remains `REWORK`
+Changed files:
+  - apps/api/src/modules/communications/chat/realtime/chat-realtime.gateway.ts
+  - apps/api/src/modules/identity/{identity.module.ts,application/{refresh-session.use-case.ts,manage-account.use-case.ts,ports/session.repository.ts},infrastructure/prisma-session.repository.ts}
+  - apps/api/test/{chat-realtime.gateway.spec.ts,chat-rate-limit.integration.spec.ts,session-use-cases.spec.ts,manage-account.spec.ts}
+  - plan/{STATUS.md,phases/10-CHAT-CONSULTATION.md,logs/phase-10.md}
+Persistent revocation map (commit → socket action):
+  - logout / explicit owned-session management: `PrismaSessionRepository.revoke` transaction commits, then `ManageSessionsUseCase.disconnectSession`.
+  - logout-all: `PrismaSessionRepository.revokeAll` transaction commits, then `ManageSessionsUseCase.disconnectUser`.
+  - user deactivation: `ManageUserStatusUseCase` transaction disables the user and revokes active sessions, then `disconnectUser`.
+  - refresh-token reuse or refresh for a disabled user: `rotateRefresh` commits the session revocation, returns `REVOKED`, then `RefreshSessionUseCase.disconnectSession`.
+  - password change: `PrismaAccountRepository.changePassword` commits credential and all session revocations together, then `ManageAccountUseCase.disconnectUser`.
+Verification:
+  - API typecheck (including Prisma generation) → PASS. Focused identity tests → PASS (2 files, 18 tests), including
+    post-commit password-change eviction and `REVOKED` refresh invalidation semantics.
+  - Run-owned disposable PostgreSQL `chatRevalidation` → PASS (8 files, 27 tests). The new real Socket.IO barrier
+    holds the session row `FOR UPDATE`, starts a socket with a buffered join, then starts the HTTP revoke before
+    releasing the barrier. The gateway remains blocked on its `FOR SHARE`; once released it can only register before
+    the committed revoke and is immediately disconnected, never completing the join or receiving later fan-out.
+  - The real refresh-cookie flow rotates once, replays the old refresh cookie, persists `REFRESH_REUSE_DETECTED`,
+    disconnects the already joined socket without another client event, and proves a later publisher fan-out is absent.
+    Valid session/user admission and existing user-deactivation coverage remain in the same PostgreSQL/Socket.IO run.
+  - The chat rate-limit fixture now creates the durable sessions required by the new REST contract; the unchanged
+    120-message conversation limit passed. `git diff --check` → PASS. The frozen 40-minute capacity proof was not
+    rerun because send throughput, workload criteria, and single-instance topology are unchanged.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - Socket.IO admission is fail-closed across the session-revoke race, and every server-owned persistent session
+    revocation path notifies the local registry only after PostgreSQL commit. No client heartbeat or follow-up event
+    is required to remove the socket from rooms before later fan-out.
+Next eligible action:
+  - F10-T09 revalidation only, then F10-T11; do not start Phase 11.

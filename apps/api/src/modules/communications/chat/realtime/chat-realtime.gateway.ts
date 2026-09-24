@@ -96,19 +96,23 @@ export class ChatRealtimeGateway {
 
   private sequence(value: unknown) { if (value === undefined) return 0n; if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new Error('invalid sequence'); return BigInt(value); }
 
-  /** A signed access token remains usable only while its server-side session is active. */
-  private async assertActiveSession(principal: AccessTokenPrincipal, prisma: Pick<Prisma.TransactionClient, 'session'> = this.prisma) {
-    const session = await prisma.session.findFirst({
-      where: {
-        id: principal.sessionId,
-        userId: principal.userId,
-        revokedAt: null,
-        expiresAt: { gt: new Date() },
-        user: { is: { status: 'ACTIVE' } },
-      },
-      select: { id: true },
-    });
-    if (!session) throw new UnauthorizedException();
+  /**
+   * The share lock serializes admission with every session revocation update.
+   * The transaction retains it through registry registration: a revocation
+   * therefore either observes the registered socket and evicts it after its
+   * commit, or commits first and causes this handshake to fail closed.
+   */
+  private async assertActiveSession(principal: AccessTokenPrincipal, prisma: Pick<Prisma.TransactionClient, '$queryRaw'> = this.prisma) {
+    const sessions = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT "id"
+      FROM "sessions"
+      WHERE "id" = ${principal.sessionId}::uuid
+        AND "user_id" = ${principal.userId}::uuid
+        AND "revoked_at" IS NULL
+        AND "expires_at" > CURRENT_TIMESTAMP
+      FOR SHARE
+    `;
+    if (!sessions[0]) throw new UnauthorizedException();
   }
 
   private async authenticate(client: RealtimeSocket): Promise<AccessTokenPrincipal> {

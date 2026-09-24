@@ -40,7 +40,9 @@ describe('chat send rate limits (PostgreSQL integration)', () => {
     const tokens = await Promise.all(Array.from({ length: 24 }, async () => {
       const user = await fixture!.prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
       await fixture!.prisma.clinicalClinicAccess.create({ data: { userId: user.id, clinicId: fixture!.clinic.id } });
-      return issuer.issue({ userId: user.id, sessionId: randomUUID(), roles: ['ADMIN'] });
+      const sessionId = randomUUID();
+      await fixture!.prisma.session.create({ data: { id: sessionId, userId: user.id, refreshTokenHash: randomUUID().replaceAll('-', '').repeat(2), expiresAt: new Date(Date.now() + 60 * 60_000) } });
+      return issuer.issue({ userId: user.id, sessionId, roles: ['ADMIN'] });
     }));
     for (let index = 0; index < 120; index += 1) {
       const response = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${id}/messages`, headers: auth(tokens[index % tokens.length]! ), payload: { clientMessageId: `a9300000-0000-4000-8000-${String(index).padStart(12, '0')}`, body: `conversation synthetic ${index}` } });

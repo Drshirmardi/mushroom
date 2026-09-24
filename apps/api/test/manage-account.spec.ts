@@ -32,6 +32,7 @@ describe('ManageAccountUseCase', () => {
   const changePassword = vi.fn();
   const verify = vi.fn();
   const hash = vi.fn();
+  const disconnectUser = vi.fn();
   const accounts = {
     findById,
     findCredential,
@@ -39,7 +40,7 @@ describe('ManageAccountUseCase', () => {
     changePassword,
   } as unknown as AccountRepository;
   const passwords = { verify, hash } as unknown as PasswordHasher;
-  const useCase = new ManageAccountUseCase(accounts, passwords, () => now);
+  const useCase = new ManageAccountUseCase(accounts, passwords, { disconnectUser }, () => now);
 
   beforeEach(() => {
     findById.mockReset().mockResolvedValue(account);
@@ -48,6 +49,7 @@ describe('ManageAccountUseCase', () => {
     changePassword.mockReset().mockResolvedValue({ kind: 'CHANGED', account });
     verify.mockReset();
     hash.mockReset().mockResolvedValue('encoded-new-hash');
+    disconnectUser.mockReset();
   });
 
   it('returns only the active account contract', async () => {
@@ -143,6 +145,7 @@ describe('ManageAccountUseCase', () => {
       changedAt: now,
       audit,
     });
+    expect(disconnectUser).toHaveBeenCalledWith(account.id);
   });
 
   it('rejects an unchanged password before hashing or persistence', async () => {
@@ -168,5 +171,6 @@ describe('ManageAccountUseCase', () => {
       'new secure password value',
       audit,
     )).rejects.toEqual(new InvalidCurrentPasswordError());
+    expect(disconnectUser).not.toHaveBeenCalled();
   });
 });

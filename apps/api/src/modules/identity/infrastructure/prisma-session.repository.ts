@@ -110,7 +110,9 @@ export class PrismaSessionRepository extends SessionRepository {
           metadata: { generation: session.refreshGeneration },
         });
 
-        return { kind: 'REUSED' };
+        // The transaction commits this durable revocation before the caller
+        // performs local Socket.IO invalidation.
+        return { kind: 'REVOKED' };
       }
 
       const user = await transaction.user.findUnique({
@@ -132,7 +134,9 @@ export class PrismaSessionRepository extends SessionRepository {
           },
         });
 
-        return { kind: 'INVALID' };
+        // A disabled user also changes an otherwise active session into a
+        // durable revocation; callers must evict any existing local socket.
+        return { kind: 'REVOKED' };
       }
 
       const generation = session.refreshGeneration + 1;

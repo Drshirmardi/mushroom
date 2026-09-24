@@ -40,6 +40,7 @@ describe('session authentication use cases', () => {
   const rotateToken = vi.fn();
   const issueAccess = vi.fn();
   const consume = vi.fn();
+  const disconnectSession = vi.fn();
   const sessions = {
     create: createSession,
     rotateRefresh,
@@ -61,6 +62,7 @@ describe('session authentication use cases', () => {
     rotateToken.mockReset();
     issueAccess.mockReset();
     consume.mockReset();
+    disconnectSession.mockReset();
     executeLogin.mockResolvedValue(user);
     createRefresh.mockReturnValue(refresh);
     rotateToken.mockReturnValue(replacement);
@@ -157,6 +159,7 @@ describe('session authentication use cases', () => {
       refreshTokens,
       accessTokens,
       rateLimiter,
+      { disconnectSession },
       () => now,
     );
 
@@ -187,7 +190,7 @@ describe('session authentication use cases', () => {
       .toBeLessThan(issueAccess.mock.invocationCallOrder[0] ?? 0);
   });
 
-  it.each(['INVALID', 'REUSED'] as const)(
+  it.each(['INVALID', 'REVOKED'] as const)(
     'maps repository status %s to one refresh error',
     async (kind) => {
       inspectRefresh.mockReturnValue({
@@ -200,6 +203,7 @@ describe('session authentication use cases', () => {
         refreshTokens,
         accessTokens,
         rateLimiter,
+        { disconnectSession },
         () => now,
       );
 
@@ -209,6 +213,7 @@ describe('session authentication use cases', () => {
         requestId,
       })).rejects.toEqual(new InvalidRefreshTokenError());
       expect(issueAccess).not.toHaveBeenCalled();
+      expect(disconnectSession).toHaveBeenCalledTimes(kind === 'REVOKED' ? 1 : 0);
     },
   );
 
@@ -223,6 +228,7 @@ describe('session authentication use cases', () => {
       refreshTokens,
       accessTokens,
       rateLimiter,
+      { disconnectSession },
       () => now,
     );
 
@@ -241,6 +247,7 @@ describe('session authentication use cases', () => {
       refreshTokens,
       accessTokens,
       rateLimiter,
+      { disconnectSession },
       () => now,
     );
 
