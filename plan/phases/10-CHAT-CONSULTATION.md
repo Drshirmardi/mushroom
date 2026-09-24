@@ -36,6 +36,7 @@
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history, visibility reconciliation, and reconnect-gap pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
 - [x] `F10-T09 REVALIDATION (revoked JWT handshake)` — revalidate Socket.IO middleware admission with the persisted-session boundary
+- [x] `F10-T09 REVALIDATION (disabled user socket invalidation)` — revalidate durable ACTIVE-user admission, deactivation eviction and reconnect safety
 - [x] `F10-T11 REVALIDATION` — final build/E2E/freshness gates after authenticated bootstrap proof
 - [x] `F10-T11 REVALIDATION (revoked JWT handshake)` — final build, browser and freshness gates after persisted-session handshake enforcement
 

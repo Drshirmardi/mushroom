@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 00:08 +03:30`
+- آخرین به‌رورسانی: `2026-09-25 00:11 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T09 REVALIDATION و F10-T11 gateها باید جداگانه اجرا و ثبت شوند؛ تا آن زمان Phase 10 در REWORK است.`
+- blocker فعال: `F10-T11 gateهای نهایی باید جداگانه اجرا و ثبت شوند؛ تا آن زمان Phase 10 در REWORK است.`
 
 ## پیشرفت کلان
 
@@ -50,11 +50,23 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: `F10-T04` now validates both durable session state and `User.status = ACTIVE` before Socket.IO
-admission. Its durable deactivation owner revokes active sessions and disconnects that user's sockets only after the
-transaction commits; the row lock makes a concurrent handshake either fail before registration or be immediately
-evicted after deactivation. F10-T09/F10-T11 are still required. Phase 11 remains `NOT_STARTED`, unclaimed and
-unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: F10-T04's durable active-user/session admission and post-commit deactivation eviction passed
+the targeted PostgreSQL/Socket.IO revalidation. F10-T11 final build/browser/freshness gates are still required. Phase
+11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R28-DISABLED-USER-SOCKET-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T09 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and `12f84ce`.
+
+- Task ID: `F10-T09 REVALIDATION (disabled user Socket.IO)`
+  - Status: `DONE`
+  - Scope: focused PostgreSQL/Socket.IO regression proof for session revocation, ACTIVE-user admission, deactivation eviction, reconnect, ordering, authorization, moderation and rate limit.
+  - Verification: run-owned disposable PostgreSQL `chatRevalidation` completed with exit code 0; API typecheck and `git diff --check` had already passed for the accepted remediation.
+  - Result: targeted behavior remains fail-closed. The frozen 40-minute capacity proof was not repeated because its workload/criterion is unaffected.
 
 ## active batch — F10-R27-DISABLED-USER-SOCKET-INVALIDATION
 

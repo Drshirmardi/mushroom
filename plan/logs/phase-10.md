@@ -1292,3 +1292,21 @@ Result:
     and a committed deactivation immediately removes existing local sockets.
 Next eligible action:
   - F10-T09 REVALIDATION only, followed by F10-T11 gates; do not start Phase 11.
+# F10-T09 REVALIDATION — disabled-user Socket.IO boundary
+
+Task ID: F10-T09 REVALIDATION (disabled user socket invalidation)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R28-DISABLED-USER-SOCKET-REVALIDATION
+Status: ACCEPTED — isolated revalidation commit pending; Phase 10 remains `REWORK`
+Verification:
+  - Run-owned disposable PostgreSQL `chatRevalidation` completed with exit code 0 after `12f84ce`. It re-executed
+    real Socket.IO chat gateway, reconnect, authorization, moderation/tombstone, ordering, presence and rate-limit
+    suites, including the ACTIVE-user/session admission and disabled-user eviction proof.
+  - API typecheck and `git diff --check` remained PASS from the accepted remediation. No capacity criterion, send
+    behavior, or topology changed, so the existing 40-minute proof was intentionally not repeated.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain outside the task and unstaged.
+Result:
+  - The targeted PostgreSQL/Socket.IO boundary remains fail-closed for durable session revocation and user
+    deactivation; F10-T11 final gates are the only next action.
+Next eligible action:
+  - F10-T11 only; do not start Phase 11.
