@@ -1,5 +1,29 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — immediate socket revocation boundary
+
+Task ID: F10-T09 REVALIDATION
+Completed at: 2026-09-24 19:20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R21-SOCKET-REVOCATION-REVALIDATION
+Reviewed by: Codex /root
+Changed files:
+  - plan/{STATUS.md,logs/phase-10.md}
+Migrations:
+  - none
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api exec vitest run test/chat-realtime.gateway.spec.ts test/chat-reconnect-load.spec.ts test/chat-authorization.integration.spec.ts test/chat-moderation.integration.spec.ts test/chat-abuse-authorization.integration.spec.ts test/chat-ordering.integration.spec.ts test/chat-presence.gateway.spec.ts test/chat-rate-limit.integration.spec.ts --no-file-parallelism` → PASS (8 files, 23 tests)
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - Real PostgreSQL/Socket.IO coverage confirms that individual-session and user-wide revoke disconnect joined sockets before a new committed message is fanned out, without a client message or heartbeat after the revoke.
+  - Reconnect high-water recovery, resource authorization, moderation tombstones, block policy, presence, ordering and rate limits remain green.
+  - The registry changes no message-send, rate-limit, capacity or multi-instance path. The existing frozen 40-minute capacity evidence remains valid and was intentionally not rerun.
+Known limitations:
+  - none beyond the existing single-instance ADR-0010 boundary.
+Next task:
+  - F10-T11 final gates; Phase 10 remains REWORK and Phase 11 remains unclaimed.
+
 ## F10-T04 REWORK — immediate session/user Socket.IO invalidation
 
 Task ID: F10-T04 REWORK

@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 19:10 +03:30`
+- آخرین به‌رورسانی: `2026-09-24 19:20 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T04 immediate session/user socket invalidation پذیرفته شد؛ F10-T09 revalidation و سپس F10-T11 final gates لازم‌اند. Phase 11 claim نشده است.`
+- blocker فعال: `F10-T09 revalidation پذیرفته شد؛ F10-T11 final gates لازم‌اند. Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -50,11 +50,28 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: `F10-T04 REWORK` now immediately disconnects in-process Socket.IO connections for a
-revoked session or all revoked sessions of one user, with a PostgreSQL/Socket.IO proof that needs no client follow-up.
-The existing product has no separate user-deactivation endpoint; server-side deactivation owners use the same exported
-user invalidation API. `F10-T09` must revalidate the focused authorization/realtime boundary, then `F10-T11` must
-rerun final gates. Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: accepted `F10-T04 REWORK` immediately disconnects in-process Socket.IO connections for a
+revoked session or all revoked sessions of one user. The existing product has no separate user-deactivation endpoint;
+server-side deactivation owners use the same exported user invalidation API. `F10-T09 REVALIDATION` passed the
+focused authorization/realtime boundary; `F10-T11` must now rerun final gates. Phase 11 remains `NOT_STARTED`,
+unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R21-SOCKET-REVOCATION-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-24 19:15 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated revalidation commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and `d35772c`.
+
+- Task ID: `F10-T09 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted F10-T04 immediate session/user invalidation.
+  - Scope: targeted real PostgreSQL/Socket.IO authorization, revocation, reconnect, visibility/tombstone, presence and rate-limit revalidation only; no capacity criterion or topology change.
+  - Owned paths: focused API test/evidence/status/checklist only if coverage is insufficient.
+  - Shared/exclusive resource: serialized PostgreSQL and Socket.IO test environment.
+  - Verification: real PostgreSQL/Socket.IO gateway, immediate session/user revoke, reconnect, authorization, moderation/tombstone, presence, ordering and rate-limit suites → PASS (8 files, 23 tests); API typecheck and `git diff --check` → PASS.
+  - Result: the immediate invalidation registry preserves the frozen high-water, moderation, authorization and rate-limit contracts. The change is not on the send, capacity or topology path; the accepted 40-minute capacity evidence is unchanged and was not rerun.
 
 ## active batch — F10-R20-IMMEDIATE-SOCKET-REVOCATION
 
