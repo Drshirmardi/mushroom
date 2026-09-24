@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 23:35 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- آخرین به‌رورسانی: `2026-09-24 23:45 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T11 REVALIDATION باید gateهای نهایی متناسب با تغییر handshake را اجرا کند؛ Phase 10 تا آن زمان REWORK است.`
+- blocker فعال: `ندارد؛ independent review یا ساخت PR فقط با درخواست صریح بعدی ممکن است؛ closure رسمی و Phase 11 claim نشده‌اند.`
 
 ## پیشرفت کلان
 
@@ -50,10 +50,11 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: `F10-T04 REWORK (revoked JWT handshake)` validates the persisted session before a Socket.IO
-connection is admitted, so a signed JWT is insufficient after `revokedAt` is set. `F10-T09 REVALIDATION` passed on a
-run-owned disposable PostgreSQL database; the shared-database phone collision was fixture contamination, not a product
-failure. `F10-T11` is next. Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `READY_FOR_REVIEW`: `F10-T04 REWORK (revoked JWT handshake)` validates the persisted session before a
+Socket.IO connection is admitted, so a signed JWT is insufficient after `revokedAt` is set. `F10-T09` passed on a
+run-owned disposable PostgreSQL database, and F10-T11 build/real Chrome E2E/freshness gates passed. The accepted
+40-minute capacity evidence remains unchanged because this remediation does not alter its path or criterion. Phase 11
+remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
 
 ## active batch — F10-R22-FINAL-REVOCATION-GATES
 

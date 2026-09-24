@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `REWORK` — remediation handshake برای JWT با session revoke‌شده پذیرفته شده است؛ تا revalidationهای F10-T09/F10-T11، phase در REWORK می‌ماند. closure رسمی و Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `READY_FOR_REVIEW` — remediation handshake برای JWT با session revoke‌شده و revalidationهای F10-T09/F10-T11 پذیرفته شده‌اند. closure رسمی و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -36,6 +36,7 @@
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
 - [x] `F10-T09 REVALIDATION (revoked JWT handshake)` — revalidate Socket.IO middleware admission with the persisted-session boundary
 - [x] `F10-T11 REVALIDATION` — final build/E2E/freshness gates after authenticated bootstrap proof
+- [x] `F10-T11 REVALIDATION (revoked JWT handshake)` — final build, browser and freshness gates after persisted-session handshake enforcement
 
 ## قرارداد اجرایی freeze‌شده
 

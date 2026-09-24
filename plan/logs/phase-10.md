@@ -1,5 +1,29 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — revoked JWT handshake final gates
+
+Recorded at: 2026-09-24 23:45 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R26-REVOKED-JWT-HANDSHAKE-FINAL-GATES
+Result: ACCEPTED — Phase 10 `READY_FOR_REVIEW`; no closure, Phase 11, PR, push, or merge.
+
+Verification:
+  - `pnpm build` → PASS (5/5 packages), including the API gateway and both browser clients.
+  - The first Chrome invocation stopped before product execution because required local ports 3000/3001/3003 had no
+    listeners. Test-owned API, web and app processes were started from the already-built workspace, health-checked at
+    all three ports, and stopped immediately after the retry.
+  - `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS (1 real Chrome test, 7.2s): real web
+    registration/login, refresh-cookie bootstrap into app UI, authorized chat join, persisted text send, no media
+    control, no external request and no token URL leakage. No token injection or test bypass was used.
+  - F10-T09's 8-file PostgreSQL/Socket.IO disposable gate remains the fresh authorization/recovery proof. The accepted
+    40-minute capacity workload was intentionally not repeated: persisted-session middleware does not alter message
+    send, rate-limit, capacity or topology contracts.
+  - `git diff --check` → PASS. User-owned `.gitignore` and
+    `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+
+Result:
+  - Phase 10 returns only to `READY_FOR_REVIEW`; no official closure action was taken.
+
 ## F10-T09 REVALIDATION — revoked JWT handshake boundary
 
 Recorded at: 2026-09-24 23:35 +03:30
