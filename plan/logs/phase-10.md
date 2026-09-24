@@ -1416,3 +1416,19 @@ Result:
   - The persisted REST and Socket.IO identity boundaries remain fail-closed in a fresh PostgreSQL revalidation run.
 Next eligible action:
   - F10-T11 final gates only; do not start Phase 11.
+
+# F10-T11 REVALIDATION — durable revocation final gates
+
+Task ID: F10-T11 REVALIDATION (durable revocation fence)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R33-DURABLE-REVOCATION-FINAL-GATES
+Status: ACCEPTED — isolated final-gate commit pending; Phase 10 `READY_FOR_REVIEW`
+Verification:
+  - `pnpm build` → PASS: all 5 workspace packages built successfully.
+  - Real Chrome `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS: 1 authenticated text-chat journey in 18.8s. It waits for a real web login and refresh response, the authenticated app shell, then creates the chat fixture and posts a message; the fixture has no token injection or URL-only success condition.
+  - The first E2E invocation stopped at its listener preflight (`127.0.0.1:3000` refused) before browser authentication; starting unchanged local web/app services and rerunning the identical test resolved that environment-readiness condition. No product or test assertion was changed.
+  - Durable revocation audit → PASS: logout and explicit session management await the repository transaction before `disconnectSession`; logout-all, password change and user deactivation await durable transactions before `disconnectUser`; refresh-token reuse and disabled-user refresh return from the rotation transaction before `disconnectSession`. Gateway admission holds active-user and active-session `FOR SHARE` locks through socket registration, so the tested concurrent transaction either registers a socket for post-commit eviction or rejects the handshake after revocation.
+  - Commit/diff isolation → PASS: `bb69c3e`, `efe5c16` and `3167815` contain only their scoped implementation/tests/evidence; `git diff --check` passes; `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned, unstaged, and absent from Phase 10 commits.
+  - The accepted 40-minute capacity workload was not rerun: no workload criterion, send throughput, or topology changed.
+Result:
+  - Phase 10 is `READY_FOR_REVIEW` only. No closure, PR, push, merge, or Phase 11 claim occurred.

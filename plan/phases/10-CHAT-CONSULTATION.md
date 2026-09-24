@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `REWORK` — JWT با session revoke‌شده در REST چت و invalidate شدن همهٔ مسیرهای revoke تا remediationهای F10-T03/F10-T04 و revalidationهای F10-T09/F10-T11 باز است. closure رسمی و Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `READY_FOR_REVIEW` — remediationهای F10-T03/F10-T04 و revalidationهای F10-T09/F10-T11 برای session revoke‌شده، race handshake/revoke و invalidation همهٔ مسیرهای revoke پاس شده‌اند. closure رسمی و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -43,6 +43,7 @@
 - [x] `F10-T11 REVALIDATION` — final build/E2E/freshness gates after authenticated bootstrap proof
 - [x] `F10-T11 REVALIDATION (revoked JWT handshake)` — final build, browser and freshness gates after persisted-session handshake enforcement
 - [x] `F10-T11 REVALIDATION (disabled user socket invalidation)` — final build, browser and freshness gates after durable active-user admission and deactivation eviction
+- [x] `F10-T11 REVALIDATION (durable revocation fence)` — final build, Chrome E2E, revocation-path and commit-isolation gates after F10-T03/F10-T04
 
 ## قرارداد اجرایی freeze‌شده
 

@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 00:30 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- آخرین به‌رورسانی: `2026-09-25 02:13 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T11 نهایی باید اجرا و جداگانه ثبت شود؛ Phase 10 تا آن زمان REWORK است.`
+- blocker فعال: `ندارد؛ فقط independent review باقی است.`
 
 ## پیشرفت کلان
 
@@ -43,17 +43,32 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
+- [x] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: F10-T03 rejects a durable-revoked principal session across chat REST actor authorization and
-F10-T04 serializes Socket.IO admission with revocation while notifying the local registry after each durable
-revocation path. Separate F10-T09/F10-T11 revalidations still follow serially. Phase 11 remains `NOT_STARTED`,
-unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `READY_FOR_REVIEW`: F10-T03 rejects a durable-revoked principal session across chat REST actor
+authorization; F10-T04 serializes Socket.IO admission with revocation and notifies the local registry after each
+durable revocation path. F10-T09 and F10-T11 final gates passed. Phase 11 remains `NOT_STARTED`, unclaimed and
+unmodified; closure has not been performed.
+
+## active batch — F10-R33-DURABLE-REVOCATION-FINAL-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 02:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T11 commit; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `bb69c3e`, `efe5c16`, and `3167815`.
+
+- Task ID: `F10-T11 REVALIDATION (durable revocation fence)`
+  - Status: `DONE`
+  - Scope: final production build, real Chrome authenticated chat journey, commit isolation/freshness review, and joint audit of every durable session/user revocation path after F10-T03/F10-T04.
+  - Owned paths: Phase 10 evidence/status/checklist only unless a final gate exposes an in-scope defect.
+  - Verification: `pnpm build` → PASS (5/5 packages); real Chrome `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS (1 test, 18.8s); source/commit isolation and `git diff --check` → PASS. The accepted 40-minute capacity workload was not rerun.
+  - Result: all durable paths are post-commit invalidated: logout/explicit session revoke → `disconnectSession`; logout-all/password change/user deactivation → `disconnectUser`; refresh reuse/disabled refresh → `disconnectSession`. The middleware holds user and active-session `FOR SHARE` locks through registration, giving the barrier-tested fail-closed ordering. The first Chrome attempt found only missing web/app local listeners; after starting those unchanged local services, the same unmodified test passed.
 
 ## active batch — F10-R32-SOCKET-REVOCATION-REVALIDATION
 
