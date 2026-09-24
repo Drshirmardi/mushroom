@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 00:16 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-25 00:30 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ independent review یا ساخت PR فقط با درخواست صریح بعدی ممکن است؛ closure رسمی و Phase 11 claim نشده‌اند.`
+- blocker فعال: `F10-T04 باید race handshake/revoke و invalidation همهٔ revokeهای پایدار را رفع کند؛ Phase 10 تا revalidationهای جداگانه در REWORK می‌ماند.`
 
 ## پیشرفت کلان
 
@@ -43,16 +43,33 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [x] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
+- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: the durable active-user/session admission and post-commit deactivation eviction
-passed targeted PostgreSQL/Socket.IO revalidation, workspace build, real Chrome authenticated chat E2E and final
-freshness/isolation review. Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: F10-T03 now rejects a durable-revoked principal session across chat REST actor authorization.
+F10-T04 remains required for the concurrent Socket.IO handshake/revoke fence and every post-commit socket
+invalidation path; separate F10-T09/F10-T11 revalidations follow serially. Phase 11 remains `NOT_STARTED`, unclaimed
+and unmodified; closure has not been performed.
+
+## active batch — F10-R30-REST-SESSION-AUTHORIZATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:30 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T03 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and independent P1 review.
+
+- Task ID: `F10-T03 REWORK (persisted session authorization)`
+  - Status: `DONE`
+  - Scope: require an active persisted principal session on all chat REST authorization paths, with real PostgreSQL history/send regressions; no Socket.IO lifecycle or shared identity invalidation changes.
+  - Owned paths: chat service and focused REST/integration tests, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: chat REST authorization and serialized PostgreSQL test environment.
+  - Verification: disposable PostgreSQL `outboxAfterChat` → PASS (2 files, 4 tests); API typecheck and `git diff --check` → PASS.
+  - Result: chat actor authorization requires an unrevoked, unexpired session owned by `principal.sessionId`; the real REST regression proves the same signed JWT can neither read history nor create a message after session-management revocation.
 
 ## active batch — F10-R29-DISABLED-USER-FINAL-GATES
 

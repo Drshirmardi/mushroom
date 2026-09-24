@@ -1333,3 +1333,28 @@ Result:
   - Phase 10 is `READY_FOR_REVIEW`, not `DONE (CLOSED)`; no PR, push, merge, closure or Phase 11 work occurred.
 Next eligible action:
   - independent review or PR only on an explicit user request; do not start Phase 11.
+
+# F10-T03 REWORK — persisted session authorization for chat REST
+
+Task ID: F10-T03 REWORK (persisted session authorization)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R30-REST-SESSION-AUTHORIZATION
+Status: ACCEPTED — isolated remediation commit pending; Phase 10 remains `REWORK`
+Changed files:
+  - apps/api/src/modules/communications/chat/chat.service.ts
+  - apps/api/test/chat-rest.integration.spec.ts
+  - plan/{STATUS.md,phases/10-CHAT-CONSULTATION.md,logs/phase-10.md}
+Verification:
+  - API typecheck (including Prisma client generation) → PASS.
+  - Run-owned disposable PostgreSQL `outboxAfterChat` → PASS (2 files, 4 tests). The new actual REST flow first
+    proves an ACTIVE user's valid session can read chat history, then revokes that exact session through the
+    session-management endpoint; the unchanged signed JWT receives `CHAT_FORBIDDEN` for history and send, and no
+    chat message is persisted.
+  - `git diff --check` → PASS. The frozen 40-minute capacity evidence was not rerun because this adds one durable
+    authorization predicate and changes neither workload, send throughput, nor topology.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - Every chat REST operation passing through `actorFor` now requires a persisted, unrevoked, unexpired session
+    owned by `principal.sessionId`, in addition to ACTIVE user and existing participant authorization.
+Next eligible action:
+  - F10-T04 handshake/revocation invalidation remediation only; do not begin the revalidations or Phase 11.

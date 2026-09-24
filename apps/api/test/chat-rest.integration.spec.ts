@@ -30,4 +30,34 @@ describe('appointment-bound chat REST (PostgreSQL API integration)', () => {
     const next = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${id}/messages?cursor=${encodeURIComponent(history.json().nextCursor)}`, headers: auth(fixture.tokens.patient) });
     expect(next.json()).toMatchObject({ items: [{ sequence: '2', body: 'doctor reply' }] });
   });
+
+  it('rejects history and sends for a JWT whose durable session was revoked', async () => {
+    fixture = await createChatFixture(app);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    expect(conversation.statusCode).toBe(200);
+    const conversationId = conversation.json().id as string;
+
+    // The active-session control proves the fixture token is usable before the
+    // server persists the revocation.
+    const before = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.patient) });
+    expect(before.statusCode).toBe(200);
+
+    const session = await fixture.prisma.session.findFirstOrThrow({ where: { userId: fixture.users.patient.id }, select: { id: true } });
+    const revoked = await app.inject({ method: 'DELETE', url: `/v1/auth/sessions/${session.id}`, headers: auth(fixture.tokens.patient) });
+    expect(revoked.statusCode).toBe(204);
+
+    const history = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.patient) });
+    const send = await app.inject({
+      method: 'POST',
+      url: `/v1/chat/conversations/${conversationId}/messages`,
+      headers: auth(fixture.tokens.patient),
+      payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000003', body: 'must not persist' },
+    });
+
+    expect(history.statusCode).toBe(403);
+    expect(history.json().code).toBe('CHAT_FORBIDDEN');
+    expect(send.statusCode).toBe(403);
+    expect(send.json().code).toBe('CHAT_FORBIDDEN');
+    expect(await fixture.prisma.chatMessage.count({ where: { conversationId } })).toBe(0);
+  });
 });

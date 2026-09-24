@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `READY_FOR_REVIEW` — remediation user `DISABLED` برای handshake و socketهای موجود، با revalidationهای F10-T09/F10-T11 پذیرفته شده است. closure رسمی و Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `REWORK` — JWT با session revoke‌شده در REST چت و invalidate شدن همهٔ مسیرهای revoke تا remediationهای F10-T03/F10-T04 و revalidationهای F10-T09/F10-T11 باز است. closure رسمی و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -29,6 +29,7 @@
 ## Security rework tracking
 
 - [x] `F10-T03 REWORK` — durable authorized visibility reconciliation and send-only block policy
+- [x] `F10-T03 REWORK (persisted session authorization)` — reject revoked-session JWTs on every chat REST access path
 - [x] `F10-T04 REWORK` — revoke room membership immediately after current authorization loss
 - [x] `F10-T04 REWORK (immediate session/user invalidation)` — disconnect joined sockets on server-side revoke without a client follow-up
 - [x] `F10-T04 REWORK (revoked JWT handshake)` — reject a fresh Socket.IO handshake when its persisted session is revoked or inactive

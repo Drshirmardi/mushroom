@@ -363,7 +363,24 @@ export class ChatService {
   }
 
   private async actorFor(principal: AccessTokenPrincipal, appointment: Awaited<ReturnType<ChatService['appointment']>>, tx: Db = this.prisma): Promise<ChatActor> {
-    const active = await tx.user.findFirst({ where: { id: principal.userId, status: 'ACTIVE' }, select: { id: true } });
+    // Access tokens deliberately remain short lived, but chat access also has to
+    // follow the server-side session lifecycle.  In particular, a token whose
+    // session was revoked must not remain usable for REST history or mutations
+    // until its JWT expiry.
+    const active = await tx.user.findFirst({
+      where: {
+        id: principal.userId,
+        status: 'ACTIVE',
+        sessions: {
+          some: {
+            id: principal.sessionId,
+            revokedAt: null,
+            expiresAt: { gt: new Date() },
+          },
+        },
+      },
+      select: { id: true },
+    });
     if (!active) throw forbidden();
     if (principal.roles.includes('ADMIN')) {
       const clinicAccess = await tx.clinicalClinicAccess.findFirst({ where: { userId: principal.userId, clinicId: appointment.clinicId }, select: { userId: true } });
