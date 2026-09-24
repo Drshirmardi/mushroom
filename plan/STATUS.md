@@ -12,7 +12,7 @@
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T09 و سپس F10-T11 باید جداگانه بازاعتبارسنجی شوند؛ Phase 10 تا آن زمان REWORK است.`
+- blocker فعال: `F10-T11 نهایی باید اجرا و جداگانه ثبت شود؛ Phase 10 تا آن زمان REWORK است.`
 
 ## پیشرفت کلان
 
@@ -54,6 +54,21 @@
 F10-T04 serializes Socket.IO admission with revocation while notifying the local registry after each durable
 revocation path. Separate F10-T09/F10-T11 revalidations still follow serially. Phase 11 remains `NOT_STARTED`,
 unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R32-SOCKET-REVOCATION-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 01:49 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T09 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and `efe5c16`.
+
+- Task ID: `F10-T09 REVALIDATION (durable revocation fence)`
+  - Status: `DONE`
+  - Scope: rerun the PostgreSQL/Socket.IO regression set after F10-T03/F10-T04, including REST durable-session authorization, handshake/revoke barrier, refresh reuse eviction, reconnect, authorization, moderation, ordering, presence and rate limits.
+  - Owned paths: Phase 10 evidence/status/checklist only.
+  - Verification: API typecheck, disposable PostgreSQL `chatRevalidation` (8 files, 27 tests), and `git diff --check` → PASS.
+  - Result: REST durable-session authorization, handshake/revoke serialization, refresh reuse eviction, reconnect, ordering, moderation/tombstones, authorization, presence and rate limits remain green after `efe5c16`; F10-T11 is next.
 
 ## active batch — F10-R31-SOCKET-REVOCATION-FENCE
 

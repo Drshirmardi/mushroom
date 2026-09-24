@@ -1396,3 +1396,23 @@ Result:
     is required to remove the socket from rooms before later fan-out.
 Next eligible action:
   - F10-T09 revalidation only, then F10-T11; do not start Phase 11.
+
+# F10-T09 REVALIDATION — durable revocation fence
+
+Task ID: F10-T09 REVALIDATION (durable revocation fence)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R32-SOCKET-REVOCATION-REVALIDATION
+Status: ACCEPTED — isolated revalidation commit pending; Phase 10 remains `REWORK`
+Verification:
+  - API typecheck (including Prisma generation) → PASS.
+  - Fresh run-owned disposable PostgreSQL `chatRevalidation` after `efe5c16` → PASS (8 files, 27 tests): real
+    Socket.IO session-revoke barrier and refresh-reuse socket eviction, durable REST authorization, reconnect/sync,
+    ordering, authorization, moderation/restricted tombstones, abuse blocks, presence and rate limits.
+  - `git diff --check` → PASS. The frozen 40-minute capacity workload was intentionally not repeated: the remediation
+    does not alter workload, throughput criterion, or topology, and its durable fixture update preserved the
+    120-message conversation rate-limit test.
+  - User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain unstaged and outside this task.
+Result:
+  - The persisted REST and Socket.IO identity boundaries remain fail-closed in a fresh PostgreSQL revalidation run.
+Next eligible action:
+  - F10-T11 final gates only; do not start Phase 11.

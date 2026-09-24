@@ -34,6 +34,7 @@
 - [x] `F10-T04 REWORK (immediate session/user invalidation)` — disconnect joined sockets on server-side revoke without a client follow-up
 - [x] `F10-T04 REWORK (revoked JWT handshake)` — reject a fresh Socket.IO handshake when its persisted session is revoked or inactive
 - [x] `F10-T04 REWORK (durable revocation fence)` — serialize handshake admission with session revocation and evict sockets after every persisted revocation path
+- [x] `F10-T09 REVALIDATION (durable revocation fence)` — rerun PostgreSQL/Socket.IO boundary suite after persisted-session and revocation fixes
 - [x] `F10-T04 REWORK (disabled user socket invalidation)` — reject disabled users before Socket.IO admission and disconnect their existing sockets after durable deactivation
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history, visibility reconciliation, and reconnect-gap pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
