@@ -1310,3 +1310,26 @@ Result:
     deactivation; F10-T11 final gates are the only next action.
 Next eligible action:
   - F10-T11 only; do not start Phase 11.
+# F10-T11 REVALIDATION — disabled-user Socket.IO final gates
+
+Task ID: F10-T11 REVALIDATION (disabled user socket invalidation)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R29-DISABLED-USER-FINAL-GATES
+Status: ACCEPTED — isolated final-gate commit pending; Phase 10 `READY_FOR_REVIEW`
+Verification:
+  - Workspace production build → PASS (5/5 packages): API, generated API client, web, app and dashboard.
+  - Real Chrome Phase 10 browser E2E against local web/app/API and PostgreSQL → PASS (1 test, 7.3s): real
+    registration/login, refresh-cookie/session bootstrap, authenticated text chat, persisted send, no media controls,
+    no external request and no token in a URL. The fixture waits for the actual refresh response and authenticated UI;
+    it does not inject a token or treat URL navigation as authentication.
+  - Final joint review: session logout/revoke persists state before `disconnectSession`; logout-all persists state
+    before `disconnectUser`; the deactivation owner atomically disables the user and revokes active sessions before
+    `disconnectUser`. The Socket.IO handshake locks the user row, requires ACTIVE, validates the persisted session,
+    then registers under the same lock, closing the corresponding concurrent deactivation race.
+  - `git diff --check` → PASS. The three recent task commits contain no `.gitignore` or
+    `plan/phases/12-PRODUCTION-HARDENING.md`; those user-owned worktree changes remain unstaged. The frozen
+    40-minute capacity evidence was not rerun because neither its workload nor criterion changed.
+Result:
+  - Phase 10 is `READY_FOR_REVIEW`, not `DONE (CLOSED)`; no PR, push, merge, closure or Phase 11 work occurred.
+Next eligible action:
+  - independent review or PR only on an explicit user request; do not start Phase 11.

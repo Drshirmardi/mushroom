@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 00:11 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- آخرین به‌رورسانی: `2026-09-25 00:16 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T11 gateهای نهایی باید جداگانه اجرا و ثبت شوند؛ تا آن زمان Phase 10 در REWORK است.`
+- blocker فعال: `ندارد؛ independent review یا ساخت PR فقط با درخواست صریح بعدی ممکن است؛ closure رسمی و Phase 11 claim نشده‌اند.`
 
 ## پیشرفت کلان
 
@@ -43,16 +43,30 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
+- [x] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: F10-T04's durable active-user/session admission and post-commit deactivation eviction passed
-the targeted PostgreSQL/Socket.IO revalidation. F10-T11 final build/browser/freshness gates are still required. Phase
-11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `READY_FOR_REVIEW`: the durable active-user/session admission and post-commit deactivation eviction
+passed targeted PostgreSQL/Socket.IO revalidation, workspace build, real Chrome authenticated chat E2E and final
+freshness/isolation review. Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R29-DISABLED-USER-FINAL-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:13 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T11 commit; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `12f84ce`, and `3442992`.
+
+- Task ID: `F10-T11 REVALIDATION (disabled user Socket.IO)`
+  - Status: `DONE`
+  - Scope: final build, real Chrome authenticated chat journey, freshness/isolation checks and joint session-revoke/deactivation review.
+  - Verification: workspace build → PASS (5/5 packages); `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS (1 real Chrome text-chat test, 7.3s); `git diff --check` → PASS.
+  - Result: session logout/revoke remains post-persistence `disconnectSession`, logout-all remains post-persistence `disconnectUser`, and the new durable deactivation owner performs transaction-then-`disconnectUser`; the shared locked handshake prevents an analogous race. The accepted 40-minute capacity evidence remains unchanged and was not repeated.
 
 ## active batch — F10-R28-DISABLED-USER-SOCKET-REVALIDATION
 
