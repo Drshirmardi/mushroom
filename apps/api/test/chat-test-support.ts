@@ -33,12 +33,20 @@ export async function createChatFixture(app: NestFastifyApplication) {
     priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: now,
     idempotencyActorUserId: admin.id, idempotencyKey: randomUUID(), idempotencyRequestHash: randomUUID().replaceAll('-', '').repeat(2),
   } });
+  const sessionIds = [randomUUID(), randomUUID(), randomUUID(), randomUUID(), randomUUID()];
+  const sessionUsers = [patient, outsider, doctor, admin, staff];
+  await prisma.session.createMany({ data: sessionIds.map((id, index) => ({
+    id,
+    userId: sessionUsers[index]!.id,
+    refreshTokenHash: id.replaceAll('-', '').repeat(2),
+    expiresAt: new Date(Date.now() + 60 * 60_000),
+  })) });
   const tokens = await Promise.all([
-    app.get(AccessTokenService).issue({ userId: patient.id, sessionId: randomUUID(), roles: ['PATIENT'] }),
-    app.get(AccessTokenService).issue({ userId: outsider.id, sessionId: randomUUID(), roles: ['PATIENT'] }),
-    app.get(AccessTokenService).issue({ userId: doctor.id, sessionId: randomUUID(), roles: ['DOCTOR'] }),
-    app.get(AccessTokenService).issue({ userId: admin.id, sessionId: randomUUID(), roles: ['ADMIN'] }),
-    app.get(AccessTokenService).issue({ userId: staff.id, sessionId: randomUUID(), roles: ['STAFF'] }),
+    app.get(AccessTokenService).issue({ userId: patient.id, sessionId: sessionIds[0]!, roles: ['PATIENT'] }),
+    app.get(AccessTokenService).issue({ userId: outsider.id, sessionId: sessionIds[1]!, roles: ['PATIENT'] }),
+    app.get(AccessTokenService).issue({ userId: doctor.id, sessionId: sessionIds[2]!, roles: ['DOCTOR'] }),
+    app.get(AccessTokenService).issue({ userId: admin.id, sessionId: sessionIds[3]!, roles: ['ADMIN'] }),
+    app.get(AccessTokenService).issue({ userId: staff.id, sessionId: sessionIds[4]!, roles: ['STAFF'] }),
   ]);
   return { prisma, clinic, offering, appointment, users: { patient, outsider, doctor, admin, staff }, tokens: { patient: tokens[0], outsider: tokens[1], doctor: tokens[2], admin: tokens[3], staff: tokens[4] } };
 }

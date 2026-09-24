@@ -1,5 +1,35 @@
 # Phase 10 Execution Evidence
 
+## F10-T04 REWORK — revoked JWT Socket.IO handshake
+
+Recorded at: 2026-09-24 23:26 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R24-REVOKED-JWT-HANDSHAKE
+Result: ACCEPTED — Phase 10 remains `REWORK`; no closure, Phase 11, PR, push, or merge.
+
+Changed files:
+  - `apps/api/src/modules/communications/chat/realtime/chat-realtime.gateway.ts`
+  - `apps/api/test/{chat-realtime.gateway.spec.ts,chat-presence.gateway.spec.ts}`
+  - `apps/api/test/chat-test-support.ts`
+  - `plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}`
+
+Verification:
+  - API session behavior was aligned with the existing active-session criteria: the persisted session must match JWT
+    `sid` and subject, have `revokedAt: null`, and have an `expiresAt` later than the server clock.
+  - Socket.IO authentication now runs in namespace middleware before `handleConnection` can register the socket;
+    a failed persisted-session lookup rejects the connection rather than leaving a join-time race.
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `pnpm --filter @sabz-zendegi/api exec vitest run test/chat-realtime.gateway.spec.ts test/chat-presence.gateway.spec.ts --no-file-parallelism` →
+    PASS (2 files, 11 tests; the gateway proof uses real PostgreSQL + Socket.IO).
+  - The new proof first joins with a valid persisted session, revokes it through the server endpoint, attempts a fresh
+    connection and buffered join with the same still-signed JWT, then commits a message. The second client is rejected,
+    cannot obtain a successful join response, and receives no fan-out.
+  - `git diff --check` → PASS. User-owned `.gitignore` and
+    `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+
+Next task:
+  - `F10-T09 REVALIDATION` only; do not rerun the frozen 40-minute capacity workload for this handshake-only change.
+
 ## F10-T11 REVALIDATION — authenticated browser bootstrap gate PASS
 
 Recorded at: 2026-09-24 23:03 +03:30

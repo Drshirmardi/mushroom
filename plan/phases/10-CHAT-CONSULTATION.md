@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `READY_FOR_REVIEW` — remediation فوری session/user برای socket، F10-T09 و F10-T11 پذیرفته شده‌اند. Chrome trace واقعی handoff refresh-cookie از `apps/web` به `apps/app` را با 200 تأیید کرد؛ fixture پیش از ورود به chat منتظر bootstrap authenticated می‌ماند. closure رسمی و Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `REWORK` — remediation handshake برای JWT با session revoke‌شده پذیرفته شده است؛ تا revalidationهای F10-T09/F10-T11، phase در REWORK می‌ماند. closure رسمی و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -31,6 +31,7 @@
 - [x] `F10-T03 REWORK` — durable authorized visibility reconciliation and send-only block policy
 - [x] `F10-T04 REWORK` — revoke room membership immediately after current authorization loss
 - [x] `F10-T04 REWORK (immediate session/user invalidation)` — disconnect joined sockets on server-side revoke without a client follow-up
+- [x] `F10-T04 REWORK (revoked JWT handshake)` — reject a fresh Socket.IO handshake when its persisted session is revoked or inactive
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history, visibility reconciliation, and reconnect-gap pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
 - [x] `F10-T11 REVALIDATION` — final build/E2E/freshness gates after authenticated bootstrap proof

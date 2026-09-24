@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 23:03 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-24 23:26 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ independent review ممکن است، اما closure رسمی و Phase 11 claim نشده‌اند.`
+- blocker فعال: `F10-T09 REVALIDATION باید پس از remediation handshake اجرا شود؛ Phase 10 تا آن زمان REWORK است.`
 
 ## پیشرفت کلان
 
@@ -50,13 +50,11 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: accepted `F10-T04 REWORK` immediately disconnects in-process Socket.IO connections for a
-revoked session or all revoked sessions of one user. The existing product has no separate user-deactivation endpoint;
-server-side deactivation owners use the same exported user invalidation API. `F10-T09 REVALIDATION` passed the
-focused authorization/realtime boundary. Trace واقعی Chrome نشان داد login refresh-cookie را از `apps/web` به
-`apps/app` منتقل می‌کند و refresh همان cookie را با 200/CORS معتبر می‌پذیرد. Fixture اکنون پیش از navigation چت
-همین handoff و UI authenticated را منتظر می‌ماند. گیت ایزوله با exit code قابل‌ثبت، build و Chrome E2E PASS شدند.
-Phase 10 is `READY_FOR_REVIEW`; Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: `F10-T04 REWORK (revoked JWT handshake)` now validates the persisted session before a
+Socket.IO connection is admitted, so a signed JWT is insufficient after `revokedAt` is set. Real PostgreSQL/Socket.IO
+coverage proves a valid session can join, then the same JWT cannot make a fresh connection or receive a later fan-out
+after server-side revoke. `F10-T09 REVALIDATION` is next; then and only then may `F10-T11` run. Phase 11 remains
+`NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
 
 ## active batch — F10-R22-FINAL-REVOCATION-GATES
 

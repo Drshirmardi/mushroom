@@ -3,6 +3,7 @@ import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSo
 import type { Server, Socket } from 'socket.io';
 
 import { AccessTokenService, type AccessTokenPrincipal } from '../../../../common/auth/access-token.service';
+import { PrismaService } from '../../../../database/prisma/prisma.service';
 import { ChatService } from '../chat.service';
 import { ChatRealtimePublisher } from './chat-realtime.publisher';
 import { ChatSocketRegistry } from './chat-socket-registry';
@@ -22,20 +23,23 @@ export class ChatRealtimeGateway {
     private readonly chat: ChatService,
     private readonly publisher: ChatRealtimePublisher,
     private readonly sockets: ChatSocketRegistry,
+    private readonly prisma: PrismaService,
   ) {}
 
-  afterInit(server: Server) { this.publisher.bind(server); }
+  afterInit(server: Server) {
+    this.publisher.bind(server);
+    server.use((client, next) => {
+      void this.authenticate(client as RealtimeSocket)
+        .then(() => next())
+        .catch(() => next(new Error('CHAT_UNAUTHORIZED')));
+    });
+  }
 
-  async handleConnection(client: RealtimeSocket) {
-    try {
-      if (Object.keys(client.handshake.query).some((key) => /token|auth/i.test(key))) throw new UnauthorizedException();
-      const token = client.handshake.auth?.token;
-      if (typeof token !== 'string') throw new UnauthorizedException();
-      const principal = await this.tokens.verify(token);
-      client.data.chatPrincipal = principal;
-      this.sockets.register(client, principal.userId, principal.sessionId);
-      client.data.expiryTimer = setTimeout(() => client.disconnect(true), Math.max(0, principal.expiresAt * 1000 + 5000 - Date.now()));
-    } catch { client.disconnect(true); }
+  handleConnection(client: RealtimeSocket) {
+    const principal = client.data.chatPrincipal;
+    if (!principal) return client.disconnect(true);
+    this.sockets.register(client, principal.userId, principal.sessionId);
+    client.data.expiryTimer = setTimeout(() => client.disconnect(true), Math.max(0, principal.expiresAt * 1000 + 5000 - Date.now()));
   }
 
   handleDisconnect(client: RealtimeSocket) {
@@ -93,6 +97,29 @@ export class ChatRealtimeGateway {
   }
 
   private sequence(value: unknown) { if (value === undefined) return 0n; if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new Error('invalid sequence'); return BigInt(value); }
+
+  /** A signed access token remains usable only while its server-side session is active. */
+  private async assertActiveSession(principal: AccessTokenPrincipal) {
+    const session = await this.prisma.session.findFirst({
+      where: {
+        id: principal.sessionId,
+        userId: principal.userId,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: { id: true },
+    });
+    if (!session) throw new UnauthorizedException();
+  }
+
+  private async authenticate(client: RealtimeSocket) {
+    if (Object.keys(client.handshake.query).some((key) => /token|auth/i.test(key))) throw new UnauthorizedException();
+    const token = client.handshake.auth?.token;
+    if (typeof token !== 'string') throw new UnauthorizedException();
+    const principal = await this.tokens.verify(token);
+    await this.assertActiveSession(principal);
+    client.data.chatPrincipal = principal;
+  }
 
   /** Current authorization loss invalidates every protected room on this socket before another room fan-out can reach it. */
   private revoke(client: RealtimeSocket) { client.disconnect(true); }
