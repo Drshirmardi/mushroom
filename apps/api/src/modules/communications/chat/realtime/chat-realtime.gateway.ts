@@ -4,6 +4,7 @@ import type { Server, Socket } from 'socket.io';
 
 import { AccessTokenService, type AccessTokenPrincipal } from '../../../../common/auth/access-token.service';
 import { PrismaService } from '../../../../database/prisma/prisma.service';
+import type { Prisma } from '../../../../generated/prisma/client';
 import { ChatService } from '../chat.service';
 import { ChatRealtimePublisher } from './chat-realtime.publisher';
 import { ChatSocketRegistry } from './chat-socket-registry';
@@ -36,10 +37,7 @@ export class ChatRealtimeGateway {
   }
 
   handleConnection(client: RealtimeSocket) {
-    const principal = client.data.chatPrincipal;
-    if (!principal) return client.disconnect(true);
-    this.sockets.register(client, principal.userId, principal.sessionId);
-    client.data.expiryTimer = setTimeout(() => client.disconnect(true), Math.max(0, principal.expiresAt * 1000 + 5000 - Date.now()));
+    if (!client.data.chatPrincipal) client.disconnect(true);
   }
 
   handleDisconnect(client: RealtimeSocket) {
@@ -99,26 +97,53 @@ export class ChatRealtimeGateway {
   private sequence(value: unknown) { if (value === undefined) return 0n; if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new Error('invalid sequence'); return BigInt(value); }
 
   /** A signed access token remains usable only while its server-side session is active. */
-  private async assertActiveSession(principal: AccessTokenPrincipal) {
-    const session = await this.prisma.session.findFirst({
+  private async assertActiveSession(principal: AccessTokenPrincipal, prisma: Pick<Prisma.TransactionClient, 'session'> = this.prisma) {
+    const session = await prisma.session.findFirst({
       where: {
         id: principal.sessionId,
         userId: principal.userId,
         revokedAt: null,
         expiresAt: { gt: new Date() },
+        user: { is: { status: 'ACTIVE' } },
       },
       select: { id: true },
     });
     if (!session) throw new UnauthorizedException();
   }
 
-  private async authenticate(client: RealtimeSocket) {
+  private async authenticate(client: RealtimeSocket): Promise<AccessTokenPrincipal> {
     if (Object.keys(client.handshake.query).some((key) => /token|auth/i.test(key))) throw new UnauthorizedException();
     const token = client.handshake.auth?.token;
     if (typeof token !== 'string') throw new UnauthorizedException();
     const principal = await this.tokens.verify(token);
-    await this.assertActiveSession(principal);
-    client.data.chatPrincipal = principal;
+    try {
+      await this.prisma.$transaction(async (transaction) => {
+        const users = await transaction.$queryRaw<{ id: string; status: 'ACTIVE' | 'DISABLED' }[]>`
+          SELECT "id", "status"
+          FROM "users"
+          WHERE "id" = ${principal.userId}::uuid
+          FOR SHARE
+        `;
+        if (users[0]?.status !== 'ACTIVE') throw new UnauthorizedException();
+        await this.assertActiveSession(principal, transaction);
+        client.data.chatPrincipal = principal;
+        // Registration occurs while the user row lock is held. A concurrent durable
+        // deactivation must either be observed above or wait and evict this socket.
+        this.register(client, principal);
+      });
+    } catch (error) {
+      clearTimeout(client.data.expiryTimer);
+      this.sockets.unregister(client.id);
+      delete client.data.chatPrincipal;
+      throw error;
+    }
+    return principal;
+  }
+
+  /** Register only after all persisted identity checks, while middleware still blocks event dispatch. */
+  private register(client: RealtimeSocket, principal: AccessTokenPrincipal) {
+    this.sockets.register(client, principal.userId, principal.sessionId);
+    client.data.expiryTimer = setTimeout(() => client.disconnect(true), Math.max(0, principal.expiresAt * 1000 + 5000 - Date.now()));
   }
 
   /** Current authorization loss invalidates every protected room on this socket before another room fan-out can reach it. */

@@ -7,19 +7,24 @@ import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { ChatService } from '../src/modules/communications/chat/chat.service';
 import { ChatRealtimeGateway } from '../src/modules/communications/chat/realtime/chat-realtime.gateway';
 import { ChatRealtimePublisher } from '../src/modules/communications/chat/realtime/chat-realtime.publisher';
+import { ManageUserStatusUseCase } from '../src/modules/identity/application/manage-user-status.use-case';
 import { auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
 
 const principal = { userId: '11111111-1111-4111-8111-111111111111', sessionId: '22222222-2222-4222-8222-222222222222', roles: ['PATIENT'] as const, tokenId: '33333333-3333-4333-8333-333333333333', issuedAt: 1, expiresAt: Math.floor(Date.now() / 1000) + 60 };
+const activeIdentity = () => {
+  const session = { findFirst: vi.fn().mockResolvedValue({ id: principal.sessionId }) };
+  return { session, $transaction: async (work: (transaction: { $queryRaw: ReturnType<typeof vi.fn>; session: typeof session }) => unknown) => work({ $queryRaw: vi.fn().mockResolvedValue([{ id: principal.userId, status: 'ACTIVE' }]), session }) };
+};
 
 describe('chat realtime gateway', () => {
   it('accepts only auth-payload authentication and fences backend sync after joining an authorized room', async () => {
     const verify = vi.fn().mockResolvedValue(principal);
     const authorizeRealtimeSubscription = vi.fn().mockResolvedValue(undefined);
     const realtimeSync = vi.fn().mockResolvedValue({ items: [], highWaterSequence: '0', nextCursor: null });
-    const gateway = new ChatRealtimeGateway({ verify } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never, { register: vi.fn(), unregister: vi.fn() } as never, { session: { findFirst: vi.fn().mockResolvedValue({ id: principal.sessionId }) } } as never);
+    const gateway = new ChatRealtimeGateway({ verify } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never, { register: vi.fn(), unregister: vi.fn() } as never, activeIdentity() as never);
     const disconnect = vi.fn(); const join = vi.fn(); const leave = vi.fn();
     const client = { id: 'socket-1', handshake: { query: {}, auth: { token: 'opaque-token' } }, data: {}, disconnect, join, leave, to: () => ({ emit: vi.fn() }) };
-    let authenticate: ((client: typeof client, next: (error?: Error) => void) => void) | undefined;
+    let authenticate: ((client: object, next: (error?: Error) => void) => void) | undefined;
     gateway.afterInit({ use: vi.fn((middleware) => { authenticate = middleware; }) } as never);
     await new Promise<void>((resolve, reject) => authenticate!(client, (error) => error ? reject(error) : resolve()));
     gateway.handleConnection(client as never);
@@ -32,7 +37,7 @@ describe('chat realtime gateway', () => {
   });
 
   it('rejects token-bearing query strings and never joins an arbitrary room', async () => {
-    const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { authorizeRealtimeSubscription: vi.fn(), realtimeSync: vi.fn() } as never, { bind: vi.fn() } as never, { unregister: vi.fn() } as never, { session: { findFirst: vi.fn() } } as never);
+    const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { authorizeRealtimeSubscription: vi.fn(), realtimeSync: vi.fn() } as never, { bind: vi.fn() } as never, { unregister: vi.fn() } as never, activeIdentity() as never);
     const disconnect = vi.fn();
     let authenticate: ((client: { id: string; handshake: { query: Record<string, string>; auth: Record<string, never> }; data: Record<string, never>; disconnect: ReturnType<typeof vi.fn> }, next: (error?: Error) => void) => void) | undefined;
     gateway.afterInit({ use: vi.fn((middleware) => { authenticate = middleware; }) } as never);
@@ -204,7 +209,7 @@ describe('chat realtime Socket.IO integration', () => {
     const joined = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
     expect(joined).toMatchObject({ ok: true });
 
-    const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', resolve));
+    const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
     const revoked = await app.inject({ method: 'DELETE', url: `/v1/auth/sessions/${principal.sessionId}`, headers: auth(fixture.tokens.patient) });
     expect(revoked.statusCode).toBe(204);
     await disconnected;
@@ -228,6 +233,66 @@ describe('chat realtime Socket.IO integration', () => {
     await new Promise((resolve) => setTimeout(resolve, 150));
     expect(rejectedFanout).toEqual([]);
     rejected.disconnect();
+  }, 30_000);
+
+  it('fails closed for a disabled user across an existing socket, a concurrent join, and a fresh JWT handshake', async () => {
+    app = await createApiApplication();
+    await app.listen({ host: '127.0.0.1', port: 0 });
+    fixture = await createChatFixture(app);
+    const principal = await app.get(AccessTokenService).verify(fixture.tokens.patient);
+    const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
+    const conversationId = conversation.json().id as string;
+    const baseUrl = await app.getUrl();
+
+    socket = io(`${baseUrl}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'], reconnection: false });
+    await new Promise<void>((resolve, reject) => { socket!.once('connect', resolve); socket!.once('connect_error', reject); });
+    const joined = await new Promise<any>((resolve, reject) => socket!.timeout(5_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => error ? reject(error) : resolve(value)));
+    expect(joined).toMatchObject({ ok: true });
+    const joinedFanout: unknown[] = [];
+    socket.on('message:committed', (event) => joinedFanout.push(event));
+    const joinedDisconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
+
+    const racing = io(`${baseUrl}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'], reconnection: false, autoConnect: false });
+    const racingFanout: unknown[] = [];
+    racing.on('message:committed', (event) => racingFanout.push(event));
+    const racingTerminated = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('concurrent disabled-user socket remained connected')), 5_000);
+      racing.once('connect_error', () => { clearTimeout(timeout); resolve(); });
+      racing.once('disconnect', () => { clearTimeout(timeout); resolve(); });
+    });
+    racing.timeout(1_000).emit('conversation:join', { conversationId, lastSequence: '0' }, () => undefined);
+    racing.connect();
+
+    const disabled = await app.get(ManageUserStatusUseCase).disable(principal.userId);
+    expect(disabled).toBe(true);
+    await Promise.all([joinedDisconnected, racingTerminated]);
+    await expect(fixture.prisma.user.findUnique({ where: { id: principal.userId }, select: { status: true } })).resolves.toEqual({ status: 'DISABLED' });
+    await expect(fixture.prisma.session.findUnique({ where: { id: principal.sessionId }, select: { revokedAt: true } })).resolves.toMatchObject({ revokedAt: expect.any(Date) });
+
+    const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000010', body: 'must not reach disabled-user sockets' } });
+    expect(published.statusCode).toBe(201);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(joinedFanout).toEqual([]);
+    expect(racingFanout).toEqual([]);
+
+    const doctor = await app.get(AccessTokenService).verify(fixture.tokens.doctor);
+    await expect(fixture.prisma.session.findUnique({ where: { id: doctor.sessionId }, select: { revokedAt: true } })).resolves.toEqual({ revokedAt: null });
+    await fixture.prisma.user.update({ where: { id: doctor.userId }, data: { status: 'DISABLED' } });
+    const disabledUser = io(`${baseUrl}/chat`, { auth: { token: fixture.tokens.doctor }, transports: ['websocket'], reconnection: false, autoConnect: false });
+    let disabledUserConnected = false;
+    disabledUser.on('connect', () => { disabledUserConnected = true; });
+    const disabledUserTerminal = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('active-session disabled-user JWT handshake was not rejected')), 5_000);
+      disabledUser.once('connect_error', () => { clearTimeout(timeout); resolve(); });
+      disabledUser.once('disconnect', () => { clearTimeout(timeout); resolve(); });
+    });
+    const disabledUserJoin = new Promise<{ error: Error | null; value: unknown }>((resolve) => disabledUser.timeout(1_000).emit('conversation:join', { conversationId, lastSequence: '0' }, (error: Error | null, value: unknown) => resolve({ error, value })));
+    disabledUser.connect();
+    await disabledUserTerminal;
+    expect(disabledUserConnected).toBe(false);
+    await expect(disabledUserJoin).resolves.not.toEqual(expect.objectContaining({ value: expect.objectContaining({ ok: true }) }));
+    racing.disconnect();
+    disabledUser.disconnect();
   }, 30_000);
 
   it('recovers a committed missed visibility signal through PostgreSQL after reconnect', async () => {

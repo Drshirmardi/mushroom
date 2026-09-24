@@ -1261,3 +1261,34 @@ Verification:
 Result:
   - Phase 10 is `READY_FOR_REVIEW`, not `DONE (CLOSED)`. A second independent closure review is required; Phase 11
     remains `NOT_STARTED`.
+# F10-T04 REWORK — disabled-user Socket.IO invalidation
+
+Task ID: F10-T04 REWORK (disabled user socket invalidation)
+Completed at: 2026-09-25 +03:30
+Batch ID: F10-R27-DISABLED-USER-SOCKET-INVALIDATION
+Status: ACCEPTED — isolated remediation commit pending; Phase 10 remains `REWORK`
+Changed files:
+  - apps/api/src/modules/identity/{application/manage-user-status.use-case.ts,identity.module.ts}
+  - apps/api/src/modules/communications/chat/realtime/chat-realtime.gateway.ts
+  - apps/api/test/{chat-realtime.gateway.spec.ts,chat-presence.gateway.spec.ts}
+  - plan/{STATUS.md,phases/10-CHAT-CONSULTATION.md,logs/phase-10.md}
+Verification:
+  - Source review found no existing production status-change owner; prior direct `User.status` mutations were test
+    setup only. The new `ManageUserStatusUseCase` is the server-side durable deactivation boundary: it atomically
+    disables the user and revokes active sessions, then invokes the existing single-instance `disconnectUser` only
+    after commit.
+  - Socket.IO middleware performs JWT verification, locks the persisted user row, requires `ACTIVE`, validates the
+    active persisted session under that same transaction, and registers only while that lock is held. Therefore a
+    concurrent deactivation either wins and rejects the handshake or waits, commits, and evicts the registered socket.
+  - API typecheck (with Prisma generate) → PASS. Run-owned disposable PostgreSQL `chatRevalidation` → PASS (8 files,
+    24 tests), including real Socket.IO proof that an ACTIVE user connects and joins; a previously joined socket and a
+    buffered concurrent join disconnect after durable deactivation without a client follow-up and receive no later
+    message fan-out; a different DISABLED user with an otherwise active session cannot handshake or complete its
+    buffered join.
+  - The frozen 40-minute capacity proof was not rerun: this task changes neither send, throughput nor topology.
+    User-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+Result:
+  - A signed JWT alone is insufficient for Socket.IO admission: the persisted session and user status are enforced,
+    and a committed deactivation immediately removes existing local sockets.
+Next eligible action:
+  - F10-T09 REVALIDATION only, followed by F10-T11 gates; do not start Phase 11.

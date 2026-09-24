@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 23:45 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-25 00:08 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ independent review یا ساخت PR فقط با درخواست صریح بعدی ممکن است؛ closure رسمی و Phase 11 claim نشده‌اند.`
+- blocker فعال: `F10-T09 REVALIDATION و F10-T11 gateها باید جداگانه اجرا و ثبت شوند؛ تا آن زمان Phase 10 در REWORK است.`
 
 ## پیشرفت کلان
 
@@ -43,18 +43,33 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [x] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
+- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: `F10-T04 REWORK (revoked JWT handshake)` validates the persisted session before a
-Socket.IO connection is admitted, so a signed JWT is insufficient after `revokedAt` is set. `F10-T09` passed on a
-run-owned disposable PostgreSQL database, and F10-T11 build/real Chrome E2E/freshness gates passed. The accepted
-40-minute capacity evidence remains unchanged because this remediation does not alter its path or criterion. Phase 11
-remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: `F10-T04` now validates both durable session state and `User.status = ACTIVE` before Socket.IO
+admission. Its durable deactivation owner revokes active sessions and disconnects that user's sockets only after the
+transaction commits; the row lock makes a concurrent handshake either fail before registration or be immediately
+evicted after deactivation. F10-T09/F10-T11 are still required. Phase 11 remains `NOT_STARTED`, unclaimed and
+unmodified; closure has not been performed.
+
+## active batch — F10-R27-DISABLED-USER-SOCKET-INVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T04 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `a860a47`, `18e4fdf`, and `ce5e4d1`.
+
+- Task ID: `F10-T04 REWORK (disabled user socket invalidation)`
+  - Status: `DONE`
+  - Scope: persisted active-user Socket.IO admission, single-instance durable user deactivation invalidation, and a real PostgreSQL/Socket.IO race proof.
+  - Owned paths: identity application/module, chat realtime gateway, focused gateway tests, evidence/status/checklist.
+  - Verification: API typecheck and run-owned disposable PostgreSQL `chatRevalidation` suite → PASS (8 files, 24 tests); it includes the real Socket.IO proof for ACTIVE admission, active-session/DISABLED-user rejection, buffered concurrent join/deactivation, post-commit socket disconnect, and no later fan-out.
+  - Result: no client heartbeat or additional message is necessary to remove sockets after durable deactivation. The frozen 40-minute capacity criterion was not rerun because send, capacity and topology paths did not change.
 
 ## active batch — F10-R22-FINAL-REVOCATION-GATES
 
