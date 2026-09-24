@@ -1,5 +1,28 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REVALIDATION — revoked JWT handshake boundary
+
+Recorded at: 2026-09-24 23:35 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R25-REVOKED-JWT-HANDSHAKE-REVALIDATION
+Result: ACCEPTED — Phase 10 remains `REWORK`; no closure, Phase 11, PR, push, or merge.
+
+Verification:
+  - An initial shared-database run had one non-product failure: a retained deterministic fixture phone collided with
+    existing test data. It did not alter application code, evidence, or the capacity criterion.
+  - The new `chatRevalidation` disposable-PostgreSQL mode creates a run-owned database, applies all 31 migrations,
+    seeds it, runs the affected gateway/reconnect/authorization/moderation/abuse/ordering/presence/rate-limit suite,
+    and removes only that run-owned database in `finally`.
+  - `chatRevalidation` → PASS (8 files, 24 tests, 83.81s): the revoked-JWT middleware proof, reconnect high-water,
+    room authorization, restricted-content/tombstone safety, block policy, ordering, presence and rate-limit paths.
+  - The established 40-minute capacity workload was not rerun: no send, rate-limit, connection-capacity or topology
+    contract changed, and the focused isolated suite passed.
+  - `git diff --check` → PASS. User-owned `.gitignore` and
+    `plan/phases/12-PRODUCTION-HARDENING.md` were not edited or staged.
+
+Next task:
+  - `F10-T11 REVALIDATION` only.
+
 ## F10-T04 REWORK — revoked JWT Socket.IO handshake
 
 Recorded at: 2026-09-24 23:26 +03:30

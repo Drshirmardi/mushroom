@@ -34,6 +34,7 @@
 - [x] `F10-T04 REWORK (revoked JWT handshake)` — reject a fresh Socket.IO handshake when its persisted session is revoked or inactive
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history, visibility reconciliation, and reconnect-gap pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
+- [x] `F10-T09 REVALIDATION (revoked JWT handshake)` — revalidate Socket.IO middleware admission with the persisted-session boundary
 - [x] `F10-T11 REVALIDATION` — final build/E2E/freshness gates after authenticated bootstrap proof
 
 ## قرارداد اجرایی freeze‌شده

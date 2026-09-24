@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 23:26 +03:30`
+- آخرین به‌رورسانی: `2026-09-24 23:35 +03:30`
 - Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
 - وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T09 REVALIDATION باید پس از remediation handshake اجرا شود؛ Phase 10 تا آن زمان REWORK است.`
+- blocker فعال: `F10-T11 REVALIDATION باید gateهای نهایی متناسب با تغییر handshake را اجرا کند؛ Phase 10 تا آن زمان REWORK است.`
 
 ## پیشرفت کلان
 
@@ -50,11 +50,10 @@
 
 ## handoff فاز فعال
 
-`Phase 10` is `REWORK`: `F10-T04 REWORK (revoked JWT handshake)` now validates the persisted session before a
-Socket.IO connection is admitted, so a signed JWT is insufficient after `revokedAt` is set. Real PostgreSQL/Socket.IO
-coverage proves a valid session can join, then the same JWT cannot make a fresh connection or receive a later fan-out
-after server-side revoke. `F10-T09 REVALIDATION` is next; then and only then may `F10-T11` run. Phase 11 remains
-`NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+`Phase 10` is `REWORK`: `F10-T04 REWORK (revoked JWT handshake)` validates the persisted session before a Socket.IO
+connection is admitted, so a signed JWT is insufficient after `revokedAt` is set. `F10-T09 REVALIDATION` passed on a
+run-owned disposable PostgreSQL database; the shared-database phone collision was fixture contamination, not a product
+failure. `F10-T11` is next. Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
 
 ## active batch — F10-R22-FINAL-REVOCATION-GATES
 

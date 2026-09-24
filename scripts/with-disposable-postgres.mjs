@@ -10,6 +10,7 @@ const commands = {
   workspace: ['exec', 'turbo', 'test'],
   reminders: ['--filter', '@sabz-zendegi/api', 'exec', 'vitest', 'run', 'test/migrations.integration.spec.ts', 'test/chat-migrations.integration.spec.ts', 'test/reminders.integration.spec.ts', '--no-file-parallelism'],
   outboxAfterChat: ['--filter', '@sabz-zendegi/api', 'exec', 'vitest', 'run', 'test/chat-rest.integration.spec.ts', 'test/outbox.integration.spec.ts', '--no-file-parallelism'],
+  chatRevalidation: ['--filter', '@sabz-zendegi/api', 'exec', 'vitest', 'run', 'test/chat-realtime.gateway.spec.ts', 'test/chat-reconnect-load.spec.ts', 'test/chat-authorization.integration.spec.ts', 'test/chat-moderation.integration.spec.ts', 'test/chat-abuse-authorization.integration.spec.ts', 'test/chat-ordering.integration.spec.ts', 'test/chat-presence.gateway.spec.ts', 'test/chat-rate-limit.integration.spec.ts', '--no-file-parallelism'],
 };
 const command = commands[mode];
 
