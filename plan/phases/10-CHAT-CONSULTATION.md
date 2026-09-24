@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `REWORK` — independent closure review سقف recovery پیش از high-water و retry restore پس از disconnect را یافت؛ فقط F10-T08 برای remediation claim شده است و Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `READY_FOR_REVIEW` — remediationهای recovery و security revalidation پذیرفته شده‌اند؛ F10-T11 با harness ایزوله، build و Chrome E2E PASS شد. closure مستقل هنوز لازم است و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.

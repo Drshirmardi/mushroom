@@ -1,5 +1,104 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — isolated final gates PASS
+
+Recorded at: 2026-09-24 15:08 +03:30
+Batch ID: F10-R19-FINAL-GATES
+Result: ACCEPTED — Phase 10 `READY_FOR_REVIEW`; no closure, Phase 11, PR, push, or merge.
+
+- The verification harness created the run-owned UUID database
+  `sabz_zendegi_verify_e18a6a1ea96d429faa07fcde10d00149`, propagated its explicit `DATABASE_URL` to Turbo and API
+  suites, applied all migrations, seeded it, and allowlist-cleaned only that database in `finally`.
+- Targeted producer/fixture isolation proof: `pnpm test:integration:outbox` ran the chat REST event-producing suite
+  before `outbox.integration.spec.ts` on one disposable DB and passed: 2 files, 3 tests. Outbox fixtures receive a
+  deterministic earlier `availableAt`, so their assertions no longer rely on the shared claim queue being empty.
+- Frozen-capacity diagnosis: `chat-capacity.load.spec.ts` reran unchanged with its `<= 1,000ms` batch criterion and
+  passed: 1 file, 2 tests, 2,199.07s. The preceding 1,015ms result was not reproducible; no production behavior or
+  capacity threshold was changed.
+- Full isolated workspace gate: `pnpm test:isolated` → PASS, 5/5 Turbo tasks; API 84 files / 346 tests; 40m45.245s.
+  The long real PostgreSQL/Socket.IO capacity/reconnect workload completed under the frozen assertion.
+- Independent PostgreSQL check after the harness returned `TEMP_DB_CLEANED` for the exact run-owned database above.
+  No shared local database was used by the API integration suite.
+- Production workspace build: `pnpm build` → PASS, 5/5 packages.
+- Real Chrome Phase 10 E2E: temporary local API/web/app servers on ports 3003/3000/3001 were healthy; Playwright with
+  the Chrome channel passed the authenticated text-chat flow (1 test, 7.3s), including persisted send, no media
+  controls, no external request, and no token in a request URL. All three test-owned server trees were then stopped.
+- Commit-isolation review: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.
+  Phase 10 is `READY_FOR_REVIEW`, not closed; its next action is independent security/closure review only.
+
+## F10-T11 REVALIDATION — observed isolated full gate (REWORK)
+
+Recorded at: 2026-09-24 13:03 +03:30
+Batch ID: F10-R19-FINAL-GATES
+Result: REWORK — no build, Chrome E2E, readiness transition, or task commit.
+
+- `pnpm test:isolated` created `sabz_zendegi_verify_719ab3b497c0420cbf28e2ae2184e063`, applied all 31 migrations,
+  seeded it, explicitly propagated `DATABASE_URL` through Turbo, and executed the full workspace suite.
+- Turbo result: 4 successful packages / 5 total; API test command failed. API result: 82 files passed, 2 failed;
+  343 tests passed, 3 failed; duration 2,224.34s. Whole workspace duration: 37m19.126s.
+- `chat-capacity.load.spec.ts` missed its test-only per-batch deadline by 15ms (`1,015ms > 1,000ms`) during its
+  20-message/sec / 30-minute synthetic workload. This is a timing-threshold failure, not an observed durable-gap
+  assertion failure.
+- `outbox.integration.spec.ts` failed two assumptions after the capacity workload generated due `CHAT_MESSAGE_COMMITTED`
+  entries: global `claim(25)` returned a prior `chat-message:*` dedupe key instead of the test event, and therefore
+  did not return the fixture's fresh processing event. The harness isolates each run from the shared DB, but the
+  full suite still shares its one disposable DB across serial API test files; the outbox test assumes an empty claim
+  queue. This is the same test-order coupling diagnosed for reminders, now exposed for the later outbox suite.
+- Harness `finally` cleanup completed: an independent PostgreSQL query confirmed the exact run-owned DB above is absent.
+- Safe next action: keep T11 in REWORK. Decide whether verification may isolate/sequence the outbox suite before
+  chat-load producers and whether the capacity deadline needs a deterministic test-clock or explicit CI tolerance;
+  do not weaken production behavior or start build/E2E before a passing full gate.
+
+## F10-T11 REVALIDATION — interrupted final-result observation (REWORK)
+
+Recorded at: 2026-09-24 12:14 +03:30
+Batch ID: F10-R19-FINAL-GATES
+Result: REWORK; no task commit or readiness transition.
+
+- The disposable PostgreSQL harness migrated all 31 migrations and seeded a fresh UUID-named database before the targeted migration/reminder command. That command passed: 3 files, 7 tests.
+- The first full isolated workspace run completed with API failures in `reminders.integration.spec.ts` after the chat load suite filled the same database's outbox. The verification script was changed to run reminders first, then the remaining API suites. This changed only verification ordering.
+- The second full isolated workspace run used session 66862. Last visible output showed reminder-first tests passed and the remaining API suites continuing after the capacity workload. A subsequent task turn cannot reconnect to that session (`Unknown process id 66862`); no matching test or harness process remains. Its exit code and final test summary are unavailable, so no full-gate PASS is claimed.
+- PostgreSQL/Docker is currently unavailable. The harness uses `finally` for allowlisted cleanup, but successful deletion of that run's disposable database cannot be independently confirmed yet. No database deletion was attempted without verification of the exact target.
+- Safe next action: when PostgreSQL is available, inspect the run-owned `sabz_zendegi_verify_5e3bd1907d9942e2985ede5e65109b20` database. Remove it only after verifying that exact generated name and ownership. Then obtain a captured final result from one controlled isolated full-gate run; proceed to build and Chrome E2E only after PASS. Do not infer success from partial output.
+
+### Follow-up targeted disposable verification — PASS
+
+Recorded at: 2026-09-24 12:24 +03:30
+
+- Docker PostgreSQL was healthy. The unreconciled exact run-owned database
+  `sabz_zendegi_verify_5e3bd1907d9942e2985ede5e65109b20` was queried and was already absent.
+- `pnpm test:integration:reminders` created a new UUID-named disposable database, applied all 31 migrations,
+  ran the seed, and passed `migrations.integration.spec.ts`, `chat-migrations.integration.spec.ts`, and
+  `reminders.integration.spec.ts`: 3 files, 7 tests, exit code 0 (58.86s).
+- The harness `finally` cleanup was independently queried afterwards: its exact disposable database
+  `sabz_zendegi_verify_a9763cbcf09b446694d2652cd42c6408` was absent. No shared database was modified.
+- This clears the targeted infrastructure check only. `F10-T11` remains `REWORK` pending one captured full
+  isolated workspace gate, followed by build and Chrome E2E only if that gate passes.
+
+## F10-T11 REVALIDATION — final-gate attempt (REWORK)
+
+Task ID: F10-T11 REVALIDATION
+Recorded at: 2026-09-23 21:35 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R19-FINAL-GATES
+Result: REWORK — no task commit and no Phase 10 readiness transition.
+
+Passing checks:
+  - PostgreSQL migration deploy/status, Prisma schema validation, OpenAPI/client freshness → PASS (31 migrations current; generated API client unchanged).
+  - workspace lint → PASS with three pre-existing warnings; workspace typecheck → PASS.
+  - full workspace test ran for 38m45s, including the real 100-consultation/600-connection PostgreSQL/Socket.IO capacity and reconnect workload; those chat-capacity checks completed without failure.
+
+Blocking evidence and baseline diagnosis:
+  - `turbo.json` only passes environment variables already present in the parent process; it does not load `apps/api/.env`. The root workspace test therefore invokes the API suite without `DATABASE_URL`, so chat-migration and migration smoke suites cannot initialize their disposable PostgreSQL databases.
+  - This is pre-existing: the merge-base (`09d7d17fdccdbb297581f0ccc5bd41462df5a9a6`) has the same root/API test scripts and, with `DATABASE_URL` deliberately absent, its unchanged `migrations.integration.spec.ts` fails immediately with `DATABASE_URL is required for the migration smoke test.`
+  - The configured shared local database currently has 157145 due `PENDING` outbox events (and 50 `PROCESSING`); the first 30 ordered rows are all old `CHAT_MESSAGE_COMMITTED` records. `OutboxService.claim()` is unchanged from merge-base and intentionally selects only the first 25 global due rows. Consequently each reminder test's worker tick/claim processes unrelated chat rows, leaves the test fixture `PENDING`, and never returns the fixture's stale claim.
+  - A read-only baseline checkout at the merge-base, with its own disposable PostgreSQL database (30 baseline migrations plus seed), passed `reminders.integration.spec.ts` 3/3. The reminder test, `claim()` implementation, and reminder service have no Phase 10 diff; the only Phase 10 worker change adds delivery handling for chat outbox records.
+
+Consequences:
+  - F10-T11 remains `REWORK`; Chrome E2E and the F10-T11 commit were not run/created after the required all-gates failure.
+  - No Phase 10 product regression or authorized source fix was found. Safe next action: a separately authorized verification-harness task that creates an isolated disposable PostgreSQL DB and supplies the declared API test environment before rerunning the complete gate; do not change Phase 10 product code or repeat the 38-minute suite against the shared DB.
+  - Phase 10 remains `REWORK`; it is not `READY_FOR_REVIEW`. Phase 11 is unclaimed and unchanged.
+
 ## F10-T09 REVALIDATION — post-F10-T08 real PostgreSQL/Socket.IO proof
 
 Task ID: F10-T09 REVALIDATION

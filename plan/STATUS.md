@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-23 20:51 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- آخرین به‌رورسانی: `2026-09-24 15:08 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T09 revalidation پذیرفته و commit می‌شود؛ F10-T11 final gates پیش از READY_FOR_REVIEW باید اجرا شود. Phase 11 claim نشده است.`
+- blocker فعال: `ندارد برای Phase 10؛ closure رسمی انجام نشده است. F10-T11 revalidation با harness ایزوله، build و Chrome E2E PASS شد و منتظر independent security/closure review است. Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -43,17 +43,43 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
+- [ ] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` remains `REWORK`: `F10-T08 REWORK` now reaches the frozen join high-water or explicitly fails before
-`connected`, and a restore cannot retry until the next successful join. `F10-T09 REVALIDATION` real
-PostgreSQL/Socket.IO confirmation passed; `F10-T11 REVALIDATION` is next eligible. Phase 11 remains `NOT_STARTED`,
-unclaimed and unmodified.
+`Phase 10` is `READY_FOR_REVIEW`: `F10-T08 REWORK` reaches the frozen join high-water or explicitly fails before
+`connected`, and restore work cannot retry until the next successful join. `F10-T09 REVALIDATION` real
+PostgreSQL/Socket.IO confirmation passed. `F10-T11 REVALIDATION` passed with a run-owned disposable PostgreSQL
+database, explicit Turbo `DATABASE_URL` propagation, full workspace tests, production builds, and real Chrome E2E.
+The run-owned database was independently confirmed removed. Phase 11 remains `NOT_STARTED`, unclaimed and
+unmodified; independent security/closure review remains required and closure has not been performed.
+
+## active batch — F10-R19-FINAL-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-23 20:53 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — all final gates passed; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `9b760a3`, and `48a5841`.
+
+- Task ID: `F10-T11 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted F10-T08 and F10-T09 revalidation.
+  - Scope: final migration/client/typecheck/test/build/freshness and real Chrome E2E verification, including the minimal
+    disposable-PostgreSQL verification harness required to eliminate shared-DB contamination.
+  - Owned paths: `scripts/with-disposable-postgres.mjs`, root `package.json`, `apps/api/package.json`, test/evidence/status/checklist only.
+  - Shared/exclusive resource: local PostgreSQL, API/web/app/dashboard processes and browser environment.
+  - Expected verification: targeted migration/reminder proof on a disposable DB, then full workspace gate and Chrome E2E;
+    `READY_FOR_REVIEW` only if every gate passes.
+  - Verification: chat-producer-then-outbox fixture proof → PASS (2 files, 3 tests); the frozen 1,000ms capacity
+    threshold rerun → PASS (1 file, 2 tests); full isolated workspace gate → PASS (5/5 tasks, API 84 files / 346
+    tests, 40m45.245s); production workspace build → PASS; real Chrome Phase 10 E2E → PASS (1 test).
+  - Result: the harness DB `sabz_zendegi_verify_e18a6a1ea96d429faa07fcde10d00149` was independently confirmed
+    absent after `finally` cleanup. The fixture no longer depends on a globally empty outbox queue, and no capacity
+    criterion was changed. Phase 10 is `READY_FOR_REVIEW`; do not start Phase 11 or closure.
 
 ## active batch — F10-R18-POST-RECOVERY-REALTIME
 
