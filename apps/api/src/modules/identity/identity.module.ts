@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 
 import { AccessTokenService } from '../../common/auth/access-token.service';
+import { ChatModule } from '../communications/chat/chat.module';
+import { ChatSocketRegistry } from '../communications/chat/realtime/chat-socket-registry';
 import { LoginSessionUseCase } from './application/login-session.use-case';
 import { LoginUserUseCase } from './application/login-user.use-case';
 import { ManageAccountUseCase } from './application/manage-account.use-case';
@@ -25,6 +27,7 @@ import { AuthController } from './presentation/http/auth.controller';
 import { MeController } from './presentation/http/me.controller';
 
 @Module({
+  imports: [ChatModule],
   controllers: [AuthController, MeController],
   providers: [
     Argon2PasswordHasher,
@@ -119,9 +122,9 @@ import { MeController } from './presentation/http/me.controller';
     },
     {
       provide: ManageSessionsUseCase,
-      inject: [SessionRepository],
-      useFactory: (sessions: SessionRepository) =>
-        new ManageSessionsUseCase(sessions),
+      inject: [SessionRepository, ChatSocketRegistry],
+      useFactory: (sessions: SessionRepository, sockets: ChatSocketRegistry) =>
+        new ManageSessionsUseCase(sessions, sockets),
     },
     {
       provide: ManageAccountUseCase,

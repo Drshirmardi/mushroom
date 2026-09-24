@@ -5,6 +5,7 @@ import type { Server, Socket } from 'socket.io';
 import { AccessTokenService, type AccessTokenPrincipal } from '../../../../common/auth/access-token.service';
 import { ChatService } from '../chat.service';
 import { ChatRealtimePublisher } from './chat-realtime.publisher';
+import { ChatSocketRegistry } from './chat-socket-registry';
 
 type JoinRequest = { conversationId?: string; lastSequence?: string };
 type ReceiptRequest = { conversationId?: string; lastDeliveredSequence?: string; lastReadSequence?: string };
@@ -14,10 +15,14 @@ type RealtimeSocket = Socket & { data: { chatPrincipal?: AccessTokenPrincipal; e
 @WebSocketGateway({ namespace: '/chat', transports: ['websocket'] })
 export class ChatRealtimeGateway {
   @WebSocketServer() server!: Server;
-  private readonly socketsByUser = new Map<string, Set<string>>();
   private readonly presenceLeases = new Map<string, NodeJS.Timeout>();
 
-  constructor(private readonly tokens: AccessTokenService, private readonly chat: ChatService, private readonly publisher: ChatRealtimePublisher) {}
+  constructor(
+    private readonly tokens: AccessTokenService,
+    private readonly chat: ChatService,
+    private readonly publisher: ChatRealtimePublisher,
+    private readonly sockets: ChatSocketRegistry,
+  ) {}
 
   afterInit(server: Server) { this.publisher.bind(server); }
 
@@ -28,12 +33,7 @@ export class ChatRealtimeGateway {
       if (typeof token !== 'string') throw new UnauthorizedException();
       const principal = await this.tokens.verify(token);
       client.data.chatPrincipal = principal;
-      const sockets = this.socketsByUser.get(principal.userId) ?? new Set<string>();
-      sockets.add(client.id); this.socketsByUser.set(principal.userId, sockets);
-      if (sockets.size > 3) {
-        const oldest = sockets.values().next().value as string;
-        sockets.delete(oldest); this.server.sockets.sockets.get(oldest)?.disconnect(true);
-      }
+      this.sockets.register(client, principal.userId, principal.sessionId);
       client.data.expiryTimer = setTimeout(() => client.disconnect(true), Math.max(0, principal.expiresAt * 1000 + 5000 - Date.now()));
     } catch { client.disconnect(true); }
   }
@@ -41,8 +41,7 @@ export class ChatRealtimeGateway {
   handleDisconnect(client: RealtimeSocket) {
     if (client.data.expiryTimer) clearTimeout(client.data.expiryTimer);
     const userId = client.data.chatPrincipal?.userId;
-    const sockets = userId ? this.socketsByUser.get(userId) : undefined;
-    sockets?.delete(client.id); if (sockets?.size === 0 && userId) this.socketsByUser.delete(userId);
+    this.sockets.unregister(client.id);
     for (const [key, lease] of this.presenceLeases) {
       if (!key.endsWith(`:${client.id}`)) continue;
       clearTimeout(lease);

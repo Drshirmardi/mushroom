@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 15:08 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-24 19:10 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 REWORK`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- وضعیت فاز فعال: `REWORK`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد برای Phase 10؛ closure رسمی انجام نشده است. F10-T11 revalidation با harness ایزوله، build و Chrome E2E PASS شد و منتظر independent security/closure review است. Phase 11 claim نشده است.`
+- blocker فعال: `F10-T04 immediate session/user socket invalidation پذیرفته شد؛ F10-T09 revalidation و سپس F10-T11 final gates لازم‌اند. Phase 11 claim نشده است.`
 
 ## پیشرفت کلان
 
@@ -43,19 +43,35 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
+- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: `F10-T08 REWORK` reaches the frozen join high-water or explicitly fails before
-`connected`, and restore work cannot retry until the next successful join. `F10-T09 REVALIDATION` real
-PostgreSQL/Socket.IO confirmation passed. `F10-T11 REVALIDATION` passed with a run-owned disposable PostgreSQL
-database, explicit Turbo `DATABASE_URL` propagation, full workspace tests, production builds, and real Chrome E2E.
-The run-owned database was independently confirmed removed. Phase 11 remains `NOT_STARTED`, unclaimed and
-unmodified; independent security/closure review remains required and closure has not been performed.
+`Phase 10` is `REWORK`: `F10-T04 REWORK` now immediately disconnects in-process Socket.IO connections for a
+revoked session or all revoked sessions of one user, with a PostgreSQL/Socket.IO proof that needs no client follow-up.
+The existing product has no separate user-deactivation endpoint; server-side deactivation owners use the same exported
+user invalidation API. `F10-T09` must revalidate the focused authorization/realtime boundary, then `F10-T11` must
+rerun final gates. Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R20-IMMEDIATE-SOCKET-REVOCATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-24 15:30 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `d257f70`, and independent closure-review P1.
+
+- Task ID: `F10-T04 REWORK`
+  - Status: `DONE`
+  - Depends on: accepted prior F10-T04/F10-T09/F10-T11 work; this remediation precedes their revalidation.
+  - Scope: process-local immediate invalidation of Socket.IO connections by authenticated session and user, wiring the real session-revoke path, and focused PostgreSQL/Socket.IO proof for session and user revocation with no follow-up client event.
+  - Owned paths: chat realtime gateway/module/registry, identity session-management wiring, focused chat realtime integration tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: single realtime API instance and serialized PostgreSQL/Socket.IO test environment.
+  - Verification: API typecheck → PASS; PostgreSQL/Socket.IO session revoke, user-wide revoke, gateway presence and session-use-case suites → PASS (3 files, 14 tests); `git diff --check` → PASS.
+  - Result: the registry is single-instance and process-local by ADR-0010. Session revoke disconnects only that session's sockets; logout-all disconnects every socket for that user. Both happen after durable revoke and before a further room fan-out, without a client heartbeat or message.
 
 ## active batch — F10-R19-FINAL-GATES
 

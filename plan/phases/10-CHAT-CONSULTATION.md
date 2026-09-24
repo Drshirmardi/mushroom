@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `READY_FOR_REVIEW` — remediationهای recovery و security revalidation پذیرفته شده‌اند؛ F10-T11 با harness ایزوله، build و Chrome E2E PASS شد. closure مستقل هنوز لازم است و Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `REWORK` — closure review نشان داد socket مجاز پس از revoke server-side تا درخواست بعدی client می‌تواند در room بماند. F10-T04 REWORK باید invalidation فوری session/user و proof واقعی PostgreSQL/Socket.IO را تکمیل کند؛ سپس F10-T09/F10-T11 بازاعتبارسنجی می‌شوند. Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -30,6 +30,7 @@
 
 - [x] `F10-T03 REWORK` — durable authorized visibility reconciliation and send-only block policy
 - [x] `F10-T04 REWORK` — revoke room membership immediately after current authorization loss
+- [x] `F10-T04 REWORK (immediate session/user invalidation)` — disconnect joined sockets on server-side revoke without a client follow-up
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history, visibility reconciliation, and reconnect-gap pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
 - [x] `F10-T11 REVALIDATION` — final build/E2E/freshness closure gates

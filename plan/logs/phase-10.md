@@ -1,5 +1,32 @@
 # Phase 10 Execution Evidence
 
+## F10-T04 REWORK — immediate session/user Socket.IO invalidation
+
+Task ID: F10-T04 REWORK
+Completed at: 2026-09-24 19:10 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R20-IMMEDIATE-SOCKET-REVOCATION
+Reviewed by: Codex /root
+Changed files:
+  - apps/api/src/modules/communications/chat/{chat.module.ts,realtime/chat-realtime.gateway.ts,realtime/chat-socket-registry.ts}
+  - apps/api/src/modules/identity/{identity.module.ts,application/manage-sessions.use-case.ts}
+  - apps/api/test/{chat-realtime.gateway.spec.ts,chat-presence.gateway.spec.ts,manage-sessions.spec.ts}
+  - plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}
+Migrations:
+  - none
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api exec vitest run test/chat-realtime.gateway.spec.ts test/chat-presence.gateway.spec.ts test/manage-sessions.spec.ts --no-file-parallelism` → PASS (3 files, 14 tests)
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS
+  - `git diff --check` → PASS
+Result:
+  - A process-local registry indexes each authenticated gateway socket by both JWT session ID and user ID; the existing three-live-socket cap remains per user.
+  - The real `DELETE /v1/auth/sessions/:id` path disconnects only the revoked session, and `POST /v1/auth/logout-all` disconnects all sockets for that user after durable session revocation.
+  - PostgreSQL/Socket.IO proof joins an authorized socket, performs either server-side revoke without a further socket message or heartbeat, then commits/publishes a new conversation message; the revoked socket receives nothing.
+Known limitations:
+  - There is no separate user-deactivation endpoint in the current product. Any future server-side user-deactivation owner must call the exported user invalidation API; this task does not add an unrelated identity-management surface.
+Next task:
+  - F10-T09 REVALIDATION, then F10-T11 final gates; Phase 10 remains REWORK and Phase 11 remains unclaimed.
+
 ## F10-T11 REVALIDATION — isolated final gates PASS
 
 Recorded at: 2026-09-24 15:08 +03:30

@@ -13,7 +13,7 @@ describe('chat presence lease', () => {
     const emit = vi.fn();
     const realtimeSync = vi.fn().mockResolvedValue({ items: [], highWaterSequence: '0', nextCursor: null });
     const authorizeRealtimeSubscription = vi.fn().mockResolvedValue(undefined);
-    const gateway = new ChatRealtimeGateway({ verify: vi.fn().mockResolvedValue(principal) } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never);
+    const gateway = new ChatRealtimeGateway({ verify: vi.fn().mockResolvedValue(principal) } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never, { register: vi.fn(), unregister: vi.fn() } as never);
     const client = { id: 'socket-1', handshake: { query: {}, auth: { token: 'opaque-token' } }, data: {}, disconnect: vi.fn(), join: vi.fn(), to: () => ({ emit }) };
     gateway.server = { sockets: { sockets: new Map() } } as never;
     await gateway.handleConnection(client as never);
@@ -27,7 +27,7 @@ describe('chat presence lease', () => {
 
   it('fails closed when the current server-side eligibility check fails', async () => {
     const emit = vi.fn();
-    const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { realtimeSync: vi.fn().mockRejectedValue(new Error('closed')) } as never, { bind: vi.fn() } as never);
+    const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { realtimeSync: vi.fn().mockRejectedValue(new Error('closed')) } as never, { bind: vi.fn() } as never, { unregister: vi.fn() } as never);
     const client = { id: 'socket-2', data: { chatPrincipal: principal }, disconnect: vi.fn(), to: () => ({ emit }) };
     await expect(gateway.heartbeat(client as never, { conversationId, lastSequence: '0' })).resolves.toEqual({ ok: false, code: 'CHAT_FORBIDDEN' });
     expect(client.disconnect).toHaveBeenCalledWith(true);

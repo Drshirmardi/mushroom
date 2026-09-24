@@ -3,6 +3,7 @@ import { io, type Socket } from 'socket.io-client';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { createApiApplication } from '../src/app.factory';
+import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { ChatService } from '../src/modules/communications/chat/chat.service';
 import { ChatRealtimeGateway } from '../src/modules/communications/chat/realtime/chat-realtime.gateway';
 import { ChatRealtimePublisher } from '../src/modules/communications/chat/realtime/chat-realtime.publisher';
@@ -15,7 +16,7 @@ describe('chat realtime gateway', () => {
     const verify = vi.fn().mockResolvedValue(principal);
     const authorizeRealtimeSubscription = vi.fn().mockResolvedValue(undefined);
     const realtimeSync = vi.fn().mockResolvedValue({ items: [], highWaterSequence: '0', nextCursor: null });
-    const gateway = new ChatRealtimeGateway({ verify } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never);
+    const gateway = new ChatRealtimeGateway({ verify } as never, { authorizeRealtimeSubscription, realtimeSync } as never, { bind: vi.fn() } as never, { register: vi.fn(), unregister: vi.fn() } as never);
     const disconnect = vi.fn(); const join = vi.fn(); const leave = vi.fn();
     const client = { id: 'socket-1', handshake: { query: {}, auth: { token: 'opaque-token' } }, data: {}, disconnect, join, leave, to: () => ({ emit: vi.fn() }) };
     gateway.server = { sockets: { sockets: new Map() } } as never;
@@ -29,7 +30,7 @@ describe('chat realtime gateway', () => {
   });
 
   it('rejects token-bearing query strings and never joins an arbitrary room', async () => {
-    const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { authorizeRealtimeSubscription: vi.fn(), realtimeSync: vi.fn() } as never, { bind: vi.fn() } as never);
+    const gateway = new ChatRealtimeGateway({ verify: vi.fn() } as never, { authorizeRealtimeSubscription: vi.fn(), realtimeSync: vi.fn() } as never, { bind: vi.fn() } as never, { unregister: vi.fn() } as never);
     const disconnect = vi.fn();
     await gateway.handleConnection({ id: 'socket-2', handshake: { query: { token: 'leak' }, auth: {} }, data: {}, disconnect } as never);
     expect(disconnect).toHaveBeenCalledWith(true);
@@ -155,10 +156,20 @@ describe('chat realtime Socket.IO integration', () => {
     await resolutionEvent;
   }, 30_000);
 
-  it('disconnects a deactivated participant before later room fan-out', async () => {
+  it.each([
+    ['one revoked session', async (app: NestFastifyApplication, sessionId: string, token: string) => app.inject({ method: 'DELETE', url: `/v1/auth/sessions/${sessionId}`, headers: auth(token) })],
+    ['all revoked user sessions', async (app: NestFastifyApplication, _sessionId: string, token: string) => app.inject({ method: 'POST', url: '/v1/auth/logout-all', headers: auth(token) })],
+  ])('disconnects %s before later room fan-out without another client event', async (_label, revoke) => {
     app = await createApiApplication();
     await app.listen({ host: '127.0.0.1', port: 0 });
     fixture = await createChatFixture(app);
+    const principal = await app.get(AccessTokenService).verify(fixture.tokens.patient);
+    await fixture.prisma.session.create({ data: {
+      id: principal.sessionId,
+      userId: fixture.users.patient.id,
+      refreshTokenHash: `${principal.sessionId.replaceAll('-', '')}${principal.sessionId.replaceAll('-', '')}`,
+      expiresAt: new Date(Date.now() + 60 * 60_000),
+    } });
     const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
     const conversationId = conversation.json().id as string;
     socket = io(`${await app.getUrl()}/chat`, { auth: { token: fixture.tokens.patient }, transports: ['websocket'] });
@@ -168,8 +179,8 @@ describe('chat realtime Socket.IO integration', () => {
     const received: unknown[] = [];
     socket.on('message:committed', (event) => received.push(event));
     const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));
-    await fixture.prisma.user.update({ where: { id: fixture.users.patient.id }, data: { status: 'DISABLED' } });
-    socket.emit('conversation:join', { conversationId, lastSequence: '0' });
+    const revoked = await revoke(app, principal.sessionId, fixture.tokens.patient);
+    expect(revoked.statusCode).toBe(204);
     await disconnected;
     const published = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversationId}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000007', body: 'must not reach revoked socket' } });
     expect(published.statusCode).toBe(201);
