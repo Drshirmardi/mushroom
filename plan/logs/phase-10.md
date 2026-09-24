@@ -1,5 +1,51 @@
 # Phase 10 Execution Evidence
 
+## F10-T11 REVALIDATION — authenticated browser bootstrap gate PASS
+
+Recorded at: 2026-09-24 23:03 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R22-FINAL-REVOCATION-GATES
+Result: ACCEPTED — Phase 10 `READY_FOR_REVIEW`; no closure, Phase 11, PR, push, or merge.
+
+Diagnosis and change:
+  - Chrome trace proved product behavior: `POST /v1/auth/login` from `http://localhost:3000` set the refresh cookie;
+    `POST /v1/auth/refresh` from `http://localhost:3001` sent that cookie and returned 200 with credentialed CORS.
+  - The prior failure was not a product or address/configuration defect. The fixture considered the location change to app
+    as a completed login, then navigated to chat before the client SessionGate refresh bootstrap had completed.
+  - `registerAndLogin` now waits for the real refresh response (200) and the authenticated app shell heading before
+    creating the chat fixture or navigating to chat. It injects no token and retains all authenticated chat assertions.
+
+Verification:
+  - `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS (1 real Chrome test, 7.7s).
+  - `pnpm test:isolated` → PASS with captured exit code 0 (5/5 Turbo tasks; API 84 files / 347 tests; 40m39.022s).
+    The frozen capacity workload ran unchanged; this repeat was required only because the earlier outer runner had no
+    observable exit status.
+  - `pnpm build` → PASS (5/5 workspace packages).
+  - `git diff --check` → PASS.
+
+Result:
+  - Refresh-cookie/session handoff is verified in real Chrome without a test-only authentication bypass. The final
+    Phase 10 gate is accepted and the phase returns only to `READY_FOR_REVIEW`.
+
+## F10-T11 REVALIDATION — final gateway revalidation REWORK
+
+Recorded at: 2026-09-24 21:52 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R22-FINAL-REVOCATION-GATES
+Result: REWORK — no closure, Phase 11, PR, push, or merge.
+
+Tests run:
+  - `pnpm test:isolated` without inherited `DATABASE_URL` → preflight FAIL before migration or tests: the disposable harness requires a parent-supplied URL. This is a verification-shell preflight issue, not a product test failure.
+  - `pnpm test:isolated` with the existing local API `DATABASE_URL` → the started process and disposable database cleanup completed; the dedicated temporary database was absent afterwards. The outer detached runner did not expose an exit status, so this run is not accepted as PASS.
+  - `pnpm build` → PASS (5/5 workspace packages).
+  - `pnpm exec playwright test --config playwright.phase10.config.ts` → FAIL (1 test): after a successful web login, direct navigation to `http://localhost:3001/chat?...` returned to `http://localhost:3000/login`; `گفتگوی مشاوره` was not visible. No chat message was sent.
+
+Impact:
+  - The final real-Chrome chat-flow gate is not satisfied. The existing session/user socket-invalidation proof and F10-T09 authorization/reconnect proof remain accepted, but they cannot substitute for the failed browser gate.
+
+Safe next action:
+  - Diagnose the browser refresh-cookie/session handoff from `apps/web` to `apps/app` on the post-login navigation. If a product defect is confirmed, fix it with a focused regression, then rerun the failed Chrome E2E and the required isolated gate while retaining an observable exit code. Do not change the frozen capacity criterion or claim Phase 11.
+
 ## F10-T09 REVALIDATION — immediate socket revocation boundary
 
 Task ID: F10-T09 REVALIDATION

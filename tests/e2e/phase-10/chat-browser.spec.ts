@@ -28,8 +28,11 @@ async function registerAndLogin(context: BrowserContext, phone: string, password
   await expect(page).toHaveURL(/http:\/\/localhost:3000\/login/u);
   await page.getByLabel("شماره موبایل").fill(phone);
   await page.getByLabel("رمز عبور", { exact: true }).fill(password);
+  const refreshResponse = page.waitForResponse((response) => response.request().method() === "POST" && /\/v1\/auth\/refresh$/u.test(response.url()));
   await page.getByRole("button", { name: "ورود" }).click();
   await expect(page).toHaveURL(/http:\/\/localhost:3001\//u);
+  expect((await refreshResponse).status()).toBe(200);
+  await expect(page.getByRole("heading", { name: "دکتر شیرمردی", exact: true })).toBeVisible();
   return page;
 }
 

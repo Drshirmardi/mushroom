@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-24 19:20 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 REWORK`
+- آخرین به‌رورسانی: `2026-09-24 23:03 +03:30`
+- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
 - فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `REWORK`
+- وضعیت فاز فعال: `READY_FOR_REVIEW`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `F10-T09 revalidation پذیرفته شد؛ F10-T11 final gates لازم‌اند. Phase 11 claim نشده است.`
+- blocker فعال: `ندارد؛ independent review ممکن است، اما closure رسمی و Phase 11 claim نشده‌اند.`
 
 ## پیشرفت کلان
 
@@ -43,7 +43,7 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `REWORK`
+- [x] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
@@ -53,8 +53,27 @@
 `Phase 10` is `REWORK`: accepted `F10-T04 REWORK` immediately disconnects in-process Socket.IO connections for a
 revoked session or all revoked sessions of one user. The existing product has no separate user-deactivation endpoint;
 server-side deactivation owners use the same exported user invalidation API. `F10-T09 REVALIDATION` passed the
-focused authorization/realtime boundary; `F10-T11` must now rerun final gates. Phase 11 remains `NOT_STARTED`,
-unclaimed and unmodified; closure has not been performed.
+focused authorization/realtime boundary. Trace واقعی Chrome نشان داد login refresh-cookie را از `apps/web` به
+`apps/app` منتقل می‌کند و refresh همان cookie را با 200/CORS معتبر می‌پذیرد. Fixture اکنون پیش از navigation چت
+همین handoff و UI authenticated را منتظر می‌ماند. گیت ایزوله با exit code قابل‌ثبت، build و Chrome E2E PASS شدند.
+Phase 10 is `READY_FOR_REVIEW`; Phase 11 remains `NOT_STARTED`, unclaimed and unmodified; closure has not been performed.
+
+## active batch — F10-R22-FINAL-REVOCATION-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-24 19:25 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T11 commit; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `d35772c`, and `a3c3bd1`.
+
+- Task ID: `F10-T11 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted F10-T04 immediate socket invalidation and F10-T09 targeted revalidation.
+  - Scope: final isolated workspace verification, production builds and real Chrome Phase 10 E2E after the gateway lifecycle change; evidence/status/checklist only unless a gate exposes a defect.
+  - Owned paths: test/evidence/status/checklist only.
+  - Shared/exclusive resource: isolated disposable PostgreSQL, local API/web/app/dashboard processes and Chrome.
+  - Verification: Chrome trace confirms `POST /v1/auth/login` sets the refresh cookie for web origin, and `POST /v1/auth/refresh` from app origin sends it and returns 200 with credentialed CORS. The strengthened no-bypass E2E passed (1 test). Captured disposable workspace gate passed with exit code 0: 5/5 Turbo tasks, API 84 files / 347 tests, 40m39.022s. Production workspace build passed (5/5 packages); `git diff --check` passed.
+  - Result: the earlier failure was a fixture readiness race: it treated the app URL as authenticated before SessionGate completed its refresh bootstrap. The fixture now waits for the real refresh response and authenticated shell; no auth/product contract changed.
 
 ## active batch — F10-R21-SOCKET-REVOCATION-REVALIDATION
 

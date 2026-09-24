@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `REWORK` — closure review نشان داد socket مجاز پس از revoke server-side تا درخواست بعدی client می‌تواند در room بماند. F10-T04 REWORK باید invalidation فوری session/user و proof واقعی PostgreSQL/Socket.IO را تکمیل کند؛ سپس F10-T09/F10-T11 بازاعتبارسنجی می‌شوند. Phase 11 شروع یا claim نشده است.
+- وضعیت فعلی: `READY_FOR_REVIEW` — remediation فوری session/user برای socket، F10-T09 و F10-T11 پذیرفته شده‌اند. Chrome trace واقعی handoff refresh-cookie از `apps/web` به `apps/app` را با 200 تأیید کرد؛ fixture پیش از ورود به chat منتظر bootstrap authenticated می‌ماند. closure رسمی و Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -33,7 +33,7 @@
 - [x] `F10-T04 REWORK (immediate session/user invalidation)` — disconnect joined sockets on server-side revoke without a client follow-up
 - [x] `F10-T08 REWORK` — bounded app/dashboard long-history, visibility reconciliation, and reconnect-gap pagination
 - [x] `F10-T09 REVALIDATION` — PostgreSQL/Socket.IO security and reconnect proof
-- [x] `F10-T11 REVALIDATION` — final build/E2E/freshness closure gates
+- [x] `F10-T11 REVALIDATION` — final build/E2E/freshness gates after authenticated bootstrap proof
 
 ## قرارداد اجرایی freeze‌شده
 
@@ -67,7 +67,7 @@ F10-T01 → F10-T02 → F10-T03 → F10-T04 → F10-T05 → F10-T06 → F10-T07 
 
 ## Closure
 
-- همهٔ `F10-T01` تا `F10-T11`، remediationهای بعدی و revalidationهای آن‌ها پذیرفته شده‌اند.
+- همهٔ `F10-T01` تا `F10-T11` و remediation/revalidationهای پس از آن پذیرفته شده‌اند؛ فاز فقط `READY_FOR_REVIEW` است.
 - PostgreSQL/Socket.IO correctness، capacity، restore pagination، app/dashboard، Chrome E2E، deferred-media absence و
   commit isolation در [`logs/phase-10.md`](../logs/phase-10.md) ثبت شده‌اند.
 - `.gitignore` و `plan/phases/12-PRODUCTION-HARDENING.md` خارج از تمام commitهای Phase 10 باقی مانده‌اند.
