@@ -1454,3 +1454,25 @@ Verification:
   - The accepted 40-minute capacity workload was not rerun: no workload criterion, send throughput, or topology changed.
 Result:
   - Phase 10 is `READY_FOR_REVIEW` only. No closure, PR, push, merge, or Phase 11 claim occurred.
+
+# F10-T09 REWORK — PR #15 capacity fixture session renewal
+
+Task ID: F10-T09 REWORK (capacity fixture persisted session)
+Started at: 2026-09-25 20:24 +03:30
+Batch ID: F10-R34-CI-CAPACITY-SESSION
+Status: DONE — correction verified on disposable PostgreSQL; isolated F10-T09 commit accepted; Phase 10 remains CLOSED
+Completed at: 2026-09-25 23:55 +03:30
+Finding:
+  - PR #15 CI `pnpm test` failed in `test/chat-capacity.load.spec.ts` with HTTP 403 instead of 201 after approximately eleven minutes; 83/84 API test files passed.
+  - The synthetic load fixture issued replacement JWTs every eight minutes using fresh random session IDs that were never persisted. The accepted chat REST security rule now correctly rejects those tokens.
+Pending changed files:
+  - apps/api/test/chat-capacity.load.spec.ts
+  - plan/{STATUS.md,phases/10-CHAT-CONSULTATION.md,logs/phase-10.md}
+Verification:
+  - API typecheck (including Prisma generation) → PASS (commit-equivalent tree: `1a7c3ae` + this fix only).
+  - `git diff --check` → PASS.
+  - Fail-fast preflights on real PostgreSQL → PASS: (1) `current_database()` through the real application connection exactly matched the disposable database; (2) renewed JWT reused the persisted session and one send returned 201 while a forged-session token returned 403; (3) harness recorded stdout/stderr/exit code with verified cleanup and no orphan processes; (4) main local database row counts unchanged (read-only before/after snapshot over 97 tables / 1,391,006 rows).
+  - Full PostgreSQL capacity test → PASS in a CI-mirror worktree (`1a7c3ae` + this fix only) with `NODE_ENV=test` and `LOG_LEVEL=error` on a disposable database: exit code 0; 2/2 tests; consultation/storm test 20.6s; load test 2178.3s (20 msg/s for 30 min, 61s gap, 50 msg/s for 5 min); every per-second batch ≤ 1000 ms; 511 messages per conversation with count == max sequence. Disposable database dropped; no orphan test processes. One benign pg driver DeprecationWarning on stderr; no failures.
+Result:
+  - The fixture change reissues tokens against the original persisted patient/doctor sessions, once per load batch. It does not change product authorization or the frozen 20/50 msg/s, 30m/5m, and 1000 ms criteria.
+  - PR #15 CI failure mode (HTTP 403 instead of 201 after renewal) is resolved. Pre-existing main-database synthetic leftovers (2007 synthetic doctor profiles, 442579 synthetic chat message bodies) and three orphan disposable databases from earlier runs were reported and left untouched. `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.

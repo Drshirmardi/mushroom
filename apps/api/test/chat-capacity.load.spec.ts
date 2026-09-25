@@ -8,7 +8,6 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { Client } from 'pg';
 
 import { AccessTokenService } from '../src/common/auth/access-token.service';
-import { createApiApplication } from '../src/app.factory';
 import { auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
 
 type Participant = { conversationId: string; token: string };
@@ -63,7 +62,9 @@ describe('chat capacity and reconnect load (synthetic PostgreSQL/Socket.IO)', ()
   });
 
   it('holds 100 consultations, 300 authenticated participants and 600 connections, then recovers a 300-participant storm', async () => {
-    await prepareDatabase(); app = await createApiApplication(); await app.listen({ host: '127.0.0.1', port: 0 });
+    await prepareDatabase();
+    const { createApiApplication } = await import('../src/app.factory');
+    app = await createApiApplication(); await app.listen({ host: '127.0.0.1', port: 0 });
     for (let index = 0; index < 100; index += 1) fixtures.push(await createChatFixture(app));
     const participants: Participant[] = [];
     for (const fixture of fixtures) {
@@ -104,23 +105,27 @@ describe('chat capacity and reconnect load (synthetic PostgreSQL/Socket.IO)', ()
     }));
     await Promise.all(fixtures.map((fixture) => fixture.prisma.appointment.update({ where: { id: fixture.appointment.id }, data: { endsAt: new Date(Date.now() + 75 * 60_000) } })));
     const issuer = app.get(AccessTokenService);
+    const sessionIds = await Promise.all(fixtures.map(async (fixture) => [
+      (await issuer.verify(fixture.tokens.patient)).sessionId,
+      (await issuer.verify(fixture.tokens.doctor)).sessionId,
+    ] as const));
     let tokens = fixtures.map((fixture) => [fixture.tokens.patient, fixture.tokens.doctor] as const);
     let refreshAt = Date.now() + 8 * 60_000;
     let sequence = 0;
     const send = async (fixtureIndex: number, senderIndex: 0 | 1) => {
-      if (Date.now() >= refreshAt) {
-        tokens = await Promise.all(fixtures.map(async (fixture) => [
-          await issuer.issue({ userId: fixture.users.patient.id, sessionId: randomUUID(), roles: ['PATIENT'] }),
-          await issuer.issue({ userId: fixture.users.doctor.id, sessionId: randomUUID(), roles: ['DOCTOR'] }),
-        ] as const));
-        refreshAt = Date.now() + 8 * 60_000;
-      }
       const response = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversations[fixtureIndex]}/messages`, headers: auth(tokens[fixtureIndex]![senderIndex]), payload: { clientMessageId: randomUUID(), body: 'synthetic load message' } });
       expect(response.statusCode).toBe(201);
     };
     const runRate = async (rate: number, seconds: number) => {
       for (let second = 0; second < seconds; second += 1) {
         const began = Date.now();
+        if (began >= refreshAt) {
+          tokens = await Promise.all(fixtures.map(async (fixture, index) => [
+            await issuer.issue({ userId: fixture.users.patient.id, sessionId: sessionIds[index]![0], roles: ['PATIENT'] }),
+            await issuer.issue({ userId: fixture.users.doctor.id, sessionId: sessionIds[index]![1], roles: ['DOCTOR'] }),
+          ] as const));
+          refreshAt = Date.now() + 8 * 60_000;
+        }
         await Promise.all(Array.from({ length: rate }, (_, offset) => {
           const messageIndex = sequence + offset;
           return send(messageIndex % fixtures.length, Math.floor(messageIndex / fixtures.length) % 2 as 0 | 1);

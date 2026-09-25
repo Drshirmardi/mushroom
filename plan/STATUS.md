@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 03:41 +03:30`
+- آخرین به‌رورسانی: `2026-09-25 23:55 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
 - فاز فعال: `ندارد؛ Phase 11 فقط next eligible work است.`
 - وضعیت فاز فعال: `NOT_STARTED`
@@ -55,6 +55,22 @@ HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences So
 and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
 [`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
 unmodified.
+
+## آخرین batch — F10-R34-CI-CAPACITY-SESSION
+
+Coordinator/Thread: `Codex (this session)`
+Completed at: `2026-09-25 23:55 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated F10-T09 commit; Phase 10 remains CLOSED`
+Baseline: `1a7c3ae docs(F10-CLOSE): close chat consultation phase after security review`
+
+- Task ID: `F10-T09 REWORK (capacity fixture persisted session)`
+  - Scope: renew synthetic load JWTs against the original persisted patient/doctor sessions. No product authorization, rate, duration, or assertion changed.
+  - Owned paths: `apps/api/test/chat-capacity.load.spec.ts`, Phase 10 evidence/status/checklist only.
+  - Verification: CI-mirror worktree (`1a7c3ae` + this fix only) with `NODE_ENV=test`, `LOG_LEVEL=error` on a disposable PostgreSQL database → full capacity suite PASS (exit 0; 2/2 tests; 20 msg/s × 30 min + 50 msg/s × 5 min; every per-second batch ≤ 1000 ms; 511 messages per conversation, count == max sequence). API typecheck PASS. Main local database row counts unchanged (read-only before/after snapshot). Disposable database dropped; no orphan test processes. Evidence: [`logs/phase-10.md`](logs/phase-10.md).
+  - Result: PR #15 CI failure mode (HTTP 403 instead of 201 after token renewal) is resolved; forged-session negative control still returns 403.
+  - Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.
+- Next eligible work: Phase 11, `NOT_STARTED` and not claimed here.
 
 ## آخرین batch — F10-CLOSE
 

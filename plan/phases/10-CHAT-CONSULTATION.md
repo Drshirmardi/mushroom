@@ -44,6 +44,7 @@
 - [x] `F10-T11 REVALIDATION (revoked JWT handshake)` — final build, browser and freshness gates after persisted-session handshake enforcement
 - [x] `F10-T11 REVALIDATION (disabled user socket invalidation)` — final build, browser and freshness gates after durable active-user admission and deactivation eviction
 - [x] `F10-T11 REVALIDATION (durable revocation fence)` — final build, Chrome E2E, revocation-path and commit-isolation gates after F10-T03/F10-T04
+- [x] `F10-T09 REWORK (capacity fixture persisted session)` — renew synthetic load JWTs against persisted sessions; full 20 msg/s × 30 min + 50 msg/s × 5 min suite PASS on disposable PostgreSQL with `NODE_ENV=test`, `LOG_LEVEL=error`
 
 ## قرارداد اجرایی freeze‌شده
 
