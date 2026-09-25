@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 02:13 +03:30`
-- Milestone فعال: `Milestone D — Phase 10 READY_FOR_REVIEW`
-- فاز فعال: `Phase 10 — Chat & Online Consultation`
-- وضعیت فاز فعال: `READY_FOR_REVIEW`
+- آخرین به‌رورسانی: `2026-09-25 03:41 +03:30`
+- Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
+- فاز فعال: `ندارد؛ Phase 11 فقط next eligible work است.`
+- وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ فقط independent review باقی است.`
+- blocker فعال: `ندارد؛ Phase 10 پس از independent security/closure review رسمی CLOSED شد.`
 
 ## پیشرفت کلان
 
@@ -43,17 +43,31 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [x] `Phase 10` — Chat & Online Consultation — `READY_FOR_REVIEW`
+- [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is `READY_FOR_REVIEW`: F10-T03 rejects a durable-revoked principal session across chat REST actor
-authorization; F10-T04 serializes Socket.IO admission with revocation and notifies the local registry after each
-durable revocation path. F10-T09 and F10-T11 final gates passed. Phase 11 remains `NOT_STARTED`, unclaimed and
-unmodified; closure has not been performed.
+`Phase 10` is formally `DONE (CLOSED)` after the independent security/closure review passed against the current
+HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences Socket.IO admission against revoke
+and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
+[`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
+unmodified.
+
+## آخرین batch — F10-CLOSE
+
+Coordinator/Thread: `Codex /root`
+Completed at: `2026-09-25 03:41 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE (CLOSED)`
+Baseline: `b8ff5f8 test(F10-T11): verify durable revocation gates`
+
+- Scope: documentation-only closure after independent security/closure review PASS.
+- Result: all F10 tasks and remediation/revalidation commits accepted; Milestone D complete.
+- Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.
+- Next eligible work: Phase 11, `NOT_STARTED` and not claimed here.
 
 ## active batch — F10-R33-DURABLE-REVOCATION-FINAL-GATES
 

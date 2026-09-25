@@ -1,5 +1,27 @@
 # Phase 10 Execution Evidence
 
+## F10-CLOSE — formal Phase 10 closure after durable revocation review
+
+Task ID: F10-CLOSE
+Status: DONE (CLOSED)
+Completed at: 2026-09-25 03:41 +03:30
+Closure authority:
+  - Independent read-only security/closure review of merge-base through `b8ff5f8` → PASS.
+  - Review checked REST revoked-session rejection, handshake/register versus revoke ordering, refresh-token reuse
+    eviction without a client follow-up, and indirect revoke paths including logout-all, password change and
+    user deactivation. It reported no remaining findings.
+Accepted scope:
+  - `F10-T01` through `F10-T11`, including all committed security remediations and revalidations.
+Final evidence summary:
+  - Fresh disposable PostgreSQL REST/chat and Socket.IO revalidation → PASS (8 files, 27 tests); API typecheck → PASS.
+  - Production workspace build → PASS (5/5 packages); real authenticated Chrome Phase 10 E2E → PASS (1 test).
+  - Previously accepted frozen capacity, reconnect, authorized history, moderation, visibility and app/dashboard
+    evidence remains recorded in this log; the latest revocation changes did not alter the capacity workload or limit.
+  - Commit isolation and `git diff --check` → PASS. User-owned `.gitignore` and
+    `plan/phases/12-PRODUCTION-HARDENING.md` remain unstaged and absent from Phase 10 commits.
+Result:
+  - Phase 10 is `DONE (CLOSED)` and Milestone D is complete. Phase 11 remains `NOT_STARTED` and unclaimed.
+
 ## F10-T11 REVALIDATION — revoked JWT handshake final gates
 
 Recorded at: 2026-09-24 23:45 +03:30

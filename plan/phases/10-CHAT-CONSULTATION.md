@@ -1,7 +1,7 @@
 # Phase 10 — Chat & Online Consultation
 
 - وضعیت اولیه: `NOT_STARTED`
-- وضعیت فعلی: `READY_FOR_REVIEW` — remediationهای F10-T03/F10-T04 و revalidationهای F10-T09/F10-T11 برای session revoke‌شده، race handshake/revoke و invalidation همهٔ مسیرهای revoke پاس شده‌اند. closure رسمی و Phase 11 شروع یا claim نشده است.
+- وضعیت نهایی: `DONE (CLOSED)` — independent security/closure review پس از remediationهای F10-T03/F10-T04 و revalidationهای F10-T09/F10-T11 در `2026-09-25` PASS شد؛ Phase 11 شروع یا claim نشده است.
 - Milestone: `D — تجارت و ارتباط`
 - پیش‌نیاز: `Phase 05 DONE`، `Phase 06 DONE` و job infrastructure
 - blocker: ندارد برای contract/persistence؛ attachment و video آگاهانه `DEFERRED / NOT_APPLICABLE FOR MVP` هستند. مقیاس چند-instance/Redis فقط با evidence Phase 12 بازبینی می‌شود.
@@ -77,7 +77,7 @@ F10-T01 → F10-T02 → F10-T03 → F10-T04 → F10-T05 → F10-T06 → F10-T07 
 
 ## Closure
 
-- همهٔ `F10-T01` تا `F10-T11` و remediation/revalidationهای پس از آن پذیرفته شده‌اند؛ فاز فقط `READY_FOR_REVIEW` است.
+- همهٔ `F10-T01` تا `F10-T11` و remediation/revalidationهای پس از آن پذیرفته شده‌اند؛ فاز `DONE (CLOSED)` است.
 - PostgreSQL/Socket.IO correctness، capacity، restore pagination، app/dashboard، Chrome E2E، deferred-media absence و
   commit isolation در [`logs/phase-10.md`](../logs/phase-10.md) ثبت شده‌اند.
 - `.gitignore` و `plan/phases/12-PRODUCTION-HARDENING.md` خارج از تمام commitهای Phase 10 باقی مانده‌اند.
