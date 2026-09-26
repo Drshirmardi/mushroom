@@ -1330,6 +1330,8 @@ model ChatMessage {
   @@unique([conversationId, sequence], map: "chat_messages_conversation_sequence_key")
   @@unique([conversationId, senderUserId, clientMessageId], map: "chat_messages_idempotency_key")
   @@index([clinicId, conversationId, sequence], map: "chat_messages_clinic_history_idx")
+  @@index([senderUserId, createdAt], map: "chat_messages_sender_created_at_idx")
+  @@index([conversationId, createdAt], map: "chat_messages_conversation_created_at_idx")
   @@map("chat_messages")
 }
 

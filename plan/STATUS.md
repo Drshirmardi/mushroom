@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-26 08:10 +03:30`
+- آخرین به‌رورسانی: `2026-09-27 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
-- فاز فعال: `ندارد؛ Phase 11 فقط next eligible work است.`
+- فاز فعال: `ندارد؛ Phase 10 CI remediation locally accepted و Phase 11 فقط next eligible work است.`
 - وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ Phase 10 پس از independent security/closure review رسمی CLOSED شد.`
+- blocker فعال: `ندارد؛ PR #15 منتظر اجرای کامل ظرفیت در GitHub Actions است.`
 
 ## پیشرفت کلان
 
@@ -55,6 +55,23 @@ HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences So
 and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
 [`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
 unmodified.
+
+## آخرین batch — F10-R36-CI-CAPACITY-RATE-LIMIT-INDEXES
+
+Coordinator/Thread: `Codex (managed worktree)`
+Started at: `2026-09-27 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — local persistence/capacity gates passed; PR #15 CI recheck pending; Phase 10 remains CLOSED`
+Baseline: `b7b6605 test(F10-T09): make capacity bootstrap portable`
+
+- Task IDs: `F10-T02 REWORK (rate-limit persistence indexes)` and `F10-T09 REVALIDATION`
+- Scope: add only the two PostgreSQL indexes required by the frozen sender/conversation rate-limit windows, prove their query plans on a disposable database, and revalidate the unchanged capacity compiler/typecheck/preflight gates.
+- Owned paths: `apps/api/prisma/schema.prisma`, one additive Phase 10 migration, `apps/api/test/chat-migrations.integration.spec.ts`, and Phase 10 evidence/status only.
+- Frozen: `20 msg/s × 30m`, the 61-second gap, `50 msg/s × 5m`, the `1000ms` ceiling, all assertions, and the CI workflow remain unchanged.
+- Excluded: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, Phase 11, unrelated product behavior and old databases/data.
+- Verification: the CI failure was confirmed at the first 50 msg/s batch (`1239ms`). A 36,000-row disposable PostgreSQL diagnostic proved the sender rate-limit query used a full sequential scan and the conversation window revisited heap rows; the two matching indexes changed both predicates to index-only scans. Prisma validate/generate, test compiler, API typecheck, the focused Phase 10 migration test (1/1), full migration smoke (3/3), and the short 100/300/600 PostgreSQL/Socket.IO preflight (1 passed, long workload skipped) all passed; `git diff --check` passed.
+- Cleanup: both standalone SQL diagnostic databases were dropped and the successful capacity preflight removed its run-owned database. Four retained `sabz_zendegi_chat_capacity_*` databases were observed after the earlier configuration-only preflight abort; because no trustworthy before-snapshot identified ownership, they were left untouched as required. No old database or data was deleted.
+- Next action: push the isolated commit and let GitHub Actions provide the only next full 20/50 capacity execution. If CI is green and no review blocker exists, merge PR #15 with a merge commit; do not start Phase 11.
 
 ## آخرین batch — F10-R35-CI-CAPACITY-PORTABILITY
 

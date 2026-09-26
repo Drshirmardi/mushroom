@@ -52,6 +52,7 @@ describe('Phase 10 chat persistence migrations', () => {
         .sort();
       for (const migration of phaseNineMigrations) await applyMigration(upgradeClient, migration);
       await applyMigration(upgradeClient, '20260916034500_phase_10_chat_persistence');
+      await applyMigration(upgradeClient, '20260927090000_phase_10_chat_rate_limit_indexes');
     } finally {
       await upgradeClient.end();
     }
@@ -82,6 +83,22 @@ describe('Phase 10 chat persistence migrations', () => {
         'chat_conversations', 'chat_legal_holds', 'chat_message_moderation_actions', 'chat_messages',
         'chat_moderation_report_decisions', 'chat_moderation_reports', 'chat_receipts',
       ]);
+
+      const rateLimitIndexes = await client.query<{ indexdef: string; indexname: string }>(`
+        SELECT indexname, indexdef FROM pg_indexes
+        WHERE schemaname = 'public'
+          AND indexname = ANY($1::text[])
+        ORDER BY indexname
+      `, [[
+        'chat_messages_conversation_created_at_idx',
+        'chat_messages_sender_created_at_idx',
+      ]]);
+      expect(rateLimitIndexes.rows.map(({ indexname }) => indexname)).toEqual([
+        'chat_messages_conversation_created_at_idx',
+        'chat_messages_sender_created_at_idx',
+      ]);
+      expect(rateLimitIndexes.rows[0]?.indexdef).toContain('(conversation_id, created_at)');
+      expect(rateLimitIndexes.rows[1]?.indexdef).toContain('(sender_user_id, created_at)');
 
       const clinic = await client.query<{ id: string }>(`SELECT id FROM clinics WHERE status = 'ACTIVE' LIMIT 1`);
       const onlineService = await client.query<{ doctor_id: string; id: string }>(`

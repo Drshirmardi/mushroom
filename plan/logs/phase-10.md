@@ -1,5 +1,44 @@
 # Phase 10 Execution Evidence
 
+## F10-T02/T09 REWORK — index frozen rate-limit windows for CI capacity
+
+Task IDs: F10-T02 REWORK / F10-T09 REVALIDATION
+Status: locally accepted; authoritative full workload delegated to PR #15 CI
+Recorded at: 2026-09-27 +03:30
+Batch ID: F10-R36-CI-CAPACITY-RATE-LIMIT-INDEXES
+
+Root cause:
+  - GitHub Actions run `36218605433`, job `108339457903` reached the full load test and failed the first
+    `50 msg/s` batch after the frozen 30-minute sustained phase and 61-second gap: `1239ms > 1000ms`.
+  - A disposable PostgreSQL diagnostic with the representative 36,000-message sustained history showed that the
+    sender/time rate-limit predicate performed a 36,000-row sequential scan (about 1.27ms per query locally), while
+    the conversation/time predicate revisited 360 heap rows. Each send executes two sender-window counts and one
+    conversation-window count, so the 50-request burst amplified those avoidable scans on the hosted runner.
+  - Matching `(sender_user_id, created_at)` and `(conversation_id, created_at)` indexes changed both predicates to
+    index-only scans (about 0.06–0.07ms in the same diagnostic). No capacity fixture, pool, logger or auth defect was
+    found, and token renewal is not reached at the failing burst boundary.
+
+Change:
+  - Added one additive Phase 10 migration and matching Prisma indexes for exactly the two persisted rate-limit
+    windows. Product authorization, runtime logic, pool sizing, CI workflow, rates, durations, 61-second gap,
+    assertions and `1000ms` ceiling are unchanged.
+  - Extended the Phase 10 migration regression to apply the additive migration and require both index names.
+
+Verification:
+  - Prisma schema validate/generate, `tsc -p apps/api/tsconfig.test.json --noEmit`, and API typecheck → PASS.
+  - Real disposable PostgreSQL Phase 10 migration test → PASS (1 file, 1 test); full migration smoke → PASS
+    (1 file, 3 tests).
+  - Focused capacity bootstrap/Socket.IO preflight with CI-equivalent `NODE_ENV=test` and `LOG_LEVEL=error` → PASS
+    (100 conversations, 300 participants, 600 connections; 1 test passed, the long rate test deliberately skipped).
+  - Both standalone SQL diagnostics and the successful preflight cleaned their run-owned databases. Four retained
+    capacity databases were observed after an earlier configuration-only preflight abort; without a trustworthy
+    before-snapshot to identify ownership, they were left untouched. No old database or data was removed.
+    `git diff --check` → PASS.
+
+Next action:
+  - GitHub Actions is the sole next full 20 msg/s × 30m + 61s + 50 msg/s × 5m execution. Merge PR #15 only after
+    that final HEAD is green and review/mergeability checks show no blocker. Phase 11 remains unstarted.
+
 ## F10-CLOSE — formal Phase 10 closure after durable revocation review
 
 Task ID: F10-CLOSE
