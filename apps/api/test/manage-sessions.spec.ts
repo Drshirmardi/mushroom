@@ -16,17 +16,25 @@ describe('ManageSessionsUseCase', () => {
   const revoke = vi.fn();
   const revokeAll = vi.fn();
   const listActive = vi.fn();
+  const disconnectSession = vi.fn();
+  const disconnectUser = vi.fn();
   const sessions = {
     revoke,
     revokeAll,
     listActive,
   } as unknown as SessionRepository;
-  const useCase = new ManageSessionsUseCase(sessions, () => now);
+  const useCase = new ManageSessionsUseCase(
+    sessions,
+    { disconnectSession, disconnectUser },
+    () => now,
+  );
 
   beforeEach(() => {
     revoke.mockReset().mockResolvedValue(undefined);
     revokeAll.mockReset().mockResolvedValue(undefined);
     listActive.mockReset();
+    disconnectSession.mockReset();
+    disconnectUser.mockReset();
   });
 
   it('revokes the current session idempotently as logout', async () => {
@@ -40,6 +48,7 @@ describe('ManageSessionsUseCase', () => {
       audit,
       auditAction: 'IDENTITY_SESSION_LOGGED_OUT',
     });
+    expect(disconnectSession).toHaveBeenCalledWith(currentSessionId);
   });
 
   it('revokes all owned sessions as logout-all', async () => {
@@ -51,6 +60,7 @@ describe('ManageSessionsUseCase', () => {
       revokedAt: now,
       audit,
     });
+    expect(disconnectUser).toHaveBeenCalledWith(userId);
   });
 
   it('uses the same ownership-scoped logout reason for a selected session', async () => {
@@ -64,6 +74,7 @@ describe('ManageSessionsUseCase', () => {
       audit,
       auditAction: 'IDENTITY_SESSION_REVOKED',
     });
+    expect(disconnectSession).toHaveBeenCalledWith(otherSessionId);
   });
 
   it('lists only repository metadata and marks the current session', async () => {

@@ -40,6 +40,7 @@ export class ManageAccountUseCase {
   constructor(
     private readonly accounts: AccountRepository,
     private readonly passwords: PasswordHasher,
+    private readonly sockets: { disconnectUser(userId: string): void },
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -114,6 +115,9 @@ export class ManageAccountUseCase {
       audit,
     });
     if (result.kind === 'STALE') throw new InvalidCurrentPasswordError();
+    // AccountRepository commits the password change and session revocations as
+    // one transaction before this local single-instance eviction occurs.
+    this.sockets.disconnectUser(userId);
   }
 
   private async activeCredential(userId: string) {

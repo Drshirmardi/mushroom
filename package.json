@@ -11,6 +11,9 @@
     "start": "turbo start",
     "lint": "turbo lint",
     "test": "turbo test",
+    "test:isolated": "node scripts/with-disposable-postgres.mjs workspace",
+    "test:integration:reminders": "node scripts/with-disposable-postgres.mjs reminders",
+    "test:integration:outbox": "node scripts/with-disposable-postgres.mjs outboxAfterChat",
     "typecheck": "turbo typecheck",
     "clean": "turbo clean && rm -rf node_modules"
   },

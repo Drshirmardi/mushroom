@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
 
 import { AccessTokenService } from '../../common/auth/access-token.service';
+import { PrismaService } from '../../database/prisma/prisma.service';
+import { ChatModule } from '../communications/chat/chat.module';
+import { ChatSocketRegistry } from '../communications/chat/realtime/chat-socket-registry';
 import { LoginSessionUseCase } from './application/login-session.use-case';
 import { LoginUserUseCase } from './application/login-user.use-case';
 import { ManageAccountUseCase } from './application/manage-account.use-case';
 import { ManageSessionsUseCase } from './application/manage-sessions.use-case';
+import { ManageUserStatusUseCase } from './application/manage-user-status.use-case';
 import { AccountRepository } from './application/ports/account.repository';
 import { LoginRepository } from './application/ports/login.repository';
 import { PasswordHasher } from './application/ports/password-hasher';
@@ -25,6 +29,7 @@ import { AuthController } from './presentation/http/auth.controller';
 import { MeController } from './presentation/http/me.controller';
 
 @Module({
+  imports: [ChatModule],
   controllers: [AuthController, MeController],
   providers: [
     Argon2PasswordHasher,
@@ -104,32 +109,42 @@ import { MeController } from './presentation/http/me.controller';
         RefreshTokenManager,
         AccessTokenService,
         PublicAuthRateLimiter,
+        ChatSocketRegistry,
       ],
       useFactory: (
         sessions: SessionRepository,
         refreshTokens: RefreshTokenManager,
         accessTokens: AccessTokenService,
         rateLimiter: PublicAuthRateLimiter,
+        sockets: ChatSocketRegistry,
       ) => new RefreshSessionUseCase(
         sessions,
         refreshTokens,
         accessTokens,
         rateLimiter,
+        sockets,
       ),
     },
     {
       provide: ManageSessionsUseCase,
-      inject: [SessionRepository],
-      useFactory: (sessions: SessionRepository) =>
-        new ManageSessionsUseCase(sessions),
+      inject: [SessionRepository, ChatSocketRegistry],
+      useFactory: (sessions: SessionRepository, sockets: ChatSocketRegistry) =>
+        new ManageSessionsUseCase(sessions, sockets),
+    },
+    {
+      provide: ManageUserStatusUseCase,
+      inject: [PrismaService, ChatSocketRegistry],
+      useFactory: (prisma: PrismaService, sockets: ChatSocketRegistry) =>
+        new ManageUserStatusUseCase(prisma, sockets),
     },
     {
       provide: ManageAccountUseCase,
-      inject: [AccountRepository, PasswordHasher],
+      inject: [AccountRepository, PasswordHasher, ChatSocketRegistry],
       useFactory: (
         accounts: AccountRepository,
         passwords: PasswordHasher,
-      ) => new ManageAccountUseCase(accounts, passwords),
+        sockets: ChatSocketRegistry,
+      ) => new ManageAccountUseCase(accounts, passwords, sockets),
     },
   ],
   exports: [
@@ -137,6 +152,7 @@ import { MeController } from './presentation/http/me.controller';
     LoginSessionUseCase,
     RefreshSessionUseCase,
     ManageSessionsUseCase,
+    ManageUserStatusUseCase,
     ManageAccountUseCase,
   ],
 })

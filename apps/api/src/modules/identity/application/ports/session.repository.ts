@@ -76,7 +76,7 @@ export type SessionRefreshResult =
       generation: number;
     }
   | { kind: 'INVALID' }
-  | { kind: 'REUSED' };
+  | { kind: 'REVOKED' };
 
 export abstract class SessionRepository {
   abstract create(input: CreateSession): Promise<void>;

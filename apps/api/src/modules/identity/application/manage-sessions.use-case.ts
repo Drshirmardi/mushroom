@@ -21,6 +21,7 @@ export interface SessionListResult {
 export class ManageSessionsUseCase {
   constructor(
     private readonly sessions: SessionRepository,
+    private readonly sockets: { disconnectSession(sessionId: string): void; disconnectUser(userId: string): void },
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -37,6 +38,7 @@ export class ManageSessionsUseCase {
       audit,
       auditAction: SECURITY_AUDIT_ACTIONS.SESSION_LOGGED_OUT,
     });
+    this.sockets.disconnectSession(sessionId);
   }
 
   async logoutAll(
@@ -49,6 +51,7 @@ export class ManageSessionsUseCase {
       revokedAt: this.now(),
       audit,
     });
+    this.sockets.disconnectUser(userId);
   }
 
   async revoke(
@@ -64,6 +67,7 @@ export class ManageSessionsUseCase {
       audit,
       auditAction: SECURITY_AUDIT_ACTIONS.SESSION_REVOKED,
     });
+    this.sockets.disconnectSession(sessionId);
   }
 
   async list(

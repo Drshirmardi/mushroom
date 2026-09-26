@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-15 23:31 +03:30`
-- Milestone فعال: `Milestone D — Phase 09 DONE (CLOSED)`
-- فاز فعال: `Phase 10 — Chat & Online Consultation`
+- آخرین به‌رورسانی: `2026-09-27 +03:30`
+- Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
+- فاز فعال: `ندارد؛ Phase 10 CI remediation locally accepted و Phase 11 فقط next eligible work است.`
 - وضعیت فاز فعال: `NOT_STARTED`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد برای Phase 09؛ PR باید CI و review گیت‌هاب را پیش از merge پاس کند.`
+- blocker فعال: `ندارد؛ PR #15 منتظر اجرای کامل ظرفیت در GitHub Actions است.`
 
 ## پیشرفت کلان
 
@@ -28,7 +28,7 @@
 - [x] اولین جریان end-to-end رزرو نوبت کامل شده است.
 - [x] اطلاعات بالینی واقعی شده‌اند.
 - [ ] فروشگاه و پرداخت واقعی شده‌اند.
-- [ ] چت واقعی شده است.
+- [x] چت واقعی شده است.
 - [ ] production readiness تأیید شده است.
 
 ## وضعیت فازها
@@ -43,16 +43,863 @@
 - [x] `Phase 07` — Prescription & Treatment — `DONE (CLOSED)`
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
-- [ ] `Phase 10` — Chat & Online Consultation — `NOT_STARTED`
+- [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
 - [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 09` is independently closed at `b5d3eda`, the closure documentation commit `984579c`, and the accepted
-PR-preflight remediation `F09-CI01`. Sadad remains fail-closed: Phase 12 owns merchant onboarding, production
-acceptance and any enable/default decision. `Phase 10` is `NOT_STARTED`; `F10-B01 / F10-T01` remains unclaimed.
+`Phase 10` is formally `DONE (CLOSED)` after the independent security/closure review passed against the current
+HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences Socket.IO admission against revoke
+and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
+[`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
+unmodified.
+
+## آخرین batch — F10-R36-CI-CAPACITY-RATE-LIMIT-INDEXES
+
+Coordinator/Thread: `Codex (managed worktree)`
+Started at: `2026-09-27 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — local persistence/capacity gates passed; PR #15 CI recheck pending; Phase 10 remains CLOSED`
+Baseline: `b7b6605 test(F10-T09): make capacity bootstrap portable`
+
+- Task IDs: `F10-T02 REWORK (rate-limit persistence indexes)` and `F10-T09 REVALIDATION`
+- Scope: add only the two PostgreSQL indexes required by the frozen sender/conversation rate-limit windows, prove their query plans on a disposable database, and revalidate the unchanged capacity compiler/typecheck/preflight gates.
+- Owned paths: `apps/api/prisma/schema.prisma`, one additive Phase 10 migration, `apps/api/test/chat-migrations.integration.spec.ts`, and Phase 10 evidence/status only.
+- Frozen: `20 msg/s × 30m`, the 61-second gap, `50 msg/s × 5m`, the `1000ms` ceiling, all assertions, and the CI workflow remain unchanged.
+- Excluded: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, Phase 11, unrelated product behavior and old databases/data.
+- Verification: the CI failure was confirmed at the first 50 msg/s batch (`1239ms`). A 36,000-row disposable PostgreSQL diagnostic proved the sender rate-limit query used a full sequential scan and the conversation window revisited heap rows; the two matching indexes changed both predicates to index-only scans. Prisma validate/generate, test compiler, API typecheck, the focused Phase 10 migration test (1/1), full migration smoke (3/3), and the short 100/300/600 PostgreSQL/Socket.IO preflight (1 passed, long workload skipped) all passed; `git diff --check` passed.
+- Cleanup: both standalone SQL diagnostic databases were dropped and the successful capacity preflight removed its run-owned database. Four retained `sabz_zendegi_chat_capacity_*` databases were observed after the earlier configuration-only preflight abort; because no trustworthy before-snapshot identified ownership, they were left untouched as required. No old database or data was deleted.
+- Next action: push the isolated commit and let GitHub Actions provide the only next full 20/50 capacity execution. If CI is green and no review blocker exists, merge PR #15 with a merge commit; do not start Phase 11.
+
+## آخرین batch — F10-R35-CI-CAPACITY-PORTABILITY
+
+Coordinator/Thread: `Codex (managed worktree)`
+Completed at: `2026-09-26 08:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — local portability gates passed; PR #15 CI recheck pending; Phase 10 remains CLOSED`
+Baseline: `ebca431 test(F10-T09): renew capacity fixture against persisted sessions`
+
+- Task ID: `F10-T09 REWORK (capacity bootstrap portability)`
+  - Scope: make the deferred application bootstrap import resolve under TypeScript/Node16 and Linux CI while preserving the disposable-database-before-AppModule ordering.
+  - Changed path: `apps/api/test/chat-capacity.load.spec.ts`, plus Phase 10 evidence/status only.
+  - Verification: exact CI TypeScript failure reproduced before the fix; test compiler and API typecheck PASS after the fix; focused real-PostgreSQL bootstrap/Socket.IO capacity scenario PASS (1 passed, long rate test skipped); `git diff --check` PASS.
+  - Result: dynamic bootstrap now uses the Node16-compatible `.js` module specifier. Product code, authorization, workflow, rate, duration, 61-second gap and 1000ms threshold are unchanged. The accepted full capacity run was not repeated locally.
+  - Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain outside this task.
+- Next action: push the isolated commit and let GitHub Actions provide the only next full capacity execution. Do not merge or start Phase 11.
+
+## آخرین batch — F10-R34-CI-CAPACITY-SESSION
+
+Coordinator/Thread: `Codex (this session)`
+Completed at: `2026-09-25 23:55 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated F10-T09 commit; Phase 10 remains CLOSED`
+Baseline: `1a7c3ae docs(F10-CLOSE): close chat consultation phase after security review`
+
+- Task ID: `F10-T09 REWORK (capacity fixture persisted session)`
+  - Scope: renew synthetic load JWTs against the original persisted patient/doctor sessions. No product authorization, rate, duration, or assertion changed.
+  - Owned paths: `apps/api/test/chat-capacity.load.spec.ts`, Phase 10 evidence/status/checklist only.
+  - Verification: CI-mirror worktree (`1a7c3ae` + this fix only) with `NODE_ENV=test`, `LOG_LEVEL=error` on a disposable PostgreSQL database → full capacity suite PASS (exit 0; 2/2 tests; 20 msg/s × 30 min + 50 msg/s × 5 min; every per-second batch ≤ 1000 ms; 511 messages per conversation, count == max sequence). API typecheck PASS. Main local database row counts unchanged (read-only before/after snapshot). Disposable database dropped; no orphan test processes. Evidence: [`logs/phase-10.md`](logs/phase-10.md).
+  - Result: PR #15 CI failure mode (HTTP 403 instead of 201 after token renewal) is resolved; forged-session negative control still returns 403.
+  - Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.
+- Next eligible work: Phase 11, `NOT_STARTED` and not claimed here.
+
+## آخرین batch — F10-CLOSE
+
+Coordinator/Thread: `Codex /root`
+Completed at: `2026-09-25 03:41 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE (CLOSED)`
+Baseline: `b8ff5f8 test(F10-T11): verify durable revocation gates`
+
+- Scope: documentation-only closure after independent security/closure review PASS.
+- Result: all F10 tasks and remediation/revalidation commits accepted; Milestone D complete.
+- Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.
+- Next eligible work: Phase 11, `NOT_STARTED` and not claimed here.
+
+## active batch — F10-R33-DURABLE-REVOCATION-FINAL-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 02:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T11 commit; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `bb69c3e`, `efe5c16`, and `3167815`.
+
+- Task ID: `F10-T11 REVALIDATION (durable revocation fence)`
+  - Status: `DONE`
+  - Scope: final production build, real Chrome authenticated chat journey, commit isolation/freshness review, and joint audit of every durable session/user revocation path after F10-T03/F10-T04.
+  - Owned paths: Phase 10 evidence/status/checklist only unless a final gate exposes an in-scope defect.
+  - Verification: `pnpm build` → PASS (5/5 packages); real Chrome `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS (1 test, 18.8s); source/commit isolation and `git diff --check` → PASS. The accepted 40-minute capacity workload was not rerun.
+  - Result: all durable paths are post-commit invalidated: logout/explicit session revoke → `disconnectSession`; logout-all/password change/user deactivation → `disconnectUser`; refresh reuse/disabled refresh → `disconnectSession`. The middleware holds user and active-session `FOR SHARE` locks through registration, giving the barrier-tested fail-closed ordering. The first Chrome attempt found only missing web/app local listeners; after starting those unchanged local services, the same unmodified test passed.
+
+## active batch — F10-R32-SOCKET-REVOCATION-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 01:49 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T09 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and `efe5c16`.
+
+- Task ID: `F10-T09 REVALIDATION (durable revocation fence)`
+  - Status: `DONE`
+  - Scope: rerun the PostgreSQL/Socket.IO regression set after F10-T03/F10-T04, including REST durable-session authorization, handshake/revoke barrier, refresh reuse eviction, reconnect, authorization, moderation, ordering, presence and rate limits.
+  - Owned paths: Phase 10 evidence/status/checklist only.
+  - Verification: API typecheck, disposable PostgreSQL `chatRevalidation` (8 files, 27 tests), and `git diff --check` → PASS.
+  - Result: REST durable-session authorization, handshake/revoke serialization, refresh reuse eviction, reconnect, ordering, moderation/tombstones, authorization, presence and rate limits remain green after `efe5c16`; F10-T11 is next.
+
+## active batch — F10-R31-SOCKET-REVOCATION-FENCE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 01:38 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T04 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and independent P1 review.
+
+- Task ID: `F10-T04 REWORK (durable revocation fence)`
+  - Status: `DONE`
+  - Scope: serialize persisted session validation/registration against revocation and notify the local Socket.IO registry after every durable revocation path, with real PostgreSQL/Socket.IO barrier and refresh-reuse regressions.
+  - Owned paths: chat gateway/registry boundary, identity revocation use cases and focused gateway/identity tests, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: Socket.IO identity handshake and session lifecycle; serialized after F10-T03.
+  - Verification: API typecheck → PASS; focused identity unit tests → PASS (18); disposable PostgreSQL `chatRevalidation` → PASS (8 files, 27 tests); `git diff --check` → PASS.
+  - Result: the handshake locks the active session through registration, so a concurrent revoke either rejects it or disconnects it after commit. Logout, session management, logout-all, user deactivation, refresh reuse/disabled refresh, and password change all now reach local socket invalidation only after their durable change commits.
+
+## active batch — F10-R30-REST-SESSION-AUTHORIZATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:30 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T03 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and independent P1 review.
+
+- Task ID: `F10-T03 REWORK (persisted session authorization)`
+  - Status: `DONE`
+  - Scope: require an active persisted principal session on all chat REST authorization paths, with real PostgreSQL history/send regressions; no Socket.IO lifecycle or shared identity invalidation changes.
+  - Owned paths: chat service and focused REST/integration tests, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: chat REST authorization and serialized PostgreSQL test environment.
+  - Verification: disposable PostgreSQL `outboxAfterChat` → PASS (2 files, 4 tests); API typecheck and `git diff --check` → PASS.
+  - Result: chat actor authorization requires an unrevoked, unexpired session owned by `principal.sessionId`; the real REST regression proves the same signed JWT can neither read history nor create a message after session-management revocation.
+
+## active batch — F10-R29-DISABLED-USER-FINAL-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:13 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T11 commit; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `12f84ce`, and `3442992`.
+
+- Task ID: `F10-T11 REVALIDATION (disabled user Socket.IO)`
+  - Status: `DONE`
+  - Scope: final build, real Chrome authenticated chat journey, freshness/isolation checks and joint session-revoke/deactivation review.
+  - Verification: workspace build → PASS (5/5 packages); `pnpm exec playwright test --config playwright.phase10.config.ts` → PASS (1 real Chrome text-chat test, 7.3s); `git diff --check` → PASS.
+  - Result: session logout/revoke remains post-persistence `disconnectSession`, logout-all remains post-persistence `disconnectUser`, and the new durable deactivation owner performs transaction-then-`disconnectUser`; the shared locked handshake prevents an analogous race. The accepted 40-minute capacity evidence remains unchanged and was not repeated.
+
+## active batch — F10-R28-DISABLED-USER-SOCKET-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T09 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and `12f84ce`.
+
+- Task ID: `F10-T09 REVALIDATION (disabled user Socket.IO)`
+  - Status: `DONE`
+  - Scope: focused PostgreSQL/Socket.IO regression proof for session revocation, ACTIVE-user admission, deactivation eviction, reconnect, ordering, authorization, moderation and rate limit.
+  - Verification: run-owned disposable PostgreSQL `chatRevalidation` completed with exit code 0; API typecheck and `git diff --check` had already passed for the accepted remediation.
+  - Result: targeted behavior remains fail-closed. The frozen 40-minute capacity proof was not repeated because its workload/criterion is unaffected.
+
+## active batch — F10-R27-DISABLED-USER-SOCKET-INVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-25 00:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T04 commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `a860a47`, `18e4fdf`, and `ce5e4d1`.
+
+- Task ID: `F10-T04 REWORK (disabled user socket invalidation)`
+  - Status: `DONE`
+  - Scope: persisted active-user Socket.IO admission, single-instance durable user deactivation invalidation, and a real PostgreSQL/Socket.IO race proof.
+  - Owned paths: identity application/module, chat realtime gateway, focused gateway tests, evidence/status/checklist.
+  - Verification: API typecheck and run-owned disposable PostgreSQL `chatRevalidation` suite → PASS (8 files, 24 tests); it includes the real Socket.IO proof for ACTIVE admission, active-session/DISABLED-user rejection, buffered concurrent join/deactivation, post-commit socket disconnect, and no later fan-out.
+  - Result: no client heartbeat or additional message is necessary to remove sockets after durable deactivation. The frozen 40-minute capacity criterion was not rerun because send, capacity and topology paths did not change.
+
+## active batch — F10-R22-FINAL-REVOCATION-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-24 19:25 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated F10-T11 commit; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `d35772c`, and `a3c3bd1`.
+
+- Task ID: `F10-T11 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted F10-T04 immediate socket invalidation and F10-T09 targeted revalidation.
+  - Scope: final isolated workspace verification, production builds and real Chrome Phase 10 E2E after the gateway lifecycle change; evidence/status/checklist only unless a gate exposes a defect.
+  - Owned paths: test/evidence/status/checklist only.
+  - Shared/exclusive resource: isolated disposable PostgreSQL, local API/web/app/dashboard processes and Chrome.
+  - Verification: Chrome trace confirms `POST /v1/auth/login` sets the refresh cookie for web origin, and `POST /v1/auth/refresh` from app origin sends it and returns 200 with credentialed CORS. The strengthened no-bypass E2E passed (1 test). Captured disposable workspace gate passed with exit code 0: 5/5 Turbo tasks, API 84 files / 347 tests, 40m39.022s. Production workspace build passed (5/5 packages); `git diff --check` passed.
+  - Result: the earlier failure was a fixture readiness race: it treated the app URL as authenticated before SessionGate completed its refresh bootstrap. The fixture now waits for the real refresh response and authenticated shell; no auth/product contract changed.
+
+## active batch — F10-R21-SOCKET-REVOCATION-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-24 19:15 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated revalidation commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and `d35772c`.
+
+- Task ID: `F10-T09 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted F10-T04 immediate session/user invalidation.
+  - Scope: targeted real PostgreSQL/Socket.IO authorization, revocation, reconnect, visibility/tombstone, presence and rate-limit revalidation only; no capacity criterion or topology change.
+  - Owned paths: focused API test/evidence/status/checklist only if coverage is insufficient.
+  - Shared/exclusive resource: serialized PostgreSQL and Socket.IO test environment.
+  - Verification: real PostgreSQL/Socket.IO gateway, immediate session/user revoke, reconnect, authorization, moderation/tombstone, presence, ordering and rate-limit suites → PASS (8 files, 23 tests); API typecheck and `git diff --check` → PASS.
+  - Result: the immediate invalidation registry preserves the frozen high-water, moderation, authorization and rate-limit contracts. The change is not on the send, capacity or topology path; the accepted 40-minute capacity evidence is unchanged and was not rerun.
+
+## active batch — F10-R20-IMMEDIATE-SOCKET-REVOCATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-24 15:30 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit; Phase 10 remains REWORK`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `d257f70`, and independent closure-review P1.
+
+- Task ID: `F10-T04 REWORK`
+  - Status: `DONE`
+  - Depends on: accepted prior F10-T04/F10-T09/F10-T11 work; this remediation precedes their revalidation.
+  - Scope: process-local immediate invalidation of Socket.IO connections by authenticated session and user, wiring the real session-revoke path, and focused PostgreSQL/Socket.IO proof for session and user revocation with no follow-up client event.
+  - Owned paths: chat realtime gateway/module/registry, identity session-management wiring, focused chat realtime integration tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: single realtime API instance and serialized PostgreSQL/Socket.IO test environment.
+  - Verification: API typecheck → PASS; PostgreSQL/Socket.IO session revoke, user-wide revoke, gateway presence and session-use-case suites → PASS (3 files, 14 tests); `git diff --check` → PASS.
+  - Result: the registry is single-instance and process-local by ADR-0010. Session revoke disconnects only that session's sockets; logout-all disconnects every socket for that user. Both happen after durable revoke and before a further room fan-out, without a client heartbeat or message.
+
+## active batch — F10-R19-FINAL-GATES
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-23 20:53 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — all final gates passed; Phase 10 READY_FOR_REVIEW`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `9b760a3`, and `48a5841`.
+
+- Task ID: `F10-T11 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted F10-T08 and F10-T09 revalidation.
+  - Scope: final migration/client/typecheck/test/build/freshness and real Chrome E2E verification, including the minimal
+    disposable-PostgreSQL verification harness required to eliminate shared-DB contamination.
+  - Owned paths: `scripts/with-disposable-postgres.mjs`, root `package.json`, `apps/api/package.json`, test/evidence/status/checklist only.
+  - Shared/exclusive resource: local PostgreSQL, API/web/app/dashboard processes and browser environment.
+  - Expected verification: targeted migration/reminder proof on a disposable DB, then full workspace gate and Chrome E2E;
+    `READY_FOR_REVIEW` only if every gate passes.
+  - Verification: chat-producer-then-outbox fixture proof → PASS (2 files, 3 tests); the frozen 1,000ms capacity
+    threshold rerun → PASS (1 file, 2 tests); full isolated workspace gate → PASS (5/5 tasks, API 84 files / 346
+    tests, 40m45.245s); production workspace build → PASS; real Chrome Phase 10 E2E → PASS (1 test).
+  - Result: the harness DB `sabz_zendegi_verify_e18a6a1ea96d429faa07fcde10d00149` was independently confirmed
+    absent after `finally` cleanup. The fixture no longer depends on a globally empty outbox queue, and no capacity
+    criterion was changed. Phase 10 is `READY_FOR_REVIEW`; do not start Phase 11 or closure.
+
+## active batch — F10-R18-POST-RECOVERY-REALTIME
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-23 20:35 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and committed `9b760a3`.
+
+- Task ID: `F10-T09 REVALIDATION`
+  - Status: `DONE`
+  - Depends on: accepted `F10-T08 REWORK`.
+  - Scope: real PostgreSQL/Socket.IO reconnection, authorization/revocation, visibility/tombstone, block-policy, and high-water contract regression verification only.
+  - Owned paths: focused API realtime/integration tests if a coverage gap is found, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: serialized PostgreSQL and Socket.IO test environment.
+  - Expected verification: real gateway/reconnect/authorization/moderation/block suites, API typecheck, and diff isolation.
+  - Verification: PostgreSQL/Socket.IO reconnect, realtime/visibility/revocation, moderation/block, authorization,
+    ordering/presence and rate-limit suites → PASS (8 files, 22 tests); API typecheck → PASS.
+  - Result: real infrastructure confirms the high-water reconnect contract and every prior security remediation;
+    no product source change was required.
+
+## active batch — F10-R17-HIGH-WATER-RECOVERY
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-22 01:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and independent closure-review findings on `4d56ca5`.
+
+- Task ID: `F10-T08 REWORK`
+  - Status: `DONE`
+  - Depends on: accepted `F10-T03/T04`; remediation is limited to client recovery.
+  - Scope: app/dashboard high-water-bounded reconnect recovery, explicit failure before `connected`, and cancellation-safe restore retry only after a successful next join.
+  - Owned paths: `apps/app/src/lib/chat-api.ts`, `apps/app/src/lib/chat-api.spec.ts`, `apps/dashboard/src/lib/chat-api.ts`, `apps/dashboard/src/lib/chat-api.spec.ts`, plus Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: app/dashboard chat adapters and focused test suites.
+  - Verification: app 45 tests and dashboard 52 tests, their typechecks and production builds, and `git diff --check` → PASS.
+  - Result: recovery page budget derives from frozen sequence distance, validates contiguous progress through high-water, reports `recovery-failed` rather than `connected` on any unreachable/stalled/empty page, and restore work resumes only after a later successful join.
+
+## آخرین batch — F10-R16-CLOSURE-GATES
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+
+- Task ID: `F10-T11 REVALIDATION`
+  - Status: `DONE`
+  - Result: Prisma/client/typechecks/tests/builds and real Chrome Phase 10 E2E passed. Playwright discovers retained Phase 09 and Phase 10 suites. Independent security/closure review is next; Phase 11 is not claimed.
+
+## آخرین batch — F10-R15-SECURITY-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+
+- Task ID: `F10-T09 REVALIDATION`
+  - Status: `DONE`
+  - Result: all real PostgreSQL/Socket.IO P1 regression gates passed; F10-T11 is next eligible and not yet claimed.
+
+## آخرین batch — F10-R14-CLIENT-PAGINATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 23:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, `7d8fe59`, and `975bc25`.
+
+- Task ID: `F10-T08 REWORK`
+  - Status: `DONE`
+  - Depends on: F10-T03/T04 REWORK
+  - Scope: bounded, cancellable app/dashboard history and reconnect pagination through authorized REST high-water; Socket.IO remains body-free signaling.
+  - Owned paths: app/dashboard chat adapters and focused tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: app/dashboard source and test suites.
+  - Expected verification: >150-message reconnect pagination, stale-disconnect safety, app/dashboard tests/typechecks/builds, diff/isolation.
+
+- Result: F10-T08 REWORK passed. Next eligible task is F10-T09 REVALIDATION, not yet claimed.
+
+## آخرین batch — F10-R13-SOCKET-REVOCATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 23:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1`, `ADR-0010`, and committed `7d8fe59`; Socket.IO is signaling only.
+
+- Task ID: `F10-T04 REWORK`
+  - Status: `DONE`
+  - Depends on: `F10-T03 REWORK`
+  - Scope: immediately revoke a socket after failed current authorization; prove missed visibility signaling reconciles through PostgreSQL.
+  - Owned paths: chat realtime gateway/publisher and real Socket.IO integration tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: Socket.IO gateway and PostgreSQL integration environment.
+  - Expected verification: real Socket.IO deactivation/revocation and disconnect-before-publish recovery, API typecheck and diff/isolation.
+
+- Result: F10-T04 REWORK passed. Next eligible task is F10-T08 REWORK, not yet claimed.
+
+## آخرین batch — F10-R12-VISIBILITY-RECONCILIATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 22:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Batch status: `DONE — accepted for isolated task commit`
+Contract baseline: `chat-consultation-v1` and `ADR-0010`; PostgreSQL remains authority and Socket.IO is body-free signaling.
+
+- Task ID: `F10-T03 REWORK`
+  - Status: `DONE`
+  - Depends on: accepted `F10-T01/T02`; no new persistence migration required because immutable moderation actions are durable.
+  - Scope: authorized REST visibility reconciliation independent of message sequence; block enforcement only on human send.
+  - Owned paths: chat REST/service/DTO/OpenAPI slice, focused PostgreSQL/API tests, Phase 10 evidence/status/checklist.
+  - Shared/exclusive resource: common chat authorization and PostgreSQL test DB.
+  - Expected verification: real PostgreSQL history/reconciliation/block regression, API typecheck, OpenAPI freshness, diff/isolation.
+
+- Result: F10-T03 REWORK passed. Durable moderation actions reconcile current authorized visibility using a server-bound
+  checkpoint independent of message sequence; block remains send-only. Next eligible task is F10-T04 REWORK, not yet claimed.
+
+## آخرین batch — F10-CLOSE
+
+Coordinator/Thread: `Codex /root`
+Completed at: `2026-09-21 21:51 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE (CLOSED)`
+Baseline: `8165d0b test(F10-T11): revalidate paginated restore closure`
+
+- Scope: documentation-only formal closure after the user-provided fifth independent closure-review PASS.
+- Result: all F10 tasks and accepted remediations/revalidations are closed; Milestone D is complete.
+- Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned, unstaged and absent from
+  every Phase 10 commit.
+- Next eligible work: `Phase 11 — Dashboard Reporting & Access Expansion`, `NOT_STARTED` and not claimed here.
+
+## آخرین batch — F10-R11-RESTORE-PAGINATION-CLOSURE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 21:25 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+Baseline: `a8e60b0 test(F10-T09): revalidate paginated restore visibility`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final closure gates after bounded restore pagination; output is `READY_FOR_REVIEW`, never `DONE (CLOSED)`.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: Prisma/OpenAPI/client, API/app/dashboard types/tests/builds, Chrome E2E, source scans, diff and commit
+  isolation passed. Only fifth independent closure review may decide formal closure.
+
+## آخرین batch — F10-R09-RESTORE-PAGINATION-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 21:15 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `78c4f25 fix(F10-T08): reconcile paginated restored messages`
+
+- Task: `F10-T09 REVALIDATION`
+- Scope: PostgreSQL/Socket.IO confirmation that sequence 101 restore remains body-free, cursor-recoverable and
+  unauthorized to outsiders, plus affected adapter/reconnect/history correctness.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: all affected real database/gateway and client adapter checks passed; frozen capacity evidence remains
+  applicable because no gateway, send, rate-limit or throughput path changed.
+
+## آخرین batch — F10-R08-RESTORE-PAGINATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 20:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `63befff test(F10-T11): revalidate restored visibility closure`
+
+- Task: `F10-T08 REWORK`
+- Scope: bounded, authorized cursor pagination for a body-free restore visibility event beyond the first history page.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: each client uses server event identity only to find the restored record across authorized REST pages; stale
+  requests cannot replace a newer safe state after disconnect, and duplicate fetches are coalesced per message.
+
+## آخرین batch — F10-R11-RESTORE-CLOSURE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 19:55 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+Baseline: `fdb91c7 test(F10-T09): revalidate restored visibility`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final closure gates after the restore visibility remediation. The output state is `READY_FOR_REVIEW`, never
+  `DONE (CLOSED)`.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: Prisma migration status/validate, OpenAPI/client freshness, app/dashboard tests and builds, Chrome E2E,
+  source scans and diff/isolation checks all passed. A fourth independent closure review remains required.
+
+## آخرین batch — F10-R03-RESTORE-TRANSITION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +05:05`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `e9efe7d test(F10-T11): revalidate phase 10 closure`
+
+- Task: `F10-T03 REWORK`
+- Scope: durable, audited `RESTRICTED → VISIBLE` transition yields an opaque post-commit publication fact; no body or preview.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: restore creates a durable, audited opaque transition fact containing conversation/message identity, sequence
+  and `VISIBLE` only; it contains no body or preview.
+
+## آخرین batch — F10-R04-RESTORE-EVENT
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `dade0b7 fix(F10-T03): publish restore visibility transition`
+
+- Task: `F10-T04 REWORK`
+- Scope: publish authorized body-free `message:visibility-changed` restore events to the conversation room only.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: a joined, authorized recipient gets one body-free restore event only from the same conversation room.
+
+## آخرین batch — F10-R08-RESTORE-RECONCILIATION
+
+Coordinator/Thread: `Codex /root`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `6fe0c2c fix(F10-T04): publish restore visibility event`
+
+- Task: `F10-T08 REWORK`
+- Result: app and dashboard ignore body-free restore event content and refresh the authoritative authorized REST history.
+- Verification: app adapter (5 tests), dashboard adapter (2 tests), app/dashboard typechecks and `git diff --check` → PASS.
+
+## آخرین batch — F10-R11-VISIBILITY-CLOSURE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +04:50`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit; Phase 10 READY_FOR_REVIEW`
+Baseline: `a9be31d test(F10-T09): revalidate visibility transitions`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final related Prisma/API/OpenAPI/client/app/dashboard/browser/security/deferred-media/commit-isolation gates
+  after F10-T03/T04/T08/T09. The output state is `READY_FOR_REVIEW`, not `DONE (CLOSED)`.
+- Owned paths: final evidence/status/checklist and a focused verification-only regression if a gap is found.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, product feature/schema/migration,
+  dependency, client output, API or UI source unless a verification gap requires its owning remediation task instead.
+- Result: all related final gates passed. The phase returns to `READY_FOR_REVIEW`, never `DONE (CLOSED)`; only a third
+  independent closure review can authorize any closure decision.
+- Verification: Prisma migration status (31 applied), schema validate, API/app/dashboard/api-client typechecks,
+  OpenAPI export/generated-client freshness, app build, dashboard build, app tests (12/38), dashboard tests (15/45),
+  live Chrome Phase 10 browser E2E, scoped deferred-media/external-messenger scan, rework commit-isolation review and
+  `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
+
+## آخرین batch — F10-R09-VISIBILITY-REVALIDATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +04:20`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `bfcb1ae fix(F10-T08): reconcile restricted message tombstones`
+
+- Task: `F10-T09 REVALIDATION`
+- Scope: real PostgreSQL/Socket.IO validation for both connected restriction paths, history/cursor/reconnect safety,
+  authorization/clinic isolation and app/dashboard tombstone regressions affected by F10-T03/T04/T08.
+- Owned paths: revalidation-only test/evidence/status/checklist paths. No product feature, schema, migration,
+  dependency, OpenAPI/client or UI source work.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: current production paths revalidated against PostgreSQL and live Socket.IO include direct and
+  report-resolution tombstones while connected, and body-free history/sync/reconnect after restriction.
+- Verification: PostgreSQL API/gateway set → PASS (9 files, 16 tests): REST/ordering, authorization, abuse/block,
+  moderation, receipts, live Socket.IO direct+resolution event, presence, and reconnect. App adapter → PASS (4);
+  dashboard adapter → PASS (1); API typecheck and `git diff --check` → PASS. Existing accepted F10-T09 frozen
+  capacity evidence remains the authoritative 100/300/600, sustained/burst and reconnect-storm evidence.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
+
+## آخرین batch — F10-R08-VISIBILITY-CACHE
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +04:05`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `6bf1eca fix(F10-T04): publish safe visibility tombstones`
+
+- Task: `F10-T08 REWORK`
+- Scope: consume `message:visibility-changed` in app and dashboard; replace cached messages by ID/sequence with the
+  authoritative tombstone and prevent ordinary UI rendering of the prior body.
+- Owned paths: app/dashboard chat adapters/pages and their focused tests, plus Phase 10 status/evidence/checklists.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, API/schema/migrations/dependencies,
+  gateway/runtime publication, or OpenAPI/public REST contract.
+- Result: both chat clients subscribe to `message:visibility-changed` and reconcile its ID/sequence replacement into
+  local state. The entire old message object is replaced, so a prior `body` cannot remain for ordinary rendering.
+- Verification: app adapter suite → PASS (4 tests); dashboard adapter suite → PASS (1 test), each covering direct
+  and report-resolution tombstones; app/dashboard typechecks and `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
+
+## آخرین batch — F10-R04-VISIBILITY-EVENT
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:50`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `f2c8c45 fix(F10-T03): persist safe moderation transitions`
+
+- Task: `F10-T04 REWORK`
+- Scope: publish a body-free `message:visibility-changed` fact only after the direct or report-resolution PostgreSQL
+  transaction commits; prove authorized room-only Socket.IO delivery for connected ordinary participants.
+- Owned paths: chat service post-commit publisher call, realtime publisher/gateway tests, and Phase 10
+  status/evidence/checklists.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, schema/migrations, dependencies,
+  OpenAPI/public REST contract, or app/dashboard source.
+- Result: Socket.IO now emits `message:visibility-changed` only to the server-authorized conversation room, and only
+  after the direct-moderation or report-resolution transaction committed. Its payload is the canonical tombstone fact
+  with no body or preview.
+- Verification: real PostgreSQL/Socket.IO gateway integration covers an already delivered visible message, then direct
+  restriction and report-resolution restriction while the patient remains joined → PASS (1 file, 5 tests); API
+  typecheck and `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
+
+## آخرین batch — F10-R03-VISIBILITY
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `e9efe7d test(F10-T11): revalidate phase 10 closure`
+
+- Task: `F10-T03 REWORK`
+- Scope: canonical, safe visibility-transition facts for direct moderation and report-resolution restriction;
+  PostgreSQL-only persistence proof. Socket.IO publication and UI cache handling are deferred to the succeeding
+  serialized `F10-T04 REWORK` and `F10-T08 REWORK` tasks.
+- Owned paths: chat service/REST moderation transition, T03 PostgreSQL tests, and Phase 10 status/evidence/checklists.
+- Do not change/stage: `.gitignore`, `plan/phases/12-PRODUCTION-HARDENING.md`, schema/migrations, dependencies,
+  gateway/runtime publication, or app/dashboard source.
+- Result: direct ADMIN restriction and report-resolution restriction share the same PostgreSQL-persisted, body-free
+  transition fact. The fact exists only after transaction commit; Socket.IO publication is intentionally deferred to
+  `F10-T04 REWORK`.
+- Verification: PostgreSQL moderation integration proof covers both paths, REST history and cursor/realtime sync for
+  patient, doctor and ADMIN, and explicit-audited review only → PASS (1 file, 1 test); API typecheck and
+  `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` are not owned, edited or staged.
+
+## آخرین batch — F10-R03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `2335ee1 test(F10-T11): close chat consultation verification`
+
+- Task: `F10-T03 REWORK`
+- Depends on: accepted `F10-T02`; closure-review HIGH restricted-content finding.
+- Scope: ordinary REST/history/cursor/realtime response mappers never disclose restricted message text, including to
+  ADMIN; explicit audited moderation review remains the sole text-returning path.
+- Owned paths: chat REST/runtime response mapping, T03 moderation/REST regression tests, generated contract if its
+  public schema changes, and task status/evidence/checklist only.
+- Shared/exclusive resource: serialized PostgreSQL integration database.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Connectivity recovered: container `healthy`, internal `psql SELECT 1`, and host Node/pg using the API environment →
+  PASS. No repository connection string, volume, proxy, reset, or user-owned file changed.
+- Result: ordinary REST history, cursor/realtime sync and post-commit payload mapping return a tombstone only for every
+  restricted message, including to ADMIN. The explicit ADMIN-only moderation-review endpoint is the sole ordinary API
+  path that returns the original body and writes `RESTRICTED_CONTENT_REVIEWED` against that message.
+- Verification: PostgreSQL API regression suite (REST, authorization, moderation and OpenAPI contract) → PASS
+  (4 files, 11 tests); API typecheck → PASS; generated OpenAPI/client freshness → PASS; `git diff --check` → PASS.
+- Review: user-owned `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` were neither edited nor staged.
+
+## آخرین batch — F10-R04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `ed5724f fix(F10-T03): restrict moderated message visibility`
+
+- Task: `F10-T04 REWORK`
+- Depends on: accepted `F10-T03 REWORK`; closure-review HIGH sync-to-room subscription race finding.
+- Scope: use a server-authorized join-before-backlog fence and prove with deterministic PostgreSQL/Socket.IO integration
+  that a commit during the former sync/join interval reaches the reconciled client without a sequence gap or durable
+  duplicate.
+- Owned paths: chat realtime gateway, T04 gateway/client reconciliation tests, and task status/evidence/checklist only.
+- Shared/exclusive resource: serialized PostgreSQL integration database and local Socket.IO gateway.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: authorization is checked before room subscription, then sync re-authorizes and captures the post-subscription
+  high-water/backlog; a failed second check leaves the room. The app reconciliation uses message ID replacement and
+  sequence ordering, making the permitted early-event/backlog duplicate harmless.
+- Verification: real PostgreSQL/Socket.IO gateway suite → PASS (4 tests, including deterministic sync/join race);
+  app reconciliation unit suite → PASS (3 tests); API/app typechecks and `git diff --check` → PASS.
+
+## آخرین batch — F10-R09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `10bd7d0 fix(F10-T04): fence realtime sync and room join`
+
+- Task: `F10-T09 REVALIDATION`
+- Scope: rerun authoritative PostgreSQL correctness, authorization/moderation/block/rate-limit, reconnect/capacity and
+  new race verification affected by T03/T04. Do not start F10-T11 until accepted.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Verification: authoritative PostgreSQL correctness suite (ordering/idempotency, REST, authorization, moderation,
+  abuse/block, rate limit, reconnect and fenced gateway race) → PASS; frozen capacity/reconnect run completed at 20
+  msg/s × 30m then 50 msg/s × 5m with the 100-consultation/300-participant/600-connection storm scenario.
+
+## آخرین batch — F10-R11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-21 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `3a7147a test(F10-T09): revalidate chat realtime correctness`
+
+- Task: `F10-T11 REVALIDATION`
+- Scope: final Prisma/API/app/dashboard/browser/realtime/privacy/OpenAPI/client/deferred-media/secret and commit-isolation
+  verification after T03/T04/T09; final state remains `READY_FOR_REVIEW`, never `DONE (CLOSED)`.
+- Do not change/stage: `.gitignore` or `plan/phases/12-PRODUCTION-HARDENING.md`.
+- Result: all final gates passed after T03/T04/T09. Phase 10 is returned to `READY_FOR_REVIEW` only; Phase 11 remains
+  `NOT_STARTED` and a second independent closure review remains required.
+
+## آخرین batch — F10-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Completed at: `2026-09-20 +03:30`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `24bbe75 docs(F10-T10): defer video consultation for MVP`
+
+- Scope: final Phase 10 migration/API/realtime/UI/browser/privacy/deferred-media verification and closure evidence.
+- Owned paths: task-owned final tests/config and Phase 10 status/evidence/checklists only.
+- Do not change: product runtime/schema/migrations/OpenAPI client/dependencies, `.gitignore`, or Phase 12 plan.
+- Result: real PostgreSQL migration/status/validate, authoritative API/gateway/lifecycle/moderation/reconnect suites,
+  app/dashboard tests and builds, deferred-media/privacy scans, and an isolated Chrome patient browser journey all
+  passed. The synthetic browser journey registers and authenticates a patient, opens an eligible online appointment
+  chat, sends a committed text message, and proves no audio/video control, external messenger request, or token URL.
+
+## batch فعال — F10-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `8ba6687 test(F10-T09): prove chat security and capacity`
+
+- Scope: prove the MVP video/voice deferral only; record absence of provider, SDK, token, room, join URL, callback,
+  credential, environment, migration, external request and app/dashboard join control.
+- Owned paths: Phase 10 status/evidence/checklist and task-owned absence verification only.
+- Do not change: chat runtime/API/schema/migrations, app/dashboard implementation, dependencies/lockfile, `.gitignore`,
+  or Phase 12 plan.
+- Result: `DEFERRED / NOT_APPLICABLE FOR MVP`. Scoped runtime/manifest scans found no WebRTC/STUN/TURN/provider SDK,
+  room/token/join/callback/credential/environment configuration or audio/video join control. No implementation added.
+
+## batch فعال — F10-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-19 23:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `e9a3523 feat(F10-T08): connect chat consultation interfaces`
+
+- Scope: task-owned PostgreSQL/gateway ordering, reconnect, abuse/authorization, rate and capacity/load proof with
+  only synthetic data; the narrowly scoped Prisma Pg pool remediation required by the demonstrated throughput defect;
+  evidence/status after all acceptance gates pass.
+- Owned paths: `apps/api/src/database/prisma/prisma.service.ts`,
+  `apps/api/test/{chat-ordering.integration.spec.ts,chat-reconnect-load.spec.ts,chat-abuse-authorization.integration.spec.ts,chat-rate-limit.integration.spec.ts,chat-capacity.load.spec.ts,chat-test-support.ts}`, task-owned load scripts/config, and Phase 10 status/evidence.
+- Shared/exclusive resource: serialized PostgreSQL test database, local Socket.IO gateway and load environment.
+- Do not change: production chat/API implementation, Prisma schema/migrations, OpenAPI/client, app/dashboard source,
+  dependencies/lockfile, `.gitignore`, or Phase 12 plan.
+- Result: Docker PostgreSQL healthy; disposable migration/seed database creation and cleanup passed. Ordering,
+  idempotency, authorization, moderation, block, rate-limit and reconnect suites passed (6 tests). Capacity proof
+  passed with 100 consultations, 300 authenticated participants, 600 Socket.IO connections, 95% signal delivery
+  within two seconds, a 300-participant reconnect storm under 60 seconds, 20 committed messages/second for 30 minutes,
+  and 50 committed messages/second for five minutes; durable message count/sequence reconciliation passed.
+
+## آخرین batch — F10-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-19 23:00 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Completed at: `2026-09-19 23:15 +03:30`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `092c5ca feat(F10-T07): add waiting room presence`
+
+- Scope: app/dashboard use the generated REST client and Socket.IO adapter for authorized text consultations;
+  remove in-scope mock conversation and unsupported phone/video UI.
+- Owned paths: `apps/app/{src/app/(app)/{chat,appointments/waiting-room}/**,src/lib/chat-api.*,package.json}`,
+  `apps/dashboard/{src/{app/(app)/messages,features/messages,lib/chat-api.ts,data/messages.ts},package.json}`, the
+  already-frozen Socket.IO-client lockfile entries, task-owned UI tests, and Phase 10 status/evidence.
+- Do not change: API/schema/migration/OpenAPI client, Socket.IO version selection (T04 baseline remains `4.8.1`),
+  appointment/encounter state, attachment, video provider/SDK, `.gitignore`, or Phase 12 plan.
+- Review: PASS — patient chat and dashboard use the generated REST client for authoritative history/send and the
+  authenticated Socket.IO adapter only for realtime/presence. Reconnect joins with the latest applied sequence;
+  REST remains the sole write path. Loading, offline/reconnecting, forbidden, tombstone and read-only states are
+  explicit; STAFF is denied locally and the server remains authoritative for clinic/appointment/linked-doctor checks.
+  Mock conversation data and phone/video controls are absent from both surfaces. Evidence: [`logs/phase-10.md`](logs/phase-10.md).
+- Next eligible batch: `F10-B09 / F10-T09` only; do not claim it in this task.
+
+## batch فعال — F10-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-19 09:00 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `8d9c4a1 feat(F10-T05): add chat receipts and safe outbox`
+
+- Scope: remove/hide in-scope app/dashboard text-chat attachment, image, file and audio mocks; record deferred absence.
+- Owned paths: `apps/app/src/app/(app)/chat/**`, `apps/dashboard/src/features/messages/**`, `apps/dashboard/src/data/messages.ts`, task-owned absence tests,
+  and Phase 10 status/evidence only.
+- Do not change: API/schema/migrations, uploads/object storage/malware pipeline, media dependencies, realtime, app/dashboard
+  chat runtime beyond attachment mock controls, `.gitignore`, or Phase 12 plan.
+- Result: `DEFERRED / NOT_APPLICABLE FOR MVP`. Chat surfaces expose text-only composition; attachment/image/file/audio
+  mocks and fake filenames are absent. No storage, upload, attachment schema, scanner, object lifecycle or dependency exists.
+- Verification: scoped absence scan, app/dashboard typechecks and `git diff --check` passed. Video/voice call controls are
+  intentionally retained for the separately owned F10-T10 deferral task.
+- Next eligible batch: `F10-B07 / F10-T07` only; no task is claimed by this completion.
+
+## batch فعال — F10-B05
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-17 03:20 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `51d8716 feat(F10-T04): add authenticated chat realtime gateway`
+
+- Scope: participant-scoped monotonic receipt acknowledgement and safe post-commit chat outbox/notification handling.
+- Owned paths: `apps/api/src/modules/communications/chat/{receipts,notifications}/**`, task-required chat service/gateway
+  extensions, `apps/api/src/modules/outbox/**`, `apps/api/src/modules/assessments/notifications/**`,
+  `apps/api/test/chat-receipts-notifications.integration.spec.ts`, and task evidence/status.
+- Do not change: Prisma schema/migration, REST/OpenAPI/generated client ownership, Socket.IO dependency/lockfile,
+  waiting-room/presence, app/dashboard UI, media, `.gitignore`, or Phase 12 plan.
+- Result: receipts are authenticated, participant-scoped and monotonic; chat outbox records only opaque identifiers and
+  is safely consumed without a text preview or a user-visible notification unsupported by the current category model.
+- Verification: PostgreSQL Socket.IO receipt acknowledgement and outbox privacy integration suites passed; API typechecks
+  and `git diff --check` passed. No task stage includes user-owned files.
+- Next eligible batch: `F10-B06 / F10-T06` only; no task is claimed by this completion.
+
+## batch فعال — F10-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-17 03:00 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `ffa06cf feat(F10-T03): add appointment chat REST API`
+
+- Scope: pinned Socket.IO/Nest gateway dependency and lockfile, handshake-authenticated connection lifecycle,
+  backend-authorized conversation join/reconnect/sync, token expiry and three-live-connection boundary, and targeted
+  gateway tests only.
+- Owned paths: `apps/api/package.json`, `pnpm-lock.yaml`, `apps/api/src/app.module.ts`,
+  `apps/api/src/modules/communications/chat/realtime/**`, task-required extension points under
+  `apps/api/src/modules/communications/chat/**`, `apps/api/test/chat-realtime.gateway.spec.ts`, and task status/evidence.
+- Do not change: Prisma schema/migrations/seed, REST/OpenAPI/generated client surface, receipt/outbox runtime,
+  waiting-room/presence runtime, app/dashboard UI, attachment/video runtime, `.gitignore`, or Phase 12 plan.
+- Acceptance focus: auth payload only (never URL), no client-selected arbitrary room/publish, server-side rechecks on
+  join/reconnect/sync, expiry close, bounded reconnect high-water recovery and at-least-once signal semantics.
+- Result: Socket.IO remains an in-process signaling/connection layer only. REST remains the sole persist path; a
+  committed message is emitted only after the PostgreSQL transaction returns successfully.
+- Verification: pinned dependency advisory scan found no Socket.IO/Nest websocket finding; targeted unit plus live
+  Socket.IO/PostgreSQL integration tests and API typecheck passed. Repository-wide audit findings are pre-existing,
+  out-of-scope Next/Fastify/Prisma dependencies and are not masked by this task.
+- Next eligible batch: `F10-B05 / F10-T05` only; no task is claimed by this completion.
+
+## batch فعال — F10-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-16 05:05 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `62f2921 feat(F10-T02): persist chat consultation records`
+
+- Scope: appointment-bound chat REST authorization, conversation/history/cursor/send/report/moderation/block endpoints,
+  PostgreSQL-backed sequence/idempotency/rate checks, stable errors, OpenAPI and generated client slice, and targeted
+  integration/authorization/moderation tests only.
+- Owned paths: `apps/api/src/modules/communications/chat/**`, `apps/api/src/common/{auth,errors}/**` only where the frozen
+  contract requires a common capability, `apps/api/src/app.module.ts`, `apps/api/test/{chat-rest.integration.spec.ts,
+  chat-authorization.integration.spec.ts,chat-moderation.integration.spec.ts,openapi-contract.spec.ts}`, `packages/api-client/**`,
+  and `plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}` plus `specs/008-adopt-phase-10/tasks.md`.
+- Do not change: Prisma schema/migrations/seed, Socket.IO dependencies or lockfile, receipt/outbox runtime, waiting-room/
+  presence runtime, app/dashboard UI, attachment/video runtime, `.gitignore`, or Phase 12 plan.
+- Acceptance focus: server-side permission + clinic + appointment/conversation membership checks; no STAFF or unlinked-doctor
+  access; REST-only committed send with stable idempotency/order/error behavior; moderation/block audit boundaries; generated
+  OpenAPI/client consistency. No realtime, receipt, waiting-room, attachment, or video implementation is claimed.
+- Result: REST-only, PostgreSQL-backed appointment chat authorization, history/cursor, idempotent ordered send, report,
+  moderation and scoped-block APIs are accepted with stable errors and generated OpenAPI client coverage. Socket.IO,
+  receipts/outbox, presence/waiting-room, UI and media remain unclaimed.
+- Verification: targeted REST, authorization and moderation integration tests passed against PostgreSQL; OpenAPI contract,
+  API/test/client TypeScript checks, export/generation and `git diff --check` passed. Coordinator review excluded
+  user-owned `.gitignore` and Phase 12 changes.
+- Next eligible batch: `F10-B04 / F10-T04` only; no task is claimed by this completion.
+
+## batch فعال — F10-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-16 03:45 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — accepted for isolated task commit`
+Baseline: `79e7979 docs(F10-T01): freeze chat consultation contract`
+
+- Scope: additive PostgreSQL/Prisma persistence only for the frozen appointment-bound text-chat contract: conversation,
+  participant, message/sequence/idempotency, receipt, report, block, moderation, retention/legal-hold and safe audit
+  boundaries; migration replay/Phase 09 upgrade/seed idempotency/schema-drift evidence.
+- Owned paths: `apps/api/prisma/{schema.prisma,migrations/20260916034500_phase_10_chat_persistence/migration.sql,seed.mjs}`,
+  `apps/api/test/{chat-migrations.integration.spec.ts,migrations.integration.spec.ts}` only when Phase 10 migration
+  coverage is necessary, and `plan/{STATUS.md,logs/phase-10.md,phases/10-CHAT-CONSULTATION.md}` plus
+  `specs/008-adopt-phase-10/tasks.md` for accepted-task synchronization.
+- Shared writer: `F10-T02` exclusively owns Prisma schema/migrations/seed. Do not add REST, authorization, OpenAPI,
+  generated client, Socket.IO, outbox handler, waiting-room runtime, app/dashboard, attachment, or video work.
+- Result: accepted persistence schema/migration stores only appointment-bound text-chat facts and preserves exclusive
+  Prisma ownership. It adds no runtime REST, Socket.IO, attachment/video, Redis/Centrifugo, generated client or UI work.
+- Verification: clean replay and Phase 09 upgrade/seed/invariant suite (4 tests) passed against disposable PostgreSQL;
+  `prisma migrate deploy/status`, migrations-to-schema drift and database-to-schema drift all passed; development seed
+  ran twice idempotently; Prisma validate/generate, API typecheck and `git diff --check` passed.
+- Next eligible batch: `F10-B03 / F10-T03` only; no task is claimed by this completion.
 
 ## batch فعال — F09-CI01
 

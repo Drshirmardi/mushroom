@@ -43,6 +43,7 @@ export class RefreshSessionUseCase {
     private readonly refreshTokens: RefreshTokenManager,
     private readonly accessTokens: AccessTokenIssuer,
     private readonly rateLimiter: PublicAuthRateLimiter,
+    private readonly sockets: { disconnectSession(sessionId: string): void },
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -81,6 +82,13 @@ export class RefreshSessionUseCase {
       },
     });
 
+    // rotateRefresh resolves only after its PostgreSQL transaction commits. A
+    // refresh replay/disabled-user branch has persistently revoked this exact
+    // session, so evict it before returning the authentication failure.
+    if (rotation.kind === 'REVOKED') {
+      this.sockets.disconnectSession(inspected.sessionId);
+      throw new InvalidRefreshTokenError();
+    }
     if (rotation.kind !== 'ROTATED') throw new InvalidRefreshTokenError();
 
     const accessToken = await this.accessTokens.issue({
