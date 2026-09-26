@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-25 23:55 +03:30`
+- آخرین به‌رورسانی: `2026-09-26 08:10 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
 - فاز فعال: `ندارد؛ Phase 11 فقط next eligible work است.`
 - وضعیت فاز فعال: `NOT_STARTED`
@@ -55,6 +55,22 @@ HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences So
 and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
 [`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
 unmodified.
+
+## آخرین batch — F10-R35-CI-CAPACITY-PORTABILITY
+
+Coordinator/Thread: `Codex (managed worktree)`
+Completed at: `2026-09-26 08:10 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Status: `DONE — local portability gates passed; PR #15 CI recheck pending; Phase 10 remains CLOSED`
+Baseline: `ebca431 test(F10-T09): renew capacity fixture against persisted sessions`
+
+- Task ID: `F10-T09 REWORK (capacity bootstrap portability)`
+  - Scope: make the deferred application bootstrap import resolve under TypeScript/Node16 and Linux CI while preserving the disposable-database-before-AppModule ordering.
+  - Changed path: `apps/api/test/chat-capacity.load.spec.ts`, plus Phase 10 evidence/status only.
+  - Verification: exact CI TypeScript failure reproduced before the fix; test compiler and API typecheck PASS after the fix; focused real-PostgreSQL bootstrap/Socket.IO capacity scenario PASS (1 passed, long rate test skipped); `git diff --check` PASS.
+  - Result: dynamic bootstrap now uses the Node16-compatible `.js` module specifier. Product code, authorization, workflow, rate, duration, 61-second gap and 1000ms threshold are unchanged. The accepted full capacity run was not repeated locally.
+  - Excluded: `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain outside this task.
+- Next action: push the isolated commit and let GitHub Actions provide the only next full capacity execution. Do not merge or start Phase 11.
 
 ## آخرین batch — F10-R34-CI-CAPACITY-SESSION
 

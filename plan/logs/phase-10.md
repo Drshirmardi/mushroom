@@ -1476,3 +1476,23 @@ Verification:
 Result:
   - The fixture change reissues tokens against the original persisted patient/doctor sessions, once per load batch. It does not change product authorization or the frozen 20/50 msg/s, 30m/5m, and 1000 ms criteria.
   - PR #15 CI failure mode (HTTP 403 instead of 201 after renewal) is resolved. Pre-existing main-database synthetic leftovers (2007 synthetic doctor profiles, 442579 synthetic chat message bodies) and three orphan disposable databases from earlier runs were reported and left untouched. `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain user-owned and unstaged.
+
+# F10-T09 REWORK — PR #15 capacity bootstrap portability
+
+Task ID: F10-T09 REWORK (capacity bootstrap portability)
+Completed at: 2026-09-26 08:10 +03:30
+Batch ID: F10-R35-CI-CAPACITY-PORTABILITY
+Status: ACCEPTED — isolated portability commit pending; Phase 10 remains CLOSED
+Finding:
+  - GitHub Actions run `36185960091`, job `108239234453`, failed at `pnpm test` before Vitest with exit code 2: TypeScript/Node16 could not resolve the extensionless dynamic import `../src/app.factory` on Linux.
+Changed files:
+  - apps/api/test/chat-capacity.load.spec.ts
+  - plan/{STATUS.md,logs/phase-10.md}
+Verification:
+  - `pnpm exec tsc -p apps/api/tsconfig.test.json --noEmit` reproduced `TS2307` before the fix and passed after changing only the module specifier to `../src/app.factory.js`.
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS, including Prisma generation.
+  - Focused real-PostgreSQL preflight `vitest run test/chat-capacity.load.spec.ts -t 'holds 100 consultations' --no-file-parallelism` → PASS (1 passed, 1 skipped, 62.65s). The deferred import resolved at runtime, the application booted after the disposable URL was installed, Socket.IO capacity/storm setup passed, the run-owned database was dropped, and no orphan process remained. The three previously reported disposable leftovers were unchanged and not deleted.
+  - `git diff --check` and task-path isolation → PASS.
+Result:
+  - No product, authorization, workflow, CI, rate, duration or threshold changed. The frozen `20 msg/s × 30m`, 61-second gap, `50 msg/s × 5m`, and per-batch `1000ms` criteria remain byte-for-byte unchanged.
+  - The 36-minute workload was not rerun locally; GitHub Actions after push is the sole next full execution. `.gitignore` and `plan/phases/12-PRODUCTION-HARDENING.md` remain outside the commit. Phase 11 was not started.

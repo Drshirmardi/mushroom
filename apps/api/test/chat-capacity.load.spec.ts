@@ -63,7 +63,7 @@ describe('chat capacity and reconnect load (synthetic PostgreSQL/Socket.IO)', ()
 
   it('holds 100 consultations, 300 authenticated participants and 600 connections, then recovers a 300-participant storm', async () => {
     await prepareDatabase();
-    const { createApiApplication } = await import('../src/app.factory');
+    const { createApiApplication } = await import('../src/app.factory.js');
     app = await createApiApplication(); await app.listen({ host: '127.0.0.1', port: 0 });
     for (let index = 0; index < 100; index += 1) fixtures.push(await createChatFixture(app));
     const participants: Participant[] = [];
