@@ -4,6 +4,28 @@ import { IsDateString, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength
 
 const statuses = ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW', 'CANCELLED'] as const;
 
+export class AppointmentReportingKpiDefinitionResponseDto {
+  @ApiProperty({ enum: ['KPI-04', 'KPI-05', 'KPI-06', 'KPI-07', 'KPI-08', 'KPI-09'] }) id!: string;
+  @ApiProperty() formula!: string;
+  @ApiProperty() dataOwner!: 'Appointments';
+  @ApiProperty() sourceOfTruth!: string;
+  @ApiProperty({ enum: ['tenant-and-clinic'] }) scope!: 'tenant-and-clinic';
+  @ApiProperty({ example: 'Asia/Tehran' }) timeZone!: 'Asia/Tehran';
+  @ApiProperty() rounding!: string;
+  @ApiProperty() zeroOrNotApplicableRule!: string;
+  @ApiProperty() partialDataRule!: string;
+  @ApiProperty() staleDataRule!: string;
+}
+
+export const appointmentReportingKpiDefinitions = [
+  { id: 'KPI-04', formula: 'count(Appointment.id) with startsAt in range and status in {PENDING, CONFIRMED, CHECKED_IN, QUEUED, IN_PROGRESS, COMPLETED, NO_SHOW, CANCELLED}', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.startsAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-05', formula: 'count(Appointment.id) with completedAt in range and status=COMPLETED', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.completedAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-06', formula: 'count(Appointment.id) with cancelledAt in range and status=CANCELLED', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.cancelledAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-07', formula: 'count(Appointment.id) with noShowAt in range and status=NO_SHOW', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.noShowAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-08', formula: 'KPI-05 / count(appointments whose terminal event in range is COMPLETED, CANCELLED, or NO_SHOW) × 100', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment lifecycle', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'one decimal percentage', zeroOrNotApplicableRule: 'denominator 0 → not-applicable, never 0%', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-09', formula: 'round-half-up(sum(startedAt - checkedInAt in whole minutes) / count(rows with both timestamps), 0)', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.checkedInAt/startedAt', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'whole minutes, round-half-up', zeroOrNotApplicableRule: 'no qualifying rows → not-applicable', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+] as const satisfies readonly AppointmentReportingKpiDefinitionResponseDto[];
+
 export class CreateAdminAppointmentDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') patientId!: string;
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') doctorServiceId!: string;

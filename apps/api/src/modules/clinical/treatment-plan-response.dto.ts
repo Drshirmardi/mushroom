@@ -2,6 +2,29 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 const treatmentPlanStates = ['DRAFT', 'ACTIVE', 'COMPLETED', 'VOIDED'] as const;
 
+export class TreatmentPlanReportingKpiDefinitionResponseDto {
+  @ApiProperty({ enum: ['KPI-13'] }) id!: string;
+  @ApiProperty() formula!: string;
+  @ApiProperty() dataOwner!: 'Clinical';
+  @ApiProperty() sourceOfTruth!: string;
+  @ApiProperty({ enum: ['tenant-and-clinic'] }) scope!: 'tenant-and-clinic';
+  @ApiProperty({ example: 'Asia/Tehran' }) timeZone!: 'Asia/Tehran';
+  @ApiProperty() rounding!: string;
+  @ApiProperty() zeroOrNotApplicableRule!: string;
+  @ApiProperty() partialDataRule!: string;
+  @ApiProperty() staleDataRule!: string;
+}
+
+export const treatmentPlanReportingKpiDefinitions = [
+  {
+    id: 'KPI-13', formula: 'count(TreatmentPlan.id) where TreatmentPlan.state = ACTIVE in the current snapshot at response asOf', dataOwner: 'Clinical',
+    sourceOfTruth: 'PostgreSQL TreatmentPlan.state', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count',
+    zeroOrNotApplicableRule: 'zero when no ACTIVE plan exists; DRAFT, COMPLETED, and VOIDED are excluded',
+    partialDataRule: 'identify the unavailable TreatmentPlan snapshot source; never estimate',
+    staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot',
+  },
+] as const satisfies readonly TreatmentPlanReportingKpiDefinitionResponseDto[];
+
 export class TreatmentMedicationResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() name!: string;

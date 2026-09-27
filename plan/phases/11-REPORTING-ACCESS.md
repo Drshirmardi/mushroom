@@ -1,13 +1,13 @@
 # Phase 11 — Dashboard Reporting & Access Expansion
 
-- وضعیت اولیه: `NOT_STARTED`
+- وضعیت فعلی: `IN_PROGRESS`
 - Milestone: `E — عملیات و انتشار`
 - پیش‌نیاز: داده واقعی featureهای هدف release
 - خروجی اصلی: Dashboard Home و گزارش‌ها کامل و تعریف‌شده‌اند؛ دسترسی‌ها در صورت نیاز از تک‌ادمین گسترش می‌یابند.
 
 ## Taskها
 
-- [ ] `F11-T01` — inventory نهایی widgetها و تعریف formula/timezone/data owner هر KPI
+- [x] `F11-T01` — inventory نهایی widgetها و تعریف formula/timezone/data owner هر KPI
 - [ ] `F11-T02` — appointment/patient/assessment/treatment reports
 - [ ] `F11-T03` — commerce/revenue reports در صورت تکمیل Phase 09
 - [ ] `F11-T04` — Dashboard Home نهایی بدون widget mock

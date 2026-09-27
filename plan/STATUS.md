@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-27 +03:30`
-- Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
-- فاز فعال: `ندارد؛ Phase 10 CI remediation locally accepted و Phase 11 فقط next eligible work است.`
-- وضعیت فاز فعال: `NOT_STARTED`
+- آخرین به‌رورسانی: `2026-09-27 16:27 +03:30`
+- Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
+- فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ PR #15 منتظر اجرای کامل ظرفیت در GitHub Actions است.`
+- blocker فعال: `ندارد`
 
 ## پیشرفت کلان
 
@@ -44,17 +44,52 @@
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
 - [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
-- [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
+- [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `IN_PROGRESS`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is formally `DONE (CLOSED)` after the independent security/closure review passed against the current
-HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences Socket.IO admission against revoke
-and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
-[`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
-unmodified.
+`Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
+complete. `F11-T01` is accepted and recorded below; Phase 11 remains `IN_PROGRESS`, with no active task or batch.
+The next eligible work is `F11-T02`, but it is not claimed here.
+
+## آخرین batch تکمیل‌شده — F11-B01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 16:18 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Completed at: `2026-09-27 16:27 +03:30`
+Batch status: `DONE`
+Contract baseline: `fa2285ad docs(spec): freeze phase 11 reporting access baseline`,
+[`specs/009-reporting-access/`](../specs/009-reporting-access/)
+
+Tasks:
+
+- Task ID: `F11-T01`
+  - Status: `DONE`
+  - Depends on: `none`
+  - Scope: preserve the frozen KPI/widget inventory as typed response metadata only in the existing patient,
+    appointment, assessment, clinical treatment-plan, clinical treatment-activity, and commerce-reporting domain
+    DTO modules. This is the response-contract foundation; it does not add reporting routes, queries, dashboard UI,
+    authorization changes, migrations, OpenAPI/client generation, or aggregates.
+  - Owned paths: `apps/api/src/modules/patients/admin/admin-patients.dto.ts`,
+    `apps/api/src/modules/appointments/admin-appointments.dto.ts`,
+    `apps/api/src/modules/assessments/admin/admin-assessment-submissions.dto.ts`,
+    `apps/api/src/modules/clinical/treatment-plan-response.dto.ts`,
+    `apps/api/src/modules/clinical/treatment-activity-response.dto.ts`,
+    `apps/api/src/modules/commerce/reporting/commerce-revenue.dto.ts`, one focused API contract test path if required,
+    and coordinator-only `plan/{STATUS.md,logs/phase-11.md,phases/11-REPORTING-ACCESS.md}`.
+  - Shared/exclusive resource: the six existing domain response contracts; OpenAPI output and generated clients stay
+    exclusively deferred to their declared later endpoint owner.
+  - Verification: API source and test typechecks, focused metadata-contract regression (2/2), isolated PostgreSQL
+    migration smoke (3/3), frozen inventory cross-check, and `git diff --check` all passed.
+  - Contract: every released widget must carry its frozen identifier, formula, data owner, PostgreSQL/API source of
+    truth, explicit tenant/clinic scope, `Asia/Tehran` timezone, and zero/partial/stale-data behavior. Do not invent
+    KPI semantics or create a central reporting module.
+  - Result: all KPI-01–21 definitions are exported from their existing domain DTO owners and the focused regression
+    proves exactly one complete, PostgreSQL-backed, tenant/clinic-scoped, Tehran-calendar metadata entry per KPI.
+    Evidence: [`logs/phase-11.md`](logs/phase-11.md).
 
 ## آخرین batch — F10-R36-CI-CAPACITY-RATE-LIMIT-INDEXES
 
