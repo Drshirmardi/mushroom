@@ -190,6 +190,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chat/appointments/{appointmentId}/conversation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get or create the authorized appointment-bound conversation */
+        get: operations["chatAppointmentConversationGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an authorized bounded ascending message history page */
+        get: operations["chatConversationHistory"];
+        put?: never;
+        /** Persist an idempotent appointment-bound text message */
+        post: operations["chatConversationMessageSend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/visibility-reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconcile durable, body-safe moderation visibility transitions */
+        get: operations["chatConversationVisibilityReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/messages/{messageId}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an authorized idempotent moderation report */
+        post: operations["chatMessageReportCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List own report status or clinic-admin moderation reports */
+        get: operations["chatConversationReportsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/messages/{messageId}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restrict or restore a message under clinic moderation policy */
+        post: operations["chatMessageVisibilityChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/messages/{messageId}/restricted-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Explicitly review restricted content as a clinic administrator */
+        get: operations["chatRestrictedContentReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/reports/{reportId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve an internal moderation report and apply an allowed action */
+        post: operations["chatReportResolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/waiting-room/appointments/{appointmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get server-evaluated appointment waiting-room readiness */
+        get: operations["chatWaitingRoomGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me": {
         parameters: {
             query?: never;
@@ -381,6 +535,23 @@ export interface paths {
         patch: operations["adminPatientsCorrectIntake"];
         trace?: never;
     };
+    "/v1/admin/reporting/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped patient reporting aggregates */
+        get: operations["adminReportingPatientsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/assessments": {
         parameters: {
             query?: never;
@@ -512,6 +683,23 @@ export interface paths {
         };
         /** Get a clinic assessment result */
         get: operations["adminAssessmentSubmissionsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reporting/assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped assessment reporting aggregates */
+        get: operations["adminReportingAssessmentsGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1295,6 +1483,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/reporting/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped appointment reporting aggregates and bounded list */
+        get: operations["adminReportingAppointmentsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/clinical/timeline": {
         parameters: {
             query?: never;
@@ -1721,6 +1926,23 @@ export interface paths {
         head?: never;
         /** Update an editable nutrition definition */
         patch: operations["adminTreatmentPlanNutritionUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/reporting/treatments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped treatment reporting aggregates */
+        get: operations["adminReportingTreatmentsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/patients/me/treatment-plans": {
@@ -2816,160 +3038,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/chat/appointments/{appointmentId}/conversation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get or create the authorized appointment-bound conversation */
-        get: operations["chatAppointmentConversationGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read an authorized bounded ascending message history page */
-        get: operations["chatConversationHistory"];
-        put?: never;
-        /** Persist an idempotent appointment-bound text message */
-        post: operations["chatConversationMessageSend"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/visibility-reconciliation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Reconcile durable, body-safe moderation visibility transitions */
-        get: operations["chatConversationVisibilityReconciliation"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/messages/{messageId}/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create an authorized idempotent moderation report */
-        post: operations["chatMessageReportCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List own report status or clinic-admin moderation reports */
-        get: operations["chatConversationReportsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/messages/{messageId}/visibility": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Restrict or restore a message under clinic moderation policy */
-        post: operations["chatMessageVisibilityChange"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/messages/{messageId}/restricted-content": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Explicitly review restricted content as a clinic administrator */
-        get: operations["chatRestrictedContentReview"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/reports/{reportId}/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve an internal moderation report and apply an allowed action */
-        post: operations["chatReportResolve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/waiting-room/appointments/{appointmentId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get server-evaluated appointment waiting-room readiness */
-        get: operations["chatWaitingRoomGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3089,6 +3157,91 @@ export interface components {
         ChangePasswordDto: {
             currentPassword: string;
             newPassword: string;
+        };
+        ChatConversationResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: uuid */
+            clinicId: string;
+            /** Format: uuid */
+            patientId: string;
+            /** Format: uuid */
+            doctorId: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ChatMessageResponseDto: {
+            /** Format: uuid */
+            id: string;
+            sequence: string;
+            /** @enum {string} */
+            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            visibility: "VISIBLE" | "RESTRICTED";
+            body?: string;
+            /** @enum {string} */
+            restrictedReasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
+            /** @description Safe tombstone shown instead of restricted text. */
+            tombstone?: string;
+        };
+        ChatHistoryResponseDto: {
+            items: components["schemas"]["ChatMessageResponseDto"][];
+            nextCursor?: Record<string, never>;
+            highWaterSequence: string;
+        };
+        ChatVisibilityReconciliationItemDto: {
+            /** @description Opaque durable moderation transition identity. */
+            revision: string;
+            message: components["schemas"]["ChatMessageResponseDto"];
+        };
+        ChatVisibilityReconciliationResponseDto: {
+            items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
+            nextCursor?: Record<string, never>;
+            /** @description Opaque checkpoint to persist after applying this page. */
+            checkpointCursor?: Record<string, never>;
+            /** @description Opaque high-water revision identity. */
+            highWaterRevision?: Record<string, never>;
+        };
+        SendChatMessageDto: {
+            /**
+             * Format: uuid
+             * @description Client-generated idempotency identifier.
+             */
+            clientMessageId: string;
+            body: string;
+        };
+        CreateChatReportDto: {
+            /** @enum {string} */
+            reasonCategory: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
+            /** @description Optional non-sensitive note; never message or medical text. */
+            reporterNote?: string;
+            /** @description Request an effective pending-review conversation-scoped block. */
+            requestImmediateBlock?: boolean;
+            /**
+             * @description ADMIN-only explicit block scope.
+             * @enum {string}
+             */
+            blockScope?: "PATIENT_DOCTOR" | "PATIENT_CLINIC_OPERATOR";
+        };
+        ChangeChatVisibilityDto: {
+            /** @enum {string} */
+            visibility: "RESTRICTED" | "VISIBLE";
+            /** @enum {string} */
+            reasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
+            /** @description Non-sensitive administrative note. */
+            safeNote?: string;
+        };
+        ResolveChatReportDto: {
+            /** @enum {string} */
+            resolution: "DISMISSED_NO_VIOLATION" | "UPHELD_POLICY_VIOLATION" | "INSUFFICIENT_EVIDENCE" | "ESCALATED_SAFETY_OR_LEGAL";
+            /** @enum {string} */
+            action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
+            /** @description Non-sensitive administrative note. */
+            safeNote?: string;
         };
         SelfProfileResponseDto: {
             /** Format: uuid */
@@ -3339,6 +3492,20 @@ export interface components {
             updatedAt: string;
         };
         AdminMedicalIntakeCorrectionDto: Record<string, never>;
+        PatientReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            newPatients: number;
+            onboardingComplete: number;
+            onboardingIncomplete: number;
+        };
         AssessmentVersionResponseDto: {
             /** Format: uuid */
             id: string;
@@ -3432,6 +3599,20 @@ export interface components {
             page: number;
             pageSize: number;
             total: number;
+        };
+        AssessmentReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            started: number;
+            completed: number;
+            completionRate: Record<string, never> | null;
         };
         PatientAssessmentListItemDto: {
             /** Format: uuid */
@@ -4125,6 +4306,33 @@ export interface components {
             /** Format: date-time */
             startsAt: string;
         };
+        AppointmentReportingListItemResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** @enum {string} */
+            status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
+        };
+        AppointmentReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            scheduled: number;
+            completed: number;
+            cancelled: number;
+            noShow: number;
+            completionRate: Record<string, never> | null;
+            averageWaitMinutes: Record<string, never> | null;
+            items: components["schemas"]["AppointmentReportingListItemResponseDto"][];
+            nextCursor?: Record<string, never> | null;
+        };
         PatientClinicalItemResponseDto: {
             /** Format: uuid */
             encounterId: string;
@@ -4475,6 +4683,21 @@ export interface components {
         UpdateNutritionPlanDto: {
             title?: string;
             instructions?: string;
+        };
+        TreatmentReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            activePlans: number;
+            dueTasks: number;
+            completedTasks: number;
+            completionRate: Record<string, never> | null;
         };
         TreatmentTaskResponseDto: {
             /** Format: uuid */
@@ -5005,91 +5228,6 @@ export interface components {
             netRevenueToman: string;
             successfulPaymentCount: number;
             series: components["schemas"]["CommerceRevenueSeriesPointDto"][];
-        };
-        ChatConversationResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            appointmentId: string;
-            /** Format: uuid */
-            clinicId: string;
-            /** Format: uuid */
-            patientId: string;
-            /** Format: uuid */
-            doctorId: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        ChatMessageResponseDto: {
-            /** Format: uuid */
-            id: string;
-            sequence: string;
-            /** @enum {string} */
-            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
-            /** Format: date-time */
-            createdAt: string;
-            /** @enum {string} */
-            visibility: "VISIBLE" | "RESTRICTED";
-            body?: string;
-            /** @enum {string} */
-            restrictedReasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
-            /** @description Safe tombstone shown instead of restricted text. */
-            tombstone?: string;
-        };
-        ChatHistoryResponseDto: {
-            items: components["schemas"]["ChatMessageResponseDto"][];
-            nextCursor?: Record<string, never>;
-            highWaterSequence: string;
-        };
-        ChatVisibilityReconciliationItemDto: {
-            /** @description Opaque durable moderation transition identity. */
-            revision: string;
-            message: components["schemas"]["ChatMessageResponseDto"];
-        };
-        ChatVisibilityReconciliationResponseDto: {
-            items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
-            nextCursor?: Record<string, never>;
-            /** @description Opaque checkpoint to persist after applying this page. */
-            checkpointCursor?: Record<string, never>;
-            /** @description Opaque high-water revision identity. */
-            highWaterRevision?: Record<string, never>;
-        };
-        SendChatMessageDto: {
-            /**
-             * Format: uuid
-             * @description Client-generated idempotency identifier.
-             */
-            clientMessageId: string;
-            body: string;
-        };
-        CreateChatReportDto: {
-            /** @enum {string} */
-            reasonCategory: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
-            /** @description Optional non-sensitive note; never message or medical text. */
-            reporterNote?: string;
-            /** @description Request an effective pending-review conversation-scoped block. */
-            requestImmediateBlock?: boolean;
-            /**
-             * @description ADMIN-only explicit block scope.
-             * @enum {string}
-             */
-            blockScope?: "PATIENT_DOCTOR" | "PATIENT_CLINIC_OPERATOR";
-        };
-        ChangeChatVisibilityDto: {
-            /** @enum {string} */
-            visibility: "RESTRICTED" | "VISIBLE";
-            /** @enum {string} */
-            reasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
-            /** @description Non-sensitive administrative note. */
-            safeNote?: string;
-        };
-        ResolveChatReportDto: {
-            /** @enum {string} */
-            resolution: "DISMISSED_NO_VIOLATION" | "UPHELD_POLICY_VIOLATION" | "INSUFFICIENT_EVIDENCE" | "ESCALATED_SAFETY_OR_LEGAL";
-            /** @enum {string} */
-            action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
-            /** @description Non-sensitive administrative note. */
-            safeNote?: string;
         };
     };
     responses: never;
@@ -5670,6 +5808,249 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    chatAppointmentConversationGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationResponseDto"];
+                };
+            };
+            /** @description The appointment conversation is unavailable to this account. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationHistory: {
+        parameters: {
+            query?: {
+                /** @description Opaque, versioned server cursor. */
+                cursor?: string;
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHistoryResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationMessageSend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendChatMessageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationVisibilityReconciliation: {
+        parameters: {
+            query?: {
+                /** @description Opaque, server-bound cursor for durable visibility transitions. */
+                cursor?: string;
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatVisibilityReconciliationResponseDto"];
+                };
+            };
+        };
+    };
+    chatMessageReportCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChatReportDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatConversationReportsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatMessageVisibilityChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeChatVisibilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageResponseDto"];
+                };
+            };
+        };
+    };
+    chatRestrictedContentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatReportResolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reportId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveChatReportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatWaitingRoomGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -6489,6 +6870,29 @@ export interface operations {
             };
         };
     };
+    adminReportingPatientsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientReportingResponseDto"];
+                };
+            };
+        };
+    };
     adminAssessmentsList: {
         parameters: {
             query?: never;
@@ -6796,6 +7200,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAssessmentSubmissionResponseDto"];
+                };
+            };
+        };
+    };
+    adminReportingAssessmentsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentReportingResponseDto"];
                 };
             };
         };
@@ -8421,6 +8848,31 @@ export interface operations {
             };
         };
     };
+    adminReportingAppointmentsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                cursor?: string;
+                from?: string;
+                limit?: number;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentReportingResponseDto"];
+                };
+            };
+        };
+    };
     patientClinicalTimeline: {
         parameters: {
             query?: never;
@@ -9109,6 +9561,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NutritionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminReportingTreatmentsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentReportingResponseDto"];
                 };
             };
         };
@@ -10844,249 +11319,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommerceRevenueDto"];
-                };
-            };
-        };
-    };
-    chatAppointmentConversationGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatConversationResponseDto"];
-                };
-            };
-            /** @description The appointment conversation is unavailable to this account. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationHistory: {
-        parameters: {
-            query?: {
-                /** @description Opaque, versioned server cursor. */
-                cursor?: string;
-                limit?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatHistoryResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationMessageSend: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendChatMessageDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessageResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationVisibilityReconciliation: {
-        parameters: {
-            query?: {
-                /** @description Opaque, server-bound cursor for durable visibility transitions. */
-                cursor?: string;
-                limit?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatVisibilityReconciliationResponseDto"];
-                };
-            };
-        };
-    };
-    chatMessageReportCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateChatReportDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatConversationReportsList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatMessageVisibilityChange: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChangeChatVisibilityDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessageResponseDto"];
-                };
-            };
-        };
-    };
-    chatRestrictedContentReview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatReportResolve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reportId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResolveChatReportDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatWaitingRoomGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
                 };
             };
         };

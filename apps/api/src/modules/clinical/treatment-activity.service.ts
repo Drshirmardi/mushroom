@@ -40,6 +40,7 @@ export class TreatmentActivityService {
       return { items: items.map((item) => this.taskResponse(item)), nextCursor: null };
     });
   }
+  async reportingMetrics(context: { clinicId: string; start: Date; end: Date; asOf: Date }) { const denominator = { treatmentPlan: { clinicId: context.clinicId }, scheduledFor: { gte: context.start, lt: context.end }, state: { in: [TreatmentTaskState.SCHEDULED, TreatmentTaskState.COMPLETED] } }; const [dueTasks, completedTasks, total, completedInCohort] = await this.prisma.$transaction([this.prisma.treatmentTask.count({ where: { treatmentPlan: { clinicId: context.clinicId }, scheduledFor: { gte: context.start, lt: context.end }, state: TreatmentTaskState.SCHEDULED } }), this.prisma.treatmentTask.count({ where: { treatmentPlan: { clinicId: context.clinicId }, state: TreatmentTaskState.COMPLETED, completedAt: { gte: context.start, lt: context.end } } }), this.prisma.treatmentTask.count({ where: denominator }), this.prisma.treatmentTask.count({ where: { ...denominator, state: TreatmentTaskState.COMPLETED, completedAt: { lte: context.asOf } } })]); return { dueTasks, completedTasks, completionRate: total === 0 ? null : Math.round(completedInCohort * 1000 / total) / 10 }; }
 
   async createTask(patientId: string, planId: string, input: CreateTreatmentTaskDto, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');

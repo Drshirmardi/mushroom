@@ -9,6 +9,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -56,6 +58,24 @@ export const patientReportingKpiDefinitions = [
     staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot',
   },
 ] as const satisfies readonly PatientReportingKpiDefinitionResponseDto[];
+
+export class PatientReportingQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') clinicId?: string;
+  @ApiPropertyOptional({ example: '2026-09-01' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) from?: string;
+  @ApiPropertyOptional({ example: '2026-09-30' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) to?: string;
+}
+
+export class PatientReportingResponseDto {
+  @ApiProperty({ format: 'uuid' }) clinicId!: string;
+  @ApiProperty() timeZone!: string;
+  @ApiProperty() from!: string;
+  @ApiProperty() to!: string;
+  @ApiProperty({ format: 'date-time' }) asOf!: Date;
+  @ApiProperty({ enum: ['current', 'partial', 'stale'] }) sourceStatus!: 'current' | 'partial' | 'stale';
+  @ApiProperty() newPatients!: number;
+  @ApiProperty() onboardingComplete!: number;
+  @ApiProperty() onboardingIncomplete!: number;
+}
 
 export class MedicalDeclarationDto {
   @IsIn(declarationStatuses)

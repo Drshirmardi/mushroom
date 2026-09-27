@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-27 16:27 +03:30`
+- آخرین به‌رورسانی: `2026-09-27 21:08 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,8 +51,23 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` is accepted and recorded below; Phase 11 remains `IN_PROGRESS`, with no active task or batch.
-The next eligible work is `F11-T02`, but it is not claimed here.
+complete. `F11-T01` and `F11-T02` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+remains `IN_PROGRESS`; no later task is claimed.
+
+## batch بعدی واجد شرایط — بدون claim
+
+Candidate batch: `F11-B03`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `NOT_STARTED`
+Prerequisite baseline: `F11-T01 DONE` and `F11-T02 DONE`.
+
+Eligible independent tasks (select and claim only in a later run):
+
+- `F11-T03` — commerce/revenue reporting; exclusive commerce route/OpenAPI-client owner.
+- `F11-T04` — Dashboard Home real-data widgets; dashboard-only paths, after selecting a separate owner.
+
+`F11-T05` waits for both `F11-T03` and `F11-T04`; no schema/migration, aggregate, authorization, or UI task is
+claimed by this status entry.
 
 ## آخرین batch تکمیل‌شده — F11-B01
 

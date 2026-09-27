@@ -1,5 +1,40 @@
 # Phase 11 Evidence
 
+## F11-T02 — clinic-scoped appointment, patient, assessment, and treatment reports
+
+Task ID: F11-T02
+Completed at: 2026-09-27 21:08 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B02
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/appointments/admin-appointments.{controller,dto,service}.ts`
+  - `apps/api/src/modules/appointments/patient-appointments.module.ts`
+  - `apps/api/src/modules/patients/admin/admin-patients.{controller,dto,service,module}.ts`
+  - `apps/api/src/modules/assessments/admin/admin-assessment-submissions.{controller,dto,service}.ts`
+  - `apps/api/src/modules/assessments/admin/admin-assessments.module.ts`
+  - `apps/api/src/modules/clinical/{admin-treatment-plans.controller,clinical.module,treatment-activity.service,treatment-plan-response.dto,treatment-plan.service}.ts`
+  - `apps/api/test/reporting.integration.spec.ts`
+  - `packages/api-client/openapi.json` and `packages/api-client/src/schema.generated.ts`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `apps/api/node_modules/.bin/tsc.cmd -p tsconfig.test.json --noEmit` → PASS.
+  - `apps/api/node_modules/.bin/vitest.cmd run test/reporting.integration.spec.ts test/openapi-contract.spec.ts --no-file-parallelism --reporter=dot` → PASS (8/8).
+  - `pnpm generate:api-client` → PASS; exported OpenAPI and generated client refreshed from the four runtime routes.
+  - `git diff --check` → PASS.
+Result:
+  - KPI-01–16 are served only by the four existing domain modules through ADMIN routes; every source query has a clinic predicate and returns only the frozen aggregate/list allow-list.
+  - Formula review confirms the frozen terminal appointment rate, canonical onboarding predicate, assessment `COMPLETE` cohort, ACTIVE treatment-plan snapshot, KPI-15 `completedAt` range, and KPI-16 subset cohort with null zero denominator.
+  - Disposable PostgreSQL integration proves API connection to a run-owned database, precise `Asia/Tehran` midnight conversion, cross-clinic exclusion, pagination, empty/zero and validation error behavior, absence of patient/medical payloads, and non-ADMIN denial.
+  - Direct PostgreSQL reporting emits `sourceStatus=current`; it never fabricates `partial` or `stale` results. A real source failure remains an API error rather than a substitute KPI value.
+Known limitations:
+  - T007/T009 remain the owners of active/revoked-session enforcement, the complete ADMIN/PATIENT/DOCTOR/STAFF authorization matrix, and browser E2E. No common authorization policy or guard changed here.
+Next task:
+  - F11-T03 or F11-T04 is eligible but unclaimed; F11-T05 remains serialized after both.
+
 ## F11-T01 — KPI/widget inventory response-metadata foundation
 
 - **Status:** `DONE`
