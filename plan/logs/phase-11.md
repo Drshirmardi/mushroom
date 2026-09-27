@@ -1,5 +1,54 @@
 # Phase 11 Evidence
 
+## F11-T04 — inventory-only Dashboard Home reporting
+
+Task ID: F11-T04
+Completed at: 2026-09-27 22:36 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B04
+Reviewed by: Codex /root
+Changed files:
+  - `apps/dashboard/src/features/dashboard/dashboard-page.tsx`
+  - `apps/dashboard/src/lib/dashboard-home-reporting.{ts,spec.ts}`
+  - `apps/dashboard/src/lib/commerce-revenue-api.spec.ts`
+  - `apps/api/src/modules/commerce/reporting/{commerce-revenue.dto,commerce-revenue.service}.ts`
+  - `apps/api/test/commerce-revenue.integration.spec.ts`
+  - `packages/api-client/{openapi.json,src/schema.generated.ts}`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none
+Tests run:
+  - `pnpm --filter dashboard lint` → PASS (0 errors; 3 pre-existing warnings outside this task).
+  - `pnpm --filter dashboard typecheck` → PASS.
+  - `pnpm --filter dashboard test` → PASS (16 files, 55 tests), including the Home reporting adapter’s
+    approved-source, forbidden-without-fallback, and error-without-fallback cases.
+  - `pnpm --filter api typecheck` → PASS with a disposable PostgreSQL configuration.
+  - `pnpm exec vitest run test/commerce-revenue.integration.spec.ts --no-file-parallelism` → PASS (2/2), proving
+    clinic-local `Refund.status in {REQUESTED, APPROVED}` snapshot semantics and no client-side inference.
+  - `pnpm exec vitest run test/reminders.integration.spec.ts --no-file-parallelism` → PASS (3/3).
+  - `pnpm exec vitest run --no-file-parallelism --exclude test/reminders.integration.spec.ts --exclude
+    test/chat-capacity.load.spec.ts` → PASS on a migration-and-seed disposable PostgreSQL database (85 files,
+    353 tests). The excluded Chat capacity load test is an unrelated 35-minute synthetic workload.
+  - `pnpm generate:api-client` and `pnpm --filter api-client build` → PASS; OpenAPI/client refreshed for
+    `CommerceRevenueDto.refundPending`.
+  - `git diff --check` → PASS.
+Result:
+  - Dashboard Home now renders only the frozen final KPI inventory: KPI-01–05, KPI-09, KPI-11, KPI-14–15,
+    KPI-19, and KPI-21; it also renders only the permitted limited today appointment list and limited recent
+    `OperationalActivity` list. Removed legacy scheduling-readiness, assessment-activity, and commerce-operation
+    widgets were not part of that inventory.
+  - All Home KPI values are read from the already-authorized ADMIN reporting APIs. The page shows loading, error,
+    forbidden, zero/empty, partial, and stale behavior explicitly and never substitutes a mock or fallback value.
+  - The one required contract extension is `refundPending`: a direct clinic-scoped PostgreSQL count of
+    `Refund` rows in `{REQUESTED, APPROVED}` at response `asOf`. This is KPI-21’s frozen formula; it excludes
+    `MANUAL_EXECUTION_PENDING`, rejected and completed refunds, and makes no monetary or Sadad-settlement claim.
+Known limitations:
+  - `F11-T05` remains the exclusive owner of query-plan measurement and any index/aggregate decision; none was added.
+  - `F11-T07` and `F11-T09` remain the owners of the phase-wide role/authorization matrix, active/revoked-session
+    enforcement, and browser E2E. No shared authorization policy or guard changed here.
+Next task:
+  - `F11-T05` is eligible and unclaimed; do not start it in this task.
+
 ## F11-T03 — clinic-scoped commerce operational-revenue report
 
 Task ID: F11-T03

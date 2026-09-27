@@ -69,5 +69,6 @@ export class CommerceRevenueDto {
   @ApiProperty({ type: String }) completedRefundToman!: string;
   @ApiProperty({ type: String }) netRevenueToman!: string;
   @ApiProperty() successfulPaymentCount!: number;
+  @ApiProperty() refundPending!: number;
   @ApiProperty({ type: CommerceRevenueSeriesPointDto, isArray: true }) series!: CommerceRevenueSeriesPointDto[];
 }

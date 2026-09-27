@@ -5235,6 +5235,7 @@ export interface components {
             completedRefundToman: string;
             netRevenueToman: string;
             successfulPaymentCount: number;
+            refundPending: number;
             series: components["schemas"]["CommerceRevenueSeriesPointDto"][];
         };
     };

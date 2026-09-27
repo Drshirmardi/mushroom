@@ -18724,6 +18724,9 @@
           "successfulPaymentCount": {
             "type": "number"
           },
+          "refundPending": {
+            "type": "number"
+          },
           "series": {
             "type": "array",
             "items": {
@@ -18744,6 +18747,7 @@
           "completedRefundToman",
           "netRevenueToman",
           "successfulPaymentCount",
+          "refundPending",
           "series"
         ]
       }

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-27 21:30 +03:30`
+- آخرین به‌رورسانی: `2026-09-27 22:36 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,20 +51,37 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T03` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
-remains `IN_PROGRESS`; no task is currently claimed.
+complete. `F11-T01` through `F11-T04` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+remains `IN_PROGRESS`; no batch is claimed.
 
-## batch بعدی واجد شرایط — بدون claim
+## batch بعدی — F11-B05 (unclaimed)
 
-Candidate batch: `F11-B04`
+Coordinator/Thread: `Codex /root`
 Phase: `11-REPORTING-ACCESS`
-Batch status: `NOT_STARTED`
-Prerequisite baseline: `F11-T01`, `F11-T02`, and `F11-T03` DONE.
+Candidate task: `F11-T05` only. Dependencies `F11-T01` through `F11-T04` are DONE. It is the exclusive
+query/index review owner and must first reproduce a scoped reporting bottleneck before proposing any index or
+aggregate. No task is claimed by this handoff.
 
-- `F11-T04` — Dashboard Home real-data widgets; dashboard-only paths, unclaimed.
+## آخرین batch تکمیل‌شده — F11-B04
 
-`F11-T05` waits for `F11-T04`; no schema/migration, aggregate, authorization, audit, role, CRM, browser-E2E, or
-Dashboard Home task is claimed by this status entry.
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 22:05 +03:30`
+Completed at: `2026-09-27 22:36 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-002–003`, `FR-012–013`, `SC-002–003`,
+`contracts/kpi-inventory.md`, and `contracts/reporting-api.md`).
+
+- Task ID: `F11-T04`
+  - Status: `DONE`
+  - Scope: Dashboard Home now reads only ADMIN-authorized, inventory-approved reporting sources and exposes
+    truthful loading/error/forbidden/empty/zero/partial/stale states without a substitute value.
+  - Review: PASS — final Home composition is KPI-01–05, KPI-09, KPI-11, KPI-14–15, KPI-19, and KPI-21 plus the
+    permitted today appointment and limited operational-activity lists. KPI-21 is supplied by the existing commerce
+    reporting endpoint as a clinic-scoped `Refund{REQUESTED, APPROVED}` snapshot rather than inferred in the client.
+    No schema/migration, aggregate/index, shared authorization/session infrastructure, navigation, role/staff,
+    audit, CRM, browser E2E, or provider activation changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T05` only, unclaimed.
 
 ## آخرین batch تکمیل‌شده — F11-B03
 

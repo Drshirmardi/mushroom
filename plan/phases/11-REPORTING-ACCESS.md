@@ -10,7 +10,7 @@
 - [x] `F11-T01` — inventory نهایی widgetها و تعریف formula/timezone/data owner هر KPI
 - [x] `F11-T02` — appointment/patient/assessment/treatment reports
 - [x] `F11-T03` — commerce/revenue reports در صورت تکمیل Phase 09
-- [ ] `F11-T04` — Dashboard Home نهایی بدون widget mock
+- [x] `F11-T04` — Dashboard Home نهایی بدون widget mock
 - [ ] `F11-T05` — query/index review و aggregate فقط برای bottleneck اثبات‌شده
 - [ ] `F11-T06` — audit viewer و ابزار عملیات پشتیبانی لازم
 - [ ] `F11-T07` — تصمیم نقش‌های واقعی release و permission matrix
