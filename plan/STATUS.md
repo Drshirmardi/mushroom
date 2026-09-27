@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-27 21:08 +03:30`
+- آخرین به‌رورسانی: `2026-09-27 21:30 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,23 +51,40 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` and `F11-T02` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
-remains `IN_PROGRESS`; no later task is claimed.
+complete. `F11-T01` through `F11-T03` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+remains `IN_PROGRESS`; no task is currently claimed.
 
 ## batch بعدی واجد شرایط — بدون claim
 
-Candidate batch: `F11-B03`
+Candidate batch: `F11-B04`
 Phase: `11-REPORTING-ACCESS`
 Batch status: `NOT_STARTED`
-Prerequisite baseline: `F11-T01 DONE` and `F11-T02 DONE`.
+Prerequisite baseline: `F11-T01`, `F11-T02`, and `F11-T03` DONE.
 
-Eligible independent tasks (select and claim only in a later run):
+- `F11-T04` — Dashboard Home real-data widgets; dashboard-only paths, unclaimed.
 
-- `F11-T03` — commerce/revenue reporting; exclusive commerce route/OpenAPI-client owner.
-- `F11-T04` — Dashboard Home real-data widgets; dashboard-only paths, after selecting a separate owner.
+`F11-T05` waits for `F11-T04`; no schema/migration, aggregate, authorization, audit, role, CRM, browser-E2E, or
+Dashboard Home task is claimed by this status entry.
 
-`F11-T05` waits for both `F11-T03` and `F11-T04`; no schema/migration, aggregate, authorization, or UI task is
-claimed by this status entry.
+## آخرین batch تکمیل‌شده — F11-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 21:24 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Completed at: `2026-09-27 21:30 +03:30`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-005–006`, `SC-004`,
+`contracts/kpi-inventory.md`, and `contracts/reporting-api.md`).
+
+- Task ID: `F11-T03`
+  - Status: `DONE`
+  - Scope: existing ADMIN commerce revenue route and dedicated revenue view reconciled with the operational
+    verified-Payment minus completed-Refund `TOMAN` contract; no Sadad production acceptance/settlement claim.
+  - Review: PASS — explicit clinic scope and response provenance added; `WEEK` granularity, operational label,
+    real-source empty/error/forbidden states, OpenAPI/client freshness, and disposable-PostgreSQL evidence passed.
+    No schema/migration, aggregate, common authorization, Dashboard Home, provider activation, or network transport
+    changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T04` only, unclaimed.
 
 ## آخرین batch تکمیل‌شده — F11-B01
 

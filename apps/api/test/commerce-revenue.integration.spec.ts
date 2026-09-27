@@ -43,10 +43,11 @@ describe('commerce revenue (PostgreSQL API integration)', () => {
   };
 
   it('returns a truthful empty range instead of a synthetic revenue total', async () => {
+    const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
     const admin = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] });
-    const response = await app.inject({ method: 'GET', url: '/v1/admin/commerce/revenue?from=2035-01-01&to=2035-01-01', headers: { authorization: `Bearer ${admin}` } });
+    const response = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&from=2035-01-01&to=2035-01-01`, headers: { authorization: `Bearer ${admin}` } });
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toMatchObject({ currency: 'TOMAN', grossCapturedToman: '0', completedRefundToman: '0', netRevenueToman: '0', successfulPaymentCount: 0, series: [] });
+    expect(response.json()).toMatchObject({ clinicId: clinic.id, currency: 'TOMAN', sourceStatus: 'current', revenueLabel: 'operational revenue', grossCapturedToman: '0', completedRefundToman: '0', netRevenueToman: '0', successfulPaymentCount: 0, series: [] });
   });
 
   it('uses only verified Payment and completed Refund TOMAN facts, with clinic-local boundaries and ADMIN authorization', async () => {
@@ -68,9 +69,11 @@ describe('commerce revenue (PostgreSQL API integration)', () => {
     const admin = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] });
     const staff = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] });
     const denied = await app.inject({ method: 'GET', url: '/v1/admin/commerce/revenue?from=2026-03-20&to=2026-03-21', headers: { authorization: `Bearer ${staff}` } }); expect(denied.statusCode).toBe(403);
-    const response = await app.inject({ method: 'GET', url: '/v1/admin/commerce/revenue?from=2026-03-20&to=2026-03-21&granularity=DAY', headers: { authorization: `Bearer ${admin}` } });
-    expect(response.statusCode).toBe(200); expect(response.json()).toMatchObject({ currency: 'TOMAN', timeZone: clinic.timeZone, from: '2026-03-20', to: '2026-03-21', grossCapturedToman: '300000', completedRefundToman: '35000', netRevenueToman: '265000', successfulPaymentCount: 2, series: [{ date: '2026-03-20', grossCapturedToman: '100000', completedRefundToman: '20000', netRevenueToman: '80000', successfulPaymentCount: 1 }, { date: '2026-03-21', grossCapturedToman: '200000', completedRefundToman: '15000', netRevenueToman: '185000', successfulPaymentCount: 1 }] });
-    const month = await app.inject({ method: 'GET', url: '/v1/admin/commerce/revenue?from=2026-03-20&to=2026-03-21&granularity=MONTH', headers: { authorization: `Bearer ${admin}` } }); expect(month.json().series).toHaveLength(1); expect(month.json().series[0]).toMatchObject({ date: '2026-03', netRevenueToman: '265000' });
-    const invalid = await app.inject({ method: 'GET', url: '/v1/admin/commerce/revenue?from=2026-02-30&to=2026-03-01', headers: { authorization: `Bearer ${admin}` } }); expect(invalid.statusCode).toBe(400);
+    const response = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&from=2026-03-20&to=2026-03-21&granularity=DAY`, headers: { authorization: `Bearer ${admin}` } });
+    expect(response.statusCode).toBe(200); expect(response.json()).toMatchObject({ clinicId: clinic.id, currency: 'TOMAN', timeZone: clinic.timeZone, sourceStatus: 'current', revenueLabel: 'operational revenue', from: '2026-03-20', to: '2026-03-21', grossCapturedToman: '300000', completedRefundToman: '35000', netRevenueToman: '265000', successfulPaymentCount: 2, series: [{ date: '2026-03-20', grossCapturedToman: '100000', completedRefundToman: '20000', netRevenueToman: '80000', successfulPaymentCount: 1 }, { date: '2026-03-21', grossCapturedToman: '200000', completedRefundToman: '15000', netRevenueToman: '185000', successfulPaymentCount: 1 }] });
+    const week = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&from=2026-03-20&to=2026-03-21&granularity=WEEK`, headers: { authorization: `Bearer ${admin}` } }); expect(week.json().series).toHaveLength(1); expect(week.json().series[0]).toMatchObject({ date: '2026-03-16', netRevenueToman: '265000' });
+    const month = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&from=2026-03-20&to=2026-03-21&granularity=MONTH`, headers: { authorization: `Bearer ${admin}` } }); expect(month.json().series).toHaveLength(1); expect(month.json().series[0]).toMatchObject({ date: '2026-03', netRevenueToman: '265000' });
+    const invalid = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&from=2026-02-30&to=2026-03-01`, headers: { authorization: `Bearer ${admin}` } }); expect(invalid.statusCode).toBe(400);
+    const unsupported = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&paymentId=${randomUUID()}`, headers: { authorization: `Bearer ${admin}` } }); expect(unsupported.statusCode).toBe(400);
   });
 });

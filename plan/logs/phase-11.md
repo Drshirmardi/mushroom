@@ -1,5 +1,51 @@
 # Phase 11 Evidence
 
+## F11-T03 — clinic-scoped commerce operational-revenue report
+
+Task ID: F11-T03
+Completed at: 2026-09-27 21:30 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B03
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/commerce/reporting/{commerce-revenue.dto,commerce-revenue.service}.ts`
+  - `apps/api/test/commerce-revenue.integration.spec.ts`
+  - `apps/dashboard/src/features/revenue/revenue-page.tsx`
+  - `apps/dashboard/src/lib/commerce-revenue-api.{ts,spec.ts}`
+  - `packages/api-client/{openapi.json,src/schema.generated.ts}`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `pnpm generate:api-client` → PASS; OpenAPI and generated client refreshed for the changed revenue contract.
+  - `pnpm --filter @sabz-zendegi/api-client build` and `typecheck` → PASS.
+  - `pnpm --filter @sabz/dashboard typecheck` → PASS.
+  - `pnpm --filter @sabz/dashboard test -- commerce-revenue-api.spec.ts` → PASS (15 files, 52 tests).
+  - `pnpm test:isolated` → PASS; official harness created a run-owned PostgreSQL database, replayed all 32
+    migrations and seed, executed the workspace suite, and removed the disposable database.
+  - `pnpm --filter @sabz/dashboard lint` → PASS.
+  - `git diff --check` → PASS.
+Result:
+  - The ADMIN revenue response now returns explicit active `clinicId`, `Asia/Tehran` range, response `asOf`,
+    `sourceStatus=current`, and the exact `operational revenue` label. Every payment/refund query remains scoped
+    through its order's clinic predicate.
+  - Gross captured, completed refunds, net revenue, and successful payment count continue to use only verified
+    `Payment.commerceAmountToman` and completed `Refund.amountToman` facts. Callback, payment-attempt, unpaid-order,
+    catalog, provider transport, and Sadad settlement data are not queried or represented as revenue.
+  - The revenue view consumes the generated contract, adds the frozen `WEEK` series option, preserves real
+    loading/error/forbidden/empty behavior, and explicitly says the value is not a production-verified Sadad
+    settlement.
+  - Disposable PostgreSQL coverage proves ADMIN denial for STAFF, exact verified-payment/completed-refund TOMAN
+    totals across Tehran boundaries, clinic response scope, weekly/monthly buckets, empty zero result, invalid range,
+    and rejected unsupported filters.
+Known limitations:
+  - `F11-T05` remains the exclusive owner of query-plan measurement and any index/aggregate decision; none was added.
+  - `F11-T07` and `F11-T09` remain the owners of the phase-wide ADMIN-only role matrix, active/revoked-session
+    enforcement, and browser E2E. No shared authorization policy or guard changed in this task.
+Next batch:
+  - `F11-B04 / F11-T04` is eligible and unclaimed; do not start it in this task.
+
 ## F11-T02 — clinic-scoped appointment, patient, assessment, and treatment reports
 
 Task ID: F11-T02

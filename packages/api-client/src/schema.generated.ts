@@ -5218,11 +5218,19 @@ export interface components {
             successfulPaymentCount: number;
         };
         CommerceRevenueDto: {
+            /** Format: uuid */
+            clinicId: string;
             /** @enum {string} */
             currency: "TOMAN";
             timeZone: string;
             from: string;
             to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            /** @enum {string} */
+            revenueLabel: "operational revenue";
             grossCapturedToman: string;
             completedRefundToman: string;
             netRevenueToman: string;
@@ -11301,6 +11309,8 @@ export interface operations {
     adminCommerceRevenueGet: {
         parameters: {
             query?: {
+                /** @description Explicit active clinic scope when more than one active clinic exists. */
+                clinicId?: string;
                 /** @description Clinic-local inclusive ISO date. */
                 from?: string;
                 granularity?: "DAY" | "WEEK" | "MONTH";

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, Matches } from 'class-validator';
+import { IsIn, IsOptional, IsUUID, Matches } from 'class-validator';
 
 export const commerceRevenueGranularities = ['DAY', 'WEEK', 'MONTH'] as const;
 export type CommerceRevenueGranularity = (typeof commerceRevenueGranularities)[number];
@@ -27,6 +27,11 @@ export const commerceReportingKpiDefinitions = [
 ] as const satisfies readonly CommerceReportingKpiDefinitionResponseDto[];
 
 export class CommerceRevenueQueryDto {
+  @ApiPropertyOptional({ format: 'uuid', description: 'Explicit active clinic scope when more than one active clinic exists.' })
+  @IsOptional()
+  @IsUUID('4')
+  clinicId?: string;
+
   @ApiPropertyOptional({ example: '2026-09-01', description: 'Clinic-local inclusive ISO date.' })
   @IsOptional()
   @Matches(/^\d{4}-\d{2}-\d{2}$/u)
@@ -52,10 +57,14 @@ export class CommerceRevenueSeriesPointDto {
 }
 
 export class CommerceRevenueDto {
+  @ApiProperty({ format: 'uuid' }) clinicId!: string;
   @ApiProperty({ enum: ['TOMAN'] }) currency!: 'TOMAN';
   @ApiProperty() timeZone!: string;
   @ApiProperty() from!: string;
   @ApiProperty() to!: string;
+  @ApiProperty({ format: 'date-time' }) asOf!: Date;
+  @ApiProperty({ enum: ['current', 'partial', 'stale'] }) sourceStatus!: 'current' | 'partial' | 'stale';
+  @ApiProperty({ enum: ['operational revenue'] }) revenueLabel!: 'operational revenue';
   @ApiProperty({ type: String }) grossCapturedToman!: string;
   @ApiProperty({ type: String }) completedRefundToman!: string;
   @ApiProperty({ type: String }) netRevenueToman!: string;

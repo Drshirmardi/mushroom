@@ -10811,6 +10811,16 @@
         "operationId": "adminCommerceRevenueGet",
         "parameters": [
           {
+            "name": "clinicId",
+            "required": false,
+            "in": "query",
+            "description": "Explicit active clinic scope when more than one active clinic exists.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "from",
             "required": false,
             "in": "query",
@@ -18665,6 +18675,10 @@
       "CommerceRevenueDto": {
         "type": "object",
         "properties": {
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "currency": {
             "type": "string",
             "enum": [
@@ -18679,6 +18693,24 @@
           },
           "to": {
             "type": "string"
+          },
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceStatus": {
+            "type": "string",
+            "enum": [
+              "current",
+              "partial",
+              "stale"
+            ]
+          },
+          "revenueLabel": {
+            "type": "string",
+            "enum": [
+              "operational revenue"
+            ]
           },
           "grossCapturedToman": {
             "type": "string"
@@ -18700,10 +18732,14 @@
           }
         },
         "required": [
+          "clinicId",
           "currency",
           "timeZone",
           "from",
           "to",
+          "asOf",
+          "sourceStatus",
+          "revenueLabel",
           "grossCapturedToman",
           "completedRefundToman",
           "netRevenueToman",
