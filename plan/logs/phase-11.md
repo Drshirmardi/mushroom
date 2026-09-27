@@ -1,5 +1,41 @@
 # Phase 11 Evidence
 
+## F11-T05 — scoped reporting query-plan baseline
+
+Task ID: F11-T05
+Completed at: 2026-09-28 02:42 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B05
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/test/reporting-query-plan.integration.spec.ts`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none — the baseline did not reproduce a scoped bottleneck, so the F11-T05 conditional schema/index/aggregate
+    owner path was intentionally not exercised.
+Tests run:
+  - `pnpm exec tsc -p tsconfig.test.json --noEmit` → PASS.
+  - `pnpm exec vitest run test/reporting-query-plan.integration.spec.ts --no-file-parallelism --reporter=verbose`
+    → PASS (1/1) on a migrated-and-seeded, run-owned PostgreSQL database that the test drops in teardown.
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `git diff --check` → PASS.
+Result:
+  - The disposable integration test captures and replays `EXPLAIN (ANALYZE, BUFFERS, COSTS OFF, FORMAT JSON)` for
+    18 real clinic-scoped query shapes: scheduled/completed/cancelled/no-show/wait/page appointments; new-patient
+    and onboarding population; assessment start/completion cohort/completed; active-plan/due/completed/cohort
+    treatment tasks; and operational payment/completed-refund/pending-refund commerce reads.
+  - Every captured plan contains the active clinic predicate and replay preserves each query shape. The measured
+    baseline was 0.049–0.304 ms execution time with 2–22 shared blocks on its run-owned dataset; the plan supplies
+    no production-size performance target, and no actual bottleneck was reproduced.
+  - Direct PostgreSQL queries remain the accepted source path. No index, aggregate, schema, migration, cache,
+    warehouse, analytics service, API contract/client, or runtime behavior was added. The commerce queries retain
+    the existing operational facts only and make no Sadad settlement or production-verification assertion.
+Review:
+  - PASS — task ownership is confined to its disposable PostgreSQL test and coordinator-only evidence/status files;
+    it does not enter F11-T06 audit/support, F11-T07 authorization, or any later Phase 11 scope.
+Next eligible task:
+  - `F11-T06` only, unclaimed; do not start it in this task.
+
 ## F11-T04 — inventory-only Dashboard Home reporting
 
 Task ID: F11-T04

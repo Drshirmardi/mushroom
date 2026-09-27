@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-27 22:36 +03:30`
+- آخرین به‌رورسانی: `2026-09-28 02:42 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,16 +51,33 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T04` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+complete. `F11-T01` through `F11-T05` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
 remains `IN_PROGRESS`; no batch is claimed.
 
-## batch بعدی — F11-B05 (unclaimed)
+## آخرین batch تکمیل‌شده — F11-B05
 
 Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 22:42 +03:30`
+Completed at: `2026-09-28 02:42 +03:30`
 Phase: `11-REPORTING-ACCESS`
-Candidate task: `F11-T05` only. Dependencies `F11-T01` through `F11-T04` are DONE. It is the exclusive
-query/index review owner and must first reproduce a scoped reporting bottleneck before proposing any index or
-aggregate. No task is claimed by this handoff.
+Batch status: `DONE`
+Contract baseline: `F11-T01` through `F11-T04` DONE; frozen `specs/009-reporting-access/` (`FR-015`, `SC-006`,
+`research.md`, `quickstart.md`, `data-model.md`, and `contracts/reporting-api.md`).
+
+- Task ID: `F11-T05`
+  - Status: `DONE`
+  - Scope: captured and replayed `EXPLAIN (ANALYZE, BUFFERS)` for 18 actual clinic-scoped report query shapes across
+    appointments, patient/onboarding population, assessments, treatments, and operational commerce revenue.
+  - Review: PASS — a migrated-and-seeded run-owned PostgreSQL database reported explicit clinic scope on every plan,
+    deterministic replay, and no reproduced bottleneck. The direct-query baseline is accepted; no index, aggregate,
+    schema, migration, OpenAPI/client, endpoint, dashboard, authorization, role, audit, CRM, browser-E2E, or later
+    task path changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T06` only, unclaimed.
+
+## batch بعدی — F11-B06 (unclaimed)
+
+Candidate task: `F11-T06` only. `F11-T05` is DONE. Audit viewer/support operations remain the next serialized
+scope; no batch or task is claimed by this handoff.
 
 ## آخرین batch تکمیل‌شده — F11-B04
 

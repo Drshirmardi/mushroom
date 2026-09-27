@@ -11,7 +11,7 @@
 - [x] `F11-T02` — appointment/patient/assessment/treatment reports
 - [x] `F11-T03` — commerce/revenue reports در صورت تکمیل Phase 09
 - [x] `F11-T04` — Dashboard Home نهایی بدون widget mock
-- [ ] `F11-T05` — query/index review و aggregate فقط برای bottleneck اثبات‌شده
+- [x] `F11-T05` — query/index review و aggregate فقط برای bottleneck اثبات‌شده
 - [ ] `F11-T06` — audit viewer و ابزار عملیات پشتیبانی لازم
 - [ ] `F11-T07` — تصمیم نقش‌های واقعی release و permission matrix
 - [ ] `F11-T08` — staff membership/invitation و منوی capability-based فقط در صورت نیاز release
