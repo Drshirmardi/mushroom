@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-28 02:42 +03:30`
+- آخرین به‌رورسانی: `2026-09-28 03:06 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,8 +51,41 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T05` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+complete. `F11-T01` through `F11-T06` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
 remains `IN_PROGRESS`; no batch is claimed.
+
+## آخرین batch تکمیل‌شده — F11-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 02:49 +03:30`
+Completed at: `2026-09-28 03:06 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: `F11-T01` through `F11-T05` DONE; frozen `specs/009-reporting-access/` (`FR-020–021`,
+`SC-005`, `contracts/audit-viewer.md`, and `contracts/authorization-matrix.md`).
+
+- Task ID: `F11-T06`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T05` DONE; no active batch or blocker at claim time.
+  - Scope: deliver the minimum-necessary ADMIN audit viewer/support read under `apps/api/src/modules/identity/audit/`
+    and `apps/dashboard/src/features/audit/`, with an authorized, clinic-scoped redacted cursor page and sensitive
+    read audit. No export, raw metadata, unbounded search, or support mutation is included.
+  - Owned paths: `apps/api/src/modules/identity/audit/**`, `apps/api/src/modules/identity/identity.module.ts`,
+    `apps/api/test/audit-viewer.integration.spec.ts`, `apps/dashboard/src/features/audit/**`,
+    `apps/dashboard/src/app/(app)/audit/page.tsx`, `apps/dashboard/src/lib/audit-viewer-api.{ts,spec.ts}`, generated
+    `packages/api-client/{openapi.json,src/schema.generated.ts}` only through the endpoint owner, and coordinator-only
+    `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`. Any schema/migration or shared auth change is
+    excluded unless separately proved required by the frozen contract and assigned to this task.
+  - Shared/exclusive resource: audit-viewer route/contract and API-client generation; disposable PostgreSQL test DB.
+    `common/auth` policy/guard and broader release authorization matrix remain exclusively deferred to `F11-T07`.
+  - Review: PASS — the endpoint is ADMIN-only and checks an active, unrevoked session before query execution;
+    `PatientAccessAudit` is queried only with an explicit active-clinic predicate and returned solely through the
+    redacted cursor projection. The generic `AuditEvent` table is deliberately not queried because it has no clinic
+    provenance. The viewer audits each disclosed clinical event through the existing clinical-audit writer; it exposes
+    no export/raw metadata path. No schema, migration, dependency, shared `common/auth` policy/guard, role matrix,
+    CRM, browser E2E, or later-task work changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T07` only, unclaimed; do not start it in this task.
 
 ## آخرین batch تکمیل‌شده — F11-B05
 
@@ -73,11 +106,6 @@ Contract baseline: `F11-T01` through `F11-T04` DONE; frozen `specs/009-reporting
     schema, migration, OpenAPI/client, endpoint, dashboard, authorization, role, audit, CRM, browser-E2E, or later
     task path changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
   - Next eligible task: `F11-T06` only, unclaimed.
-
-## batch بعدی — F11-B06 (unclaimed)
-
-Candidate task: `F11-T06` only. `F11-T05` is DONE. Audit viewer/support operations remain the next serialized
-scope; no batch or task is claimed by this handoff.
 
 ## آخرین batch تکمیل‌شده — F11-B04
 

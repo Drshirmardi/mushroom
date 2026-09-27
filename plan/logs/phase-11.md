@@ -1,5 +1,53 @@
 # Phase 11 Evidence
 
+## F11-T06 — redacted clinic-scoped audit viewer
+
+Task ID: F11-T06
+Completed at: 2026-09-28 03:06 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B06
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/identity/audit/{audit-viewer.controller,audit-viewer.dto,audit-viewer-session.guard,audit-viewer.service}.ts`
+  - `apps/api/src/modules/identity/identity.module.ts`
+  - `apps/api/test/audit-viewer.integration.spec.ts`
+  - `apps/dashboard/src/app/(app)/audit/page.tsx`
+  - `apps/dashboard/src/features/audit/audit-viewer-page.tsx`
+  - `apps/dashboard/src/lib/audit-viewer-api.{ts,spec.ts}`
+  - generated `packages/api-client/{openapi.json,src/schema.generated.ts}`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none — the existing clinic-provenanced `PatientAccessAudit` model and clinical audit writer satisfy the frozen
+    minimum-necessary viewer contract. The generic `AuditEvent` table is excluded because it has no clinic provenance.
+Tests run:
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `pnpm exec tsc -p tsconfig.test.json --noEmit` → PASS.
+  - `pnpm exec vitest run test/audit-viewer.integration.spec.ts --no-file-parallelism --reporter=dot` → PASS (3/3)
+    on a migrated-and-seeded, run-owned PostgreSQL database that the test drops in teardown.
+  - `pnpm generate:api-client` and `pnpm --filter @sabz-zendegi/api-client build` → PASS; OpenAPI/client refreshed
+    for `GET /v1/admin/audit-events`.
+  - `pnpm --filter @sabz/dashboard typecheck` → PASS.
+  - `pnpm --filter @sabz/dashboard test -- audit-viewer-api.spec.ts` → PASS (2/2).
+  - `pnpm --filter @sabz/dashboard lint` → PASS (0 errors; 3 pre-existing warnings outside this task).
+  - `git diff --check` → PASS.
+Result:
+  - `GET /v1/admin/audit-events` is a backend-enforced ADMIN route with a route-local active/unrevoked-session check.
+    The phase-wide shared authorization policy/guard remains exclusively owned by F11-T07.
+  - The read path resolves an active clinic before filters, count, or page work; every returned row is a
+    `PatientAccessAudit` row with that clinic predicate. It provides only a stable `createdAt,id` cursor page,
+    local `Asia/Tehran` date range (1–366 days), action, clinical resource type, and actor identifier filters.
+  - The response contains redacted actor/subject/request references and a fixed allow-listed metadata summary. It
+    never returns raw patient/actor/resource identifiers, IP address, session data, clinical text, raw metadata,
+    arbitrary JSON, or a raw/export endpoint. Each disclosed event produces a new existing-policy-compatible
+    `AUDIT_VIEWER_READ` clinical audit event within the same transaction.
+  - The direct `/audit` dashboard route uses the generated contract and provides loading, forbidden, error, empty,
+    filters, and next-page states without a mock or synthetic fallback. It deliberately adds no navigation or role UI.
+Review:
+  - PASS — scope is confined to F11-T06 and its generated route contract/evidence. No database schema/migration,
+    dependency, shared auth policy/guard, role/membership/CRM path, browser E2E, or later Phase 11 task changed.
+Next eligible task:
+  - `F11-T07` only, unclaimed; do not start it in this task.
+
 ## F11-T05 — scoped reporting query-plan baseline
 
 Task ID: F11-T05

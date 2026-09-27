@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AccessTokenService } from '../../common/auth/access-token.service';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { ChatModule } from '../communications/chat/chat.module';
+import { ClinicalModule } from '../clinical/clinical.module';
 import { ChatSocketRegistry } from '../communications/chat/realtime/chat-socket-registry';
 import { LoginSessionUseCase } from './application/login-session.use-case';
 import { LoginUserUseCase } from './application/login-user.use-case';
@@ -27,10 +28,13 @@ import { PrismaRegistrationRepository } from './infrastructure/prisma-registrati
 import { PrismaSessionRepository } from './infrastructure/prisma-session.repository';
 import { AuthController } from './presentation/http/auth.controller';
 import { MeController } from './presentation/http/me.controller';
+import { AuditViewerController } from './audit/audit-viewer.controller';
+import { AuditViewerSessionGuard } from './audit/audit-viewer-session.guard';
+import { AuditViewerService } from './audit/audit-viewer.service';
 
 @Module({
-  imports: [ChatModule],
-  controllers: [AuthController, MeController],
+  imports: [ChatModule, ClinicalModule],
+  controllers: [AuthController, MeController, AuditViewerController],
   providers: [
     Argon2PasswordHasher,
     {
@@ -146,6 +150,8 @@ import { MeController } from './presentation/http/me.controller';
         sockets: ChatSocketRegistry,
       ) => new ManageAccountUseCase(accounts, passwords, sockets),
     },
+    AuditViewerSessionGuard,
+    AuditViewerService,
   ],
   exports: [
     LoginUserUseCase,
