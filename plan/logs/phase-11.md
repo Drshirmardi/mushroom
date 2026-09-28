@@ -1,5 +1,62 @@
 # Phase 11 Evidence
 
+## F11-T11 — independent Phase 11 closure gate
+
+Task ID: F11-T11
+Completed at: 2026-09-29 00:21 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B11
+Reviewed by: Codex /root
+Changed files: closure documentation/status/evidence only; no runtime, schema, migration, dependency, lockfile,
+generated-client, or SpecKit baseline file was changed by this task.
+
+### Closure audit
+
+- **Roadmap/evidence/traceability**: PASS — the phase checklist and this log contain accepted evidence for every
+  `F11-T01` through `F11-T10`; frozen SpecKit maps `F11-T01` through `F11-T11` to uniquely identified requirements,
+  artifacts, dependencies, verification, and evidence. The final cross-artifact review found no unresolved
+  clarification and no `HIGH` or `CRITICAL` finding. Historical planning-only unchecked boxes in frozen
+  `specs/009-reporting-access/tasks.md` are not roadmap status.
+- **Reporting correctness**: PASS — the governed KPI inventory, real-source report endpoints, scoped query-plan
+  evidence, `Asia/Tehran` calendar and integer `TOMAN` rules, zero/partial/stale states, and no mock/fallback
+  reporting widget requirement are covered by the accepted T01–T05 evidence and closure test suite.
+- **Access and audit**: PASS — backend ADMIN-only enforcement, active/unrevoked/unexpired persisted-session checks,
+  explicit tenant/clinic scope, medical-ownership limits, redacted audit viewer, and API/UI no-disclosure behavior
+  are covered by the T06–T09 evidence and fresh integration/browser runs.
+- **Operational CRM**: PASS — the only CRM route remains the real commerce-domain, read-only and clinic-scoped API;
+  it has no runtime `CRM_CUSTOMERS` reference, marketing page change, export, saved-segment, audience, campaign,
+  bulk-message, medical-profile, persistence, or inert-action surface. Fresh PostgreSQL evidence covers canonical
+  population/projection, payment/refund integer-TOMAN math, 0/1/2–4/5+ segments, zero denominator, validation,
+  pagination, clinic/role/session denial, and fixed redacted audit provenance.
+  Canonical `Payment` records have required `verifiedAt` and are created only by the verification-finalization path;
+  later refund lifecycle statuses preserve that verified commerce fact and are correctly offset by completed refunds.
+- **Isolation/freshness**: PASS — `F11-T10` did not change the marketing page, protected paths, schema/migrations,
+  dependencies, or lockfiles. `openapi:export` and API-client build completed with no resulting generated diff.
+  The normal Vitest configuration excludes only `e2e/**`; the separate Playwright configuration still discovers and
+  executes all seven Phase 11 browser cases. `git diff --check` is clean.
+
+### Fresh verification
+
+- Disposable PostgreSQL database: `prisma:migrate:deploy` applied all 32 migrations; `prisma:seed` passed; the
+  database was disposed after the run.
+- API PostgreSQL suite: `reporting-kpi-metadata.contract`, `reporting`, `commerce-revenue`, `reporting-query-plan`,
+  `audit-viewer`, `reporting-authorization`, `commerce-customer-crm`, `phase-11-exclusions`,
+  `release-admin-session.guard`, and `authorization.guard` — **10 files / 40 tests passed**.
+- `pnpm typecheck` — PASS; API test TypeScript check — PASS; `pnpm build` — PASS (all five workspace build tasks).
+- `pnpm --filter @sabz-zendegi/api openapi:export` — PASS; `pnpm --filter @sabz-zendegi/api-client build` — PASS;
+  checked-in OpenAPI/client output is fresh.
+- `pnpm --filter @sabz/dashboard test` — **18 files / 61 tests passed**.
+- `pnpm exec playwright test --config=playwright.phase11.config.ts` — **7 / 7 passed**; listing confirms the
+  suite remains independent from Vitest collection.
+- `git diff --check HEAD`, `git diff --check origin/main..HEAD`, combined history/path-isolation review, and
+  protected-path/CRM-surface scans — PASS.
+
+### Decision
+
+**PASS — Phase 11 is `DONE (CLOSED)`.** No blocker remains. The frozen, explicit scope exclusions (including staff
+membership/invitation, CRM marketing/export/audience capabilities, and dynamic roles) remain deferred by contract,
+not defects. Phase 12 is `NOT_STARTED`, no next task/batch is claimed, and this closure task stops here.
+
 ## F11-T10 — clinic-scoped operational store customer CRM
 
 Task ID: F11-T10

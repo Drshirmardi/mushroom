@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-28 23:16 +03:30`
-- Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
-- فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
-- وضعیت فاز فعال: `IN_PROGRESS`
+- آخرین به‌رورسانی: `2026-09-29 00:21 +03:30`
+- Milestone فعال: `Milestone E — Phase 11 DONE (CLOSED)`
+- فاز فعال: `ندارد؛ Phase 12 همچنان NOT_STARTED و unclaimed است`
+- وضعیت فاز فعال: `DONE (CLOSED)`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - blocker فعال: `ندارد`
@@ -44,16 +44,43 @@
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
 - [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
-- [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `IN_PROGRESS`
+- [x] `Phase 11` — Dashboard Reporting & Access Expansion — `DONE (CLOSED)`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T10` are accepted and recorded in
-[`logs/phase-11.md`](logs/phase-11.md). Phase 11 remains `IN_PROGRESS`; no batch is active. `F11-T11` is eligible
-but unclaimed and must not start without a separate task selection.
+`Phase 10` remains formally `DONE (CLOSED)`. `F11-T01` through `F11-T11` are accepted with independent
+closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 is formally `DONE (CLOSED)`.
+`Phase 12` remains `NOT_STARTED`, unclaimed, and out of scope for this completed batch.
+
+## آخرین batch تکمیل‌شده — F11-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 23:55 +03:30`
+Completed at: `2026-09-29 00:21 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/`, Phase 11 roadmap, `F11-T01` through `F11-T10` accepted
+evidence, and the formal pre-implementation reviewer gate.
+
+- Task ID: `F11-T11`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T01` through `F11-T10` DONE; no active batch or blocker at claim time.
+  - Scope: independent requirement-by-requirement Phase 11 review and closure evidence only. The required migration,
+    contract/client, PostgreSQL, authorization/audit/reporting/CRM, dashboard, browser, history, protected-path, and
+    SpecKit traceability checks passed with no closure-owned or predecessor defect.
+  - Owned paths: coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}` and any
+    closure-review checklist/evidence explicitly required by the frozen plan. All runtime, schema/migration,
+    dependency/lockfile, generated-client, dashboard/product, and Phase 12 paths are review-only.
+  - Shared/exclusive resource: final Phase 11 status/checklist/evidence and run-owned disposable PostgreSQL databases.
+    No other task or batch may write Phase 11 closure state.
+  - Review: PASS — all required typecheck/build, OpenAPI/client, disposable PostgreSQL migration and 40-test API
+    suites, normal dashboard Vitest (18 files/61 tests), independent Playwright (7/7), and diff/history isolation
+    checks passed. The closure commit owns documentation/status/evidence only. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible work: `Phase 12` is `NOT_STARTED`; no task or batch is selected or claimed.
 
 ## آخرین batch تکمیل‌شده — F11-B10
 
