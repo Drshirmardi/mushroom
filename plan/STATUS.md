@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-28 17:14 +03:30`
+- آخرین به‌رورسانی: `2026-09-28 17:26 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,9 +51,39 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T07` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
-remains `IN_PROGRESS`; no batch is claimed. `F11-T08`, `F11-T09`, and `F11-T10` are eligible but deliberately
-unclaimed.
+complete. `F11-T01` through `F11-T08` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+remains `IN_PROGRESS`; no batch is claimed. `F11-T09` and `F11-T10` are eligible but deliberately unclaimed.
+
+## آخرین batch تکمیل‌شده — F11-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 17:22 +03:30`
+Completed at: `2026-09-28 17:26 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-016`, `FR-017`, `FR-024–026`, `SC-003`,
+`contracts/conditional-exclusions.md`, and `contracts/authorization-matrix.md`), with `F11-T01` through
+`F11-T08` DONE after review.
+
+- Task ID: `F11-T08`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T07` DONE; no active batch or blocker at claim time.
+  - Scope: prove the confirmed release exclusion of staff membership/invitation and capability menus; preserve the
+    ADMIN-only admission boundary and add no membership, invitation, role mutation, route, UI capability, email,
+    export, schema, migration, dependency, or generated-client surface.
+  - Owned paths: `apps/api/test/phase-11-exclusions.spec.ts`, `apps/dashboard/src/auth/session.test.ts`, and
+    coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`.
+  - Shared/exclusive resource: exclusion evidence tests and disposable PostgreSQL test database. `common/auth`,
+    schema/migrations, OpenAPI/client, final authorization matrix/browser E2E, and CRM remain owned by other tasks.
+  - Review: PASS — source, schema, migration-name, and checked-in OpenAPI inspection prove no staff
+    membership/invitation mutation, capability menu, role builder, or report/audit export surface was introduced.
+    Dashboard refresh clears a `STAFF` bearer token and retains no authenticated snapshot. Backend ADMIN-only policy,
+    reporting/audit tenant/clinic isolation, redaction, and disabled/revoked-session regression all passed on a
+    disposable PostgreSQL database. Workspace typechecks and API-client contract freshness passed; no runtime,
+    schema, migration, dependency, generated-client, or later-task path changed. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible tasks: `F11-T09` and `F11-T10`; both remain unclaimed. Stop before starting either task.
 
 ## آخرین batch تکمیل‌شده — F11-B07
 

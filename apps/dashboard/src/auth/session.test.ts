@@ -64,6 +64,24 @@ describe("dashboard auth session", () => {
     });
   });
 
+  it("discards STAFF refresh authentication without retaining its bearer token", async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValue(jsonResponse(authentication(["STAFF"]), 200));
+    const manager = new DashboardSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+    );
+
+    await expect(manager.bootstrap()).resolves.toEqual({
+      status: "forbidden",
+      authentication: null,
+    });
+    expect(manager.getSnapshot()).toEqual({
+      status: "forbidden",
+      authentication: null,
+    });
+  });
+
   it("bootstraps concurrent callers with one credentialed, bodyless refresh", async () => {
     let finishRequest: ((response: Response) => void) | undefined;
     const pendingResponse = new Promise<Response>((resolve) => {

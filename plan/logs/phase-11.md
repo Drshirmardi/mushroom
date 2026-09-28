@@ -1,5 +1,44 @@
 # Phase 11 Evidence
 
+## F11-T08 — staff membership/invitation exclusion proof
+
+Task ID: F11-T08
+Completed at: 2026-09-28 17:26 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B08
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/test/phase-11-exclusions.spec.ts`
+  - `apps/dashboard/src/auth/session.test.ts`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none — this task proves the frozen conditional exclusion and does not create a membership, invitation, role,
+    route, export, schema, dependency, OpenAPI, or generated-client surface.
+Tests run:
+  - `pnpm typecheck` → PASS (all workspace typechecks, including API-client OpenAPI generation freshness check).
+  - `tsc -p apps/api/tsconfig.test.json --noEmit` → PASS.
+  - `vitest run test/phase-11-exclusions.spec.ts test/authorization.guard.spec.ts test/release-admin-session.guard.spec.ts --no-file-parallelism` →
+    PASS (3 files, 25 tests).
+  - `pnpm --filter @sabz/dashboard test -- session.test.ts` → PASS (17 files, 59 tests).
+  - `vitest run test/reporting.integration.spec.ts test/audit-viewer.integration.spec.ts --no-file-parallelism` →
+    PASS (2 files, 4 tests) on migrated-and-seeded, run-owned PostgreSQL databases dropped in teardown.
+  - `git diff --check` → PASS.
+Result:
+  - The API/dashboard source trees, canonical Prisma schema, migration names, and checked-in OpenAPI paths contain
+    no staff membership/invitation runtime surface. The release has no role builder or capability menu, and the
+    protected reporting/audit OpenAPI paths expose no export route.
+  - Dashboard session refresh receiving a `STAFF` authentication response returns `forbidden`, clears the
+    authentication snapshot, and retains no bearer token. Existing backend policy and persisted release-session
+    guard tests remain green, so menu absence is not relied on as authorization.
+  - Disposable reporting/audit regression preserved ADMIN-only admission before protected disclosure plus existing
+    clinic scoping, audit redaction, and disabled/revoked-session denial. No runtime, schema, migration, dependency,
+    generated artifact, or later-task path changed.
+Review:
+  - PASS — T08 is confined to its frozen proof/evidence paths. The final full authorization matrix and browser E2E
+    remain owned by F11-T09; CRM/segmentation remains owned by F11-T10. No blocker remains for this task.
+Next eligible tasks:
+  - `F11-T09` and `F11-T10` are eligible and unclaimed; stop before starting either task.
+
 ## F11-T07 — ADMIN-only release admission and live session authorization
 
 Task ID: F11-T07
