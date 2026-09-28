@@ -1,5 +1,54 @@
 # Phase 11 Evidence
 
+## F11-T10 — clinic-scoped operational store customer CRM
+
+Task ID: F11-T10
+Completed at: 2026-09-28 23:16 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B10
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/modules/commerce/reporting/{admin-commerce-customer-crm.controller,commerce-customer-crm.dto,commerce-customer-crm.service}.ts`
+  - `apps/api/src/modules/commerce/catalog/admin-commerce-catalog.module.ts`
+  - `apps/api/test/commerce-customer-crm.integration.spec.ts`
+  - `packages/api-client/{openapi.json,src/schema.generated.ts}`
+  - `apps/dashboard/src/lib/commerce-customer-crm-api.{ts,spec.ts}`
+  - `apps/dashboard/src/features/store-crm/store-crm-page.tsx`
+  - `apps/dashboard/e2e/phase-11-access.spec.ts`
+  - `apps/dashboard/vitest.config.mts`
+  - approved Phase 11 SpecKit change-control artifacts and coordinator-only phase/status evidence files
+Migrations:
+  - none — CRM is a read-only calculation over canonical records; no table, copied CRM record, retention policy,
+    aggregate, schema, or migration was created.
+Tests run:
+  - migrated-and-seeded disposable PostgreSQL: `vitest run test/commerce-customer-crm.integration.spec.ts --no-file-parallelism`
+    → PASS (1 file, 2 tests). The database was dropped in teardown. It covers canonical payment/refund arithmetic,
+    POTENTIAL/ONE_TIME/RETURNING/VIP boundaries, top-product/last-purchase facts, bounded pagination/search/filter/sort,
+    invalid query rejection, clinic denial, non-ADMIN/disabled/revoked/expired/unassigned session denial, and per-row
+    redacted audit provenance.
+  - `pnpm --filter @sabz-zendegi/api typecheck` → PASS.
+  - `tsc -p apps/api/tsconfig.test.json --noEmit` → PASS.
+  - `pnpm --filter @sabz-zendegi/api-client build` → PASS; checked generated OpenAPI/client output is fresh.
+  - `pnpm --filter @sabz/dashboard typecheck` → PASS.
+  - `pnpm --filter @sabz/dashboard test` → PASS (18 files, 61 tests); `e2e/**` is excluded from Vitest collection only.
+  - `playwright test --config=playwright.phase11.config.ts` → PASS (7/7), including the real CRM route contract,
+    no marketing/export controls, and the pre-existing ADMIN/session direct-navigation denials.
+  - `git diff --check` → PASS.
+Result:
+  - `GET /v1/admin/commerce/customers` is an ADMIN-only commerce-domain API requiring a valid persisted session and
+    explicit active-clinic `ClinicalClinicAccess`. Every data CTE is clinic-scoped; no caller-provided foreign scope,
+    medical field, raw audit metadata, token, or payload is returned or recorded.
+  - The dashboard CRM is connected to that API and has loading, empty, error, forbidden, filtering, sorting, and
+    pagination states with no mock data or inert customer/marketing/export actions.
+  - The release's canonical clinic model permits one active clinic; a syntactically valid inactive foreign clinic ID
+    is denied before any row or derived summary disclosure. This preserves the same cross-clinic boundary without
+    inventing a second active clinic.
+Review:
+  - PASS — all changes are within F11-T10-owned paths. `ClinicalClinicAccess` is read only; shared authorization,
+    Prisma schema/migrations, dependency/lockfile, marketing, and every later task remain untouched.
+Next eligible task:
+  - `F11-T11` is eligible and unclaimed. Do not start it in this task.
+
 ## F11-T09 — authorization matrix and browser E2E
 
 Task ID: F11-T09

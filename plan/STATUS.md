@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-28 18:16 +03:30`
+- آخرین به‌رورسانی: `2026-09-28 23:16 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,9 +51,38 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T08` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
-remains `IN_PROGRESS`; `F11-T01` through `F11-T09` are accepted and recorded in
-[`logs/phase-11.md`](logs/phase-11.md). `F11-T10` remains eligible but unclaimed.
+complete. `F11-T01` through `F11-T10` are accepted and recorded in
+[`logs/phase-11.md`](logs/phase-11.md). Phase 11 remains `IN_PROGRESS`; no batch is active. `F11-T11` is eligible
+but unclaimed and must not start without a separate task selection.
+
+## آخرین batch تکمیل‌شده — F11-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 22:38 +03:30`
+Completed at: `2026-09-28 23:16 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: owner-approved CRM change control in [`specs/009-reporting-access/`](../specs/009-reporting-access/),
+including `FR-023`, `FR-027–033`, `SC-008–010`, and
+[`contracts/customer-crm-api.md`](../specs/009-reporting-access/contracts/customer-crm-api.md).
+
+- Task ID: `F11-T10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T07` and `F11-T09` DONE; `F11-T01` through `F11-T09` accepted before claim.
+  - Result: real, read-only, clinic-scoped operational customer CRM is delivered inside the existing commerce domain.
+    It requires an active persisted ADMIN session and pre-existing `ClinicalClinicAccess`, derives only its approved
+    non-medical projection from canonical `PatientProfile`, `UserProfile`, Payment, Refund, and order-line records,
+    validates bounded query input, and audits each disclosed patient with fixed redacted provenance.
+  - Review: PASS — integration on a migrated-and-seeded disposable PostgreSQL database proves payment/refund math,
+    deterministic segments, integer-truncated TOMAN summary, search/filter/sort/pagination validation, clinic denial,
+    PATIENT/DOCTOR/STAFF denial, disabled/revoked/expired session denial, and non-sensitive audit metadata. API/client
+    freshness, API/dashboard typechecks, ordinary dashboard Vitest (18 files/61 tests), independent Phase 11
+    Playwright (7/7), and `git diff --check` passed. The only Vitest configuration change excludes `e2e/**`; the
+    Playwright suite remains intact. No schema, migration, aggregate, dependency, lockfile, shared-auth, marketing,
+    export, campaign, saved-segment, audience, bulk-message, or medical-profiling surface changed. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T11`, unclaimed. Stop before starting it.
 
 ## آخرین batch تکمیل‌شده — F11-B09
 

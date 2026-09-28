@@ -34,29 +34,30 @@
 
 **Independent test**: The same protected route is permitted for an active scoped ADMIN and produces no protected response for every denied identity/scope case.
 
-## Phase 4: Explicitly Deferred Scope and Closure
+## Phase 4: Operational Customer CRM and Closure
 
-**Goal**: Preserve scope boundaries and complete evidence only after all preceding review gates pass.
+**Goal**: Deliver the owner-approved operational store-customer CRM within the existing commerce domain, then complete evidence only after all preceding review gates pass.
 
-- [ ] T010 [US3] Implement roadmap F11-T10 by recording and proving CRM/segmentation exclusion in `apps/api/test/phase-11-exclusions.spec.ts`, `apps/dashboard/src/features/store-crm/`, `apps/dashboard/src/features/store-marketing/`, and `plan/logs/phase-11.md`; verify no segmentation/marketing audience/query/export is added without a separately approved requirement.
+- [ ] T010 [US4] Implement roadmap F11-T10 by adding the read-only, clinic-scoped operational customer CRM in the existing `apps/api/src/modules/commerce/reporting/` domain, its controller/DTO/service and single existing commerce-module wiring path, focused disposable-PostgreSQL integration test, generated `packages/api-client/{openapi.json,src/schema.generated.ts}`, `apps/dashboard/src/lib/commerce-customer-crm-api.{ts,spec.ts}`, `apps/dashboard/src/features/store-crm/`, the CRM case in `apps/dashboard/e2e/phase-11-access.spec.ts`, and the minimum `apps/dashboard/vitest.config.mts` collection boundary. Verify [customer-crm-api.md](contracts/customer-crm-api.md): pre-existing ADMIN `ClinicalClinicAccess` clinic allow; all denied roles/session/foreign-clinic cases; canonical non-medical projection; payment/refund math and segment boundaries; validated page/search/filter/sort; per-disclosed-patient audit; no CRM persistence/export/marketing actions; OpenAPI/client freshness; ordinary Vitest and independent Playwright pass. Do not modify `apps/dashboard/src/features/store-marketing/`.
 - [ ] T011 [US3] Implement roadmap F11-T11 by running and recording final Phase 11 evidence in `plan/logs/phase-11.md`, synchronizing `plan/phases/11-REPORTING-ACCESS.md` and `plan/STATUS.md` only after review, and preserving `specs/009-reporting-access/`; verify all task-level checks, OpenAPI/client freshness where changed, clean migration smoke if applicable, no mock inventory widgets, full authorization matrix, browser E2E, and closure gate.
 
 ## Dependencies & Execution Order
 
-`F11-T01 → F11-T02/F11-T03/F11-T04 → F11-T05 → F11-T06 → F11-T07 → F11-T09 → F11-T11`
+`F11-T01 → F11-T02/F11-T03/F11-T04 → F11-T05 → F11-T06 → F11-T07 → F11-T09 → F11-T10 → F11-T11`
 
-`F11-T08` depends on `F11-T07` only to prove the ADMIN-only/STAFF-deny boundary. `F11-T10` may run after T001 and T007 but is evidence-only; it never creates CRM runtime. T011 depends on every prior task passing review.
+`F11-T08` depends on `F11-T07` only to prove the ADMIN-only/STAFF-deny boundary. `F11-T10` depends on `F11-T07` and `F11-T09`: it consumes frozen ADMIN/session enforcement and the completed browser/access isolation baseline before adding a new protected commerce route. T011 depends on every prior task passing review.
 
 ## Single-Writer and Parallel Rules
 
 - T005 exclusively owns `apps/api/prisma/schema.prisma`, migrations, and query-plan evidence if a measured bottleneck requires a data-path change.
 - T007 exclusively owns shared authorization policy/guard. T009 consumes the frozen policy and owns matrix tests/E2E only.
-- The endpoint owner of T002/T003 exclusively owns OpenAPI/client generation for its changed route; generated output is never manually edited.
+- The endpoint owner of T002/T003/T010 exclusively owns OpenAPI/client generation for its changed route; generated output is never manually edited.
 - T004 and T006 may be parallel only after T001 and their route contracts are frozen, with separate dashboard paths. DB-integrated suites serialize unless disposable databases are isolated.
+- T010 exclusively owns its commerce CRM endpoint/module wiring, CRM adapter/page, audit use in that endpoint, API-client generation, and the minimal Vitest E2E exclusion. It must not alter marketing, shared auth, schema/migrations, or infrastructure.
 
 ## Verification Baseline
 
-Every implementation task must run its targeted type/lint checks and real PostgreSQL tests. T002/T003/T006 require contract freshness when their endpoint changes. T009 is the authoritative browser/access gate. T011 is the only closure/evidence task; it must not mark any roadmap checkbox complete until coordinator review succeeds.
+Every implementation task must run its targeted type/lint checks and real PostgreSQL tests. T002/T003/T006/T010 require contract freshness when their endpoint changes. T009 is the initial browser/access baseline; T010 must re-run the phase browser suite after CRM integration. T011 is the only closure/evidence task; it must not mark any roadmap checkbox complete until coordinator review succeeds.
 
 ## Traceability
 
@@ -71,5 +72,5 @@ Every implementation task must run its targeted type/lint checks and real Postgr
 | F11-T07 | FR-016–019 | T007 | `contracts/authorization-matrix.md` |
 | F11-T08 | FR-024–025 | T008 | `contracts/conditional-exclusions.md` |
 | F11-T09 | FR-017–022 | T009 | authorization contract, quickstart |
-| F11-T10 | FR-023 | T010 | conditional exclusions |
+| F11-T10 | FR-023, FR-027–033, SC-008–010 | T010 | `contracts/customer-crm-api.md`, authorization matrix, conditional exclusions, quickstart |
 | F11-T11 | FR-025–026 | T011 | formal reviewer gate/evidence |

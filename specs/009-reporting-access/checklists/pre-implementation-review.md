@@ -44,21 +44,40 @@
 - [x] CHK025 Is no-disclosure behavior defined consistently across API bodies/statuses, UI states/navigation, and any separately approved export path? [Consistency, Spec §FR-014, §FR-022]
 - [x] CHK026 Do the backend matrix and browser E2E requirements cover the same ADMIN allow and PATIENT/DOCTOR/STAFF, disabled, revoked, tenant, clinic, and medical-ownership denial cases? [Traceability, Spec §FR-022, §SC-005]
 - [x] CHK027 Is staff membership/invitation explicitly excluded, with requirements preventing mutation endpoints, capability menus, schema changes, and exports from entering Phase 11 implicitly? [Boundary, Spec §FR-024, Contract `conditional-exclusions.md`]
-- [x] CHK028 Is CRM/segmentation explicitly excluded unless a separate approved requirement defines population, privacy/consent, ownership, retention, filters, access, and acceptance criteria? [Boundary, Spec §FR-023, Contract `conditional-exclusions.md`]
+- [x] CHK028 Does the owner-approved operational CRM define purpose, canonical population, approved projection, privacy boundary, access, audit, pagination/filter/sort, and measurable acceptance criteria while preserving the listed marketing/retention/export exclusions? [Boundary, Spec §FR-023, §FR-027–033, Contract `customer-crm-api.md`]
 - [x] CHK029 Are support-operation filters and pagination minimum-necessary, and are unrestricted search, raw metadata dump, and implied export expressly prohibited? [Least Privilege, Spec §FR-021]
 
 ## Reviewer Decision
 
 - [x] CHK030 Can every `F11-T01`–`F11-T11` roadmap task be traced to unique requirement IDs, concrete owned file paths, dependencies, verification, and evidence without using a task claim? [Traceability, Spec §FR-025, Tasks §Traceability]
 - [x] CHK031 Are all single-writer paths and serialized dependencies explicit, including authorization ownership, schema/migration ownership, generated-client ownership, and `F11-T06 → F11-T07` ordering? [Consistency, Plan §Serialized Batches, Tasks §Single-Writer and Parallel Rules]
-- [x] CHK032 Is the gate free of unresolved clarification markers and explicit that Phase 11 remains `NOT_STARTED` until reviewer approval, with no implication that checklist completion equals implementation completion? [Gate Integrity, Spec §FR-026]
+- [x] CHK032 Is the gate free of unresolved clarification markers and explicit that `F11-T10` remains unclaimed/unimplemented until reviewer approval, with no implication that checklist completion equals implementation completion or Phase 11 closure? [Gate Integrity, Spec §FR-026]
+
+## Operational CRM Change-Control Gate
+
+- [x] CHK033 Are the CRM segment boundaries exhaustive, mutually exclusive, and based solely on the stated verified-payment counts? [Consistency, Spec §FR-029, Contract `customer-crm-api.md`]
+- [x] CHK034 Are gross, completed refund, net spend, top product, last purchase, and summary formulas reproducible from the named canonical records with integer TOMAN and zero-denominator behavior? [Measurability, Spec §FR-029–030, Contract `customer-crm-api.md`]
+- [x] CHK035 Does the CRM requirement make `ClinicalClinicAccess` the explicit existing ADMIN-to-clinic boundary and require it before every population, monetary, summary, and audit query? [Security, Spec §FR-027, Data Model §Read-model invariants]
+- [x] CHK036 Is the response projection exhaustively non-medical and limited to the approved identifier, name, account status, segment, measures, product, and timestamp? [Data Minimization, Spec §FR-028, Contract `customer-crm-api.md`]
+- [x] CHK037 Are valid pagination, search, segment, sort, direction, stable tie-breaks, defaults, and invalid-parameter `BAD_REQUEST` behavior specified without a silent fallback? [Completeness, Spec §FR-030, Contract `customer-crm-api.md`]
+- [x] CHK038 Are CRM audit events required only for disclosed patients, with actor/session/clinic/request provenance and explicit prohibition of token, raw payload, medical, and foreign-clinic metadata? [Auditability, Spec §FR-031, Contract `customer-crm-api.md`]
+- [x] CHK039 Are CRM export, saved segments, audiences, marketing/campaign flows, bulk messaging, medical profiling, copied retention records, schema/migration, aggregation infrastructure, and inert actions explicitly excluded? [Boundary, Spec §FR-033, Contract `conditional-exclusions.md`]
+- [x] CHK040 Does the task plan assign exact owned paths and serialized dependencies for the commerce endpoint, audit use, OpenAPI/client, dashboard CRM, Vitest boundary, and no-marketing constraint? [Traceability, Tasks §Phase 4, Plan §Serialized Batches]
+- [x] CHK041 Do acceptance criteria require disposable-PostgreSQL isolation, authorization/session denial, foreign active-clinic denial, formula boundaries, OpenAPI/client freshness, normal Vitest, independent Playwright, and diff hygiene? [Coverage, Spec §SC-008–010, Quickstart §Required validation scenarios]
 
 ## Review Record — 2026-09-27
 
 - Reviewer assistance: Codex, explicitly requested by the user; requirements quality only.
 - Evidence reviewed: `spec.md`, `plan.md`, `tasks.md`, `research.md`, `data-model.md`, `quickstart.md`, all five contracts, the canonical onboarding evaluator/service, Prisma enum/model definitions, and repository workflow/constitution constraints.
-- Result: **32/32 satisfied**; R1–R3 are resolved and the follow-up `speckit-analyze` pass reports no remaining finding.
-- Gate decision: **PASSED for SpecKit requirements quality**. Phase 11 remains `NOT_STARTED`; this review authorizes no implementation, task claim, runtime change, or completion-status change by itself.
+- Result: **Superseded by owner-approved CRM change control on 2026-09-28**. The original 32/32 result remains historical evidence; CHK028 and CHK033–CHK041 require a fresh requirements-quality review before implementation.
+- Gate decision: **PENDING refreshed CRM review**. This checklist authorizes no implementation, task claim, runtime change, or completion-status change by itself.
+
+## Review Record — 2026-09-28 CRM Change Control
+
+- Reviewer assistance: Codex, explicitly requested by the owner; requirements quality only.
+- Evidence reviewed: canonical Prisma relations/enums, existing commerce revenue and audit patterns, `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/customer-crm-api.md`, authorization/exclusion contracts, `tasks.md`, and `quickstart.md`.
+- Result: **41/41 satisfied**; the old exclusion is fully replaced, the pre-existing clinic-access prerequisite is explicit, and cross-artifact analysis has no HIGH or CRITICAL finding.
+- Gate decision: **PASSED for `F11-T10` requirements quality**. This permits the coordinator to make the single-task claim only; it does not mark the task or Phase 11 complete.
 
 ## Notes
 

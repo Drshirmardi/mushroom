@@ -16,7 +16,7 @@
 - [x] `F11-T07` — تصمیم نقش‌های واقعی release و permission matrix
 - [x] `F11-T08` — staff membership/invitation و منوی capability-based فقط در صورت نیاز release
 - [x] `F11-T09` — authorization matrix و browser E2E نقش‌ها
-- [ ] `F11-T10` — CRM/segmentation پایه فقط با requirement تأییدشده
+- [x] `F11-T10` — CRM عملیاتی مشتریان فروشگاه، فقط با scope تأییدشده و clinic-scoped
 - [ ] `F11-T11` — evidence
 
 ## قواعد

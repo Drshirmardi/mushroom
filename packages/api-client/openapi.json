@@ -10993,6 +10993,117 @@
           "Admin Commerce Revenue"
         ]
       }
+    },
+    "/v1/admin/commerce/customers": {
+      "get": {
+        "operationId": "adminCommerceCustomersList",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "required": true,
+            "in": "query",
+            "description": "Required existing ADMIN-authorized clinic scope.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Trimmed substring of the canonical display name.",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "segment",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "POTENTIAL",
+                "ONE_TIME",
+                "RETURNING",
+                "VIP"
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "NET_SPEND",
+              "type": "string",
+              "enum": [
+                "NET_SPEND",
+                "SUCCESSFUL_PURCHASE_COUNT",
+                "LAST_PURCHASE_AT",
+                "DISPLAY_NAME"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceCustomerCrmPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic-scoped operational store customers without medical or marketing data",
+        "tags": [
+          "Admin Commerce Customers"
+        ]
+      }
     }
   },
   "info": {
@@ -18969,6 +19080,145 @@
           "successfulPaymentCount",
           "refundPending",
           "series"
+        ]
+      },
+      "CommerceCustomerCrmSummaryDto": {
+        "type": "object",
+        "properties": {
+          "totalCustomerCount": {
+            "type": "number"
+          },
+          "vipCustomerCount": {
+            "type": "number"
+          },
+          "netSpendToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "averageNetSpendToman": {
+            "type": "string",
+            "description": "Integer-truncated TOMAN average; zero for an empty population."
+          }
+        },
+        "required": [
+          "totalCustomerCount",
+          "vipCustomerCount",
+          "netSpendToman",
+          "averageNetSpendToman"
+        ]
+      },
+      "CommerceCustomerCrmItemDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "segment": {
+            "type": "string",
+            "enum": [
+              "POTENTIAL",
+              "ONE_TIME",
+              "RETURNING",
+              "VIP"
+            ]
+          },
+          "successfulPurchaseCount": {
+            "type": "number"
+          },
+          "grossToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "completedRefundToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "netSpendToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "topProduct": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastPurchaseAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "patientId",
+          "accountStatus",
+          "segment",
+          "successfulPurchaseCount",
+          "grossToman",
+          "completedRefundToman",
+          "netSpendToman"
+        ]
+      },
+      "CommerceCustomerCrmPageDto": {
+        "type": "object",
+        "properties": {
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "TOMAN"
+            ]
+          },
+          "timeZone": {
+            "type": "string",
+            "example": "Asia/Tehran"
+          },
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "totalCustomerCount": {
+            "type": "number"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/CommerceCustomerCrmSummaryDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceCustomerCrmItemDto"
+            }
+          }
+        },
+        "required": [
+          "clinicId",
+          "currency",
+          "timeZone",
+          "asOf",
+          "page",
+          "pageSize",
+          "totalCustomerCount",
+          "summary",
+          "items"
         ]
       }
     }

@@ -3055,6 +3055,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/commerce/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic-scoped operational store customers without medical or marketing data */
+        get: operations["adminCommerceCustomersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5291,6 +5308,48 @@ export interface components {
             successfulPaymentCount: number;
             refundPending: number;
             series: components["schemas"]["CommerceRevenueSeriesPointDto"][];
+        };
+        CommerceCustomerCrmSummaryDto: {
+            totalCustomerCount: number;
+            vipCustomerCount: number;
+            /** @description Integer TOMAN. */
+            netSpendToman: string;
+            /** @description Integer-truncated TOMAN average; zero for an empty population. */
+            averageNetSpendToman: string;
+        };
+        CommerceCustomerCrmItemDto: {
+            /** Format: uuid */
+            patientId: string;
+            displayName?: string | null;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            /** @enum {string} */
+            segment: "POTENTIAL" | "ONE_TIME" | "RETURNING" | "VIP";
+            successfulPurchaseCount: number;
+            /** @description Integer TOMAN. */
+            grossToman: string;
+            /** @description Integer TOMAN. */
+            completedRefundToman: string;
+            /** @description Integer TOMAN. */
+            netSpendToman: string;
+            topProduct?: string | null;
+            /** Format: date-time */
+            lastPurchaseAt?: string | null;
+        };
+        CommerceCustomerCrmPageDto: {
+            /** Format: uuid */
+            clinicId: string;
+            /** @enum {string} */
+            currency: "TOMAN";
+            /** @example Asia/Tehran */
+            timeZone: string;
+            /** Format: date-time */
+            asOf: string;
+            page: number;
+            pageSize: number;
+            totalCustomerCount: number;
+            summary: components["schemas"]["CommerceCustomerCrmSummaryDto"];
+            items: components["schemas"]["CommerceCustomerCrmItemDto"][];
         };
     };
     responses: never;
@@ -11418,6 +11477,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommerceRevenueDto"];
+                };
+            };
+        };
+    };
+    adminCommerceCustomersList: {
+        parameters: {
+            query: {
+                /** @description Required existing ADMIN-authorized clinic scope. */
+                clinicId: string;
+                direction?: "ASC" | "DESC";
+                page?: number;
+                pageSize?: number;
+                /** @description Trimmed substring of the canonical display name. */
+                search?: string;
+                segment?: "POTENTIAL" | "ONE_TIME" | "RETURNING" | "VIP";
+                sort?: "NET_SPEND" | "SUCCESSFUL_PURCHASE_COUNT" | "LAST_PURCHASE_AT" | "DISPLAY_NAME";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceCustomerCrmPageDto"];
                 };
             };
         };

@@ -61,6 +61,39 @@ test('allows ADMIN direct dashboard navigation without an export surface', async
   }
 });
 
+test('renders clinic-scoped operational CRM from the real API contract without marketing or export controls', async ({ browser }) => {
+  const { context, page, protectedRequests } = await dashboardPage(browser, { status: 200, roles: ['ADMIN'] });
+  const clinicId = '00000000-0000-4000-8000-000000000010';
+  try {
+    await context.route('**/v1/admin/commerce/customers**', async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      expect(url.searchParams.get('clinicId')).toBe(clinicId);
+      expect(url.searchParams.get('page')).toBe('1');
+      expect(url.searchParams.get('pageSize')).toBe('25');
+      expect(request.headers().authorization).toBe('Bearer browser-test-access-token');
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          clinicId, currency: 'TOMAN', timeZone: 'Asia/Tehran', asOf: '2026-09-28T12:00:00.000Z',
+          page: 1, pageSize: 25, totalCustomerCount: 1,
+          summary: { totalCustomerCount: 1, vipCustomerCount: 1, netSpendToman: '450000', averageNetSpendToman: '450000' },
+          items: [{ patientId: '00000000-0000-4000-8000-000000000011', displayName: 'مینا مشتری', accountStatus: 'ACTIVE', segment: 'VIP', successfulPurchaseCount: 5, grossToman: '500000', completedRefundToman: '50000', netSpendToman: '450000', topProduct: 'محصول محبوب', lastPurchaseAt: '2026-09-28T10:00:00.000Z' }],
+        }),
+      });
+    });
+    await page.goto(`${dashboardOrigin}/store-crm`);
+    await page.locator('#crm-clinic-id').fill(clinicId);
+    await page.getByRole('button', { name: 'نمایش مشتریان' }).click();
+    await expect(page.getByText('مینا مشتری', { exact: true })).toBeVisible();
+    await expect(page.getByText('محصول محبوب', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /خروجی|export|کمپین|campaign|پیام انبوه/i })).toHaveCount(0);
+    expect(protectedRequests.some((url) => new URL(url).pathname === '/v1/admin/commerce/customers')).toBe(true);
+  } finally {
+    await context.close();
+  }
+});
+
 for (const role of ['PATIENT', 'DOCTOR', 'STAFF'] as const) {
   test(`denies ${role} direct dashboard navigation before protected UI disclosure`, async ({ browser }) => {
     const { context, page, protectedRequests } = await dashboardPage(browser, { status: 200, roles: [role] });

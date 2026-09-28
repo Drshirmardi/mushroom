@@ -42,6 +42,28 @@
 
 ## R6 — Conditional roadmap tasks
 
-**Decision**: F11-T08 and F11-T10 are evidence/absence tasks in this release, not runtime features.
+**Decision**: `F11-T08` remains an evidence/absence task. Owner-approved change control converts `F11-T10` into a real, read-only operational store-customer CRM task.
 
-**Rationale**: Staff membership/invitation and CRM/segmentation lack the required confirmed need. The roadmap requires explicit treatment of those conditions.
+**Rationale**: The owner confirmed a release need for clinic-scoped customer operations. Marketing, campaign/audience, bulk messaging, saved segments, export, medical profiling, retention/copy tables, schema/migration, and new aggregation infrastructure remain unapproved.
+
+## R7 — Customer CRM lineage and isolation
+
+**Decision**: CRM is a direct computed read model within the existing commerce domain. Its population is `PatientProfile` scoped by the resolved clinic; display names use only `PatientProfile.user → User.userProfile`; purchase facts use verified `Payment`, completed `Refund`, their canonical `CommerceOrder` joins, and existing `CommerceOrderLine` snapshots. `ClinicalClinicAccess` is the existing ADMIN-to-clinic authorization predicate.
+
+**Rationale**: These are existing persisted relationships and fields. They support a clinic-local operational view without a CRM table, copied identity data, medical projection, retention policy, or a new service/module boundary.
+
+**Alternatives considered**: a CRM entity/table, analytics aggregate, central reporting/CRM module, browser-computed summaries, unrestricted ADMIN cross-clinic selection, and using clinical data to enrich customers. Rejected because they violate scope, weaken isolation, create retention concerns, or lack bottleneck evidence.
+
+## R8 — Customer measures, query contract, and audit
+
+**Decision**: Segments use count of verified payments (0, 1, 2–4, >=5). Gross/refund/net reuse the Phase 09 operational revenue meaning in integer `TOMAN`; summary is over the same filtered population before pagination. The endpoint requires a clinic ID, uses bounded page/page size, validated name search, validated segment, validated sort/direction, and stable ID tie-break. Each disclosed patient row is audited through the existing `PatientAccessAudit` writer with fixed non-sensitive provenance metadata.
+
+**Rationale**: The rule is deterministic, has no segment overlap, prevents totals from differing from visible filter meaning, and uses existing audit guarantees. A per-disclosed-patient audit preserves the existing non-null patient provenance model without inventing a synthetic patient or a second audit store.
+
+**Alternatives considered**: creating an aggregate audit event with a synthetic subject, allowing omitted clinic scope, silently ignoring bad filters, or using order count rather than verified payment count. Rejected because they weaken provenance, validation, or the owner’s explicit segment definition.
+
+## R9 — Dashboard test-suite separation
+
+**Decision**: `F11-T10` may add the minimum dashboard Vitest configuration required to exclude `apps/dashboard/e2e/**` from Vitest collection. The Playwright suite and its dedicated config remain intact and run independently.
+
+**Rationale**: The existing generic dashboard test command currently collects the Playwright file as Vitest. A narrow collection boundary fixes that test-runner ownership conflict without changing coverage or disabling browser tests.
