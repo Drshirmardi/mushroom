@@ -1,5 +1,48 @@
 # Phase 11 Evidence
 
+## F11-T09 — authorization matrix and browser E2E
+
+Task ID: F11-T09
+Completed at: 2026-09-28 18:16 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B09
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/test/reporting-authorization.integration.spec.ts`
+  - `apps/dashboard/e2e/phase-11-access.spec.ts`
+  - `playwright.phase11.config.ts`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none — this task adds verification only and leaves the canonical `User`, `Session`, clinic, clinical-audit,
+    reporting, authorization, OpenAPI/client, schema, dependency, and runtime paths unchanged.
+Tests run:
+  - `vitest run test/reporting-authorization.integration.spec.ts --no-file-parallelism --reporter=dot` → PASS
+    (1 file, 4 tests) on a migrated-and-seeded, run-owned PostgreSQL database dropped in teardown.
+  - `vitest run test/reporting.integration.spec.ts test/audit-viewer.integration.spec.ts --no-file-parallelism` →
+    PASS (2 files, 4 tests) on migrated-and-seeded, run-owned PostgreSQL databases dropped in teardown.
+  - `tsc -p apps/api/tsconfig.test.json --noEmit` → PASS.
+  - `pnpm typecheck` → PASS (all workspace typechecks; Prisma generation and API-client OpenAPI freshness checks
+    report no generated-contract drift).
+  - `playwright test --config=playwright.phase11.config.ts` → PASS (6/6): ADMIN allow; PATIENT, DOCTOR, STAFF,
+    disabled ADMIN, and revoked ADMIN direct-route denial.
+  - `git diff --check` → PASS.
+Result:
+  - The disposable backend matrix proves the frozen ADMIN-only policy for all four domain reports, operational
+    revenue, and the redacted audit viewer. PATIENT, DOCTOR, and STAFF receive `403` before data disclosure;
+    disabled and revoked ADMIN sessions receive `401`; no report/audit export route exists.
+  - ADMIN can read only the active clinic-scoped reporting/audit paths. A foreign inactive clinic cannot be queried,
+    and a foreign patient's clinical workspace remains denied by its separate medical-ownership permission; neither
+    response exposes the fixture's private medical text or patient identity.
+  - The browser suite checks direct dashboard navigation rather than menu visibility: only a refreshed ADMIN session
+    renders protected dashboard UI; all denied identities redirect before it and make no admin request. It asserts no
+    bearer token in a URL and no report/audit export UI or request.
+Review:
+  - PASS — the combined diff contains only T09-owned test/E2E harness paths and the required coordinator evidence.
+    No shared auth policy, runtime route, dashboard session code, schema/migration, dependency/lockfile, generated
+    output, staff membership/invitation, CRM/segmentation, or F11-T10/F11-T11 work changed. No blocker remains.
+Next eligible task:
+  - `F11-T10` is eligible and unclaimed; stop before starting it.
+
 ## F11-T08 — staff membership/invitation exclusion proof
 
 Task ID: F11-T08

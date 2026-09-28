@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-28 17:26 +03:30`
+- آخرین به‌رورسانی: `2026-09-28 18:16 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -52,7 +52,39 @@
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
 complete. `F11-T01` through `F11-T08` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
-remains `IN_PROGRESS`; no batch is claimed. `F11-T09` and `F11-T10` are eligible but deliberately unclaimed.
+remains `IN_PROGRESS`; `F11-T01` through `F11-T09` are accepted and recorded in
+[`logs/phase-11.md`](logs/phase-11.md). `F11-T10` remains eligible but unclaimed.
+
+## آخرین batch تکمیل‌شده — F11-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 17:32 +03:30`
+Completed at: `2026-09-28 18:16 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-017–022`, `SC-005`,
+`contracts/authorization-matrix.md`, and `quickstart.md`), with `F11-T01` through `F11-T08` DONE.
+
+- Task ID: `F11-T09`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T07` DONE; `F11-T01` through `F11-T08` accepted; no active batch or blocker at claim time.
+  - Scope: prove the frozen ADMIN-only reporting/audit access matrix at backend and browser boundaries, including
+    denied roles, disabled/revoked ADMIN sessions, tenant/clinic isolation, medical-ownership limits, and no API/UI/
+    export disclosure. This batch adds verification only; it does not expand the release capability.
+  - Owned paths: `apps/api/test/reporting-authorization.integration.spec.ts`,
+    `apps/dashboard/e2e/phase-11-access.spec.ts`, `playwright.phase11.config.ts`, and coordinator-only
+    `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`.
+  - Shared/exclusive resource: the new authorization-matrix test and browser E2E suite plus their run-owned
+    disposable PostgreSQL databases. `common/auth`, audit/report runtime modules, schema/migrations, OpenAPI/client,
+    dashboard session gate, dependencies/lockfile, and CRM/segmentation remain outside this task.
+  - Review: PASS — the run-owned PostgreSQL matrix proves ADMIN access only for the active clinic-scoped report,
+    revenue, and redacted audit routes; PATIENT/DOCTOR/STAFF receive no protected disclosure; disabled/revoked
+    ADMIN sessions receive `401`; an inactive foreign clinic and foreign medical workspace remain denied; export
+    routes do not exist. Browser E2E proves the same direct-navigation boundary before dashboard UI disclosure.
+    Workspace typechecks and API-client/OpenAPI freshness passed, with no runtime authorization, schema, migration,
+    dependency, generated-client, or later-task path change. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T10`, unclaimed. Stop before starting it.
 
 ## آخرین batch تکمیل‌شده — F11-B08
 
