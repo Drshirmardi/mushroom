@@ -1,5 +1,47 @@
 # Phase 11 Evidence
 
+## F11-T07 — ADMIN-only release admission and live session authorization
+
+Task ID: F11-T07
+Completed at: 2026-09-28 17:14 +03:30
+Agent/Thread: Codex /root
+Batch ID: F11-B07
+Reviewed by: Codex /root
+Changed files:
+  - `apps/api/src/common/auth/{authorization.policy,authorization.guard,release-admin-session.guard,auth.module}.ts`
+  - `apps/api/test/{authorization.guard,release-admin-session.guard}.spec.ts`
+  - `apps/api/test/{reporting,commerce-revenue}.integration.spec.ts` (persisted active ADMIN fixtures for the shared guard)
+  - `apps/dashboard/src/auth/{session,session.test}.ts`
+  - coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`
+Migrations:
+  - none — the existing `User.status`, `Session.revokedAt`, `Session.expiresAt`, and user/session ownership relation
+    are the canonical active-session source; no schema, dependency, or generated-client change is required.
+Tests run:
+  - `pnpm typecheck` → PASS (all workspace typechecks, including API-client generation freshness check).
+  - `tsc -p apps/api/tsconfig.test.json --noEmit` → PASS.
+  - `pnpm --filter @sabz/dashboard test -- session.test.ts` → PASS (17 files, 58 tests).
+  - `vitest run test/authorization.guard.spec.ts test/release-admin-session.guard.spec.ts --no-file-parallelism` →
+    PASS (2 files, 22 tests).
+  - `vitest run test/reporting.integration.spec.ts test/audit-viewer.integration.spec.ts --no-file-parallelism` →
+    PASS (2 files, 4 tests) on migrated-and-seeded, run-owned PostgreSQL databases dropped in teardown.
+  - `vitest run test/commerce-revenue.integration.spec.ts --no-file-parallelism` → PASS (1 file, 2 tests).
+  - `git diff --check` → PASS.
+Result:
+  - `ADMIN` is the sole release dashboard role at both boundaries: API policy gives `DASHBOARD_ACCESS` only to
+    `ADMIN`, and dashboard refresh rejects `PATIENT`, `DOCTOR`, and `STAFF` before rendering dashboard content.
+  - `ReleaseAdminSessionGuard` runs between JWT verification and authorization. It looks up the canonical persisted
+    session by `sessionId` plus `userId`, requires `revokedAt=null`, a future `expiresAt`, and `User.status=ACTIVE`,
+    and returns `401` before a controller can disclose data when that check fails.
+  - The existing scoped report and audit services remain unchanged. Disposable API integration re-proved clinic
+    scoping/redaction and ADMIN allow; PATIENT/DOCTOR/STAFF denial and revoked/disabled ADMIN denial occur before
+    protected disclosure. Existing medical ownership controls remain domain-owned and unchanged.
+Review:
+  - PASS — scope is confined to T07 shared authorization/admission paths, their necessary persisted-session fixtures,
+    and coordinator evidence/status. The final comprehensive matrix and browser E2E stay exclusively with F11-T09;
+    staff membership/invitation remains excluded for F11-T08; CRM remains excluded for F11-T10.
+Next eligible tasks:
+  - `F11-T08`, `F11-T09`, and `F11-T10` are eligible and unclaimed; stop before starting them.
+
 ## F11-T06 — redacted clinic-scoped audit viewer
 
 Task ID: F11-T06

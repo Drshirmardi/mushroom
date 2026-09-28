@@ -65,7 +65,9 @@ describe('Phase 11 domain reporting (disposable PostgreSQL API integration)', ()
       await tx.$executeRawUnsafe(`INSERT INTO appointments (id, clinic_id, patient_id, doctor_service_id, doctor_id, starts_at, ends_at, status, price_amount, currency, price_captured_at, checked_in_at, started_at, completed_at, created_at, updated_at) VALUES ('${randomUUID()}', '${clinic.id}', '${patientId}', '${randomUUID()}', '${randomUUID()}', '2026-03-20T20:30:00.000Z', '2026-03-20T21:30:00.000Z', 'COMPLETED', 0, 'IRR', '2026-03-20T20:00:00.000Z', '2026-03-20T20:30:00.000Z', '2026-03-20T20:40:00.000Z', '2026-03-20T20:50:00.000Z', now(), now())`);
       await tx.$executeRawUnsafe(`INSERT INTO appointments (id, clinic_id, patient_id, doctor_service_id, doctor_id, starts_at, ends_at, status, price_amount, currency, price_captured_at, cancelled_at, created_at, updated_at) VALUES ('${randomUUID()}', '${otherClinic.id}', '${patientId}', '${randomUUID()}', '${randomUUID()}', '2026-03-20T20:30:00.000Z', '2026-03-20T21:30:00.000Z', 'CANCELLED', 0, 'IRR', '2026-03-20T20:00:00.000Z', '2026-03-20T20:50:00.000Z', now(), now())`);
     });
-    const admin = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] });
+    const adminUser = await prisma.user.create({ data: { phone: `+989${Math.floor(100_000_000 + Math.random() * 900_000_000)}` } });
+    const adminSession = await prisma.session.create({ data: { userId: adminUser.id, refreshTokenHash: randomUUID().replaceAll('-', '') + randomUUID().replaceAll('-', ''), expiresAt: new Date(Date.now() + 3_600_000) } });
+    const admin = await tokens.issue({ userId: adminUser.id, sessionId: adminSession.id, roles: ['ADMIN'] });
     const headers = { authorization: `Bearer ${admin}` };
     const suffix = `?clinicId=${clinic.id}&from=2026-03-20&to=2026-03-21`;
     const appointments = await app.inject({ method: 'GET', url: `/v1/admin/reporting/appointments${suffix}&limit=1`, headers });

@@ -13,7 +13,7 @@
 - [x] `F11-T04` — Dashboard Home نهایی بدون widget mock
 - [x] `F11-T05` — query/index review و aggregate فقط برای bottleneck اثبات‌شده
 - [x] `F11-T06` — audit viewer و ابزار عملیات پشتیبانی لازم
-- [ ] `F11-T07` — تصمیم نقش‌های واقعی release و permission matrix
+- [x] `F11-T07` — تصمیم نقش‌های واقعی release و permission matrix
 - [ ] `F11-T08` — staff membership/invitation و منوی capability-based فقط در صورت نیاز release
 - [ ] `F11-T09` — authorization matrix و browser E2E نقش‌ها
 - [ ] `F11-T10` — CRM/segmentation پایه فقط با requirement تأییدشده

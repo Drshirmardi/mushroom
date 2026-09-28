@@ -11,6 +11,7 @@ import {
 import { AuthorizationGuard } from '../src/common/auth/authorization.guard';
 import {
   PERMISSIONS,
+  hasReleaseAdminRole,
   permissionsFor,
   type Permission,
   type RoleCode,
@@ -19,8 +20,8 @@ import {
 describe('authorization policy', () => {
   it.each([
     ['PATIENT', false, false],
-    ['DOCTOR', true, false],
-    ['STAFF', true, false],
+    ['DOCTOR', false, false],
+    ['STAFF', false, false],
     ['ADMIN', true, true],
   ] as const)(
     'maps %s to the expected dashboard and identity capabilities',
@@ -41,10 +42,12 @@ describe('authorization policy', () => {
     },
   );
 
-  it('combines permissions for a user with multiple roles', () => {
-    expect(permissionsFor(['PATIENT', 'STAFF'])).toContain(
+  it('keeps dashboard admission ADMIN-only for mixed-role identities', () => {
+    expect(permissionsFor(['PATIENT', 'STAFF'])).not.toContain(
       PERMISSIONS.DASHBOARD_ACCESS,
     );
+    expect(hasReleaseAdminRole(['PATIENT', 'STAFF'])).toBe(false);
+    expect(hasReleaseAdminRole(['PATIENT', 'ADMIN'])).toBe(true);
   });
 
   it('grants nothing for an unexpected runtime role', () => {
@@ -112,8 +115,8 @@ describe('AuthorizationGuard', () => {
 
   it.each([
     ['PATIENT', false],
-    ['DOCTOR', true],
-    ['STAFF', true],
+    ['DOCTOR', false],
+    ['STAFF', false],
     ['ADMIN', true],
   ] as const)('enforces the dashboard permission for %s', (role, allowed) => {
     require([], [PERMISSIONS.DASHBOARD_ACCESS]);

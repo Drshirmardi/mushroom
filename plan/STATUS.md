@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-28 03:06 +03:30`
+- آخرین به‌رورسانی: `2026-09-28 17:14 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 IN_PROGRESS`
 - فاز فعال: `Phase 11 — Dashboard Reporting & Access Expansion`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -51,8 +51,39 @@
 ## handoff فاز فعال
 
 `Phase 10` remains formally `DONE (CLOSED)` after its independent security/closure review. Milestone D is
-complete. `F11-T01` through `F11-T06` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
-remains `IN_PROGRESS`; no batch is claimed.
+complete. `F11-T01` through `F11-T07` are accepted and recorded in [`logs/phase-11.md`](logs/phase-11.md). Phase 11
+remains `IN_PROGRESS`; no batch is claimed. `F11-T08`, `F11-T09`, and `F11-T10` are eligible but deliberately
+unclaimed.
+
+## آخرین batch تکمیل‌شده — F11-B07
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 17:03 +03:30`
+Completed at: `2026-09-28 17:14 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-016–019`, `SC-003–004`,
+`contracts/authorization-matrix.md`), with `F11-T01` through `F11-T06` DONE.
+
+- Task ID: `F11-T07`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T06` DONE; no active batch or blocker at claim time.
+  - Scope: froze ADMIN-only dashboard/admin admission and shared backend authorization enforcement while preserving
+    patient self-service and the existing tenant/clinic, medical-ownership, audit-redaction, and session controls.
+  - Owned paths: `apps/api/src/common/auth/{access-token.guard,authorization.guard,authorization.policy,release-admin-session.guard,auth.module}.ts`,
+    focused T07 authorization tests under `apps/api/test/`, `apps/dashboard/src/auth/{session,session.test}.ts`, and
+    coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`.
+  - Shared/exclusive resource: `common/auth` policy/guards and disposable PostgreSQL authorization test database.
+    T009 remains the sole owner of the final full authorization-matrix and browser E2E suites.
+  - Review: PASS — `DOCTOR` and `STAFF` no longer receive `DASHBOARD_ACCESS`; dashboard admission is ADMIN-only.
+    A global shared guard requires a persisted active, unrevoked, unexpired session for every ADMIN request before
+    controller execution. Focused unit tests, full workspace typechecks, real disposable PostgreSQL reporting/audit
+    integrations, and revenue regression passed. No schema, migration, dependency, endpoint, generated client,
+    membership/invitation, CRM, export, browser E2E, or later-task path changed. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible tasks: `F11-T08`, `F11-T09`, and `F11-T10`; all remain unclaimed. Do not start another task in
+    this batch.
 
 ## آخرین batch تکمیل‌شده — F11-B06
 
