@@ -60,4 +60,5 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sabz-zendegi/api prisma:generate
       - run: pnpm test:capacity
