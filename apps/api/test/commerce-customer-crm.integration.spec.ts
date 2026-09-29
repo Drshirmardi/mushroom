@@ -64,9 +64,10 @@ describe('commerce customer CRM (PostgreSQL API integration)', () => {
 
   it('derives deterministic, paginated clinic-local customer facts from canonical commerce records and audits disclosure', async () => {
     const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
+    const crmMarker = `crm${randomUUID().slice(0, 8)}`;
     const admin = await actor(['ADMIN'], { clinicId: clinic.id });
     const [potential, oneTime, returning, vip] = await Promise.all([
-      patient(clinic.id, 'پریسا', 'بالقوه'), patient(clinic.id, 'مینا', 'یکبار'), patient(clinic.id, 'سارا', 'بازگشتی'), patient(clinic.id, 'ویپ', 'مشتری'),
+      patient(clinic.id, `${crmMarker} پریسا`, 'بالقوه'), patient(clinic.id, `${crmMarker} مینا`, 'یکبار'), patient(clinic.id, `${crmMarker} سارا`, 'بازگشتی'), patient(clinic.id, `${crmMarker} ویپ`, 'مشتری'),
     ]);
     const source = await revision(clinic.id);
     await payment(clinic.id, oneTime.id, source.id, 100_000n, 'محصول یک', new Date('2026-09-20T10:00:00.000Z'));
@@ -78,14 +79,14 @@ describe('commerce customer CRM (PostgreSQL API integration)', () => {
     const foreignPatient = await patient(foreign.id, 'محرمانه', 'خارجی'); const foreignSource = await revision(foreign.id);
     await payment(foreign.id, foreignPatient.id, foreignSource.id, 999_999n, 'افشا نشود', new Date('2026-09-28T11:00:00.000Z'));
 
-    const url = `/v1/admin/commerce/customers?clinicId=${clinic.id}&page=1&pageSize=2&sort=SUCCESSFUL_PURCHASE_COUNT&direction=DESC`;
+    const url = `/v1/admin/commerce/customers?clinicId=${clinic.id}&page=1&pageSize=2&sort=SUCCESSFUL_PURCHASE_COUNT&direction=DESC&search=${crmMarker}`;
     const response = await app.inject({ method: 'GET', url, headers: { authorization: `Bearer ${admin.token}` } });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({ clinicId: clinic.id, currency: 'TOMAN', timeZone: clinic.timeZone, page: 1, pageSize: 2, totalCustomerCount: 4, summary: { totalCustomerCount: 4, vipCustomerCount: 1, netSpendToman: '1050000', averageNetSpendToman: '262500' } });
     expect(response.json().items).toEqual(expect.arrayContaining([expect.objectContaining({ patientId: vip.id, segment: 'VIP', successfulPurchaseCount: 5, grossToman: '500000', completedRefundToman: '50000', netSpendToman: '450000', topProduct: 'محصول محبوب' }), expect.objectContaining({ patientId: returning.id, segment: 'RETURNING', successfulPurchaseCount: 2 })]));
-    const potentialResponse = await app.inject({ method: 'GET', url: `/v1/admin/commerce/customers?clinicId=${clinic.id}&segment=POTENTIAL&search=%D9%BE%D8%B1%DB%8C%D8%B3%D8%A7`, headers: { authorization: `Bearer ${admin.token}` } });
+    const potentialResponse = await app.inject({ method: 'GET', url: `/v1/admin/commerce/customers?clinicId=${clinic.id}&segment=POTENTIAL&search=${crmMarker}`, headers: { authorization: `Bearer ${admin.token}` } });
     expect(potentialResponse.statusCode).toBe(200); expect(potentialResponse.json()).toMatchObject({ totalCustomerCount: 1, summary: { totalCustomerCount: 1, netSpendToman: '0', averageNetSpendToman: '0' }, items: [expect.objectContaining({ patientId: potential.id, segment: 'POTENTIAL' })] });
-    const pastEnd = await app.inject({ method: 'GET', url: `/v1/admin/commerce/customers?clinicId=${clinic.id}&page=99&pageSize=25`, headers: { authorization: `Bearer ${admin.token}` } });
+    const pastEnd = await app.inject({ method: 'GET', url: `/v1/admin/commerce/customers?clinicId=${clinic.id}&page=99&pageSize=25&search=${crmMarker}`, headers: { authorization: `Bearer ${admin.token}` } });
     expect(pastEnd.statusCode).toBe(200); expect(pastEnd.json()).toMatchObject({ totalCustomerCount: 4, summary: { totalCustomerCount: 4, netSpendToman: '1050000' }, items: [] });
     const forbiddenScope = await app.inject({ method: 'GET', url: `/v1/admin/commerce/customers?clinicId=${foreign.id}`, headers: { authorization: `Bearer ${admin.token}` } });
     expect(forbiddenScope.statusCode).toBe(403); expect(forbiddenScope.body).not.toContain('محرمانه');
