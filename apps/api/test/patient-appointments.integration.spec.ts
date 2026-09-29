@@ -174,7 +174,10 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
   it('lets an administrator create, filter, confirm, reschedule, and cancel clinic appointments under lifecycle policy', async () => {
     const { profile, token } = await patient();
     const adminId = randomUUID(); userIds.add(adminId);
-    const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: randomUUID(), roles: ['ADMIN'] });
+    await prisma.user.create({ data: { id: adminId, phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
+    const adminSessionId = randomUUID();
+    await prisma.session.create({ data: { id: adminSessionId, userId: adminId, refreshTokenHash: randomUUID().replaceAll('-', '').repeat(2), expiresAt: new Date(Date.now() + 3_600_000) } });
+    const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: adminSessionId, roles: ['ADMIN'] });
     const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
     const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
     const day = nextWeekday(rule.isoWeekday);
@@ -212,7 +215,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const { profile } = await patient();
     const adminId = randomUUID(); userIds.add(adminId);
     await prisma.user.create({ data: { id: adminId, phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
-    const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: randomUUID(), roles: ['ADMIN'] });
+    const adminSessionId = randomUUID();
+    await prisma.session.create({ data: { id: adminSessionId, userId: adminId, refreshTokenHash: randomUUID().replaceAll('-', '').repeat(2), expiresAt: new Date(Date.now() + 3_600_000) } });
+    const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: adminSessionId, roles: ['ADMIN'] });
     const now = Date.now();
     const currentDayAtNoon = currentTehranDayAtNoon();
     const currentStartsAt = new Date(currentDayAtNoon.getTime() - 5 * 60_000);

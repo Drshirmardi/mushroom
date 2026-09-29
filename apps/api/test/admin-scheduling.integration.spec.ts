@@ -7,13 +7,14 @@ import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { AdminSchedulingService } from '../src/modules/scheduling/admin-scheduling.service';
+import { createReleaseAdminTestPrincipal, disposeReleaseAdminTestPrincipal, type ReleaseAdminTestPrincipal } from './release-admin-test-support';
 
 describe('admin scheduling CRUD (PostgreSQL API integration)', () => {
-  let app: NestFastifyApplication; let prisma: PrismaService; let scheduling: AdminSchedulingService; let token: string;
+  let app: NestFastifyApplication; let prisma: PrismaService; let scheduling: AdminSchedulingService; let token: string; let admin: ReleaseAdminTestPrincipal;
   const doctors = new Set<string>(); const rules = new Set<string>(); const closures = new Set<string>(); const exceptions = new Set<string>();
-  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); scheduling = app.get(AdminSchedulingService); token = await app.get(AccessTokenService).issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] }); }, 30_000);
+  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); scheduling = app.get(AdminSchedulingService); admin = await createReleaseAdminTestPrincipal(prisma, app.get(AccessTokenService)); token = admin.token; }, 30_000);
   afterEach(async () => { if (exceptions.size) await prisma.doctorAvailabilityException.deleteMany({ where: { id: { in: [...exceptions] } } }); if (rules.size) await prisma.availabilityRule.deleteMany({ where: { id: { in: [...rules] } } }); if (closures.size) await prisma.clinicClosure.deleteMany({ where: { id: { in: [...closures] } } }); if (doctors.size) await prisma.doctorProfile.deleteMany({ where: { id: { in: [...doctors] } } }); doctors.clear(); rules.clear(); closures.clear(); exceptions.clear(); });
-  afterAll(async () => { await app.close(); });
+  afterAll(async () => { await disposeReleaseAdminTestPrincipal(prisma, admin); await app.close(); });
   const headers = () => ({ authorization: `Bearer ${token}`, origin: 'http://localhost:3000' });
   const createDoctor = async () => { const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } }); const doctor = await prisma.doctorProfile.create({ data: { clinicId: clinic.id, displayName: `Schedule ${randomUUID().slice(0, 8)}` } }); doctors.add(doctor.id); return doctor; };
 

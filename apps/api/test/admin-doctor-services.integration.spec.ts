@@ -6,11 +6,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createReleaseAdminTestPrincipal, disposeReleaseAdminTestPrincipal, type ReleaseAdminTestPrincipal } from './release-admin-test-support';
 
 describe('admin doctor-service CRUD (PostgreSQL API integration)', () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
   let token: string;
+  let admin: ReleaseAdminTestPrincipal;
   const doctorServices = new Set<string>();
   const doctors = new Set<string>();
   const specialties = new Set<string>();
@@ -21,7 +23,8 @@ describe('admin doctor-service CRUD (PostgreSQL API integration)', () => {
     app = await createApiApplication();
     await app.init();
     prisma = app.get(PrismaService);
-    token = await app.get(AccessTokenService).issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] });
+    admin = await createReleaseAdminTestPrincipal(prisma, app.get(AccessTokenService));
+    token = admin.token;
   }, 30_000);
 
   afterEach(async () => {
@@ -32,7 +35,7 @@ describe('admin doctor-service CRUD (PostgreSQL API integration)', () => {
     if (clinics.size) { await prisma.clinic.deleteMany({ where: { id: { in: [...clinics] } } }); clinics.clear(); }
   });
 
-  afterAll(async () => { await app.close(); });
+  afterAll(async () => { await disposeReleaseAdminTestPrincipal(prisma, admin); await app.close(); });
 
   const headers = () => ({ authorization: `Bearer ${token}`, origin: 'http://localhost:3000' });
   const createParents = async (published = false) => {

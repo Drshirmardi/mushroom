@@ -31,7 +31,9 @@ describe('commerce checkout and clinic shipping rate (PostgreSQL API integration
 
   it('uses ADMIN-audited clinic rate, enforces ownership, and snapshots an idempotent server-priced checkout with an atomic reservation', async () => {
     const first = await patient(); const second = await patient(); const commerceSku = await sku();
-    const adminToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] }); const staffToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] });
+    const adminUser = await prisma.user.create({ data: { phone: phone() } }); users.add(adminUser.id); const adminSessionId = randomUUID();
+    await prisma.session.create({ data: { id: adminSessionId, userId: adminUser.id, refreshTokenHash: createHash('sha256').update(adminSessionId).digest('hex'), expiresAt: new Date(Date.now() + 60_000) } });
+    const adminToken = await tokens.issue({ userId: adminUser.id, sessionId: adminSessionId, roles: ['ADMIN'] }); const staffToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] });
     const denied = await app.inject({ method: 'PATCH', url: '/v1/admin/commerce/shipping-rates/courier', headers: headers(staffToken), payload: { amountToman: 30000, isActive: true } }); expect(denied.statusCode).toBe(403);
     const rate = await app.inject({ method: 'PATCH', url: '/v1/admin/commerce/shipping-rates/courier', headers: headers(adminToken), payload: { amountToman: 30000, isActive: true } }); expect(rate.statusCode).toBe(200); expect(rate.json()).toMatchObject({ method: 'COURIER', amountToman: '30000', isActive: true, isConfigured: true });
     const discount = await app.inject({ method: 'POST', url: '/v1/admin/commerce/discounts', headers: headers(adminToken), payload: { code: ' save_20000 ', title: 'تخفیف تست', kind: 'FIXED_AMOUNT', amountToman: '20000', usageLimit: 2, perPatientUsageLimit: 1 } }); expect(discount.statusCode).toBe(201); discountIds.add(discount.json().id as string); expect(discount.json()).toMatchObject({ code: 'SAVE_20000', amountToman: '20000', remainingGlobalCapacity: 2 });
