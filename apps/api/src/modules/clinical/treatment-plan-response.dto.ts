@@ -1,6 +1,49 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsUUID, Matches } from 'class-validator';
 
 const treatmentPlanStates = ['DRAFT', 'ACTIVE', 'COMPLETED', 'VOIDED'] as const;
+
+export class TreatmentPlanReportingKpiDefinitionResponseDto {
+  @ApiProperty({ enum: ['KPI-13'] }) id!: string;
+  @ApiProperty() formula!: string;
+  @ApiProperty() dataOwner!: 'Clinical';
+  @ApiProperty() sourceOfTruth!: string;
+  @ApiProperty({ enum: ['tenant-and-clinic'] }) scope!: 'tenant-and-clinic';
+  @ApiProperty({ example: 'Asia/Tehran' }) timeZone!: 'Asia/Tehran';
+  @ApiProperty() rounding!: string;
+  @ApiProperty() zeroOrNotApplicableRule!: string;
+  @ApiProperty() partialDataRule!: string;
+  @ApiProperty() staleDataRule!: string;
+}
+
+export const treatmentPlanReportingKpiDefinitions = [
+  {
+    id: 'KPI-13', formula: 'count(TreatmentPlan.id) where TreatmentPlan.state = ACTIVE in the current snapshot at response asOf', dataOwner: 'Clinical',
+    sourceOfTruth: 'PostgreSQL TreatmentPlan.state', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count',
+    zeroOrNotApplicableRule: 'zero when no ACTIVE plan exists; DRAFT, COMPLETED, and VOIDED are excluded',
+    partialDataRule: 'identify the unavailable TreatmentPlan snapshot source; never estimate',
+    staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot',
+  },
+] as const satisfies readonly TreatmentPlanReportingKpiDefinitionResponseDto[];
+
+export class TreatmentReportingQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') clinicId?: string;
+  @ApiPropertyOptional({ example: '2026-09-01' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) from?: string;
+  @ApiPropertyOptional({ example: '2026-09-30' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) to?: string;
+}
+
+export class TreatmentReportingResponseDto {
+  @ApiProperty({ format: 'uuid' }) clinicId!: string;
+  @ApiProperty() timeZone!: string;
+  @ApiProperty() from!: string;
+  @ApiProperty() to!: string;
+  @ApiProperty({ format: 'date-time' }) asOf!: Date;
+  @ApiProperty({ enum: ['current', 'partial', 'stale'] }) sourceStatus!: 'current' | 'partial' | 'stale';
+  @ApiProperty() activePlans!: number;
+  @ApiProperty() dueTasks!: number;
+  @ApiProperty() completedTasks!: number;
+  @ApiProperty({ nullable: true }) completionRate!: number | null;
+}
 
 export class TreatmentMedicationResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string;

@@ -2,10 +2,10 @@ import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, ParseUUIDP
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../common/auth/access-token.guard';
-import { RequirePermissions } from '../../common/auth/authorization.decorator';
+import { RequirePermissions, RequireRoles } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
 import { AdminAppointmentsService } from './admin-appointments.service';
-import { AdminAppointmentListQueryDto, AdminAppointmentPageResponseDto, AdminAppointmentResponseDto, AdminAppointmentStatusHistoryPageResponseDto, AdminAppointmentTimelineQueryDto, AdminQueueResponseDto, CancelAdminAppointmentDto, CreateAdminAppointmentDto, DashboardAppointmentSummaryResponseDto, OperationalActivityListQueryDto, OperationalActivityPageResponseDto, RescheduleAdminAppointmentDto } from './admin-appointments.dto';
+import { AdminAppointmentListQueryDto, AdminAppointmentPageResponseDto, AdminAppointmentResponseDto, AdminAppointmentStatusHistoryPageResponseDto, AdminAppointmentTimelineQueryDto, AdminQueueResponseDto, AppointmentReportingQueryDto, AppointmentReportingResponseDto, CancelAdminAppointmentDto, CreateAdminAppointmentDto, DashboardAppointmentSummaryResponseDto, OperationalActivityListQueryDto, OperationalActivityPageResponseDto, RescheduleAdminAppointmentDto } from './admin-appointments.dto';
 
 @ApiTags('Admin appointments')
 @ApiBearerAuth('bearerAuth')
@@ -28,4 +28,18 @@ export class AdminAppointmentsController {
   @Post(':appointmentId/complete') @HttpCode(HttpStatus.OK) @ApiOperation({ operationId: 'adminAppointmentsComplete', summary: 'Complete a doctor current appointment' }) @ApiOkResponse({ type: AdminAppointmentResponseDto }) complete(@Param('appointmentId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.appointments.complete(request.auth.userId, id); }
   @Post(':appointmentId/no-show') @HttpCode(HttpStatus.OK) @ApiOperation({ operationId: 'adminAppointmentsNoShow', summary: 'Mark a past appointment as no-show' }) @ApiOkResponse({ type: AdminAppointmentResponseDto }) noShow(@Param('appointmentId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.appointments.noShow(request.auth.userId, id); }
   @Post('doctors/:doctorId/call-next') @HttpCode(HttpStatus.OK) @ApiOperation({ operationId: 'adminAppointmentsCallNext', summary: 'Start the earliest queued appointment for a doctor' }) @ApiOkResponse({ type: AdminAppointmentResponseDto }) callNext(@Param('doctorId', new ParseUUIDPipe({ version: '4' })) doctorId: string, @Req() request: AuthenticatedRequest) { return this.appointments.callNext(request.auth.userId, doctorId); }
+}
+
+@ApiTags('Admin Reporting')
+@ApiBearerAuth('bearerAuth')
+@RequireRoles('ADMIN')
+@RequirePermissions(PERMISSIONS.APPOINTMENTS_MANAGE)
+@Controller('admin/reporting/appointments')
+export class AdminAppointmentReportingController {
+  constructor(private readonly appointments: AdminAppointmentsService) {}
+
+  @Get()
+  @ApiOperation({ operationId: 'adminReportingAppointmentsGet', summary: 'Get clinic-scoped appointment reporting aggregates and bounded list' })
+  @ApiOkResponse({ type: AppointmentReportingResponseDto })
+  report(@Query() query: AppointmentReportingQueryDto) { return this.appointments.report(query); }
 }

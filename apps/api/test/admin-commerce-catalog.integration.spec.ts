@@ -4,13 +4,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createReleaseAdminTestPrincipal, disposeReleaseAdminTestPrincipal, type ReleaseAdminTestPrincipal } from './release-admin-test-support';
 
 describe('admin commerce catalog (PostgreSQL API integration)', () => {
-  let app: NestFastifyApplication; let prisma: PrismaService; let adminToken: string; let staffToken: string;
+  let app: NestFastifyApplication; let prisma: PrismaService; let adminToken: string; let staffToken: string; let admin: ReleaseAdminTestPrincipal;
   const suffix = randomUUID().slice(0, 8);
   const subjectIds = new Set<string>();
-  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); const tokens = app.get(AccessTokenService); adminToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] }); staffToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] }); }, 30_000);
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); const tokens = app.get(AccessTokenService); admin = await createReleaseAdminTestPrincipal(prisma, tokens); adminToken = admin.token; staffToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] }); }, 30_000);
+  afterAll(async () => { await disposeReleaseAdminTestPrincipal(prisma, admin); await app.close(); });
   afterEach(async () => {
     const products = await prisma.commerceProduct.findMany({ where: { slug: `product-${suffix}` }, select: { id: true } });
     const productIds = products.map((product) => product.id);

@@ -26,7 +26,8 @@ function jsonResponse(body: unknown, status: number) {
 }
 
 describe("dashboard auth session", () => {
-  it.each<Role>(["DOCTOR", "STAFF", "ADMIN"])("allows the %s role", async (role) => {
+  it("allows only the ADMIN role", async () => {
+    const role: Role = "ADMIN";
     const auth = authentication([role]);
     const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(jsonResponse(auth, 200));
     const manager = new DashboardSessionManager(
@@ -40,9 +41,13 @@ describe("dashboard auth session", () => {
     });
   });
 
-  it("rejects patient-only sessions and permits a mixed managerial role", () => {
-    expect(canAccessDashboard(["PATIENT"])).toBe(false);
-    expect(canAccessDashboard(["PATIENT", "STAFF"])).toBe(true);
+  it.each<Role>(["PATIENT", "DOCTOR", "STAFF"])("rejects the %s role", (role) => {
+    expect(canAccessDashboard([role])).toBe(false);
+  });
+
+  it("rejects a non-admin mixed-role session and permits a session that includes ADMIN", () => {
+    expect(canAccessDashboard(["PATIENT", "STAFF"])).toBe(false);
+    expect(canAccessDashboard(["PATIENT", "ADMIN"])).toBe(true);
   });
 
   it("discards patient authentication instead of exposing dashboard content", async () => {
@@ -54,6 +59,24 @@ describe("dashboard auth session", () => {
     );
 
     await expect(manager.bootstrap()).resolves.toEqual({
+      status: "forbidden",
+      authentication: null,
+    });
+  });
+
+  it("discards STAFF refresh authentication without retaining its bearer token", async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValue(jsonResponse(authentication(["STAFF"]), 200));
+    const manager = new DashboardSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+    );
+
+    await expect(manager.bootstrap()).resolves.toEqual({
+      status: "forbidden",
+      authentication: null,
+    });
+    expect(manager.getSnapshot()).toEqual({
       status: "forbidden",
       authentication: null,
     });
@@ -129,7 +152,7 @@ describe("dashboard auth session", () => {
   });
 
   it("logs out with the memory-only bearer token and clears the snapshot", async () => {
-    const auth = authentication(["STAFF"]);
+    const auth = authentication(["ADMIN"]);
     const fetch = vi
       .fn<typeof globalThis.fetch>()
       .mockResolvedValueOnce(jsonResponse(auth, 200))

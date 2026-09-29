@@ -112,7 +112,11 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
 
     const { patient, token, actor } = await fixture();
     const created = await prescriptions.create(patient.id, { expectedRevision: 0, items: [{ medicationName: 'Capability boundary medicine' }] }, actor);
-    const adminToken = await accessTokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['ADMIN'] });
+    const adminUser = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
+    userIds.add(adminUser.id);
+    const adminSessionId = randomUUID();
+    await prisma.session.create({ data: { id: adminSessionId, userId: adminUser.id, refreshTokenHash: randomUUID().replaceAll('-', '').repeat(2), expiresAt: new Date(Date.now() + 3_600_000) } });
+    const adminToken = await accessTokens.issue({ userId: adminUser.id, sessionId: adminSessionId, roles: ['ADMIN'] });
     const roleOnlyAdmin = await app.inject({
       method: 'POST',
       url: `/v1/admin/patients/${patient.id}/prescriptions/${created.id}/issue`,

@@ -190,6 +190,873 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/audit-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List clinic-scoped clinical audit events using a redacted, cursor-paginated representation */
+        get: operations["adminAuditEventsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/appointments/{appointmentId}/conversation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get or create the authorized appointment-bound conversation */
+        get: operations["chatAppointmentConversationGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an authorized bounded ascending message history page */
+        get: operations["chatConversationHistory"];
+        put?: never;
+        /** Persist an idempotent appointment-bound text message */
+        post: operations["chatConversationMessageSend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/visibility-reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconcile durable, body-safe moderation visibility transitions */
+        get: operations["chatConversationVisibilityReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/messages/{messageId}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an authorized idempotent moderation report */
+        post: operations["chatMessageReportCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List own report status or clinic-admin moderation reports */
+        get: operations["chatConversationReportsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/messages/{messageId}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restrict or restore a message under clinic moderation policy */
+        post: operations["chatMessageVisibilityChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/messages/{messageId}/restricted-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Explicitly review restricted content as a clinic administrator */
+        get: operations["chatRestrictedContentReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/reports/{reportId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve an internal moderation report and apply an allowed action */
+        post: operations["chatReportResolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/waiting-room/appointments/{appointmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get server-evaluated appointment waiting-room readiness */
+        get: operations["chatWaitingRoomGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/clinical/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List permitted patient clinical timeline */
+        get: operations["patientClinicalTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/clinical/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List permitted patient clinical history */
+        get: operations["patientClinicalHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/clinical/appointments/{appointmentId}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get permitted patient visit summary */
+        get: operations["patientClinicalAppointmentSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an authorized patient clinical workspace */
+        get: operations["adminClinicalWorkspaceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/encounters/{encounterId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a controlled clinical-note revision */
+        post: operations["adminClinicalWorkspaceCreateNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save a controlled clinical-note revision */
+        post: operations["adminClinicalWorkspaceSaveNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign an exact clinical-note revision */
+        post: operations["adminClinicalWorkspaceSignNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish an already signed patient summary */
+        post: operations["adminClinicalWorkspacePublishNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a reviewed clinical record from immutable intake provenance */
+        post: operations["adminClinicalWorkspaceReconcileRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save a controlled reviewed-record revision */
+        post: operations["adminClinicalWorkspaceReviseRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign an exact reviewed-record revision */
+        post: operations["adminClinicalWorkspaceSignRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized patient prescriptions */
+        get: operations["adminPrescriptionsList"];
+        put?: never;
+        /** Create a prescription draft */
+        post: operations["adminPrescriptionsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an authorized prescription current revision */
+        get: operations["adminPrescriptionsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save an append-only prescription draft revision */
+        post: operations["adminPrescriptionsSaveDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue an exact current prescription revision */
+        post: operations["adminPrescriptionsIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized patient treatment plans */
+        get: operations["adminTreatmentPlansList"];
+        put?: never;
+        /** Create an authorized treatment-plan definition */
+        post: operations["adminTreatmentPlansCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an authorized treatment-plan definition */
+        get: operations["adminTreatmentPlansGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable treatment-plan definition */
+        patch: operations["adminTreatmentPlansUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a treatment medication definition without schedule execution */
+        post: operations["adminTreatmentPlanMedicationsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications/{medicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable treatment medication definition */
+        patch: operations["adminTreatmentPlanMedicationsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an ordered clinical session definition without scheduling */
+        post: operations["adminTreatmentPlanSessionsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an ordered clinical session definition without scheduling */
+        patch: operations["adminTreatmentPlanSessionsUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an exercise definition without schedule execution */
+        post: operations["adminTreatmentPlanExercisesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises/{exerciseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable exercise definition */
+        patch: operations["adminTreatmentPlanExercisesUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a nutrition definition */
+        post: operations["adminTreatmentPlanNutritionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition/{nutritionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an editable nutrition definition */
+        patch: operations["adminTreatmentPlanNutritionUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/reporting/treatments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped treatment reporting aggregates */
+        get: operations["adminReportingTreatmentsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the patient permitted active or completed treatment plans */
+        get: operations["patientTreatmentPlansList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment-plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a patient permitted active or completed treatment plan */
+        get: operations["patientTreatmentPlansGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List authorized treatment-task occurrences */
+        get: operations["adminTreatmentTasksList"];
+        put?: never;
+        /** Schedule a one-off medication or exercise task */
+        post: operations["adminTreatmentTasksCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reschedule a scheduled treatment task */
+        patch: operations["adminTreatmentTasksReschedule"];
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a scheduled treatment task */
+        post: operations["adminTreatmentTasksCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the patient scheduled treatment tasks */
+        get: operations["patientTreatmentTasksList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment/tasks/{taskId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete one permitted treatment task repeat-safely */
+        post: operations["patientTreatmentTasksComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment/medications/{medicationId}/adherence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record permitted medication adherence idempotently */
+        post: operations["patientMedicationAdherenceRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get authorized real treatment progress and timeline */
+        get: operations["adminTreatmentProgressGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/treatment-plans/{planId}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the authenticated patient real treatment progress and timeline */
+        get: operations["patientTreatmentProgressGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientNotificationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["NotificationsController_read"];
+        trace?: never;
+    };
+    "/v1/patients/me/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_all"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/notifications/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NotificationsController_preferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["NotificationsController_preference"];
+        trace?: never;
+    };
+    "/v1/admin/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminNotificationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me": {
         parameters: {
             query?: never;
@@ -381,6 +1248,23 @@ export interface paths {
         patch: operations["adminPatientsCorrectIntake"];
         trace?: never;
     };
+    "/v1/admin/reporting/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped patient reporting aggregates */
+        get: operations["adminReportingPatientsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/assessments": {
         parameters: {
             query?: never;
@@ -512,6 +1396,23 @@ export interface paths {
         };
         /** Get a clinic assessment result */
         get: operations["adminAssessmentSubmissionsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reporting/assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get clinic-scoped assessment reporting aggregates */
+        get: operations["adminReportingAssessmentsGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1295,677 +2196,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/clinical/timeline": {
+    "/v1/admin/reporting/appointments": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List permitted patient clinical timeline */
-        get: operations["patientClinicalTimeline"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/clinical/history": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List permitted patient clinical history */
-        get: operations["patientClinicalHistory"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/clinical/appointments/{appointmentId}/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get permitted patient visit summary */
-        get: operations["patientClinicalAppointmentSummary"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an authorized patient clinical workspace */
-        get: operations["adminClinicalWorkspaceGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/encounters/{encounterId}/notes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a controlled clinical-note revision */
-        post: operations["adminClinicalWorkspaceCreateNote"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/revisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Save a controlled clinical-note revision */
-        post: operations["adminClinicalWorkspaceSaveNote"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/sign": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Sign an exact clinical-note revision */
-        post: operations["adminClinicalWorkspaceSignNote"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/notes/{noteId}/publish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Publish an already signed patient summary */
-        post: operations["adminClinicalWorkspacePublishNote"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/records": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a reviewed clinical record from immutable intake provenance */
-        post: operations["adminClinicalWorkspaceReconcileRecord"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/revisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Save a controlled reviewed-record revision */
-        post: operations["adminClinicalWorkspaceReviseRecord"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/clinical-workspace/records/{kind}/{recordId}/sign": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Sign an exact reviewed-record revision */
-        post: operations["adminClinicalWorkspaceSignRecord"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/prescriptions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List authorized patient prescriptions */
-        get: operations["adminPrescriptionsList"];
-        put?: never;
-        /** Create a prescription draft */
-        post: operations["adminPrescriptionsCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an authorized prescription current revision */
-        get: operations["adminPrescriptionsGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/revisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Save an append-only prescription draft revision */
-        post: operations["adminPrescriptionsSaveDraft"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/issue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Issue an exact current prescription revision */
-        post: operations["adminPrescriptionsIssue"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List authorized patient treatment plans */
-        get: operations["adminTreatmentPlansList"];
-        put?: never;
-        /** Create an authorized treatment-plan definition */
-        post: operations["adminTreatmentPlansCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an authorized treatment-plan definition */
-        get: operations["adminTreatmentPlansGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update an editable treatment-plan definition */
-        patch: operations["adminTreatmentPlansUpdate"];
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add a treatment medication definition without schedule execution */
-        post: operations["adminTreatmentPlanMedicationsCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/medications/{medicationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update an editable treatment medication definition */
-        patch: operations["adminTreatmentPlanMedicationsUpdate"];
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add an ordered clinical session definition without scheduling */
-        post: operations["adminTreatmentPlanSessionsCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/sessions/{sessionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update an ordered clinical session definition without scheduling */
-        patch: operations["adminTreatmentPlanSessionsUpdate"];
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add an exercise definition without schedule execution */
-        post: operations["adminTreatmentPlanExercisesCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/exercises/{exerciseId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update an editable exercise definition */
-        patch: operations["adminTreatmentPlanExercisesUpdate"];
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add a nutrition definition */
-        post: operations["adminTreatmentPlanNutritionCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/nutrition/{nutritionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update an editable nutrition definition */
-        patch: operations["adminTreatmentPlanNutritionUpdate"];
-        trace?: never;
-    };
-    "/v1/patients/me/treatment-plans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the patient permitted active or completed treatment plans */
-        get: operations["patientTreatmentPlansList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/treatment-plans/{planId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a patient permitted active or completed treatment plan */
-        get: operations["patientTreatmentPlansGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List authorized treatment-task occurrences */
-        get: operations["adminTreatmentTasksList"];
-        put?: never;
-        /** Schedule a one-off medication or exercise task */
-        post: operations["adminTreatmentTasksCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Reschedule a scheduled treatment task */
-        patch: operations["adminTreatmentTasksReschedule"];
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/tasks/{taskId}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Cancel a scheduled treatment task */
-        post: operations["adminTreatmentTasksCancel"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/treatment/tasks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the patient scheduled treatment tasks */
-        get: operations["patientTreatmentTasksList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/treatment/tasks/{taskId}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Complete one permitted treatment task repeat-safely */
-        post: operations["patientTreatmentTasksComplete"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/treatment/medications/{medicationId}/adherence": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Record permitted medication adherence idempotently */
-        post: operations["patientMedicationAdherenceRecord"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/progress": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get authorized real treatment progress and timeline */
-        get: operations["adminTreatmentProgressGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/treatment-plans/{planId}/progress": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the authenticated patient real treatment progress and timeline */
-        get: operations["patientTreatmentProgressGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/notifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["patientNotificationsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/notifications/{id}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["NotificationsController_read"];
-        trace?: never;
-    };
-    "/v1/patients/me/notifications/read-all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["NotificationsController_all"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/notifications/preferences": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["NotificationsController_preferences"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["NotificationsController_preference"];
-        trace?: never;
-    };
-    "/v1/admin/notifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminNotificationsList"];
+        /** Get clinic-scoped appointment reporting aggregates and bounded list */
+        get: operations["adminReportingAppointmentsGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2816,152 +3055,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/chat/appointments/{appointmentId}/conversation": {
+    "/v1/admin/commerce/customers": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get or create the authorized appointment-bound conversation */
-        get: operations["chatAppointmentConversationGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read an authorized bounded ascending message history page */
-        get: operations["chatConversationHistory"];
-        put?: never;
-        /** Persist an idempotent appointment-bound text message */
-        post: operations["chatConversationMessageSend"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/visibility-reconciliation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Reconcile durable, body-safe moderation visibility transitions */
-        get: operations["chatConversationVisibilityReconciliation"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/messages/{messageId}/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create an authorized idempotent moderation report */
-        post: operations["chatMessageReportCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List own report status or clinic-admin moderation reports */
-        get: operations["chatConversationReportsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/messages/{messageId}/visibility": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Restrict or restore a message under clinic moderation policy */
-        post: operations["chatMessageVisibilityChange"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/messages/{messageId}/restricted-content": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Explicitly review restricted content as a clinic administrator */
-        get: operations["chatRestrictedContentReview"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/reports/{reportId}/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve an internal moderation report and apply an allowed action */
-        post: operations["chatReportResolve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/waiting-room/appointments/{appointmentId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get server-evaluated appointment waiting-room readiness */
-        get: operations["chatWaitingRoomGet"];
+        /** List clinic-scoped operational store customers without medical or marketing data */
+        get: operations["adminCommerceCustomersList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3090,6 +3192,569 @@ export interface components {
             currentPassword: string;
             newPassword: string;
         };
+        AuditViewerItemDto: {
+            /**
+             * Format: uuid
+             * @description Opaque audit-event identifier.
+             */
+            id: string;
+            /** @enum {string} */
+            action: "READ" | "CREATE" | "UPDATE" | "SIGN" | "AMEND" | "PUBLISH" | "EXPORT";
+            /** @description Redacted actor reference; never a user identifier. */
+            actorReference: string | null;
+            /** @description Redacted subject reference; never a patient identifier. */
+            subjectReference: string;
+            /** @description Allow-listed clinical resource type. */
+            subjectType: string;
+            /** @description Redacted request/correlation reference. */
+            requestCorrelationReference: string | null;
+            /** @description Fixed safe summary, never raw audit metadata. */
+            metadataSummary: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        AuditViewerPageDto: {
+            /** Format: uuid */
+            clinicId: string;
+            /** @example Asia/Tehran */
+            timeZone: string;
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            items: components["schemas"]["AuditViewerItemDto"][];
+            nextCursor?: string | null;
+        };
+        ChatConversationResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: uuid */
+            clinicId: string;
+            /** Format: uuid */
+            patientId: string;
+            /** Format: uuid */
+            doctorId: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ChatMessageResponseDto: {
+            /** Format: uuid */
+            id: string;
+            sequence: string;
+            /** @enum {string} */
+            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            visibility: "VISIBLE" | "RESTRICTED";
+            body?: string;
+            /** @enum {string} */
+            restrictedReasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
+            /** @description Safe tombstone shown instead of restricted text. */
+            tombstone?: string;
+        };
+        ChatHistoryResponseDto: {
+            items: components["schemas"]["ChatMessageResponseDto"][];
+            nextCursor?: Record<string, never>;
+            highWaterSequence: string;
+        };
+        ChatVisibilityReconciliationItemDto: {
+            /** @description Opaque durable moderation transition identity. */
+            revision: string;
+            message: components["schemas"]["ChatMessageResponseDto"];
+        };
+        ChatVisibilityReconciliationResponseDto: {
+            items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
+            nextCursor?: Record<string, never>;
+            /** @description Opaque checkpoint to persist after applying this page. */
+            checkpointCursor?: Record<string, never>;
+            /** @description Opaque high-water revision identity. */
+            highWaterRevision?: Record<string, never>;
+        };
+        SendChatMessageDto: {
+            /**
+             * Format: uuid
+             * @description Client-generated idempotency identifier.
+             */
+            clientMessageId: string;
+            body: string;
+        };
+        CreateChatReportDto: {
+            /** @enum {string} */
+            reasonCategory: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
+            /** @description Optional non-sensitive note; never message or medical text. */
+            reporterNote?: string;
+            /** @description Request an effective pending-review conversation-scoped block. */
+            requestImmediateBlock?: boolean;
+            /**
+             * @description ADMIN-only explicit block scope.
+             * @enum {string}
+             */
+            blockScope?: "PATIENT_DOCTOR" | "PATIENT_CLINIC_OPERATOR";
+        };
+        ChangeChatVisibilityDto: {
+            /** @enum {string} */
+            visibility: "RESTRICTED" | "VISIBLE";
+            /** @enum {string} */
+            reasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
+            /** @description Non-sensitive administrative note. */
+            safeNote?: string;
+        };
+        ResolveChatReportDto: {
+            /** @enum {string} */
+            resolution: "DISMISSED_NO_VIOLATION" | "UPHELD_POLICY_VIOLATION" | "INSUFFICIENT_EVIDENCE" | "ESCALATED_SAFETY_OR_LEGAL";
+            /** @enum {string} */
+            action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
+            /** @description Non-sensitive administrative note. */
+            safeNote?: string;
+        };
+        PatientClinicalItemResponseDto: {
+            /** Format: uuid */
+            encounterId: string;
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: date-time */
+            completedAt: string;
+            revisionNumber: number;
+            patientSummary: string;
+            /** Format: date-time */
+            publishedAt: string;
+        };
+        PatientClinicalListResponseDto: {
+            items: components["schemas"]["PatientClinicalItemResponseDto"][];
+        };
+        AdminClinicalWorkspaceIntakeSourceDto: {
+            /** Format: uuid */
+            intakeId: string;
+            /** Format: uuid */
+            revisionId: string;
+            revisionNumber: number;
+        };
+        AdminClinicalWorkspaceEncounterDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            appointmentId: string;
+            state: string;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+        };
+        ClinicalNoteRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "SIGNED";
+            content: string;
+            isPrivate: boolean;
+            patientSummary: string | null;
+            amendmentReasonCategory: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            signedAt: string | null;
+            /** Format: uuid */
+            signedByUserId: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** Format: uuid */
+            publishedByUserId: string | null;
+            integrityHash: string | null;
+        };
+        ClinicalNoteResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            encounterId: string;
+            /** Format: uuid */
+            patientId?: string;
+            currentRevision: number;
+            currentEffectiveRevision: number | null;
+            latestSignedRevision: number | null;
+            currentPublishedRevision: number | null;
+            revision: components["schemas"]["ClinicalNoteRevisionResponseDto"] | null;
+        };
+        ClinicalRecordRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "SIGNED";
+            content: {
+                [key: string]: unknown;
+            };
+            isPrivate: boolean;
+            amendmentReasonCategory: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            signedAt: string | null;
+            /** Format: uuid */
+            signedByUserId: string | null;
+            integrityHash: string | null;
+        };
+        ClinicalRecordResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+            /** Format: uuid */
+            patientId?: string;
+            /** Format: uuid */
+            encounterId?: string | null;
+            state?: string;
+            currentRevision: number;
+            latestSignedRevision: number | null;
+            revision: components["schemas"]["ClinicalRecordRevisionResponseDto"] | null;
+        };
+        AdminClinicalWorkspaceTimelineItemDto: {
+            id: string;
+            type: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** Format: uuid */
+            encounterId: string | null;
+        };
+        AdminClinicalWorkspaceResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            intakeSource: components["schemas"]["AdminClinicalWorkspaceIntakeSourceDto"] | null;
+            encounters: components["schemas"]["AdminClinicalWorkspaceEncounterDto"][];
+            notes: components["schemas"]["ClinicalNoteResponseDto"][];
+            records: components["schemas"]["ClinicalRecordResponseDto"][];
+            timeline: components["schemas"]["AdminClinicalWorkspaceTimelineItemDto"][];
+        };
+        CreateClinicalNoteDto: {
+            expectedRevision: number;
+            content: string;
+            isPrivate?: boolean;
+            patientSummary?: string | null;
+        };
+        SaveClinicalNoteDto: {
+            expectedRevision: number;
+            content: string;
+            isPrivate?: boolean;
+            patientSummary?: string | null;
+            amendmentReasonCategory?: string | null;
+        };
+        SignClinicalRevisionDto: {
+            revisionNumber: number;
+            expectedRevision: number;
+        };
+        PublishClinicalNoteDto: {
+            revisionNumber: number;
+            expectedRevision: number;
+        };
+        ReconcileClinicalRecordDto: {
+            /** @enum {string} */
+            kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+            /** Format: uuid */
+            encounterId?: string;
+            /** Format: uuid */
+            sourceIntakeId: string;
+            /** Format: uuid */
+            sourceIntakeRevisionId: string;
+            sourceIntakeRevisionNumber: number;
+            reviewedContent: {
+                [key: string]: unknown;
+            };
+        };
+        ReviseClinicalRecordDto: {
+            expectedRevision: number;
+            reviewedContent: {
+                [key: string]: unknown;
+            };
+            amendmentReasonCategory?: string | null;
+        };
+        PrescriptionItemResponseDto: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            medicationName: string;
+            doseText: string | null;
+            frequencyText: string | null;
+            durationText: string | null;
+            instructions: string | null;
+        };
+        PrescriptionRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "ISSUED" | "VOIDED";
+            amendmentReasonCategory: string | null;
+            integrityHash: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            issuedAt: string | null;
+            /** Format: uuid */
+            issuedByUserId: string | null;
+            items: components["schemas"]["PrescriptionItemResponseDto"][];
+        };
+        PrescriptionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            currentRevision: number;
+            currentIssuedRevision: number | null;
+            latestIssuedRevision: number | null;
+            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
+        };
+        PrescriptionListResponseDto: {
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        PrescriptionItemDto: {
+            medicationName: string;
+            doseText?: string;
+            frequencyText?: string;
+            durationText?: string;
+            instructions?: string;
+        };
+        CreatePrescriptionDto: {
+            expectedRevision: number;
+            items: components["schemas"]["PrescriptionItemDto"][];
+        };
+        SavePrescriptionDraftDto: {
+            expectedRevision: number;
+            items: components["schemas"]["PrescriptionItemDto"][];
+            amendmentReasonCategory?: string;
+        };
+        IssuePrescriptionDto: {
+            revisionNumber: number;
+            expectedRevision: number;
+        };
+        TreatmentMedicationResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            dosage: string | null;
+            instructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentSessionPlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            title: string;
+            goals: string[];
+            instructions: string | null;
+            patientInstructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ExercisePlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            instructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        NutritionPlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            instructions: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentPlanResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            /** @enum {string} */
+            state: "DRAFT" | "ACTIVE" | "COMPLETED" | "VOIDED";
+            title: string | null;
+            medications: components["schemas"]["TreatmentMedicationResponseDto"][];
+            sessionPlans: components["schemas"]["TreatmentSessionPlanResponseDto"][];
+            exercisePlans: components["schemas"]["ExercisePlanResponseDto"][];
+            nutritionPlans: components["schemas"]["NutritionPlanResponseDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentPlanListResponseDto: {
+            items: components["schemas"]["TreatmentPlanResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        TreatmentMedicationDto: {
+            name: string;
+            dosage?: string;
+            instructions?: string;
+        };
+        TreatmentSessionPlanDto: {
+            position: number;
+            title: string;
+            goals: string[];
+            instructions?: string;
+            patientInstructions?: string;
+        };
+        ExercisePlanDto: {
+            title: string;
+            instructions?: string;
+        };
+        NutritionPlanDto: {
+            title: string;
+            instructions?: string;
+        };
+        CreateTreatmentPlanDto: {
+            title?: string;
+            medications?: components["schemas"]["TreatmentMedicationDto"][];
+            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
+            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
+            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+        };
+        UpdateTreatmentPlanDto: {
+            title?: string;
+            /** @enum {string} */
+            state?: "DRAFT" | "ACTIVE" | "COMPLETED" | "VOIDED";
+        };
+        UpdateTreatmentMedicationDto: {
+            name?: string;
+            dosage?: string;
+            instructions?: string;
+        };
+        UpdateTreatmentSessionPlanDto: {
+            position?: number;
+            title?: string;
+            goals?: string[];
+            instructions?: string;
+            patientInstructions?: string;
+        };
+        UpdateExercisePlanDto: {
+            title?: string;
+            instructions?: string;
+        };
+        UpdateNutritionPlanDto: {
+            title?: string;
+            instructions?: string;
+        };
+        TreatmentReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            activePlans: number;
+            dueTasks: number;
+            completedTasks: number;
+            completionRate: Record<string, never> | null;
+        };
+        TreatmentTaskResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            treatmentPlanId: string;
+            /** @enum {string} */
+            kind: "MEDICATION" | "EXERCISE";
+            /** Format: date-time */
+            scheduledFor: string;
+            /** @enum {string} */
+            state: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+            /** Format: date-time */
+            completedAt?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TreatmentTaskListResponseDto: {
+            items: components["schemas"]["TreatmentTaskResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        CreateTreatmentTaskDto: {
+            /** @enum {string} */
+            kind: "MEDICATION" | "EXERCISE";
+            /** Format: date-time */
+            scheduledFor: string;
+        };
+        RescheduleTreatmentTaskDto: {
+            /** Format: date-time */
+            scheduledFor: string;
+        };
+        RecordMedicationAdherenceDto: {
+            /**
+             * Format: uuid
+             * @description Optional matching MEDICATION task in the same treatment plan.
+             */
+            treatmentTaskId?: string;
+        };
+        MedicationAdherenceResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            treatmentMedicationId: string;
+            /** Format: uuid */
+            treatmentTaskId?: string | null;
+            /** Format: date-time */
+            recordedAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TreatmentProgressEventResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            treatmentPlanId: string;
+            /** Format: uuid */
+            treatmentTaskId?: string | null;
+            /** @enum {string} */
+            eventType: "TASK_COMPLETED" | "MEDICATION_ADHERENCE_RECORDED";
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        TreatmentProgressResponseDto: {
+            /** Format: uuid */
+            treatmentPlanId: string;
+            percentage: number;
+            completedTasks: number;
+            totalTasks: number;
+            timeline: components["schemas"]["TreatmentProgressEventResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
+        PreferenceDto: Record<string, never>;
         SelfProfileResponseDto: {
             /** Format: uuid */
             patientId: string;
@@ -3339,6 +4004,20 @@ export interface components {
             updatedAt: string;
         };
         AdminMedicalIntakeCorrectionDto: Record<string, never>;
+        PatientReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            newPatients: number;
+            onboardingComplete: number;
+            onboardingIncomplete: number;
+        };
         AssessmentVersionResponseDto: {
             /** Format: uuid */
             id: string;
@@ -3432,6 +4111,20 @@ export interface components {
             page: number;
             pageSize: number;
             total: number;
+        };
+        AssessmentReportingResponseDto: {
+            /** Format: uuid */
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            started: number;
+            completed: number;
+            completionRate: Record<string, never> | null;
         };
         PatientAssessmentListItemDto: {
             /** Format: uuid */
@@ -4125,432 +4818,33 @@ export interface components {
             /** Format: date-time */
             startsAt: string;
         };
-        PatientClinicalItemResponseDto: {
-            /** Format: uuid */
-            encounterId: string;
-            /** Format: uuid */
-            appointmentId: string;
-            /** Format: date-time */
-            completedAt: string;
-            revisionNumber: number;
-            patientSummary: string;
-            /** Format: date-time */
-            publishedAt: string;
-        };
-        PatientClinicalListResponseDto: {
-            items: components["schemas"]["PatientClinicalItemResponseDto"][];
-        };
-        AdminClinicalWorkspaceIntakeSourceDto: {
-            /** Format: uuid */
-            intakeId: string;
-            /** Format: uuid */
-            revisionId: string;
-            revisionNumber: number;
-        };
-        AdminClinicalWorkspaceEncounterDto: {
+        AppointmentReportingListItemResponseDto: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            appointmentId: string;
-            state: string;
             /** Format: date-time */
-            startedAt: string;
-            /** Format: date-time */
-            completedAt: string | null;
-        };
-        ClinicalNoteRevisionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            revisionNumber: number;
-            /** Format: uuid */
-            previousRevisionId: string | null;
+            startsAt: string;
             /** @enum {string} */
-            state: "DRAFT" | "SIGNED";
-            content: string;
-            isPrivate: boolean;
-            patientSummary: string | null;
-            amendmentReasonCategory: string | null;
-            /** Format: date-time */
-            authoredAt: string;
-            /** Format: uuid */
-            authoredByUserId: string | null;
-            /** Format: date-time */
-            signedAt: string | null;
-            /** Format: uuid */
-            signedByUserId: string | null;
-            /** Format: date-time */
-            publishedAt: string | null;
-            /** Format: uuid */
-            publishedByUserId: string | null;
-            integrityHash: string | null;
+            status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
         };
-        ClinicalNoteResponseDto: {
+        AppointmentReportingResponseDto: {
             /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            encounterId: string;
-            /** Format: uuid */
-            patientId?: string;
-            currentRevision: number;
-            currentEffectiveRevision: number | null;
-            latestSignedRevision: number | null;
-            currentPublishedRevision: number | null;
-            revision: components["schemas"]["ClinicalNoteRevisionResponseDto"] | null;
-        };
-        ClinicalRecordRevisionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            revisionNumber: number;
-            /** Format: uuid */
-            previousRevisionId: string | null;
+            clinicId: string;
+            timeZone: string;
+            from: string;
+            to: string;
+            /** Format: date-time */
+            asOf: string;
             /** @enum {string} */
-            state: "DRAFT" | "SIGNED";
-            content: {
-                [key: string]: unknown;
-            };
-            isPrivate: boolean;
-            amendmentReasonCategory: string | null;
-            /** Format: date-time */
-            authoredAt: string;
-            /** Format: uuid */
-            authoredByUserId: string | null;
-            /** Format: date-time */
-            signedAt: string | null;
-            /** Format: uuid */
-            signedByUserId: string | null;
-            integrityHash: string | null;
+            sourceStatus: "current" | "partial" | "stale";
+            scheduled: number;
+            completed: number;
+            cancelled: number;
+            noShow: number;
+            completionRate: Record<string, never> | null;
+            averageWaitMinutes: Record<string, never> | null;
+            items: components["schemas"]["AppointmentReportingListItemResponseDto"][];
+            nextCursor?: Record<string, never> | null;
         };
-        ClinicalRecordResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
-            /** Format: uuid */
-            patientId?: string;
-            /** Format: uuid */
-            encounterId?: string | null;
-            state?: string;
-            currentRevision: number;
-            latestSignedRevision: number | null;
-            revision: components["schemas"]["ClinicalRecordRevisionResponseDto"] | null;
-        };
-        AdminClinicalWorkspaceTimelineItemDto: {
-            id: string;
-            type: string;
-            /** Format: date-time */
-            occurredAt: string;
-            /** Format: uuid */
-            encounterId: string | null;
-        };
-        AdminClinicalWorkspaceResponseDto: {
-            /** Format: uuid */
-            patientId: string;
-            intakeSource: components["schemas"]["AdminClinicalWorkspaceIntakeSourceDto"] | null;
-            encounters: components["schemas"]["AdminClinicalWorkspaceEncounterDto"][];
-            notes: components["schemas"]["ClinicalNoteResponseDto"][];
-            records: components["schemas"]["ClinicalRecordResponseDto"][];
-            timeline: components["schemas"]["AdminClinicalWorkspaceTimelineItemDto"][];
-        };
-        CreateClinicalNoteDto: {
-            expectedRevision: number;
-            content: string;
-            isPrivate?: boolean;
-            patientSummary?: string | null;
-        };
-        SaveClinicalNoteDto: {
-            expectedRevision: number;
-            content: string;
-            isPrivate?: boolean;
-            patientSummary?: string | null;
-            amendmentReasonCategory?: string | null;
-        };
-        SignClinicalRevisionDto: {
-            revisionNumber: number;
-            expectedRevision: number;
-        };
-        PublishClinicalNoteDto: {
-            revisionNumber: number;
-            expectedRevision: number;
-        };
-        ReconcileClinicalRecordDto: {
-            /** @enum {string} */
-            kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
-            /** Format: uuid */
-            encounterId?: string;
-            /** Format: uuid */
-            sourceIntakeId: string;
-            /** Format: uuid */
-            sourceIntakeRevisionId: string;
-            sourceIntakeRevisionNumber: number;
-            reviewedContent: {
-                [key: string]: unknown;
-            };
-        };
-        ReviseClinicalRecordDto: {
-            expectedRevision: number;
-            reviewedContent: {
-                [key: string]: unknown;
-            };
-            amendmentReasonCategory?: string | null;
-        };
-        PrescriptionItemResponseDto: {
-            /** Format: uuid */
-            id: string;
-            position: number;
-            medicationName: string;
-            doseText: string | null;
-            frequencyText: string | null;
-            durationText: string | null;
-            instructions: string | null;
-        };
-        PrescriptionRevisionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            revisionNumber: number;
-            /** Format: uuid */
-            previousRevisionId: string | null;
-            /** @enum {string} */
-            state: "DRAFT" | "ISSUED" | "VOIDED";
-            amendmentReasonCategory: string | null;
-            integrityHash: string | null;
-            /** Format: date-time */
-            authoredAt: string;
-            /** Format: uuid */
-            authoredByUserId: string | null;
-            /** Format: date-time */
-            issuedAt: string | null;
-            /** Format: uuid */
-            issuedByUserId: string | null;
-            items: components["schemas"]["PrescriptionItemResponseDto"][];
-        };
-        PrescriptionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            patientId: string;
-            currentRevision: number;
-            currentIssuedRevision: number | null;
-            latestIssuedRevision: number | null;
-            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
-        };
-        PrescriptionListResponseDto: {
-            items: components["schemas"]["PrescriptionResponseDto"][];
-            /** Format: uuid */
-            nextCursor?: string | null;
-        };
-        PrescriptionItemDto: {
-            medicationName: string;
-            doseText?: string;
-            frequencyText?: string;
-            durationText?: string;
-            instructions?: string;
-        };
-        CreatePrescriptionDto: {
-            expectedRevision: number;
-            items: components["schemas"]["PrescriptionItemDto"][];
-        };
-        SavePrescriptionDraftDto: {
-            expectedRevision: number;
-            items: components["schemas"]["PrescriptionItemDto"][];
-            amendmentReasonCategory?: string;
-        };
-        IssuePrescriptionDto: {
-            revisionNumber: number;
-            expectedRevision: number;
-        };
-        TreatmentMedicationResponseDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            dosage: string | null;
-            instructions: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        TreatmentSessionPlanResponseDto: {
-            /** Format: uuid */
-            id: string;
-            position: number;
-            title: string;
-            goals: string[];
-            instructions: string | null;
-            patientInstructions: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        ExercisePlanResponseDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            instructions: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        NutritionPlanResponseDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            instructions: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        TreatmentPlanResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            patientId: string;
-            /** @enum {string} */
-            state: "DRAFT" | "ACTIVE" | "COMPLETED" | "VOIDED";
-            title: string | null;
-            medications: components["schemas"]["TreatmentMedicationResponseDto"][];
-            sessionPlans: components["schemas"]["TreatmentSessionPlanResponseDto"][];
-            exercisePlans: components["schemas"]["ExercisePlanResponseDto"][];
-            nutritionPlans: components["schemas"]["NutritionPlanResponseDto"][];
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        TreatmentPlanListResponseDto: {
-            items: components["schemas"]["TreatmentPlanResponseDto"][];
-            /** Format: uuid */
-            nextCursor?: string | null;
-        };
-        TreatmentMedicationDto: {
-            name: string;
-            dosage?: string;
-            instructions?: string;
-        };
-        TreatmentSessionPlanDto: {
-            position: number;
-            title: string;
-            goals: string[];
-            instructions?: string;
-            patientInstructions?: string;
-        };
-        ExercisePlanDto: {
-            title: string;
-            instructions?: string;
-        };
-        NutritionPlanDto: {
-            title: string;
-            instructions?: string;
-        };
-        CreateTreatmentPlanDto: {
-            title?: string;
-            medications?: components["schemas"]["TreatmentMedicationDto"][];
-            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
-            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
-            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
-        };
-        UpdateTreatmentPlanDto: {
-            title?: string;
-            /** @enum {string} */
-            state?: "DRAFT" | "ACTIVE" | "COMPLETED" | "VOIDED";
-        };
-        UpdateTreatmentMedicationDto: {
-            name?: string;
-            dosage?: string;
-            instructions?: string;
-        };
-        UpdateTreatmentSessionPlanDto: {
-            position?: number;
-            title?: string;
-            goals?: string[];
-            instructions?: string;
-            patientInstructions?: string;
-        };
-        UpdateExercisePlanDto: {
-            title?: string;
-            instructions?: string;
-        };
-        UpdateNutritionPlanDto: {
-            title?: string;
-            instructions?: string;
-        };
-        TreatmentTaskResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            treatmentPlanId: string;
-            /** @enum {string} */
-            kind: "MEDICATION" | "EXERCISE";
-            /** Format: date-time */
-            scheduledFor: string;
-            /** @enum {string} */
-            state: "SCHEDULED" | "COMPLETED" | "CANCELLED";
-            /** Format: date-time */
-            completedAt?: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        TreatmentTaskListResponseDto: {
-            items: components["schemas"]["TreatmentTaskResponseDto"][];
-            /** Format: uuid */
-            nextCursor?: string | null;
-        };
-        CreateTreatmentTaskDto: {
-            /** @enum {string} */
-            kind: "MEDICATION" | "EXERCISE";
-            /** Format: date-time */
-            scheduledFor: string;
-        };
-        RescheduleTreatmentTaskDto: {
-            /** Format: date-time */
-            scheduledFor: string;
-        };
-        RecordMedicationAdherenceDto: {
-            /**
-             * Format: uuid
-             * @description Optional matching MEDICATION task in the same treatment plan.
-             */
-            treatmentTaskId?: string;
-        };
-        MedicationAdherenceResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            treatmentMedicationId: string;
-            /** Format: uuid */
-            treatmentTaskId?: string | null;
-            /** Format: date-time */
-            recordedAt: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        TreatmentProgressEventResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            treatmentPlanId: string;
-            /** Format: uuid */
-            treatmentTaskId?: string | null;
-            /** @enum {string} */
-            eventType: "TASK_COMPLETED" | "MEDICATION_ADHERENCE_RECORDED";
-            /** Format: date-time */
-            occurredAt: string;
-        };
-        TreatmentProgressResponseDto: {
-            /** Format: uuid */
-            treatmentPlanId: string;
-            percentage: number;
-            completedTasks: number;
-            totalTasks: number;
-            timeline: components["schemas"]["TreatmentProgressEventResponseDto"][];
-            /** Format: uuid */
-            nextCursor?: string | null;
-        };
-        PreferenceDto: Record<string, never>;
         CreateHealthObservationDto: {
             /** @enum {string} */
             metric: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
@@ -4995,101 +5289,67 @@ export interface components {
             successfulPaymentCount: number;
         };
         CommerceRevenueDto: {
+            /** Format: uuid */
+            clinicId: string;
             /** @enum {string} */
             currency: "TOMAN";
             timeZone: string;
             from: string;
             to: string;
+            /** Format: date-time */
+            asOf: string;
+            /** @enum {string} */
+            sourceStatus: "current" | "partial" | "stale";
+            /** @enum {string} */
+            revenueLabel: "operational revenue";
             grossCapturedToman: string;
             completedRefundToman: string;
             netRevenueToman: string;
             successfulPaymentCount: number;
+            refundPending: number;
             series: components["schemas"]["CommerceRevenueSeriesPointDto"][];
         };
-        ChatConversationResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            appointmentId: string;
-            /** Format: uuid */
-            clinicId: string;
+        CommerceCustomerCrmSummaryDto: {
+            totalCustomerCount: number;
+            vipCustomerCount: number;
+            /** @description Integer TOMAN. */
+            netSpendToman: string;
+            /** @description Integer-truncated TOMAN average; zero for an empty population. */
+            averageNetSpendToman: string;
+        };
+        CommerceCustomerCrmItemDto: {
             /** Format: uuid */
             patientId: string;
-            /** Format: uuid */
-            doctorId: string;
+            displayName?: string | null;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            /** @enum {string} */
+            segment: "POTENTIAL" | "ONE_TIME" | "RETURNING" | "VIP";
+            successfulPurchaseCount: number;
+            /** @description Integer TOMAN. */
+            grossToman: string;
+            /** @description Integer TOMAN. */
+            completedRefundToman: string;
+            /** @description Integer TOMAN. */
+            netSpendToman: string;
+            topProduct?: string | null;
             /** Format: date-time */
-            createdAt: string;
+            lastPurchaseAt?: string | null;
         };
-        ChatMessageResponseDto: {
+        CommerceCustomerCrmPageDto: {
             /** Format: uuid */
-            id: string;
-            sequence: string;
+            clinicId: string;
             /** @enum {string} */
-            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
+            currency: "TOMAN";
+            /** @example Asia/Tehran */
+            timeZone: string;
             /** Format: date-time */
-            createdAt: string;
-            /** @enum {string} */
-            visibility: "VISIBLE" | "RESTRICTED";
-            body?: string;
-            /** @enum {string} */
-            restrictedReasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
-            /** @description Safe tombstone shown instead of restricted text. */
-            tombstone?: string;
-        };
-        ChatHistoryResponseDto: {
-            items: components["schemas"]["ChatMessageResponseDto"][];
-            nextCursor?: Record<string, never>;
-            highWaterSequence: string;
-        };
-        ChatVisibilityReconciliationItemDto: {
-            /** @description Opaque durable moderation transition identity. */
-            revision: string;
-            message: components["schemas"]["ChatMessageResponseDto"];
-        };
-        ChatVisibilityReconciliationResponseDto: {
-            items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
-            nextCursor?: Record<string, never>;
-            /** @description Opaque checkpoint to persist after applying this page. */
-            checkpointCursor?: Record<string, never>;
-            /** @description Opaque high-water revision identity. */
-            highWaterRevision?: Record<string, never>;
-        };
-        SendChatMessageDto: {
-            /**
-             * Format: uuid
-             * @description Client-generated idempotency identifier.
-             */
-            clientMessageId: string;
-            body: string;
-        };
-        CreateChatReportDto: {
-            /** @enum {string} */
-            reasonCategory: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
-            /** @description Optional non-sensitive note; never message or medical text. */
-            reporterNote?: string;
-            /** @description Request an effective pending-review conversation-scoped block. */
-            requestImmediateBlock?: boolean;
-            /**
-             * @description ADMIN-only explicit block scope.
-             * @enum {string}
-             */
-            blockScope?: "PATIENT_DOCTOR" | "PATIENT_CLINIC_OPERATOR";
-        };
-        ChangeChatVisibilityDto: {
-            /** @enum {string} */
-            visibility: "RESTRICTED" | "VISIBLE";
-            /** @enum {string} */
-            reasonCategory?: "ABUSE_OR_HARASSMENT" | "THREAT_OR_SAFETY" | "SENSITIVE_DATA_EXPOSURE" | "SPAM_OR_SCAM" | "MALICIOUS_CONTENT" | "OTHER";
-            /** @description Non-sensitive administrative note. */
-            safeNote?: string;
-        };
-        ResolveChatReportDto: {
-            /** @enum {string} */
-            resolution: "DISMISSED_NO_VIOLATION" | "UPHELD_POLICY_VIOLATION" | "INSUFFICIENT_EVIDENCE" | "ESCALATED_SAFETY_OR_LEGAL";
-            /** @enum {string} */
-            action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
-            /** @description Non-sensitive administrative note. */
-            safeNote?: string;
+            asOf: string;
+            page: number;
+            pageSize: number;
+            totalCustomerCount: number;
+            summary: components["schemas"]["CommerceCustomerCrmSummaryDto"];
+            items: components["schemas"]["CommerceCustomerCrmItemDto"][];
         };
     };
     responses: never;
@@ -5671,6 +5931,1360 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
+            };
+        };
+    };
+    adminAuditEventsList: {
+        parameters: {
+            query?: {
+                action?: "READ" | "CREATE" | "UPDATE" | "SIGN" | "AMEND" | "PUBLISH" | "EXPORT";
+                /** @description Actor user identifier within the selected clinic audit scope. */
+                actorId?: string;
+                /** @description An active clinic scope. If omitted, the server selects its active default clinic. */
+                clinicId?: string;
+                /** @description Opaque cursor returned by the preceding page. */
+                cursor?: string;
+                /** @description Asia/Tehran local date. */
+                from?: string;
+                limit?: number;
+                /** @description Clinical resource type only; this is not free-text search. */
+                subjectType?: string;
+                /** @description Asia/Tehran local date. */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditViewerPageDto"];
+                };
+            };
+        };
+    };
+    chatAppointmentConversationGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationResponseDto"];
+                };
+            };
+            /** @description The appointment conversation is unavailable to this account. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationHistory: {
+        parameters: {
+            query?: {
+                /** @description Opaque, versioned server cursor. */
+                cursor?: string;
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHistoryResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationMessageSend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendChatMessageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationVisibilityReconciliation: {
+        parameters: {
+            query?: {
+                /** @description Opaque, server-bound cursor for durable visibility transitions. */
+                cursor?: string;
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatVisibilityReconciliationResponseDto"];
+                };
+            };
+        };
+    };
+    chatMessageReportCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChatReportDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatConversationReportsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatMessageVisibilityChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeChatVisibilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageResponseDto"];
+                };
+            };
+        };
+    };
+    chatRestrictedContentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatReportResolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reportId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveChatReportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatWaitingRoomGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    patientClinicalTimeline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientClinicalListResponseDto"];
+                };
+            };
+        };
+    };
+    patientClinicalHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientClinicalListResponseDto"];
+                };
+            };
+        };
+    };
+    patientClinicalAppointmentSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientClinicalItemResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinicalWorkspaceResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceCreateNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounterId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClinicalNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceSaveNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                noteId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveClinicalNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceSignNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                noteId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignClinicalRevisionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspacePublishNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                noteId: string;
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishClinicalNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceReconcileRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileClinicalRecordDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceReviseRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+                patientId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviseClinicalRecordDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
+                };
+            };
+        };
+    };
+    adminClinicalWorkspaceSignRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
+                patientId: string;
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignClinicalRevisionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsList: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                limit?: unknown;
+            };
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePrescriptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsSaveDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavePrescriptionDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionsIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssuePrescriptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanListResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTreatmentPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlansUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTreatmentPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanMedicationsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TreatmentMedicationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentMedicationResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanMedicationsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                medicationId: string;
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTreatmentMedicationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentMedicationResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanSessionsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TreatmentSessionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentSessionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanSessionsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTreatmentSessionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentSessionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanExercisesCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExercisePlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExercisePlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanExercisesUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exerciseId: string;
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExercisePlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExercisePlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanNutritionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NutritionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NutritionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentPlanNutritionUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nutritionId: string;
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNutritionPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NutritionPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminReportingTreatmentsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentReportingResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentPlansList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanListResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentPlansGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskListResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTreatmentTaskDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksReschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescheduleTreatmentTaskDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentTasksCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentTasksList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskListResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentTasksComplete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
+                };
+            };
+        };
+    };
+    patientMedicationAdherenceRecord: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                medicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordMedicationAdherenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicationAdherenceResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentProgressGet: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                limit?: unknown;
+            };
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentProgressResponseDto"];
+                };
+            };
+        };
+    };
+    patientTreatmentProgressGet: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                limit?: unknown;
+            };
+            header?: never;
+            path: {
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentProgressResponseDto"];
+                };
+            };
+        };
+    };
+    patientNotificationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_preferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_preference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminNotificationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -6489,6 +8103,29 @@ export interface operations {
             };
         };
     };
+    adminReportingPatientsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientReportingResponseDto"];
+                };
+            };
+        };
+    };
     adminAssessmentsList: {
         parameters: {
             query?: never;
@@ -6796,6 +8433,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAssessmentSubmissionResponseDto"];
+                };
+            };
+        };
+    };
+    adminReportingAssessmentsGet: {
+        parameters: {
+            query?: {
+                clinicId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentReportingResponseDto"];
                 };
             };
         };
@@ -8421,701 +10081,15 @@ export interface operations {
             };
         };
     };
-    patientClinicalTimeline: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientClinicalListResponseDto"];
-                };
-            };
-        };
-    };
-    patientClinicalHistory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientClinicalListResponseDto"];
-                };
-            };
-        };
-    };
-    patientClinicalAppointmentSummary: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientClinicalItemResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminClinicalWorkspaceResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceCreateNote: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                encounterId: string;
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateClinicalNoteDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceSaveNote: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                noteId: string;
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SaveClinicalNoteDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceSignNote: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                noteId: string;
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SignClinicalRevisionDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspacePublishNote: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                noteId: string;
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PublishClinicalNoteDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalNoteResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceReconcileRecord: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReconcileClinicalRecordDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceReviseRecord: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
-                patientId: string;
-                recordId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReviseClinicalRecordDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
-                };
-            };
-        };
-    };
-    adminClinicalWorkspaceSignRecord: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
-                patientId: string;
-                recordId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SignClinicalRevisionDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClinicalRecordResponseDto"];
-                };
-            };
-        };
-    };
-    adminPrescriptionsList: {
+    adminReportingAppointmentsGet: {
         parameters: {
             query?: {
-                cursor?: unknown;
-                limit?: unknown;
+                clinicId?: string;
+                cursor?: string;
+                from?: string;
+                limit?: number;
+                to?: string;
             };
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
-                };
-            };
-        };
-    };
-    adminPrescriptionsCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePrescriptionDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PrescriptionResponseDto"];
-                };
-            };
-        };
-    };
-    adminPrescriptionsGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                prescriptionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PrescriptionResponseDto"];
-                };
-            };
-        };
-    };
-    adminPrescriptionsSaveDraft: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                prescriptionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SavePrescriptionDraftDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PrescriptionResponseDto"];
-                };
-            };
-        };
-    };
-    adminPrescriptionsIssue: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                prescriptionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IssuePrescriptionDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PrescriptionResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlansList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentPlanListResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlansCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateTreatmentPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlansGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlansUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateTreatmentPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanMedicationsCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TreatmentMedicationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentMedicationResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanMedicationsUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                medicationId: string;
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateTreatmentMedicationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentMedicationResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanSessionsCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TreatmentSessionPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentSessionPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanSessionsUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-                sessionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateTreatmentSessionPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentSessionPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanExercisesCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExercisePlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExercisePlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanExercisesUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                exerciseId: string;
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateExercisePlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExercisePlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanNutritionCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NutritionPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NutritionPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentPlanNutritionUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                nutritionId: string;
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateNutritionPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NutritionPlanResponseDto"];
-                };
-            };
-        };
-    };
-    patientTreatmentPlansList: {
-        parameters: {
-            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -9127,351 +10101,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TreatmentPlanListResponseDto"];
+                    "application/json": components["schemas"]["AppointmentReportingResponseDto"];
                 };
-            };
-        };
-    };
-    patientTreatmentPlansGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentTasksList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentTaskListResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentTasksCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateTreatmentTaskDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentTasksReschedule: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-                taskId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RescheduleTreatmentTaskDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentTasksCancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-                taskId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
-                };
-            };
-        };
-    };
-    patientTreatmentTasksList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentTaskListResponseDto"];
-                };
-            };
-        };
-    };
-    patientTreatmentTasksComplete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                taskId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentTaskResponseDto"];
-                };
-            };
-        };
-    };
-    patientMedicationAdherenceRecord: {
-        parameters: {
-            query?: never;
-            header: {
-                "Idempotency-Key": string;
-            };
-            path: {
-                medicationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RecordMedicationAdherenceDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MedicationAdherenceResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentProgressGet: {
-        parameters: {
-            query?: {
-                cursor?: unknown;
-                limit?: unknown;
-            };
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentProgressResponseDto"];
-                };
-            };
-        };
-    };
-    patientTreatmentProgressGet: {
-        parameters: {
-            query?: {
-                cursor?: unknown;
-                limit?: unknown;
-            };
-            header?: never;
-            path: {
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentProgressResponseDto"];
-                };
-            };
-        };
-    };
-    patientNotificationsList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    NotificationsController_read: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    NotificationsController_all: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    NotificationsController_preferences: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    NotificationsController_preference: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PreferenceDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    adminNotificationsList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -10826,6 +11457,8 @@ export interface operations {
     adminCommerceRevenueGet: {
         parameters: {
             query?: {
+                /** @description Explicit active clinic scope when more than one active clinic exists. */
+                clinicId?: string;
                 /** @description Clinic-local inclusive ISO date. */
                 from?: string;
                 granularity?: "DAY" | "WEEK" | "MONTH";
@@ -10848,13 +11481,21 @@ export interface operations {
             };
         };
     };
-    chatAppointmentConversationGet: {
+    adminCommerceCustomersList: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
+            query: {
+                /** @description Required existing ADMIN-authorized clinic scope. */
+                clinicId: string;
+                direction?: "ASC" | "DESC";
+                page?: number;
+                pageSize?: number;
+                /** @description Trimmed substring of the canonical display name. */
+                search?: string;
+                segment?: "POTENTIAL" | "ONE_TIME" | "RETURNING" | "VIP";
+                sort?: "NET_SPEND" | "SUCCESSFUL_PURCHASE_COUNT" | "LAST_PURCHASE_AT" | "DISPLAY_NAME";
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -10864,229 +11505,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChatConversationResponseDto"];
-                };
-            };
-            /** @description The appointment conversation is unavailable to this account. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationHistory: {
-        parameters: {
-            query?: {
-                /** @description Opaque, versioned server cursor. */
-                cursor?: string;
-                limit?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatHistoryResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationMessageSend: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendChatMessageDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessageResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationVisibilityReconciliation: {
-        parameters: {
-            query?: {
-                /** @description Opaque, server-bound cursor for durable visibility transitions. */
-                cursor?: string;
-                limit?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatVisibilityReconciliationResponseDto"];
-                };
-            };
-        };
-    };
-    chatMessageReportCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateChatReportDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatConversationReportsList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatMessageVisibilityChange: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChangeChatVisibilityDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessageResponseDto"];
-                };
-            };
-        };
-    };
-    chatRestrictedContentReview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                messageId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatReportResolve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reportId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResolveChatReportDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    chatWaitingRoomGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CommerceCustomerCrmPageDto"];
                 };
             };
         };

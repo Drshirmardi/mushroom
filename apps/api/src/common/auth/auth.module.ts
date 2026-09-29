@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenGuard } from './access-token.guard';
 import { AccessTokenService } from './access-token.service';
 import { AuthorizationGuard } from './authorization.guard';
+import { ReleaseAdminSessionGuard } from './release-admin-session.guard';
 import { ClinicalPermissionService } from './clinical-permission.service';
 import { BrowserOriginService } from './browser-origin.service';
 import { RefreshCookieService } from './refresh-cookie.service';
@@ -20,6 +21,10 @@ import { RefreshCookieService } from './refresh-cookie.service';
     {
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ReleaseAdminSessionGuard,
     },
     {
       provide: APP_GUARD,

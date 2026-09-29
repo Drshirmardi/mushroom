@@ -1,8 +1,61 @@
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min } from 'class-validator';
 
 const statuses = ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW', 'CANCELLED'] as const;
+
+export class AppointmentReportingKpiDefinitionResponseDto {
+  @ApiProperty({ enum: ['KPI-04', 'KPI-05', 'KPI-06', 'KPI-07', 'KPI-08', 'KPI-09'] }) id!: string;
+  @ApiProperty() formula!: string;
+  @ApiProperty() dataOwner!: 'Appointments';
+  @ApiProperty() sourceOfTruth!: string;
+  @ApiProperty({ enum: ['tenant-and-clinic'] }) scope!: 'tenant-and-clinic';
+  @ApiProperty({ example: 'Asia/Tehran' }) timeZone!: 'Asia/Tehran';
+  @ApiProperty() rounding!: string;
+  @ApiProperty() zeroOrNotApplicableRule!: string;
+  @ApiProperty() partialDataRule!: string;
+  @ApiProperty() staleDataRule!: string;
+}
+
+export const appointmentReportingKpiDefinitions = [
+  { id: 'KPI-04', formula: 'count(Appointment.id) with startsAt in range and status in {PENDING, CONFIRMED, CHECKED_IN, QUEUED, IN_PROGRESS, COMPLETED, NO_SHOW, CANCELLED}', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.startsAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-05', formula: 'count(Appointment.id) with completedAt in range and status=COMPLETED', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.completedAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-06', formula: 'count(Appointment.id) with cancelledAt in range and status=CANCELLED', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.cancelledAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-07', formula: 'count(Appointment.id) with noShowAt in range and status=NO_SHOW', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.noShowAt/status', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count', zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-08', formula: 'KPI-05 / count(appointments whose terminal event in range is COMPLETED, CANCELLED, or NO_SHOW) × 100', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment lifecycle', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'one decimal percentage', zeroOrNotApplicableRule: 'denominator 0 → not-applicable, never 0%', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+  { id: 'KPI-09', formula: 'round-half-up(sum(startedAt - checkedInAt in whole minutes) / count(rows with both timestamps), 0)', dataOwner: 'Appointments', sourceOfTruth: 'PostgreSQL Appointment.checkedInAt/startedAt', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'whole minutes, round-half-up', zeroOrNotApplicableRule: 'no qualifying rows → not-applicable', partialDataRule: 'identify the unavailable Appointment range; never estimate', staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot' },
+] as const satisfies readonly AppointmentReportingKpiDefinitionResponseDto[];
+
+export class AppointmentReportingQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') clinicId?: string;
+  @ApiPropertyOptional({ example: '2026-09-01' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) from?: string;
+  @ApiPropertyOptional({ example: '2026-09-30' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) to?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() cursor?: string;
+  @ApiPropertyOptional({ type: Number, minimum: 1, maximum: 100, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 20;
+}
+
+export class AppointmentReportingListItemResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ format: 'date-time' }) startsAt!: Date;
+  @ApiProperty({ enum: statuses }) status!: string;
+}
+
+export class AppointmentReportingResponseDto {
+  @ApiProperty({ format: 'uuid' }) clinicId!: string;
+  @ApiProperty() timeZone!: string;
+  @ApiProperty() from!: string;
+  @ApiProperty() to!: string;
+  @ApiProperty({ format: 'date-time' }) asOf!: Date;
+  @ApiProperty({ enum: ['current', 'partial', 'stale'] }) sourceStatus!: 'current' | 'partial' | 'stale';
+  @ApiProperty() scheduled!: number;
+  @ApiProperty() completed!: number;
+  @ApiProperty() cancelled!: number;
+  @ApiProperty() noShow!: number;
+  @ApiProperty({ nullable: true }) completionRate!: number | null;
+  @ApiProperty({ nullable: true }) averageWaitMinutes!: number | null;
+  @ApiProperty({ type: AppointmentReportingListItemResponseDto, isArray: true }) items!: AppointmentReportingListItemResponseDto[];
+  @ApiPropertyOptional({ nullable: true }) nextCursor!: string | null;
+}
 
 export class CreateAdminAppointmentDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') patientId!: string;

@@ -36,7 +36,7 @@ export class CommerceRevenueService {
   constructor(private readonly prisma: PrismaService) {}
 
   async report(query: CommerceRevenueQueryDto) {
-    const clinic = await this.prisma.clinic.findFirst({ where: { status: 'ACTIVE' }, select: { id: true, timeZone: true } });
+    const clinic = await this.prisma.clinic.findFirst({ where: { status: 'ACTIVE', ...(query.clinicId ? { id: query.clinicId } : {}) }, select: { id: true, timeZone: true } });
     if (!clinic) throw new NotFoundException({ code: 'CLINIC_NOT_FOUND', message: 'The active clinic was not found.', details: {} });
     const today = localDay(new Date(), clinic.timeZone);
     const from = query.from ?? addDays(today, -29);
@@ -46,9 +46,11 @@ export class CommerceRevenueService {
     const start = zonedMidnight(from, clinic.timeZone);
     const end = zonedMidnight(addDays(to, 1), clinic.timeZone);
     const granularity = query.granularity ?? 'DAY';
-    const [payments, refunds] = await Promise.all([
+    const asOf = new Date();
+    const [payments, refunds, refundPending] = await Promise.all([
       this.prisma.payment.findMany({ where: { order: { clinicId: clinic.id }, verifiedAt: { gte: start, lt: end } }, select: { commerceAmountToman: true, verifiedAt: true } }),
       this.prisma.refund.findMany({ where: { status: 'COMPLETED', completedAt: { gte: start, lt: end }, payment: { order: { clinicId: clinic.id } } }, select: { amountToman: true, completedAt: true } }),
+      this.prisma.refund.count({ where: { status: { in: ['REQUESTED', 'APPROVED'] }, payment: { order: { clinicId: clinic.id } } } }),
     ]);
     const buckets = new Map<string, Bucket>();
     const bucket = (key: string) => { const found = buckets.get(key); if (found) return found; const next = { gross: 0n, refund: 0n, count: 0 }; buckets.set(key, next); return next; };
@@ -56,6 +58,6 @@ export class CommerceRevenueService {
     for (const refund of refunds) { const target = bucket(bucketKey(refund.completedAt!, clinic.timeZone, granularity)); target.refund += refund.amountToman; }
     const gross = payments.reduce((sum, payment) => sum + payment.commerceAmountToman, 0n);
     const completedRefund = refunds.reduce((sum, refund) => sum + refund.amountToman, 0n);
-    return { currency: 'TOMAN' as const, timeZone: clinic.timeZone, from, to, grossCapturedToman: gross.toString(), completedRefundToman: completedRefund.toString(), netRevenueToman: (gross - completedRefund).toString(), successfulPaymentCount: payments.length, series: [...buckets.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([date, value]) => ({ date, grossCapturedToman: value.gross.toString(), completedRefundToman: value.refund.toString(), netRevenueToman: (value.gross - value.refund).toString(), successfulPaymentCount: value.count })) };
+    return { clinicId: clinic.id, currency: 'TOMAN' as const, timeZone: clinic.timeZone, from, to, asOf, sourceStatus: 'current' as const, revenueLabel: 'operational revenue' as const, grossCapturedToman: gross.toString(), completedRefundToman: completedRefund.toString(), netRevenueToman: (gross - completedRefund).toString(), successfulPaymentCount: payments.length, refundPending, series: [...buckets.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([date, value]) => ({ date, grossCapturedToman: value.gross.toString(), completedRefundToman: value.refund.toString(), netRevenueToman: (value.gross - value.refund).toString(), successfulPaymentCount: value.count })) };
   }
 }

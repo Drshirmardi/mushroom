@@ -16,7 +16,7 @@ export type AuthSessionSnapshot =
 type ApiClient = ReturnType<typeof createApiClient>;
 type Listener = () => void;
 
-const DASHBOARD_ROLES: ReadonlySet<Role> = new Set(["DOCTOR", "STAFF", "ADMIN"]);
+const DASHBOARD_ROLES: ReadonlySet<Role> = new Set(["ADMIN"]);
 const EXPIRY_SAFETY_WINDOW_MS = 5_000;
 
 export function canAccessDashboard(roles: readonly Role[]): boolean {

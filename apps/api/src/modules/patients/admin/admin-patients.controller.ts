@@ -2,11 +2,11 @@ import { Body, Controller, Get, Headers, HttpStatus, Param, ParseUUIDPipe, Patch
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
-import { RequirePermissions } from '../../../common/auth/authorization.decorator';
+import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { AdminPatientsService } from './admin-patients.service';
-import { AdminMedicalIntakeCorrectionDto, AdminMedicalIntakeRevisionResponseDto, AdminOnboardingSummaryResponseDto, AdminPatientCreateResponseDto, AdminPatientDetailResponseDto, AdminPatientListQueryDto, AdminPatientListResponseDto, AdminPatientProfileUpdateResponseDto, CreateAdminPatientDto, UpdateAdminPatientDto } from './admin-patients.dto';
+import { AdminMedicalIntakeCorrectionDto, AdminMedicalIntakeRevisionResponseDto, AdminOnboardingSummaryResponseDto, AdminPatientCreateResponseDto, AdminPatientDetailResponseDto, AdminPatientListQueryDto, AdminPatientListResponseDto, AdminPatientProfileUpdateResponseDto, CreateAdminPatientDto, PatientReportingQueryDto, PatientReportingResponseDto, UpdateAdminPatientDto } from './admin-patients.dto';
 
 @ApiTags('Admin Patients')
 @ApiBearerAuth('bearerAuth')
@@ -89,4 +89,18 @@ export class AdminPatientsController {
   private context(request: AuthenticatedRequest) {
     return { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip };
   }
+}
+
+@ApiTags('Admin Reporting')
+@ApiBearerAuth('bearerAuth')
+@RequireRoles('ADMIN')
+@RequirePermissions(PERMISSIONS.PATIENTS_READ)
+@Controller('admin/reporting/patients')
+export class AdminPatientReportingController {
+  constructor(private readonly patients: AdminPatientsService) {}
+
+  @Get()
+  @ApiOperation({ operationId: 'adminReportingPatientsGet', summary: 'Get clinic-scoped patient reporting aggregates' })
+  @ApiOkResponse({ type: PatientReportingResponseDto })
+  report(@Query() query: PatientReportingQueryDto) { return this.patients.report(query); }
 }

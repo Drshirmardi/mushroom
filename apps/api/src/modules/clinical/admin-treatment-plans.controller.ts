@@ -1,12 +1,13 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../common/auth/access-token.guard';
-import { RequirePermissions } from '../../common/auth/authorization.decorator';
+import { RequirePermissions, RequireRoles } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
 import { CreateTreatmentPlanDto, ExercisePlanDto, NutritionPlanDto, TreatmentMedicationDto, TreatmentSessionPlanDto, UpdateExercisePlanDto, UpdateNutritionPlanDto, UpdateTreatmentMedicationDto, UpdateTreatmentPlanDto, UpdateTreatmentSessionPlanDto } from './treatment-plan.dto';
-import { ExercisePlanResponseDto, NutritionPlanResponseDto, TreatmentMedicationResponseDto, TreatmentPlanListResponseDto, TreatmentPlanResponseDto, TreatmentSessionPlanResponseDto } from './treatment-plan-response.dto';
+import { ExercisePlanResponseDto, NutritionPlanResponseDto, TreatmentMedicationResponseDto, TreatmentPlanListResponseDto, TreatmentPlanResponseDto, TreatmentReportingQueryDto, TreatmentReportingResponseDto, TreatmentSessionPlanResponseDto } from './treatment-plan-response.dto';
 import { TreatmentPlanService } from './treatment-plan.service';
+import { TreatmentActivityService } from './treatment-activity.service';
 
 @ApiTags('Admin treatment plans')
 @ApiBearerAuth('bearerAuth')
@@ -98,4 +99,10 @@ export class AdminTreatmentPlansController {
   updateNutrition(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Param('planId', new ParseUUIDPipe({ version: '4' })) planId: string, @Param('nutritionId', new ParseUUIDPipe({ version: '4' })) nutritionId: string, @Body() body: UpdateNutritionPlanDto, @Req() request: AuthenticatedRequest) { return this.treatmentPlans.updateNutritionPlan(patientId, planId, nutritionId, body, this.actor(request)); }
 
   private actor(request: AuthenticatedRequest) { return { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip, roles: request.auth.roles }; }
+}
+
+@ApiTags('Admin Reporting') @ApiBearerAuth('bearerAuth') @RequireRoles('ADMIN') @Controller('admin/reporting/treatments')
+export class AdminTreatmentReportingController {
+  constructor(private readonly treatmentPlans: TreatmentPlanService, private readonly treatmentActivity: TreatmentActivityService) {}
+  @Get() @ApiOperation({ operationId: 'adminReportingTreatmentsGet', summary: 'Get clinic-scoped treatment reporting aggregates' }) @ApiOkResponse({ type: TreatmentReportingResponseDto }) async report(@Query() query: TreatmentReportingQueryDto) { const { start, end, ...response } = await this.treatmentPlans.reportingContext(query); const activity = await this.treatmentActivity.reportingMetrics({ clinicId: response.clinicId, start, end, asOf: response.asOf }); return { ...response, ...activity }; }
 }

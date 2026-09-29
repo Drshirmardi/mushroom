@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-27 +03:30`
-- Milestone فعال: `Milestone E — Phase 11 NOT_STARTED`
-- فاز فعال: `ندارد؛ Phase 10 CI remediation locally accepted و Phase 11 فقط next eligible work است.`
-- وضعیت فاز فعال: `NOT_STARTED`
+- آخرین به‌رورسانی: `2026-09-29 00:21 +03:30`
+- Milestone فعال: `Milestone E — Phase 11 DONE (CLOSED)`
+- فاز فعال: `ندارد؛ Phase 12 همچنان NOT_STARTED و unclaimed است`
+- وضعیت فاز فعال: `DONE (CLOSED)`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد؛ PR #15 منتظر اجرای کامل ظرفیت در GitHub Actions است.`
+- blocker فعال: `ندارد`
 
 ## پیشرفت کلان
 
@@ -44,17 +44,295 @@
 - [x] `Phase 08` — Follow-up, Health Tracking, Notifications & Content — `DONE (CLOSED)`
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
 - [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
-- [ ] `Phase 11` — Dashboard Reporting & Access Expansion — `NOT_STARTED`
+- [x] `Phase 11` — Dashboard Reporting & Access Expansion — `DONE (CLOSED)`
 - [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
-`Phase 10` is formally `DONE (CLOSED)` after the independent security/closure review passed against the current
-HEAD `b8ff5f8`. F10-T03 rejects revoked sessions in chat REST; F10-T04 fences Socket.IO admission against revoke
-and invalidates sockets after every durable revocation path. F10-T09 and F10-T11 gates passed; evidence is in
-[`logs/phase-10.md`](logs/phase-10.md). Milestone D is complete. Phase 11 remains `NOT_STARTED`, unclaimed and
-unmodified.
+`Phase 10` remains formally `DONE (CLOSED)`. `F11-T01` through `F11-T11` are accepted with independent
+closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 is formally `DONE (CLOSED)`.
+`Phase 12` remains `NOT_STARTED`, unclaimed, and out of scope for this completed batch.
+
+## آخرین batch تکمیل‌شده — F11-B11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 23:55 +03:30`
+Completed at: `2026-09-29 00:21 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/`, Phase 11 roadmap, `F11-T01` through `F11-T10` accepted
+evidence, and the formal pre-implementation reviewer gate.
+
+- Task ID: `F11-T11`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T01` through `F11-T10` DONE; no active batch or blocker at claim time.
+  - Scope: independent requirement-by-requirement Phase 11 review and closure evidence only. The required migration,
+    contract/client, PostgreSQL, authorization/audit/reporting/CRM, dashboard, browser, history, protected-path, and
+    SpecKit traceability checks passed with no closure-owned or predecessor defect.
+  - Owned paths: coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}` and any
+    closure-review checklist/evidence explicitly required by the frozen plan. All runtime, schema/migration,
+    dependency/lockfile, generated-client, dashboard/product, and Phase 12 paths are review-only.
+  - Shared/exclusive resource: final Phase 11 status/checklist/evidence and run-owned disposable PostgreSQL databases.
+    No other task or batch may write Phase 11 closure state.
+  - Review: PASS — all required typecheck/build, OpenAPI/client, disposable PostgreSQL migration and 40-test API
+    suites, normal dashboard Vitest (18 files/61 tests), independent Playwright (7/7), and diff/history isolation
+    checks passed. The closure commit owns documentation/status/evidence only. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible work: `Phase 12` is `NOT_STARTED`; no task or batch is selected or claimed.
+
+## آخرین batch تکمیل‌شده — F11-B10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 22:38 +03:30`
+Completed at: `2026-09-28 23:16 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: owner-approved CRM change control in [`specs/009-reporting-access/`](../specs/009-reporting-access/),
+including `FR-023`, `FR-027–033`, `SC-008–010`, and
+[`contracts/customer-crm-api.md`](../specs/009-reporting-access/contracts/customer-crm-api.md).
+
+- Task ID: `F11-T10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T07` and `F11-T09` DONE; `F11-T01` through `F11-T09` accepted before claim.
+  - Result: real, read-only, clinic-scoped operational customer CRM is delivered inside the existing commerce domain.
+    It requires an active persisted ADMIN session and pre-existing `ClinicalClinicAccess`, derives only its approved
+    non-medical projection from canonical `PatientProfile`, `UserProfile`, Payment, Refund, and order-line records,
+    validates bounded query input, and audits each disclosed patient with fixed redacted provenance.
+  - Review: PASS — integration on a migrated-and-seeded disposable PostgreSQL database proves payment/refund math,
+    deterministic segments, integer-truncated TOMAN summary, search/filter/sort/pagination validation, clinic denial,
+    PATIENT/DOCTOR/STAFF denial, disabled/revoked/expired session denial, and non-sensitive audit metadata. API/client
+    freshness, API/dashboard typechecks, ordinary dashboard Vitest (18 files/61 tests), independent Phase 11
+    Playwright (7/7), and `git diff --check` passed. The only Vitest configuration change excludes `e2e/**`; the
+    Playwright suite remains intact. No schema, migration, aggregate, dependency, lockfile, shared-auth, marketing,
+    export, campaign, saved-segment, audience, bulk-message, or medical-profiling surface changed. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T11`, unclaimed. Stop before starting it.
+
+## آخرین batch تکمیل‌شده — F11-B09
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 17:32 +03:30`
+Completed at: `2026-09-28 18:16 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-017–022`, `SC-005`,
+`contracts/authorization-matrix.md`, and `quickstart.md`), with `F11-T01` through `F11-T08` DONE.
+
+- Task ID: `F11-T09`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T07` DONE; `F11-T01` through `F11-T08` accepted; no active batch or blocker at claim time.
+  - Scope: prove the frozen ADMIN-only reporting/audit access matrix at backend and browser boundaries, including
+    denied roles, disabled/revoked ADMIN sessions, tenant/clinic isolation, medical-ownership limits, and no API/UI/
+    export disclosure. This batch adds verification only; it does not expand the release capability.
+  - Owned paths: `apps/api/test/reporting-authorization.integration.spec.ts`,
+    `apps/dashboard/e2e/phase-11-access.spec.ts`, `playwright.phase11.config.ts`, and coordinator-only
+    `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`.
+  - Shared/exclusive resource: the new authorization-matrix test and browser E2E suite plus their run-owned
+    disposable PostgreSQL databases. `common/auth`, audit/report runtime modules, schema/migrations, OpenAPI/client,
+    dashboard session gate, dependencies/lockfile, and CRM/segmentation remain outside this task.
+  - Review: PASS — the run-owned PostgreSQL matrix proves ADMIN access only for the active clinic-scoped report,
+    revenue, and redacted audit routes; PATIENT/DOCTOR/STAFF receive no protected disclosure; disabled/revoked
+    ADMIN sessions receive `401`; an inactive foreign clinic and foreign medical workspace remain denied; export
+    routes do not exist. Browser E2E proves the same direct-navigation boundary before dashboard UI disclosure.
+    Workspace typechecks and API-client/OpenAPI freshness passed, with no runtime authorization, schema, migration,
+    dependency, generated-client, or later-task path change. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T10`, unclaimed. Stop before starting it.
+
+## آخرین batch تکمیل‌شده — F11-B08
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 17:22 +03:30`
+Completed at: `2026-09-28 17:26 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-016`, `FR-017`, `FR-024–026`, `SC-003`,
+`contracts/conditional-exclusions.md`, and `contracts/authorization-matrix.md`), with `F11-T01` through
+`F11-T08` DONE after review.
+
+- Task ID: `F11-T08`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T07` DONE; no active batch or blocker at claim time.
+  - Scope: prove the confirmed release exclusion of staff membership/invitation and capability menus; preserve the
+    ADMIN-only admission boundary and add no membership, invitation, role mutation, route, UI capability, email,
+    export, schema, migration, dependency, or generated-client surface.
+  - Owned paths: `apps/api/test/phase-11-exclusions.spec.ts`, `apps/dashboard/src/auth/session.test.ts`, and
+    coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`.
+  - Shared/exclusive resource: exclusion evidence tests and disposable PostgreSQL test database. `common/auth`,
+    schema/migrations, OpenAPI/client, final authorization matrix/browser E2E, and CRM remain owned by other tasks.
+  - Review: PASS — source, schema, migration-name, and checked-in OpenAPI inspection prove no staff
+    membership/invitation mutation, capability menu, role builder, or report/audit export surface was introduced.
+    Dashboard refresh clears a `STAFF` bearer token and retains no authenticated snapshot. Backend ADMIN-only policy,
+    reporting/audit tenant/clinic isolation, redaction, and disabled/revoked-session regression all passed on a
+    disposable PostgreSQL database. Workspace typechecks and API-client contract freshness passed; no runtime,
+    schema, migration, dependency, generated-client, or later-task path changed. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible tasks: `F11-T09` and `F11-T10`; both remain unclaimed. Stop before starting either task.
+
+## آخرین batch تکمیل‌شده — F11-B07
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 17:03 +03:30`
+Completed at: `2026-09-28 17:14 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-016–019`, `SC-003–004`,
+`contracts/authorization-matrix.md`), with `F11-T01` through `F11-T06` DONE.
+
+- Task ID: `F11-T07`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T06` DONE; no active batch or blocker at claim time.
+  - Scope: froze ADMIN-only dashboard/admin admission and shared backend authorization enforcement while preserving
+    patient self-service and the existing tenant/clinic, medical-ownership, audit-redaction, and session controls.
+  - Owned paths: `apps/api/src/common/auth/{access-token.guard,authorization.guard,authorization.policy,release-admin-session.guard,auth.module}.ts`,
+    focused T07 authorization tests under `apps/api/test/`, `apps/dashboard/src/auth/{session,session.test}.ts`, and
+    coordinator-only `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`.
+  - Shared/exclusive resource: `common/auth` policy/guards and disposable PostgreSQL authorization test database.
+    T009 remains the sole owner of the final full authorization-matrix and browser E2E suites.
+  - Review: PASS — `DOCTOR` and `STAFF` no longer receive `DASHBOARD_ACCESS`; dashboard admission is ADMIN-only.
+    A global shared guard requires a persisted active, unrevoked, unexpired session for every ADMIN request before
+    controller execution. Focused unit tests, full workspace typechecks, real disposable PostgreSQL reporting/audit
+    integrations, and revenue regression passed. No schema, migration, dependency, endpoint, generated client,
+    membership/invitation, CRM, export, browser E2E, or later-task path changed. Evidence:
+    [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible tasks: `F11-T08`, `F11-T09`, and `F11-T10`; all remain unclaimed. Do not start another task in
+    this batch.
+
+## آخرین batch تکمیل‌شده — F11-B06
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-28 02:49 +03:30`
+Completed at: `2026-09-28 03:06 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: `F11-T01` through `F11-T05` DONE; frozen `specs/009-reporting-access/` (`FR-020–021`,
+`SC-005`, `contracts/audit-viewer.md`, and `contracts/authorization-matrix.md`).
+
+- Task ID: `F11-T06`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F11-T05` DONE; no active batch or blocker at claim time.
+  - Scope: deliver the minimum-necessary ADMIN audit viewer/support read under `apps/api/src/modules/identity/audit/`
+    and `apps/dashboard/src/features/audit/`, with an authorized, clinic-scoped redacted cursor page and sensitive
+    read audit. No export, raw metadata, unbounded search, or support mutation is included.
+  - Owned paths: `apps/api/src/modules/identity/audit/**`, `apps/api/src/modules/identity/identity.module.ts`,
+    `apps/api/test/audit-viewer.integration.spec.ts`, `apps/dashboard/src/features/audit/**`,
+    `apps/dashboard/src/app/(app)/audit/page.tsx`, `apps/dashboard/src/lib/audit-viewer-api.{ts,spec.ts}`, generated
+    `packages/api-client/{openapi.json,src/schema.generated.ts}` only through the endpoint owner, and coordinator-only
+    `plan/{STATUS.md,phases/11-REPORTING-ACCESS.md,logs/phase-11.md}`. Any schema/migration or shared auth change is
+    excluded unless separately proved required by the frozen contract and assigned to this task.
+  - Shared/exclusive resource: audit-viewer route/contract and API-client generation; disposable PostgreSQL test DB.
+    `common/auth` policy/guard and broader release authorization matrix remain exclusively deferred to `F11-T07`.
+  - Review: PASS — the endpoint is ADMIN-only and checks an active, unrevoked session before query execution;
+    `PatientAccessAudit` is queried only with an explicit active-clinic predicate and returned solely through the
+    redacted cursor projection. The generic `AuditEvent` table is deliberately not queried because it has no clinic
+    provenance. The viewer audits each disclosed clinical event through the existing clinical-audit writer; it exposes
+    no export/raw metadata path. No schema, migration, dependency, shared `common/auth` policy/guard, role matrix,
+    CRM, browser E2E, or later-task work changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T07` only, unclaimed; do not start it in this task.
+
+## آخرین batch تکمیل‌شده — F11-B05
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 22:42 +03:30`
+Completed at: `2026-09-28 02:42 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: `F11-T01` through `F11-T04` DONE; frozen `specs/009-reporting-access/` (`FR-015`, `SC-006`,
+`research.md`, `quickstart.md`, `data-model.md`, and `contracts/reporting-api.md`).
+
+- Task ID: `F11-T05`
+  - Status: `DONE`
+  - Scope: captured and replayed `EXPLAIN (ANALYZE, BUFFERS)` for 18 actual clinic-scoped report query shapes across
+    appointments, patient/onboarding population, assessments, treatments, and operational commerce revenue.
+  - Review: PASS — a migrated-and-seeded run-owned PostgreSQL database reported explicit clinic scope on every plan,
+    deterministic replay, and no reproduced bottleneck. The direct-query baseline is accepted; no index, aggregate,
+    schema, migration, OpenAPI/client, endpoint, dashboard, authorization, role, audit, CRM, browser-E2E, or later
+    task path changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T06` only, unclaimed.
+
+## آخرین batch تکمیل‌شده — F11-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 22:05 +03:30`
+Completed at: `2026-09-27 22:36 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-002–003`, `FR-012–013`, `SC-002–003`,
+`contracts/kpi-inventory.md`, and `contracts/reporting-api.md`).
+
+- Task ID: `F11-T04`
+  - Status: `DONE`
+  - Scope: Dashboard Home now reads only ADMIN-authorized, inventory-approved reporting sources and exposes
+    truthful loading/error/forbidden/empty/zero/partial/stale states without a substitute value.
+  - Review: PASS — final Home composition is KPI-01–05, KPI-09, KPI-11, KPI-14–15, KPI-19, and KPI-21 plus the
+    permitted today appointment and limited operational-activity lists. KPI-21 is supplied by the existing commerce
+    reporting endpoint as a clinic-scoped `Refund{REQUESTED, APPROVED}` snapshot rather than inferred in the client.
+    No schema/migration, aggregate/index, shared authorization/session infrastructure, navigation, role/staff,
+    audit, CRM, browser E2E, or provider activation changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T05` only, unclaimed.
+
+## آخرین batch تکمیل‌شده — F11-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 21:24 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Completed at: `2026-09-27 21:30 +03:30`
+Batch status: `DONE`
+Contract baseline: frozen `specs/009-reporting-access/` (`FR-005–006`, `SC-004`,
+`contracts/kpi-inventory.md`, and `contracts/reporting-api.md`).
+
+- Task ID: `F11-T03`
+  - Status: `DONE`
+  - Scope: existing ADMIN commerce revenue route and dedicated revenue view reconciled with the operational
+    verified-Payment minus completed-Refund `TOMAN` contract; no Sadad production acceptance/settlement claim.
+  - Review: PASS — explicit clinic scope and response provenance added; `WEEK` granularity, operational label,
+    real-source empty/error/forbidden states, OpenAPI/client freshness, and disposable-PostgreSQL evidence passed.
+    No schema/migration, aggregate, common authorization, Dashboard Home, provider activation, or network transport
+    changed. Evidence: [`logs/phase-11.md`](logs/phase-11.md).
+  - Next eligible task: `F11-T04` only, unclaimed.
+
+## آخرین batch تکمیل‌شده — F11-B01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-27 16:18 +03:30`
+Phase: `11-REPORTING-ACCESS`
+Completed at: `2026-09-27 16:27 +03:30`
+Batch status: `DONE`
+Contract baseline: `fa2285ad docs(spec): freeze phase 11 reporting access baseline`,
+[`specs/009-reporting-access/`](../specs/009-reporting-access/)
+
+Tasks:
+
+- Task ID: `F11-T01`
+  - Status: `DONE`
+  - Depends on: `none`
+  - Scope: preserve the frozen KPI/widget inventory as typed response metadata only in the existing patient,
+    appointment, assessment, clinical treatment-plan, clinical treatment-activity, and commerce-reporting domain
+    DTO modules. This is the response-contract foundation; it does not add reporting routes, queries, dashboard UI,
+    authorization changes, migrations, OpenAPI/client generation, or aggregates.
+  - Owned paths: `apps/api/src/modules/patients/admin/admin-patients.dto.ts`,
+    `apps/api/src/modules/appointments/admin-appointments.dto.ts`,
+    `apps/api/src/modules/assessments/admin/admin-assessment-submissions.dto.ts`,
+    `apps/api/src/modules/clinical/treatment-plan-response.dto.ts`,
+    `apps/api/src/modules/clinical/treatment-activity-response.dto.ts`,
+    `apps/api/src/modules/commerce/reporting/commerce-revenue.dto.ts`, one focused API contract test path if required,
+    and coordinator-only `plan/{STATUS.md,logs/phase-11.md,phases/11-REPORTING-ACCESS.md}`.
+  - Shared/exclusive resource: the six existing domain response contracts; OpenAPI output and generated clients stay
+    exclusively deferred to their declared later endpoint owner.
+  - Verification: API source and test typechecks, focused metadata-contract regression (2/2), isolated PostgreSQL
+    migration smoke (3/3), frozen inventory cross-check, and `git diff --check` all passed.
+  - Contract: every released widget must carry its frozen identifier, formula, data owner, PostgreSQL/API source of
+    truth, explicit tenant/clinic scope, `Asia/Tehran` timezone, and zero/partial/stale-data behavior. Do not invent
+    KPI semantics or create a central reporting module.
+  - Result: all KPI-01–21 definitions are exported from their existing domain DTO owners and the focused regression
+    proves exactly one complete, PostgreSQL-backed, tenant/clinic-scoped, Tehran-calendar metadata entry per KPI.
+    Evidence: [`logs/phase-11.md`](logs/phase-11.md).
 
 ## آخرین batch — F10-R36-CI-CAPACITY-RATE-LIMIT-INDEXES
 

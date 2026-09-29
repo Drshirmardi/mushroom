@@ -9,6 +9,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -22,6 +24,58 @@ const sleepValues = ['LESS_THAN_5_HOURS', 'FROM_5_TO_LESS_THAN_7_HOURS', 'FROM_7
 const exerciseValues = ['NONE', 'ONCE_OR_TWICE_WEEKLY', 'THREE_OR_FOUR_TIMES_WEEKLY', 'DAILY', 'UNKNOWN'] as const;
 const stressValues = ['LOW', 'MODERATE', 'HIGH', 'VERY_HIGH', 'UNKNOWN'] as const;
 const tobaccoValues = ['NEVER', 'FORMER', 'CURRENT', 'UNKNOWN'] as const;
+
+export class PatientReportingKpiDefinitionResponseDto {
+  @ApiProperty({ enum: ['KPI-01', 'KPI-02', 'KPI-03'] }) id!: string;
+  @ApiProperty() formula!: string;
+  @ApiProperty() dataOwner!: 'Patients';
+  @ApiProperty() sourceOfTruth!: string;
+  @ApiProperty({ enum: ['tenant-and-clinic'] }) scope!: 'tenant-and-clinic';
+  @ApiProperty({ example: 'Asia/Tehran' }) timeZone!: 'Asia/Tehran';
+  @ApiProperty() rounding!: string;
+  @ApiProperty() zeroOrNotApplicableRule!: string;
+  @ApiProperty() partialDataRule!: string;
+  @ApiProperty() staleDataRule!: string;
+}
+
+export const patientReportingKpiDefinitions = [
+  {
+    id: 'KPI-01', formula: 'count(distinct PatientProfile.id) created in range', dataOwner: 'Patients',
+    sourceOfTruth: 'PostgreSQL PatientProfile.createdAt', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'count',
+    zeroOrNotApplicableRule: 'zero when no rows', partialDataRule: 'identify the unavailable PatientProfile range; never estimate',
+    staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot',
+  },
+  {
+    id: 'KPI-02', formula: 'count(patient in P where onboardingComplete(patient) = true) at response asOf', dataOwner: 'Patients',
+    sourceOfTruth: 'PostgreSQL PatientProfile joined through PatientProfile.user → User.userProfile, latest PatientMedicalIntakeRevision, PatientMedicalIntake, PatientConsentRecord, and clinic-scoped ConsentPolicyVersion', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'snapshot count',
+    zeroOrNotApplicableRule: 'zero only when no eligible patient is complete; never infer from missing rows', partialDataRule: 'identify the unavailable onboarding source; never estimate or infer completion',
+    staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot',
+  },
+  {
+    id: 'KPI-03', formula: 'count(patient in P where onboardingComplete(patient) = false), equivalently count(P) - KPI-02, at the same asOf', dataOwner: 'Patients',
+    sourceOfTruth: 'PostgreSQL PatientProfile and the canonical onboardingComplete(patient) predicate', scope: 'tenant-and-clinic', timeZone: 'Asia/Tehran', rounding: 'snapshot count',
+    zeroOrNotApplicableRule: 'zero only if P is empty or every member is complete', partialDataRule: 'identify the unavailable onboarding source; never estimate or infer completion',
+    staleDataRule: 'current at response asOf; do not claim stale without a retained snapshot',
+  },
+] as const satisfies readonly PatientReportingKpiDefinitionResponseDto[];
+
+export class PatientReportingQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') clinicId?: string;
+  @ApiPropertyOptional({ example: '2026-09-01' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) from?: string;
+  @ApiPropertyOptional({ example: '2026-09-30' }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/u) to?: string;
+}
+
+export class PatientReportingResponseDto {
+  @ApiProperty({ format: 'uuid' }) clinicId!: string;
+  @ApiProperty() timeZone!: string;
+  @ApiProperty() from!: string;
+  @ApiProperty() to!: string;
+  @ApiProperty({ format: 'date-time' }) asOf!: Date;
+  @ApiProperty({ enum: ['current', 'partial', 'stale'] }) sourceStatus!: 'current' | 'partial' | 'stale';
+  @ApiProperty() newPatients!: number;
+  @ApiProperty() onboardingComplete!: number;
+  @ApiProperty() onboardingIncomplete!: number;
+}
 
 export class MedicalDeclarationDto {
   @IsIn(declarationStatuses)
