@@ -1,0 +1,64 @@
+name: Chat capacity
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 2 * * 1-5'
+  pull_request:
+    paths:
+      - '.github/workflows/chat-capacity.yml'
+      - 'apps/api/package.json'
+      - 'apps/api/prisma/**'
+      - 'apps/api/src/app.factory.ts'
+      - 'apps/api/src/common/auth/**'
+      - 'apps/api/src/modules/communications/**'
+      - 'apps/api/test/chat-capacity.load.spec.ts'
+      - 'apps/api/test/chat-test-support.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/chat-capacity.yml'
+      - 'apps/api/package.json'
+      - 'apps/api/prisma/**'
+      - 'apps/api/src/app.factory.ts'
+      - 'apps/api/src/common/auth/**'
+      - 'apps/api/src/modules/communications/**'
+      - 'apps/api/test/chat-capacity.load.spec.ts'
+      - 'apps/api/test/chat-test-support.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  capacity:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sabz_zendegi
+          POSTGRES_USER: sabz_zendegi
+          POSTGRES_PASSWORD: ci-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sabz_zendegi -d sabz_zendegi"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/sabz_zendegi?schema=public
+      JWT_ACCESS_SECRET: ci-only-jwt-access-secret-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      REFRESH_TOKEN_PEPPER: ci-only-refresh-token-pepper-9876543210-ZYXWVUTSRQPONMLKJIHGFEDCBA
+      NODE_ENV: test
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sabz-zendegi/api prisma:generate
+      - run: pnpm test:capacity

@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-29 00:21 +03:30`
+- آخرین به‌رورسانی: `2026-09-29 19:12 +03:30`
 - Milestone فعال: `Milestone E — Phase 11 DONE (CLOSED)`
 - فاز فعال: `ندارد؛ Phase 12 همچنان NOT_STARTED و unclaimed است`
 - وضعیت فاز فعال: `DONE (CLOSED)`
@@ -50,9 +50,39 @@
 
 ## handoff فاز فعال
 
-`Phase 10` remains formally `DONE (CLOSED)`. `F11-T01` through `F11-T11` are accepted with independent
-closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 is formally `DONE (CLOSED)`.
-`Phase 12` remains `NOT_STARTED`, unclaimed, and out of scope for this completed batch.
+`F10-T09 REWORK` CI/load-test isolation is accepted; Phase 10 remains `DONE (CLOSED)`. `F11-T01` through `F11-T11`
+remain accepted with independent closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 remains
+`DONE (CLOSED)` and is out of scope. Phase 12 remains `NOT_STARTED` and unclaimed.
+
+## آخرین batch تکمیل‌شده — F10-R36-CI-CAPACITY-ISOLATION
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-29 18:55 +03:30`
+Phase: `10-CHAT-CONSULTATION`
+Completed at: `2026-09-29 19:12 +03:30`
+Batch status: `DONE`
+Contract baseline: frozen F10-T09 20 msg/s × 30 min, 61-second gap, 50 msg/s × 5 min, and per-batch `<= 1000ms`
+criterion; the two observed CI/local timing failures (`1015ms`, `1032ms`) and Phase 10 evidence.
+
+- Task ID: `F10-T09 REWORK`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: all original F10-T09 prerequisites and Phase 10 closure evidence are accepted; no active batch or
+    blocker existed before this claim.
+  - Scope: remove only the long synthetic capacity workload from the ordinary `pnpm test` path; retain it unchanged
+    behind an explicit `test:capacity` command and a separate scheduled/manual-or-chat-change CI workflow.
+  - Owned paths: `package.json`, `apps/api/package.json`, `.github/workflows/{ci.yml,chat-capacity.yml}`, and
+    coordinator-only `plan/{STATUS.md,phases/10-CHAT-CONSULTATION.md,logs/phase-10.md}`.
+  - Shared/exclusive resource: workspace/API test scripts and GitHub Actions workflow configuration; no runtime,
+    schema, migration, dependency, lockfile, Phase 11, or Phase 12 path.
+  - Expected verification: ordinary `pnpm test`, workspace typecheck, targeted disposable-PostgreSQL capacity
+    preflight, workflow syntax/trigger review, and `git diff --check`.
+  - Review: PASS — the ordinary workspace suite excludes only the frozen long capacity file and passed 91 API files/
+    373 API tests in 7m29s; the unchanged capacity bootstrap preflight passed on a run-owned PostgreSQL database.
+    `test:capacity` and the separate `Chat capacity` workflow preserve the full workload for schedule/manual and
+    chat/capacity-relevant PR or main changes. No runtime, schema, migration, dependency, lockfile, Phase 11, or
+    Phase 12 path changed. Evidence: [`logs/phase-10.md`](logs/phase-10.md).
+  - Next eligible work: Phase 12 remains `NOT_STARTED`; no task or batch is selected or claimed.
 
 ## آخرین batch تکمیل‌شده — F11-B11
 

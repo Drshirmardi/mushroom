@@ -45,6 +45,7 @@
 - [x] `F10-T11 REVALIDATION (disabled user socket invalidation)` — final build, browser and freshness gates after durable active-user admission and deactivation eviction
 - [x] `F10-T11 REVALIDATION (durable revocation fence)` — final build, Chrome E2E, revocation-path and commit-isolation gates after F10-T03/F10-T04
 - [x] `F10-T09 REWORK (capacity fixture persisted session)` — renew synthetic load JWTs against persisted sessions; full 20 msg/s × 30 min + 50 msg/s × 5 min suite PASS on disposable PostgreSQL with `NODE_ENV=test`, `LOG_LEVEL=error`
+- [x] `F10-T09 REWORK (CI/load-test isolation)` — preserve the frozen capacity workload and `<= 1000ms` criterion while removing it from ordinary CI, exposing an explicit command and a dedicated scheduled/manual-or-chat-change workflow.
 
 ## قرارداد اجرایی freeze‌شده
 

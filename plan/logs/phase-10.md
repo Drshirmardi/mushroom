@@ -1,5 +1,49 @@
 # Phase 10 Execution Evidence
 
+## F10-T09 REWORK — CI/load-test isolation
+
+Task ID: F10-T09 REWORK (CI/load-test isolation)
+Completed at: 2026-09-29 19:12 +03:30
+Agent/Thread: Codex /root
+Batch ID: F10-R36-CI-CAPACITY-ISOLATION
+Reviewed by: Codex /root
+
+Finding:
+  - `main` at merge commit `4589aa0` has the same tree as the pre-merge Phase 11 head. It does not modify the chat
+    capacity test. The ordinary CI failure was `1032ms > 1000ms`; the same frozen timing assertion previously failed
+    at `1015ms > 1000ms` in this log before a later passing full workload.
+
+Changed files:
+  - package.json
+  - apps/api/package.json
+  - .github/workflows/chat-capacity.yml
+  - plan/{STATUS.md,phases/10-CHAT-CONSULTATION.md,logs/phase-10.md}
+
+Result:
+  - Ordinary `pnpm test` excludes only `test/chat-capacity.load.spec.ts`; the test remains unmodified and is exposed
+    by `pnpm test:capacity`.
+  - `Chat capacity` runs the explicit command independently on manual dispatch, weekday schedule, and chat/capacity
+    relevant pull-request or `main` changes. The ordinary `verify` workflow and branch-protection configuration are
+    not weakened or changed.
+  - The frozen `20 msg/s × 30 min`, 61-second gap, `50 msg/s × 5 min`, and per-batch `<= 1000ms` contract remains
+    unchanged. No measurement redesign was needed, so no F12-T03 change-control item is created.
+
+Tests run:
+  - pnpm install --frozen-lockfile → PASS; lockfile unchanged.
+  - pnpm typecheck → PASS (6/6 workspace tasks).
+  - disposable PostgreSQL preflight: `vitest run test/chat-capacity.load.spec.ts -t "holds 100 consultations" --no-file-parallelism` → PASS (1 passed, 1 skipped, 39.55s); the run-owned capacity database was absent after cleanup.
+  - pnpm test → PASS (5/5 workspace tasks; API 91 files / 373 tests; 7m28.751s); the long capacity file was not collected.
+  - actionlint 1.7.8 → PASS for all workflows.
+  - git diff --check → PASS.
+
+Known limitations:
+  - The full 40-minute workload was deliberately not rerun locally by this isolation hotfix. It remains unchanged and
+    will execute only via `pnpm test:capacity` or the dedicated CI workflow; a future measurement redesign requires
+    F12-T03 evidence/change control rather than an arbitrary tolerance.
+
+Next batch:
+  - Phase 12 remains NOT_STARTED; no task or batch is selected or claimed.
+
 ## F10-T02/T09 REWORK — index frozen rate-limit windows for CI capacity
 
 Task IDs: F10-T02 REWORK / F10-T09 REVALIDATION
