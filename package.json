@@ -11,6 +11,7 @@
     "start": "turbo start",
     "lint": "turbo lint",
     "test": "turbo test",
+    "test:capacity": "pnpm --filter @sabz-zendegi/api test:capacity",
     "test:isolated": "node scripts/with-disposable-postgres.mjs workspace",
     "test:integration:reminders": "node scripts/with-disposable-postgres.mjs reminders",
     "test:integration:outbox": "node scripts/with-disposable-postgres.mjs outboxAfterChat",
