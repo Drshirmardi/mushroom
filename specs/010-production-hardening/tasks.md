@@ -32,8 +32,8 @@ Every task: stays within its owned paths; preserves existing contracts; passes i
 | B2 | T02 | exclusive deployment/payment/API-contract extension. |
 | B3 | T03, T05, T06 | isolated load, recovery and storage-decision paths after contracts freeze. |
 | B4 | T04, T07, T08 | serialize query and secret writers; scan may follow frozen payment surface. |
-| B5 | T09, T10, T12 | monitoring, migration and browser matrix have distinct owned paths after code/contracts stabilize. |
-| B6 | T11 | consumes recovery/secrets/monitoring/migration evidence. |
+| B5 | T09, T10 | monitoring and migration have distinct owned paths after code/contracts stabilize. |
+| B6 | T11, T12 | starts only after accepted T09/T10; incident and browser/a11y work consume the accepted monitoring contract, while retaining distinct owned paths. |
 | B7 | T13 | independent final review only; no implementation edits. |
 
 Tasks in a batch may be reduced or serialized by the coordinator when shared environments, generated clients, migrations or release configurations overlap. No batch is currently active.

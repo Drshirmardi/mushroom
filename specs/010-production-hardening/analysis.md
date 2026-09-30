@@ -13,6 +13,7 @@
 |---|---|
 | All roadmap IDs F12-T01–F12-T13 represented | PASS |
 | Dependencies, batch map, owned paths and single-writer surfaces declared | PASS |
+| T12 sequencing after its T09 dependency | PASS — B6 starts only after accepted B5/T09; T12 is not co-batched with its prerequisite |
 | Constitution scope/roadmap/single-writer gates consistent | PASS |
 | Phase 10 frozen workload, `1015ms`/`1032ms`, CI isolation and threshold retained | PASS |
 | Liara external static-outbound-egress gate and no-auto-switch policy retained | PASS |

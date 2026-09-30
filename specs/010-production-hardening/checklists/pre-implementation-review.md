@@ -9,6 +9,7 @@
 - [x] CHK001 Are all F12-T01–F12-T13 requirements, dependencies, acceptance criteria, Definition of Done, owned paths, single writers and verifications specified? [Completeness, tasks.md]
 - [x] CHK002 Are the F12-T02 Sadad extension and its dependencies on T03/T07/T09/T13 explicitly bounded without reopening Phase 09? [Consistency, Spec FR-014–016]
 - [x] CHK003 Are object storage's N/A decision and its reopen condition based on current source evidence? [Completeness, research.md]
+- [x] CHK003a Is T12 scheduled only after accepted T09 observability output rather than in the same batch? [Dependency, tasks.md]
 
 ## Clarity and Measurability
 
