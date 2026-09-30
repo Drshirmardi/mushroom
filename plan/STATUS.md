@@ -6,10 +6,10 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-29 19:12 +03:30`
-- Milestone فعال: `Milestone E — Phase 11 DONE (CLOSED)`
-- فاز فعال: `ندارد؛ Phase 12 همچنان NOT_STARTED و unclaimed است`
-- وضعیت فاز فعال: `DONE (CLOSED)`
+- آخرین به‌رورسانی: `2026-09-30 22:00 +03:30`
+- Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
+- فاز فعال: `Phase 12 — Production Hardening`
+- وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
 - blocker فعال: `ندارد`
@@ -45,14 +45,44 @@
 - [x] `Phase 09` — Commerce, Inventory & Payments — `DONE (CLOSED)`
 - [x] `Phase 10` — Chat & Online Consultation — `DONE (CLOSED)`
 - [x] `Phase 11` — Dashboard Reporting & Access Expansion — `DONE (CLOSED)`
-- [ ] `Phase 12` — Production Hardening — `NOT_STARTED`
+- [ ] `Phase 12` — Production Hardening — `IN_PROGRESS`
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
 
 `F10-T09 REWORK` CI/load-test isolation is accepted; Phase 10 remains `DONE (CLOSED)`. `F11-T01` through `F11-T11`
 remain accepted with independent closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 remains
-`DONE (CLOSED)` and is out of scope. Phase 12 remains `NOT_STARTED` and unclaimed.
+`DONE (CLOSED)` and is out of scope. `F12-T01` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md).
+Phase 12 remains `IN_PROGRESS`; `F12-B02` / `F12-T02` is next eligible but unclaimed and must not start without a
+new claim.
+
+## آخرین batch تکمیل‌شده — F12-B01
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-30 21:52 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Completed at: `2026-09-30 22:00 +03:30`
+Batch status: `DONE`
+Contract baseline: frozen `specs/010-production-hardening/`, owner-approved Liara/staging/production/recovery/
+availability decisions, and `b7f84b8` Sadad F12-T02 extension change control.
+
+- Task ID: `F12-T01`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: Phase 10 and Phase 11 `DONE (CLOSED)`; no active batch, task, blocker, or ownership conflict at claim time.
+  - Scope: record the approved target release, capacity and availability objectives, environment strategy, external gates,
+    owners and change-control boundary as the executable F12-T01 release envelope. No provider purchase/provisioning,
+    external Sadad request, secret, runtime/schema/migration/dependency/workflow change, deployment, push or PR.
+  - Owned paths: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,contracts/phase-12-release-envelope.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: Phase 12 release-decision record and status/checklist/evidence coordination; later tasks must
+    consume this record and may not alter it without approved change control.
+  - Review: PASS — the executable release envelope preserves all owner-approved Liara, staging/production, manual
+    promotion/rollback, capacity, availability, recovery, secrets, object-storage N/A and Sadad boundaries. It assigns
+    every external dependency to its consuming future task without treating it as completed evidence. No runtime,
+    schema, migration, dependency, workflow, provisioning, connection, activation, secret, push or PR was added.
+    Evidence: [`contracts/phase-12-release-envelope.md`](contracts/phase-12-release-envelope.md) and
+    [`logs/phase-12.md`](logs/phase-12.md).
+  - Next eligible work: `F12-B02` / `F12-T02`, unclaimed.
 
 ## آخرین batch تکمیل‌شده — F10-R36-CI-CAPACITY-ISOLATION
 
