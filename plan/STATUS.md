@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-30 22:00 +03:30`
+- آخرین به‌رورسانی: `2026-09-30 23:06 +03:30`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -53,8 +53,42 @@
 `F10-T09 REWORK` CI/load-test isolation is accepted; Phase 10 remains `DONE (CLOSED)`. `F11-T01` through `F11-T11`
 remain accepted with independent closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 remains
 `DONE (CLOSED)` and is out of scope. `F12-T01` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md).
-Phase 12 remains `IN_PROGRESS`; `F12-B02` / `F12-T02` is next eligible but unclaimed and must not start without a
-new claim.
+`F12-B02` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md). No later Phase 12 task is claimed;
+`F12-B03` is eligible but remains unclaimed.
+
+## آخرین batch تکمیل‌شده — F12-B02
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-09-30 22:12 +03:30`
+Completed at: `2026-09-30 23:06 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/phase-12-release-envelope.md`, frozen `specs/010-production-hardening/`,
+`b7f84b8` F12-T02 change control, and existing Phase 09 payment contracts.
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F12-T01 DONE`; no active batch, task, blocker, or ownership conflict at claim time.
+  - Scope: deployment/staging artifact-promotion/rollback preparation and the approved gap-only Sadad software path:
+    transport, request/redirect/callback/Verify wiring, timeout/ambiguous outcome, retry, reconciliation, idempotency,
+    config validation, safe env-template documentation and tests. No purchase/provisioning, external Sadad call,
+    enable/default, production deployment, real secret, push or PR.
+  - Owned paths: deployment/container/IaC/release documentation, `apps/api/src/modules/commerce/payments/**`, payment
+    controllers, API contract/client when changed, `apps/api/.env.example`, local ignored `.env` placeholders, focused
+    payment tests, and coordinator-only `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: payment adapter/orchestration/config/API-contract and deployment release-path surfaces;
+    no other task may write them in this batch.
+  - Review: `PASS` — the Liara staging/promotion/rollback path is recorded without provisioning; the completed Sadad
+    protocol adapter supports only explicitly injected simulation while Nest runtime stays `SADAD_GO_LIVE_BLOCKED`.
+    Request/redirect/callback/Verify parsing, RIAL/order/amount matching, timeout-to-reconciliation, same-attempt
+    retry, duplicate-safe Verify and redaction boundaries are covered. Encrypted credential revision storage remains
+    unchanged; `.env.example` validates non-secret settings and a local ignored template contains no real secret.
+    No schema/migration/dependency/workflow, external Sadad request, provider enable/default, provisioning,
+    production deployment, push or PR occurred. Evidence: [`logs/phase-12.md`](logs/phase-12.md).
+  - Remaining release gates: the project owner must obtain Liara static outbound-egress confirmation and merchant
+    acceptance evidence; these block real connection/enable/default/payment sign-off only, not this accepted task.
+  - Next eligible batch: `F12-B03` (`F12-T03`, `F12-T05`, `F12-T06`), unclaimed. Stop before starting it.
 
 ## آخرین batch تکمیل‌شده — F12-B01
 

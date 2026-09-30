@@ -7,10 +7,12 @@ export type PaymentProviderDescriptor = {
   capabilities: Record<PaymentCapability, PaymentCapabilityState>;
 };
 
-export type ProviderCreateInput = { providerOrderId: bigint; commerceAmountToman: bigint; providerAmount: bigint; providerUnit: string; credential: Record<string, string> };
-export type ProviderCreateResult = { token: string; redirectUrl: string; providerResultCode: string };
+export type ProviderCreateInput = { providerOrderId: bigint; commerceAmountToman: bigint; providerAmount: bigint; providerUnit: string; credential: Record<string, string>; returnUrl?: string; redirectProfile?: string };
+/** A non-success request has no redirect token. Callers must persist the safe outcome, never invent one. */
+export type ProviderCreateResult = { token?: string; redirectUrl?: string; providerResultCode: string };
 export type ProviderCallback = { providerOrderId: bigint; token: string; resultCode: string };
-export type ProviderVerifyResult = { resultCode: string; providerOrderId: bigint; amount: bigint; referenceId?: string; traceNumber?: string };
+/** Sadad may omit Amount/OrderId for a non-success Verify result; success handling requires both. */
+export type ProviderVerifyResult = { resultCode: string; providerOrderId?: bigint; amount?: bigint; referenceId?: string; traceNumber?: string };
 
 export interface PaymentProviderPort {
   readonly descriptor: PaymentProviderDescriptor;

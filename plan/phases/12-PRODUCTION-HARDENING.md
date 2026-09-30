@@ -8,7 +8,7 @@
 ## Taskها
 
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
-- [ ] `F12-T02` — deployment provider، container/IaC و staging pipeline
+- [x] `F12-T02` — deployment provider، container/IaC و staging pipeline
 - [ ] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release
 - [ ] `F12-T04` — query/index، pool و timeout tuning
 - [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL

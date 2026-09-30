@@ -48,6 +48,26 @@ const trustedProxySchema = Joi.string()
     'any.invalid': 'must contain only explicit IP addresses or non-universal CIDR ranges',
   });
 
+const paymentCredentialKeySchema = Joi.string()
+  .allow('')
+  .custom((value, helpers) => {
+    if (!value) return value;
+    const decoded = Buffer.from(value, 'base64');
+    return decoded.length === 32 && decoded.toString('base64') === value ? value : helpers.error('any.invalid');
+  })
+  .messages({ 'any.invalid': 'must be a canonical base64-encoded 32-byte AES-256 key' });
+
+const sadadReturnUrlSchema = Joi.string()
+  .allow('')
+  .custom((value, helpers) => {
+    if (!value) return value;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && url.pathname === '/v1/payments/providers/sadad/callback' && !url.search && !url.hash ? url.toString() : helpers.error('any.invalid');
+    } catch { return helpers.error('any.invalid'); }
+  })
+  .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /v1/payments/providers/sadad/callback with no query or fragment' });
+
 export const environmentValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
@@ -91,4 +111,11 @@ export const environmentValidationSchema = Joi.object({
     .invalid('replace-this-placeholder-with-a-unique-refresh-token-pepper')
     .invalid(Joi.ref('JWT_ACCESS_SECRET'))
     .required(),
+  // Sadad remains disabled here: merchant credentials are encrypted config revisions, never environment values.
+  PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.optional(),
+  PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
+  SADAD_TRANSPORT_MODE: Joi.string().valid('disabled').default('disabled'),
+  SADAD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1_000).max(30_000).default(5_000),
+  SADAD_RETURN_URL: sadadReturnUrlSchema.optional(),
+  SADAD_REDIRECT_PROFILE: Joi.string().valid('', 'PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX').default(''),
 }).unknown(true);

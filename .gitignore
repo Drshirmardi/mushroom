@@ -28,6 +28,7 @@ yarn.lock
 *.local
 .env
 .env.*
+apps/api/.env
 !.env.example
 
 # IDE

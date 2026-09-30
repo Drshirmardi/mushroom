@@ -17,7 +17,7 @@ const mismatch = () => new ConflictException({ code: 'PAYMENT_VERIFICATION_MISMA
 export class PaymentAttemptOrchestrationService {
   constructor(private readonly prisma: PrismaService, private readonly registry: PaymentProviderRegistry, private readonly orderIds: PaymentProviderOrderIdService, private readonly verification: PaymentVerificationService) {}
 
-  async createSynthetic(input: { patientId: string; orderId: string; providerConfigRevisionId: string; provider: PaymentProviderPort; idempotencyKey: string; providerAmount: bigint; providerUnit: string; credential: Record<string, string> }) {
+  async createSynthetic(input: { patientId: string; orderId: string; providerConfigRevisionId: string; provider: PaymentProviderPort; idempotencyKey: string; providerAmount: bigint; providerUnit: string; credential: Record<string, string>; returnUrl?: string; redirectProfile?: string }) {
     if (!input.idempotencyKey || input.idempotencyKey.length > 240 || input.providerAmount <= 0n || input.providerUnit === 'UNCONFIRMED') throw invalid();
     this.registry.require(input.provider, 'createPayment');
     return this.prisma.$transaction(async (tx) => {
@@ -32,8 +32,15 @@ export class PaymentAttemptOrchestrationService {
       if (!order || !revision || revision.config.clinicId !== order.clinicId || revision.config.providerCode !== input.provider.descriptor.code || revision.providerUnit !== input.providerUnit) throw invalid();
       const providerOrderId = await this.orderIds.next(tx);
       const created = await tx.paymentAttempt.create({ data: { clinicId: order.clinicId, patientId: input.patientId, orderId: input.orderId, providerConfigRevisionId: revision.id, providerOrderId, commerceAmountToman: order.totalAmountToman, providerAmount: input.providerAmount, providerUnit: input.providerUnit, idempotencyKey: input.idempotencyKey } });
-      const result = await input.provider.createPayment({ providerOrderId, commerceAmountToman: order.totalAmountToman, providerAmount: input.providerAmount, providerUnit: input.providerUnit, credential: input.credential });
-      if (result.providerResultCode !== '0' || !result.token || result.token.length > 512 || !result.redirectUrl) throw invalid();
+      let result;
+      try {
+        result = await input.provider.createPayment({ providerOrderId, commerceAmountToman: order.totalAmountToman, providerAmount: input.providerAmount, providerUnit: input.providerUnit, credential: input.credential, returnUrl: input.returnUrl, redirectProfile: input.redirectProfile });
+      } catch {
+        // A request timeout is ambiguous: retain this immutable attempt for reconciliation, never retry by making a new order ID.
+        return tx.paymentAttempt.update({ where: { id: created.id }, data: { status: 'REQUIRES_RECONCILIATION', providerResultCode: 'TIMEOUT' } });
+      }
+      if (result.providerResultCode !== '0') return tx.paymentAttempt.update({ where: { id: created.id }, data: { status: 'FAILED', providerResultCode: result.providerResultCode } });
+      if (!result.token || result.token.length > 512 || !result.redirectUrl) return tx.paymentAttempt.update({ where: { id: created.id }, data: { status: 'REQUIRES_RECONCILIATION', providerResultCode: 'MALFORMED_RESPONSE' } });
       return tx.paymentAttempt.update({ where: { id: created.id }, data: { status: 'REDIRECT_READY', providerToken: result.token, providerResultCode: result.providerResultCode } });
     });
   }
@@ -66,9 +73,20 @@ export class PaymentAttemptOrchestrationService {
     try { result = await input.provider.verifyPayment({ token: attempt.providerToken, credential: input.credential }); }
     catch { return this.prisma.$transaction((tx) => this.verification.recordNonSuccess(tx, { attemptId: input.attemptId, resultCode: 'TIMEOUT', verifiedAt: input.now })); }
     return this.prisma.$transaction(async (tx) => {
-      if (result.resultCode === '0' || result.resultCode === '100') return this.verification.finalize(tx, { attemptId: input.attemptId, providerOrderId: result.providerOrderId, providerAmount: result.amount, providerUnit: input.providerUnit, resultCode: result.resultCode, referenceId: result.referenceId, traceNumber: result.traceNumber, verifiedAt: input.now });
+      if (result.resultCode === '0' || result.resultCode === '100') {
+        if (result.providerOrderId === undefined || result.amount === undefined) throw invalid();
+        return this.verification.finalize(tx, { attemptId: input.attemptId, providerOrderId: result.providerOrderId, providerAmount: result.amount, providerUnit: input.providerUnit, resultCode: result.resultCode, referenceId: result.referenceId, traceNumber: result.traceNumber, verifiedAt: input.now });
+      }
       if (result.resultCode === '-1' || result.resultCode === '101') return this.verification.recordNonSuccess(tx, { attemptId: input.attemptId, resultCode: result.resultCode, verifiedAt: input.now });
       throw invalid();
     });
+  }
+
+  /** Explicit, same-attempt retry for an ambiguous Verify timeout; scheduling/backoff ownership remains F12-T09. */
+  async retryTimedOutVerifySynthetic(input: { attemptId: string; provider: PaymentProviderPort; providerUnit: string; credential: Record<string, string>; now: Date }) {
+    const attempt = await this.prisma.paymentAttempt.findUnique({ where: { id: input.attemptId }, select: { status: true, providerResultCode: true } });
+    if (!attempt || attempt.status !== 'REQUIRES_RECONCILIATION' || attempt.providerResultCode !== 'TIMEOUT') throw invalid();
+    await this.prisma.paymentAttempt.update({ where: { id: input.attemptId }, data: { status: 'VERIFYING' } });
+    return this.verifySynthetic(input);
   }
 }
