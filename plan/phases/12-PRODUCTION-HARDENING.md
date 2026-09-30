@@ -21,6 +21,28 @@
 - [ ] `F12-T12` — browser/device/accessibility release matrix
 - [ ] `F12-T13` — production readiness review و sign-off
 
+## Change control — Sadad target-release software completion
+
+مالک محصول در `2026-09-30` extension رسمیِ `F12-T02` را بدون بازگشایی Phase 09 تأیید کرد. این extension
+تنها پس از claim عادی Phase 12 اجرا می‌شود و شامل تکمیل gapهای واقعی مسیر سداد است: transport، wiring
+request/redirect/callback/Verify به orchestration موجود، timeout/ambiguous response، retry، reconciliation،
+idempotency، validation/configuration، مستندسازی placeholderهای `.env.example` و تست‌های موفق/ناموفق.
+
+مرزها و وابستگی‌ها:
+
+- adapter/callback/provider-config/orchestration موجود ابتدا باید inventory شود؛ پیاده‌سازی یا contract پذیرفته‌شدهٔ
+  Phase 09 نباید دوباره ساخته شود.
+- ownership، acceptance criteria، single-writer resources و verification این extension در baseline SpecKit به
+  `F12-T02` و taskهای هم‌بستهٔ `F12-T03`، `F12-T07`، `F12-T09` و `F12-T13` map می‌شوند.
+- credentialهای سداد در revisionهای رمزنگاری‌شدهٔ فعلی می‌مانند. کلید encryption خارج از database و Git نگهداری
+  می‌شود و rotation آن نباید revisionهای پیشین را ناخوانا کند. `.env.example` فقط نام/توضیح/validation placeholder
+  دارد؛ `.env` یا مقدار واقعی gate پذیرندگی را دور نمی‌زند.
+- `SADAD_GO_LIVE_BLOCKED` تا evidence پذیرندگی، تأیید کتبی static outbound egress IP لیارا، endpoint/callback،
+  credential خارج از Git و sign-off باقی می‌ماند. IP ورودی یا اختصاصی جایگزین static outbound IP نیست.
+- provisioning، خرید، credential واقعی، اتصال خارجی، enable/default و deploy در این change control یا baseline
+  مجاز نیستند. اگر لیارا static outbound egress مناسب را تأیید نکند، مالک پروژه تصمیم جایگزین را می‌گیرد و provider
+  خودکار تغییر نمی‌کند.
+
 ## Sadad production acceptance gate
 
 پیش از هر enable/default یا اتصال واقعی سداد، Phase 12 باید evidence غیرمحرمانهٔ موارد زیر را ثبت کند:
