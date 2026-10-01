@@ -12,6 +12,17 @@ import { auth, createChatFixture, destroyChatFixture, type ChatFixture } from '.
 
 type Participant = { conversationId: string; token: string };
 type Connected = Participant & { socket: Socket };
+const TOKEN_ROTATION_SAFETY_MARGIN_MS = 30_000;
+
+const tokenExpiry = (value: string): number => {
+  const encodedPayload = value.split('.')[1];
+  if (!encodedPayload) throw new Error('Synthetic access token has no JWT payload.');
+  const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8')) as { exp?: unknown };
+  if (typeof payload.exp !== 'number' || !Number.isInteger(payload.exp)) {
+    throw new Error('Synthetic access token has no integer exp claim.');
+  }
+  return payload.exp * 1_000;
+};
 
 const connect = (url: string, participant: Participant, lastSequence: string) => new Promise<Connected>((resolve, reject) => {
   const socket = io(`${url}/chat`, { auth: { token: participant.token }, transports: ['websocket'], reconnection: false });
@@ -110,8 +121,16 @@ describe('chat capacity and reconnect load (synthetic PostgreSQL/Socket.IO)', ()
       (await issuer.verify(fixture.tokens.doctor)).sessionId,
     ] as const));
     let tokens = fixtures.map((fixture) => [fixture.tokens.patient, fixture.tokens.doctor] as const);
-    let refreshAt = Date.now() + 8 * 60_000;
+    let earliestTokenExpiryMs = Math.min(...tokens.flat().map(tokenExpiry));
     let sequence = 0;
+    const refreshTokensBeforeExpiry = async () => {
+      if (Date.now() < earliestTokenExpiryMs - TOKEN_ROTATION_SAFETY_MARGIN_MS) return;
+      tokens = await Promise.all(fixtures.map(async (fixture, index) => [
+        await issuer.issue({ userId: fixture.users.patient.id, sessionId: sessionIds[index]![0], roles: ['PATIENT'] }),
+        await issuer.issue({ userId: fixture.users.doctor.id, sessionId: sessionIds[index]![1], roles: ['DOCTOR'] }),
+      ] as const));
+      earliestTokenExpiryMs = Math.min(...tokens.flat().map(tokenExpiry));
+    };
     const send = async (fixtureIndex: number, senderIndex: 0 | 1) => {
       const response = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${conversations[fixtureIndex]}/messages`, headers: auth(tokens[fixtureIndex]![senderIndex]), payload: { clientMessageId: randomUUID(), body: 'synthetic load message' } });
       expect(response.statusCode).toBe(201);
@@ -119,13 +138,7 @@ describe('chat capacity and reconnect load (synthetic PostgreSQL/Socket.IO)', ()
     const runRate = async (rate: number, seconds: number) => {
       for (let second = 0; second < seconds; second += 1) {
         const began = Date.now();
-        if (began >= refreshAt) {
-          tokens = await Promise.all(fixtures.map(async (fixture, index) => [
-            await issuer.issue({ userId: fixture.users.patient.id, sessionId: sessionIds[index]![0], roles: ['PATIENT'] }),
-            await issuer.issue({ userId: fixture.users.doctor.id, sessionId: sessionIds[index]![1], roles: ['DOCTOR'] }),
-          ] as const));
-          refreshAt = Date.now() + 8 * 60_000;
-        }
+        await refreshTokensBeforeExpiry();
         await Promise.all(Array.from({ length: rate }, (_, offset) => {
           const messageIndex = sequence + offset;
           return send(messageIndex % fixtures.length, Math.floor(messageIndex / fixtures.length) % 2 as 0 | 1);

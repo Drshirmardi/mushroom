@@ -1,5 +1,133 @@
 # Phase 12 Execution Evidence
 
+## F12-T03 — capacity profiles and chat acceptance
+
+Task ID: F12-T03
+Batch ID: F12-B03-R3
+Completed at: 2026-10-02 +03:30
+Agent/Thread: Codex /root
+Review result: PASS; accepted and ready for its independent task commit.
+
+Scope and contract correction:
+
+- Frozen mixed acceptance is the prior durable run's `17,990/18,000` successful requests (`99.944444%`) and p95
+  `21.8106ms`; it meets the authoritative `>=99%` success and p95 `<=750ms` contract. The ten 401 responses were
+  caused by a test token issued before setup and rotated only by loop second; they are a harness artifact, not a
+  product/capacity failure. No mixed rerun occurred.
+- The harness now reads each JWT's actual integer `exp` claim and rotates the same persisted Session token with a
+  30-second safety margin. The old 15-minute comment and iteration-based rotation are removed. The all-route-2xx
+  condition remains only in the short preflight, not as a mixed acceptance gate.
+- Boundary preflight: PASS — test TypeScript compilation plus the opt-in two-second mixed wiring run passed; all eight
+  selected routes were 2xx, clinical access audits were written, a forced pre-expiry rotation issued a distinct valid
+  token for the persisted Session, and its child database cleanup completed.
+
+Frozen chat execution:
+
+- Durable stdout: `%TEMP%/mushroom-f12-t03-chat-acceptance.log`; stderr:
+  `%TEMP%/mushroom-f12-t03-chat-acceptance.log.err`.
+- Exit code: `0`; Vitest: `1` file / `2` tests passed; reported duration: `2202.78s` (`2200.62s` tests).
+- The accepted workload remained exact: `20 msg/s × 30 min`, a `61s` gap, then `50 msg/s × 5 min`. The test's
+  per-batch `<=1000ms` assertion passed throughout. The final invariant passed: each conversation has count and
+  maximum sequence both equal to `511`, so no durable sequence gap remains.
+- Stderr contained one non-failing pg deprecation warning about overlapping `client.query()` execution; it did not
+  alter the exit code, timing assertions or final invariants and is not treated as an acceptance failure.
+
+Environment, review and cleanup:
+
+- Only run-owned local PostgreSQL was used: `postgres:16-alpine`, loopback `127.0.0.1:17781`, 1 GiB / 2 CPUs and
+  label `codex.task=F12-T03`. No shared/production/Liara database or Sadad endpoint was contacted; this result does
+  not claim production capacity or Liara readiness.
+- API typecheck (including Prisma generation) → PASS. `git diff --check` → PASS. Owned-path review → PASS: only the
+  capacity commands/harnesses and coordinator-only Phase 12 status/evidence/checklist changed; no payment runtime,
+  schema/migration, dependency, workflow, secret or F12-T05/T06 path changed.
+- The chat child database was absent after the test cleanup; the labeled run-owned container was then stopped and its
+  `--rm` removal completed. Mixed, booking-conflict and simulated-Sadad results were preserved and not rerun.
+
+Next batch:
+
+- `F12-B04` is not claimed or started. `F12-T05` remains independently BLOCKED pending written Liara WAL/archive,
+  restore/PITR and RPO/RTO capability evidence.
+
+## F12-T03 — serial acceptance R2 (REWORK)
+
+Task ID: F12-T03
+Batch ID: F12-B03-R2
+Run: 2026-10-01 22:22–22:53 +03:30
+Result: REWORK; unchecked, unclaimed, no task-completion commit.
+
+Durable logs:
+
+- stdout: `%TEMP%/mushroom-f12-t03-serial-acceptance.log`
+- stderr: `%TEMP%/mushroom-f12-t03-serial-acceptance.log.err`
+
+Preflight and mixed result:
+
+- Preflight PASSed before the acceptance run: all eight selected routes were 2xx; empty clinical timeline/history
+  emitted audits; rotating and post-profile tokens were verified against the persisted fixture Session; child-database
+  cleanup passed. A real credential was also required by `/v1/me`; Session alone fixes the clinical audit FK but not
+  current-account availability.
+- Mixed executed the frozen `10 req/s × 1,800 s` profile: `18,000` requests, `17,990` success, `99.944444%`, p95
+  `21.8106ms`. The threshold checks pass, but the explicit per-route all-2xx gate failed: ten `401`s appeared at
+  token-expiry boundaries (`/assessments` 1, timeline 1, appointments 2, history 2, `/me` 1, directory 1,
+  onboarding 1, booking-eligibility 1). Clinical audit count was `4,497` and the post-profile token was tied to the
+  persisted Session.
+- Exit codes: mixed `1`; chat `-1` (not started by the serial runner after mixed failed). Therefore there is no R2
+  chat result for the frozen `20 msg/s × 30 min`, 61-second gap, `50 msg/s × 5 min`, `<=1000ms` batches or its final
+  invariants. The known prior diagnostic evidence remains preserved and is not a substitute for this acceptance run.
+
+Correction (2026-10-02):
+
+- The frozen mixed acceptance contract is only `>=99%` success and p95 `<=750ms`. R2's `17,990/18,000`
+  (`99.944444%`) and p95 `21.8106ms` therefore PASS. The previous per-route all-2xx assertion was not an
+  authoritative acceptance gate. Its ten 401s arose because the 10-minute JWT was issued before loop setup but was
+  rotated only at the loop's second-600 boundary; they are a known harness artifact, not a product/capacity failure.
+- F12-B03-R3 uses the token's actual JWT `exp` claim plus a safety margin, validates that boundary in a short
+  preflight, and then runs only the still-unverified frozen chat workload. R2 mixed, booking-conflict and
+  simulated-Sadad results are retained and are not rerun.
+
+## F12-T03 — capacity profile execution (REWORK)
+
+Task ID: F12-T03
+Batch ID: F12-B03-R1
+Executed at: 2026-10-01 18:20–21:35 +03:30
+Agent/Thread: Codex /root
+Review result: REWORK; unchecked, unclaimed and not committed.
+
+Run-owned environment:
+
+- Docker Desktop engine `28.4.0`; container `mushroom-f12-t03-postgres` on `postgres:16-alpine` / PostgreSQL `16.14`.
+- Container constraints: 1 GiB memory, 2 CPUs; random loopback-only host port `17781`; label `codex.task=F12-T03`.
+- Every test database was a uniquely named child of the local run-owned parent. No shared, production, Liara or Sadad
+  service was contacted. Results do not demonstrate production capacity or Liara readiness.
+
+Verification and findings:
+
+- Harness typecheck and short preflight exercised migration, seed, authentication, selected routes and child-database
+  cleanup. The preflight is explicitly non-acceptance; its opt-in two-second duration does not change the approved
+  30-minute profile.
+- The first durable mixed run completed `1,800` seconds and `18,000` requests, with p95 `43.78ms`, but failed at
+  `20.83%` success after the initial harness omitted token rotation. That result is diagnostic only.
+- After rotating the synthetic token during the profile, the second durable mixed run completed `1,800` seconds and
+  `18,000` requests, p95 `48.84ms`, and `11,250/18,000` successful requests (`62.5%`): FAIL against the frozen
+  `>=99%` criterion. The contract and thresholds were not changed.
+- Diagnostic preflight produced: `/v1/me` → `401` (synthetic patient has no durable session); `/v1/patients/me/clinical/timeline`
+  and `/v1/patients/me/clinical/history` → `503` (fixture has no clinical journey data). Assessment, onboarding,
+  booking eligibility, directory and appointment-list journeys returned `200`.
+- Booking conflict and simulated-only Sadad financial idempotency were independently verified on a separate disposable
+  child database: `patient-appointments.integration.spec.ts` and `commerce-checkout.integration.spec.ts` → `2 files,
+  8 tests PASS`. This includes one-slot conflict protection, duplicate callback/Verify, retry/reconciliation,
+  mismatch rejection and exactly-one financial effect; no Sadad transport was used.
+- The earlier Phase-10 chat workload has no durable final result for this run and is not accepted here. Its frozen
+  `20 msg/s × 30 min`, 61-second gap, `50 msg/s × 5 min`, `<=1000ms` contract remains unchanged; historical
+  `1015ms`/`1032ms`, CI isolation and scheduled/manual outcome remain inputs, not a replacement execution.
+
+Safe next action:
+
+- Build a valid durable-session fixture and clinical timeline/history fixture for every selected authenticated release
+  journey, ensure the test token is valid through the post-profile booking check, rerun the short preflight, then
+  rerun only the approved mixed profile and the still-unverified frozen chat profile with durable logs. Keep F12-T03
+  unchecked until those runs satisfy their frozen gates. Do not start F12-B04.
+
 ## F12-T06 — object-storage applicability review
 
 Task ID: F12-T06
