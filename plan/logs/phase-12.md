@@ -1,5 +1,44 @@
 # Phase 12 Execution Evidence
 
+## F12-T06 — object-storage applicability review
+
+Task ID: F12-T06
+Completed at: 2026-10-01 17:45 +03:30
+Agent/Thread: Codex /root
+Batch ID: F12-B03 (reduced)
+Reviewed by: Codex /root
+
+Changed files:
+
+- `plan/contracts/phase-12-object-storage-decision.md`
+- `plan/STATUS.md`, `plan/phases/12-PRODUCTION-HARDENING.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- Source-consumer inventory across API routes/services, Prisma schema/migrations, app/dashboard/web source, workspace
+  packages, dependency manifests and deployment configuration → PASS: no multipart/upload transport, presigned URL,
+  object-store SDK, bucket configuration, file/attachment/media model or API-backed product consumer exists.
+- Phase 10 contract/migration cross-check → PASS: chat attachment is explicitly `DEFERRED / NOT_APPLICABLE FOR MVP`;
+  its persistence migration explicitly creates no attachment transport or storage.
+- No-storage-infrastructure/dependency/configuration review and `git diff --check` → PASS.
+
+Result:
+
+- Object storage remains `N/A` for the initial release. The decision records no provider/bucket/configuration and a
+  mandatory product-owner re-entry review for any future real binary consumer, including private access, validation,
+  quarantine, retention/disposition, restore and secret boundaries.
+- No object-storage infrastructure, dependency, schema, secret, deployment, provider contact, push or PR was added.
+
+Batch exclusions and next action:
+
+- `F12-T03` remains `BLOCKED` and unchecked. Docker Desktop's engine is not running and no local PostgreSQL runtime
+  exists; start a local disposable runtime before running the frozen capacity profiles. A real/shared database must not
+  be used as a substitute.
+- `F12-T05` remains `BLOCKED` and unchecked. The project owner must obtain written Liara evidence for daily backup,
+  continuous WAL/archive, restore/PITR and supported RPO/RTO. The official Liara CLI documents manual backup creation,
+  listing and download only; that is insufficient for recovery acceptance.
+- Do not start F12-B04 in this handoff.
+
 ## F12-T02 REWORK — lossless Sadad financial integer serialization
 
 Task ID: F12-T02

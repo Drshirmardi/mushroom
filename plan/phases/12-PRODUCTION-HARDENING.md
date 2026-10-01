@@ -9,10 +9,10 @@
 
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
 - [x] `F12-T02` — deployment provider، container/IaC و staging pipeline
-- [ ] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release
+- [ ] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release — `BLOCKED: local disposable PostgreSQL runtime unavailable`
 - [ ] `F12-T04` — query/index، pool و timeout tuning
-- [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL
-- [ ] `F12-T06` — object storage retention/restore در صورت استفاده
+- [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL — `BLOCKED: Liara WAL/archive/restore capability evidence required`
+- [x] `F12-T06` — object storage retention/restore در صورت استفاده
 - [ ] `F12-T07` — secrets management و key rotation drill
 - [ ] `F12-T08` — dependency/container/security scan و abuse scenarios
 - [ ] `F12-T09` — observability dashboard، frontend error tracking و alert runbook

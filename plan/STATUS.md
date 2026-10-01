@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-01 17:20 +03:30`
+- آخرین به‌رورسانی: `2026-10-01 17:45 +03:30`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
 - batch فعال: `ندارد`
 - task فعال: `ندارد`
-- blocker فعال: `ندارد`
+- blocker فعال: `F12-T03 BLOCKED — no independent disposable PostgreSQL runtime is available locally; F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`
 
 ## پیشرفت کلان
 
@@ -57,7 +57,51 @@ remain accepted with independent closure evidence in [`logs/phase-11.md`](logs/p
 request values now cross the actual transport as JSON number tokens, and top-level `Amount`/`OrderId` response
 literals remain exact through Verify parsing. The `@sabz-zendegi/api-client` resolver was a fresh-worktree artifact
 preparation issue (`dist/` missing despite a correct workspace link); its package build and dashboard checks pass.
-`F12-B03` remains eligible but unclaimed and must not start in this handoff.
+`F12-T06` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md). `F12-T03` remains unchecked and unclaimed: Docker
+Desktop's engine is unavailable and no local PostgreSQL server/tooling exists, so a disposable database cannot be
+prepared without using a real/shared database. `F12-T05` remains unchecked and unclaimed: Liara's official CLI
+evidence confirms manually created/downloadable backups but not the approved daily backup plus continuous WAL/archive,
+restore/PITR, or RPO/RTO capability. Neither blocker is bypassed or satisfied by the local T06 result.
+
+## آخرین batch تکمیل‌شده — F12-B03
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-01 17:35 +03:30`
+Completed at: `2026-10-01 17:45 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE (REDUCED)`
+Contract baseline: `plan/contracts/phase-12-release-envelope.md`, frozen `specs/010-production-hardening/`,
+`plan/04-ENGINEERING-STANDARDS.md`, and accepted F12-T02 evidence at `44667c2`.
+
+- Task ID: `F12-T06`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F12-T01 DONE`; no ownership conflict. F12-T02 remains accepted but is not a dependency of this task.
+  - Scope: inventory actual API/app/dashboard/package file consumers and record whether object storage remains N/A. Do
+    not add a bucket, storage SDK, upload endpoint, schema, dependency, retention job, or configuration without an
+    approved real consumer.
+  - Owned paths: storage-decision evidence/contract and coordinator-only
+    `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: the Phase 12 object-storage decision is single-writer; it does not overlap F12-T03's
+    load harness or F12-T05's recovery procedure.
+  - Expected verification: source/API/schema consumer inventory, deferred-chat/architecture contract cross-check,
+    no-storage-dependency/configuration diff review, and `git diff --check`.
+  - Review: `PASS` — current API/app/dashboard/web/package/deployment consumers contain no real upload, attachment,
+    medical-file or binary consumer; no multipart/upload transport, storage persistence model, object-store SDK,
+    bucket configuration or secret exists. The only attachment-related persistence migration explicitly defers it.
+    `N/A` is documented with a mandatory re-entry review; no object-storage infrastructure, dependency, schema,
+    configuration or secret was introduced. Evidence: [`contracts/phase-12-object-storage-decision.md`](contracts/phase-12-object-storage-decision.md)
+    and [`logs/phase-12.md`](logs/phase-12.md).
+
+Excluded, unchecked tasks and exact next action:
+
+- `F12-T03 BLOCKED`: Docker Desktop client is installed but `dockerDesktopLinuxEngine` is not running; no `postgres`,
+  `initdb`, or PostgreSQL service is present. Start Docker Desktop (or supply a local disposable PostgreSQL runtime),
+  then create a run-owned database and execute the frozen capacity profiles. Do not use a shared or production-like
+  database as a substitute.
+- `F12-T05 BLOCKED`: obtain written Liara evidence covering daily base backup retention, continuous WAL/archive,
+  restore/PITR procedure and supported RPO/RTO before claiming recovery acceptance. The official CLI supports manual
+  backup create/list/download, but that is insufficient evidence for the approved recovery objective.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R1
 
