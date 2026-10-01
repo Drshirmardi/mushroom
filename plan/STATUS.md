@@ -10,8 +10,8 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد
-- task فعال: ندارد
+- batch فعال: `F12-B04`
+- task فعال: `F12-T07`, `F12-T08`
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`
 
 ## پیشرفت کلان
@@ -67,8 +67,35 @@ unchecked and unclaimed: Liara's official CLI evidence confirms
 manually created/downloadable backups but not the approved daily backup plus continuous WAL/archive, restore/PITR,
 or RPO/RTO capability.
 
-`F12-B04` (`F12-T04`, `F12-T07`, `F12-T08`) is the next planned batch after the accepted B03 work, but is not claimed
-or started in this handoff.
+## batch فعال — F12-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-02 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `IN_PROGRESS` (serialized task commits)
+
+- Task ID: `F12-T04`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F12-T03` DONE. Disposable query-plan, bounded-pool saturation and controlled timeout-recovery
+    checks passed. The accepted T03 result has no measured query/pool/timeout bottleneck, so no runtime setting,
+    index, datastore or topology was changed. Owned resource: query-plan, pool/timeout code/tests and T04-only
+    evidence.
+- Task ID: `F12-T07`
+  - Agent/Thread: `Codex /root`
+  - Status: `IN_PROGRESS (claimed; external capability gate under review)`
+  - Depends on: `F12-T01` and `F12-T02` DONE. Owned resource: secret inventory/rotation procedure, secret-template
+    boundary and key-rotation test/evidence. Liara managed-secret-store capability is not assumed; if task acceptance
+    requires unavailable provider evidence, this task becomes BLOCKED, unchecked, and remains a F12-T13 sign-off gate.
+- Task ID: `F12-T08`
+  - Agent/Thread: `Codex /root`
+  - Status: `IN_PROGRESS (claimed)`
+  - Depends on: `F12-T01` and `F12-T02` DONE. Owned resource: scan configuration/results and auth/rate-limit/Sadad
+    callback-redirect/secret-disclosure abuse coverage.
+
+The coordinator serializes the shared Phase 12 checklist, status and evidence updates. Each accepted task receives an
+independent review and commit; no runtime secret, provider provisioning, external Sadad request, enable/default,
+production deployment, push or PR is authorized.
 
 ## آخرین batch تکمیل‌شده — F12-B03-R3
 

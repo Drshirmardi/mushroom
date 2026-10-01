@@ -10,7 +10,7 @@
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
 - [x] `F12-T02` — deployment provider، container/IaC و staging pipeline
 - [x] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release — `DONE: frozen mixed/chat profiles and disposable invariants accepted; see phase-12 evidence`
-- [ ] `F12-T04` — query/index، pool و timeout tuning
+- [x] `F12-T04` — query/index، pool و timeout tuning — `DONE: measured no-change decision; release query plans and bounded-pool/timeout recovery evidence recorded`
 - [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL — `BLOCKED: Liara WAL/archive/restore capability evidence required`
 - [x] `F12-T06` — object storage retention/restore در صورت استفاده
 - [ ] `F12-T07` — secrets management و key rotation drill

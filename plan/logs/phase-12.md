@@ -1,5 +1,45 @@
 # Phase 12 Execution Evidence
 
+## F12-T04 — measured query, pool and timeout review
+
+Task ID: F12-T04
+Batch ID: F12-B04
+Completed at: 2026-10-02 +03:30
+Agent/Thread: Codex /root
+Review result: PASS; accepted and ready for its independent task commit.
+
+Decision and scope:
+
+- The accepted F12-T03 mixed profile (`17,990/18,000`, `99.944444%`, p95 `21.8106ms`) supplied no measured
+  query, connection-pool or timeout bottleneck. This task therefore made no speculative runtime, index, datastore
+  or scale-topology change.
+- A new opt-in disposable-PostgreSQL regression test records `EXPLAIN (ANALYZE, BUFFERS, COSTS OFF, FORMAT JSON)`
+  for the active-offerings directory, patient appointment-history and payment-reconciliation release query shapes.
+  All plans completed with clinic scoping and measurable planning/execution timings; the test deliberately records
+  rather than invents an unapproved performance threshold.
+- The same test starts 25 concurrent short database sleeps through the application Prisma service and observes the
+  existing bounded pool (configured maximum `20`) without exceeding it. A controlled `statement_timeout` cancellation
+  is then required to surface, and a subsequent query proves connection recovery. This is local fault injection, not
+  a production timeout setting change.
+
+Verification, environment and review:
+
+- `pnpm --filter @sabz-zendegi/api test:phase-12-performance` → PASS (`1` file, `2` tests; `16.28s`). The initial
+  test instrumentation accidentally observed lazy Prisma promises and selected a void `pg_sleep` result; both were
+  corrected before this accepted run. Neither was a product finding or used as performance evidence.
+- `pnpm --filter @sabz-zendegi/api typecheck` (including Prisma generation) → PASS.
+- `git diff --check` → PASS. The test-only owned-path review → PASS: one opt-in API performance test and command,
+  plus coordinator-only Phase 12 checklist/status/evidence changed; no schema, migration, dependency, runtime pool,
+  index, secret, provider setting or unrelated path changed.
+- The test used only the run-owned local `postgres:16-alpine` container for F12-B04 on loopback with a separate
+  parent database. Its generated child database was absent after cleanup. No shared/Liara/production database or
+  Sadad endpoint was contacted; this evidence does not claim production or Liara capacity.
+
+Result:
+
+- `F12-T04` is DONE with an evidence-based no-change decision. Future changes to pool size, indexes, timeouts or
+  topology require a newly measured bottleneck and applicable change control.
+
 ## F12-T03 — capacity profiles and chat acceptance
 
 Task ID: F12-T03
