@@ -5,7 +5,7 @@ import { PaymentProviderRegistry } from './payment-provider.registry';
 
 const blocked = () => new ServiceUnavailableException({ code: 'SADAD_GO_LIVE_BLOCKED', message: 'Sadad is configured for review only until merchant acceptance is complete.', details: {} });
 const invalid = () => new UnprocessableEntityException({ code: 'PAYMENT_PROVIDER_CONFIGURATION_INVALID', message: 'Sadad protocol input or response is invalid.', details: {} });
-const MAX_INT64 = 9_223_372_036_854_775_807n;
+export const SADAD_MAX_INT64 = 9_223_372_036_854_775_807n;
 const CALLBACK_MAX_FIELD_LENGTH = 512;
 const DEFAULT_TIMEOUT_MS = 5_000;
 
@@ -22,8 +22,87 @@ export const SADAD_REDIRECT_PROFILES = {
 } as const;
 
 export type SadadRedirectProfile = keyof typeof SADAD_REDIRECT_PROFILES;
-export type SadadJson = Record<string, string | number>;
+export type SadadJson = Record<string, string | number | bigint>;
 export type SadadTransport = { postJson(input: { endpoint: string; body: SadadJson; timeoutMs: number }): Promise<unknown> };
+
+/** Emit bounded bigint values as JSON number tokens without coercing them to imprecise JavaScript numbers. */
+export const serializeSadadJson = (body: SadadJson) => {
+  const entries = Object.entries(body).map(([key, value]) => {
+    if (typeof value === 'bigint') {
+      if (value < 0n || value > SADAD_MAX_INT64) throw invalid();
+      return `${JSON.stringify(key)}:${value.toString()}`;
+    }
+    if (typeof value === 'number') {
+      if (!Number.isSafeInteger(value) || value < 0) throw invalid();
+      return `${JSON.stringify(key)}:${value}`;
+    }
+    return `${JSON.stringify(key)}:${JSON.stringify(value)}`;
+  });
+  return `{${entries.join(',')}}`;
+};
+
+const skipWhitespace = (input: string, cursor: number) => {
+  while (/\s/u.test(input[cursor] ?? '')) cursor += 1;
+  return cursor;
+};
+
+const stringEnd = (input: string, cursor: number) => {
+  if (input[cursor] !== '"') throw invalid();
+  cursor += 1;
+  while (cursor < input.length) {
+    if (input[cursor] === '\\') { cursor += 2; continue; }
+    if (input[cursor] === '"') return cursor + 1;
+    cursor += 1;
+  }
+  throw invalid();
+};
+
+const valueEnd = (input: string, cursor: number) => {
+  if (input[cursor] === '"') return stringEnd(input, cursor);
+  if (input[cursor] !== '{' && input[cursor] !== '[') {
+    while (cursor < input.length && !/[\s,}\]]/u.test(input[cursor]!)) cursor += 1;
+    return cursor;
+  }
+  let depth = 0;
+  while (cursor < input.length) {
+    if (input[cursor] === '"') { cursor = stringEnd(input, cursor); continue; }
+    if (input[cursor] === '{' || input[cursor] === '[') depth += 1;
+    if (input[cursor] === '}' || input[cursor] === ']') { depth -= 1; if (depth === 0) return cursor + 1; }
+    cursor += 1;
+  }
+  throw invalid();
+};
+
+/** Native JSON parsing loses JSON integer precision; retain top-level financial literals verbatim before matching. */
+const losslessFinancialIntegers = (input: string) => {
+  const values = new Map<string, string>(); let cursor = skipWhitespace(input, 0);
+  if (input[cursor] !== '{') throw invalid();
+  cursor = skipWhitespace(input, cursor + 1);
+  while (input[cursor] !== '}') {
+    const keyStart = cursor; const keyEnd = stringEnd(input, cursor); const key = JSON.parse(input.slice(keyStart, keyEnd)) as string;
+    cursor = skipWhitespace(input, keyEnd); if (input[cursor] !== ':') throw invalid();
+    cursor = skipWhitespace(input, cursor + 1);
+    const numeric = input.slice(cursor).match(/^(?:0|[1-9]\d*)/u);
+    if ((key === 'Amount' || key === 'OrderId') && numeric) {
+      const end = skipWhitespace(input, cursor + numeric[0].length);
+      if (input[end] !== ',' && input[end] !== '}') throw invalid();
+      values.set(key, numeric[0]); cursor = end;
+    } else cursor = skipWhitespace(input, valueEnd(input, cursor));
+    if (input[cursor] === ',') cursor = skipWhitespace(input, cursor + 1);
+    else if (input[cursor] !== '}') throw invalid();
+  }
+  if (skipWhitespace(input, cursor + 1) !== input.length) throw invalid();
+  return values;
+};
+
+export const parseSadadResponseJson = (input: string) => {
+  let parsed: unknown;
+  try { parsed = JSON.parse(input); } catch { throw invalid(); }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw invalid();
+  const response = parsed as Record<string, unknown>;
+  for (const [field, value] of losslessFinancialIntegers(input)) response[field] = value;
+  return response;
+};
 
 /** Runtime uses this until F12-T13 accepts merchant evidence; env values cannot turn it into a live connection. */
 export class BlockedSadadTransport implements SadadTransport {
@@ -36,18 +115,21 @@ export class FetchSadadTransport implements SadadTransport {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
     try {
-      const response = await fetch(input.endpoint, { method: 'POST', headers: { 'content-type': 'application/json; charset=utf-8', accept: 'application/json' }, body: JSON.stringify(input.body), signal: controller.signal });
+      const response = await fetch(input.endpoint, { method: 'POST', headers: { 'content-type': 'application/json; charset=utf-8', accept: 'application/json' }, body: serializeSadadJson(input.body), signal: controller.signal });
       if (!response.ok) throw invalid();
-      const payload: unknown = await response.json();
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw invalid();
-      return payload;
+      return parseSadadResponseJson(await response.text());
     } finally { clearTimeout(timeout); }
   }
 }
 
 export const toSadadRial = (commerceAmountToman: bigint) => {
-  if (commerceAmountToman <= 0n || commerceAmountToman > MAX_INT64 / 10n) throw invalid();
+  if (commerceAmountToman <= 0n || commerceAmountToman > SADAD_MAX_INT64 / 10n) throw invalid();
   return commerceAmountToman * 10n;
+};
+
+const positiveInt64 = (value: bigint) => {
+  if (value <= 0n || value > SADAD_MAX_INT64) throw invalid();
+  return value;
 };
 
 export const formatSadadLocalDateTime = (instant: Date) => {
@@ -66,10 +148,11 @@ const stringField = (input: Record<string, unknown>, field: string, optional = f
 };
 
 const integerField = (input: Record<string, unknown>, field: string, optional = false) => {
+  if (typeof input[field] === 'number' && !Number.isSafeInteger(input[field])) throw invalid();
   const value = stringField(input, field, optional);
   if (value === undefined) return undefined;
   if (!/^\d+$/u.test(value)) throw invalid();
-  return BigInt(value);
+  return positiveInt64(BigInt(value));
 };
 
 const responseRecord = (input: unknown) => {
@@ -126,9 +209,9 @@ export class SadadPaymentProviderAdapter implements PaymentProviderPort {
   constructor(registry: PaymentProviderRegistry) { registry.register(this); }
 
   async createPayment(input: ProviderCreateInput): Promise<ProviderCreateResult> {
-    const secret = credential(input.credential); const amount = toSadadRial(input.commerceAmountToman);
+    const secret = credential(input.credential); const amount = toSadadRial(input.commerceAmountToman); const providerOrderId = positiveInt64(input.providerOrderId);
     if (input.providerUnit !== 'RIAL' || input.providerAmount !== amount) throw invalid();
-    const result = responseRecord(await this.transport.postJson({ endpoint: SADAD_ENDPOINTS.paymentRequest, timeoutMs: this.timeoutMs, body: { MerchantId: secret.merchantId, TerminalId: secret.terminalId, Amount: amount.toString(), OrderId: input.providerOrderId.toString(), LocalDateTime: formatSadadLocalDateTime(this.now()), ReturnUrl: returnUrl(input.returnUrl), SignData: this.signData(secret.terminalId, input.providerOrderId, amount, secret.terminalKey) } }));
+    const result = responseRecord(await this.transport.postJson({ endpoint: SADAD_ENDPOINTS.paymentRequest, timeoutMs: this.timeoutMs, body: { MerchantId: secret.merchantId, TerminalId: secret.terminalId, Amount: amount, OrderId: providerOrderId, LocalDateTime: formatSadadLocalDateTime(this.now()), ReturnUrl: returnUrl(input.returnUrl), SignData: this.signData(secret.terminalId, providerOrderId, amount, secret.terminalKey) } }));
     const providerResultCode = stringField(result, 'ResCode')!;
     if (providerResultCode !== '0') return { providerResultCode };
     const token = stringField(result, 'Token');

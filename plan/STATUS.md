@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-09-30 23:06 +03:30`
+- آخرین به‌رورسانی: `2026-10-01 17:20 +03:30`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -53,8 +53,49 @@
 `F10-T09 REWORK` CI/load-test isolation is accepted; Phase 10 remains `DONE (CLOSED)`. `F11-T01` through `F11-T11`
 remain accepted with independent closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 remains
 `DONE (CLOSED)` and is out of scope. `F12-T01` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md).
-`F12-B02` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md). No later Phase 12 task is claimed;
-`F12-B03` is eligible but remains unclaimed.
+`F12-T02 REWORK` is accepted with corrective evidence in [`logs/phase-12.md`](logs/phase-12.md): bounded bigint
+request values now cross the actual transport as JSON number tokens, and top-level `Amount`/`OrderId` response
+literals remain exact through Verify parsing. The `@sabz-zendegi/api-client` resolver was a fresh-worktree artifact
+preparation issue (`dist/` missing despite a correct workspace link); its package build and dashboard checks pass.
+`F12-B03` remains eligible but unclaimed and must not start in this handoff.
+
+## آخرین batch تکمیل‌شده — F12-B02-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-01 00:05 +03:30`
+Completed at: `2026-10-01 17:20 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `plan/contracts/sadad-ipg-v1.md`, `plan/contracts/phase-12-release-envelope.md`, frozen
+`specs/010-production-hardening/`, and the original F12-T02 completion commit `24cee87` (which will not be rewritten).
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F12-T01 DONE`; no other active batch or ownership conflict existed before this corrective claim.
+  - Defect: request `Amount` and `OrderId` used `bigint.toString()` and were then emitted by `JSON.stringify` as JSON
+    strings, contrary to the frozen `Number` / `Number(Long)` contract. `response.json()` could also lose precision for
+    provider financial integers before `verifyPayment` compares them.
+  - Scope: preserve exact bounded integer lexical values as JSON number tokens on the real transport boundary; preserve
+    numeric response precision until financial parsing; update affected tests to inspect local/simulated-fetch wire
+    payloads; diagnose and, if preparation-caused, repair the workspace `@sabz-zendegi/api-client` resolver failure.
+    No real Sadad request, provider activation/default, credential, provisioning, deployment, push, PR, schema,
+    migration, dependency, workflow, or F12-B03 work.
+  - Owned paths: `apps/api/src/modules/commerce/payments/sadad-payment-provider.adapter.ts`,
+    `apps/api/test/sadad-payment-provider.adapter.spec.ts`, and coordinator-only
+    `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`. Package build artifacts may be regenerated
+    locally for verification but are not task source or commit content.
+  - Shared/exclusive resource: Sadad adapter/transport and F12 status/evidence are single-writer resources for this
+    corrective batch. `F12-B03` remains unclaimed.
+  - Review: `PASS` — the real Fetch transport writes `Amount` and `OrderId` as unquoted exact integer JSON literals
+    without converting bigint to Number, rejects unsafe or out-of-range values before fetch, and parses raw successful
+    responses so `Amount`/`OrderId` retain their lexical int64 values before Verify financial matching. A loopback HTTP
+    server proves both normal and boundary wire payloads; no Sadad endpoint was contacted. The workspace resolver
+    failure was caused only by the missing ignored `packages/api-client/dist` artifact in this new worktree; the
+    workspace junction was correct, package build recreated the artifact, and dashboard test/typecheck pass. No
+    schema, migration, dependency, workflow, activation/default, credential, provisioning, deployment, push, PR, or
+    F12-B03 work occurred. Evidence: [`logs/phase-12.md`](logs/phase-12.md).
+  - Next eligible batch: `F12-B03` (`F12-T03`, `F12-T05`, `F12-T06`), unclaimed. Stop before starting it.
 
 ## آخرین batch تکمیل‌شده — F12-B02
 

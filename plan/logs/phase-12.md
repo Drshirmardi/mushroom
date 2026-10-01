@@ -1,5 +1,53 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 REWORK — lossless Sadad financial integer serialization
+
+Task ID: F12-T02
+Completed at: 2026-10-01 17:20 +03:30
+Agent/Thread: Codex /root
+Batch ID: F12-B02-R1
+Reviewed by: Codex /root
+
+Corrective finding:
+
+- The original F12-T02 adapter passed `Amount` and `OrderId` as `bigint.toString()` values into `JSON.stringify`,
+  making frozen `Number`/`Number(Long)` fields quoted JSON strings. Its `response.json()` path could also coerce an
+  unsafe provider financial integer before Verify performs immutable amount/order matching.
+
+Changed files:
+
+- `apps/api/src/modules/commerce/payments/sadad-payment-provider.adapter.ts`
+- `apps/api/test/sadad-payment-provider.adapter.spec.ts`
+- `plan/STATUS.md`, `plan/phases/12-PRODUCTION-HARDENING.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- API test TypeScript compilation → PASS.
+- Focused `sadad-payment-provider.adapter.spec.ts` → PASS (1 file, 4 tests). A loopback HTTP server captures raw
+  request text: ordinary values and `9223372036854775807` boundaries are unquoted JSON numeric literals; unsafe
+  Number coercion and int64 overflow reject before fetch. The same loopback raw Verify response preserves exact
+  `OrderId` and `Amount` values through adapter financial parsing. No external Sadad request occurs.
+- `@sabz-zendegi/api-client` resolver diagnosis → worktree preparation cause confirmed: dashboard's workspace junction
+  targets the correct package but its ignored `dist/index.js` export was absent in this newly prepared worktree.
+  `pnpm --filter @sabz-zendegi/api-client build` recreated it without source drift; dashboard test → PASS (18 files,
+  61 tests) and dashboard typecheck → PASS.
+- `git diff --check` and owned-path review → PASS.
+
+Result and remaining gates:
+
+- Fetch serialization never converts bigint to JavaScript Number; bounded integer literals remain exact on the wire.
+  Fetch response parsing captures top-level financial integer literals from raw JSON before native JSON parsing can
+  lose precision, then Verify converts the exact decimal text to bounded bigint.
+- The correction keeps the Nest runtime transport `SADAD_GO_LIVE_BLOCKED`; it does not provision infrastructure,
+  contact Sadad, expose credentials, enable/default a provider, deploy, push, or create a PR.
+- The disposable workspace harness was not reasserted in this corrective run because it requires a parent
+  `DATABASE_URL`, which is absent from this worktree environment. That does not reclassify the resolver as a product
+  defect; its affected package build, dashboard test and typecheck were rerun successfully.
+
+Next batch:
+
+- `F12-B03` remains eligible and unclaimed. Do not start it in this handoff.
+
 ## F12-T02 — Liara release path and Sadad software completion
 
 Task ID: F12-T02
