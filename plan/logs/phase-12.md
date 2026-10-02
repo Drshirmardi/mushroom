@@ -1,5 +1,31 @@
 # Phase 12 Execution Evidence
 
+## F12-T08 corrective override compatibility R2 — DONE
+
+Batch ID: F12-B04-R2
+Recorded at: 2026-10-02 +03:30
+Coordinator/Thread: Codex /root
+
+Registry-stable `deepmerge-ts@8.0.2` (GHSA-ggr8-5vv4-36mx requires >=8.0.0) and `mysql2@3.24.5`
+(GHSA-3f6p-5ww8-9rcr requires >=3.22.0) are bounded overrides only for `@prisma/config>deepmerge-ts`
+and `prisma>mysql2`. `pnpm why` confirms the only production paths are
+`apps/api > @prisma/client > prisma > @prisma/config > deepmerge-ts@8.0.2` and
+`apps/api > @prisma/client > prisma > mysql2@3.24.5`. No Prisma 8 or MySQL configuration was added.
+
+Frozen install, Prisma 7.10.0 validate/generate, and PostgreSQL migration replay passed. A loopback-only,
+run-owned PostgreSQL 16 container labelled `codex.batch=F12-B04-R2` applied all 32 migrations to a clean database
+and replayed them from zero on a second fresh database; it was removed after review.
+
+API/app/web/dashboard typechecks passed; app/web/dashboard tests passed (`45`, `9`, `61`); API build passed.
+The focused disposable abuse suite passed: 5 files, 25 tests, 103.89 seconds, exit 0, covering auth/session,
+audit redaction, chat rate-limit, Sadad callback/redirect/fail-closed and simulated payment idempotency. No real
+Sadad call occurred. `%TEMP%/mushroom-f12-t08-pnpm-audit-r2.json` reports `0 critical`, `0 high`, `5 moderate`,
+`0 low`; audit exit 1 reflects remaining moderate findings only.
+
+Main-agent review: PASS. F12-T07 uncommitted secret-rotation work is preserved and excluded. T08 is DONE;
+B05 is unstarted.
+
+
 ## F12-T04 — measured query, pool and timeout review
 
 Task ID: F12-T04

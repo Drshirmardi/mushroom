@@ -67,6 +67,22 @@ unchecked and unclaimed: Liara's official CLI evidence confirms
 manually created/downloadable backups but not the approved daily backup plus continuous WAL/archive, restore/PITR,
 or RPO/RTO capability.
 
+
+## batch تکمیل‌شده — F12-B04-R2
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-02 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (single-task corrective override compatibility experiment)
+
+- Task ID: `F12-T08`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Scope: bounded production dependency remediation and scan/abuse verification only; F12-T07 changes are excluded.
+  - Review: PASS — stable `deepmerge-ts@8.0.2` and `mysql2@3.24.5` Prisma-path overrides pass frozen install,
+    Prisma validate/generate, fresh PostgreSQL migration replay, typechecks, affected tests/build, abuse coverage and
+    final audit (`0 critical`, `0 high`, `5 moderate`, `0 low`). No Prisma 8, MySQL configuration, deployment or B05 work.
+
 ## batch فعال — F12-B04
 
 Coordinator/Thread: `Codex /root`

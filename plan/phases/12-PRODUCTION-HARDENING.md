@@ -14,7 +14,7 @@
 - [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL — `BLOCKED: Liara WAL/archive/restore capability evidence required`
 - [x] `F12-T06` — object storage retention/restore در صورت استفاده
 - [ ] `F12-T07` — secrets management و key rotation drill
-- [ ] `F12-T08` — dependency/container/security scan و abuse scenarios
+- [x] `F12-T08` — dependency/container/security scan و abuse scenarios — `DONE: corrective bounded Prisma transitive overrides passed compatibility, abuse and final production-audit gates (0 critical, 0 high)`
 - [ ] `F12-T09` — observability dashboard، frontend error tracking و alert runbook
 - [ ] `F12-T10` — low-downtime migration و rollback exercise
 - [ ] `F12-T11` — incident response و breach workflow exercise
