@@ -87,7 +87,7 @@ As a patient, clinician, or clinic operator, I can use the approved release jour
 
 - **FR-001**: The baseline MUST preserve `F12-T01`–`F12-T13`, dependencies, batch map, owned paths, single-writer resources, acceptance criteria, Definition of Done, and verification; it MUST NOT replace the roadmap.
 - **FR-002**: `F12-T01` MUST freeze only owner-approved release target, SLO, traffic, and environment decisions with their evidence and change-control authority.
-- **FR-003**: `F12-T02` MUST require provider-approved deployment, container/IaC scope, staging/promotion, health/release gates, rollback ownership, and evidence.
+- **FR-003**: `F12-T02` MUST require provider-approved deployment, container/IaC scope, staging/promotion, health/release gates, rollback ownership, and evidence. Approved change-control: the release artifact is provider-neutral OCI/Linux, Liara is only the first deployment profile, final runners use the approved pinned Distroless Node 24 non-root base as UID/GID `65532:65532`, and public runtime configuration must not require image rebuild or contain secrets.
 - **FR-004**: `F12-T03` MUST cover auth, onboarding, assessment, booking, encounter, communications, commerce/payment boundaries, and confirmed release features under the approved profile; it MUST preserve the frozen Phase 10 measurement contract and record `1015ms`, `1032ms`, CI isolation, and scheduled/manual result.
 - **FR-005**: `F12-T04` MUST use measured query/index, pool, and timeout evidence; any new datastore or scale topology needs a measured bottleneck and approval.
 - **FR-006**: `F12-T05`/`F12-T06` MUST distinguish approved PostgreSQL backup/restore objectives from conditional storage retention/restore requirements.

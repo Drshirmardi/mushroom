@@ -1,0 +1,28 @@
+FROM node:24-bookworm-slim AS build
+WORKDIR /workspace
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/* \
+  && corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json apps/api/package.json
+COPY packages/api-client/package.json packages/api-client/package.json
+RUN pnpm install --frozen-lockfile
+COPY . .
+ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build
+RUN pnpm --filter @sabz-zendegi/api build \
+  && pnpm --filter @sabz-zendegi/api deploy --legacy --prod /production
+
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:9eeb7f5887d0e239e78264b06f7f11d2e14be534050481803a9e4728fcdd278e AS runner
+WORKDIR /workspace/apps/api
+ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3003
+COPY --from=build --chown=65532:65532 /production/node_modules ./node_modules
+COPY --from=build --chown=65532:65532 /workspace/apps/api/dist ./dist
+COPY --from=build --chown=65532:65532 /workspace/apps/api/prisma ./prisma
+COPY --from=build --chown=65532:65532 /workspace/apps/api/prisma.config.ts ./prisma.config.ts
+COPY --from=build --chown=65532:65532 /workspace/apps/api/package.json ./package.json
+COPY --chown=65532:65532 deploy/docker/api-entrypoint.mjs /usr/local/bin/api-entrypoint.mjs
+USER 65532:65532
+EXPOSE 3003
+ENTRYPOINT ["/nodejs/bin/node", "/usr/local/bin/api-entrypoint.mjs"]
+CMD ["dist/main.js"]

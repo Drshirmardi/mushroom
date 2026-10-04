@@ -1,0 +1,77 @@
+name: sabz-zendegi-production-example
+
+services:
+  api:
+    image: "${API_IMAGE:?set an immutable API image digest}"
+    environment:
+      NODE_ENV: "production"
+      PORT: "3003"
+      HOSTNAME: "0.0.0.0"
+      DATABASE_URL_FILE: "/run/secrets/database_url"
+      JWT_ACCESS_SECRET_FILE: "/run/secrets/jwt_access_secret"
+      REFRESH_TOKEN_PEPPER_FILE: "/run/secrets/refresh_token_pepper"
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_FILE: "/run/secrets/payment_credential_encryption_key"
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:?non-secret active credential-key version}"
+      PAYMENT_CREDENTIAL_DECRYPTION_KEYS_FILE: "/run/secrets/payment_credential_decryption_keys"
+      APP_ORIGINS: "${APP_ORIGINS:?public origins only}"
+      TRUSTED_PROXIES: "${TRUSTED_PROXIES:?explicit reverse-proxy IP/CIDR}"
+    secrets: [database_url, jwt_access_secret, refresh_token_pepper, payment_credential_encryption_key, payment_credential_decryption_keys]
+    ports: ["${API_PORT:-3003}:3003"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3003/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: "${WEB_IMAGE:?set an immutable web image digest}"
+    environment:
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?HTTPS public API URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?HTTPS app URL}"
+      PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?HTTPS dashboard URL}"
+    ports: ["${WEB_PORT:-3000}:3000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  app:
+    image: "${APP_IMAGE:?set an immutable app image digest}"
+    environment:
+      PORT: "3001"
+      HOSTNAME: "0.0.0.0"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?HTTPS public API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?HTTPS web URL}"
+    ports: ["${APP_PORT:-3001}:3001"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  dashboard:
+    image: "${DASHBOARD_IMAGE:?set an immutable dashboard image digest}"
+    environment:
+      PORT: "3002"
+      HOSTNAME: "0.0.0.0"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?HTTPS public API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?HTTPS web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?HTTPS app URL}"
+    ports: ["${DASHBOARD_PORT:-3002}:3002"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+secrets:
+  database_url: { file: ./secrets/database_url }
+  jwt_access_secret: { file: ./secrets/jwt_access_secret }
+  refresh_token_pepper: { file: ./secrets/refresh_token_pepper }
+  payment_credential_encryption_key: { file: ./secrets/payment_credential_encryption_key }
+  payment_credential_decryption_keys: { file: ./secrets/payment_credential_decryption_keys }

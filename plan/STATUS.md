@@ -6,13 +6,13 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-02`
+- آخرین به‌رورسانی: `2026-10-04`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `F12-B04`
-- task فعال: `F12-T07`, `F12-T08`
-- blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`
+- batch فعال: `ندارد`
+- task فعال: `ندارد`
+- blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## پیشرفت کلان
 
@@ -65,8 +65,54 @@ JWT `exp` with a safety margin and keeps all-route-2xx only as a short preflight
 simulated-Sadad results were retained, not rerun. `F12-T05` remains
 unchecked and unclaimed: Liara's official CLI evidence confirms
 manually created/downloadable backups but not the approved daily backup plus continuous WAL/archive, restore/PITR,
-or RPO/RTO capability.
+or RPO/RTO capability. `F12-T02`'s corrective provider-neutral OCI artifact extension is accepted with evidence in
+[`logs/phase-12.md`](logs/phase-12.md): the pinned Distroless Node 24 non-root runners, explicit API-image migration,
+public-only runtime configuration, Compose health and Liara documentation-profile gates pass; all four actual release
+images scan `0 Critical / 0 High`. This proves local artifact behavior only, not Liara or Sadad external readiness.
 
+## آخرین batch تکمیل‌شده — F12-B02-R2
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-02 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (single-task Distroless runtime corrective extension)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted `F12-T01`; original T02 and its serialization corrective (`44667c2`) are accepted. No
+    active ownership conflict: the pre-existing, uncommitted F12-T07 secret-rotation files are preserved and
+    explicitly excluded from this task's staging and commit.
+  - Scope: record ADR-0011 and update the release envelope/SpecKit task map; make API/web/app/dashboard OCI
+    artifacts provider-neutral and non-root; add public runtime URL configuration, explicit API-image migration,
+    production Compose example and a Liara documentation-only profile. Verify image build/smoke/health/migration and
+    scan the real artifacts. No provider provisioning, external Sadad call, secret, or production deployment.
+  - Initial verification: API/web/app/dashboard typechecks and entrypoint shell syntax pass; `git diff --check` passes.
+    Docker Desktop's service is stopped, cannot be started from this non-elevated session, and its existing Linux-engine
+    named pipes accept no CLI response (`docker version` and the run-owned image build remained silent). Therefore no
+    OCI image, smoke/health/migration result or actual container scan exists and none is claimed.
+  - Prior verification: `docker version` (`28.4.0`) and `docker run --rm hello-world` pass. The API image built
+    as non-root `mushroom`; its run-owned tag was removed during cleanup. The web image failed at `next build` because
+    Docker could not resolve workspace package `@sabz-zendegi/api-client`, although the same local web build passes.
+    No web/app/dashboard image, smoke, migration, Compose validation or image scan ran after this gate failure.
+  - Resumption scope: owner diagnosis confirms the workspace symlink is correct; ignored `dist/` plus imported
+    `tsconfig.tsbuildinfo` made TypeScript skip its output. This run owns only ignoring incremental/turbo caches,
+    forcing API-client output generation with an `dist/index.js` assertion, then the remaining artifact gates. Keep the
+    pre-existing F12-T07 changes unstaged; do not provision Liara or contact Sadad.
+  - Result: the clean client-output assertion unblocked all four OCI image builds; non-root runtime config, one-shot
+    migration and API liveness/readiness pass. Production Compose fails before startup at line 27 because its inline
+    mapping contains an unquoted `${VAR:?message}` with `:`. The run-owned Docker containers/networks were removed.
+  - Current execution: all required Compose interpolations are quoted and API/web/app/dashboard environments use
+    block mappings; `docker compose config` resolves with synthetic values. All four images rebuilt and the
+    disposable migration passed, but the Compose API container rejected deliberately non-secret yet malformed AES and
+    keyring test values before reaching health. The three Next services were healthy/non-root. All run-owned
+    containers, network and images were removed.
+  - Review: PASS — the owner-approved pinned Distroless Node 24 Debian 13 non-root final base, numerical
+    `65532:65532` ownership, Node-only API/Next entrypoints, clean API-client assertion, explicit Prisma JavaScript
+    migration, runtime-config promotion, Compose health and Liara documentation-profile gates all pass. Docker Scout
+    reports `0 Critical / 0 High` for each of API, web, app and dashboard. All run-owned Docker resources were
+    removed. F12-T07 remains unstaged and outside this commit. Evidence: [`logs/phase-12.md`](logs/phase-12.md).
+  - Next eligible work: no batch is started. F12-T05 and F12-T07 remain external-evidence blockers; do not start B05.
 
 ## batch تکمیل‌شده — F12-B04-R2
 
@@ -78,17 +124,42 @@ Batch status: `DONE` (single-task corrective override compatibility experiment)
 - Task ID: `F12-T08`
   - Agent/Thread: `Codex /root`
   - Status: `DONE`
-  - Scope: bounded production dependency remediation and scan/abuse verification only; F12-T07 changes are excluded.
-  - Review: PASS — stable `deepmerge-ts@8.0.2` and `mysql2@3.24.5` Prisma-path overrides pass frozen install,
-    Prisma validate/generate, fresh PostgreSQL migration replay, typechecks, affected tests/build, abuse coverage and
-    final audit (`0 critical`, `0 high`, `5 moderate`, `0 low`). No Prisma 8, MySQL configuration, deployment or B05 work.
+  - Depends on: `F12-T01` and `F12-T02` DONE; no active ownership conflict. F12-T07’s uncommitted secret-rotation
+    work remains preserved and excluded from every T08 stage/commit. The experiment owns only the bounded root
+    `pnpm.overrides` entries, corresponding lockfile paths and T08 scan/evidence/status hunks. It tests the
+    registry-stable advisory versions `deepmerge-ts@8.0.2` (GHSA-ggr8-5vv4-36mx requires >=8.0.0) and
+    `mysql2@3.24.5` (GHSA-3f6p-5ww8-9rcr requires >=3.22.0), without Prisma 8 or MySQL configuration. Frozen
+    install, Prisma validate/generate, fresh disposable PostgreSQL migration/replay, typechecks, affected tests/build,
+    abuse suite and final audit passed. The final audit is `0 critical`, `0 high`, `5 moderate`, `0 low`; T08 is
+    accepted. No B05 work is authorized.
 
-## batch فعال — F12-B04
+## batch نیازمند بازکاری — F12-B04-R1
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-02 +03:30`
 Phase: `12-PRODUCTION-HARDENING`
-Batch status: `IN_PROGRESS` (serialized task commits)
+Batch status: `REWORK` (single-task corrective batch closed without completion commit)
+
+- Task ID: `F12-T08`
+  - Agent/Thread: `Codex /root`
+  - Status: `REWORK (unchecked; claim released)`
+  - Depends on: `F12-T01` and `F12-T02` DONE; no active task ownership conflict. F12-T07’s uncommitted secret-rotation
+    work is preserved but excluded from every T08 stage/commit. Owned resource: dependency/lockfile remediation,
+    scan results and abuse verification. The source audit had 30 unique GHSA advisories, represented by 35
+    advisory-plus-patched-version entries across 47 advisory-path occurrences (18 unique dependency paths). The serialized Next, Nest/Fastify and bounded
+    transitive remediation removes all critical findings, but the final production audit is `0 critical`, `2 high`,
+    `6 moderate`, `0 low`: Prisma 7.10.0 still resolves `deepmerge-ts@7.1.5` (GHSA-ggr8-5vv4-36mx; patched >=8.0.0)
+    and `mysql2@3.15.3` (GHSA-3f6p-5ww8-9rcr; patched >=3.22.0). No compatible stable parent upgrade exists;
+    Prisma 8 is pre-release/major and was not adopted blindly. Exact next action: owner-approved Prisma-major
+    compatibility remediation or wait for a compatible stable Prisma release, then rerun the final audit and abuse
+    suite. No B05 work is authorized.
+
+## آخرین batch نیازمند بازکاری — F12-B04
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-02 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `REWORK/BLOCKED` (closed without a successor batch)
 
 - Task ID: `F12-T04`
   - Agent/Thread: `Codex /root`
@@ -99,19 +170,24 @@ Batch status: `IN_PROGRESS` (serialized task commits)
     evidence.
 - Task ID: `F12-T07`
   - Agent/Thread: `Codex /root`
-  - Status: `IN_PROGRESS (claimed; external capability gate under review)`
-  - Depends on: `F12-T01` and `F12-T02` DONE. Owned resource: secret inventory/rotation procedure, secret-template
-    boundary and key-rotation test/evidence. Liara managed-secret-store capability is not assumed; if task acceptance
-    requires unavailable provider evidence, this task becomes BLOCKED, unchecked, and remains a F12-T13 sign-off gate.
+  - Status: `BLOCKED (unchecked; claim released)`
+  - Depends on: `F12-T01` and `F12-T02` DONE. Software-level versioned key rotation, validation and synthetic
+    continuity tests are prepared, but acceptance requires written Liara managed-secret-store capability and an
+    authorized environment drill. That evidence is absent and remains a F12-T13 sign-off gate. Owned resource:
+    secret inventory/rotation procedure, secret-template boundary and key-rotation test/evidence.
 - Task ID: `F12-T08`
   - Agent/Thread: `Codex /root`
-  - Status: `IN_PROGRESS (claimed)`
-  - Depends on: `F12-T01` and `F12-T02` DONE. Owned resource: scan configuration/results and auth/rate-limit/Sadad
-    callback-redirect/secret-disclosure abuse coverage.
+  - Status: `REWORK (unchecked; claim released)`
+  - Depends on: `F12-T01` and `F12-T02` DONE. Corrective serialized remediation reduced the production audit from
+    10 critical/37 high to 0 critical/2 high, but did not and may not mute or waive the remaining Prisma transitives:
+    `deepmerge-ts@7.1.5` (GHSA-ggr8-5vv4-36mx; patched >=8.0.0) and `mysql2@3.15.3`
+    (GHSA-3f6p-5ww8-9rcr; patched >=3.22.0). Exact next action: owner-approved Prisma-major compatibility
+    remediation or compatible stable parent release, then rerun audit and abuse coverage. Owned resource: scan
+    configuration/results and auth/rate-limit/Sadad callback-redirect/secret-disclosure abuse coverage.
 
-The coordinator serializes the shared Phase 12 checklist, status and evidence updates. Each accepted task receives an
-independent review and commit; no runtime secret, provider provisioning, external Sadad request, enable/default,
-production deployment, push or PR is authorized.
+The coordinator serialized the shared Phase 12 checklist, status and evidence updates. T04 received its independent
+commit; T07/T08 have no completion commit because their acceptance gates are unresolved. No runtime secret, provider
+provisioning, external Sadad request, enable/default, production deployment, push or PR is authorized.
 
 ## آخرین batch تکمیل‌شده — F12-B03-R3
 

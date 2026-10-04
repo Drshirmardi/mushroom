@@ -19,6 +19,22 @@ enable/default, production deployment, or external credentials. Those remain gat
   An inbound/dedicated IP is insufficient. A missing or negative confirmation blocks real Sadad connection and payment
   sign-off; it does not silently select another provider or block unrelated F12-T01 completion.
 
+## Provider-neutral artifact boundary
+
+- API, web, app and dashboard are produced as non-root OCI images. The tested immutable digest must be promotable
+  unchanged from staging to production and runnable on Liara, a generic Linux VPS using Docker Compose, or another
+  OCI-compatible PaaS. The final runner is pinned to the approved official Distroless Node 24 Debian 13 non-root
+  digest and runs as numeric UID/GID `65532:65532`; Node 24 slim is build-stage-only.
+- The supported runtime envelope is PostgreSQL 16+, an HTTPS reverse proxy that preserves WebSocket upgrade, outbound
+  HTTPS, and standard environment or mounted-file secrets. Liara-specific material is a profile only; no provider SDK,
+  API or runtime branch belongs in the application.
+- Next public URLs are emitted at container start into a fixed public-only runtime configuration file. They are not
+  baked by `NEXT_PUBLIC_*` during image build and must never carry a secret. The API reads `PORT` and `HOSTNAME` at
+  runtime; each Next server does likewise.
+- Database migration is a separately invoked, one-shot `node_modules/prisma/build/index.js migrate deploy` command
+  from the promoted API image. Normal API startup never applies a migration. Realtime is single-instance only: adding a second instance is blocked until a distributed
+  Socket.IO/session adapter has separately been approved and verified.
+
 ## Capacity and availability objectives
 
 | Area | Approved objective | Boundary |

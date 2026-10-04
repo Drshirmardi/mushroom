@@ -1,12 +1,13 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
+import { runtimePublicUrl } from "./runtime-config";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3003";
+const apiBaseUrl = runtimePublicUrl("apiUrl", "http://localhost:3003");
 
 export const apiClient = createApiClient({ baseUrl: apiBaseUrl });
 
-export const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001";
+export const appUrl = runtimePublicUrl("appUrl", "http://localhost:3001");
 export const dashboardUrl =
-    process.env.NEXT_PUBLIC_DASHBOARD_URL ?? "http://localhost:3002";
+    runtimePublicUrl("dashboardUrl", "http://localhost:3002");
 
 const allowedPostLoginOrigins = new Set([
     new URL(appUrl).origin,

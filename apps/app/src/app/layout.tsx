@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { SessionGate } from "@/components/auth/session-gate";
 import "./globals.css";
 
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body className="antialiased">
+        <Script src="/runtime-config.js" strategy="beforeInteractive" />
         <SessionGate>{children}</SessionGate>
       </body>
     </html>

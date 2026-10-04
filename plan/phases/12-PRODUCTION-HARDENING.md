@@ -8,12 +8,12 @@
 ## Taskها
 
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
-- [x] `F12-T02` — deployment provider، container/IaC و staging pipeline
+- [x] `F12-T02` — deployment provider، container/IaC و staging pipeline — `DONE: corrective extension delivers pinned Distroless Node 24 non-root provider-neutral OCI artifacts, public runtime config, explicit migration boundary and real-image scan 0 Critical/0 High; see phase-12 evidence`
 - [x] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release — `DONE: frozen mixed/chat profiles and disposable invariants accepted; see phase-12 evidence`
 - [x] `F12-T04` — query/index، pool و timeout tuning — `DONE: measured no-change decision; release query plans and bounded-pool/timeout recovery evidence recorded`
 - [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL — `BLOCKED: Liara WAL/archive/restore capability evidence required`
 - [x] `F12-T06` — object storage retention/restore در صورت استفاده
-- [ ] `F12-T07` — secrets management و key rotation drill
+- [ ] `F12-T07` — secrets management و key rotation drill — `BLOCKED: written Liara managed-secret-store capability and authorized environment drill evidence required`
 - [x] `F12-T08` — dependency/container/security scan و abuse scenarios — `DONE: corrective bounded Prisma transitive overrides passed compatibility, abuse and final production-audit gates (0 critical, 0 high)`
 - [ ] `F12-T09` — observability dashboard، frontend error tracking و alert runbook
 - [ ] `F12-T10` — low-downtime migration و rollback exercise
@@ -58,6 +58,28 @@ idempotency، validation/configuration، مستندسازی placeholderهای `.
 
 تا این gate، `SADAD_GO_LIVE_BLOCKED` برای activation/runtime باقی می‌ماند؛ اما completion نرم‌افزاری Phase 09
 و taskهای بعدی آن را مسدود نمی‌کند.
+
+## Change control — provider-neutral deployment artifact
+
+مالک محصول در `2026-10-02` extension اصلاحی مستقلی را زیر `F12-T02` تأیید کرد. خروجی release باید artifactهای
+OCI provider-neutral برای API، web، app و dashboard باشد: non-root، قابل اجرای یکسان روی Liara، Linux VPS با Docker
+Compose و OCI PaaS. Liara فقط profile عملیاتی نخست است و هیچ SDK/API یا branch runtime provider-specific وارد
+application نمی‌شود.
+
+- envelope پشتیبانی‌شده: Linux/OCI، PostgreSQL `16+`، HTTPS reverse proxy با WebSocket upgrade، outbound HTTPS و
+  secret استاندارد environment یا file-mounted؛ compose توسعه دست‌نخورده می‌ماند و مثال production به PostgreSQL
+  خارجی متصل است. runner نهایی هر چهار artifact، digest رسمی تأییدشدهٔ Distroless Node 24 Debian 13 non-root است و
+  با UID/GID عددی `65532:65532` اجرا می‌شود؛ Node 24 slim فقط stage build است.
+- URLهای عمومی Next هنگام شروع container و فقط در runtime config عمومی نوشته می‌شوند؛ هیچ secret در آن نیست و یک
+  image digest بدون rebuild از staging به production/provider دیگر promotion می‌شود. API و هر Next server `PORT` و
+  `HOSTNAME` runtime را می‌پذیرند.
+- migration یک فرمان یک‌باره از API artifact است و به startup عادی وصل نمی‌شود. realtime صریحاً تک‌instance است؛
+  multi-instance تا adapter توزیع‌شدهٔ Socket.IO/session با approval و verification مستقل BLOCKED می‌ماند.
+- profile لیارا فقط port، health، domain، secret injection و gate static outbound egress را مستند می‌کند؛ این
+  change-control provisioning، deployment واقعی، secret واقعی یا اتصال Sadad را مجاز نمی‌کند.
+- ADR-0011، release envelope، SpecKit task map و evidence corrective باید پیش از پذیرش هم‌گام شوند. image build،
+  smoke/health/migration و container scan روی artifact واقعی gate پذیرش این extension هستند؛ نتیجهٔ dependency scan
+  پذیرفته‌شدهٔ F12-T08 بدون دلیل تکرار نمی‌شود.
 
 ## معیار خروج
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({
     return (
         <html lang="fa" dir="rtl">
             <body>
+                <Script src="/runtime-config.js" strategy="beforeInteractive" />
                 {children}
                 <Toaster dir="rtl" position="top-center" richColors closeButton />
             </body>
