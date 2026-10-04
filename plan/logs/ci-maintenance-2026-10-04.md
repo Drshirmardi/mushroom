@@ -75,3 +75,20 @@ successful remote runs; account for the path-filtered artifact workflow on docum
 No roadmap batch was started, task marked DONE, completed-task commit created, or push performed.
 The owner subsequently authorized a standalone CI-maintenance commit of this configuration and evidence.
 That commit preserves the pending Docker/remote verification above; it is not roadmap-task acceptance.
+
+## Corrective Trivy template — owner-authorized commit/push
+
+The remote secret-scan job failed while formatting its report: Trivy 0.75.0 supplies
+`types.Results` (the results array) directly to Go templates, not the full JSON report.
+The earlier native JSON scan did not exercise this custom template and therefore could
+not prove that the CI reporting path worked. Change only `{{range .Results}}` to
+`{{range .}}` in `.github/workflows/ci.yml`; keep secret scanning, exit-code 1 and the
+location/rule-only output unchanged. No finding is waived or secret value logged.
+
+Verification with native Trivy 0.75.0: the old template fails on a disposable synthetic
+report; the corrected template renders exactly `fixture.txt:7 synthetic-rule` for a
+populated finding and does not render its synthetic matched value. The corrected template
+also passes the existing tracked-source scan snapshot with exit 0. Actionlint and
+`git diff --check` pass. Docker image/remote Actions execution is not claimed by these checks.
+Only the workflow and this evidence are included in the corrective maintenance commit;
+no roadmap status/checklist, runtime, dependency, or capacity contract changes are made.

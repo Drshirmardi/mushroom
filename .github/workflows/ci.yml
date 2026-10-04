@@ -77,4 +77,4 @@ jobs:
           mkdir -p "$RUNNER_TEMP/secret-source"
           git ls-files -z | tar --null -T - -cf - | tar -xf - -C "$RUNNER_TEMP/secret-source"
           # Only locations/rule IDs are logged, never the detected secret contents.
-          docker run --rm -v "$RUNNER_TEMP/secret-source:/source:ro" aquasec/trivy:0.75.0 fs --scanners secret --exit-code 1 --format template --template '{{range .Results}}{{$path := .Target}}{{range .Secrets}}{{$path}}:{{.StartLine}} {{.RuleID}}{{printf "\n"}}{{end}}{{end}}' /source
+          docker run --rm -v "$RUNNER_TEMP/secret-source:/source:ro" aquasec/trivy:0.75.0 fs --scanners secret --exit-code 1 --format template --template '{{range .}}{{$path := .Target}}{{range .Secrets}}{{$path}}:{{.StartLine}} {{.RuleID}}{{printf "\n"}}{{end}}{{end}}' /source
