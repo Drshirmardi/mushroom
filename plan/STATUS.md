@@ -50,6 +50,13 @@
 
 ## handoff فاز فعال
 
+CI maintenance handoff (owner-authorized, 2026-10-04): ordinary checks retained; security/browser/artifact
+gates added; frozen chat capacity is manual-only without changing its contract. Browser 7/7, typecheck,
+dependency High/Critical gate, tracked-source secret scan and workflow validation pass. Artifact smoke/scan
+remains unverified because the local Docker Linux engine is unavailable; no full-green claim or task DONE.
+No roadmap task/batch selected, no existing blocker/dependency changed. Scope is CI configuration/helpers/docs
+only. Evidence and exact remaining verification: [`logs/ci-maintenance-2026-10-04.md`](logs/ci-maintenance-2026-10-04.md).
+
 `F10-T09 REWORK` CI/load-test isolation is accepted; Phase 10 remains `DONE (CLOSED)`. `F11-T01` through `F11-T11`
 remain accepted with independent closure evidence in [`logs/phase-11.md`](logs/phase-11.md); Phase 11 remains
 `DONE (CLOSED)` and is out of scope. `F12-T01` is accepted with evidence in [`logs/phase-12.md`](logs/phase-12.md).
