@@ -70,6 +70,42 @@ or RPO/RTO capability. `F12-T02`'s corrective provider-neutral OCI artifact exte
 public-only runtime configuration, Compose health and Liara documentation-profile gates pass; all four actual release
 images scan `0 Critical / 0 High`. This proves local artifact behavior only, not Liara or Sadad external readiness.
 
+## آخرین batch تکمیل‌شده — F12-B05-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-04 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (reduced single-task migration/rollback rehearsal)
+
+- Task ID: `F12-T10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F12-T02` and `F12-T04` are DONE. `F12-T09` is not eligible because `F12-T07` remains BLOCKED;
+    F12-T05 and F12-T07 are excluded and retain their existing owners/paths. No active ownership conflict exists:
+    the pre-existing uncommitted F12-T07 secret-rotation files remain untouched, unstaged and out of this task.
+  - Scope: on run-owned disposable PostgreSQL only, rehearse empty-database replay, an older schema baseline upgrade,
+    current/previous application compatibility at rollout, application rollback against the current schema, and
+    Prisma validate/generate/migrate-status/client compatibility. Record expand/migrate/contract and forward-fix
+    policy, commands, duration, result and cleanup. Do not create, rewrite or remove an accepted migration, a
+    destructive data rollback, shared/staging/production database, capacity run, container scan, Sadad operation or
+    F12-T02 rerun.
+  - Owned paths: `apps/api/test/phase-12-migration-rollback.integration.spec.ts`,
+    `deploy/phase-12-migration-rollout.md`; coordinator-only
+    `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`.
+    Shared/exclusive resource: schema/migration compatibility rehearsal and fully labelled run-owned PostgreSQL
+    container/databases; no schema, migration, dependency, client-generation output or F12-T07 file may be changed.
+  - Expected verification: fresh 32-migration replay, selected pre-current baseline upgrade, previous/current API
+    startup and client compatibility at the rollout boundary, explicit rollback-to-previous-artifact startup, Prisma
+    validate/generate/migrate status, test evidence, cleanup and `git diff --check`.
+  - Review: PASS — labelled PostgreSQL 16 child databases replayed all 32 immutable migrations, passed Prisma
+    validate/generate/status and proved the actual Phase 09→10 SQL upgrade is forward-only. Clean source artifacts
+    from `d8e9948` (previous) and `df24278` (current) each built non-root, and readiness passed in order
+    previous → current → previous against the current schema. No data/schema rollback was performed; application
+    rollback leaves the expanded schema in place. All run-owned Docker databases, containers, networks and images
+    were removed. Evidence: [`logs/phase-12.md`](logs/phase-12.md).
+  - Next eligible work: no batch is started. F12-T09 remains ineligible while F12-T07 is BLOCKED; F12-T11 and
+    F12-T12 are not started by this task.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R2
 
 Coordinator/Thread: `Codex /root`

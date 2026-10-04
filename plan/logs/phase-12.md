@@ -1,5 +1,65 @@
 # Phase 12 Execution Evidence
 
+## F12-T10 — low-downtime migration and application-rollback rehearsal
+
+Task ID: F12-T10
+Batch ID: F12-B05-R1
+Completed at: 2026-10-04 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Changed files:
+
+- `apps/api/test/phase-12-migration-rollback.integration.spec.ts`
+- `deploy/phase-12-migration-rollout.md`
+- coordinator-only `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`
+
+Rehearsal design:
+
+- The rollout is **expand → migrate → contract**. Accepted migrations are immutable; migration runs once before
+  application promotion and never from ordinary API startup. Contract/removal work is deferred to a separately
+  rehearsed later release after the previous artifact is retired.
+- Rollback is application-only: retain the expanded schema and return to the previous verified artifact. There is no
+  down SQL, `prisma migrate reset`, truncation or destructive data rollback. Any discovered incompatibility requires a
+  forward-fix migration that preserves migration history and data.
+- The chosen pre-current artifact is `d8e994887a6a78a8f903275459952e6fefc17fd3`; its migration tree is identical
+  to the current `df24278` tree. The meaningful historical schema upgrade remains Phase 09 final
+  `20260913204000_phase_09_payment_immutability_trigger_fix` through the two accepted Phase 10 migrations. This is
+  exercised separately from the artifact-boundary startup sequence.
+
+Verification and measured results:
+
+- A labelled, loopback-only PostgreSQL 16 container `mushroom-f12t10-postgres` supplied uniquely named child
+  databases only. No shared, staging or production database was contacted.
+- `pnpm --filter @sabz-zendegi/api exec vitest run test/phase-12-migration-rollback.integration.spec.ts
+  --no-file-parallelism --reporter=dot` → PASS: 2 tests in `9.42s`. It replayed all 32 migration directories on a
+  blank database, `migrate status` reported no pending migration, and it rebuilt the Phase 09 baseline before applying
+  the two Phase 10 migrations. The ten chat tables and the two rate-limit indexes exist; the upgraded SQL contains no
+  table/column/type drop, truncate or data-delete statement.
+- `prisma validate` → PASS; `prisma generate` → PASS in `596ms`; API `typecheck` → PASS.
+- Exact promoted-image command `node_modules/prisma/build/index.js migrate deploy` on a fresh measured child database
+  replayed all 32 migrations in `6.59s`; subsequent `migrate status` was PASS and `_prisma_migrations` had 32 finished
+  rows.
+- Clean Git archives excluded all uncommitted F12-T07 work. The previous `d8e9948` API source (Prisma 7.9.1) and
+  current `df24278` API source (Prisma 7.10.0) each built as numerical UID/GID `65532:65532` artifacts. Against the
+  expanded current schema, readiness passed in the required order: previous `1.70s`, current `1.69s`, previous again
+  `1.61s`. The initial previous-artifact attempt exposed only a missing synthetic `TRUSTED_PROXIES` production fixture;
+  after adding the documented explicit loopback proxy/origin fixture, no application or schema defect remained.
+- `git diff --check` → PASS. No accepted migration was rewritten, removed or created.
+
+Cleanup:
+
+- Child databases, the labelled PostgreSQL container, all three startup containers, both run-owned Docker networks and
+  both temporary API image tags were removed. Run-owned source archives and command logs are outside Git and contain
+  no real credential or production data.
+
+Result:
+
+- **PASS / DONE.** The rehearsal proves application rollback to the selected previous artifact does not prevent API
+  startup or damage data on the expanded schema. It does not claim database rollback, production deployment, backup
+  restore, provider readiness or Sadad activation.
+- F12-T09 remains unstarted and blocked by F12-T07. F12-T05 and F12-T07 remain untouched.
+
 ## F12-T02 corrective provider-neutral OCI artifact extension R7 — DONE
 
 Batch ID: F12-B02-R2
