@@ -7,6 +7,7 @@ import { PaymentVerificationService } from '../src/modules/commerce/payments/pay
 
 const syntheticKey = Buffer.alloc(32, 7).toString('base64');
 const crypto = (key = syntheticKey) => new PaymentCredentialCryptoService({ get: (name: string, fallback?: string) => name === 'PAYMENT_CREDENTIAL_ENCRYPTION_KEY' ? key : fallback } as never);
+const cryptoWithConfig = (values: Record<string, string>) => new PaymentCredentialCryptoService({ get: (name: string, fallback?: string) => values[name] ?? fallback } as never);
 
 class FakePaymentProvider implements PaymentProviderPort {
   readonly descriptor = { code: 'fake-test-only', displayName: 'Fake test provider', capabilities: { createPayment: 'SUPPORTED_WHEN_GO_LIVE_READY', parseCallback: 'SUPPORTED_WHEN_GO_LIVE_READY', verifyPayment: 'SUPPORTED_WHEN_GO_LIVE_READY', sandbox: 'UNSUPPORTED', inquiry: 'UNSUPPORTED', webhook: 'UNSUPPORTED', refund: 'UNSUPPORTED', partialRefund: 'UNSUPPORTED' } } as const;
@@ -33,6 +34,19 @@ describe('payment provider contract', () => {
   });
   it('fails closed when a master key is absent or malformed', () => {
     expect(() => crypto('').encrypt({ secret: 'synthetic' })).toThrow(/encryption is not configured/u); expect(() => crypto(Buffer.alloc(31).toString('base64')).encrypt({ secret: 'synthetic' })).toThrow(/encryption is not configured/u);
+  });
+  it('rotates the primary key without making prior encrypted revisions unreadable', () => {
+    const v1 = Buffer.alloc(32, 1).toString('base64');
+    const v2 = Buffer.alloc(32, 2).toString('base64');
+    const beforeRotation = cryptoWithConfig({ PAYMENT_CREDENTIAL_ENCRYPTION_KEY: v1, PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: 'v1' });
+    const historicRevision = beforeRotation.encrypt({ merchantId: 'synthetic-v1', terminalKey: 'synthetic-v1-key' });
+    const afterRotation = cryptoWithConfig({ PAYMENT_CREDENTIAL_ENCRYPTION_KEY: v2, PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: 'v2', PAYMENT_CREDENTIAL_DECRYPTION_KEYS: `v1:${v1}` });
+    const currentRevision = afterRotation.encrypt({ merchantId: 'synthetic-v2', terminalKey: 'synthetic-v2-key' });
+    expect(currentRevision.keyVersion).toBe('v2');
+    expect(afterRotation.decrypt({ encryptedPayload: historicRevision.ciphertext, encryptionNonce: historicRevision.nonce, authenticationTag: historicRevision.tag, encryptionKeyVersion: historicRevision.keyVersion })).toEqual({ merchantId: 'synthetic-v1', terminalKey: 'synthetic-v1-key' });
+    expect(afterRotation.decrypt({ encryptedPayload: currentRevision.ciphertext, encryptionNonce: currentRevision.nonce, authenticationTag: currentRevision.tag, encryptionKeyVersion: currentRevision.keyVersion })).toEqual({ merchantId: 'synthetic-v2', terminalKey: 'synthetic-v2-key' });
+    const missingHistoricKey = cryptoWithConfig({ PAYMENT_CREDENTIAL_ENCRYPTION_KEY: v2, PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: 'v2' });
+    expect(() => missingHistoricKey.decrypt({ encryptedPayload: historicRevision.ciphertext, encryptionNonce: historicRevision.nonce, authenticationTag: historicRevision.tag, encryptionKeyVersion: historicRevision.keyVersion })).toThrow(/encryption is not configured/u);
   });
   it('uses the frozen TripleDES request signature layout with synthetic input only', () => {
     const registry = new PaymentProviderRegistry(); const sadad = new SadadPaymentProviderAdapter(registry); const key = Buffer.alloc(24, 3).toString('base64');

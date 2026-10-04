@@ -5,7 +5,7 @@ const base = { DATABASE_URL: 'postgresql://user:password@localhost:5432/test', J
 
 describe('production-hardening environment validation', () => {
   it('accepts only a disabled Sadad runtime with bounded non-secret settings', () => {
-    const value = environmentValidationSchema.validate({ ...base, SADAD_TRANSPORT_MODE: 'disabled', SADAD_REQUEST_TIMEOUT_MS: '5000', SADAD_RETURN_URL: 'https://staging.example.test/v1/payments/providers/sadad/callback', SADAD_REDIRECT_PROFILE: 'PDF_PURCHASE', PAYMENT_CREDENTIAL_ENCRYPTION_KEY: Buffer.alloc(32, 8).toString('base64') });
+    const value = environmentValidationSchema.validate({ ...base, SADAD_TRANSPORT_MODE: 'disabled', SADAD_REQUEST_TIMEOUT_MS: '5000', SADAD_RETURN_URL: 'https://staging.example.test/v1/payments/providers/sadad/callback', SADAD_REDIRECT_PROFILE: 'PDF_PURCHASE', PAYMENT_CREDENTIAL_ENCRYPTION_KEY: Buffer.alloc(32, 8).toString('base64'), PAYMENT_CREDENTIAL_DECRYPTION_KEYS: `v1:${Buffer.alloc(32, 7).toString('base64')}` });
     expect(value.error).toBeUndefined();
     expect(value.value.SADAD_TRANSPORT_MODE).toBe('disabled');
   });
@@ -15,5 +15,7 @@ describe('production-hardening environment validation', () => {
     expect(environmentValidationSchema.validate({ ...base, SADAD_RETURN_URL: 'http://example.test/v1/payments/providers/sadad/callback' }).error).toBeDefined();
     expect(environmentValidationSchema.validate({ ...base, SADAD_REDIRECT_PROFILE: 'INVENTED_PROFILE' }).error).toBeDefined();
     expect(environmentValidationSchema.validate({ ...base, PAYMENT_CREDENTIAL_ENCRYPTION_KEY: 'not-a-32-byte-key' }).error).toBeDefined();
+    expect(environmentValidationSchema.validate({ ...base, PAYMENT_CREDENTIAL_DECRYPTION_KEYS: 'v1:not-a-32-byte-key' }).error).toBeDefined();
+    expect(environmentValidationSchema.validate({ ...base, PAYMENT_CREDENTIAL_DECRYPTION_KEYS: `v1:${Buffer.alloc(32, 7).toString('base64')},v1:${Buffer.alloc(32, 8).toString('base64')}` }).error).toBeDefined();
   });
 });

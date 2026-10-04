@@ -57,6 +57,25 @@ const paymentCredentialKeySchema = Joi.string()
   })
   .messages({ 'any.invalid': 'must be a canonical base64-encoded 32-byte AES-256 key' });
 
+const paymentCredentialHistoricalKeyringSchema = Joi.string()
+  .allow('')
+  .custom((value, helpers) => {
+    if (!value) return value;
+    const versions = new Set<string>();
+    const entries = value.split(',');
+    const valid = entries.length > 0 && entries.every((entry: string) => {
+      const separator = entry.indexOf(':');
+      const version = separator > 0 ? entry.slice(0, separator) : '';
+      const encoded = separator > 0 ? entry.slice(separator + 1) : '';
+      const decoded = Buffer.from(encoded, 'base64');
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/u.test(version) || versions.has(version) || decoded.length !== 32 || decoded.toString('base64') !== encoded) return false;
+      versions.add(version);
+      return true;
+    });
+    return valid ? value : helpers.error('any.invalid');
+  })
+  .messages({ 'any.invalid': 'must be a comma-separated version:canonical-base64-32-byte-key keyring with unique versions' });
+
 const sadadReturnUrlSchema = Joi.string()
   .allow('')
   .custom((value, helpers) => {
@@ -114,6 +133,7 @@ export const environmentValidationSchema = Joi.object({
   // Sadad remains disabled here: merchant credentials are encrypted config revisions, never environment values.
   PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.optional(),
   PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
+  PAYMENT_CREDENTIAL_DECRYPTION_KEYS: paymentCredentialHistoricalKeyringSchema.optional(),
   SADAD_TRANSPORT_MODE: Joi.string().valid('disabled').default('disabled'),
   SADAD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1_000).max(30_000).default(5_000),
   SADAD_RETURN_URL: sadadReturnUrlSchema.optional(),
