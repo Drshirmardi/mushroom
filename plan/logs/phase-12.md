@@ -1,5 +1,68 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 — release image build and CI concurrency corrective
+
+Task ID: F12-T02
+Batch ID: F12-B02-R4
+Completed at: 2026-10-05 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Changed files:
+
+- `docker-bake.hcl`
+- `scripts/release-images.mjs`
+- `package.json`
+- `README.md`
+- `docs/PRODUCTION.md`
+- `.github/workflows/{ci.yml,container-checks.yml}`
+- coordinator-only `plan/{STATUS.md,logs/phase-12.md}`
+
+Release build contract:
+
+- Docker Buildx Bake is the single declarative source for the API, web, app and dashboard image targets. The
+  `images:print`, `images:build`, `images:verify` and `images:push` package scripts use that same graph.
+- The wrapper derives the GitHub owner in Codespaces or from `origin`, normalizes the registry to lowercase, tags a
+  clean build with the 12-character source commit and appends `-dirty` to non-published worktree builds. Publishing
+  rejects a dirty worktree and prints immutable registry digests after push.
+- Container CI selects one target from the same Bake definition per matrix job. No provider SDK, deployment action,
+  production secret or Sadad activation was added.
+
+CI cancellation diagnosis:
+
+- GitHub Actions push run `37334407135` ended as `cancelled` while displaying `pnpm test`; no failing assertion was
+  reported. Pull-request run `37334669014` ran the same workspace test command successfully and completed its build.
+- GitHub's retained run/job logs report only an external cancellation and do not expose the initiator, so a more
+  specific cancellation source is not claimed. CI and artifact workflows now use GitHub's documented
+  `github.head_ref || github.run_id` pattern: stale runs for one pull-request branch can still cancel, while every
+  protected-branch push gets a unique group and therefore cannot be canceled by workflow concurrency.
+
+Verification:
+
+- wrapper syntax, supported-mode rejection, dirty-push rejection, lowercase registry normalization and Bake print
+  target/tag assertions → PASS
+- workflow YAML parse and concurrency/config review → PASS
+- `pnpm install --frozen-lockfile --ignore-scripts` → PASS
+- `pnpm lint` → PASS with 0 errors and 3 pre-existing cached dashboard warnings
+- `pnpm typecheck` → PASS across all 5 workspaces
+- disposable PostgreSQL 16: all 32 migrations and seed → PASS; `pnpm test` → PASS across all 5 workspaces, including
+  API 94 files / 382 tests; database/container removed after the run
+- `IMAGE_REGISTRY=local IMAGE_TAG=f12-b02-r4 pnpm images:verify` → PASS: four images built and loaded; all four
+  disposable smoke checks passed; Trivy 0.75.0 reported `0 Critical / 0 High` for API/web/app/dashboard
+- no smoke container remained after verification; `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** One standard command now builds the complete production artifact set, and the misleading
+  post-merge cancellation mechanism is corrected without skipping or weakening tests.
+
+Known limitations:
+
+- Images were not pushed and no environment was deployed. Registry authentication and external deployment remain
+  explicit operator actions.
+- F12-T05 backup/restore and F12-T07 secret-manager evidence remain blocked, and F12-T09 observability remains
+  dependency-gated. Production and real Sadad activation still require F12-T13 sign-off.
+
 ## F12-T02 — development and production runbook corrective
 
 Task ID: F12-T02
@@ -38,6 +101,9 @@ Verification:
   `scripts/ci-container-smoke.mjs`, API environment validation and Phase 12 migration policy → PASS
 - no-secret/no-provider-action review → PASS
 - `git diff --check` → PASS
+- post-push command review after a real Codespaces attempt → PASS: the GHCR namespace is now derived from
+  `GITHUB_REPOSITORY`, normalized to lowercase, printed before build and shown as `ghcr.io/drshirmardi` in release
+  examples; the literal uppercase `OWNER` placeholder that Docker rejects is no longer copyable.
 
 Result:
 

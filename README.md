@@ -45,7 +45,12 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm images:build
 ```
+
+`pnpm images:build` هر چهار image تولیدی را با tag همان commit می‌سازد. smoke test و اسکن امنیتی با
+`pnpm images:verify` و انتشار کنترل‌شده در registry با `pnpm images:push` انجام می‌شود؛ جزئیات در
+[راهنمای Production](docs/PRODUCTION.md) آمده است.
 
 اجرای integration testهای وابسته به PostgreSQL و profileهای ظرفیت، قرارداد و هزینه زمانی جداگانه دارند؛ آن‌ها
 را طبق roadmap و راهنمای CI اجرا کنید، نه به‌عنوان بخشی از هر اجرای روزمره.

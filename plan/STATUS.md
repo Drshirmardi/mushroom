@@ -77,6 +77,39 @@ or RPO/RTO capability. `F12-T02`'s corrective provider-neutral OCI artifact exte
 public-only runtime configuration, Compose health and Liara documentation-profile gates pass; all four actual release
 images scan `0 Critical / 0 High`. This proves local artifact behavior only, not Liara or Sadad external readiness.
 
+## آخرین batch تکمیل‌شده — F12-B02-R4
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-05 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (owner-requested release-build and CI corrective)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted provider-neutral OCI artifacts, artifact smoke/scan gates and documentation from F12-T02.
+    No active batch or ownership conflict exists.
+  - Scope: replace four manually repeated image-build commands with one declarative Docker Buildx Bake entry point;
+    keep deterministic commit tags and lowercase registry derivation; diagnose and correct cross-event GitHub Actions
+    cancellation without weakening tests. Do not publish images, deploy, provision a provider, touch runtime code or
+    activate Sadad.
+  - Owned paths: `docker-bake.hcl`, `scripts/release-images.mjs`, `package.json`, `README.md`, `docs/PRODUCTION.md`,
+    `.github/workflows/{ci.yml,container-checks.yml}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: release artifact build configuration and CI concurrency keys.
+  - Expected verification: Bake print/target/tag assertions, wrapper dry-run and argument validation, workflow parse
+    and concurrency review, targeted package-script validation, current remote CI evidence and `git diff --check`.
+  - Review: PASS — Docker Buildx Bake now defines the four release targets once, and the root wrapper derives a
+    lowercase registry plus commit-based tags for print/build/verify/push. The full local verification built all four
+    Distroless/non-root artifacts, passed their disposable smoke checks and reported `0 Critical / 0 High` for every
+    image. Workspace lint, typecheck and all tests also pass against a disposable PostgreSQL 16 database.
+  - CI diagnosis: the canceled post-merge `pnpm test` step contains no failed assertion and the same test command
+    passes locally and in the following pull-request run. GitHub's retained log reports only an external cancellation,
+    so it does not identify the initiator. CI and artifact checks now use GitHub's documented `head_ref || run_id`
+    pattern: stale runs for one pull-request branch cancel, while every protected `main` push gets a unique group and
+    cannot be canceled by workflow concurrency. Container CI consumes the same Bake targets.
+  - Next eligible work: no batch is started. Existing F12-T05/F12-T07 external-evidence blockers and the F12-T09
+    dependency remain unchanged.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R3
 
 Coordinator/Thread: `Codex /root`
@@ -102,7 +135,9 @@ Batch status: `DONE` (owner-requested documentation-only corrective)
     covers four provider-neutral image builds, artifact smoke/scan, registry digest capture, file-backed secrets,
     Compose migration/start, staging promotion, update and application-only rollback. All relative links and
     documented repository paths/scripts resolve; 36 Bash blocks pass syntax validation; the documented loopback
-    port-variable shape passes `docker compose config`; no real secret or provider action is present.
+    port-variable shape passes `docker compose config`; no real secret or provider action is present. A post-push
+    usability correction now derives and lowercases the GHCR namespace instead of exposing a copyable uppercase
+    `OWNER` placeholder that Docker rejects.
   - Next eligible work: no batch is started. Existing F12-T05/F12-T07 blockers and the F12-T09 dependency remain
     unchanged.
 
