@@ -48,7 +48,10 @@ git status --short
 git rev-parse HEAD
 
 VERSION="$(git rev-parse --short=12 HEAD)"
-REGISTRY="ghcr.io/OWNER"
+OWNER="${GITHUB_REPOSITORY%%/*}"
+OWNER="${OWNER:-Drshirmardi}"
+OWNER="$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
+REGISTRY="ghcr.io/${OWNER}"
 
 API_IMAGE="${REGISTRY}/mushroom-api:${VERSION}"
 WEB_IMAGE="${REGISTRY}/mushroom-web:${VERSION}"
@@ -56,7 +59,18 @@ APP_IMAGE="${REGISTRY}/mushroom-app:${VERSION}"
 DASHBOARD_IMAGE="${REGISTRY}/mushroom-dashboard:${VERSION}"
 ```
 
-`OWNER` را با owner واقعی registry جایگزین کنید. از `latest` برای promotion استفاده نکنید.
+در Codespaces، `GITHUB_REPOSITORY` owner مخزن را فراهم می‌کند و فرمان بالا آن را برای محدودیت نام‌گذاری Docker به
+lowercase تبدیل می‌کند. برای مخزن فعلی خروجی `ghcr.io/drshirmardi` است. اگر imageها را زیر حساب یا سازمان دیگری
+منتشر می‌کنید، `OWNER` را به namespace lowercase همان حساب تغییر دهید و مطمئن شوید مجوز push دارید. از `latest`
+برای promotion استفاده نکنید.
+
+قبل از build مقدارها را کنترل کنید:
+
+```bash
+printf '%s\n' "$API_IMAGE" "$WEB_IMAGE" "$APP_IMAGE" "$DASHBOARD_IMAGE"
+```
+
+هیچ‌کدام نباید شامل `OWNER`، حروف بزرگ یا فضای خالی باشند.
 
 ## ۲. ساخت چهار image
 
@@ -189,10 +203,10 @@ release note یا log قرار ندهید.
 نمونه بدون secret:
 
 ```dotenv
-API_IMAGE=ghcr.io/OWNER/mushroom-api@sha256:API_DIGEST
-WEB_IMAGE=ghcr.io/OWNER/mushroom-web@sha256:WEB_DIGEST
-APP_IMAGE=ghcr.io/OWNER/mushroom-app@sha256:APP_DIGEST
-DASHBOARD_IMAGE=ghcr.io/OWNER/mushroom-dashboard@sha256:DASHBOARD_DIGEST
+API_IMAGE=ghcr.io/drshirmardi/mushroom-api@sha256:API_DIGEST
+WEB_IMAGE=ghcr.io/drshirmardi/mushroom-web@sha256:WEB_DIGEST
+APP_IMAGE=ghcr.io/drshirmardi/mushroom-app@sha256:APP_DIGEST
+DASHBOARD_IMAGE=ghcr.io/drshirmardi/mushroom-dashboard@sha256:DASHBOARD_DIGEST
 
 PUBLIC_API_URL=https://api.example.com
 PUBLIC_WEB_URL=https://example.com

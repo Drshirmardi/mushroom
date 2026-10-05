@@ -38,6 +38,9 @@ Verification:
   `scripts/ci-container-smoke.mjs`, API environment validation and Phase 12 migration policy → PASS
 - no-secret/no-provider-action review → PASS
 - `git diff --check` → PASS
+- post-push command review after a real Codespaces attempt → PASS: the GHCR namespace is now derived from
+  `GITHUB_REPOSITORY`, normalized to lowercase, printed before build and shown as `ghcr.io/drshirmardi` in release
+  examples; the literal uppercase `OWNER` placeholder that Docker rejects is no longer copyable.
 
 Result:
 

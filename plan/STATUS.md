@@ -102,7 +102,9 @@ Batch status: `DONE` (owner-requested documentation-only corrective)
     covers four provider-neutral image builds, artifact smoke/scan, registry digest capture, file-backed secrets,
     Compose migration/start, staging promotion, update and application-only rollback. All relative links and
     documented repository paths/scripts resolve; 36 Bash blocks pass syntax validation; the documented loopback
-    port-variable shape passes `docker compose config`; no real secret or provider action is present.
+    port-variable shape passes `docker compose config`; no real secret or provider action is present. A post-push
+    usability correction now derives and lowercases the GHCR namespace instead of exposing a copyable uppercase
+    `OWNER` placeholder that Docker rejects.
   - Next eligible work: no batch is started. Existing F12-T05/F12-T07 blockers and the F12-T09 dependency remain
     unchanged.
 
