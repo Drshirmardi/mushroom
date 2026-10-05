@@ -7,12 +7,14 @@ on:
       - 'apps/**'
       - 'packages/**'
       - 'deploy/docker/**'
+      - 'docker-bake.hcl'
       - '*compose*.yaml'
       - '.dockerignore'
       - '**/package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - 'scripts/ci-container-smoke.mjs'
+      - 'scripts/release-images.mjs'
       - '.github/workflows/container-checks.yml'
   push:
     branches: [main]
@@ -20,19 +22,21 @@ on:
       - 'apps/**'
       - 'packages/**'
       - 'deploy/docker/**'
+      - 'docker-bake.hcl'
       - '*compose*.yaml'
       - '.dockerignore'
       - '**/package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - 'scripts/ci-container-smoke.mjs'
+      - 'scripts/release-images.mjs'
       - '.github/workflows/container-checks.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: artifacts-${{ github.ref }}
+  group: artifacts-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -50,16 +54,17 @@ jobs:
           node-version: 24
       - uses: docker/setup-buildx-action@v3
       - name: Build production artifact without publishing
-        uses: docker/build-push-action@v6
+        uses: docker/bake-action@v6
         with:
-          context: .
-          file: deploy/docker/Dockerfile.${{ matrix.service == 'api' && 'api' || 'next' }}
-          build-args: APP=${{ matrix.service }}
+          source: .
+          files: ./docker-bake.hcl
+          targets: ${{ matrix.service }}
           load: true
-          push: false
-          tags: mushroom-ci:${{ matrix.service }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          pull: true
+          set: |
+            ${{ matrix.service }}.tags=mushroom-ci:${{ matrix.service }}
+            ${{ matrix.service }}.cache-from=type=gha,scope=${{ matrix.service }}
+            ${{ matrix.service }}.cache-to=type=gha,mode=max,scope=${{ matrix.service }}
       - name: Disposable artifact smoke and cleanup
         run: node scripts/ci-container-smoke.mjs mushroom-ci:${{ matrix.service }} ${{ matrix.service }}
       - name: Scan actual runtime image (no Critical/High waiver)

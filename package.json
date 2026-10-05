@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:api": "pnpm --filter @sabz-zendegi/api dev",
+    "images:print": "node scripts/release-images.mjs print",
+    "images:build": "node scripts/release-images.mjs build",
+    "images:verify": "node scripts/release-images.mjs verify",
+    "images:push": "node scripts/release-images.mjs push",
     "generate:api-client": "corepack pnpm --filter @sabz-zendegi/api openapi:export && corepack pnpm --filter @sabz-zendegi/api-client generate",
     "build": "turbo build",
     "start": "turbo start",

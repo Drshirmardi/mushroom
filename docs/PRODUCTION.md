@@ -39,104 +39,73 @@ runner نهایی آن‌ها Distroless Node 24 و non-root با UID/GID `65532
 Realtime فعلی تک‌instance است. تا زمانی که adapter توزیع‌شده Socket.IO/session تصویب و تست نشده، API را بیشتر از
 یک replica اجرا نکنید.
 
-## ۱. انتخاب commit و نام imageها
+## ۱. نام imageها و تنظیمات build
 
-روی checkout تمیز و reviewed:
+فایل `docker-bake.hcl` تعریف استاندارد و مشترک هر چهار image است. wrapper پروژه owner مخزن را از
+`GITHUB_REPOSITORY` در Codespaces یا از remote مربوط به `origin` پیدا می‌کند، registry را lowercase می‌کند و ۱۲
+کاراکتر اول commit را به‌عنوان tag می‌گذارد. بنابراین خطای نامی مانند `ghcr.io/OWNER/...` ایجاد نمی‌شود.
 
-```bash
-git status --short
-git rev-parse HEAD
-
-VERSION="$(git rev-parse --short=12 HEAD)"
-OWNER="${GITHUB_REPOSITORY%%/*}"
-OWNER="${OWNER:-Drshirmardi}"
-OWNER="$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
-REGISTRY="ghcr.io/${OWNER}"
-
-API_IMAGE="${REGISTRY}/mushroom-api:${VERSION}"
-WEB_IMAGE="${REGISTRY}/mushroom-web:${VERSION}"
-APP_IMAGE="${REGISTRY}/mushroom-app:${VERSION}"
-DASHBOARD_IMAGE="${REGISTRY}/mushroom-dashboard:${VERSION}"
-```
-
-در Codespaces، `GITHUB_REPOSITORY` owner مخزن را فراهم می‌کند و فرمان بالا آن را برای محدودیت نام‌گذاری Docker به
-lowercase تبدیل می‌کند. برای مخزن فعلی خروجی `ghcr.io/drshirmardi` است. اگر imageها را زیر حساب یا سازمان دیگری
-منتشر می‌کنید، `OWNER` را به namespace lowercase همان حساب تغییر دهید و مطمئن شوید مجوز push دارید. از `latest`
-برای promotion استفاده نکنید.
-
-قبل از build مقدارها را کنترل کنید:
+قبل از build می‌توانید targetها و نام دقیق imageها را بدون ساختن artifact ببینید:
 
 ```bash
-printf '%s\n' "$API_IMAGE" "$WEB_IMAGE" "$APP_IMAGE" "$DASHBOARD_IMAGE"
+pnpm images:print
 ```
 
-هیچ‌کدام نباید شامل `OWNER`، حروف بزرگ یا فضای خالی باشند.
+خروجی معمول مخزن فعلی مشابه این است:
 
-## ۲. ساخت چهار image
+```text
+ghcr.io/drshirmardi/mushroom-api:<commit>
+ghcr.io/drshirmardi/mushroom-web:<commit>
+ghcr.io/drshirmardi/mushroom-app:<commit>
+ghcr.io/drshirmardi/mushroom-dashboard:<commit>
+```
 
-دستورها باید از ریشه repository اجرا شوند:
+اگر imageها باید زیر حساب یا سازمان دیگری ساخته شوند، namespace را صریح بدهید؛ wrapper آن را lowercase می‌کند:
 
 ```bash
-docker build --pull \
-  -f deploy/docker/Dockerfile.api \
-  -t "$API_IMAGE" \
-  .
-
-docker build --pull \
-  --build-arg APP=web \
-  -f deploy/docker/Dockerfile.next \
-  -t "$WEB_IMAGE" \
-  .
-
-docker build --pull \
-  --build-arg APP=app \
-  -f deploy/docker/Dockerfile.next \
-  -t "$APP_IMAGE" \
-  .
-
-docker build --pull \
-  --build-arg APP=dashboard \
-  -f deploy/docker/Dockerfile.next \
-  -t "$DASHBOARD_IMAGE" \
-  .
+IMAGE_REGISTRY=ghcr.io/sayh3x pnpm images:print
 ```
 
-ساخت imageها به secret یا دیتابیس واقعی نیاز ندارد. secret را با `--build-arg`، `ENV` یا فایل داخل build context
+برای build موقت از worktree دارای تغییر، پسوند `-dirty` خودکار به tag افزوده می‌شود. انتشار از worktree کثیف
+ممنوع است و فرمان push متوقف می‌شود. برای release از `latest` استفاده نکنید.
+
+## ۲. ساخت هر چهار image با یک فرمان
+
+از ریشه repository اجرا کنید:
+
+```bash
+pnpm images:build
+```
+
+Docker Buildx Bake هر چهار target را از یک قرارداد می‌سازد و imageها را در Docker محلی load می‌کند. اگر registry
+مقصد با owner مخزن فرق دارد:
+
+```bash
+IMAGE_REGISTRY=ghcr.io/sayh3x pnpm images:build
+```
+
+در صورت نیاز به tag مشخص می‌توانید هر دو ورودی را تعیین کنید:
+
+```bash
+IMAGE_REGISTRY=ghcr.io/sayh3x IMAGE_TAG=release-candidate-1 pnpm images:build
+```
+
+ساخت imageها به secret یا دیتابیس واقعی نیاز ندارد. secret را با build argument، `ENV` یا فایل داخل build context
 وارد image نکنید.
 
-## ۳. smoke test artifactهای واقعی
+## ۳. smoke test و اسکن با یک فرمان
 
-اسکریپت CI repository برای هر image، اجرای non-root، HTTP readiness، runtime config و در مورد API، migration روی
-PostgreSQL disposable را بررسی و resourceهای خودش را پاک می‌کند:
-
-```bash
-node scripts/ci-container-smoke.mjs "$API_IMAGE" api
-node scripts/ci-container-smoke.mjs "$WEB_IMAGE" web
-node scripts/ci-container-smoke.mjs "$APP_IMAGE" app
-node scripts/ci-container-smoke.mjs "$DASHBOARD_IMAGE" dashboard
-```
-
-هر چهار فرمان باید `PASS` شوند. این تست، استقرار واقعی یا قابلیت backup/provider را تأیید نمی‌کند.
-
-## ۴. اسکن imageها
-
-CI با Trivy هر finding سطح Critical یا High را رد می‌کند. نمونه اجرای محلی:
+برای gate کامل محلی، همان imageها ساخته می‌شوند، اجرای non-root، HTTP readiness، runtime config و migration API
+روی PostgreSQL disposable بررسی می‌شود و سپس Trivy هر finding سطح Critical یا High را رد می‌کند:
 
 ```bash
-for IMAGE in "$API_IMAGE" "$WEB_IMAGE" "$APP_IMAGE" "$DASHBOARD_IMAGE"; do
-  docker run --rm \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    aquasec/trivy:0.75.0 image \
-    --scanners vuln \
-    --severity CRITICAL,HIGH \
-    --exit-code 1 \
-    "$IMAGE"
-done
+pnpm images:verify
 ```
 
-finding را mute یا waive نکنید. image اصلاح‌شده باید دوباره از ابتدا build، smoke و scan شود.
+این فرمان ممکن است چند دقیقه طول بکشد و به Docker فعال نیاز دارد. finding را mute یا waive نکنید؛ image اصلاح‌شده
+باید دوباره از ابتدا build، smoke و scan شود. این gate، استقرار واقعی یا قابلیت backup/provider را تأیید نمی‌کند.
 
-## ۵. push به registry و ثبت digest
+## ۴. push هر چهار image و ثبت digest با یک فرمان
 
 برای GHCR ابتدا با حساب و token دارای `write:packages` وارد شوید:
 
@@ -144,25 +113,30 @@ finding را mute یا waive نکنید. image اصلاح‌شده باید دو
 docker login ghcr.io
 ```
 
-سپس:
+سپس روی checkout تمیز و reviewed اجرا کنید:
 
 ```bash
-docker push "$API_IMAGE"
-docker push "$WEB_IMAGE"
-docker push "$APP_IMAGE"
-docker push "$DASHBOARD_IMAGE"
+pnpm images:push
 ```
 
-پس از push، digestهای immutable را ثبت کنید:
+این فرمان چهار image را build می‌کند، smoke test و scan را اجرا می‌کند، هر چهار artifact را push می‌کند و referenceهای
+immutable مبتنی بر digest را در انتها چاپ می‌کند. برای namespace متفاوت:
 
 ```bash
-docker image inspect --format '{{index .RepoDigests 0}}' "$API_IMAGE"
-docker image inspect --format '{{index .RepoDigests 0}}' "$WEB_IMAGE"
-docker image inspect --format '{{index .RepoDigests 0}}' "$APP_IMAGE"
-docker image inspect --format '{{index .RepoDigests 0}}' "$DASHBOARD_IMAGE"
+IMAGE_REGISTRY=ghcr.io/sayh3x pnpm images:push
 ```
 
-فایل release و محیط مقصد باید از `image@sha256:...` استفاده کنند، نه tag قابل جابه‌جایی.
+فایل release و محیط مقصد باید از `image@sha256:...` چاپ‌شده استفاده کنند، نه tag قابل جابه‌جایی.
+
+## ۵. اجرای مستقیم Bake برای عیب‌یابی
+
+فرمان‌های `pnpm images:*` ورودی اصلی پروژه هستند. اگر برای عیب‌یابی Buildx به لایه پایین‌تر نیاز دارید:
+
+```bash
+IMAGE_REGISTRY=ghcr.io/sayh3x \
+IMAGE_TAG="$(git rev-parse --short=12 HEAD)" \
+docker buildx bake --file docker-bake.hcl --pull --load release
+```
 
 ## ۶. ساخت پوشه release روی VPS
 
