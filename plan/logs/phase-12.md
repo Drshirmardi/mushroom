@@ -1,5 +1,57 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 — development and production runbook corrective
+
+Task ID: F12-T02
+Batch ID: F12-B02-R3
+Completed at: 2026-10-05 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Changed files:
+
+- `README.md`
+- `docs/DEVELOPMENT.md`
+- `docs/PRODUCTION.md`
+- coordinator-only `plan/{STATUS.md,logs/phase-12.md}`
+
+Documentation contract:
+
+- The root README describes the current four-application/PostgreSQL architecture and directs developers to separate
+  Development/Codespaces and Production runbooks instead of the stale foundation-era setup.
+- The Development runbook covers Node/pnpm/Docker prerequisites, local PostgreSQL, ignored API environment values,
+  generated client, Prisma migrate/seed, all application URLs, Codespaces forwarded origins/runtime config, restart,
+  reset, update and troubleshooting. Sadad stays disabled and no real data or credential is requested.
+- The Production runbook follows the accepted provider-neutral artifact boundary: build the four existing
+  Dockerfiles once, smoke and scan actual artifacts, push and record immutable digests, promote those exact digests
+  through staging, run migration explicitly, start with file-backed secrets, update without `compose down`, and
+  perform application-only rollback while retaining the expanded schema.
+
+Verification:
+
+- all relative Markdown links in the three public documents resolve → PASS
+- documented repository paths and root package scripts exist → PASS
+- Bash syntax validation for all 36 documented `bash` command blocks → PASS
+- documented loopback port variables and required synthetic release variables with
+  `docker compose -f compose.production.example.yaml config --quiet` → PASS
+- command/config review against `compose.yaml`, `compose.production.example.yaml`, both release Dockerfiles,
+  `scripts/ci-container-smoke.mjs`, API environment validation and Phase 12 migration policy → PASS
+- no-secret/no-provider-action review → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The documentation is executable against the accepted repository interfaces and makes the local,
+  Codespaces, build, promotion, update and rollback paths discoverable without modifying runtime behavior or claiming
+  deployment readiness.
+
+Known limitations:
+
+- No image was rebuilt and no environment was deployed for this documentation-only corrective; the previously
+  accepted F12-T02 artifact evidence remains authoritative.
+- F12-T05 backup/restore and F12-T07 secret-manager evidence remain blocked, and F12-T09 observability remains
+  dependency-gated. Production and real Sadad activation still require F12-T13 sign-off.
+
 ## F12-T10 — low-downtime migration and application-rollback rehearsal
 
 Task ID: F12-T10

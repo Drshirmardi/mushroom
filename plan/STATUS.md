@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-04`
+- آخرین به‌رورسانی: `2026-10-05`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -77,7 +77,36 @@ or RPO/RTO capability. `F12-T02`'s corrective provider-neutral OCI artifact exte
 public-only runtime configuration, Compose health and Liara documentation-profile gates pass; all four actual release
 images scan `0 Critical / 0 High`. This proves local artifact behavior only, not Liara or Sadad external readiness.
 
-## آخرین batch تکمیل‌شده — F12-B05-R1
+## آخرین batch تکمیل‌شده — F12-B02-R3
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-05 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (owner-requested documentation-only corrective)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted provider-neutral OCI artifacts and migration/rollback procedure from `F12-T02` and
+    `F12-T10`. No active batch or ownership conflict exists.
+  - Scope: add one development/Codespaces runbook and one production image build/promotion runbook, then replace
+    the stale root README overview with accurate project entry points and links. Do not change runtime code,
+    dependencies, migrations, deployment artifacts, provider configuration, secrets or external environments.
+  - Owned paths: `README.md`, `docs/DEVELOPMENT.md`, `docs/PRODUCTION.md`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: documentation only.
+  - Expected verification: command/path/config review against package scripts, Dockerfiles, Compose files and CI;
+    Markdown link validation; no-secret review; `git diff --check`.
+  - Review: PASS — root README now routes contributors to two focused runbooks. Development covers local and
+    Codespaces configuration, valid synthetic secrets, migrations, seed, runtime URLs and lifecycle. Production
+    covers four provider-neutral image builds, artifact smoke/scan, registry digest capture, file-backed secrets,
+    Compose migration/start, staging promotion, update and application-only rollback. All relative links and
+    documented repository paths/scripts resolve; 36 Bash blocks pass syntax validation; the documented loopback
+    port-variable shape passes `docker compose config`; no real secret or provider action is present.
+  - Next eligible work: no batch is started. Existing F12-T05/F12-T07 blockers and the F12-T09 dependency remain
+    unchanged.
+
+## batch تکمیل‌شده — F12-B05-R1
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-04 +03:30`
