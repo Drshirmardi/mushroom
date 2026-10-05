@@ -1,73 +1,66 @@
-# سبز زندگی — Monorepo
+# سبز زندگی
 
-مونوریپوی پروژه **سبز زندگی** (کلینیک طب سنتی دکتر شیرمردی) با **pnpm workspaces + Turborepo**.
+مونوریپوی محصول «سبز زندگی» شامل سایت عمومی، اپلیکیشن بیمار، داشبورد عملیاتی و API کلینیک است. پروژه با
+`pnpm workspace` و Turborepo مدیریت می‌شود، از PostgreSQL به‌عنوان منبع اصلی داده استفاده می‌کند و چهار
+artifact مستقل OCI برای استقرار تولید دارد.
 
-## ساختار
+## شروع کار
 
-```
-mushroom/
-├── apps/
-│   ├── web/          # وب‌سایت اصلی (لندینگ + ورود/ثبت‌نام) → sabz.local:3000
-│   ├── app/          # اپلیکیشن کاربر (نوبت‌دهی، درمان، فروشگاه) → app.sabz.local:3001
-│   ├── dashboard/    # داشبورد مدیریتی → dashboard.sabz.local:3002
-│   └── api/          # بک‌اند NestJS/Fastify + PostgreSQL → api.sabz.local:3003
-├── packages/         # کتابخانه‌های اشتراکی (آینده — فعلاً خالی)
-├── pnpm-workspace.yaml
-├── turbo.json
-├── tsconfig.base.json
-└── package.json
-```
+- [راه‌اندازی Development و GitHub Codespaces](docs/DEVELOPMENT.md)
+- [ساخت imageها و استقرار Production](docs/PRODUCTION.md)
+- [راهنمای artifactهای استقرار](deploy/README.md)
+- [وضعیت اجرایی و roadmap](plan/STATUS.md)
 
-## دامنه‌ها
+اگر هدف توسعه، بررسی رابط‌ها یا اجرای Codespaces است، از راهنمای Development شروع کنید. اگر هدف ساخت image،
+انتشار در registry، استقرار staging/production یا به‌روزرسانی سرور است، راهنمای Production را دنبال کنید.
 
-| اپ | دامنه نهایی (پروडاکشن) | لوکال |
-|---|---|---|
-| web | `sabz.example.com` | `localhost:3000` |
-| app | `app.sabz.example.com` | `localhost:3001` |
-| dashboard | `dashboard.sabz.example.com` | `localhost:3002` |
-| api | `api.sabz.example.com` | `localhost:3003` |
+## برنامه‌ها
 
-## پیش‌نیازها
+| Workspace | نقش | پورت پیش‌فرض |
+|---|---|---:|
+| `apps/web` | سایت عمومی و ورود/ثبت‌نام | `3000` |
+| `apps/app` | اپلیکیشن بیمار، رزرو، درمان، فروشگاه و چت | `3001` |
+| `apps/dashboard` | داشبورد کارکنان و مدیریت کلینیک | `3002` |
+| `apps/api` | API مبتنی بر NestJS/Fastify و Socket.IO | `3003` |
+| `packages/api-client` | client تولیدشده و type-safe برای API | — |
 
-- Node.js 24+
-- pnpm 10+ (`corepack enable` یا `npm i -g pnpm`)
+PostgreSQL توسعه روی پورت `5432` اجرا می‌شود. در production، دیتابیس باید خارج از containerهای برنامه و با
+سیاست backup/restore مستقل ارائه شود.
 
-## دستورات
+## فناوری‌های اصلی
+
+- Node.js 24 و pnpm 10.10
+- Next.js 16، React 19 و TypeScript
+- NestJS 11، Fastify و Socket.IO
+- PostgreSQL 16+، Prisma 7 و migrationهای immutable
+- Docker/OCI با runnerهای Distroless و non-root
+- GitHub Actions برای CI، تست، audit و بررسی artifactها
+
+## دستورات رایج
 
 ```bash
-# نصب وابستگی‌ها (همه workspaceها)
-pnpm install
-
-# اجرای همه اپ‌ها همزمان (توربو)
+pnpm install --frozen-lockfile
 pnpm dev
-
-# اجرای یک اپ خاص
-pnpm --filter @sabz/web dev
-pnpm --filter @sabz/app dev
-pnpm --filter @sabz/dashboard dev
-
-# بیلد همه
+pnpm lint
+pnpm typecheck
+pnpm test
 pnpm build
-
-# بیلد یک اپ خاص
-pnpm --filter @sabz/web build
-
-# پاکسازی کش‌ها
-pnpm clean
 ```
 
-## اصول معماری
+اجرای integration testهای وابسته به PostgreSQL و profileهای ظرفیت، قرارداد و هزینه زمانی جداگانه دارند؛ آن‌ها
+را طبق roadmap و راهنمای CI اجرا کنید، نه به‌عنوان بخشی از هر اجرای روزمره.
 
-1. **استقلال اپ‌ها:** هر اپ کاملاً مستقل build و deploy می‌شود؛ تغییر یا بیلد یک اپ روی بقیه اثر نمی‌گذارد (هیچ dependency مستقیمی بین اپ‌ها وجود ندارد).
-2. **کد اشتراکی فقط از طریق `packages/`:** هر چیزی که بین دو اپ تکرار شد، به‌صورت پکیج با نام `@sabz/*` در `packages/` منتقل می‌شود — نه با import نسبی بین اپ‌ها.
-3. **فرانت‌یندها Next.js 16 (App Router) + TypeScript + Tailwind v4** هستند.
-4. **بک‌اند (آینده) NestJS** با معماری ماژولار مبتنی بر دامنه در `apps/api` قرار می‌گیرد و فقط از طریق HTTP/REST با فرانت‌اندها صحبت می‌کند.
+## مرزهای استقرار
 
-## تکنولوژی‌ها
+چهار image تولیدی provider-neutral هستند و می‌توانند روی Linux VPS با Docker Compose، Liara یا هر OCI PaaS
+سازگار اجرا شوند. URLهای عمومی frontend هنگام شروع container تزریق می‌شوند؛ بنابراین همان digest آزمایش‌شده بدون
+rebuild از staging به production منتقل می‌شود.
 
-| لایه | ابزار |
-|---|---|
-| Monorepo | pnpm workspaces + Turborepo |
-| فرانت‌اند | Next.js 16, React 19, TypeScript, Tailwind CSS v4 |
-| بک‌اند (آینده) | NestJS, PostgreSQL |
-| UI | کامپوننت‌های سفارشی + shadcn/ui (در web) |
+اتصال واقعی سداد تا تکمیل پذیرندگی merchant، ثبت callback، تأیید IP خروجی ثابت، نگه‌داری credential خارج از Git و
+sign-off نهایی با `SADAD_GO_LIVE_BLOCKED` مسدود است. اجرای Development، Codespaces یا ساخت image این gate را
+فعال نمی‌کند.
+
+## منبع حقیقت اجرای پروژه
+
+پوشه [`plan/`](plan/README.md) منبع حقیقت taskها، dependencyها، blockerها و evidence است. پیش از تغییر roadmap یا
+شروع یک task جدید، [`AGENTS.md`](AGENTS.md)، وضعیت زنده و فایل فاز فعال را بخوانید.
