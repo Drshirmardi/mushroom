@@ -7,6 +7,8 @@ on:
       - 'apps/**'
       - 'packages/**'
       - 'deploy/docker/**'
+      - 'deploy/vps/**'
+      - 'deploy/contracts/release-manifest.schema.json'
       - 'docker-bake.hcl'
       - '*compose*.yaml'
       - '.dockerignore'
@@ -15,13 +17,22 @@ on:
       - 'pnpm-workspace.yaml'
       - 'scripts/ci-container-smoke.mjs'
       - 'scripts/release-images.mjs'
+      - 'scripts/release-manifest.mjs'
+      - 'scripts/deploy-vps.mjs'
+      - 'scripts/test-release-pipeline.mjs'
+      - 'scripts/test-vps-deploy.sh'
       - '.github/workflows/container-checks.yml'
+      - '.github/workflows/release.yml'
+      - '.github/workflows/promote.yml'
+      - '.github/workflows/rollback.yml'
   push:
     branches: [main]
     paths:
       - 'apps/**'
       - 'packages/**'
       - 'deploy/docker/**'
+      - 'deploy/vps/**'
+      - 'deploy/contracts/release-manifest.schema.json'
       - 'docker-bake.hcl'
       - '*compose*.yaml'
       - '.dockerignore'
@@ -30,7 +41,14 @@ on:
       - 'pnpm-workspace.yaml'
       - 'scripts/ci-container-smoke.mjs'
       - 'scripts/release-images.mjs'
+      - 'scripts/release-manifest.mjs'
+      - 'scripts/deploy-vps.mjs'
+      - 'scripts/test-release-pipeline.mjs'
+      - 'scripts/test-vps-deploy.sh'
       - '.github/workflows/container-checks.yml'
+      - '.github/workflows/release.yml'
+      - '.github/workflows/promote.yml'
+      - '.github/workflows/rollback.yml'
 
 permissions:
   contents: read
@@ -40,6 +58,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  release-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate release manifest, workflow and VPS contracts
+        run: pnpm release:test
+      - name: Rehearse deployment state and application rollback
+        run: pnpm release:test:vps
+      - name: Validate GitHub Actions workflows
+        run: >-
+          docker run --rm -v "$GITHUB_WORKSPACE:/repo" -w /repo
+          rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+
   artifact:
     runs-on: ubuntu-latest
     timeout-minutes: 35

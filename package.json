@@ -10,6 +10,8 @@
     "images:build": "node scripts/release-images.mjs build",
     "images:verify": "node scripts/release-images.mjs verify",
     "images:push": "node scripts/release-images.mjs push",
+    "release:test": "node scripts/test-release-pipeline.mjs",
+    "release:test:vps": "bash scripts/test-vps-deploy.sh",
     "generate:api-client": "corepack pnpm --filter @sabz-zendegi/api openapi:export && corepack pnpm --filter @sabz-zendegi/api-client generate",
     "build": "turbo build",
     "start": "turbo start",

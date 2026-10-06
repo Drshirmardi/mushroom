@@ -55,3 +55,22 @@ Availability monitoring is separate from capacity-test success rate: two indepen
 ## Demo alignment
 
 No demo reference was supplied. The later task must compare each approved demo claim only with running code, API contracts and non-secret evidence; it must not treat dashboard import text or mock-looking artifacts as a product capability.
+
+## Continuous delivery and VPS rehearsal decision
+
+The approved release path is GitHub Actions to private GHCR to a non-production Linux VPS over OpenSSH. This keeps
+application artifacts OCI-provider-neutral: Liara, another OCI PaaS or a Docker-capable VPS consumes the same digest
+set. GitHub-hosted runners are ephemeral; the VPS has a restricted non-root `deploy` user and no self-hosted runner,
+polling agent or provider SDK.
+
+The one-VPS rehearsal uses two independent deployment roots and Compose project names. `staging` is automatic after a
+successful protected-main CI/publication run. `production-sim` consumes the exact staging manifest only through a
+manual promotion workflow run by the configured owner. This explicit dispatch is the portable approval gate for a
+private repository; an Environment required reviewer is additional protection where the GitHub plan supports it.
+Private GHCR pull access exists only for the duration of deployment via a temporary Docker configuration and a
+read-only job token; it is not persisted under the deploy user's home.
+
+This repository can prepare and locally validate the complete workflow before a VPS exists. Live acceptance still
+requires a host/IP, pinned host key, restricted account, environment-scoped GitHub secrets, isolated runtime secret
+files and at least a baseline plus two sequential updates. Those are execution inputs, not reasons to couple runtime
+code to Liara.

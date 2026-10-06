@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./release-manifest.schema.json",
+  "title": "Mushroom release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "sourceSha", "ciRunId", "releaseRunId", "createdAt", "images"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "ciRunId": { "type": "string", "pattern": "^[0-9]+$" },
+    "releaseRunId": { "type": "string", "pattern": "^[0-9]+$" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "images": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api", "web", "app", "dashboard"],
+      "properties": {
+        "api": { "type": "string", "pattern": "^ghcr\\.io/[a-z0-9._-]+/mushroom-api@sha256:[0-9a-f]{64}$" },
+        "web": { "type": "string", "pattern": "^ghcr\\.io/[a-z0-9._-]+/mushroom-web@sha256:[0-9a-f]{64}$" },
+        "app": { "type": "string", "pattern": "^ghcr\\.io/[a-z0-9._-]+/mushroom-app@sha256:[0-9a-f]{64}$" },
+        "dashboard": { "type": "string", "pattern": "^ghcr\\.io/[a-z0-9._-]+/mushroom-dashboard@sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

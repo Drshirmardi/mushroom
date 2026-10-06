@@ -8,7 +8,7 @@
 ## Taskها
 
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
-- [x] `F12-T02` — deployment provider، container/IaC و staging pipeline — `DONE: corrective extension delivers pinned Distroless Node 24 non-root provider-neutral OCI artifacts, public runtime config, explicit migration boundary and real-image scan 0 Critical/0 High; see phase-12 evidence`
+- [x] `F12-T02` — deployment provider، container/IaC و staging pipeline — `DONE: provider-neutral Distroless artifacts plus private-GHCR publication, immutable manifest, automatic non-production staging, owner-dispatched production-sim promotion and application-only rollback are implemented and locally verified; live VPS baseline/two-update/rollback evidence remains an explicit F12-T13 sign-off gate`
 - [x] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release — `DONE: frozen mixed/chat profiles and disposable invariants accepted; see phase-12 evidence`
 - [x] `F12-T04` — query/index، pool و timeout tuning — `DONE: measured no-change decision; release query plans and bounded-pool/timeout recovery evidence recorded`
 - [ ] `F12-T05` — backup policy، RPO/RTO و restore drill PostgreSQL — `BLOCKED: Liara WAL/archive/restore capability evidence required`

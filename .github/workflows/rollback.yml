@@ -1,0 +1,57 @@
+name: Application rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Non-production VPS environment to restore to its recorded previous application manifest
+        required: true
+        type: choice
+        options: [staging, production-sim]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: rollback-${{ inputs.environment }}-vps
+      cancel-in-progress: false
+    environment: ${{ inputs.environment == 'staging' && 'staging-vps' || 'production-sim' }}
+    steps:
+      - name: Authorize production-sim rollback owner
+        if: inputs.environment == 'production-sim'
+        env:
+          APPROVER: ${{ vars.RELEASE_APPROVER }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          test -n "$APPROVER" || { echo 'RELEASE_APPROVER is not configured'; exit 1; }
+          test "${ACTOR,,}" = "${APPROVER,,}" || { echo 'Only RELEASE_APPROVER may roll back production-sim'; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare pinned SSH material
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/ssh/id"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/ssh/id" "$RUNNER_TEMP/ssh/known_hosts"
+      - name: Restore previous application digests without database rollback
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY_PATH: ${{ runner.temp }}/ssh/id
+          VPS_KNOWN_HOSTS_PATH: ${{ runner.temp }}/ssh/known_hosts
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/deploy-vps.mjs rollback "${{ inputs.environment }}"

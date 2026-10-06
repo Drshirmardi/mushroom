@@ -1,5 +1,76 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 — private GHCR continuous delivery and VPS rehearsal corrective
+
+Task ID: F12-T02
+Batch ID: F12-B02-R5
+Completed at: 2026-10-06 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Changed files:
+
+- `.github/workflows/{release.yml,promote.yml,rollback.yml,container-checks.yml}`
+- `deploy/contracts/release-manifest.schema.json`
+- `deploy/vps/{README.md,compose.yaml,deploy-release.sh,env.example}`
+- `scripts/{deploy-vps.mjs,release-images.mjs,release-manifest.mjs,test-release-pipeline.mjs,test-vps-deploy.sh}`
+- `docker-bake.hcl`, `package.json`
+- `README.md`, `.github/CI.md`, `deploy/README.md`, `docs/PRODUCTION.md`
+- `specs/010-production-hardening/{spec.md,plan.md,tasks.md,research.md,data-model.md,quickstart.md}` and its
+  release-readiness contract/checklist
+- coordinator-only `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`
+
+Accepted delivery contract:
+
+- Pull-request CI must pass before merge. A successful CI run for the current protected `main` SHA is the only trigger
+  that may build, verify, scan and publish the four private GHCR images. Publication uses the scoped workflow token and
+  records OCI source/revision labels plus provenance attestations.
+- One strict release manifest binds source SHA, CI/release run IDs and the API/web/app/dashboard repositories to exact
+  `sha256` digests. Staging and production-sim consume that manifest without rebuilding or accepting mutable tags.
+- The release workflow stops after automatic `staging` delivery. `production-sim` promotion is a separate manual
+  workflow that verifies the named release run and successful staging job, then requires the caller to match the
+  configured `RELEASE_APPROVER`. GitHub Environment review may add a second approval when the repository plan supports
+  it for private repositories.
+- Deployment originates on an ephemeral GitHub-hosted runner over host-key-pinned SSH to a restricted non-root user.
+  The private GHCR workflow token is piped only to a temporary Docker configuration, used to pull the exact digests,
+  logged out and deleted. The VPS stores no registry PAT and runs no persistent runner or polling update agent.
+- The VPS contract isolates `staging` and `production-sim` by Compose project, root directory, PostgreSQL database/user,
+  volume, secret files, loopback ports, public origins and release state. Sadad is disabled and production data or
+  credentials are prohibited.
+- Migration is forward-only and completes before application switching. Failed staging verification automatically
+  restores the recorded previous application digest set; production-sim rollback remains an explicit owner operation.
+  No path resets, reverses or rolls back the database.
+
+Verification:
+
+- SpecKit requirements checklist → 11/11 PASS; pre-implementation checklist → 15/15 PASS
+- read-only SpecKit analysis → 33/33 requirements and buildable success criteria mapped; 0 HIGH/CRITICAL findings
+- `pnpm release:test` → PASS: triggers/permissions, manual approval, manifest strictness, digest-only references,
+  secret/registry policy, Compose interpolation and script syntax
+- all six workflow YAML files parsed; pinned `actionlint 1.7.12` → PASS
+- `scripts/test-vps-deploy.sh` in a disposable Linux/Node environment → PASS: baseline and sequential staging updates,
+  controlled staging failure with automatic application rollback, production-sim failed candidate retention, manual
+  rollback, migration-before-switch and ephemeral Docker configuration
+- `pnpm lint` → PASS with 0 errors and the same 3 pre-existing dashboard warnings; `pnpm typecheck` → PASS
+- `IMAGE_REGISTRY=local IMAGE_TAG=f12-b02-r5 pnpm images:verify` → PASS: all four real images built, non-root smoke
+  checks passed, and Trivy reported `0 Critical / 0 High` for API/web/app/dashboard. The shared temporary Trivy cache
+  was removed after the run.
+- no release container or task-owned Docker volume remained; `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE for the software/readiness scope.** The repository now contains the standard private-GHCR CI/CD path,
+  immutable promotion boundary, non-production VPS deployment contract and rollback controls requested by the owner.
+
+External acceptance still required:
+
+- No package was published and no external server was changed in this batch. Set up a GitHub plan that supports
+  Environment secrets for a private repository, configure `VPS_CD_ENABLED`, `RELEASE_APPROVER`, pinned SSH material and
+  the two isolated VPS runtime/secret directories, then run and retain evidence for one baseline plus two sequential
+  updates and the controlled rollback exercises.
+- Until that evidence and the remaining Phase 12 gates exist, F12-T13 must reject production readiness. F12-T05,
+  F12-T07, real Sadad acceptance and production deployment remain unchanged and blocked by their own gates.
+
 ## F12-T02 — release image build and CI concurrency corrective
 
 Task ID: F12-T02

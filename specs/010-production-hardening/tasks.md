@@ -51,6 +51,7 @@ Tasks in a batch may be reduced or serialized by the coordinator when shared env
 | FR-010 | T12, T13 |
 | FR-011, FR-013, SC-005 | T13 |
 | FR-012, FR-014–016 | T02, T03, T07, T09, T13 |
+| FR-019–023, SC-006–010 | T02, T10, T13 |
 
 ## External Gates
 
@@ -60,3 +61,22 @@ Tasks in a batch may be reduced or serialized by the coordinator when shared env
 | Merchant credentials, endpoint/redirect/callback acceptance evidence | Project owner / merchant | real calls, enable/default, payment sign-off |
 | Liara backup/WAL/archive and managed-secret capabilities | F12-T05 / F12-T07 owner | recovery/secret sign-off |
 | Monthly availability observations | F12-T09 owner | final release sign-off |
+
+## F12-T02 continuous-delivery corrective checklist
+
+These implementation slices retain `F12-T02` as the roadmap and commit identity. They are serialized because the
+release manifest, workflows and remote deployment contract are shared single-writer surfaces.
+
+- [x] T001 [US2] Define the immutable release-manifest and VPS deployment contract in `deploy/contracts/release-manifest.schema.json`, `deploy/vps/README.md` and `deploy/vps/env.example`
+- [x] T002 [US2] Extend private GHCR publication to emit verified digest evidence in `scripts/release-images.mjs` and `.github/workflows/release.yml`
+- [x] T003 [US2] Implement host-key-pinned, non-root, temporary-registry-auth deployment in `deploy/vps/deploy-release.sh` and `deploy/vps/compose.yaml`
+- [x] T004 [US2] Wire automatic staging and owner-dispatched production-sim promotion in `.github/workflows/release.yml` and `.github/workflows/promote.yml`
+- [x] T005 [US2] Add explicit owner-gated application rollback in `.github/workflows/rollback.yml` and `deploy/vps/deploy-release.sh`
+- [x] T006 [US2] Validate workflow permissions, manifest immutability, isolation and rollback behavior in `scripts/test-release-pipeline.mjs`
+- [x] T007 [US2] Document GitHub Environment/VPS bootstrap and update rehearsal in `docs/PRODUCTION.md` and `deploy/vps/README.md`
+- [x] T008 [US2] Record local verification and external VPS inputs in `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md` and `plan/STATUS.md`
+
+**Independent test**: with no live provider, schema and pipeline tests prove a successful `main` CI is required,
+references are digest-only, two environments cannot share state, registry credentials are ephemeral, migration precedes
+switching and rollback is application-only. Live completion additionally requires one baseline and two sequential
+updates on the isolated non-production VPS.

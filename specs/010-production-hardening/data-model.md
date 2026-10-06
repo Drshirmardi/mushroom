@@ -10,5 +10,11 @@
 | AvailabilityObservation | probe location/type, timestamp, raw outcome, adjusted exclusion reason | F12-T09 |
 | PaymentAcceptance | config revision reference, non-secret merchant test-plan ID, callback/Verify result, reconciliation outcome | F12-T02/T13 |
 | ReleaseSignOff | owner, date, all gate references, approved exceptions | F12-T13 |
+| ReleaseManifest | source commit, CI run, registry, four immutable image digests, creation time; no mutable deployment reference | F12-T02 |
+| DeploymentRecord | environment, Compose project, release-manifest digest, previous manifest, migration outcome, health/synthetic outcome, workflow run and approved actor | F12-T02 |
 
 No entity permits credentials, full callback bodies, PAN, encryption keys, or production secret values in Git or logs.
+
+`ReleaseManifest` is promoted unchanged from staging to production-sim. `DeploymentRecord` may point to a previous
+manifest for application rollback, but never represents a database rollback. Staging and production-sim records,
+secrets, databases and Compose resources are disjoint even when they share one physical rehearsal VPS.

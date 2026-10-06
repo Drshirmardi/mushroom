@@ -15,6 +15,24 @@ and verify Next public configuration changes with the same image ID. Runtime ima
 rejects every reported High/Critical finding, including unfixed findings, and retains JSON reports.
 This is artifact smoke, not real deployment or Liara capability evidence.
 
+## Release and VPS delivery
+
+`Release and stage` listens only to a successful `CI` push run for the current `main` commit. It rebuilds the four
+runtime artifacts through the same project release command, repeats smoke and High/Critical scanning, publishes them
+to private GHCR, records exact digests in one release manifest and creates registry provenance attestations. It never
+publishes from a pull request or a failed/canceled/superseded CI run.
+
+The repository variable `VPS_CD_ENABLED` controls external delivery. When it is absent or `false`, publication still
+works and the staging VPS job is skipped. When it is `true`, staging deploys automatically through the `staging-vps`
+Environment and the automatic workflow stops. The configured owner must then run `Promote staging release` with the
+successful release run ID; that workflow revalidates staging and the immutable manifest before touching
+`production-sim`. Both use host-key-pinned SSH, the versioned deployment script and the job-scoped `GITHUB_TOKEN` for
+temporary private-GHCR read access. `Application rollback` is the explicit operator path and applies the same owner
+check to production-sim.
+
+The release contract check runs for affected pull requests and main changes. Live VPS acceptance still requires a
+baseline plus two sequential update rehearsals; local workflow checks cannot claim that evidence.
+
 ## Long capacity check
 
 `Chat capacity` is now manual-only (`workflow_dispatch`) in GitHub Actions. It has not been

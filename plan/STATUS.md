@@ -77,6 +77,43 @@ or RPO/RTO capability. `F12-T02`'s corrective provider-neutral OCI artifact exte
 public-only runtime configuration, Compose health and Liara documentation-profile gates pass; all four actual release
 images scan `0 Critical / 0 High`. This proves local artifact behavior only, not Liara or Sadad external readiness.
 
+## آخرین batch تکمیل‌شده — F12-B02-R5
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-06 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (continuous-delivery software/readiness scope; live VPS acceptance remains a release gate)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted provider-neutral OCI artifacts, release build/scan gates and F12-T10 application-only
+    rollback contract. No active batch or ownership conflict exists.
+  - Scope: clarify and implement automatic immutable-image publication, staging deployment to a disposable/test VPS,
+    owner-gated production promotion, explicit migration and application-only rollback. Preserve provider-neutral
+    application/runtime code and keep real Sadad and production activation blocked.
+  - Owned paths: `specs/010-production-hardening/{spec.md,plan.md,tasks.md}`, `.github/workflows/**`,
+    `deploy/**`, `scripts/**`, release documentation and package scripts needed by this corrective;
+    coordinator-only `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`.
+  - Shared/exclusive resources: GHCR release namespace, deployment workflow contracts, migration/release manifest and
+    VPS staging interface.
+  - Expected verification: workflow validation, least-privilege permission review, immutable digest and provenance
+    assertions, offline migration, disposable/local deployment rehearsal, VPS deployment/update/rollback evidence when
+    target access is supplied, and `git diff --check`.
+  - Review: PASS — successful protected-main CI is the only private-GHCR publication trigger; the four exact digests
+    are preserved in one release manifest, staging delivery is automatic only when explicitly enabled, production-sim
+    promotion/rollback is a separate owner-dispatched operation, and the VPS script enforces pinned SSH, non-root use,
+    isolated Compose projects, temporary registry authentication, migration-before-switch and application-only rollback.
+  - Verification: SpecKit analysis has 100% requirement/task coverage and no HIGH/CRITICAL finding; release contract,
+    workflow YAML/actionlint, synthetic Compose configuration, staged/failed-release rollback behavior, lint/typecheck
+    and actual four-image build/smoke/scan all pass. The four images remain `0 Critical / 0 High` and all run as the
+    accepted non-root Distroless UID/GID.
+  - External gate: no GHCR publication or VPS deployment was performed. Before release sign-off, configure a GitHub
+    plan that supports private-repository Environment secrets, repository variables, environment-scoped SSH material
+    and the isolated test VPS; then retain evidence for one baseline, two sequential updates and controlled rollback.
+  - Next eligible work: no batch is started. F12-T05/F12-T07 remain blocked by their existing external evidence; F12-T09
+    remains dependency-gated. Real production and Sadad activation remain blocked through F12-T13.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R4
 
 Coordinator/Thread: `Codex /root`

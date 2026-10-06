@@ -1,0 +1,108 @@
+name: ${COMPOSE_PROJECT_NAME:?set an isolated Compose project name}
+
+services:
+  postgres:
+    image: "${POSTGRES_IMAGE:?set the rehearsal PostgreSQL image}"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:?set an isolated database name}"
+      POSTGRES_USER: "${POSTGRES_USER:?set an isolated database user}"
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    image: "${API_IMAGE:?set an immutable API digest}"
+    environment:
+      NODE_ENV: production
+      PORT: "3003"
+      HOSTNAME: "0.0.0.0"
+      DATABASE_URL_FILE: /run/secrets/database_url
+      JWT_ACCESS_SECRET_FILE: /run/secrets/jwt_access_secret
+      REFRESH_TOKEN_PEPPER_FILE: /run/secrets/refresh_token_pepper
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/payment_credential_encryption_key
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:?set the key version}"
+      PAYMENT_CREDENTIAL_DECRYPTION_KEYS_FILE: /run/secrets/payment_credential_decryption_keys
+      APP_ORIGINS: "${APP_ORIGINS:?set public origins}"
+      TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
+      SADAD_TRANSPORT_MODE: disabled
+    secrets: [database_url, jwt_access_secret, refresh_token_pepper, payment_credential_encryption_key, payment_credential_decryption_keys]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["${API_PORT:?set an isolated API binding}:3003"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3003/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    image: "${WEB_IMAGE:?set an immutable web digest}"
+    environment:
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"
+      PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dashboard URL}"
+    ports: ["${WEB_PORT:?set an isolated web binding}:3000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  app:
+    image: "${APP_IMAGE:?set an immutable app digest}"
+    environment:
+      PORT: "3001"
+      HOSTNAME: "0.0.0.0"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public web URL}"
+    ports: ["${APP_PORT:?set an isolated app binding}:3001"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  dashboard:
+    image: "${DASHBOARD_IMAGE:?set an immutable dashboard digest}"
+    environment:
+      PORT: "3002"
+      HOSTNAME: "0.0.0.0"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"
+    ports: ["${DASHBOARD_PORT:?set an isolated dashboard binding}:3002"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  postgres_data:
+
+secrets:
+  postgres_password:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/postgres_password"
+  database_url:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/database_url"
+  jwt_access_secret:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/jwt_access_secret"
+  refresh_token_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/refresh_token_pepper"
+  payment_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/payment_credential_encryption_key"
+  payment_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/payment_credential_decryption_keys"
