@@ -1,10 +1,15 @@
 # Implementation Plan: Phase 12 Production Hardening
 
-**Branch**: `codex/phase-12-speckit` | **Date**: 2026-09-30 | **Spec**: [spec.md](spec.md)
+**Branch**: `codex/vps-cd-pipeline` | **Date**: 2026-10-06 | **Spec**: [spec.md](spec.md)
 
 ## Summary
 
 Prepare the completed product for a Liara-targeted, separately staged production release. Preserve the existing modular monolith and Phase 09 payment boundaries; complete only documented gaps through `F12-T01`–`F12-T13`. Real Sadad activation remains blocked by merchant acceptance and written confirmation of a static outbound egress IP.
+
+The owner-authorized `F12-T02` continuous-delivery corrective publishes the existing four provider-neutral OCI
+artifacts to private GHCR only after successful protected-branch CI, deploys their immutable digests to an isolated
+VPS `staging` project, and pauses before promotion to an isolated `production-sim` project. Promotion and
+production-sim rollback require owner approval and never rebuild the accepted artifacts.
 
 ## Technical Context
 
@@ -15,14 +20,16 @@ Prepare the completed product for a Liara-targeted, separately staged production
 **Secrets**: deployment-managed secret store; payment credential revisions stay encrypted in existing persistence; encryption keys are outside Git/database.
 **Operations targets**: approved capacity profile in spec; RPO ≤15 min, RTO ≤4 h; 99.5% calendar-month availability measured raw and adjusted separately.
 **Testing**: targeted disposable-PostgreSQL/API/client/browser tests, controlled staging exercises, static scan and independent monitoring evidence.
+**CD transport**: GitHub-hosted ephemeral runner, private GHCR, host-key-pinned OpenSSH and a restricted non-root VPS
+identity. The VPS hosts no persistent runner or registry watcher.
 
 ## Constitution Check
 
 | Gate | Result | Evidence / constraint |
 |---|---|---|
-| Scope discipline | PASS | Exactly F12-T01–T13; no implementation in this baseline. |
+| Scope discipline | PASS | The corrective stays inside F12-T02 release/CD artifacts and non-production rehearsal tooling. |
 | Existing architecture | PASS | Modular monolith/PostgreSQL/OpenAPI and encrypted payment revisions preserved. |
-| Roadmap authority | PASS | Stable task IDs, Phase 12 `NOT_STARTED`, no STATUS/log/checklist execution edits. |
+| Roadmap authority | PASS | Stable task IDs and Phase 12 ownership remain authoritative; corrective status/evidence uses the normal batch gate. |
 | Risk-based verification | PASS | Capacity, authorization, recovery, security, browser/a11y and payment boundaries have explicit gates. |
 | Single writers | PASS | Schema/migrations, payment orchestration, generated client, env templates, deployment configuration and monitoring config each have one task owner per batch. |
 
@@ -34,6 +41,14 @@ Prepare the completed product for a Liara-targeted, separately staged production
 4. The frozen chat workload remains `20 msg/s × 30 min`, 61-second gap, `50 msg/s × 5 min`, every batch `<=1000ms`. Historical `1015ms`/`1032ms` failures, CI isolation and scheduled/manual execution are inputs, not a changed threshold.
 5. `F12-T02` owns the approved Sadad extension. It inventories existing dormant code first; it must not recreate accepted Phase 09 contracts. Enabling/default and external calls remain blocked until all acceptance evidence exists.
 6. `F12-T02`'s corrective deployment extension produces provider-neutral, non-root OCI images for API, web, app and dashboard. Every final runner uses the owner-approved pinned Distroless Node 24 Debian 13 non-root digest as UID/GID `65532:65532`; Node 24 slim remains build-stage-only. Liara is only the first documented profile; the same tested digest must run on a generic Linux VPS or OCI PaaS. Next public URLs are emitted at runtime from a fixed public-only allowlist, and migrations are an explicit one-shot API-image command. Multi-instance realtime is blocked until a distributed Socket.IO/session adapter has its own approved and verified change.
+7. Private GHCR is the release registry. A successful `main` CI run is the only publication trigger. Staging and
+   production-sim consume one signed release manifest containing the four exact digests and source SHA.
+8. One test VPS may host both rehearsal environments only as isolated Compose projects with separate directories,
+   databases, secrets, ports, origins and release records. It is not a production topology claim.
+9. Deployment authenticates with environment-scoped SSH material and a pinned host key. Registry access is temporary,
+   read-only and removed after pulling. The server stores runtime secrets but no long-lived GHCR credential.
+10. Migration is forward-only and completes before application switching. Staging application verification failure
+    restores the previous application digest set automatically; production-sim rollback is a separately approved job.
 
 ## Owned Surfaces and Single Writers
 
@@ -59,6 +74,25 @@ Prepare the completed product for a Liara-targeted, separately staged production
 - [contracts/release-readiness.md](contracts/release-readiness.md): observable operational contract.
 - [quickstart.md](quickstart.md): non-production verification sequence.
 - [tasks.md](tasks.md): authoritative Phase 12 task mapping and batch map.
+
+## Continuous-delivery corrective design
+
+1. `.github/workflows/release.yml` listens to successful completion of the protected `CI` workflow for `main`, checks
+   out its exact SHA, verifies and publishes the four private GHCR images, records their registry digests in a release
+   manifest, and preserves the manifest as workflow evidence.
+2. The same workflow deploys the manifest to the `staging-vps` GitHub Environment through a reusable, versioned SSH
+   deployment script. Environment concurrency serializes changes. It stops after staging.
+3. `.github/workflows/promote.yml` is an explicit `workflow_dispatch` operation. It accepts a completed release run ID,
+   verifies that run and its staging job succeeded, downloads the exact manifest, requires `github.actor` to match the
+   configured `RELEASE_APPROVER`, and then deploys `production-sim`. A GitHub Environment required reviewer is optional
+   defense in depth when the repository's GitHub plan supports that rule for private repositories.
+4. The remote script validates environment isolation, pulls only digest references using a temporary Docker config,
+   runs the API migration command, changes the Compose project, probes all four services and atomically records current
+   and previous releases. A staging post-switch failure restores only the previous application manifest.
+5. `.github/workflows/rollback.yml` is an explicit operator workflow. Staging may be restored automatically by the
+   deploy script; production-sim rechecks the configured owner and may also use an approval-protected Environment.
+6. Repository tests validate workflow permissions/triggers, release-manifest shape, immutable references, isolation
+   checks, temporary credential cleanup and rollback policy without needing a live provider.
 
 ## Definition of Done (per task)
 

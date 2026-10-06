@@ -6,6 +6,14 @@ variable "IMAGE_TAG" {
   default = "dev"
 }
 
+variable "SOURCE_REPOSITORY" {
+  default = "local"
+}
+
+variable "SOURCE_REVISION" {
+  default = "dev"
+}
+
 group "default" {
   targets = ["api", "web", "app", "dashboard"]
 }
@@ -17,6 +25,10 @@ group "release" {
 target "_common" {
   context = "."
   pull    = true
+  labels = {
+    "org.opencontainers.image.source"   = "${SOURCE_REPOSITORY}"
+    "org.opencontainers.image.revision" = "${SOURCE_REVISION}"
+  }
 }
 
 target "api" {

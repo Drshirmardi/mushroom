@@ -22,7 +22,7 @@
 - [x] The owner direction for Liara target selection, separate staging/production, manual production approval, target-release Sadad scope, capacity/recovery/secrets, encrypted credential revisions, and non-secret environment documentation is reflected.
 - [x] The F12-T02 Sadad software-completion extension and its related task dependencies are approved.
 - [x] Production availability SLO, raw/adjusted reporting, and payment-outage treatment are approved.
-- [ ] Ready for planning — blocked until all clarification markers are resolved.
+- [x] Ready for planning — blocked until all clarification markers are resolved.
 
 ## Notes
 

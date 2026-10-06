@@ -1,0 +1,166 @@
+name: Release and stage
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  eligibility:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      is-current: ${{ steps.main.outputs.is-current }}
+      source-sha: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - id: main
+        name: Reject a superseded main run
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$SOURCE_SHA" ]; then
+            echo 'is-current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'is-current=false' >> "$GITHUB_OUTPUT"
+            echo "Skipping superseded main commit $SOURCE_SHA"
+          fi
+
+  publish:
+    needs: eligibility
+    if: needs.eligibility.outputs.is-current == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: release-publish-main
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      artifact-name: ${{ steps.release.outputs.artifact-name }}
+      source-sha: ${{ needs.eligibility.outputs.source-sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.eligibility.outputs.source-sha }}
+          fetch-depth: 1
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: docker/setup-buildx-action@v3
+      - name: Authenticate publisher to private GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: release
+        name: Build, verify, scan and publish immutable images
+        env:
+          IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+          IMAGE_TAG: ${{ needs.eligibility.outputs.source-sha }}
+          SOURCE_REPOSITORY: https://github.com/${{ github.repository }}
+          RELEASE_MANIFEST_PATH: ${{ runner.temp }}/release/release-manifest.json
+          SOURCE_CI_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          pnpm images:push
+          echo "artifact-name=release-${{ needs.eligibility.outputs.source-sha }}" >> "$GITHUB_OUTPUT"
+      - id: subjects
+        name: Read attestation subjects from the release manifest
+        run: |
+          manifest='${{ runner.temp }}/release/release-manifest.json'
+          for service in api web app dashboard; do
+            reference=$(jq -r ".images.$service" "$manifest")
+            echo "${service}-name=${reference%@*}" >> "$GITHUB_OUTPUT"
+            echo "${service}-digest=${reference#*@}" >> "$GITHUB_OUTPUT"
+          done
+      - name: Attest API image provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ steps.subjects.outputs.api-name }}
+          subject-digest: ${{ steps.subjects.outputs.api-digest }}
+          push-to-registry: true
+      - name: Attest web image provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ steps.subjects.outputs.web-name }}
+          subject-digest: ${{ steps.subjects.outputs.web-digest }}
+          push-to-registry: true
+      - name: Attest app image provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ steps.subjects.outputs.app-name }}
+          subject-digest: ${{ steps.subjects.outputs.app-digest }}
+          push-to-registry: true
+      - name: Attest dashboard image provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ steps.subjects.outputs.dashboard-name }}
+          subject-digest: ${{ steps.subjects.outputs.dashboard-digest }}
+          push-to-registry: true
+      - name: Preserve immutable release manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.release.outputs.artifact-name }}
+          path: ${{ runner.temp }}/release/release-manifest.json
+          if-no-files-found: error
+          retention-days: 90
+
+  deploy-staging:
+    needs: publish
+    if: vars.VPS_CD_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: deploy-staging-vps
+      cancel-in-progress: false
+    environment: staging-vps
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.publish.outputs.source-sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.publish.outputs.artifact-name }}
+          path: ${{ runner.temp }}/release
+      - name: Prepare pinned SSH material
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/ssh/id"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/ssh/id" "$RUNNER_TEMP/ssh/known_hosts"
+      - name: Deploy and verify staging
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY_PATH: ${{ runner.temp }}/ssh/id
+          VPS_KNOWN_HOSTS_PATH: ${{ runner.temp }}/ssh/known_hosts
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/deploy-vps.mjs deploy staging "$RUNNER_TEMP/release/release-manifest.json"

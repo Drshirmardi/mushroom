@@ -8,11 +8,13 @@ artifact مستقل OCI برای استقرار تولید دارد.
 
 - [راه‌اندازی Development و GitHub Codespaces](docs/DEVELOPMENT.md)
 - [ساخت imageها و استقرار Production](docs/PRODUCTION.md)
+- [راه‌اندازی CI/CD روی VPS آزمایشی](deploy/vps/README.md)
 - [راهنمای artifactهای استقرار](deploy/README.md)
 - [وضعیت اجرایی و roadmap](plan/STATUS.md)
 
-اگر هدف توسعه، بررسی رابط‌ها یا اجرای Codespaces است، از راهنمای Development شروع کنید. اگر هدف ساخت image،
-انتشار در registry، استقرار staging/production یا به‌روزرسانی سرور است، راهنمای Production را دنبال کنید.
+اگر هدف توسعه، بررسی رابط‌ها یا اجرای Codespaces است، از راهنمای Development شروع کنید. اگر هدف ساخت image یا
+استقرار دستی است، راهنمای Production را دنبال کنید. برای انتشار خودکار پس از merge و تمرین staging/production-sim
+روی VPS، راهنمای CI/CD روی VPS را دنبال کنید.
 
 ## برنامه‌ها
 

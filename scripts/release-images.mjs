@@ -1,11 +1,23 @@
 import { spawnSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateReleaseManifest } from './release-manifest.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const services = ['api', 'web', 'app', 'dashboard'];
 const supportedModes = new Set(['build', 'verify', 'push', 'print']);
 const [mode = 'build', ...unexpectedArguments] = process.argv.slice(2);
+let trivyCacheVolume;
+
+process.once('exit', () => {
+  if (trivyCacheVolume) {
+    spawnSync('docker', ['volume', 'rm', '--force', trivyCacheVolume], {
+      cwd: repositoryRoot,
+      stdio: 'ignore',
+    });
+  }
+});
 
 if (!supportedModes.has(mode) || unexpectedArguments.length > 0) {
   console.error('Usage: node scripts/release-images.mjs [build|verify|push|print]');
@@ -71,6 +83,8 @@ const bakeEnvironment = {
   ...process.env,
   IMAGE_REGISTRY: imageRegistry,
   IMAGE_TAG: imageTag,
+  SOURCE_REPOSITORY: process.env.SOURCE_REPOSITORY?.trim() || 'local',
+  SOURCE_REVISION: git('rev-parse', 'HEAD'),
 };
 
 console.log(`Release image mode: ${mode}`);
@@ -93,10 +107,13 @@ if (mode === 'verify' || mode === 'push') {
     run(process.execPath, ['scripts/ci-container-smoke.mjs', images[service], service]);
   }
 
+  trivyCacheVolume = `mushroom-trivy-cache-${process.pid}`;
+  run('docker', ['volume', 'create', trivyCacheVolume]);
   for (const service of services) {
     run('docker', [
       'run', '--rm',
       '-v', '/var/run/docker.sock:/var/run/docker.sock',
+      '-v', `${trivyCacheVolume}:/root/.cache/trivy`,
       'aquasec/trivy:0.75.0', 'image',
       '--scanners', 'vuln',
       '--severity', 'CRITICAL,HIGH',
@@ -104,14 +121,44 @@ if (mode === 'verify' || mode === 'push') {
       images[service],
     ]);
   }
+  run('docker', ['volume', 'rm', '--force', trivyCacheVolume]);
+  trivyCacheVolume = undefined;
 }
 
 if (mode === 'push') {
   for (const service of services) run('docker', ['push', images[service]]);
   console.log('Published immutable references:');
+  const immutableImages = {};
   for (const service of services) {
-    console.log(run('docker', [
-      'image', 'inspect', '--format', '{{index .RepoDigests 0}}', images[service],
+    const repository = images[service].slice(0, images[service].lastIndexOf(':'));
+    const repoDigests = JSON.parse(run('docker', [
+      'image', 'inspect', '--format', '{{json .RepoDigests}}', images[service],
     ], { capture: true }));
+    const immutableReference = repoDigests.find((reference) => reference.startsWith(`${repository}@sha256:`));
+    if (!immutableReference) throw new Error(`Registry digest was not recorded for ${service}.`);
+    immutableImages[service] = immutableReference;
+    console.log(immutableReference);
+  }
+
+  const manifestPath = process.env.RELEASE_MANIFEST_PATH?.trim();
+  if (manifestPath) {
+    const sourceSha = git('rev-parse', 'HEAD');
+    const ciRunId = process.env.SOURCE_CI_RUN_ID?.trim();
+    const releaseRunId = process.env.GITHUB_RUN_ID?.trim();
+    if (!/^\d+$/u.test(ciRunId ?? '') || !/^\d+$/u.test(releaseRunId ?? '')) {
+      throw new Error('SOURCE_CI_RUN_ID and GITHUB_RUN_ID are required to write a release manifest.');
+    }
+    const manifest = validateReleaseManifest({
+      schemaVersion: 1,
+      sourceSha,
+      ciRunId,
+      releaseRunId,
+      createdAt: new Date().toISOString(),
+      images: immutableImages,
+    });
+    const absoluteManifestPath = resolve(repositoryRoot, manifestPath);
+    mkdirSync(dirname(absoluteManifestPath), { recursive: true });
+    writeFileSync(absoluteManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });
+    console.log(`Release manifest: ${absoluteManifestPath}`);
   }
 }

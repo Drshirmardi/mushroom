@@ -1,5 +1,9 @@
 # ساخت image و استقرار Production
 
+> برای انتشار خودکار private GHCR و rehearsal روی VPS، ابتدا
+> [راهنمای CD روی VPS](../deploy/vps/README.md) را اجرا کنید. مراحل دستی این صفحه برای عیب‌یابی، providerهای دیگر و
+> اجرای کنترل‌شدهٔ بدون GitHub Actions معتبرند.
+
 این راهنما artifactهای provider-neutral پروژه را می‌سازد و فرایند انتشار آن‌ها را از registry تا staging و
 production توضیح می‌دهد. اجرای فرمان‌ها به‌تنهایی مجوز production یا فعال‌سازی سداد نیست؛ gateهای باز Phase 12 و
 sign-off مالک همچنان لازم‌اند.
