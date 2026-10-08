@@ -90,6 +90,26 @@ Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/
   - Expected verification: anonymous public catalog/detail plus active-clinic filtering, protected patient commerce
     authorization regression, OpenAPI/client freshness, app/API tests/typechecks/builds and `git diff --check`.
 
+- Task ID: `F12-T02-R10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted `F12-T02-R9` shared-dev delivery and live collision evidence from the first dev sync.
+  - Scope: move the documented/default shared-dev host bindings away from the already-reserved production-sim
+    `3200–3203` range to `3300–3303`, retaining the existing fail-closed cross-environment validation.
+  - Owned paths: `deploy/vps/{dev-env.example,README.md}`, `scripts/{test-vps-dev.sh,
+    test-release-pipeline.mjs}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: VPS loopback port allocation only; no container internal port, database, secret,
+    production runtime or application contract change.
+  - Expected verification: simulated collision rejection, dev/release contract suite, exact port-reference scan and
+    `git diff --check`.
+  - Review: PASS — the live blocker was a correct fail-closed boundary check, not a container failure. The dev
+    defaults now use the unreserved `3300–3303` range; production-sim retains `3200–3203`.
+  - Verification: `bash scripts/test-vps-dev.sh`, `pnpm release:test`, exact port-reference scan and
+    `git diff --check` PASS. The behavior test now models both staging (`3100–3103`) and production-sim
+    (`3200–3203`) before accepting the new dev range.
+  - External next action: change only the dev `runtime.env` and the four dev reverse-proxy upstreams to `3300–3303`,
+    then push this corrective and rerun the same `dev` SHA. Do not change production-sim.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R9
 
 Coordinator/Thread: `Codex /root`

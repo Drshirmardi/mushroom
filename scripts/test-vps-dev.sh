@@ -16,7 +16,8 @@ workspace="$dev_root/workspace"
 fake_bin="$scratch/bin"
 docker_log="$scratch/docker.log"
 mkdir -p "$workspace/deploy/vps" "$workspace/apps/api" "$workspace/packages/api-client" \
-  "$dev_root/cache" "$dev_root/state" "$dev_root/secrets" "$scratch/mushroom/staging" "$fake_bin"
+  "$dev_root/cache" "$dev_root/state" "$dev_root/secrets" "$scratch/mushroom/staging" \
+  "$scratch/mushroom/production-sim" "$fake_bin"
 
 cp "$repo_root/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/Dockerfile.dev"
 cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.yaml"
@@ -43,10 +44,10 @@ PUBLIC_APP_URL=https://dev-app.example.test
 PUBLIC_DASHBOARD_URL=https://dev-dashboard.example.test
 APP_ORIGINS=https://dev.example.test,https://dev-app.example.test,https://dev-dashboard.example.test
 TRUSTED_PROXIES=127.0.0.1/32
-API_PORT=127.0.0.1:3203
-WEB_PORT=127.0.0.1:3200
-APP_PORT=127.0.0.1:3201
-DASHBOARD_PORT=127.0.0.1:3202
+API_PORT=127.0.0.1:3303
+WEB_PORT=127.0.0.1:3300
+APP_PORT=127.0.0.1:3301
+DASHBOARD_PORT=127.0.0.1:3302
 EOF
 
 cat >"$scratch/mushroom/staging/runtime.env" <<EOF
@@ -62,6 +63,21 @@ API_PORT=127.0.0.1:3103
 WEB_PORT=127.0.0.1:3100
 APP_PORT=127.0.0.1:3101
 DASHBOARD_PORT=127.0.0.1:3102
+EOF
+
+cat >"$scratch/mushroom/production-sim/runtime.env" <<EOF
+COMPOSE_PROJECT_NAME=mushroom-production-sim
+MUSHROOM_ENV_ROOT=$scratch/mushroom/production-sim
+POSTGRES_DB=mushroom_production_sim
+POSTGRES_USER=mushroom_production_sim
+PUBLIC_API_URL=https://production-sim-api.example.test
+PUBLIC_WEB_URL=https://production-sim.example.test
+PUBLIC_APP_URL=https://production-sim-app.example.test
+PUBLIC_DASHBOARD_URL=https://production-sim-dashboard.example.test
+API_PORT=127.0.0.1:3203
+WEB_PORT=127.0.0.1:3200
+APP_PORT=127.0.0.1:3201
+DASHBOARD_PORT=127.0.0.1:3202
 EOF
 
 for secret in postgres_password database_url jwt_access_secret refresh_token_pepper \
@@ -127,7 +143,7 @@ grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
   || fail 'dependency change did not recreate watcher services'
 
 cp "$scratch/mushroom/staging/runtime.env" "$scratch/staging.original"
-sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3203/' "$scratch/staging.original" \
+sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3303/' "$scratch/staging.original" \
   >"$scratch/mushroom/staging/runtime.env"
 if run_deploy dddddddddddddddddddddddddddddddddddddddd >/dev/null 2>&1; then
   fail 'dev deployment accepted a staging port collision'

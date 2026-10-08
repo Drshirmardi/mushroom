@@ -242,10 +242,10 @@ try {
     'PUBLIC_DASHBOARD_URL=https://dev-dashboard.example.test',
     'APP_ORIGINS=https://dev.example.test,https://dev-app.example.test,https://dev-dashboard.example.test',
     'TRUSTED_PROXIES=127.0.0.1/32',
-    'API_PORT=127.0.0.1:3203',
-    'WEB_PORT=127.0.0.1:3200',
-    'APP_PORT=127.0.0.1:3201',
-    'DASHBOARD_PORT=127.0.0.1:3202',
+    'API_PORT=127.0.0.1:3303',
+    'WEB_PORT=127.0.0.1:3300',
+    'APP_PORT=127.0.0.1:3301',
+    'DASHBOARD_PORT=127.0.0.1:3302',
     '',
   ].join('\n'));
   run('docker', ['compose', '--profile', 'tools', '--env-file', envPath, '--file', 'deploy/vps/compose.dev.yaml', 'config', '--quiet']);

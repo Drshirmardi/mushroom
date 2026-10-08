@@ -231,7 +231,7 @@ chmod 600 "$HOME/mushroom/dev/runtime.env"
 
 چهار دامنهٔ `dev*.example.com` داخل `runtime.env` را با دامنه‌های واقعی عوض کنید. مسیرهای `/home/deploy/...` نیز
 باید با home واقعی `VPS_USER` برابر باشند. پورت‌های
-پیش‌فرض dev عبارت‌اند از `3200` وب، `3201` اپ، `3202` داشبورد و `3203` API؛ آن‌ها باید فقط روی `127.0.0.1` بمانند
+پیش‌فرض dev عبارت‌اند از `3300` وب، `3301` اپ، `3302` داشبورد و `3303` API؛ آن‌ها باید فقط روی `127.0.0.1` بمانند
 و با staging/production-sim تکراری نباشند.
 
 secretهای dev را جداگانه بسازید؛ هیچ secret یا database URL از محیط‌های دیگر کپی نشود:
@@ -256,10 +256,10 @@ unset db_password
 
 | hostname نمونه | upstream |
 |---|---|
-| `dev.example.com` | `http://127.0.0.1:3200` |
-| `dev-app.example.com` | `http://127.0.0.1:3201` |
-| `dev-dashboard.example.com` | `http://127.0.0.1:3202` |
-| `dev-api.example.com` | `http://127.0.0.1:3203` |
+| `dev.example.com` | `http://127.0.0.1:3300` |
+| `dev-app.example.com` | `http://127.0.0.1:3301` |
+| `dev-dashboard.example.com` | `http://127.0.0.1:3302` |
+| `dev-api.example.com` | `http://127.0.0.1:3303` |
 
 برای Nginx الگوی هر hostname چنین است؛ `server_name` و upstream را طبق جدول تکرار کنید و گواهی را با روش فعلی
 سرور صادر کنید:
@@ -270,7 +270,7 @@ server {
   server_name dev.example.com;
   # ssl_certificate / ssl_certificate_key: managed by the server's existing ACME setup
   location / {
-    proxy_pass http://127.0.0.1:3200;
+    proxy_pass http://127.0.0.1:3300;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;

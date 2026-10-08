@@ -1,5 +1,44 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R10 — shared-dev port collision corrective
+
+Task ID: F12-T02-R10
+Batch ID: F12-B15-R1
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- The first `dev` source-sync stopped before Docker operations with `API_PORT crosses into production-sim`.
+- The live staging containers correctly occupy `3100–3103`; the server's configured `production-sim/runtime.env`
+  reserves `3200–3203`, which were mistakenly selected as the initial dev defaults. The collision guard behaved as
+  designed even though production-sim containers were not running.
+
+Changed files:
+
+- `deploy/vps/dev-env.example`, `deploy/vps/README.md`
+- `scripts/test-vps-dev.sh`, `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- `bash scripts/test-vps-dev.sh` → PASS; it now configures staging on `3100–3103` and production-sim on
+  `3200–3203`, accepts dev on `3300–3303`, and still rejects a deliberate collision.
+- `pnpm release:test` → PASS
+- exact dev deployment/reference scan and `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** Shared dev defaults and documented Nginx targets are now `3300` web, `3301` app,
+  `3302` dashboard and `3303` API. No production-sim setting, container, database, secret or release artifact is
+  changed.
+
+External next action:
+
+- Update only `/home/deploy/mushroom/dev/runtime.env` and the four dev virtual-host `proxy_pass` values, push this
+  corrective to `dev`, then rerun/observe `Sync shared dev VPS`.
+
 ## F12-T02-R9 — fast isolated shared development delivery
 
 Task ID: F12-T02-R9
