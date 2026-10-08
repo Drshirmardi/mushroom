@@ -1,5 +1,52 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R10 — Caddy-aligned shared-dev VPS guide
+
+Task ID: F12-T02-R10
+Batch ID: F12-B02-R10
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Owner request:
+
+- Replace the Nginx-oriented instructions with the server's actual Caddy topology, provide one complete and real
+  shared-dev VPS guide, and link it from the root README before continuing activation.
+
+Changed files:
+
+- `docs/DEVELOPMENT-VPS.md`
+- `README.md`, `deploy/vps/README.md`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Live read-only evidence:
+
+- `dev.roxco.ir`, `dev-app.roxco.ir`, `dev-dashboard.roxco.ir` and `dev-api.roxco.ir` all resolve to the current VPS
+  `46.8.228.24`.
+- Caddy is installed, active and enabled on public ports `80/443`. Nginx was installed by the earlier command but is
+  failed and enabled, confirming that it must be disabled rather than configured alongside Caddy.
+- `/home/deploy/mushroom/dev` has the independent runtime file, six non-empty secret files with mode `600`, and
+  workspace/cache/state directories owned by `deploy`. Its public URLs and loopback bindings are the approved
+  `roxco.ir` dev hostnames and `3200-3203`; those four ports were still free before first sync.
+
+Verification:
+
+- Proposed four-site Caddy configuration combined with the live staging Caddyfile → `Valid configuration` using
+  Caddy's own Caddyfile adapter; no server configuration was mutated by this check.
+- `pnpm release:test` → PASS; existing release and shared-dev contracts remain unchanged.
+- Local Markdown target check for the root, standalone dev-VPS and VPS CI/CD guides → PASS.
+- `git diff --check` and owned-path review → PASS.
+
+Result and next action:
+
+- **PASS / DONE.** The repository now has a standalone operator sequence for prerequisites, DNS, isolated runtime and
+  secrets, disabling the conflicting Nginx unit, Caddy automatic HTTPS/WebSocket proxying, GitHub activation, first
+  sync, daily updates and safe diagnostics. The existing VPS guide no longer directs this host to Nginx/Certbot.
+- Live activation remains an external owner action requiring root: disable Nginx, install and validate the documented
+  Caddy site file and reload Caddy. After the implementation PR is merged, enable `VPS_DEV_CD_ENABLED`, create `dev`
+  from accepted `main` and observe its first workflow. No live container, secret, Caddyfile, GitHub setting or branch
+  was changed in this task.
+
 ## F12-T02-R9 — fast isolated shared development delivery
 
 Task ID: F12-T02-R9

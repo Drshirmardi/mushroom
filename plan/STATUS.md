@@ -50,6 +50,34 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` owner-requested documentation corrective)
+Batch status: `DONE` (Caddy-aligned shared-dev activation guide)
+
+- Task ID: `F12-T02-R10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R9` shared-dev implementation.
+  - Scope: replace the incorrect Nginx/Certbot activation path with the VPS's existing Caddy path, add a complete
+    standalone shared-dev VPS guide, link it from the root README and preserve all release/runtime boundaries.
+  - Owned paths: `README.md`, `docs/DEVELOPMENT-VPS.md`, `deploy/vps/README.md`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Expected verification: documentation link/path checks, command/config review against the live server facts,
+    release/dev contract tests where applicable and `git diff --check`.
+  - Review: PASS — the standalone operator guide uses the host's existing Caddy/TLS path, keeps staging routes and
+    loopback ports intact, handles the accidentally enabled Nginx service, and links the shared-dev workflow from the
+    root README. It makes no runtime, workflow, secret or release-contract change.
+  - Verification: all four dev DNS records resolve to the VPS; live metadata confirms Caddy active/enabled, Nginx
+    failed/enabled, isolated dev runtime/secrets present with mode `600`, and ports `3200-3203` free. The proposed four
+    Caddy site blocks validate against the live Caddyfile. `pnpm release:test`, local Markdown link checks and
+    `git diff --check` PASS.
+  - External next action: with root, disable Nginx and add/validate/reload the documented Caddy site file; then merge
+    the dev-environment PR, set `VPS_DEV_CD_ENABLED=true`, create branch `dev` from accepted `main` and inspect the
+    first `Sync shared dev VPS` run. No new batch is started here.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R9
 
 Coordinator/Thread: `Codex /root`
