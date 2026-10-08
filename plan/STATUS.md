@@ -50,22 +50,28 @@
 
 ## handoff فاز فعال
 
-## batch فعال — F12-B14-R1
+## آخرین batch تکمیل‌شده — F12-B14-R1
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-08 +03:30`
 Phase: `12-PRODUCTION-HARDENING` (`F07-T11` CI reliability corrective)
-Batch status: `IN_PROGRESS`
+Batch status: `DONE` (prescription concurrency-test reliability corrective)
 Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`
 
 - Task ID: `F07-T11-R1`
   - Agent/Thread: `Codex /root`
-  - Status: `CLAIMED`
+  - Status: `DONE`
   - Scope: remove the nondeterministic winner assumption from the real-PostgreSQL concurrent prescription revision
     assertion while preserving the one-winner/one-conflict and exact issued-evidence contract.
   - Owned paths: `apps/api/test/prescription.integration.spec.ts`; coordinator-only
     `plan/{STATUS.md,logs/phase-12.md}`.
-  - Expected verification: focused prescription integration test on PostgreSQL, API typecheck and `git diff --check`.
+  - Review: PASS — the test still requires exactly one committed revision and one stale-revision conflict, but now
+    verifies issued/history evidence against whichever concurrent request PostgreSQL serialized first.
+  - Verification: CI run `37727025727` passed the original race; post-merge run `37727664058` reproduced the opposite
+    valid winner and isolated the sole flaky assertion. Patched main CI run `37729167480`, API typecheck and
+    `git diff --check` PASS.
+  - Next eligible work: no batch is started in this handoff; the requested isolated fast dev environment can be
+    claimed next without modifying the production release path.
 
 ## آخرین batch تکمیل‌شده — F12-B13-R1
 

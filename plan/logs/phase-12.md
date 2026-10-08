@@ -1,5 +1,45 @@
 # Phase 12 Execution Evidence
 
+## F07-T11-R1 — deterministic concurrent prescription test assertion
+
+Task ID: F07-T11-R1
+Batch ID: F12-B14-R1
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed failure:
+
+- Pull-request CI run `37727025727` passed the PostgreSQL prescription concurrency test.
+- The same product code in post-merge main CI run `37727664058` committed the other concurrent request first. The
+  database still produced exactly one revision and rejected the stale competitor with
+  `PRESCRIPTION_REVISION_CONFLICT`, but the test hard-coded the first payload as the winner and failed at line 89.
+- The failure was isolated to one assertion: 94 other test files and 384 other tests passed.
+
+Changed files:
+
+- `apps/api/test/prescription.integration.spec.ts`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- comparative CI evidence from runs `37727025727` and `37727664058` → both legal serialization orders observed
+- patched main CI run `37729167480` → PASS
+- API typecheck, including Prisma generation → PASS
+- `git diff --check` → PASS
+- local PostgreSQL rerun was unavailable because this host has neither a PostgreSQL listener nor Docker engine; the
+  required PostgreSQL integration coverage passed in the main CI service database
+
+Result:
+
+- **PASS / DONE.** The test derives the expected persisted item from the fulfilled concurrent request. It retains
+  assertions for one success, one stale conflict, revision number/parentage, issued integrity evidence, immutable
+  history and later amendment behavior without imposing an invalid promise-scheduling order.
+
+Next batch:
+
+- No batch is started in this handoff. The requested isolated fast dev environment is eligible as a separate batch.
+
 ## F12-T02 — non-root VPS file-secret ownership corrective
 
 Task ID: F12-T02
