@@ -5,7 +5,7 @@ command_name=${1:-}
 
 read_secret() {
   local name=$1
-  local path="/run/secrets/$name"
+  local path="/run/secrets/${name,,}"
   [[ -r $path ]] || { printf '%s is not readable\n' "$path" >&2; exit 1; }
   printf -v "$name" '%s' "$(<"$path")"
   export "$name"

@@ -1,5 +1,44 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R12 — shared-dev secret mount name corrective
+
+Task ID: F12-T02-R12
+Batch ID: F12-B02-R12
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- After the dev build context was corrected, the runtime image built and the isolated PostgreSQL container became
+  healthy. The one-shot bootstrap then stopped at `/run/secrets/DATABASE_URL is not readable`.
+- Compose mounts the declared `database_url` secret at `/run/secrets/database_url`; the shared dev loader used the
+  upper-case environment-variable name as the filename. The same mismatch affected JWT, refresh pepper and both
+  payment-key secrets that API startup would read next.
+
+Changed files:
+
+- `deploy/vps/dev-service.sh`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- `pnpm release:test` → PASS, including the lower-case file-secret mapping contract
+- `bash scripts/test-vps-dev.sh` → PASS
+- `bash -n deploy/vps/dev-service.sh` → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The loader lowercases only the mounted filename while retaining the existing upper-case exported
+  environment variable. No secret value, host permission, database state, staging or production-sim path changed.
+
+External next action:
+
+- Push the corrective to `dev` and observe the next `Sync shared dev VPS`. The already-created isolated PostgreSQL
+  container and volume are safe to retain; bootstrap will continue idempotently.
+
 ## F12-T02-R11 — shared-dev build-context and Caddy corrective
 
 Task ID: F12-T02-R11

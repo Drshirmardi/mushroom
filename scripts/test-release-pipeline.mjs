@@ -151,6 +151,10 @@ assert(devCompose.includes('cap_drop: [ALL]'), 'shared dev Node services must dr
 for (const required of ['write_runtime_configs', 'apps/${application}/public/runtime-config.js']) {
   assert(devServiceScript.includes(required), `dev frontend runtime configuration is missing: ${required}`);
 }
+assert(
+  devServiceScript.includes('local path="/run/secrets/${name,,}"'),
+  'dev secret loader must map upper-case environment names to lower-case Compose secret paths',
+);
 
 const validManifest = {
   schemaVersion: 1,

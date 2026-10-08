@@ -50,6 +50,34 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev lower-case secret mount corrective)
+Contract baseline: Compose mounts lower-case file-secret names while application environment variables remain
+upper-case; shared dev must translate between those names without changing secret files or release environments.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R12`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R11` build-context corrective and the first successful live dev image build.
+  - Scope: make the shared dev secret loader read Compose's lower-case `/run/secrets/*` paths while exporting the
+    existing upper-case API environment variables, and add a regression contract assertion.
+  - Owned paths: `deploy/vps/dev-service.sh`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev file-secret adapter only; no secret value, application contract, database,
+    staging or production-sim change.
+  - Expected verification: dev/release contract suite, VPS behavior simulation, shell syntax and `git diff --check`.
+  - Review: PASS — one shared loader now maps upper-case environment-variable names to Compose's lower-case secret
+    filenames, covering database, JWT, refresh pepper and both payment-key files without changing their values.
+  - Verification: `pnpm release:test`, `bash scripts/test-vps-dev.sh`, `bash -n deploy/vps/dev-service.sh` and
+    `git diff --check` PASS.
+  - External next action: push this commit to `dev`; the existing PostgreSQL volume/container may remain in place and
+    the sync can resume bootstrap without recreating secrets. No batch is started in this handoff.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R11
 
 Coordinator/Thread: `Codex /root`
