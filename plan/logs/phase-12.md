@@ -1,5 +1,43 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R13 — shared-dev API compiler heap corrective
+
+Task ID: F12-T02-R13
+Batch ID: F12-B02-R13
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- The API container stayed below its Compose memory limit (`oom=false`) but restarted seven times while readiness on
+  host port `3303` returned empty/reset connections.
+- The API log terminated inside V8 with `JavaScript heap out of memory` near a `512 MiB` old-space ceiling. This was
+  the initial TypeScript compilation run by `apps/api/scripts/dev.mjs`; PostgreSQL remained healthy.
+
+Changed files:
+
+- `apps/api/scripts/dev.mjs`
+- `apps/api/test/dev-runtime.spec.ts`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- focused API dev-runtime test → PASS (1 file / 3 tests)
+- API build (`tsc -p tsconfig.build.json`) → PASS
+- `node --check apps/api/scripts/dev.mjs` → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** Initial and watch-mode TypeScript compiler subprocesses now receive a `768 MiB` V8 old-space
+  ceiling. The Nest runtime, Compose `1g` API memory limit, other services, database, secrets and release environments
+  are unchanged.
+
+External next action:
+
+- Push the corrective to `dev` and rerun `Sync shared dev VPS`. No manual server configuration change is required.
+
 ## F12-T02-R12 — shared-dev secret mount name corrective
 
 Task ID: F12-T02-R12

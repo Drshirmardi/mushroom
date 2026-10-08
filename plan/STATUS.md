@@ -50,6 +50,33 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R13
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev API compiler heap corrective)
+Contract baseline: shared dev keeps its existing `1g` API container limit; only the TypeScript compiler subprocess
+receives a larger V8 old-space ceiling so the application runtime and other services are unaffected.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R13`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R12` secret-mount corrective and live logs proving compiler heap exhaustion.
+  - Scope: prevent the shared-dev API compiler from restarting at the container-aware default V8 heap ceiling and
+    add a focused regression assertion.
+  - Owned paths: `apps/api/scripts/dev.mjs`, `apps/api/test/dev-runtime.spec.ts`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: API development compiler process only; no production runtime, container limit,
+    database, secret, staging or production-sim change.
+  - Expected verification: focused API dev-runtime test, API development build, Node syntax and `git diff --check`.
+  - Review: PASS — both TypeScript compiler invocations receive a `768 MiB` V8 old-space ceiling while the Nest
+    runtime and the existing `1g` API container limit remain unchanged.
+  - Verification: focused API dev-runtime test (3/3), API build, Node syntax and `git diff --check` PASS.
+  - External next action: push this commit to `dev` and rerun `Sync shared dev VPS`; no server-side environment,
+    database, secret, Caddy or port change is required.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R12
 
 Coordinator/Thread: `Codex /root`

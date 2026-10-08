@@ -3,11 +3,12 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const typescriptCompiler = require.resolve('typescript/bin/tsc');
+const compilerArguments = ['--max-old-space-size=768', typescriptCompiler];
 const buildArguments = ['-p', 'tsconfig.build.json'];
 
 const initialBuild = spawnSync(
   process.execPath,
-  [typescriptCompiler, ...buildArguments],
+  [...compilerArguments, ...buildArguments],
   { stdio: 'inherit' },
 );
 
@@ -19,7 +20,7 @@ const children = [
   spawn(
     process.execPath,
     [
-      typescriptCompiler,
+      ...compilerArguments,
       ...buildArguments,
       '--watch',
       '--preserveWatchOutput',

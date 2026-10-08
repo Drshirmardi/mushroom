@@ -17,6 +17,7 @@ describe('API development runtime', () => {
     expect(packageJson.scripts?.['start:dev']).toBe('node scripts/dev.mjs');
     expect(packageJson.type).toBe('commonjs');
     expect(developmentRunner).toContain("require.resolve('typescript/bin/tsc')");
+    expect(developmentRunner).toContain("'--max-old-space-size=768'");
     expect(developmentRunner).toContain("'--watch'");
     expect(developmentRunner).toContain("'dist/main.js'");
     expect(developmentRunner).not.toContain('tsx');
