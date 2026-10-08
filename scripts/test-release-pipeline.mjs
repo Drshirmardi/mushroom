@@ -47,7 +47,7 @@ for (const required of [
   "github.event.workflow_run.head_branch == 'main'",
   'packages: write',
   'packages: read',
-  'environment: staging-vps',
+  'name: Validate repository-scoped VPS inputs',
   "vars.VPS_CD_ENABLED == 'true'",
   "vars.GHCR_ATTESTATIONS_ENABLED == 'true'",
 ]) assert(releaseWorkflow.includes(required), `release workflow is missing: ${required}`);
@@ -72,10 +72,14 @@ for (const required of [
   '.name == "deploy-staging" and .conclusion == "success"',
   'run-id: ${{ inputs.release_run_id }}',
   'ref: ${{ steps.manifest.outputs.source-sha }}',
-  'environment: production-sim',
+  'name: Validate repository-scoped VPS inputs',
 ]) assert(promoteWorkflow.includes(required), `manual promotion workflow is missing: ${required}`);
+for (const workflow of [releaseWorkflow, promoteWorkflow, rollbackWorkflow]) {
+  assert(!workflow.includes('environment: staging-vps'), 'Free-plan VPS workflow must not require staging Environment');
+  assert(!workflow.includes('environment: production-sim'), 'Free-plan VPS workflow must not require production Environment');
+}
 assert(rollbackWorkflow.includes('workflow_dispatch:'), 'rollback must be an explicit operator action');
-assert(rollbackWorkflow.includes("inputs.environment == 'staging'"), 'rollback must use the selected protected environment');
+assert(rollbackWorkflow.includes("inputs.environment == 'production-sim'"), 'production-sim rollback must retain its owner gate');
 assert(rollbackWorkflow.includes('ref: main'), 'rollback must run the versioned script from protected main');
 
 for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down', 'POSTGRES_PASSWORD=']) {

@@ -20,7 +20,6 @@ jobs:
     concurrency:
       group: deploy-production-sim-vps
       cancel-in-progress: false
-    environment: production-sim
     steps:
       - name: Authorize the explicit owner promotion
         env:
@@ -31,6 +30,17 @@ jobs:
           test "$VPS_CD_ENABLED" = 'true' || { echo 'VPS CD is not enabled'; exit 1; }
           test -n "$APPROVER" || { echo 'RELEASE_APPROVER is not configured'; exit 1; }
           test "${ACTOR,,}" = "${APPROVER,,}" || { echo "Only RELEASE_APPROVER may promote"; exit 1; }
+      - name: Validate repository-scoped VPS inputs
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -n "$VPS_HOST" || { echo 'VPS_HOST repository secret is not configured'; exit 1; }
+          test -n "$VPS_USER" || { echo 'VPS_USER repository secret is not configured'; exit 1; }
+          test -n "$SSH_PRIVATE_KEY" || { echo 'VPS_SSH_PRIVATE_KEY repository secret is not configured'; exit 1; }
+          test -n "$SSH_KNOWN_HOSTS" || { echo 'VPS_KNOWN_HOSTS repository secret is not configured'; exit 1; }
       - id: accepted
         name: Verify the source workflow and successful staging job
         env:

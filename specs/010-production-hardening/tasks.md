@@ -73,7 +73,7 @@ release manifest, workflows and remote deployment contract are shared single-wri
 - [x] T004 [US2] Wire automatic staging and owner-dispatched production-sim promotion in `.github/workflows/release.yml` and `.github/workflows/promote.yml`
 - [x] T005 [US2] Add explicit owner-gated application rollback in `.github/workflows/rollback.yml` and `deploy/vps/deploy-release.sh`
 - [x] T006 [US2] Validate workflow permissions, manifest immutability, isolation and rollback behavior in `scripts/test-release-pipeline.mjs`
-- [x] T007 [US2] Document GitHub Environment/VPS bootstrap and update rehearsal in `docs/PRODUCTION.md` and `deploy/vps/README.md`
+- [x] T007 [US2] Document GitHub repository-credential/VPS bootstrap and update rehearsal in `docs/PRODUCTION.md` and `deploy/vps/README.md`
 - [x] T008 [US2] Record local verification and external VPS inputs in `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md` and `plan/STATUS.md`
 
 **Independent test**: with no live provider, schema and pipeline tests prove a successful `main` CI is required,

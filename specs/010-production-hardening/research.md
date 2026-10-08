@@ -66,7 +66,8 @@ polling agent or provider SDK.
 The one-VPS rehearsal uses two independent deployment roots and Compose project names. `staging` is automatic after a
 successful protected-main CI/publication run. `production-sim` consumes the exact staging manifest only through a
 manual promotion workflow run by the configured owner. This explicit dispatch is the portable approval gate for a
-private repository; an Environment required reviewer is additional protection where the GitHub plan supports it.
+private repository. The selected GitHub Free rehearsal uses repository-scoped credentials on its one test VPS and an
+explicit owner check; separately scoped credentials and an approval-capable control plane remain mandatory for real production.
 Private GHCR pull access exists only for the duration of deployment via a temporary Docker configuration and a
 read-only job token; it is not persisted under the deploy user's home.
 

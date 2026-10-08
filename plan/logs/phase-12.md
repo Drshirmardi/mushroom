@@ -1,5 +1,56 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 — private GitHub Free test-VPS CD boundary
+
+Task ID: F12-T02
+Batch ID: F12-B02-R7
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed baseline:
+
+- Protected-main CI run `37711152615` for SHA `fc4f18fa5a8a999b49ff457588104d5a8c3f0d5a` passed.
+- Release run `37711880141` passed publication and retained artifact
+  `release-fc4f18fa5a8a999b49ff457588104d5a8c3f0d5a`; staging was correctly skipped while CD was disabled.
+- Repository Actions metadata reported zero repository variables and zero repository secrets before activation.
+- The private organization repository uses GitHub Free, which cannot configure GitHub Environments for a private
+  repository; retaining those job references would make live deployment unavailable on the selected plan.
+
+Changed files:
+
+- `.github/workflows/release.yml`
+- `.github/workflows/promote.yml`
+- `.github/workflows/rollback.yml`
+- `.github/CI.md`
+- `deploy/vps/README.md`
+- `scripts/test-release-pipeline.mjs`
+- `specs/010-production-hardening/plan.md`
+- `specs/010-production-hardening/quickstart.md`
+- `plan/decisions/ADR-0012-free-plan-test-vps-cd.md`
+- `plan/STATUS.md`
+- `plan/logs/phase-12.md`
+
+Verification:
+
+- `pnpm release:test` → PASS
+- all six workflow YAML files parsed → PASS
+- actionlint → PASS
+- owner-gate, manifest, SSH host-key and least-privilege permission review → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The one-host non-production rehearsal now uses repository-scoped SSH inputs supported on GitHub
+  Free. staging remains gated by `VPS_CD_ENABLED`; production-sim remains manual and actor-gated; immutable digests,
+  temporary GHCR authentication and isolated VPS state are unchanged.
+
+Known limitation and next action:
+
+- This shared credential boundary is accepted only for the test VPS. Real production must use separately scoped
+  credentials and an approval-capable control plane. Configure the documented repository secrets/variables before
+  setting `VPS_CD_ENABLED=true`; live baseline/two-update/rollback evidence remains part of F12-T13.
+
 ## F12-T02 — GitHub Free-plan attestation corrective
 
 Task ID: F12-T02

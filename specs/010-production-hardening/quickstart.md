@@ -16,8 +16,8 @@
    verify all services, record the release and automatically restore the previous application manifest on failure.
 5. Review staging evidence, then manually run `Promote staging release` with that release workflow run ID. The workflow
    revalidates staging success and the configured owner before continuing.
-6. If configured and supported by the GitHub plan, approve the additional `production-sim` Environment review. Deploy
-   the same digests to the isolated project and record the result.
+6. Deploy the same digests to the isolated `production-sim` project only after the workflow verifies the configured
+   owner, and record the result. The private GitHub Free rehearsal uses repository-scoped credentials for its one VPS.
 7. Repeat steps 1–6 for at least two sequential updates, then run controlled staging and approved production-sim
    rollback rehearsals. Confirm test data survived and no database rollback command ran.
 8. Treat the VPS outcome as non-production evidence. Provider backup, managed-secret, availability and Sadad gates
