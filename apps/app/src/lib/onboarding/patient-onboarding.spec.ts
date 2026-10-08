@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { createApiClient } from "@sabz-zendegi/api-client";
 
-import { onboardingErrorMessage, PatientOnboardingRequestError, updateSelfProfile } from "./patient-onboarding";
+import { loadConsentPolicy, loadSelfProfile, onboardingErrorMessage, PatientOnboardingRequestError, updateSelfProfile } from "./patient-onboarding";
 
 describe("patient onboarding request errors", () => {
   it("does not misrepresent authorization failures as an empty profile", () => {
@@ -43,5 +44,38 @@ describe("patient onboarding request errors", () => {
 
   it("explains generic validation responses", () => {
     expect(onboardingErrorMessage(new PatientOnboardingRequestError(400, "BAD_REQUEST"))).toContain("معتبر نیست");
+  });
+
+  it("uses the parsed openapi error after the response body has been consumed", async () => {
+    const client = createApiClient({
+      baseUrl: "https://api.example.test",
+      fetch: vi.fn(async () => new Response(JSON.stringify({
+        code: "CONSENT_POLICY_NOT_AVAILABLE",
+        message: "No current consent policy is available.",
+        details: {},
+      }), { status: 503, headers: { "content-type": "application/json" } })),
+    });
+
+    await expect(loadConsentPolicy("access-token", client)).rejects.toMatchObject({
+      status: 503,
+      code: "CONSENT_POLICY_NOT_AVAILABLE",
+    });
+  });
+
+  it("loads a profile without requesting consent or medical-intake resources", async () => {
+    const get = vi.fn().mockResolvedValue({
+      data: { patientId: "patient-1", phone: "+989121234567", accountStatus: "ACTIVE" },
+      response: new Response(null, { status: 200 }),
+    });
+
+    await loadSelfProfile("access-token", { GET: get } as never);
+
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(get).toHaveBeenCalledWith("/v1/patients/me", expect.any(Object));
+  });
+
+  it("uses read-specific wording for an unrecognized load failure", () => {
+    expect(onboardingErrorMessage(new PatientOnboardingRequestError(500, "INTERNAL_SERVER_ERROR"), "load"))
+      .toContain("دریافت اطلاعات");
   });
 });

@@ -102,8 +102,10 @@ run_deploy() {
   local incoming="$test_home/.mushroom-incoming/$run_id-$environment"
   mkdir -p "$incoming"
   cp "$repository_root/deploy/vps/compose.yaml" "$incoming/compose.yaml"
+  cp "$repository_root/deploy/vps/reference-data/rehearsal-consent-policy.json" "$incoming/rehearsal-consent-policy.json"
   printf 'ephemeral-token' | bash "$repository_root/deploy/vps/deploy-release.sh" \
-    "$action" "$environment" "$manifest" "$incoming/compose.yaml" github-actions "$incoming"
+    "$action" "$environment" "$manifest" "$incoming/compose.yaml" github-actions "$incoming" \
+    "$([[ $action == deploy ]] && printf '%s' "$incoming/rehearsal-consent-policy.json" || printf '-')"
 }
 
 run_deploy deploy staging "$scratch/release-1.json" 1
@@ -139,10 +141,13 @@ run_deploy rollback production-sim - 6
 [[ ! -e $HOME/.docker/config.json ]] || exit 1
 
 first_migration=$(grep -n 'migrate deploy' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
+first_policy_publish=$(grep -n 'manage-consent-policy.mjs publish' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
+first_policy_verify=$(grep -n 'manage-consent-policy.mjs verify' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
 first_secret_prepare=$(grep -n -- '--cap-add CHOWN' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
 first_switch=$(grep -n -- '--wait' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
 [[ $first_secret_prepare -lt $first_migration ]] || { printf 'secret permissions were not prepared before migration\n' >&2; exit 1; }
-[[ $first_migration -lt $first_switch ]] || { printf 'migration did not precede application switching\n' >&2; exit 1; }
+[[ $first_migration -lt $first_policy_publish && $first_policy_publish -lt $first_policy_verify && $first_policy_verify -lt $first_switch ]] \
+  || { printf 'migration, policy publication and verification did not precede application switching\n' >&2; exit 1; }
 grep -q -- '--network none' "$FAKE_DOCKER_LOG" || { printf 'secret permission helper must have no network\n' >&2; exit 1; }
 grep -q -- '--cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE' "$FAKE_DOCKER_LOG" \
   || { printf 'secret permission helper capabilities are not bounded\n' >&2; exit 1; }

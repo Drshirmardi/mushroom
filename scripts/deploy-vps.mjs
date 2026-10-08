@@ -45,8 +45,9 @@ if (!/^\d{1,5}$/u.test(port) || Number(port) < 1 || Number(port) > 65535) {
 const root = resolve(import.meta.dirname, '..');
 const composePath = resolve(root, 'deploy/vps/compose.yaml');
 const deployScriptPath = resolve(root, 'deploy/vps/deploy-release.sh');
+const rehearsalConsentPolicyPath = resolve(root, 'deploy/vps/reference-data/rehearsal-consent-policy.json');
 const manifestPath = action === 'deploy' ? resolve(manifestArgument) : null;
-for (const file of [composePath, deployScriptPath, manifestPath].filter(Boolean)) {
+for (const file of [composePath, deployScriptPath, rehearsalConsentPolicyPath, manifestPath].filter(Boolean)) {
   if (!existsSync(file)) throw new Error(`Required deployment input is missing: ${file}`);
 }
 
@@ -83,10 +84,13 @@ const scpOptions = [
   '-o', `UserKnownHostsFile=${process.env.VPS_KNOWN_HOSTS_PATH}`,
 ];
 const inputs = [composePath, deployScriptPath];
-if (manifestPath) inputs.push(manifestPath);
+if (manifestPath) inputs.push(manifestPath, rehearsalConsentPolicyPath);
 run('scp', [...scpOptions, ...inputs, `${target}:${remoteDirectory}/`]);
 
 const remoteManifest = manifestPath ? `${remoteDirectory}/${manifestPath.split(/[\\/]/u).at(-1)}` : '-';
+const remoteConsentPolicy = manifestPath
+  ? `${remoteDirectory}/${rehearsalConsentPolicyPath.split(/[\\/]/u).at(-1)}`
+  : '-';
 const remoteCommand = [
   'bash',
   `${remoteDirectory}/deploy-release.sh`,
@@ -96,6 +100,7 @@ const remoteCommand = [
   `${remoteDirectory}/compose.yaml`,
   process.env.GHCR_USERNAME,
   remoteDirectory,
+  remoteConsentPolicy,
 ].map((part) => `'${part.replaceAll("'", "'\\''")}'`).join(' ');
 
 run('ssh', [...sshOptions, target, remoteCommand], { input: process.env.GHCR_TOKEN });

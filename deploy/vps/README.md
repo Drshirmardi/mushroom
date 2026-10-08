@@ -7,6 +7,11 @@
 
 این topology برای تمرین انتشار است. داده، credential و اتصال واقعی سداد در آن مجاز نیست.
 
+فایل versioned [`reference-data/rehearsal-consent-policy.json`](reference-data/rehearsal-consent-policy.json)
+فقط برای همین دو محیط تمرینی مجاز است. متن آن صریحاً دادهٔ واقعی بیمار را منع می‌کند و ابزار انتشار، محیط مجاز و
+SHA-256 دقیق body را پیش از هر write بررسی می‌کند. این فایل policy حقوقی production نیست و در محیط `production`
+رد می‌شود.
+
 ## ۱. پیش‌نیاز سرور
 
 یک Linux VPS اختصاصی تست با Docker Engine، Compose v2، `curl` و `jq` لازم است. یک مدیر سرور یک کاربر بدون
@@ -139,7 +144,8 @@ evidence تکمیلی provenance اضافه می‌کند و artifact قابل p
 2. بعد از merge، CI دوباره روی `main` اجرا می‌شود.
 3. فقط آخرین commit موفق `main` چهار image را build، smoke-test، scan و در GHCR خصوصی publish می‌کند.
 4. release manifest شامل چهار digest و شناسهٔ CI ثبت و attest می‌شود.
-5. staging از طریق SSH pinned، migration و health check به‌روز می‌شود و workflow خودکار پایان می‌یابد.
+5. staging از طریق SSH pinned، migration، انتشار idempotent policy تمرینی، verification آن و health check به‌روز
+   می‌شود و workflow خودکار پایان می‌یابد.
 6. مالک از `Actions → Promote staging release → Run workflow` شناسهٔ همان release run را وارد می‌کند.
 7. workflow نام مالک، موفقیت staging و manifest را دوباره کنترل می‌کند و همان digestها را بدون rebuild روی
    production-sim اجرا می‌کند.
@@ -147,6 +153,13 @@ evidence تکمیلی provenance اضافه می‌کند و artifact قابل p
 اگر migration شکست بخورد، application جدید switch نمی‌شود. اگر staging بعد از migration healthy نشود، script فقط
 application digestهای قبلی را برمی‌گرداند و schema گسترش‌یافته را نگه می‌دارد. production-sim به‌صورت خودکار rollback
 نمی‌شود.
+
+اگر policy تمرینی missing، دست‌کاری‌شده، خارج از محیط مجاز یا ناسازگار با نسخهٔ فعال باشد، deployment پیش از switch
+برنامه متوقف می‌شود. انتشار نسخهٔ جدید ابتدا نسخهٔ ACTIVE قبلی را در همان transaction بازنشسته می‌کند، نسخهٔ جدید
+را فعال می‌کند و evidence غیرحساس release را در audit ثبت می‌کند. اجرای seed توسعه روی VPS بخشی از این مسیر نیست.
+
+برای production واقعی باید سند جداگانه با متن حقوقی تأییدشده، hash بازبینی‌شده و `allowedEnvironments` مناسب از مسیر
+approval مالک محصول/حقوقی ارائه شود؛ فایل rehearsal نباید کپی یا تغییرنام داده شود.
 
 ## ۶. rollback کنترل‌شده
 

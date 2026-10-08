@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "policyKey": "MEDICAL_INTAKE_PROCESSING",
+  "versionNumber": 1,
+  "locale": "fa-IR",
+  "title": "رضایت پردازش اطلاعات پزشکی اولیه — محیط آزمایشی",
+  "body": "این محیط صرفاً برای آزمون فنی است و نباید حاوی اطلاعات واقعی بیمار باشد. با ثبت اطلاعات پزشکی خوداظهاری آزمایشی، رضایت می‌دهم این داده‌های غیرواقعی فقط برای بررسی جریان پرونده اولیه در محیط تمرینی پردازش شوند.",
+  "contentHash": "0568d01c129096d715e6dafab70a68b9c053e4386fc25dfe014617132952b838",
+  "allowedEnvironments": ["staging", "production-sim"]
+}

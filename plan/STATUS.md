@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-05`
+- آخرین به‌رورسانی: `2026-10-08`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -49,6 +49,35 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — F12-B13-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F02-T08` release-readiness corrective)
+Batch status: `DONE` (patient profile and consent-policy release corrective)
+Contract baseline: `plan/contracts/patient-onboarding-v1.md`; missing policy remains fail-closed and no production
+placeholder may be introduced.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+- Task ID: `F02-T08-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Scope: restore newly registered patient profile access when the consent policy is unavailable, preserve the
+    explicit onboarding blocker, expose the real generated-client error code, and add release-safe consent-policy
+    verification/provisioning support without running the development seed.
+  - Owned paths: `apps/app/src/lib/onboarding/**`, `apps/app/src/app/(app)/profile/**`, focused app tests;
+    `apps/api/prisma/*consent-policy*`, `apps/api/package.json`, focused API/script tests; VPS release scripts,
+    deployment documentation and their contract tests; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: consent-policy lifecycle and VPS release activation sequence; no schema/OpenAPI change.
+  - Review: PASS — profile/edit/medical views now load only their own resources; generated-client error bodies retain
+    stable error codes; onboarding remains explicitly fail-closed when consent is unavailable. Rehearsal deployment
+    publishes and verifies an environment/hash-bound policy after migrations and before application activation.
+  - Verification: focused app 10/10 and consent-policy 3/3 tests, full app 48/48 tests, app/API typechecks and builds,
+    release/VPS contracts, shell/Node syntax and `git diff --check` PASS. The full API integration suite was not
+    asserted because no local PostgreSQL listener or Docker engine is available; failures stopped at database setup.
+  - Next eligible work: no batch is started. Deploy this commit through the existing release path and confirm a new
+    patient can open profile and complete consent in staging; production still requires a separately approved policy.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R8
 

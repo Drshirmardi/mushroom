@@ -1,5 +1,68 @@
 # Phase 12 Execution Evidence
 
+## F02-T08-R1 — patient profile and consent-policy release corrective
+
+Task ID: F02-T08-R1
+Batch ID: F12-B13-R1
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed failure:
+
+- The patient app used one four-request onboarding loader for the profile, profile-edit and medical-profile pages.
+  A missing active consent policy therefore returned `CONSENT_POLICY_NOT_AVAILABLE` and hid unrelated profile data.
+- `openapi-fetch` had already parsed the error body, but the loader tried to clone and parse the consumed response;
+  it lost the stable code and rendered the save-only fallback «ذخیره‌سازی انجام نشد» during a read.
+- The VPS release path ran migrations without publishing the release-managed consent policy. The development seed is
+  intentionally not part of deployment, so a fresh rehearsal database had no active policy.
+
+Changed files:
+
+- patient onboarding client, focused tests and profile/onboarding views under `apps/app`
+- `apps/api/prisma/manage-consent-policy.mjs`, package scripts and focused release-document tests
+- rehearsal-only versioned policy under `deploy/vps/reference-data/`
+- VPS release/deploy helpers, behavior contracts and deployment documentation
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- focused app onboarding tests → PASS (10/10)
+- focused API consent-policy document tests → PASS (3/3)
+- full app tests → PASS (12 files / 48 tests)
+- app typecheck and production build → PASS
+- API typecheck and production build → PASS
+- API entrypoint invocation of consent-policy validation → PASS
+- release-pipeline contract and VPS deployment behavior test → PASS
+- Node and shell syntax checks → PASS
+- `git diff --check` → PASS
+- full API integration test attempt → NOT ASSERTED: the environment has no reachable PostgreSQL listener and no
+  Docker engine; suites failed during database setup before exercising application assertions
+
+Result:
+
+- **PASS / DONE.** Profile, edit and medical views no longer depend on the consent-policy endpoint. A missing policy
+  blocks only onboarding/consent and is shown with an explicit read-time message.
+- The request helper now consumes the generated client's parsed error object and keeps stable API codes without
+  cloning an already-consumed response.
+- Staging and production-sim deployment now validates, publishes idempotently and verifies a versioned policy after
+  migration and before switching application services. Publication is serializable, retires the previous active
+  version atomically and records non-sensitive release evidence in `audit_events`.
+- The tracked document is visibly non-production, restricted to `staging` and `production-sim`, and protected by an
+  exact SHA-256 body hash. Development seed execution was not added to the release path.
+
+Known limitation and next action:
+
+- This work does not claim a live staging deployment from the local workspace. Promote the commit through the
+  existing immutable release workflow, then register a new staging patient and confirm profile access plus consent
+  completion.
+- Production remains fail-closed until product/legal owners provide a separate approved policy document and hash;
+  the rehearsal document is rejected when `MUSHROOM_ENVIRONMENT=production`.
+
+Next batch:
+
+- No batch is started in this handoff. Existing Phase 12 blockers remain unchanged.
+
 ## F12-T02 — non-root VPS file-secret ownership corrective
 
 Task ID: F12-T02
