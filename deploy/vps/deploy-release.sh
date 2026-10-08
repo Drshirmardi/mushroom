@@ -157,6 +157,49 @@ registry_pull() {
   docker_config=''
 }
 
+prepare_secret_permissions() {
+  local release_dir=$1
+  local api_image host_uid permission_script
+  api_image=$(sed -n 's/^API_IMAGE=//p' "$release_dir/release.env" | tail -n 1)
+  [[ $api_image == ghcr.io/*@sha256:* ]] || die "release API image is not an immutable GHCR reference"
+  host_uid=$(id -u)
+  permission_script=$(cat <<'NODE'
+const { chmodSync, chownSync } = require('node:fs');
+const ownerUid = Number.parseInt(process.env.SECRET_OWNER_UID, 10);
+if (!Number.isSafeInteger(ownerUid) || ownerUid < 1) throw new Error('SECRET_OWNER_UID is invalid');
+for (const name of [
+  'postgres_password',
+  'database_url',
+  'jwt_access_secret',
+  'refresh_token_pepper',
+  'payment_credential_encryption_key',
+  'payment_credential_decryption_keys',
+]) {
+  const path = `/run/secrets/${name}`;
+  chownSync(path, ownerUid, 65532);
+  chmodSync(path, 0o640);
+}
+NODE
+)
+
+  # Compose file secrets are bind mounts and retain host ownership. Keep the deployment user as owner while granting
+  # only the accepted Distroless runtime group read access; never make secret files world-readable.
+  docker run --rm \
+    --user 0:0 \
+    --network none \
+    --read-only \
+    --security-opt no-new-privileges \
+    --cap-drop ALL \
+    --cap-add CHOWN \
+    --cap-add FOWNER \
+    --cap-add DAC_OVERRIDE \
+    --env "SECRET_OWNER_UID=$host_uid" \
+    --mount "type=bind,src=$environment_root/secrets,dst=/run/secrets" \
+    --entrypoint /nodejs/bin/node \
+    "$api_image" \
+    -e "$permission_script"
+}
+
 probe_url() {
   local url=$1
   local attempt
@@ -213,6 +256,7 @@ if [[ $action == rollback ]]; then
   previous_release=$(<"$rollback_state")
   [[ -d $previous_release ]] || die "recorded previous release directory is missing"
   registry_pull "$previous_release"
+  prepare_secret_permissions "$previous_release"
   activate_release "$previous_release" || die "previous application release did not become healthy"
   if [[ $rollback_state == "$state_root/rollback-target" ]]; then
     rm -f -- "$state_root/rollback-target" "$state_root/pending-failed"
@@ -233,6 +277,7 @@ install -m 600 "$compose_source" "$release_dir/compose.yaml"
 release_env_from_manifest "$release_dir/release-manifest.json" "$release_dir/release.env"
 
 registry_pull "$release_dir"
+prepare_secret_permissions "$release_dir"
 
 # The database may start before migration, but application services do not switch until migration succeeds.
 compose_for "$release_dir" up -d postgres

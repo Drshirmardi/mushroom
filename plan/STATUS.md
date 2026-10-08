@@ -50,6 +50,30 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R8
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (non-root file-secret ownership corrective)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Scope: correct file-secret ownership for the accepted non-root Distroless UID/GID after the first live staging
+    deployment proved that Compose file secrets retain host ownership.
+  - Owned paths: `deploy/vps/deploy-release.sh`, `scripts/test-vps-deploy.sh`, VPS deployment documentation;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Expected verification: VPS behavior contract, release contract, shell syntax, security/ordering review and
+    `git diff --check`; live staging rerun remains external evidence.
+  - Review: PASS — the accepted API artifact now performs a no-network, read-only, capability-bounded ownership helper
+    before migration/activation. Host owner `deploy` is retained, runtime group `65532` receives read access and no
+    secret becomes world-readable.
+  - Verification: VPS behavior/release contracts, shell syntax and `git diff --check` PASS. Live run `37715705119`,
+    attempt 4, completed successfully; all five staging containers and API live/ready plus three Next HTTP probes pass.
+  - Next eligible work: no batch is started. Record baseline release `37715705119` for the later two-update and
+    rollback rehearsal; production-sim promotion remains an explicit owner operation.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R7
 
 Coordinator/Thread: `Codex /root`

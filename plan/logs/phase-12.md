@@ -1,5 +1,50 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 — non-root VPS file-secret ownership corrective
+
+Task ID: F12-T02
+Batch ID: F12-B02-R8
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed failure:
+
+- Live Release run `37715705119` published the immutable release successfully, then staging migration failed because
+  the UID/GID `65532:65532` Distroless API could not read `/run/secrets/database_url`.
+- The VPS secret files correctly began as host-owned mode `600`; Compose file secrets are bind mounts and retained
+  that ownership rather than remapping it to the application UID.
+
+Changed files:
+
+- `deploy/vps/deploy-release.sh`
+- `deploy/vps/README.md`
+- `scripts/test-vps-deploy.sh`
+- `plan/STATUS.md`
+- `plan/logs/phase-12.md`
+
+Verification:
+
+- `bash scripts/test-vps-deploy.sh` → PASS, including permission-helper-before-migration ordering and bounded runtime
+- `pnpm release:test` → PASS
+- `bash -n deploy/vps/deploy-release.sh` → PASS
+- `git diff --check` → PASS
+- live host metadata → all staging and production-sim secrets are `deploy:65532` mode `640`
+- Release run `37715705119`, attempt 4 → eligibility/publish/deploy-staging PASS
+- live staging → PostgreSQL/API/web/app/dashboard healthy; API live/ready and three Next loopback probes PASS
+
+Result:
+
+- **PASS / DONE.** Before migration or rollback activation, the trusted API image runs a short helper as root with no
+  network, a read-only root filesystem and only `CHOWN`, `FOWNER` and `DAC_OVERRIDE`. It preserves the host deployment
+  user as owner, grants read access only to runtime GID `65532`, and sets mode `640`. Application containers remain
+  non-root and secrets are never world-readable.
+
+Known limitation and next action:
+
+- Run `37715705119` is the accepted live baseline. Two sequential update deployments and controlled rollback remain
+  F12-T13 evidence. production-sim promotion remains manual and owner-gated.
+
 ## F12-T02 — private GitHub Free test-VPS CD boundary
 
 Task ID: F12-T02

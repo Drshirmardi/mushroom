@@ -139,7 +139,12 @@ run_deploy rollback production-sim - 6
 [[ ! -e $HOME/.docker/config.json ]] || exit 1
 
 first_migration=$(grep -n 'migrate deploy' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
+first_secret_prepare=$(grep -n -- '--cap-add CHOWN' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
 first_switch=$(grep -n -- '--wait' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
+[[ $first_secret_prepare -lt $first_migration ]] || { printf 'secret permissions were not prepared before migration\n' >&2; exit 1; }
 [[ $first_migration -lt $first_switch ]] || { printf 'migration did not precede application switching\n' >&2; exit 1; }
+grep -q -- '--network none' "$FAKE_DOCKER_LOG" || { printf 'secret permission helper must have no network\n' >&2; exit 1; }
+grep -q -- '--cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE' "$FAKE_DOCKER_LOG" \
+  || { printf 'secret permission helper capabilities are not bounded\n' >&2; exit 1; }
 
 printf 'VPS deploy behavior checks passed.\n'
