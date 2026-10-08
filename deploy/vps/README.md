@@ -261,28 +261,16 @@ unset db_password
 | `dev-dashboard.example.com` | `http://127.0.0.1:3202` |
 | `dev-api.example.com` | `http://127.0.0.1:3203` |
 
-برای Nginx الگوی هر hostname چنین است؛ `server_name` و upstream را طبق جدول تکرار کنید و گواهی را با روش فعلی
-سرور صادر کنید:
-
-```nginx
-server {
-  listen 443 ssl http2;
-  server_name dev.example.com;
-  # ssl_certificate / ssl_certificate_key: managed by the server's existing ACME setup
-  location / {
-    proxy_pass http://127.0.0.1:3200;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-  }
-}
-```
+روی VPS فعلی Caddy مالک پورت‌های `80/443` و TLS است. Nginx یا Certbot موازی نصب یا فعال نشود. چهار site block را
+طبق [راهنمای Development روی VPS](../../docs/DEVELOPMENT-VPS.md) به Caddy اضافه
+کنید. `reverse_proxy` در Caddy اتصال WebSocket مربوط به hot reload را نیز عبور می‌دهد و گواهی HTTPS را پس از رسیدن
+DNS و بازبودن پورت‌های عمومی به‌صورت خودکار دریافت و تمدید می‌کند.
 
 این دامنه‌ها عمومی و حاوی دادهٔ واقعی نباشند. دسترسی را در reverse proxy با VPN، allowlist IP یا authentication
 سازمانی محدود کنید؛ dev نباید با credential بیمار یا درگاه واقعی استفاده شود.
+
+راهنمای کامل و مرحله‌به‌مرحلهٔ فعال‌سازی، عیب‌یابی و کار روزمرهٔ این محیط در
+[`docs/DEVELOPMENT-VPS.md`](../../docs/DEVELOPMENT-VPS.md) قرار دارد.
 
 ### ۸.۴. فعال‌سازی GitHub و اولین sync
 
