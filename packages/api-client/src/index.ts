@@ -39,6 +39,43 @@ export interface CreateApiClientOptions {
   fetch?: typeof globalThis.fetch;
 }
 
+export type AccessTokenProvider = () => Promise<string | null>;
+
+export interface SessionAwareFetch {
+  fetch: typeof globalThis.fetch;
+  setAccessTokenProvider: (provider: AccessTokenProvider) => void;
+}
+
+/**
+ * Replaces a caller's bearer token immediately before protected requests are
+ * sent. Public requests remain untouched, so refresh/login calls cannot
+ * recursively trigger the provider.
+ */
+export function createSessionAwareFetch(
+  fetchImpl: typeof globalThis.fetch = globalThis.fetch,
+): SessionAwareFetch {
+  let accessTokenProvider: AccessTokenProvider | null = null;
+
+  return {
+    setAccessTokenProvider(provider) {
+      accessTokenProvider = provider;
+    },
+    fetch: async (input, init) => {
+      const request = new Request(input, init);
+      if (!request.headers.has('authorization') || !accessTokenProvider) {
+        return fetchImpl(request);
+      }
+
+      const accessToken = await accessTokenProvider();
+      const headers = new Headers(request.headers);
+      if (accessToken) headers.set('authorization', `Bearer ${accessToken}`);
+      else headers.delete('authorization');
+
+      return fetchImpl(new Request(request, { headers }));
+    },
+  };
+}
+
 export const createApiClient = ({
   baseUrl,
   fetch,

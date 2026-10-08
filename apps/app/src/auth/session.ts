@@ -83,7 +83,9 @@ export class AuthSessionManager {
   }
 
   private async performRefresh(): Promise<AuthSessionSnapshot> {
-    this.update({ status: "checking", authentication: null });
+    if (this.snapshot.status !== "authenticated") {
+      this.update({ status: "checking", authentication: null });
+    }
 
     try {
       const { data } = await withRequestTimeout(

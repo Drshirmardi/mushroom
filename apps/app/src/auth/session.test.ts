@@ -71,6 +71,31 @@ describe("app auth session", () => {
     });
   });
 
+  it("renews an expired access token while preserving the authenticated view", async () => {
+    let now = 1_000;
+    const renewedAuthentication = { ...authentication, accessToken: "renewed-token" };
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(jsonResponse(authentication, 200))
+      .mockResolvedValueOnce(jsonResponse(renewedAuthentication, 200));
+    const manager = new AuthSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+      () => now,
+    );
+
+    await manager.bootstrap();
+    const snapshots: string[] = [];
+    manager.subscribe(() => snapshots.push(manager.getSnapshot().status));
+    now += authentication.expiresIn * 1_000;
+
+    await expect(manager.bootstrap()).resolves.toEqual({
+      status: "authenticated",
+      authentication: renewedAuthentication,
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(snapshots).not.toContain("checking");
+  });
+
   it("becomes anonymous when refresh stalls", async () => {
     vi.useFakeTimers();
     try {

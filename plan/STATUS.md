@@ -10,8 +10,8 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `ندارد`
-- task فعال: `ندارد`
+- batch فعال: `F12-B15-R1`
+- task فعال: `F09-T04-R1`
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## پیشرفت کلان
@@ -49,6 +49,46 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## batch فعال — F12-B15-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (owner-approved release regression correctives)
+Batch status: `IN_PROGRESS`
+Contract baseline: `ADR-0001` browser session contract, accepted Phase 09 commerce boundary, and the owner-approved
+requirement that product browse/search/detail is public while patient-owned commerce mutations remain authenticated.
+Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}` and generated OpenAPI/client.
+
+- Task ID: `F01-R05`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted Phase 01 identity/session baseline and Phase 11 ADMIN-only dashboard admission.
+  - Scope: renew the memory-only access token before protected app/dashboard requests, preserve single-flight refresh
+    rotation and absolute session deadlines, and distinguish authentication expiry from real authorization denial.
+  - Owned paths: `packages/api-client/src/index.ts`, focused API-client tests,
+    `apps/app/src/{auth,components/auth,lib/api*}`, `apps/dashboard/src/{auth,components/auth,lib/api*,
+    features/settings/settings-page.tsx}`, and focused frontend tests.
+  - Shared/exclusive resource: API-client request transport and browser refresh-token rotation contract; no API
+    token/session lifetime or role policy change.
+  - Expected verification: expired-token request refresh, concurrent single-flight behavior, refreshed bearer use,
+    refresh failure, 401/403 presentation, app/dashboard tests/typechecks/builds and `git diff --check`.
+  - Review: PASS — protected requests now renew an expired memory-only access token through the existing single-flight
+    refresh session before sending, without changing access/session lifetime or exposing refresh credentials. App and
+    dashboard retain their authenticated view during renewal, and settings distinguish 401 from a real 403 denial.
+
+- Task ID: `F09-T04-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `CLAIMED`
+  - Depends on: accepted F09-T04 catalog/cart implementation; independent of F01-R05 implementation.
+  - Scope: make active product browse/search/detail public for the single active release clinic, keep cart/wishlist/
+    checkout/order/payment protected, and prevent protected personalization failures from hiding the public catalog.
+  - Owned paths: `apps/api/src/modules/commerce/catalog/{patient-commerce-catalog.controller.ts,
+    patient-commerce-catalog.service.ts}`, focused API/OpenAPI tests; `apps/app/src/app/**/store/**`, app layouts,
+    `apps/app/src/lib/commerce-catalog-api*`, focused app tests; generated OpenAPI/client.
+  - Shared/exclusive resource: commerce catalog route contract and generated OpenAPI/client; no Prisma change.
+  - Expected verification: anonymous public catalog/detail plus active-clinic filtering, protected patient commerce
+    authorization regression, OpenAPI/client freshness, app/API tests/typechecks/builds and `git diff --check`.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R9
 

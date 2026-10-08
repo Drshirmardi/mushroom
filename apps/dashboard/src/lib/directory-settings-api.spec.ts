@@ -22,9 +22,12 @@ describe("directory settings API", () => {
     expect((fetch.mock.calls[0]?.[0] as Request).headers.get("authorization")).toBe("Bearer token");
   });
 
-  it.each([401, 403])("keeps %i responses distinct as forbidden", async (status) => {
+  it.each([
+    [401, "unauthenticated"],
+    [403, "forbidden"],
+  ] as const)("maps %i responses to %s", async (status, expected) => {
     const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(() => Promise.resolve(json({}, status)));
-    await expect(loadDirectorySettings(createApiClient({ baseUrl: "https://api.example.test", fetch }), "token")).resolves.toEqual({ status: "unauthorized" });
+    await expect(loadDirectorySettings(createApiClient({ baseUrl: "https://api.example.test", fetch }), "token")).resolves.toEqual({ status: expected });
   });
 
   it("keeps an unavailable service distinct from a valid empty configuration", async () => {

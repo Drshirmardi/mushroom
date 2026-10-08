@@ -11,9 +11,20 @@ import {
   DashboardSessionManager,
   type Authentication,
 } from "@/auth/session";
-import { apiClient, dashboardLoginUrl, patientAppUrl } from "@/lib/api";
+import {
+  authApiClient,
+  dashboardLoginUrl,
+  patientAppUrl,
+  setAccessTokenProvider,
+} from "@/lib/api";
 
-const sessionManager = new DashboardSessionManager(apiClient);
+const sessionManager = new DashboardSessionManager(authApiClient);
+setAccessTokenProvider(async () => {
+  const snapshot = await sessionManager.bootstrap();
+  return snapshot.status === "authenticated"
+    ? snapshot.authentication.accessToken
+    : null;
+});
 
 interface DashboardSessionContextValue {
   authentication: Authentication;

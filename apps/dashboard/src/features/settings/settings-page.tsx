@@ -9,20 +9,20 @@ import { apiClient } from "@/lib/api";
 import { createAvailabilityRule, createClinicClosure, createDoctor, createDoctorException, createDoctorService, createService, createSpecialty, DirectorySettingsApiError, loadDirectorySettings, type DirectorySettingsData, type DirectorySettingsState, updateClinic, updateDoctor, updateDoctorService, updateService } from "@/lib/directory-settings-api";
 
 type ViewState = DirectorySettingsState | { status: "loading" };
-type MutationState = { status: "idle" } | { status: "saving" } | { status: "success"; message: string } | { status: "validation"; message: string } | { status: "forbidden" } | { status: "unavailable" } | { status: "error" };
+type MutationState = { status: "idle" } | { status: "saving" } | { status: "success"; message: string } | { status: "validation"; message: string } | { status: "unauthenticated" } | { status: "forbidden" } | { status: "unavailable" } | { status: "error" };
 
 const field = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const button = "inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50";
 
 function Notice({ state, onRetry }: { state: Exclude<ViewState["status"], "ready" | "loading">; onRetry: () => void }) {
-  const title = state === "unauthorized" ? "دسترسی مجاز نیست" : state === "unavailable" ? "سرویس در دسترس نیست" : "دریافت تنظیمات ناموفق بود";
-  const body = state === "unauthorized" ? "حساب شما اجازهٔ مدیریت تنظیمات کلینیک را ندارد." : state === "unavailable" ? "اتصال به API برقرار نشد؛ هیچ داده‌ای نمایش داده نمی‌شود." : "داده‌ای نمایش داده نشد؛ دوباره تلاش کنید.";
-  return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950" role="alert"><div className="flex items-center gap-2 font-bold"><ShieldAlert size={18} />{title}</div><p className="mt-2 text-sm">{body}</p>{state !== "unauthorized" && <button onClick={onRetry} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold"><RefreshCw size={15} />تلاش دوباره</button>}</div>;
+  const title = state === "unauthenticated" ? "نشست کاربری منقضی شده است" : state === "forbidden" ? "دسترسی مجاز نیست" : state === "unavailable" ? "سرویس در دسترس نیست" : "دریافت تنظیمات ناموفق بود";
+  const body = state === "unauthenticated" ? "نشست شما تمدید نشد؛ دوباره وارد حساب شوید." : state === "forbidden" ? "حساب شما اجازهٔ مدیریت تنظیمات کلینیک را ندارد." : state === "unavailable" ? "اتصال به API برقرار نشد؛ هیچ داده‌ای نمایش داده نمی‌شود." : "داده‌ای نمایش داده نشد؛ دوباره تلاش کنید.";
+  return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950" role="alert"><div className="flex items-center gap-2 font-bold"><ShieldAlert size={18} />{title}</div><p className="mt-2 text-sm">{body}</p>{state !== "forbidden" && <button onClick={onRetry} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold"><RefreshCw size={15} />تلاش دوباره</button>}</div>;
 }
 
 function MutationNotice({ state }: { state: MutationState }) {
   if (state.status === "idle" || state.status === "saving") return null;
-  const message = state.status === "success" ? state.message : state.status === "validation" ? state.message : state.status === "forbidden" ? "اجازهٔ انجام این تغییر را ندارید." : state.status === "unavailable" ? "سرویس در دسترس نیست؛ تغییر ذخیره نشد." : "ذخیره‌سازی ناموفق بود؛ دادهٔ نمایش‌داده‌شده تغییر نکرد.";
+  const message = state.status === "success" ? state.message : state.status === "validation" ? state.message : state.status === "unauthenticated" ? "نشست شما تمدید نشد؛ دوباره وارد حساب شوید." : state.status === "forbidden" ? "اجازهٔ انجام این تغییر را ندارید." : state.status === "unavailable" ? "سرویس در دسترس نیست؛ تغییر ذخیره نشد." : "ذخیره‌سازی ناموفق بود؛ دادهٔ نمایش‌داده‌شده تغییر نکرد.";
   return <p className={`rounded-xl px-3 py-2 text-sm ${state.status === "success" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`} role={state.status === "success" ? "status" : "alert"}>{message}</p>;
 }
 
@@ -36,7 +36,7 @@ function SettingsForms({ data, accessToken, refresh }: { data: DirectorySettings
   const [doctorId, setDoctorId] = useState(""); const [serviceId, setServiceId] = useState(""); const [price, setPrice] = useState("0");
   const [weekday, setWeekday] = useState("1"); const [start, setStart] = useState("09:00"); const [end, setEnd] = useState("17:00");
   const [closureLabel, setClosureLabel] = useState(""); const [closureStart, setClosureStart] = useState(""); const [closureEnd, setClosureEnd] = useState("");
-  const submit = async (work: () => Promise<unknown>, success: string) => { setMutation({ status: "saving" }); try { await work(); await refresh(); setMutation({ status: "success", message: success }); } catch (error) { const status = error instanceof DirectorySettingsApiError ? error.status : 0; setMutation(status === 401 || status === 403 ? { status: "forbidden" } : status === 400 || status === 409 || status === 422 ? { status: "validation", message: "ورودی یا بازهٔ زمانی معتبر نیست یا با برنامهٔ موجود تداخل دارد." } : status === 0 || status === 503 || status === 504 ? { status: "unavailable" } : { status: "error" }); } };
+  const submit = async (work: () => Promise<unknown>, success: string) => { setMutation({ status: "saving" }); try { await work(); await refresh(); setMutation({ status: "success", message: success }); } catch (error) { const status = error instanceof DirectorySettingsApiError ? error.status : 0; setMutation(status === 401 ? { status: "unauthenticated" } : status === 403 ? { status: "forbidden" } : status === 400 || status === 409 || status === 422 ? { status: "validation", message: "ورودی یا بازهٔ زمانی معتبر نیست یا با برنامهٔ موجود تداخل دارد." } : status === 0 || status === 503 || status === 504 ? { status: "unavailable" } : { status: "error" }); } };
   const emptyDirectory = data.doctors.length === 0 || data.services.length === 0;
   return <div className="space-y-5"><MutationNotice state={mutation} />
     <Section icon={Stethoscope} title="پروفایل کلینیک و پزشک" description="اطلاعات واقعی کلینیک و ساخت پروفایل پزشک بدون نیاز به حساب کاربری.">

@@ -129,6 +129,32 @@ describe("dashboard auth session", () => {
     });
   });
 
+  it("renews an expired admin token while preserving the authenticated view", async () => {
+    let now = 1_000;
+    const first = authentication(["ADMIN"]);
+    const renewed = { ...first, accessToken: "renewed-token" };
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(jsonResponse(first, 200))
+      .mockResolvedValueOnce(jsonResponse(renewed, 200));
+    const manager = new DashboardSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+      () => now,
+    );
+
+    await manager.bootstrap();
+    const snapshots: string[] = [];
+    manager.subscribe(() => snapshots.push(manager.getSnapshot().status));
+    now += first.expiresIn * 1_000;
+
+    await expect(manager.bootstrap()).resolves.toEqual({
+      status: "authenticated",
+      authentication: renewed,
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(snapshots).not.toContain("checking");
+  });
+
   it("becomes anonymous when refresh stalls", async () => {
     vi.useFakeTimers();
     try {

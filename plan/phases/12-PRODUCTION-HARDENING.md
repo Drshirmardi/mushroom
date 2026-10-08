@@ -81,6 +81,19 @@ application نمی‌شود.
   smoke/health/migration و container scan روی artifact واقعی gate پذیرش این extension هستند؛ نتیجهٔ dependency scan
   پذیرفته‌شدهٔ F12-T08 بدون دلیل تکرار نمی‌شود.
 
+## Change control — browser session continuity and public commerce catalog
+
+مالک محصول در `2026-10-08` دو corrective مستقل release را تأیید کرد؛ Phase 01، Phase 09 و Phase 11 بازگشایی
+نمی‌شوند و هر corrective باید commit و evidence مستقل داشته باشد.
+
+- [x] `F01-R05` — access token حافظه‌ای app/dashboard پیش از درخواست محافظت‌شده از refresh single-flight معتبر
+  می‌شود؛ عمر ده‌دقیقه‌ای access token و deadline مطلق ۲۴ساعته/۳۰روزه session تغییر نمی‌کند. `401` authentication
+  است و فقط `403` به‌عنوان permission denial نمایش داده می‌شود.
+- [ ] `F09-T04-R1` — فهرست، جست‌وجو و جزئیات محصول فعال برای کلینیک فعال release عمومی است؛ cart، wishlist،
+  address، checkout، order و payment همچنان authentication، ownership و authorization فعلی را حفظ می‌کنند.
+
+این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
+
 ## معیار خروج
 
 - SLO/capacity با evidence ثبت شده است.

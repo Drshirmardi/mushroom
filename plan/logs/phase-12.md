@@ -1236,3 +1236,52 @@ Known limitations:
 Next batch:
 
 - F12-B02 / F12-T02 remains unclaimed.
+# F01-R05 — browser session continuity before protected requests
+
+Task ID: F01-R05
+Completed at: 2026-10-08 21:42 +03:30
+Agent/Thread: Codex /root
+Batch ID: F12-B15-R1
+Reviewed by: Codex /root
+
+Changed files:
+
+- `packages/api-client/src/index.ts` and focused request-transport tests
+- app/dashboard API clients, session managers, gates and focused session tests
+- dashboard directory-settings API/UI and focused response-mapping tests
+- `plan/STATUS.md`, `plan/phases/12-PRODUCTION-HARDENING.md`, `plan/logs/phase-12.md`
+
+Migrations, dependencies and generated API contract:
+
+- none
+
+Verification:
+
+- API client build and tests: 1 file / 5 tests → PASS
+- app tests: 12 files / 49 tests → PASS
+- dashboard tests: 18 files / 62 tests → PASS
+- app and dashboard typechecks → PASS
+- app and dashboard production builds → PASS
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- Every protected app/dashboard request now asks the existing session manager for a valid memory-only access token
+  immediately before sending. An expired token is renewed through the existing credentialed, single-flight refresh
+  flow; concurrent callers share that refresh and receive the renewed bearer token.
+- Refresh/login remain outside the session-aware transport, preventing recursion. Failed refresh removes the stale
+  bearer and drives the existing anonymous redirect without persisting tokens in browser storage.
+- Access-token TTL remains ten minutes and refresh-session absolute deadlines remain 24 hours or 30 remembered days.
+  The authenticated screen is retained while a background renewal runs.
+- Dashboard settings now render a 401 as session expiry and reserve the permission-denied message for a real 403.
+
+Known limitation:
+
+- The correction covers HTTP API requests. Existing long-lived socket reconnect behavior was not changed because it
+  is outside the reported protected-page regression and the task's frozen scope.
+
+Next task in the active batch:
+
+- `F09-T04-R1` remains claimed and is now active; make catalog browse/search/detail public while retaining protected
+  patient commerce mutations.
+

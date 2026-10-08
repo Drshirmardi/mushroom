@@ -26,7 +26,8 @@ export interface DirectorySettingsData {
 
 export type DirectorySettingsState =
   | { status: "ready"; data: DirectorySettingsData }
-  | { status: "unauthorized" }
+  | { status: "unauthenticated" }
+  | { status: "forbidden" }
   | { status: "unavailable" }
   | { status: "error" };
 
@@ -69,7 +70,8 @@ export async function loadDirectorySettings(client: ApiClient, accessToken: stri
     return { status: "ready", data: { clinic, doctors: doctors.items, specialties: specialties.items, services: services.items, doctorServices: doctorServices.items, availabilityRules: availabilityRules.items, closures: closures.items, exceptions: exceptions.items } };
   } catch (error) {
     const status = statusFor(error);
-    if (status === 401 || status === 403) return { status: "unauthorized" };
+    if (status === 401) return { status: "unauthenticated" };
+    if (status === 403) return { status: "forbidden" };
     if (status === 0 || status === 503 || status === 504) return { status: "unavailable" };
     return { status: "error" };
   }

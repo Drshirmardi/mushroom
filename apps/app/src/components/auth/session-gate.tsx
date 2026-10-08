@@ -9,9 +9,15 @@ import {
 } from "react";
 
 import { AuthSessionManager, type Authentication } from "@/auth/session";
-import { apiClient, loginUrl } from "@/lib/api";
+import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
 
-const sessionManager = new AuthSessionManager(apiClient);
+const sessionManager = new AuthSessionManager(authApiClient);
+setAccessTokenProvider(async () => {
+  const snapshot = await sessionManager.bootstrap();
+  return snapshot.status === "authenticated"
+    ? snapshot.authentication.accessToken
+    : null;
+});
 
 interface AuthSessionContextValue {
   authentication: Authentication;
