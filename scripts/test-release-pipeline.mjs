@@ -143,6 +143,7 @@ for (const required of [
   'DEV_INSTALL_DEPENDENCIES',
   'DEV_RUN_SEED',
   'probe api "http://$(env_value API_PORT)/v1/health/ready"',
+  'compose logs --no-color --tail 200 "$name"',
 ]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
 assert(devCompose.includes('SADAD_TRANSPORT_MODE: disabled'), 'shared dev must keep Sadad disabled');
 assert(devCompose.includes('ports: []'), 'shared dev database must not publish a host port');

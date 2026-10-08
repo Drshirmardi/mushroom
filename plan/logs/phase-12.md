@@ -1,5 +1,52 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R14 — low-memory shared-dev API compiler corrective
+
+Task ID: F12-T02-R14
+Batch ID: F12-B02-R14
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- After the heap-only R13 corrective, the API readiness endpoint still repeatedly reset the connection while the
+  PostgreSQL and frontend containers remained running. Raising the compiler heap alone did not make the shared VPS
+  runtime stable and increased the risk of exhausting the existing `1g` container envelope.
+- The API dev runner was performing full semantic checking and declaration/declaration-map emission twice at startup:
+  once before launch and again when the persistent compiler watch initialized. CI and normal API builds already own
+  full typechecking, while shared dev only needs correct JavaScript emission and Nest decorator metadata.
+
+Changed files:
+
+- `apps/api/scripts/dev.mjs`
+- `apps/api/test/dev-runtime.spec.ts`
+- `deploy/vps/deploy-dev.sh`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- clean TypeScript emit with `--max-old-space-size=640 --noCheck --declaration false --declarationMap false` → PASS
+- emitted Nest `design:paramtypes` metadata → PASS (111 files)
+- focused API dev-runtime test → PASS (1 file / 3 tests)
+- normal API build with full TypeScript checking → PASS
+- `pnpm release:test` (including simulated VPS sync) → PASS
+- Node/shell syntax and `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The initial and persistent dev compilers now perform transpile-only emission at a lower heap ceiling
+  while retaining the official TypeScript compiler and decorator metadata required by Nest dependency injection.
+  Normal CI/build typechecking is unchanged.
+- A readiness timeout now emits `docker compose ps` plus the failing service's last 200 log lines, so a future failure
+  is actionable directly from GitHub Actions instead of appearing only as repeated curl resets.
+
+External next action:
+
+- Push the corrective to `dev` and rerun `Sync shared dev VPS`. No runtime.env, secret, database, Caddy or port change
+  is required.
+
 ## F12-T02-R13 — shared-dev API compiler heap corrective
 
 Task ID: F12-T02-R13

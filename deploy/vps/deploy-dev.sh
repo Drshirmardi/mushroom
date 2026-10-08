@@ -159,6 +159,8 @@ probe() {
     fi
     sleep 2
   done
+  compose ps "$name" >&2 || true
+  compose logs --no-color --tail 200 "$name" >&2 || true
   die "$name did not become ready at $url"
 }
 

@@ -3,8 +3,16 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const typescriptCompiler = require.resolve('typescript/bin/tsc');
-const compilerArguments = ['--max-old-space-size=768', typescriptCompiler];
-const buildArguments = ['-p', 'tsconfig.build.json'];
+const compilerArguments = ['--max-old-space-size=640', typescriptCompiler];
+const buildArguments = [
+  '-p',
+  'tsconfig.build.json',
+  '--noCheck',
+  '--declaration',
+  'false',
+  '--declarationMap',
+  'false',
+];
 
 const initialBuild = spawnSync(
   process.execPath,

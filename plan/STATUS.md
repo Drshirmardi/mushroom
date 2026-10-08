@@ -50,6 +50,38 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R14
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (low-memory shared-dev API compiler corrective)
+Contract baseline: shared dev retains TypeScript decorator metadata and CI typechecking, but its persistent compiler
+must emit without full semantic/declaration work inside the existing `1g` API container; failed probes must print the
+service state and logs in the workflow.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R14`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R13` and repeated live API reset/restart evidence after the heap-only corrective.
+  - Scope: make the API dev compiler transpile-only without losing decorator metadata, bound it below the previous
+    heap ceiling, and expose API logs automatically when readiness fails.
+  - Owned paths: `apps/api/scripts/dev.mjs`, `apps/api/test/dev-runtime.spec.ts`,
+    `deploy/vps/deploy-dev.sh`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: API development compilation and dev readiness diagnostics only; no production runtime,
+    database, secret, Caddy, port, staging or production-sim change.
+  - Expected verification: constrained transpile with decorator metadata, focused API dev-runtime test, API build,
+    dev/release deployment tests, syntax and `git diff --check`.
+  - Review: PASS — dev `tsc` now skips semantic/declaration work, stays bounded at `640 MiB`, and preserves emitted
+    Nest decorator metadata; CI/full builds retain normal typechecking. A failed health probe now prints service state
+    and the last 200 log lines before exiting.
+  - Verification: clean constrained emit at `640 MiB` with decorator metadata in 111 files, focused API dev-runtime
+    test (3/3), full API build, `pnpm release:test`, Node/shell syntax and `git diff --check` PASS.
+  - External next action: push this commit to `dev` and rerun `Sync shared dev VPS`; no server-side configuration
+    change is required. If readiness still fails, the workflow will now include the actionable API logs.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R13
 
 Coordinator/Thread: `Codex /root`
