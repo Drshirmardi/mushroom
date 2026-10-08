@@ -85,8 +85,12 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
     expect(revisions.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
     const rejected = revisions.find((result): result is PromiseRejectedResult => result.status === 'rejected');
     expect(rejected?.reason).toMatchObject({ response: { code: 'PRESCRIPTION_REVISION_CONFLICT', details: { currentRevision: 2 } } });
-    const saved = revisions.find((result): result is PromiseFulfilledResult<Awaited<ReturnType<PrescriptionService['save']>>> => result.status === 'fulfilled')!.value;
-    expect(saved).toMatchObject({ currentRevision: 2, revision: { revisionNumber: 2, previousRevisionId: created.revision!.id, state: 'DRAFT', items: [{ medicationName: 'Updated medicine' }] } });
+    const savedIndex = revisions.findIndex((result) => result.status === 'fulfilled');
+    const saved = (revisions[savedIndex] as PromiseFulfilledResult<Awaited<ReturnType<PrescriptionService['save']>>>).value;
+    const winningItem = savedIndex === 0
+      ? { medicationName: 'Updated medicine', doseText: '20 mg', instructions: 'With food' }
+      : { medicationName: 'Competing medicine' };
+    expect(saved).toMatchObject({ currentRevision: 2, revision: { revisionNumber: 2, previousRevisionId: created.revision!.id, state: 'DRAFT', items: [winningItem] } });
 
     const issued = await prescriptions.issue(patient.id, created.id, { revisionNumber: 2, expectedRevision: 2 }, actor);
     expect(issued).toMatchObject({ currentRevision: 2, currentIssuedRevision: 2, latestIssuedRevision: 2, revision: { id: saved.revision!.id, state: 'ISSUED', issuedByUserId: clinician.id, issuedAt: expect.any(Date), integrityHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
@@ -101,7 +105,7 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
 
     const history = await prisma.prescriptionRevision.findMany({ where: { prescriptionId: created.id }, orderBy: { revisionNumber: 'asc' }, include: { items: { orderBy: { position: 'asc' } } } });
     expect(history).toHaveLength(3);
-    expect(history[1]).toMatchObject({ id: saved.revision!.id, state: 'ISSUED', integrityHash: issued.revision!.integrityHash, items: [{ medicationName: 'Updated medicine', instructions: 'With food' }] });
+    expect(history[1]).toMatchObject({ id: saved.revision!.id, state: 'ISSUED', integrityHash: issued.revision!.integrityHash, items: [winningItem] });
     expect(history[2]).toMatchObject({ state: 'ISSUED', previousRevisionId: saved.revision!.id, items: [{ medicationName: 'Corrected medicine' }] });
   });
 
