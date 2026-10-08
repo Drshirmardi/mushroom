@@ -1,5 +1,46 @@
 # Phase 12 Execution Evidence
 
+## F12-T02 — GitHub Free-plan attestation corrective
+
+Task ID: F12-T02
+Batch ID: F12-B02-R6
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed release evidence:
+
+- GitHub Actions run `37540615770`, attempt 3, accepted protected-main SHA
+  `d922f099594267ec726b3f4527f9b51fefc733b6` and passed build, smoke, High/Critical scan and private-GHCR publish.
+- Published immutable references:
+  - API: `ghcr.io/drshirmardi/mushroom-api@sha256:ceaf21a494b14b658abdfe4e049507484f7281e31c6c69900b738df905024629`
+  - web: `ghcr.io/drshirmardi/mushroom-web@sha256:4d1e7967ef9933800bae859f4f2f41462a42a78537acbca6f6b75319f0e912c1`
+  - app: `ghcr.io/drshirmardi/mushroom-app@sha256:4c53b12011fbb1b85487a5c1bbefad81a288996ed2e881bd98ae18a35ffaf7b8`
+  - dashboard: `ghcr.io/drshirmardi/mushroom-dashboard@sha256:194858125d169ce2896cfffc18d32f1c536a93f4d74b41483b6b8a8a87ff3ab2`
+- The subsequent API attestation step failed with GitHub's explicit `Feature not available` response for a private
+  repository in the `Drshirmardi` Free-plan organization. Because manifest upload followed attestations, the valid
+  generated manifest was not retained and staging correctly remained skipped.
+
+Corrective contract:
+
+- Upload the strict digest manifest immediately after successful publication, before any optional provenance step.
+- Run subject extraction and all four `actions/attest-build-provenance` steps only when repository variable
+  `GHCR_ATTESTATIONS_ENABLED` is exactly `true`. Unsupported plans leave it absent or `false`.
+- Attestation is supplemental evidence. Publication, immutable manifest validation, staging/promotion and rollback
+  continue to use the exact four registry digests and do not weaken their gate when attestation is unavailable.
+
+Verification:
+
+- `pnpm release:test` → PASS, including manifest-before-attestation order and five explicit plan gates
+- all six workflow YAML files parsed → PASS
+- actionlint `1.7.12` → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** Private GHCR publication remains accepted; the next main run can retain its manifest on the current
+  plan without treating an unavailable supplemental GitHub feature as a release failure.
+
 ## F12-T02 — private GHCR continuous delivery and VPS rehearsal corrective
 
 Task ID: F12-T02
