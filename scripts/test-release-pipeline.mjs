@@ -49,7 +49,18 @@ for (const required of [
   'packages: read',
   'environment: staging-vps',
   "vars.VPS_CD_ENABLED == 'true'",
+  "vars.GHCR_ATTESTATIONS_ENABLED == 'true'",
 ]) assert(releaseWorkflow.includes(required), `release workflow is missing: ${required}`);
+
+assert(
+  releaseWorkflow.indexOf('name: Preserve immutable release manifest')
+    < releaseWorkflow.indexOf('name: Attest API image provenance'),
+  'release manifest must be preserved before optional provenance attestations',
+);
+assert(
+  releaseWorkflow.match(/if: vars\.GHCR_ATTESTATIONS_ENABLED == 'true'/gu)?.length === 5,
+  'subject extraction and all four provenance steps must be explicitly plan-gated',
+);
 
 assert(!releaseWorkflow.includes('pull_request:'), 'release workflow must not publish from pull requests');
 assert(!releaseWorkflow.includes('GHCR_READ_TOKEN'), 'deployment must use the ephemeral workflow token, not a stored PAT');

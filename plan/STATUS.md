@@ -77,6 +77,29 @@ or RPO/RTO capability. `F12-T02`'s corrective provider-neutral OCI artifact exte
 public-only runtime configuration, Compose health and Liara documentation-profile gates pass; all four actual release
 images scan `0 Critical / 0 High`. This proves local artifact behavior only, not Liara or Sadad external readiness.
 
+## آخرین batch تکمیل‌شده — F12-B02-R6
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (free-plan-compatible manifest preservation and optional provenance attestation)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Scope: preserve the immutable release manifest before optional provenance work, skip GitHub artifact attestations
+    unless explicitly enabled on a supporting plan, and retain digest-only promotion/deployment guarantees.
+  - Owned paths: `.github/workflows/release.yml`, `.github/CI.md`, `deploy/vps/README.md`,
+    `scripts/test-release-pipeline.mjs`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Expected verification: workflow contract tests, YAML/actionlint, permission/order review and `git diff --check`.
+  - Review: PASS — GitHub run `37540615770` attempt 3 published all four private images and produced exact digests,
+    then failed only because private-repository artifact attestation is unavailable on the organization's Free plan.
+    The manifest is now uploaded before optional attestation work, and all provenance steps require the explicit
+    `GHCR_ATTESTATIONS_ENABLED=true` repository variable. Digest-only promotion and deployment remain unchanged.
+  - Verification: `pnpm release:test`, six-workflow YAML parse, actionlint 1.7.12 and `git diff --check` PASS.
+  - Next eligible work: no batch is started. Merge this corrective, allow the resulting main release to publish a
+    retained manifest, then configure the VPS inputs before enabling staging delivery.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R5
 
 Coordinator/Thread: `Codex /root`

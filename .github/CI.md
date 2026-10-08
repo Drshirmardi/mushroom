@@ -19,8 +19,14 @@ This is artifact smoke, not real deployment or Liara capability evidence.
 
 `Release and stage` listens only to a successful `CI` push run for the current `main` commit. It rebuilds the four
 runtime artifacts through the same project release command, repeats smoke and High/Critical scanning, publishes them
-to private GHCR, records exact digests in one release manifest and creates registry provenance attestations. It never
+to private GHCR, records exact digests in one release manifest and, when enabled, creates registry provenance
+attestations. It never
 publishes from a pull request or a failed/canceled/superseded CI run.
+
+The immutable manifest is uploaded immediately after a successful publish. GitHub artifact attestations are an
+optional extra because private-repository attestation is not available on every organization plan. Leave repository
+variable `GHCR_ATTESTATIONS_ENABLED` absent or `false` on unsupported plans; set it to `true` only after that GitHub
+feature is available. Digest-only promotion, manifest verification and deployment do not depend on this optional step.
 
 The repository variable `VPS_CD_ENABLED` controls external delivery. When it is absent or `false`, publication still
 works and the staging VPS job is skipped. When it is `true`, staging deploys automatically through the `staging-vps`

@@ -81,8 +81,16 @@ jobs:
         run: |
           pnpm images:push
           echo "artifact-name=release-${{ needs.eligibility.outputs.source-sha }}" >> "$GITHUB_OUTPUT"
+      - name: Preserve immutable release manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.release.outputs.artifact-name }}
+          path: ${{ runner.temp }}/release/release-manifest.json
+          if-no-files-found: error
+          retention-days: 90
       - id: subjects
         name: Read attestation subjects from the release manifest
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         run: |
           manifest='${{ runner.temp }}/release/release-manifest.json'
           for service in api web app dashboard; do
@@ -91,37 +99,33 @@ jobs:
             echo "${service}-digest=${reference#*@}" >> "$GITHUB_OUTPUT"
           done
       - name: Attest API image provenance
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ steps.subjects.outputs.api-name }}
           subject-digest: ${{ steps.subjects.outputs.api-digest }}
           push-to-registry: true
       - name: Attest web image provenance
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ steps.subjects.outputs.web-name }}
           subject-digest: ${{ steps.subjects.outputs.web-digest }}
           push-to-registry: true
       - name: Attest app image provenance
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ steps.subjects.outputs.app-name }}
           subject-digest: ${{ steps.subjects.outputs.app-digest }}
           push-to-registry: true
       - name: Attest dashboard image provenance
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ steps.subjects.outputs.dashboard-name }}
           subject-digest: ${{ steps.subjects.outputs.dashboard-digest }}
           push-to-registry: true
-      - name: Preserve immutable release manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.release.outputs.artifact-name }}
-          path: ${{ runner.temp }}/release/release-manifest.json
-          if-no-files-found: error
-          retention-days: 90
-
   deploy-staging:
     needs: publish
     if: vars.VPS_CD_ENABLED == 'true'

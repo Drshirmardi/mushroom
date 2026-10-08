@@ -119,7 +119,12 @@ repository خصوصی بسته به پلن قابل استفاده نیست؛ ب
 ```text
 VPS_CD_ENABLED=false
 RELEASE_APPROVER=YOUR_GITHUB_USERNAME
+GHCR_ATTESTATIONS_ENABLED=false
 ```
+
+`GHCR_ATTESTATIONS_ENABLED` اختیاری است. برای repository خصوصی روی پلنی که artifact attestation را پشتیبانی نمی‌کند
+آن را `false` نگه دارید. release manifest و digestهای دقیق همچنان منبع استقرار هستند؛ فعال‌کردن attestation فقط
+evidence تکمیلی provenance اضافه می‌کند و artifact قابل promotion را تغییر نمی‌دهد.
 
 پس از آماده‌شدن هر دو محیط، `VPS_CD_ENABLED` را به `true` تغییر دهید. تا قبل از آن CI و انتشار GHCR انجام می‌شوند ولی jobهای VPS
 به‌درستی skip می‌شوند.
