@@ -83,6 +83,11 @@ chmod 600 runtime.env secrets/*
 unset db_password
 ```
 
+فایل‌ها روی host با مالک `deploy` و mode برابر `600` شروع می‌شوند. هنگام deployment، اسکریپت versioned با استفاده از
+همان API image پذیرفته‌شده و یک helper بدون شبکه، group فایل‌های secret را به GID غیرریشه‌ای runtime یعنی `65532`
+تبدیل و mode را `640` می‌کند. مالک host همچنان `deploy` می‌ماند؛ secretها هرگز world-readable نمی‌شوند. تغییر دستی
+به `644` یا اجرای application به‌صورت root مجاز نیست.
+
 برای `production-sim` همین کار را با user/database همان محیط و secretهای تازه تکرار کنید. هیچ فایل یا مقدار secret
 بین دو محیط کپی نمی‌شود.
 
