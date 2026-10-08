@@ -41,6 +41,11 @@ const deployScript = read('deploy/vps/deploy-release.sh');
 const compose = read('deploy/vps/compose.yaml');
 const releaseScript = read('scripts/release-images.mjs');
 const consentPolicy = JSON.parse(read('deploy/vps/reference-data/rehearsal-consent-policy.json'));
+const devWorkflow = read('.github/workflows/dev-sync.yml');
+const devDeployScript = read('deploy/vps/deploy-dev.sh');
+const devCompose = read('deploy/vps/compose.dev.yaml');
+const devSyncScript = read('scripts/deploy-dev-vps.mjs');
+const devServiceScript = read('deploy/vps/dev-service.sh');
 
 for (const required of [
   "github.event.workflow_run.conclusion == 'success'",
@@ -107,6 +112,41 @@ assert(compose.includes('postgres_data:'), 'VPS rehearsal requires a project-sco
 assert(releaseScript.includes(':/root/.cache/trivy'), 'four-image verification must share one temporary Trivy DB cache');
 assert(releaseScript.includes("volume', 'rm', '--force'"), 'temporary Trivy cache volume must be removed');
 
+for (const required of [
+  'branches: [dev]',
+  "vars.VPS_DEV_CD_ENABLED == 'true'",
+  'cancel-in-progress: true',
+  'VPS_KNOWN_HOSTS',
+  'node scripts/deploy-dev-vps.mjs "$GITHUB_SHA"',
+]) assert(devWorkflow.includes(required), `dev sync workflow is missing: ${required}`);
+for (const forbidden of ['packages: write', 'GHCR_TOKEN', 'GITHUB_TOKEN', 'docker/login-action']) {
+  assert(!devWorkflow.includes(forbidden), `dev sync must not receive release credentials: ${forbidden}`);
+}
+for (const required of [
+  'StrictHostKeyChecking=yes',
+  '--delete-delay',
+  '--delay-updates',
+  '--exclude=/.git/',
+  'mushroom/dev/workspace',
+]) assert(devSyncScript.includes(required), `dev source sync is missing: ${required}`);
+for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down']) {
+  assert(!devDeployScript.includes(forbidden), `dev deployment contains forbidden operation: ${forbidden}`);
+}
+for (const required of [
+  'MUSHROOM_ENVIRONMENT) == development',
+  'COMPOSE_PROJECT_NAME) == mushroom-dev',
+  'DEV_INSTALL_DEPENDENCIES',
+  'DEV_RUN_SEED',
+  'probe api "http://$(env_value API_PORT)/v1/health/ready"',
+]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
+assert(devCompose.includes('SADAD_TRANSPORT_MODE: disabled'), 'shared dev must keep Sadad disabled');
+assert(devCompose.includes('ports: []'), 'shared dev database must not publish a host port');
+assert(devCompose.includes('postgres_data:'), 'shared dev requires its own project-scoped database volume');
+assert(devCompose.includes('cap_drop: [ALL]'), 'shared dev Node services must drop Linux capabilities');
+for (const required of ['write_runtime_configs', 'apps/${application}/public/runtime-config.js']) {
+  assert(devServiceScript.includes(required), `dev frontend runtime configuration is missing: ${required}`);
+}
+
 const validManifest = {
   schemaVersion: 1,
   sourceSha: 'a'.repeat(40),
@@ -129,7 +169,12 @@ assert(rejectedMutableTag, 'release manifest validator must reject mutable tags'
 
 run(process.execPath, ['--check', 'scripts/release-images.mjs']);
 run(process.execPath, ['--check', 'scripts/deploy-vps.mjs']);
+run(process.execPath, ['--check', 'scripts/deploy-dev-vps.mjs']);
 run('bash', ['-n', 'deploy/vps/deploy-release.sh']);
+run('bash', ['-n', 'deploy/vps/deploy-dev.sh']);
+run('bash', ['-n', 'deploy/vps/dev-service.sh']);
+run('bash', ['-n', 'scripts/test-vps-dev.sh']);
+run('bash', ['scripts/test-vps-dev.sh']);
 
 const scratch = mkdtempSync(join(tmpdir(), 'mushroom-release-pipeline-'));
 try {
@@ -169,6 +214,43 @@ try {
   run('docker', ['compose', '--env-file', envPath, '--file', 'deploy/vps/compose.yaml', 'config', '--quiet']);
 } finally {
   rmSync(scratch, { recursive: true, force: true });
+}
+
+const devScratch = mkdtempSync(join(tmpdir(), 'mushroom-dev-compose-'));
+try {
+  const devRoot = join(devScratch, 'dev').replaceAll('\\', '/');
+  const secrets = join(devScratch, 'dev', 'secrets');
+  mkdirSync(secrets, { recursive: true });
+  for (const secret of [
+    'postgres_password', 'database_url', 'jwt_access_secret', 'refresh_token_pepper',
+    'payment_credential_encryption_key', 'payment_credential_decryption_keys',
+  ]) writeFileSync(join(secrets, secret), 'synthetic');
+  const envPath = join(devScratch, 'dev.env');
+  writeFileSync(envPath, [
+    'MUSHROOM_ENVIRONMENT=development',
+    'COMPOSE_PROJECT_NAME=mushroom-dev',
+    `MUSHROOM_ENV_ROOT=${devRoot}`,
+    `DEV_WORKSPACE_PATH=${root.replaceAll('\\', '/')}`,
+    `DEV_CACHE_PATH=${join(devScratch, 'cache').replaceAll('\\', '/')}`,
+    'DEV_UID=1000',
+    'DEV_GID=1000',
+    'POSTGRES_DB=mushroom_dev',
+    'POSTGRES_USER=mushroom_dev',
+    'PUBLIC_API_URL=https://dev-api.example.test',
+    'PUBLIC_WEB_URL=https://dev.example.test',
+    'PUBLIC_APP_URL=https://dev-app.example.test',
+    'PUBLIC_DASHBOARD_URL=https://dev-dashboard.example.test',
+    'APP_ORIGINS=https://dev.example.test,https://dev-app.example.test,https://dev-dashboard.example.test',
+    'TRUSTED_PROXIES=127.0.0.1/32',
+    'API_PORT=127.0.0.1:3203',
+    'WEB_PORT=127.0.0.1:3200',
+    'APP_PORT=127.0.0.1:3201',
+    'DASHBOARD_PORT=127.0.0.1:3202',
+    '',
+  ].join('\n'));
+  run('docker', ['compose', '--profile', 'tools', '--env-file', envPath, '--file', 'deploy/vps/compose.dev.yaml', 'config', '--quiet']);
+} finally {
+  rmSync(devScratch, { recursive: true, force: true });
 }
 
 console.log('Release pipeline contract checks passed.');

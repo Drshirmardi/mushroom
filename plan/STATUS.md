@@ -50,6 +50,38 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R9
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` owner-approved development-delivery extension)
+Batch status: `DONE` (isolated fast shared development delivery)
+Contract baseline: one shared internal `dev` branch/environment on the existing VPS; source-sync and hot reload are
+isolated from immutable `main` release workflows, databases, secrets, ports and state.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, deployment workflow and ADR.
+
+- Task ID: `F12-T02-R9`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted VPS deployment baseline and completed `F07-T11-R1` corrective.
+  - Scope: implement a gated `dev`-branch source-sync workflow, persistent Docker Compose watch services, isolated
+    PostgreSQL/secrets/ports, dependency and migration bootstrap, health verification, operator setup documentation
+    and focused contract/behavior tests without changing the production release path.
+  - Owned paths: `.github/workflows/dev-sync.yml`, `.github/CI.md`, `deploy/vps/{Dockerfile.dev,compose.dev.yaml,
+    dev-*.sh,dev-env.example,README.md}`, `scripts/{deploy-dev-vps.mjs,test-vps-dev.sh,
+    test-release-pipeline.mjs}`, one deployment ADR; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: VPS deployment identity and host resource envelope; no production runtime state,
+    Prisma schema, OpenAPI contract or application feature code change.
+  - Expected verification: dev workflow/release contracts, simulated VPS source/bootstrap/watch behavior, shell/Node
+    syntax, YAML parse, production workflow non-regression and `git diff --check`.
+  - Review: PASS — `dev` now has a gated source-sync path, persistent Nest/Next watchers, isolated/capped Compose
+    state and fail-closed boundary checks. Existing `main` CI, immutable release and promotion files are unchanged.
+  - Verification: `pnpm release:test`, `bash scripts/test-vps-dev.sh`, Node/shell syntax, dev workflow YAML parse and
+    `git diff --check` PASS. The focused simulation covers first bootstrap/seed, source-only hot update, dependency
+    reinstall/recreate and staging-port collision rejection.
+  - External next action: configure the documented VPS runtime/secrets/DNS/reverse proxy and GitHub variable, create
+    branch `dev`, then record the first live four-endpoint sync. No batch is started in this handoff.
+
 ## آخرین batch تکمیل‌شده — F12-B14-R1
 
 Coordinator/Thread: `Codex /root`

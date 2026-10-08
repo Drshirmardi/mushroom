@@ -1,0 +1,154 @@
+name: ${COMPOSE_PROJECT_NAME:?set the isolated dev Compose project name}
+
+x-node-service: &node-service
+  image: mushroom-dev-runtime:local
+  user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
+  working_dir: /workspace
+  init: true
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  environment: &node-environment
+    HOME: /home/dev
+    PNPM_HOME: /home/dev/.local/share/pnpm
+    NEXT_TELEMETRY_DISABLED: "1"
+    TURBO_TELEMETRY_DISABLED: "1"
+  volumes: &node-volumes
+    - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
+    - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: "${POSTGRES_IMAGE:-postgres:16-alpine}"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:?set the isolated dev database name}"
+      POSTGRES_USER: "${POSTGRES_USER:?set the isolated dev database user}"
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    ports: []
+    restart: unless-stopped
+    cpus: "${DEV_POSTGRES_CPUS:-0.50}"
+    mem_limit: "${DEV_POSTGRES_MEMORY:-512m}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  bootstrap:
+    image: mushroom-dev-runtime:local
+    build:
+      context: ../..
+      dockerfile: deploy/vps/Dockerfile.dev
+    user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
+    working_dir: /workspace
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    environment:
+      <<: *node-environment
+      DEV_INSTALL_DEPENDENCIES: "${DEV_INSTALL_DEPENDENCIES:-false}"
+      DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
+      PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
+    volumes: *node-volumes
+    secrets: [database_url]
+    command: ["bash", "deploy/vps/dev-service.sh", "bootstrap"]
+    profiles: [tools]
+
+  api:
+    <<: *node-service
+    command: ["bash", "deploy/vps/dev-service.sh", "api"]
+    environment:
+      <<: *node-environment
+      LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      APP_ORIGINS: "${APP_ORIGINS:?set dev browser origins}"
+      TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
+      SADAD_TRANSPORT_MODE: disabled
+    secrets:
+      - database_url
+      - jwt_access_secret
+      - refresh_token_pepper
+      - payment_credential_encryption_key
+      - payment_credential_decryption_keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["${API_PORT:?set the isolated dev API binding}:3003"]
+    cpus: "${DEV_API_CPUS:-1.00}"
+    mem_limit: "${DEV_API_MEMORY:-1g}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3003/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  web:
+    <<: *node-service
+    command: ["bash", "deploy/vps/dev-service.sh", "web"]
+    environment:
+      <<: *node-environment
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
+      PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
+    ports: ["${WEB_PORT:?set the isolated dev web binding}:3000"]
+    cpus: "${DEV_WEB_CPUS:-0.75}"
+    mem_limit: "${DEV_WEB_MEMORY:-768m}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    <<: *node-service
+    command: ["bash", "deploy/vps/dev-service.sh", "app"]
+    environment:
+      <<: *node-environment
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
+    ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
+    cpus: "${DEV_APP_CPUS:-0.75}"
+    mem_limit: "${DEV_APP_MEMORY:-768m}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  dashboard:
+    <<: *node-service
+    command: ["bash", "deploy/vps/dev-service.sh", "dashboard"]
+    environment:
+      <<: *node-environment
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
+    ports: ["${DASHBOARD_PORT:?set the isolated dev dashboard binding}:3002"]
+    cpus: "${DEV_DASHBOARD_CPUS:-0.75}"
+    mem_limit: "${DEV_DASHBOARD_MEMORY:-768m}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  postgres_data:
+
+secrets:
+  postgres_password:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/postgres_password"
+  database_url:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/database_url"
+  jwt_access_secret:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/jwt_access_secret"
+  refresh_token_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/refresh_token_pepper"
+  payment_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/payment_credential_encryption_key"
+  payment_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/payment_credential_decryption_keys"

@@ -1,5 +1,61 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R9 — fast isolated shared development delivery
+
+Task ID: F12-T02-R9
+Batch ID: F12-B02-R9
+Completed at: 2026-10-08 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Owner request:
+
+- Keep the accepted full CI and immutable-image CD path for `main`, while making ordinary development updates
+  available quickly to the team on the same VPS.
+- Separate dev from release databases, secrets, ports and state, and identify the exact one-time GitHub/server work.
+
+Changed files:
+
+- `.github/workflows/dev-sync.yml`, `.github/CI.md`
+- `deploy/vps/Dockerfile.dev`, `compose.dev.yaml`, `deploy-dev.sh`, `dev-service.sh`, `dev-env.example`, `README.md`
+- `scripts/deploy-dev-vps.mjs`, `scripts/test-vps-dev.sh`, `scripts/test-release-pipeline.mjs`
+- `plan/decisions/ADR-0013-fast-shared-vps-dev-environment.md`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- `pnpm release:test` → PASS, including production release contract non-regression and dev Compose config validation
+- `bash scripts/test-vps-dev.sh` → PASS: first runtime build/install/seed, source-only sync without recreate,
+  dependency-triggered install/recreate, one-time seed and staging-port collision rejection
+- `bash -n` for the dev deployment/service/behavior scripts and `node --check scripts/deploy-dev-vps.mjs` → PASS
+- dev GitHub workflow YAML parse with the installed `js-yaml` parser → PASS
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** Pushes to the fixed `dev` branch can now rsync source through host-key-pinned SSH without registry
+  credentials or image publication. Persistent Nest/Next watchers keep source-only latency low; dependency/runtime
+  fingerprints trigger only the necessary bootstrap or recreate.
+- Dev uses project `mushroom-dev`, a dedicated PostgreSQL volume, file secrets, workspace/cache/state, loopback ports,
+  public URLs and explicit CPU/memory caps. Runtime validation rejects identity/environment mismatches and collisions
+  with configured staging or production-sim values. Sadad remains disabled.
+- Frontend public runtime configuration is regenerated during every bootstrap so the three browser apps target the
+  dev API rather than committed localhost defaults. Prisma uses generation plus forward-only migrate deploy; the
+  development seed runs once and no normal path contains reset, down migration or Compose down.
+- Existing `main` CI/release/promotion/rollback workflow and production Compose files are unchanged.
+
+External activation and limits:
+
+- Live VPS activation is not claimed: the owner must supply DNS/TLS/access control, synthetic dev secrets,
+  `runtime.env`, repository variable `VPS_DEV_CD_ENABLED=true`, and create the `dev` branch as documented.
+- Full workspace application tests were not repeated because no application feature or shared contract changed; the
+  deployment-specific behavior and existing release contract suites passed. The shared-host capacity must be checked
+  before enabling the bounded dev services.
+
+Next batch:
+
+- No batch is started in this handoff. After external setup, capture the first live sync SHA and four endpoint checks.
+
 ## F07-T11-R1 — deterministic concurrent prescription test assertion
 
 Task ID: F07-T11-R1
