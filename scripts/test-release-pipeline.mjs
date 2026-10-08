@@ -19,6 +19,7 @@ function run(command, args) {
     process.stderr.write(result.stderr ?? '');
     throw new Error(`${command} ${args.join(' ')} failed`);
   }
+  return result.stdout ?? '';
 }
 
 const schema = JSON.parse(read('deploy/contracts/release-manifest.schema.json'));
@@ -132,6 +133,10 @@ for (const required of [
 for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down']) {
   assert(!devDeployScript.includes(forbidden), `dev deployment contains forbidden operation: ${forbidden}`);
 }
+assert(
+  !devDeployScript.includes('--project-directory'),
+  'dev deployment must preserve Compose file-relative build context resolution',
+);
 for (const required of [
   'MUSHROOM_ENVIRONMENT) == development',
   'COMPOSE_PROJECT_NAME) == mushroom-dev',
@@ -248,7 +253,14 @@ try {
     'DASHBOARD_PORT=127.0.0.1:3302',
     '',
   ].join('\n'));
-  run('docker', ['compose', '--profile', 'tools', '--env-file', envPath, '--file', 'deploy/vps/compose.dev.yaml', 'config', '--quiet']);
+  const rendered = JSON.parse(run('docker', [
+    'compose', '--profile', 'tools', '--env-file', envPath,
+    '--file', 'deploy/vps/compose.dev.yaml', 'config', '--format', 'json',
+  ]));
+  assert(
+    resolve(rendered.services.bootstrap.build.context) === root,
+    `dev build context must resolve to the synced workspace, got ${rendered.services.bootstrap.build.context}`,
+  );
 } finally {
   rmSync(devScratch, { recursive: true, force: true });
 }

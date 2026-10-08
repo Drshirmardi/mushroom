@@ -1,5 +1,47 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R11 — shared-dev build-context and Caddy corrective
+
+Task ID: F12-T02-R11
+Batch ID: F12-B02-R11
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- After the port collision was corrected, both the main-carried update and a later `dev` push reached the runtime
+  image build, then stopped with `resolve : lstat /home/<user>/mushroom/<path>: no such file or directory`.
+- `deploy-dev.sh` passed `--project-directory "$workspace"` while `compose.dev.yaml` already used a file-relative
+  `context: ../..`. Compose therefore resolved the context two levels above the synced workspace and looked for the
+  Dockerfile in a nonexistent host path.
+- The live reverse proxy is Caddy, not Nginx; its four dev upstreams still referenced the old `3200–3203` range.
+
+Changed files:
+
+- `deploy/vps/deploy-dev.sh`, `deploy/vps/README.md`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- rendered dev Compose JSON resolves `services.bootstrap.build.context` exactly to the repository/workspace root →
+  PASS
+- `pnpm release:test` → PASS
+- `bash scripts/test-vps-dev.sh` → PASS
+- `bash -n deploy/vps/deploy-dev.sh` and `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The redundant project-directory override is removed, so the absolute Compose file location is the
+  base for `../..` and Docker builds from the synced workspace on any deployment-user home path.
+- Operator documentation now matches the confirmed Caddy setup and points the four dev hosts to `3300–3303`.
+  Application code, databases, secrets, staging, production-sim and immutable release workflows are unchanged.
+
+External next action:
+
+- Apply the four dev runtime/Caddy port substitutions on the VPS, push this commit to `dev`, and rerun the dev sync.
+
 ## F12-T02-R10 — shared-dev port collision corrective
 
 Task ID: F12-T02-R10

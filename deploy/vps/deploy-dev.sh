@@ -89,7 +89,6 @@ compose() {
     --project-name mushroom-dev \
     --env-file "$runtime_env" \
     --file "$compose_file" \
-    --project-directory "$workspace" \
     "$@"
 }
 

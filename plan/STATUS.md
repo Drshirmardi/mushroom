@@ -50,6 +50,36 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev build-context and Caddy corrective)
+Contract baseline: shared dev remains isolated on `3300–3303`; Caddy terminates HTTPS; Compose build context must be
+the synced workspace regardless of the deployment user's home path.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R11`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R10` port corrective and the second live dev-sync failure.
+  - Scope: stop overriding Compose's file-relative project directory so `../..` resolves to the synced workspace,
+    add a regression assertion for the resolved build context, and replace the obsolete Nginx example with the
+    owner-confirmed Caddy virtual hosts on `3300–3303`.
+  - Owned paths: `deploy/vps/{deploy-dev.sh,README.md}`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev bootstrap build path and reverse-proxy documentation only; no application,
+    database, secret, staging or production-sim change.
+  - Expected verification: resolved Compose build-context assertion, dev/release contract suite, shell syntax and
+    `git diff --check`.
+  - Review: PASS — removing the unnecessary project-directory override restores Compose's file-relative `../..`
+    resolution to the synced workspace. Caddy documentation now matches the confirmed live proxy and `3300–3303`.
+  - Verification: resolved Compose JSON context equals the repository/workspace root; `pnpm release:test`,
+    `bash scripts/test-vps-dev.sh`, shell syntax and `git diff --check` PASS.
+  - External next action: update the live dev `runtime.env` and Caddy upstreams to `3300–3303`, push this corrective
+    to `dev`, and rerun `Sync shared dev VPS`. No batch is started in this handoff.
+
 ## آخرین batch تکمیل‌شده — F12-B15-R1
 
 Coordinator/Thread: `Codex /root`
