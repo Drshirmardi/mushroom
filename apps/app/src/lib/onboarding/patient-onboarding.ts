@@ -1,4 +1,4 @@
-import type { components } from "@sabz-zendegi/api-client";
+import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient } from "../api";
 
@@ -26,18 +26,34 @@ export class PatientOnboardingRequestError extends Error {
   }
 }
 
-async function expectData<T>(request: Promise<{ data?: T; response: Response }>): Promise<T> {
-  const { data, response } = await request;
-  if (response.ok && data) return data;
-
-  let code: string | null = null;
+async function expectData<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   try {
-    const body = await response.clone().json() as { code?: unknown };
-    code = typeof body.code === "string" ? body.code : null;
-  } catch {
-    // The response can be empty for an infrastructure failure.
+    const { data, error, response } = await withRequestTimeout(request);
+    if (response.ok && data) return data;
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string"
+      ? error.code
+      : null;
+    throw new PatientOnboardingRequestError(response.status, code);
+  } catch (error) {
+    if (error instanceof PatientOnboardingRequestError) throw error;
+    throw new PatientOnboardingRequestError(0, null);
   }
-  throw new PatientOnboardingRequestError(response.status, code);
+}
+
+export function loadSelfProfile(accessToken: string, client: Client = apiClient) {
+  return expectData(client.GET("/v1/patients/me", { headers: authorizationHeaders(accessToken) }));
+}
+
+export function loadOnboardingStatus(accessToken: string, client: Client = apiClient) {
+  return expectData(client.GET("/v1/patients/me/onboarding-status", { headers: authorizationHeaders(accessToken) }));
+}
+
+export function loadConsentPolicy(accessToken: string, client: Client = apiClient) {
+  return expectData(client.GET("/v1/patients/me/consent-policy", { headers: authorizationHeaders(accessToken) }));
+}
+
+export function loadMedicalIntake(accessToken: string, client: Client = apiClient) {
+  return expectData(client.GET("/v1/patients/me/medical-intake", { headers: authorizationHeaders(accessToken) }));
 }
 
 export async function loadPatientOnboarding(accessToken: string, client: Client = apiClient) {
@@ -115,10 +131,11 @@ export function completeMedicalIntake(
   }));
 }
 
-export function onboardingErrorMessage(error: unknown) {
+export function onboardingErrorMessage(error: unknown, operation: "load" | "save" = "save") {
   if (!(error instanceof PatientOnboardingRequestError)) {
     return "ارتباط با سرویس برقرار نشد؛ دوباره تلاش کنید.";
   }
+  if (error.status === 0) return "ارتباط با سرویس برقرار نشد؛ دوباره تلاش کنید.";
   if (error.code === "CONSENT_REQUIRED") return "برای ذخیره اطلاعات پزشکی، رضایت فعال لازم است.";
   if (error.status === 401 || error.status === 403) {
     return "دسترسی به پرونده شما مجاز نیست. لطفاً دوباره وارد حساب شوید.";
@@ -129,6 +146,9 @@ export function onboardingErrorMessage(error: unknown) {
   if (error.code === "MEDICAL_INTAKE_REVISION_CONFLICT") return "اطلاعات در دستگاه دیگری تغییر کرده است؛ صفحه را تازه کنید.";
   if (error.code === "MEDICAL_INTAKE_INCOMPLETE") return "همه پاسخ‌های ضروری را تکمیل کنید.";
   if (error.code === "CONSENT_POLICY_STALE") return "نسخه رضایت تغییر کرده است؛ متن جدید را بررسی کنید.";
-  if (error.code === "CONSENT_POLICY_NOT_AVAILABLE" || error.code === "SERVICE_UNAVAILABLE") return "سرویس پرونده اولیه موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کنید.";
-  return "ذخیره‌سازی انجام نشد؛ دوباره تلاش کنید.";
+  if (error.code === "CONSENT_POLICY_NOT_AVAILABLE") return "رضایت‌نامه هنوز برای این محیط منتشر نشده است؛ کمی بعد دوباره تلاش کنید.";
+  if (error.code === "SERVICE_UNAVAILABLE") return "سرویس پرونده اولیه موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کنید.";
+  return operation === "load"
+    ? "دریافت اطلاعات انجام نشد؛ دوباره تلاش کنید."
+    : "ذخیره‌سازی انجام نشد؛ دوباره تلاش کنید.";
 }

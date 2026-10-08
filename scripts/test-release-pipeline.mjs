@@ -40,6 +40,7 @@ const rollbackWorkflow = read('.github/workflows/rollback.yml');
 const deployScript = read('deploy/vps/deploy-release.sh');
 const compose = read('deploy/vps/compose.yaml');
 const releaseScript = read('scripts/release-images.mjs');
+const consentPolicy = JSON.parse(read('deploy/vps/reference-data/rehearsal-consent-policy.json'));
 
 for (const required of [
   "github.event.workflow_run.conclusion == 'success'",
@@ -89,9 +90,17 @@ for (const required of [
   'mktemp -d',
   'rm -rf -- "$docker_config"',
   'run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy',
+  'api prisma/manage-consent-policy.mjs publish',
+  'api prisma/manage-consent-policy.mjs verify',
   'candidate verification failed; restoring previous staging application release',
   'another deployment is active',
 ]) assert(deployScript.includes(required), `deployment script is missing: ${required}`);
+
+assert(
+  JSON.stringify(consentPolicy.allowedEnvironments) === JSON.stringify(['staging', 'production-sim']),
+  'rehearsal consent policy must be restricted to both rehearsal environments',
+);
+assert(consentPolicy.title.includes('محیط آزمایشی'), 'rehearsal consent policy must be visibly non-production');
 
 assert(compose.includes('SADAD_TRANSPORT_MODE: disabled'), 'VPS rehearsal must keep Sadad disabled');
 assert(compose.includes('postgres_data:'), 'VPS rehearsal requires a project-scoped database volume');

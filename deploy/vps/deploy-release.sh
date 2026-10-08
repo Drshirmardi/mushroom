@@ -4,8 +4,8 @@ set -Eeuo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  deploy-release.sh deploy <staging|production-sim> <manifest.json> <compose.yaml> <registry-user> <incoming-dir>
-  deploy-release.sh rollback <staging|production-sim> - <compose.yaml> <registry-user> <incoming-dir>
+  deploy-release.sh deploy <staging|production-sim> <manifest.json> <compose.yaml> <registry-user> <incoming-dir> <consent-policy.json>
+  deploy-release.sh rollback <staging|production-sim> - <compose.yaml> <registry-user> <incoming-dir> -
 
 The ephemeral registry token is read from stdin. MUSHROOM_ROOT defaults to $HOME/mushroom.
 EOF
@@ -16,7 +16,7 @@ die() {
   exit 1
 }
 
-[[ $# -eq 6 ]] || { usage >&2; exit 2; }
+[[ $# -eq 7 ]] || { usage >&2; exit 2; }
 
 action=$1
 environment=$2
@@ -24,6 +24,7 @@ manifest_path=$3
 compose_source=$4
 registry_user=$5
 incoming_dir=$6
+consent_policy_source=$7
 
 if [[ $incoming_dir != /* ]]; then
   incoming_dir="$HOME/$incoming_dir"
@@ -63,6 +64,9 @@ mkdir -p -- "$environment_root" "$state_root" "$releases_root"
 mkdir -- "$lock_dir" 2>/dev/null || die "another deployment is active for $environment"
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
 [[ -f $compose_source ]] || die "versioned compose file is missing"
+if [[ $action == deploy ]]; then
+  [[ -f $consent_policy_source ]] || die "versioned rehearsal consent policy is missing"
+fi
 
 env_value() {
   local key=$1
@@ -274,6 +278,7 @@ release_dir="$releases_root/${source_sha}-${release_run_id}"
 mkdir -p -- "$release_dir"
 install -m 600 "$manifest_path" "$release_dir/release-manifest.json"
 install -m 600 "$compose_source" "$release_dir/compose.yaml"
+install -m 644 "$consent_policy_source" "$release_dir/consent-policy.json"
 release_env_from_manifest "$release_dir/release-manifest.json" "$release_dir/release.env"
 
 registry_pull "$release_dir"
@@ -282,6 +287,14 @@ prepare_secret_permissions "$release_dir"
 # The database may start before migration, but application services do not switch until migration succeeds.
 compose_for "$release_dir" up -d postgres
 compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy
+compose_for "$release_dir" run --rm --no-deps \
+  --volume "$release_dir/consent-policy.json:/run/mushroom-consent-policy.json:ro" \
+  --env "MUSHROOM_ENVIRONMENT=$environment" \
+  --env "CONSENT_POLICY_DOCUMENT_FILE=/run/mushroom-consent-policy.json" \
+  --env "CONSENT_POLICY_RELEASE_REF=${source_sha}:${release_run_id}" \
+  api prisma/manage-consent-policy.mjs publish
+compose_for "$release_dir" run --rm --no-deps \
+  api prisma/manage-consent-policy.mjs verify
 
 if [[ -n $current_release ]]; then
   printf '%s\n' "$current_release" >"$state_root/rollback-target.tmp"
