@@ -31,11 +31,11 @@ async function expectData<T>(request: Promise<{ data?: T; error?: unknown; respo
   }
 }
 
-export const listCommerceProducts = (accessToken: string, query?: { page?: number; pageSize?: number; query?: string; categoryId?: string }) =>
-  expectData<components["schemas"]["PatientCommerceProductPageDto"]>(apiClient.GET("/v1/commerce/products", { headers: authorization(accessToken), params: { query } }));
+export const listCommerceProducts = (query?: { page?: number; pageSize?: number; query?: string; categoryId?: string }) =>
+  expectData<components["schemas"]["PatientCommerceProductPageDto"]>(apiClient.GET("/v1/commerce/products", { params: { query } }));
 
-export const getCommerceProduct = (accessToken: string, productId: string) =>
-  expectData<CommerceProduct>(apiClient.GET("/v1/commerce/products/{productId}", { headers: authorization(accessToken), params: { path: { productId } } }));
+export const getCommerceProduct = (productId: string) =>
+  expectData<CommerceProduct>(apiClient.GET("/v1/commerce/products/{productId}", { params: { path: { productId } } }));
 
 export const getCommerceCart = (accessToken: string) =>
   expectData<CommerceCart>(apiClient.GET("/v1/patients/me/cart", { headers: authorization(accessToken) }));
@@ -83,7 +83,8 @@ export function commerceErrorMessage(error: unknown) {
   if (error.code === "COMMERCE_SKU_NOT_FOUND") return "یکی از کالاهای سبد دیگر در دسترس نیست؛ سبد را بررسی کنید.";
   if (error.code === "SHIPPING_METHOD_UNAVAILABLE") return "روش ارسال انتخاب‌شده در دسترس نیست.";
   if (error.code === "IDEMPOTENCY_KEY_REUSED") return "این درخواست با اطلاعات دیگری قبلاً ثبت شده است؛ صفحه را تازه‌سازی کنید.";
-  if (error.status === 401 || error.status === 403) return "اجازهٔ دسترسی به فروشگاه را ندارید.";
+  if (error.status === 401) return "نشست شما منقضی شده است؛ دوباره وارد حساب شوید.";
+  if (error.status === 403) return "اجازهٔ انجام این عملیات فروشگاه را ندارید.";
   if (error.status === 404) return "این محصول دیگر در دسترس نیست.";
   if (error.status === 422) return "مقدار واردشده معتبر نیست.";
   return "درخواست فروشگاه انجام نشد؛ دوباره تلاش کنید.";

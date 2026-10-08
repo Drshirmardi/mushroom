@@ -151,11 +151,15 @@ describe('identity OpenAPI contract', () => {
     );
   });
 
-  it('publishes the frozen patient-commerce paths with bearer protection', () => {
+  it('publishes public catalog reads and bearer-protected patient commerce mutations', () => {
     const paths = document.paths;
     for (const [path, method] of [
       ['/v1/commerce/products', 'get'],
       ['/v1/commerce/products/{productId}', 'get'],
+    ]) {
+      expect(paths[path][method].security ?? []).toEqual([]);
+    }
+    for (const [path, method] of [
       ['/v1/patients/me/cart', 'get'],
       ['/v1/patients/me/cart', 'put'],
       ['/v1/patients/me/wishlist', 'get'],

@@ -1324,3 +1324,51 @@ Next task in the active batch:
 - `F09-T04-R1` remains claimed and is now active; make catalog browse/search/detail public while retaining protected
   patient commerce mutations.
 
+## F09-T04-R1 — public commerce catalog boundary
+
+Task ID: F09-T04-R1
+Completed at: 2026-10-09 01:30 +03:30
+Agent/Thread: Codex /root
+Batch ID: F12-B15-R1
+Reviewed by: Codex /root
+
+Changed files:
+
+- public commerce catalog controller/service plus focused API and OpenAPI contract tests
+- app public store route group, protected app/onboarding layouts, optional session context and commerce adapter tests
+- generated `packages/api-client/openapi.json` and `packages/api-client/src/schema.generated.ts`
+- `plan/STATUS.md`, `plan/phases/12-PRODUCTION-HARDENING.md`, `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none
+
+Verification:
+
+- disposable PostgreSQL workspace suite → PASS: 5/5 packages; API 95 files / 385 tests, app 12 / 50,
+  dashboard 18 / 62, web 4 / 9 and API client 1 / 5
+- API typecheck/build, app typecheck/production build and API-client build → PASS
+- focused anonymous catalog, protected cart and OpenAPI security contract checks → PASS
+- generated OpenAPI/client freshness, owned-path review and `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** Product browse, search and detail use no bearer token and resolve the deterministic active release
+  clinic. Only active products, categories and SKUs are exposed; inactive and other-clinic records remain hidden.
+- `/store` and product detail are public app routes. An optional authenticated session may add cart/wishlist state,
+  but failure of that protected personalization cannot replace or hide the public catalog.
+- Cart, wishlist, address, checkout, order and payment routes keep their existing authentication, ownership and
+  authorization boundaries. Anonymous cart access is explicitly covered as `401`.
+- No guest cart, role expansion, multi-clinic selector, Prisma migration or payment behavior was introduced.
+
+Known limitation:
+
+- The release contract still assumes one active clinic. Deterministic first-active-clinic selection prevents data
+  mixing if inconsistent data temporarily contains more than one, but multi-clinic storefront selection remains out
+  of scope.
+
+Next work:
+
+- No new batch is claimed. `F12-T05` and `F12-T07` remain blocked on external provider evidence; `F12-T09` remains
+  dependency-gated. `F12-T11` and `F12-T12` remain unclaimed.
+

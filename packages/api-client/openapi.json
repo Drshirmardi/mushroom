@@ -9626,14 +9626,9 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "List active commerce products with active SKUs in the patient clinic",
+        "summary": "List active commerce products with active SKUs in the active clinic",
         "tags": [
-          "Patient Commerce Catalog"
+          "Commerce Catalog"
         ]
       }
     },
@@ -9672,14 +9667,9 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get an active commerce product with active SKUs in the patient clinic",
+        "summary": "Get an active commerce product with active SKUs in the active clinic",
         "tags": [
-          "Patient Commerce Catalog"
+          "Commerce Catalog"
         ]
       }
     },

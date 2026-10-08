@@ -2504,7 +2504,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List active commerce products with active SKUs in the patient clinic */
+        /** List active commerce products with active SKUs in the active clinic */
         get: operations["patientCommerceProductsList"];
         put?: never;
         post?: never;
@@ -2521,7 +2521,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get an active commerce product with active SKUs in the patient clinic */
+        /** Get an active commerce product with active SKUs in the active clinic */
         get: operations["patientCommerceProductGet"];
         put?: never;
         post?: never;

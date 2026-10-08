@@ -1,0 +1,35 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Check, Heart, Minus, Plus, ShoppingCart } from "lucide-react";
+import { useOptionalAuthSession } from "@/components/auth/session-gate";
+import { commerceErrorMessage, getCommerceCart, getCommerceProduct, getCommerceWishlist, updateCommerceCart, updateCommerceWishlist, type CommerceCart, type CommerceProduct, type CommerceWishlist } from "@/lib/commerce-catalog-api";
+import { formatPrice, toP } from "@/lib/format";
+import { useScreenNavigation } from "@/lib/navigation";
+import { useCartStore } from "@/stores/cart";
+import { useWishlistStore } from "@/stores/wishlist";
+
+const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity })));
+const cacheWishlist = (wishlist: CommerceWishlist) => useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
+
+export default function ProductDetailPage() {
+  const session = useOptionalAuthSession(); const router = useRouter(); const { id } = useParams<{ id: string }>(); const navigateScreen = useScreenNavigation();
+  const [product, setProduct] = useState<CommerceProduct | null>(null); const [error, setError] = useState<string | null>(null); const [quantity, setQuantity] = useState(1); const [busy, setBusy] = useState(false); const cart = useCartStore((state) => state.items); const wishlist = useWishlistStore((state) => state.ids);
+  const load = useCallback(async () => { setProduct(null); setError(null); try { setProduct(await getCommerceProduct(id)); } catch (cause) { setError(commerceErrorMessage(cause)); } }, [id]);
+  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    if (!session) { useCartStore.getState().replace([]); useWishlistStore.getState().replace([]); return; }
+    let cancelled = false;
+    void Promise.all([getCommerceCart(session.authentication.accessToken), getCommerceWishlist(session.authentication.accessToken)])
+      .then(([serverCart, serverWishlist]) => { if (!cancelled) { cacheCart(serverCart); cacheWishlist(serverWishlist); } })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [session]);
+  if (!product && !error) return <div className="p-4" role="status">در حال دریافت محصول…</div>;
+  if (error || !product) return <div className="p-4"><p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error ?? "محصول در دسترس نیست."}</p><button type="button" onClick={() => void load()} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>;
+  const sku = product.skus[0]; const saved = wishlist.includes(sku.id); const current = cart.find((item) => item.skuId === sku.id)?.qty ?? 0;
+  const add = async () => { if (!session) { navigateScreen("CartScreen"); return; } setBusy(true); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, sku.id, Math.min(current + quantity, 100))); navigateScreen("CartScreen"); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
+  const toggle = async () => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, sku.id, !saved)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
+  return <div><div className="flex h-48 items-center justify-center bg-primary/10 text-center text-lg font-bold text-primary">{product.category.name}</div><div className="space-y-4 px-4 py-4 pb-8"><div className="flex items-start justify-between gap-3"><div><h1 className="text-xl font-bold text-foreground">{product.title}</h1><p className="mt-1 text-sm text-muted-foreground">{product.category.name}</p></div><button type="button" disabled={busy} onClick={() => void toggle()} className={`flex h-10 w-10 items-center justify-center rounded-xl ${saved ? "bg-rose-500 text-white" : "bg-muted"}`}><Heart size={18} className={saved ? "fill-white" : ""} /></button></div><div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="text-xs text-muted-foreground">قیمت</p><p className="mt-1 text-2xl font-black text-primary">{formatPrice(Number(sku.currentPriceToman))} <span className="text-sm">تومان</span></p>{sku.currentTaxToman !== "0" && <p className="mt-2 text-xs text-muted-foreground">مالیات مشمول قیمت: {formatPrice(Number(sku.currentTaxToman))} تومان</p>}</div>{product.description && <div className="rounded-2xl border border-border bg-white p-4 text-sm leading-7 text-foreground shadow-sm">{product.description}</div>}<div className="flex items-center justify-between rounded-2xl bg-muted p-2"><button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} className="flex h-8 w-8 items-center justify-center"><Minus size={16} /></button><span className="font-bold">{toP(quantity)}</span><button type="button" disabled={quantity >= 100} onClick={() => setQuantity((value) => Math.min(100, value + 1))} className="flex h-8 w-8 items-center justify-center"><Plus size={16} /></button></div><button type="button" disabled={busy} onClick={() => void add()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-white disabled:opacity-60">{current > 0 ? <Check size={18} /> : <ShoppingCart size={18} />}{session ? (current > 0 ? "افزودن بیشتر به سبد" : "افزودن به سبد") : "ورود برای خرید"}</button><button type="button" onClick={() => router.back()} className="w-full text-sm font-bold text-primary">بازگشت</button></div></div>;
+}

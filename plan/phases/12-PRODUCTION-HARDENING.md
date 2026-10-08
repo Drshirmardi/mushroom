@@ -89,7 +89,7 @@ application نمی‌شود.
 - [x] `F01-R05` — access token حافظه‌ای app/dashboard پیش از درخواست محافظت‌شده از refresh single-flight معتبر
   می‌شود؛ عمر ده‌دقیقه‌ای access token و deadline مطلق ۲۴ساعته/۳۰روزه session تغییر نمی‌کند. `401` authentication
   است و فقط `403` به‌عنوان permission denial نمایش داده می‌شود.
-- [ ] `F09-T04-R1` — فهرست، جست‌وجو و جزئیات محصول فعال برای کلینیک فعال release عمومی است؛ cart، wishlist،
+- [x] `F09-T04-R1` — فهرست، جست‌وجو و جزئیات محصول فعال برای کلینیک فعال release عمومی است؛ cart، wishlist،
   address، checkout، order و payment همچنان authentication، ownership و authorization فعلی را حفظ می‌کنند.
 
 این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.

@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-08`
+- آخرین به‌رورسانی: `2026-10-09`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `F12-B15-R1`
-- task فعال: `F09-T04-R1`
+- batch فعال: `ندارد`
+- task فعال: `ندارد`
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## پیشرفت کلان
@@ -50,12 +50,12 @@
 
 ## handoff فاز فعال
 
-## batch فعال — F12-B15-R1
+## آخرین batch تکمیل‌شده — F12-B15-R1
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-08 +03:30`
 Phase: `12-PRODUCTION-HARDENING` (owner-approved release regression correctives)
-Batch status: `IN_PROGRESS`
+Batch status: `DONE`
 Contract baseline: `ADR-0001` browser session contract, accepted Phase 09 commerce boundary, and the owner-approved
 requirement that product browse/search/detail is public while patient-owned commerce mutations remain authenticated.
 Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}` and generated OpenAPI/client.
@@ -79,7 +79,7 @@ Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/
 
 - Task ID: `F09-T04-R1`
   - Agent/Thread: `Codex /root`
-  - Status: `CLAIMED`
+  - Status: `DONE`
   - Depends on: accepted F09-T04 catalog/cart implementation; independent of F01-R05 implementation.
   - Scope: make active product browse/search/detail public for the single active release clinic, keep cart/wishlist/
     checkout/order/payment protected, and prevent protected personalization failures from hiding the public catalog.
@@ -89,6 +89,12 @@ Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/
   - Shared/exclusive resource: commerce catalog route contract and generated OpenAPI/client; no Prisma change.
   - Expected verification: anonymous public catalog/detail plus active-clinic filtering, protected patient commerce
     authorization regression, OpenAPI/client freshness, app/API tests/typechecks/builds and `git diff --check`.
+  - Review: PASS — active-clinic product browse/search/detail is available without a bearer token, while inactive
+    products/categories/SKUs and other clinics stay hidden. Cart, wishlist, address, checkout, order and payment
+    remain protected; a protected personalization failure no longer hides the public catalog.
+  - Verification: disposable PostgreSQL workspace suite (5/5 packages; API 95 files/385 tests, app 12/50,
+    dashboard 18/62, web 4/9, API client 1/5), API/app typechecks and production builds, generated OpenAPI/client
+    freshness, focused anonymous/protected contract checks and `git diff --check` PASS.
 
 - Task ID: `F12-T02-R10`
   - Agent/Thread: `Codex /root`
@@ -109,6 +115,11 @@ Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/
     (`3200–3203`) before accepting the new dev range.
   - External next action: change only the dev `runtime.env` and the four dev reverse-proxy upstreams to `3300–3303`,
     then push this corrective and rerun the same `dev` SHA. Do not change production-sim.
+
+- Batch review gate: PASS — all three independently committed tasks have implementation, focused/integration
+  verification and recorded evidence. The active claim is cleared; no new batch is started. `F12-T05` and
+  `F12-T07` remain externally blocked, `F12-T09` remains dependency-gated, and `F12-T11`/`F12-T12` remain
+  unclaimed.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R9
 

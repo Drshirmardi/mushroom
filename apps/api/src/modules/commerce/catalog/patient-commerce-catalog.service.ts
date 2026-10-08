@@ -10,8 +10,8 @@ const normalizeQuery = (value: string) => value.normalize('NFKC').trim().replace
 export class PatientCommerceCatalogService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(userId: string, query: PatientCommerceListQueryDto) {
-    const clinic = await this.patientClinic(userId);
+  async list(query: PatientCommerceListQueryDto) {
+    const clinic = await this.activeClinic();
     const where: Prisma.CommerceProductWhereInput = {
       clinicId: clinic.id,
       status: 'ACTIVE',
@@ -27,19 +27,17 @@ export class PatientCommerceCatalogService {
     return { items: products.map((product) => this.product(product)), page: query.page, pageSize: query.pageSize, total };
   }
 
-  async detail(userId: string, id: string) {
-    const clinic = await this.patientClinic(userId);
+  async detail(id: string) {
+    const clinic = await this.activeClinic();
     const product = await this.prisma.commerceProduct.findFirst({ where: { id, clinicId: clinic.id, status: 'ACTIVE', category: { isActive: true }, skus: { some: { isActive: true } } }, include: this.include });
     if (!product) throw missing();
     return this.product(product);
   }
 
   private readonly include = { category: true, skus: { where: { isActive: true }, orderBy: [{ code: 'asc' }, { id: 'asc' }] } } satisfies Prisma.CommerceProductInclude;
-  private async patientClinic(userId: string) {
-    const patient = await this.prisma.patientProfile.findUnique({ where: { userId }, select: { clinicId: true } });
-    if (!patient) throw new NotFoundException({ code: 'PATIENT_PROFILE_NOT_FOUND', message: 'Patient profile was not found.', details: {} });
-    const clinic = await this.prisma.clinic.findFirst({ where: { id: patient.clinicId, status: 'ACTIVE' }, select: { id: true } });
-    if (!clinic) throw new NotFoundException({ code: 'CLINIC_NOT_FOUND', message: 'The patient clinic was not found or is not active.', details: {} });
+  private async activeClinic() {
+    const clinic = await this.prisma.clinic.findFirst({ where: { status: 'ACTIVE' }, orderBy: { id: 'asc' }, select: { id: true } });
+    if (!clinic) throw new NotFoundException({ code: 'CLINIC_NOT_FOUND', message: 'The active clinic was not found.', details: {} });
     return clinic;
   }
   private product(product: { id: string; title: string; slug: string; description: string | null; category: { id: string; name: string; slug: string }; skus: Array<{ id: string; code: string; title: string | null; currentPriceToman: bigint; currentTaxToman: bigint }> }) {

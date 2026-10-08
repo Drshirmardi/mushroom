@@ -8,7 +8,11 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { AuthSessionManager, type Authentication } from "@/auth/session";
+import {
+  AuthSessionManager,
+  type Authentication,
+  type AuthSessionSnapshot,
+} from "@/auth/session";
 import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
 
 const sessionManager = new AuthSessionManager(authApiClient);
@@ -25,6 +29,7 @@ interface AuthSessionContextValue {
 }
 
 const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
+const SessionSnapshotContext = createContext<AuthSessionSnapshot | null>(null);
 
 function SessionStatus({ redirecting = false }: { redirecting?: boolean }) {
   return (
@@ -42,7 +47,7 @@ function SessionStatus({ redirecting = false }: { redirecting?: boolean }) {
   );
 }
 
-export function SessionGate({ children }: { children: React.ReactNode }) {
+export function SessionProvider({ children }: { children: React.ReactNode }) {
   const snapshot = useSyncExternalStore(
     sessionManager.subscribe,
     sessionManager.getSnapshot,
@@ -52,12 +57,6 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void sessionManager.bootstrap();
   }, []);
-
-  useEffect(() => {
-    if (snapshot.status === "anonymous") {
-      window.location.replace(loginUrl);
-    }
-  }, [snapshot.status]);
 
   const contextValue = useMemo<AuthSessionContextValue | null>(
     () =>
@@ -70,15 +69,33 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
     [snapshot],
   );
 
-  if (snapshot.status !== "authenticated" || !contextValue) {
+  return (
+    <SessionSnapshotContext.Provider value={snapshot}>
+      <AuthSessionContext.Provider value={contextValue}>
+        {children}
+      </AuthSessionContext.Provider>
+    </SessionSnapshotContext.Provider>
+  );
+}
+
+export function SessionGate({ children }: { children: React.ReactNode }) {
+  const snapshot = useContext(SessionSnapshotContext);
+
+  useEffect(() => {
+    if (snapshot?.status === "anonymous") {
+      window.location.replace(loginUrl);
+    }
+  }, [snapshot?.status]);
+
+  if (!snapshot) {
+    throw new Error("SessionGate must be used inside SessionProvider");
+  }
+
+  if (snapshot.status !== "authenticated") {
     return <SessionStatus redirecting={snapshot.status === "anonymous"} />;
   }
 
-  return (
-    <AuthSessionContext.Provider value={contextValue}>
-      {children}
-    </AuthSessionContext.Provider>
-  );
+  return children;
 }
 
 export function useAuthSession(): AuthSessionContextValue {
@@ -87,4 +104,8 @@ export function useAuthSession(): AuthSessionContextValue {
     throw new Error("useAuthSession must be used inside SessionGate");
   }
   return value;
+}
+
+export function useOptionalAuthSession(): AuthSessionContextValue | null {
+  return useContext(AuthSessionContext);
 }
