@@ -50,22 +50,60 @@
 
 ## handoff فاز فعال
 
-## batch فعال — F12-B14-R1
+## آخرین batch تکمیل‌شده — F12-B02-R9
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` owner-approved development-delivery extension)
+Batch status: `DONE` (isolated fast shared development delivery)
+Contract baseline: one shared internal `dev` branch/environment on the existing VPS; source-sync and hot reload are
+isolated from immutable `main` release workflows, databases, secrets, ports and state.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, deployment workflow and ADR.
+
+- Task ID: `F12-T02-R9`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted VPS deployment baseline and completed `F07-T11-R1` corrective.
+  - Scope: implement a gated `dev`-branch source-sync workflow, persistent Docker Compose watch services, isolated
+    PostgreSQL/secrets/ports, dependency and migration bootstrap, health verification, operator setup documentation
+    and focused contract/behavior tests without changing the production release path.
+  - Owned paths: `.github/workflows/dev-sync.yml`, `.github/CI.md`, `deploy/vps/{Dockerfile.dev,compose.dev.yaml,
+    dev-*.sh,dev-env.example,README.md}`, `scripts/{deploy-dev-vps.mjs,test-vps-dev.sh,
+    test-release-pipeline.mjs}`, one deployment ADR; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: VPS deployment identity and host resource envelope; no production runtime state,
+    Prisma schema, OpenAPI contract or application feature code change.
+  - Expected verification: dev workflow/release contracts, simulated VPS source/bootstrap/watch behavior, shell/Node
+    syntax, YAML parse, production workflow non-regression and `git diff --check`.
+  - Review: PASS — `dev` now has a gated source-sync path, persistent Nest/Next watchers, isolated/capped Compose
+    state and fail-closed boundary checks. Existing `main` CI, immutable release and promotion files are unchanged.
+  - Verification: `pnpm release:test`, `bash scripts/test-vps-dev.sh`, Node/shell syntax, dev workflow YAML parse and
+    `git diff --check` PASS. The focused simulation covers first bootstrap/seed, source-only hot update, dependency
+    reinstall/recreate and staging-port collision rejection.
+  - External next action: configure the documented VPS runtime/secrets/DNS/reverse proxy and GitHub variable, create
+    branch `dev`, then record the first live four-endpoint sync. No batch is started in this handoff.
+
+## آخرین batch تکمیل‌شده — F12-B14-R1
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-08 +03:30`
 Phase: `12-PRODUCTION-HARDENING` (`F07-T11` CI reliability corrective)
-Batch status: `IN_PROGRESS`
+Batch status: `DONE` (prescription concurrency-test reliability corrective)
 Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`
 
 - Task ID: `F07-T11-R1`
   - Agent/Thread: `Codex /root`
-  - Status: `CLAIMED`
+  - Status: `DONE`
   - Scope: remove the nondeterministic winner assumption from the real-PostgreSQL concurrent prescription revision
     assertion while preserving the one-winner/one-conflict and exact issued-evidence contract.
   - Owned paths: `apps/api/test/prescription.integration.spec.ts`; coordinator-only
     `plan/{STATUS.md,logs/phase-12.md}`.
-  - Expected verification: focused prescription integration test on PostgreSQL, API typecheck and `git diff --check`.
+  - Review: PASS — the test still requires exactly one committed revision and one stale-revision conflict, but now
+    verifies issued/history evidence against whichever concurrent request PostgreSQL serialized first.
+  - Verification: CI run `37727025727` passed the original race; post-merge run `37727664058` reproduced the opposite
+    valid winner and isolated the sole flaky assertion. Patched main CI run `37729167480`, API typecheck and
+    `git diff --check` PASS.
+  - Next eligible work: no batch is started in this handoff; the requested isolated fast dev environment can be
+    claimed next without modifying the production release path.
 
 ## آخرین batch تکمیل‌شده — F12-B13-R1
 

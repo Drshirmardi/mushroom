@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+command_name=${1:-}
+
+read_secret() {
+  local name=$1
+  local path="/run/secrets/$name"
+  [[ -r $path ]] || { printf '%s is not readable\n' "$path" >&2; exit 1; }
+  printf -v "$name" '%s' "$(<"$path")"
+  export "$name"
+}
+
+write_runtime_configs() {
+  node --input-type=module <<'NODE'
+import { writeFile } from 'node:fs/promises';
+
+const values = {
+  apiUrl: process.env.PUBLIC_API_URL || '',
+  webUrl: process.env.PUBLIC_WEB_URL || '',
+  appUrl: process.env.PUBLIC_APP_URL || '',
+  dashboardUrl: process.env.PUBLIC_DASHBOARD_URL || '',
+};
+for (const [name, value] of Object.entries(values)) {
+  if (!value) throw new Error(`${name} is required for the shared dev runtime`);
+  const url = new URL(value);
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+    throw new Error(`${name} must be an http(s) URL without credentials`);
+  }
+}
+const source = `window.__MUSHROOM_RUNTIME_CONFIG__ = Object.freeze(${JSON.stringify(values)});\n`;
+await Promise.all(['web', 'app', 'dashboard'].map((application) =>
+  writeFile(`apps/${application}/public/runtime-config.js`, source, { mode: 0o644 }),
+));
+NODE
+}
+
+case "$command_name" in
+  bootstrap)
+    read_secret DATABASE_URL
+    export NODE_ENV=development
+    if [[ ${DEV_INSTALL_DEPENDENCIES:-false} == true ]]; then
+      pnpm install --frozen-lockfile
+    fi
+    [[ -d node_modules/.pnpm ]] || { printf 'workspace dependencies are not installed\n' >&2; exit 1; }
+    write_runtime_configs
+    pnpm --filter @sabz-zendegi/api-client build
+    pnpm --filter @sabz-zendegi/api prisma:generate
+    pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+    if [[ ${DEV_RUN_SEED:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api prisma:seed
+    fi
+    ;;
+  api)
+    for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER \
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY PAYMENT_CREDENTIAL_DECRYPTION_KEYS; do
+      read_secret "$secret"
+    done
+    export NODE_ENV=development HOSTNAME=0.0.0.0 PORT=3003
+    exec pnpm --filter @sabz-zendegi/api dev
+    ;;
+  web)
+    exec pnpm --filter @sabz/web exec next dev --hostname 0.0.0.0 --port 3000
+    ;;
+  app)
+    exec pnpm --filter @sabz/app exec next dev --hostname 0.0.0.0 --port 3001
+    ;;
+  dashboard)
+    exec pnpm --filter @sabz/dashboard exec next dev --hostname 0.0.0.0 --port 3002
+    ;;
+  *)
+    printf 'usage: dev-service.sh <bootstrap|api|web|app|dashboard>\n' >&2
+    exit 2
+    ;;
+esac

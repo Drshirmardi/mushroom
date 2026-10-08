@@ -178,3 +178,138 @@ approval مالک محصول/حقوقی ارائه شود؛ فایل rehearsal �
 - شکست کنترل‌شده و application-only rollback؛
 - نبود credential رجیستری در Docker config دائمی کاربر؛
 - جدایی database، volume، secret، port، origin و release state دو محیط.
+
+## ۸. محیط توسعهٔ سریع و مشترک روی همین VPS
+
+محیط `dev` یک مسیر جدا از release است: push روی branch به نام `dev` سورس را مستقیم sync می‌کند و watcherهای
+Nest/Next روی سرور روشن می‌مانند. تغییر معمول سورس بدون build image یا restart سرویس دیده می‌شود؛ تغییر dependency،
+Dockerfile یا Compose به‌صورت خودکار bootstrap/recreate می‌شود. این محیط فقط برای دادهٔ ساختگی تیم است و نتیجهٔ آن
+هیچ‌وقت جای CI یا staging را نمی‌گیرد.
+
+### ۸.۱. بررسی ظرفیت و نصب پیش‌نیاز
+
+مدیر سرور ابتدا `rsync` را نصب می‌کند؛ سپس با کاربر `deploy` headroom و دسترسی ابزار را بررسی کنید:
+
+```bash
+sudo apt-get update && sudo apt-get install -y rsync
+su - deploy
+rsync --version
+free -h
+df -h /var/lib/docker "$HOME"
+docker stats --no-stream
+```
+
+مقادیر پیش‌فرض dev حداکثر حدود `3.75 CPU` و `3.8 GiB RAM` بین PostgreSQL و چهار برنامه محدود می‌کنند. اگر پس از
+سرویس‌های فعلی این ظرفیت آزاد نیست، مقادیر `DEV_*_CPUS` و `DEV_*_MEMORY` را پایین‌تر تنظیم کنید یا dev را به VPS
+دوم ببرید؛ oversubscribeکردن همان host می‌تواند staging را کند کند.
+
+### ۸.۲. ساخت runtime و secretهای مستقل dev
+
+پس از mergeشدن فایل‌های این بخش در `main`، ابتدا یک‌بار روی سرور پوشه‌ها را بسازید:
+
+```bash
+install -d -m 700 \
+  "$HOME/mushroom/dev/secrets" \
+  "$HOME/mushroom/dev/workspace" \
+  "$HOME/mushroom/dev/cache" \
+  "$HOME/mushroom/dev/state"
+```
+
+سپس روی سیستم خودتان فایل نمونه را بفرستید:
+
+```bash
+scp -P 22 deploy/vps/dev-env.example deploy@YOUR_VPS_HOST:/home/deploy/mushroom/dev/runtime.env
+```
+
+پورت SSH، user، hostname و مسیر home را با مقادیر واقعی عوض کنید. بعد روی سرور identity را تنظیم کنید:
+
+```bash
+sed -i "s/^DEV_UID=.*/DEV_UID=$(id -u)/; s/^DEV_GID=.*/DEV_GID=$(id -g)/" \
+  "$HOME/mushroom/dev/runtime.env"
+chmod 600 "$HOME/mushroom/dev/runtime.env"
+```
+
+چهار دامنهٔ `dev*.example.com` داخل `runtime.env` را با دامنه‌های واقعی عوض کنید. مسیرهای `/home/deploy/...` نیز
+باید با home واقعی `VPS_USER` برابر باشند. پورت‌های
+پیش‌فرض dev عبارت‌اند از `3200` وب، `3201` اپ، `3202` داشبورد و `3203` API؛ آن‌ها باید فقط روی `127.0.0.1` بمانند
+و با staging/production-sim تکراری نباشند.
+
+secretهای dev را جداگانه بسازید؛ هیچ secret یا database URL از محیط‌های دیگر کپی نشود:
+
+```bash
+cd "$HOME/mushroom/dev"
+db_password=$(openssl rand -hex 32)
+printf '%s' "$db_password" > secrets/postgres_password
+printf 'postgresql://mushroom_dev:%s@postgres:5432/mushroom_dev?schema=public' "$db_password" > secrets/database_url
+openssl rand -base64 48 | tr -d '\n=+/' > secrets/jwt_access_secret
+openssl rand -base64 48 | tr -d '\n=+/' > secrets/refresh_token_pepper
+openssl rand -base64 32 | tr -d '\n' > secrets/payment_credential_encryption_key
+printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/payment_credential_decryption_keys
+chmod 600 runtime.env secrets/*
+unset db_password
+```
+
+### ۸.۳. DNS، HTTPS و دسترسی تیم
+
+چهار DNS record به IP همین VPS اشاره می‌کنند. reverse proxy موجود باید آن‌ها را به loopbackهای زیر بفرستد و TLS
+را terminate کند:
+
+| hostname نمونه | upstream |
+|---|---|
+| `dev.example.com` | `http://127.0.0.1:3200` |
+| `dev-app.example.com` | `http://127.0.0.1:3201` |
+| `dev-dashboard.example.com` | `http://127.0.0.1:3202` |
+| `dev-api.example.com` | `http://127.0.0.1:3203` |
+
+برای Nginx الگوی هر hostname چنین است؛ `server_name` و upstream را طبق جدول تکرار کنید و گواهی را با روش فعلی
+سرور صادر کنید:
+
+```nginx
+server {
+  listen 443 ssl http2;
+  server_name dev.example.com;
+  # ssl_certificate / ssl_certificate_key: managed by the server's existing ACME setup
+  location / {
+    proxy_pass http://127.0.0.1:3200;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+}
+```
+
+این دامنه‌ها عمومی و حاوی دادهٔ واقعی نباشند. دسترسی را در reverse proxy با VPN، allowlist IP یا authentication
+سازمانی محدود کنید؛ dev نباید با credential بیمار یا درگاه واقعی استفاده شود.
+
+### ۸.۴. فعال‌سازی GitHub و اولین sync
+
+چهار secret قبلی `VPS_HOST`، `VPS_USER`، `VPS_SSH_PRIVATE_KEY` و `VPS_KNOWN_HOSTS` و variable اختیاری
+`VPS_PORT` دوباره استفاده می‌شوند. در `Settings → Secrets and variables → Actions → Variables` متغیر جدید
+`VPS_DEV_CD_ENABLED=true` را اضافه کنید. هیچ secret جدیدی برای database در GitHub قرار نمی‌گیرد.
+
+پس از mergeشدن این تغییر در `main`، branch را یک‌بار بسازید:
+
+```bash
+git fetch origin
+git push origin origin/main:refs/heads/dev
+```
+
+از آن پس هر commit که باید فوری روی dev دیده شود روی همین branch push می‌شود. workflow `Sync shared dev VPS` سورس
+را sync، migrationهای forward-only را اجرا، فقط در اولین اجرا seed می‌کند و هر چهار URL را health-check می‌کند.
+merge به `main` همچنان مسیر کامل CI/CD production را طی می‌کند.
+
+وضعیت جاری روی سرور:
+
+```bash
+cd "$HOME/mushroom/dev/workspace"
+docker compose --env-file "$HOME/mushroom/dev/runtime.env" \
+  -f deploy/vps/compose.dev.yaml --project-name mushroom-dev ps
+cat "$HOME/mushroom/dev/state/source.sha"
+```
+
+اگر عمداً volume دیتابیس dev را جداگانه حذف کردید، marker
+`$HOME/mushroom/dev/state/seeded` را نیز پیش از sync بعدی حذف کنید. اسکریپت معمول deployment هیچ database reset،
+down migration یا دست‌کاری state محیط‌های release انجام نمی‌دهد.

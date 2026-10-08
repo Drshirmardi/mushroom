@@ -40,6 +40,23 @@ target must restore separately scoped deployment credentials and an approval-cap
 The release contract check runs for affected pull requests and main changes. Live VPS acceptance still requires a
 baseline plus two sequential update rehearsals; local workflow checks cannot claim that evidence.
 
+## Fast shared development delivery
+
+Pushes to the dedicated `dev` branch use `Sync shared dev VPS`. This path intentionally does not build or publish
+release images and does not replace CI: it rsyncs the checked-out source over host-key-pinned SSH, runs an idempotent
+dependency/Prisma bootstrap, and leaves four persistent development watchers running on the VPS. A source-only push
+therefore becomes visible as soon as the relevant watcher recompiles; dependency or runtime changes trigger a
+controlled recreate. Newer pushes cancel an older in-flight dev sync.
+
+The workflow is disabled unless repository variable `VPS_DEV_CD_ENABLED` is exactly `true`. It reuses only the four
+repository-scoped SSH inputs and optional `VPS_PORT`; it receives no package-write permission, GHCR credential or
+production secret. The VPS side rejects a non-`development` runtime, a project other than `mushroom-dev`, non-loopback
+ports, identity mismatches and collisions with the two release environments. Dev has its own PostgreSQL volume,
+file secrets, source/cache/state directories, public URLs and bounded CPU/memory. Sadad transport remains disabled.
+
+This is a fast internal feedback environment and may run unreviewed code, so branch protection must never treat its
+health result as release evidence. `main` still follows the complete CI, immutable-image release and staging path.
+
 ## Long capacity check
 
 `Chat capacity` is now manual-only (`workflow_dispatch`) in GitHub Actions. It has not been
