@@ -50,6 +50,32 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R7
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE` (private GitHub Free test-VPS credential boundary)
+
+- Task ID: `F12-T02`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Scope: adapt the test-VPS CD workflows to the confirmed private-repository GitHub Free boundary by using
+    repository-scoped SSH inputs, while preserving automatic staging, explicit owner promotion/rollback,
+    immutable manifests and the two isolated VPS environments.
+  - Owned paths: `.github/workflows/{release,promote,rollback}.yml`, `.github/CI.md`, `deploy/vps/README.md`,
+    `scripts/test-release-pipeline.mjs`, affected SpecKit/decision documentation; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Expected verification: workflow contract tests, YAML/actionlint, permission and owner-gate review,
+    repository-input documentation review and `git diff --check`.
+  - Review: PASS — GitHub Environment references were removed from the three VPS workflows because the confirmed
+    private repository on GitHub Free cannot configure them. Repository-scoped SSH inputs are validated before use;
+    staging remains opt-in/automatic, while production-sim promotion and rollback retain explicit actor matching.
+  - Verification: `pnpm release:test`, six-workflow YAML parse, actionlint and `git diff --check` PASS.
+  - External next action: repository Actions currently reports zero repository variables and zero repository secrets.
+    Configure the documented four SSH secrets and four variables, keep `VPS_CD_ENABLED=false` until present, then set
+    it to `true` and merge a baseline update to exercise staging. No new batch is started.
+
 CI maintenance handoff (owner-authorized, 2026-10-04): ordinary checks retained; security/browser/artifact
 gates added; frozen chat capacity is manual-only without changing its contract. Browser 7/7, typecheck,
 dependency High/Critical gate, tracked-source secret scan and workflow validation pass. Artifact smoke/scan

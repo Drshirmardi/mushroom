@@ -3,7 +3,7 @@
 این مسیر برای یک VPS غیرپروداکشن است که دو محیط مستقل دارد:
 
 - `staging`: پس از CI موفق `main` به‌صورت خودکار به‌روز می‌شود.
-- `production-sim`: فقط پس از تأیید مالک در GitHub Environment همان digestهای staging را می‌گیرد.
+- `production-sim`: فقط پس از اجرای دستی مالک همان digestهای پذیرفته‌شدهٔ staging را می‌گیرد.
 
 این topology برای تمرین انتشار است. داده، credential و اتصال واقعی سداد در آن مجاز نیست.
 
@@ -88,12 +88,8 @@ unset db_password
 
 ## ۴. تنظیم GitHub
 
-در `Settings → Environments` دو Environment بسازید:
-
-1. `staging-vps`
-2. `production-sim`
-
-در هر دو Environment این secretها را تعریف کنید:
+در repository به مسیر `Settings → Secrets and variables → Actions → Secrets` بروید و این repository secretها را
+تعریف کنید:
 
 | نام | مقدار |
 |---|---|
@@ -102,24 +98,27 @@ unset db_password
 | `VPS_SSH_PRIVATE_KEY` | کلید خصوصی مخصوص GitHub Actions |
 | `VPS_KNOWN_HOSTS` | خط کامل و از قبل تأییدشدهٔ host key |
 
-متغیر اختیاری `VPS_PORT` را نیز در هر Environment قرار دهید؛ نبود آن یعنی پورت `22`. host key را از یک کانال مورد
+متغیر `VPS_PORT` را در بخش repository variables قرار دهید؛ نبود آن یعنی پورت `22`. host key را از یک کانال مورد
 اعتماد با fingerprint سرور تطبیق دهید. workflow از `ssh-keyscan` خودکار استفاده نمی‌کند.
 
 در `Settings → Actions → General` دسترسی workflow را فعال نگه دارید و packageهای `mushroom-*` را private و مرتبط
 با همین repository نگه دارید. workflow برای publish و pull از `GITHUB_TOKEN` کوتاه‌عمر استفاده می‌کند؛ PAT روی VPS
 ذخیره نمی‌شود.
 
-دسترسی Environment و secret آن در repository خصوصی به GitHub Pro/Team/Enterprise نیاز دارد. required reviewer برای
-repository خصوصی بسته به پلن قابل استفاده نیست؛ بنابراین gate اصلی این پروژه اجرای دستی workflow و تطبیق username
-مالک است. جزئیات محدودیت پلن در [مستند رسمی GitHub Environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments)
-آمده است. اگر پلن شما پشتیبانی می‌کند، Required reviewer محیط `production-sim` را نیز به‌عنوان لایهٔ دوم فعال کنید.
+این rehearsal برای repository خصوصی روی GitHub Free از Environment استفاده نمی‌کند، چون Environment و secret آن در
+private repository به GitHub Pro/Team/Enterprise نیاز دارد. هر دو محیط روی یک VPS آزمایشی و با یک deployment identity
+کار می‌کنند، اما database، volume، secret، port و release state آن‌ها جداست. gate مربوط به `production-sim` اجرای
+دستی workflow و تطبیق `github.actor` با `RELEASE_APPROVER` است. real production باید credential و approval scope
+مستقل داشته باشد. جزئیات محدودیت پلن در [مستند رسمی GitHub Environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments)
+آمده است.
 
-در `Settings → Secrets and variables → Actions → Variables` این دو repository variable را تنظیم کنید:
+در `Settings → Secrets and variables → Actions → Variables` این repository variableها را تنظیم کنید:
 
 ```text
 VPS_CD_ENABLED=false
 RELEASE_APPROVER=YOUR_GITHUB_USERNAME
 GHCR_ATTESTATIONS_ENABLED=false
+VPS_PORT=22
 ```
 
 `GHCR_ATTESTATIONS_ENABLED` اختیاری است. برای repository خصوصی روی پلنی که artifact attestation را پشتیبانی نمی‌کند
@@ -147,7 +146,7 @@ application digestهای قبلی را برمی‌گرداند و schema گست�
 ## ۶. rollback کنترل‌شده
 
 از `Actions → Application rollback → Run workflow` محیط را انتخاب کنید. انتخاب `production-sim` فقط برای username
-ثبت‌شده در `RELEASE_APPROVER` مجاز است و در صورت پشتیبانی پلن از approval همان Environment هم عبور می‌کند. rollback
+ثبت‌شده در `RELEASE_APPROVER` مجاز است. rollback
 فقط release قبلی برنامه را فعال می‌کند؛ database reset، down migration یا بازیابی خودکار داده وجود ندارد.
 
 ## ۷. پذیرش VPS

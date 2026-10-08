@@ -29,12 +29,13 @@ variable `GHCR_ATTESTATIONS_ENABLED` absent or `false` on unsupported plans; set
 feature is available. Digest-only promotion, manifest verification and deployment do not depend on this optional step.
 
 The repository variable `VPS_CD_ENABLED` controls external delivery. When it is absent or `false`, publication still
-works and the staging VPS job is skipped. When it is `true`, staging deploys automatically through the `staging-vps`
-Environment and the automatic workflow stops. The configured owner must then run `Promote staging release` with the
+works and the staging VPS job is skipped. When it is `true`, staging deploys automatically using repository-scoped
+SSH secrets and the automatic workflow stops. The configured owner must then run `Promote staging release` with the
 successful release run ID; that workflow revalidates staging and the immutable manifest before touching
 `production-sim`. Both use host-key-pinned SSH, the versioned deployment script and the job-scoped `GITHUB_TOKEN` for
 temporary private-GHCR read access. `Application rollback` is the explicit operator path and applies the same owner
-check to production-sim.
+check to production-sim. This Free-plan rehearsal intentionally targets one isolated test VPS; a future real production
+target must restore separately scoped deployment credentials and an approval-capable control plane.
 
 The release contract check runs for affected pull requests and main changes. Live VPS acceptance still requires a
 baseline plus two sequential update rehearsals; local workflow checks cannot claim that evidence.

@@ -80,17 +80,18 @@ identity. The VPS hosts no persistent runner or registry watcher.
 1. `.github/workflows/release.yml` listens to successful completion of the protected `CI` workflow for `main`, checks
    out its exact SHA, verifies and publishes the four private GHCR images, records their registry digests in a release
    manifest, and preserves the manifest as workflow evidence.
-2. The same workflow deploys the manifest to the `staging-vps` GitHub Environment through a reusable, versioned SSH
-   deployment script. Environment concurrency serializes changes. It stops after staging.
+2. The same workflow deploys the manifest to the test VPS `staging` project through a reusable, versioned SSH
+   deployment script and repository-scoped credentials compatible with a private GitHub Free repository. Job
+   concurrency serializes changes. It stops after staging.
 3. `.github/workflows/promote.yml` is an explicit `workflow_dispatch` operation. It accepts a completed release run ID,
    verifies that run and its staging job succeeded, downloads the exact manifest, requires `github.actor` to match the
-   configured `RELEASE_APPROVER`, and then deploys `production-sim`. A GitHub Environment required reviewer is optional
-   defense in depth when the repository's GitHub plan supports that rule for private repositories.
+   configured `RELEASE_APPROVER`, and then deploys `production-sim`. A future paid-plan or real-production control
+   plane must restore separately scoped credentials and an independent approval boundary.
 4. The remote script validates environment isolation, pulls only digest references using a temporary Docker config,
    runs the API migration command, changes the Compose project, probes all four services and atomically records current
    and previous releases. A staging post-switch failure restores only the previous application manifest.
 5. `.github/workflows/rollback.yml` is an explicit operator workflow. Staging may be restored automatically by the
-   deploy script; production-sim rechecks the configured owner and may also use an approval-protected Environment.
+   deploy script; production-sim rechecks the configured owner before any remote action.
 6. Repository tests validate workflow permissions/triggers, release-manifest shape, immutable references, isolation
    checks, temporary credential cleanup and rollback policy without needing a live provider.
 
