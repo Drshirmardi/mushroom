@@ -4,6 +4,7 @@ import type { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AuthenticatedRequest } from '../src/common/auth/access-token.guard';
+import { SKIP_ACTIVE_SESSION_CHECK_KEY } from '../src/common/auth/active-session.decorator';
 import { ReleaseAdminSessionGuard } from '../src/common/auth/release-admin-session.guard';
 import type { PrismaService } from '../src/database/prisma/prisma.service';
 
@@ -40,15 +41,31 @@ describe('ReleaseAdminSessionGuard', () => {
     } as unknown as ExecutionContext;
   };
 
-  it.each(['PATIENT', 'DOCTOR', 'STAFF'] as const)(
-    'leaves the retained %s self-service session semantics to its route policy',
+  it.each(['PATIENT', 'DOCTOR', 'STAFF', 'ADMIN'] as const)(
+    'admits a persisted active %s session',
     async (role) => {
+      findFirst.mockResolvedValue({ id: 'df846b14-c123-45bd-8efe-58220999e940' });
+
       await expect(guard.canActivate(contextFor([role]))).resolves.toBe(true);
-      expect(findFirst).not.toHaveBeenCalled();
+      expect(findFirst).toHaveBeenCalledWith(expect.objectContaining({
+        where: expect.objectContaining({
+          revokedAt: null,
+          user: { status: 'ACTIVE' },
+        }),
+      }));
     },
   );
 
-  it('admits only a persisted active ADMIN session', async () => {
+  it('allows an authenticated logout retry to reach its idempotent handler', async () => {
+    getAllAndOverride.mockImplementation((key) =>
+      key === SKIP_ACTIVE_SESSION_CHECK_KEY ? true : false,
+    );
+
+    await expect(guard.canActivate(contextFor(['PATIENT']))).resolves.toBe(true);
+    expect(findFirst).not.toHaveBeenCalled();
+  });
+
+  it('admits only a persisted active session', async () => {
     findFirst.mockResolvedValue({ id: 'df846b14-c123-45bd-8efe-58220999e940' });
 
     await expect(guard.canActivate(contextFor(['ADMIN']))).resolves.toBe(true);
@@ -61,7 +78,7 @@ describe('ReleaseAdminSessionGuard', () => {
   });
 
   it.each(['revoked', 'expired', 'disabled'])(
-    'rejects a %s ADMIN session before a controller can run',
+    'rejects a %s session before a controller can run',
     async () => {
       findFirst.mockResolvedValue(null);
 

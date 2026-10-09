@@ -54,10 +54,10 @@ describe('appointment-bound chat REST (PostgreSQL API integration)', () => {
       payload: { clientMessageId: 'a1000000-0000-4000-8000-000000000003', body: 'must not persist' },
     });
 
-    expect(history.statusCode).toBe(403);
-    expect(history.json().code).toBe('CHAT_FORBIDDEN');
-    expect(send.statusCode).toBe(403);
-    expect(send.json().code).toBe('CHAT_FORBIDDEN');
+    expect(history.statusCode).toBe(401);
+    expect(history.json().code).toBe('UNAUTHORIZED');
+    expect(send.statusCode).toBe(401);
+    expect(send.json().code).toBe('UNAUTHORIZED');
     expect(await fixture.prisma.chatMessage.count({ where: { conversationId } })).toBe(0);
   });
 });

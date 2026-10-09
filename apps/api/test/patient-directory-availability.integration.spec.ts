@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createTestAccessToken } from './auth-test-support';
 
 describe('patient directory and on-demand availability (PostgreSQL API integration)', () => {
   let app: NestFastifyApplication; let prisma: PrismaService; let token: string; let userId: string;
@@ -15,7 +16,7 @@ describe('patient directory and on-demand availability (PostgreSQL API integrati
   const futureDay = (offset = 7) => { const date = new Date(); date.setUTCDate(date.getUTCDate() + offset); return date.toISOString().slice(0, 10); };
   const createVisibleFixture = async () => {
     const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } }); const suffix = randomUUID().slice(0, 8); const publication = { isActive: true, publicationStatus: 'PUBLISHED' as const, publishedAt: new Date() };
-    const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); users.add(user.id); const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId: clinic.id } }); profiles.add(profile.id); userId = user.id; token = await app.get(AccessTokenService).issue({ userId, sessionId: randomUUID(), roles: ['PATIENT'] });
+    const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); users.add(user.id); const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId: clinic.id } }); profiles.add(profile.id); userId = user.id; token = (await createTestAccessToken(prisma, app.get(AccessTokenService), ['PATIENT'], userId)).token;
     const specialty = await prisma.specialty.create({ data: { clinicId: clinic.id, name: `Visible specialty ${suffix}`, canonicalName: `visible specialty ${suffix}`, ...publication } }); specialties.add(specialty.id);
     const doctor = await prisma.doctorProfile.create({ data: { clinicId: clinic.id, displayName: `Visible doctor ${suffix}`, biography: 'Patient-facing biography', languages: ['fa'], education: ['MD'], certifications: ['Board'] } }); doctors.add(doctor.id); await prisma.doctorSpecialty.create({ data: { clinicId: clinic.id, doctorId: doctor.id, specialtyId: specialty.id } }); await prisma.doctorProfile.update({ where: { id: doctor.id }, data: publication });
     const service = await prisma.service.create({ data: { clinicId: clinic.id, name: `Visible service ${suffix}`, canonicalName: `visible service ${suffix}`, description: 'Patient-facing service', ...publication } }); services.add(service.id);

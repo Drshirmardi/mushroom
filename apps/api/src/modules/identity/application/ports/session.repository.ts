@@ -76,6 +76,7 @@ export type SessionRefreshResult =
       generation: number;
     }
   | { kind: 'INVALID' }
+  | { kind: 'CONCURRENT_REFRESH' }
   | { kind: 'REVOKED' };
 
 export abstract class SessionRepository {

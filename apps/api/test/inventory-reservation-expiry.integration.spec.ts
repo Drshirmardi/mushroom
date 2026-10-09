@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createTestAccessToken } from './auth-test-support';
 import { CommerceClock } from '../src/modules/commerce/inventory/commerce-clock';
 import { CommerceInventoryService } from '../src/modules/commerce/inventory/commerce-inventory.service';
 import { InventoryReservationExpiryWorker } from '../src/modules/commerce/inventory/inventory-reservation-expiry.worker';
@@ -22,7 +23,7 @@ describe('commerce inventory reservation expiry (PostgreSQL integration)', () =>
     users.clear(); patients.clear(); categories.clear(); products.clear(); skus.clear(); inventoryIds.clear(); orders.clear(); configs.clear();
   });
   const headers = (token: string, key?: string) => ({ authorization: `Bearer ${token}`, origin: 'http://localhost:3000', ...(key ? { 'idempotency-key': key } : {}) });
-  const buyer = async () => { const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); users.add(user.id); const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId } }); patients.add(profile.id); return { profile, token: await tokens.issue({ userId: user.id, sessionId: randomUUID(), roles: ['PATIENT'] }) }; };
+  const buyer = async () => { const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); users.add(user.id); const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId } }); patients.add(profile.id); return { profile, token: (await createTestAccessToken(prisma, tokens, ['PATIENT'], user.id)).token }; };
   const sku = async (onHandQuantity = 2) => { const suffix = randomUUID().slice(0, 8); const category = await prisma.commerceCategory.create({ data: { clinicId, name: `expiry ${suffix}`, slug: `expiry-${suffix}` } }); categories.add(category.id); const product = await prisma.commerceProduct.create({ data: { clinicId, categoryId: category.id, title: `expiry ${suffix}`, slug: `expiry-product-${suffix}`, status: 'ACTIVE' } }); products.add(product.id); const record = await prisma.commerceSku.create({ data: { clinicId, productId: product.id, code: `EXP-${suffix}`, currentPriceToman: 10_000n, currentTaxToman: 0n, isActive: true, inventoryItem: { create: { clinicId, onHandQuantity } } }, include: { inventoryItem: true } }); skus.add(record.id); inventoryIds.add(record.inventoryItem!.id); return record; };
   const checkout = async (token: string, skuId: string, quantity = 1) => { expect((await app.inject({ method: 'PUT', url: '/v1/patients/me/cart', headers: headers(token), payload: { skuId, quantity } })).statusCode).toBe(200); return app.inject({ method: 'POST', url: '/v1/patients/me/orders', headers: headers(token, `expiry-${randomUUID()}`), payload: { shippingMethod: 'PICKUP' } }); };
 

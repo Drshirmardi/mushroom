@@ -68,6 +68,14 @@ export function Header() {
                                 ورود
                             </Link>
                         </>
+                    ) : session.status === "unavailable" ? (
+                        <button
+                            type="button"
+                            onClick={() => void sessionManager.bootstrap()}
+                            className="rounded-full border border-primary/30 px-4 py-2.5 text-sm font-semibold text-primary"
+                        >
+                            تلاش دوباره
+                        </button>
                     ) : (
                         <div aria-label="در حال بررسی حساب کاربری" className="h-10 w-24 animate-pulse rounded-full bg-secondary" />
                     )}

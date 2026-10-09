@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createTestAccessToken } from './auth-test-support';
 
 describe('patient appointment create (PostgreSQL API integration)', () => {
   let app: NestFastifyApplication;
@@ -59,7 +60,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
       const intake = await prisma.patientMedicalIntake.create({ data: { patientId: profile.id, clinicId: clinic.id, currentRevisionNumber: 1, completedRevisionNumber: 1, submissionState: 'COMPLETE' } });
       await prisma.patientMedicalIntakeRevision.create({ data: { intakeId: intake.id, revisionNumber: 1, assignedSchemaVersion: 1, revisionState: 'COMPLETE', birthDate: new Date('1990-01-01T00:00:00Z'), sexAtBirth: 'FEMALE', allergyReport: { status: 'NONE', items: [] }, chronicConditionReport: { status: 'UNKNOWN', items: [] }, currentMedicationReport: { status: 'NONE', items: [] }, completedAt: new Date(), completedConsentRecordId: consent.id, mutationOperation: 'COMPLETE', mutationKey: randomUUID(), recordingMode: 'PATIENT_ENTRY', reportedPatientId: profile.id, payloadHash: randomUUID().replaceAll('-', '').repeat(2) } });
     }
-    const token = await app.get(AccessTokenService).issue({ userId: user.id, sessionId: randomUUID(), roles: ['PATIENT'] });
+    const token = (await createTestAccessToken(prisma, app.get(AccessTokenService), ['PATIENT'], user.id)).token;
     return { user, profile, token };
   };
 

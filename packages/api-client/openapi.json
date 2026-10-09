@@ -264,6 +264,16 @@
               }
             }
           },
+          "409": {
+            "description": "A concurrent refresh has updated the browser cookie; retry shortly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Refresh rate limit exceeded.",
             "content": {
@@ -11204,6 +11214,7 @@
               "LOGIN_RATE_LIMITED",
               "REGISTRATION_RATE_LIMITED",
               "REFRESH_RATE_LIMITED",
+              "REFRESH_CONCURRENT_RETRY",
               "INVALID_REFRESH_TOKEN",
               "INVALID_CURRENT_PASSWORD",
               "PASSWORD_UNCHANGED",

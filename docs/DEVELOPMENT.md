@@ -120,6 +120,23 @@ pnpm dev
 | API | <http://localhost:3003> |
 | Swagger | <http://localhost:3003/docs> |
 
+### بازبینی از شبکهٔ محلی
+
+برای باز کردن برنامه از تلفن یا دستگاه دیگری در همان شبکه، URLها باید همگی
+یک host داشته باشند. برنامه‌ها در حالت `pnpm dev` روی همهٔ رابط‌های شبکه گوش
+می‌دهند و URL API و برنامه‌های دیگر را از IP فعلی مرورگر می‌سازند؛ بنابراین
+نیازی به build نیست. تنها تنظیم لازم، allowlist دقیق API است. IP دستگاه توسعه
+را با originهای localhost در `apps/api/.env` قرار دهید و API را دوباره اجرا کنید:
+
+```dotenv
+APP_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://192.168.1.20:3000,http://192.168.1.20:3001,http://192.168.1.20:3002
+```
+
+سپس Web، App و Dashboard را با همان IP و پورت‌های ۳۰۰۰ تا ۳۰۰۲ باز کنید.
+`localhost` و IP را در یک نشست مخلوط نکنید؛ cookie توسعه host-only است و هر
+origin باید صریحاً در allowlist باشد. برای دامنهٔ توسعه نیز همین سه origin دقیق
+را وارد کنید؛ wildcard مجاز نیست.
+
 سلامت API را در terminal دوم بررسی کنید:
 
 ```bash

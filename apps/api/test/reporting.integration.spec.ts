@@ -82,7 +82,9 @@ describe('Phase 11 domain reporting (disposable PostgreSQL API integration)', ()
     expect(treatments.statusCode).toBe(200); expect(treatments.json()).toMatchObject({ clinicId: clinic.id, activePlans: 1, dueTasks: 1, completedTasks: 1, completionRate: 50, sourceStatus: 'current' });
     const unsupported = await app.inject({ method: 'GET', url: `/v1/admin/reporting/patients${suffix}&cursor=unsafe`, headers }); expect(unsupported.statusCode).toBe(400);
     const invalidRange = await app.inject({ method: 'GET', url: `/v1/admin/reporting/appointments?clinicId=${clinic.id}&from=2026-02-30&to=2026-03-01`, headers }); expect(invalidRange.statusCode).toBe(400);
-    const nonAdmin = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['PATIENT'] });
+    const nonAdminUser = await prisma.user.create({ data: { phone: `+989${Math.floor(100_000_000 + Math.random() * 900_000_000)}` } });
+    const nonAdminSession = await prisma.session.create({ data: { userId: nonAdminUser.id, refreshTokenHash: randomUUID().replaceAll('-', '') + randomUUID().replaceAll('-', ''), expiresAt: new Date(Date.now() + 3_600_000) } });
+    const nonAdmin = await tokens.issue({ userId: nonAdminUser.id, sessionId: nonAdminSession.id, roles: ['PATIENT'] });
     const forbidden = await app.inject({ method: 'GET', url: `/v1/admin/reporting/patients${suffix}`, headers: { authorization: `Bearer ${nonAdmin}` } }); expect(forbidden.statusCode).toBe(403);
   }, 60_000);
 });
