@@ -50,6 +50,9 @@ case "$command_name" in
     if [[ ${DEV_RUN_SEED:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:seed
     fi
+    NODE_OPTIONS=--max-old-space-size=640 \
+      pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
+        --noCheck --declaration false --declarationMap false
     ;;
   api)
     for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER \
@@ -57,7 +60,7 @@ case "$command_name" in
       read_secret "$secret"
     done
     export NODE_ENV=development HOSTNAME=0.0.0.0 PORT=3003
-    exec pnpm --filter @sabz-zendegi/api dev
+    exec node --enable-source-maps apps/api/dist/main.js
     ;;
   web)
     exec pnpm --filter @sabz/web exec next dev --hostname 0.0.0.0 --port 3000

@@ -152,6 +152,20 @@ assert(devCompose.includes('cap_drop: [ALL]'), 'shared dev Node services must dr
 for (const required of ['write_runtime_configs', 'apps/${application}/public/runtime-config.js']) {
   assert(devServiceScript.includes(required), `dev frontend runtime configuration is missing: ${required}`);
 }
+for (const required of [
+  'NODE_OPTIONS=--max-old-space-size=640',
+  'pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json',
+  '--noCheck --declaration false --declarationMap false',
+  'exec node --enable-source-maps apps/api/dist/main.js',
+]) assert(devServiceScript.includes(required), `dev API runtime separation is missing: ${required}`);
+assert(
+  !devServiceScript.includes('exec pnpm --filter @sabz-zendegi/api dev'),
+  'shared dev API container must not retain the TypeScript compiler watcher',
+);
+assert(
+  devDeployScript.includes('compose up -d --no-deps --force-recreate api'),
+  'every source-only sync must restart the compiled API runtime exactly once',
+);
 assert(
   devServiceScript.includes('local path="/run/secrets/${name,,}"'),
   'dev secret loader must map upper-case environment names to lower-case Compose secret paths',

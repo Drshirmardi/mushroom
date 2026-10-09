@@ -1,5 +1,48 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R15 — shared-dev API compiler/runtime isolation corrective
+
+Task ID: F12-T02-R15
+Batch ID: F12-B02-R15
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- Live cgroup evidence confirmed the API container exceeded its `1g` limit: `oom=2`, `oom_kill=2`, Docker health was
+  `unhealthy`, restart count was `16`, and `OOMKilled=true`.
+- The earlier low-memory compiler still remained concurrently resident with the Nest runtime. Current memory after
+  the kill was only about `90 MiB`, which represented the surviving wrapper/compiler state rather than peak usage.
+
+Changed files:
+
+- `deploy/vps/dev-service.sh`
+- `deploy/vps/deploy-dev.sh`
+- `scripts/test-vps-dev.sh`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- clean bounded TypeScript emit at `640 MiB` → PASS; Nest decorator metadata retained in 111 emitted files
+- `pnpm release:test` → PASS
+- `bash scripts/test-vps-dev.sh` → PASS, including source-only API recreation without frontend recreation
+- shell/Node syntax and `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** Every Git sync now performs migration, optional seed and one bounded API compilation inside the
+  one-shot bootstrap container. The persistent API container runs only `dist/main.js`; no TypeScript compiler or
+  compiler watcher shares its `1g` cgroup.
+- A source-only sync recreates only API after bootstrap completes. Dependency/runtime changes retain the existing full
+  service recreation, while Next development watchers remain persistent on ordinary source updates.
+
+External next action:
+
+- Push the corrective to `dev`. The changed runtime fingerprint forces replacement of the existing unhealthy API
+  container. No manual server configuration or container deletion is required.
+
 ## F12-T02-R14 — low-memory shared-dev API compiler corrective
 
 Task ID: F12-T02-R14

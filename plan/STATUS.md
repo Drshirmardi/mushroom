@@ -50,6 +50,36 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R15
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev API compiler/runtime isolation corrective)
+Contract baseline: every Git sync compiles the API once in the one-shot bootstrap container; the persistent API
+container only runs the emitted application so compiler and runtime memory cannot accumulate under its `1g` cgroup.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R15`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R14` and live cgroup evidence (`oom=2`, `oom_kill=2`, container unhealthy).
+  - Scope: move shared-dev API compilation into bootstrap, leave only the emitted Node runtime in the API container,
+    recreate that runtime once per completed sync, and freeze the separation in deployment tests.
+  - Owned paths: `deploy/vps/{dev-service.sh,deploy-dev.sh}`, `scripts/{test-vps-dev.sh,
+    test-release-pipeline.mjs}`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev API process lifecycle only; no application compiler contract, production
+    runtime, database, secret, Caddy, port, staging or production-sim change.
+  - Expected verification: constrained compiler emission with decorator metadata, dev/release deployment tests,
+    shell syntax and `git diff --check`.
+  - Review: PASS — bootstrap completes migration, optional seed and bounded transpilation before activation; the API
+    container now runs only emitted Node code and source-only syncs recreate only that container.
+  - Verification: constrained `640 MiB` emit with decorator metadata in 111 files, `pnpm release:test`, direct dev
+    VPS contract test, Node/shell syntax and `git diff --check` PASS.
+  - External next action: push this commit to `dev`; the runtime hash change forces recreation and replaces the live
+    compiler-bearing unhealthy API container without any manual Caddy, database, secret or port change.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R14
 
 Coordinator/Thread: `Codex /root`

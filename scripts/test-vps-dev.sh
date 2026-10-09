@@ -131,8 +131,10 @@ run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ! grep -q 'build bootstrap' "$docker_log" || fail 'unchanged runtime was rebuilt'
 grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false' "$docker_log" \
   || fail 'unchanged source repeated install or seed'
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'source-only sync did not recreate the compiled API runtime'
 ! grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
-  || fail 'source-only sync unnecessarily recreated watcher services'
+  || fail 'source-only sync unnecessarily recreated frontend watcher services'
 
 printf '\n' >>"$workspace/apps/api/package.json"
 : >"$docker_log"

@@ -143,11 +143,12 @@ if [[ $run_seed == true ]]; then
   : >"$state_root/seeded"
 fi
 
-up_arguments=(up -d --remove-orphans)
 if [[ $runtime_changed == true || $install_dependencies == true ]]; then
-  up_arguments+=(--force-recreate)
+  compose up -d --remove-orphans --force-recreate
+else
+  compose up -d --no-deps --force-recreate api
+  compose up -d --remove-orphans
 fi
-compose "${up_arguments[@]}"
 
 probe() {
   local name=$1
