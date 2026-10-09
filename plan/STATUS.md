@@ -50,6 +50,35 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R17
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev build-context corrective)
+Batch status: `DONE`
+Contract baseline: the dev runtime image must always build from the validated synced workspace, independent of the
+remote shell working directory or Docker Compose project-directory resolution.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R17`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R16` and live failure evidence showing Compose resolved the build context outside
+    the synced workspace.
+  - Scope: anchor the dev image build context to the already validated absolute `DEV_WORKSPACE_PATH` and freeze that
+    contract in release/deployment tests.
+  - Owned paths: `deploy/vps/compose.dev.yaml`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev image build context only; no application, database, secret, Caddy, staging
+    or production-sim change.
+  - Expected verification: rendered Compose context, dev/release deployment tests, `git diff --check`.
+  - Review: PASS — Compose now receives the validated absolute workspace as its build context, so neither the remote
+    login directory nor Compose project-directory semantics can move the Docker build outside the synced source.
+  - Verification: rendered Compose context, `bash scripts/test-vps-dev.sh`, `pnpm release:test` and
+    `git diff --check` PASS.
+  - External next action: push the corrective to `dev`; no server-side runtime.env, secret, database, Caddy or port
+    change is required.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R16
 
 Coordinator/Thread: `Codex /root`

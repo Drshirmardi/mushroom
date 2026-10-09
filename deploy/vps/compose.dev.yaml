@@ -39,7 +39,7 @@ services:
   bootstrap:
     image: mushroom-dev-runtime:local
     build:
-      context: ../..
+      context: "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}"
       dockerfile: deploy/vps/Dockerfile.dev
     user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
     working_dir: /workspace

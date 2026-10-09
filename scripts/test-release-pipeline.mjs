@@ -138,7 +138,11 @@ for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down']
 }
 assert(
   !devDeployScript.includes('--project-directory'),
-  'dev deployment must preserve Compose file-relative build context resolution',
+  'dev deployment must not override the Compose project directory',
+);
+assert(
+  devCompose.includes('context: "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}"'),
+  'dev build context must be anchored to the validated absolute workspace path',
 );
 for (const required of [
   'MUSHROOM_ENVIRONMENT) == development',

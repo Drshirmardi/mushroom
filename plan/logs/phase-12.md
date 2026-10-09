@@ -1,5 +1,48 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R17 — absolute shared-dev build-context corrective
+
+Task ID: F12-T02-R17
+Batch ID: F12-B02-R17
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- The dev workflow reached `mushroom-dev-runtime:local Building` and then BuildKit failed with
+  `resolve : lstat /home/***/mushroom/***: no such file or directory` before it could load `Dockerfile.dev`.
+- The masked path was the dev environment root rather than its synced `workspace`, proving the relative `../..`
+  context was resolved against a different Compose project directory on the VPS.
+
+Changed files:
+
+- `deploy/vps/compose.dev.yaml`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- rendered Docker Compose config resolves bootstrap build context to the supplied absolute workspace → PASS
+- `bash scripts/test-vps-dev.sh` → PASS across first, unchanged, dependency, API-only and frontend-only syncs
+- `pnpm release:test` → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The runtime image build now uses the same absolute `DEV_WORKSPACE_PATH` already checked against
+  `$HOME/mushroom/dev/workspace` by the deployment boundary.
+- Image rebuilds no longer depend on the SSH login directory or Docker Compose relative project-directory behavior.
+- No runtime environment, secret, database, Caddy, port, staging or production-sim setting changed.
+
+Known limitation:
+
+- Live confirmation requires pushing this corrective to `dev` and observing the next shared-dev workflow.
+
+Next work:
+
+- No new batch is claimed; continue Phase 12 according to its eligible task map after live confirmation.
+
 ## F12-T02-R16 — incremental shared-dev sync corrective
 
 Task ID: F12-T02-R16
