@@ -1,5 +1,50 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R19 — shared-dev Next watcher warm-up corrective
+
+Task ID: F12-T02-R19
+Batch ID: F12-B02-R19
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- `mushroom-dev-app-1` repeatedly started `Next.js 16.3.8 (Turbopack)` and first compilation of `/` took 6.7–7.1
+  seconds, while both Docker healthchecks and deployment curl probes had a five-second limit.
+- The workflow therefore issued overlapping, aborted root requests and declared the app unavailable before its first
+  development compile could complete.
+
+Changed files:
+
+- `deploy/vps/compose.dev.yaml`, `deploy/vps/deploy-dev.sh`
+- `scripts/test-vps-dev.sh`, `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- dev watcher startup timeout/cadence contract → PASS
+- `bash scripts/test-vps-dev.sh` → PASS across first, unchanged, dependency, API-only, frontend-only and lock-contention syncs
+- `pnpm release:test` → PASS
+- targeted `git diff --check` for task-owned files → PASS
+
+Result:
+
+- **PASS / DONE.** Docker healthchecks were removed only from the three persistent Next development watchers; they
+  previously caused parallel first-route compilation. The deployment's existing ordered probes remain authoritative.
+- Web, app and dashboard readiness probes now allow 30 seconds, enough for observed 6–7 second initial Turbopack
+  compilation without retry pressure. API readiness remains unchanged at five seconds.
+- A failed probe now prints the container restart count, OOM flag, exit code and health state before its logs.
+
+Known limitation:
+
+- This eliminates the demonstrated short-timeout and concurrent-warm-up failure. If the app still restarts, the next
+  workflow output will identify whether it is an OOM kill; live confirmation requires pushing the corrective to `dev`.
+
+Next work:
+
+- No new batch is claimed; continue Phase 12 according to its eligible task map after live confirmation.
+
 ## F12-T02-R18 — shared-dev synchronization corrective
 
 Task ID: F12-T02-R18

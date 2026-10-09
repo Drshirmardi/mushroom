@@ -157,6 +157,10 @@ for (const required of [
   'DEV_COMPILE_API',
   'DEV_WRITE_RUNTIME_CONFIG',
   'probe api "http://$(env_value API_PORT)/v1/health/ready"',
+  'probe web "http://$(env_value WEB_PORT)/" 30',
+  'probe app "http://$(env_value APP_PORT)/" 30',
+  'probe dashboard "http://$(env_value DASHBOARD_PORT)/" 30',
+  'restarts={{.RestartCount}} oom={{.State.OOMKilled}}',
   'compose logs --no-color --tail 200 "$name"',
 ]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
 assert(devCompose.includes('SADAD_TRANSPORT_MODE: disabled'), 'shared dev must keep Sadad disabled');
@@ -294,6 +298,12 @@ try {
     resolve(rendered.services.bootstrap.build.context) === root,
     `dev build context must resolve to the synced workspace, got ${rendered.services.bootstrap.build.context}`,
   );
+  for (const service of ['web', 'app', 'dashboard']) {
+    assert(
+      !rendered.services[service].healthcheck,
+      `${service} must be warmed by the serialized deployment probe, not a concurrent Docker healthcheck`,
+    );
+  }
 } finally {
   rmSync(devScratch, { recursive: true, force: true });
 }

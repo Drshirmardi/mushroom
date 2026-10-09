@@ -50,6 +50,33 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R19
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev Next warm-up corrective)
+Batch status: `DONE`
+Contract baseline: persistent Next dev watchers must be warmed serially by deployment readiness probes; Docker health
+checks must not concurrently trigger their expensive first route compilation with a shorter timeout.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R19`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R18` and live app logs showing 6–7 second initial Next compilation versus a
+    five-second health/readiness timeout.
+  - Scope: make dev watcher health cadence and sequential readiness timeouts accommodate bounded initial compilation.
+  - Owned paths: `deploy/vps/{compose.dev.yaml,deploy-dev.sh}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev Next watcher startup only; no API runtime, database, secret, Caddy, staging
+    or production-sim change.
+  - Expected verification: startup timeout/cadence contract, dev/release deployment tests and `git diff --check`.
+  - Review: PASS — Docker no longer concurrently compiles all three Next root routes through healthchecks. The
+    existing deployment probes warm web, app and dashboard serially and allow 30 seconds for their first compile.
+  - Verification: `bash scripts/test-vps-dev.sh`, `pnpm release:test` and targeted `git diff --check` PASS.
+  - External next action: push the corrective to `dev`; a failed probe now also prints restart/OOM state. No server
+    configuration change is required.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R18
 
 Coordinator/Thread: `Codex /root`

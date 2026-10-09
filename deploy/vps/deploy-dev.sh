@@ -251,22 +251,29 @@ fi
 probe() {
   local name=$1
   local url=$2
+  local max_time=${3:-5}
   local attempt
   for attempt in {1..60}; do
-    if curl --fail --silent --show-error --max-time 5 "$url" >/dev/null; then
+    if curl --fail --silent --show-error --max-time "$max_time" "$url" >/dev/null; then
       return 0
     fi
     sleep 2
   done
   compose ps "$name" >&2 || true
+  container_id=$(compose ps -q "$name" 2>/dev/null || true)
+  if [[ -n $container_id ]]; then
+    docker inspect "$container_id" \
+      --format 'container={{.Name}} restarts={{.RestartCount}} oom={{.State.OOMKilled}} exit={{.State.ExitCode}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' \
+      >&2 || true
+  fi
   compose logs --no-color --tail 200 "$name" >&2 || true
   die "$name did not become ready at $url"
 }
 
 probe api "http://$(env_value API_PORT)/v1/health/ready"
-probe web "http://$(env_value WEB_PORT)/"
-probe app "http://$(env_value APP_PORT)/"
-probe dashboard "http://$(env_value DASHBOARD_PORT)/"
+probe web "http://$(env_value WEB_PORT)/" 30
+probe app "http://$(env_value APP_PORT)/" 30
+probe dashboard "http://$(env_value DASHBOARD_PORT)/" 30
 
 printf '%s\n' "$source_sha" >"$state_root/source.sha"
 printf 'dev environment is ready at source %s\n' "$source_sha"
