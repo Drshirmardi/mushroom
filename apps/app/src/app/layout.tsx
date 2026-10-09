@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { SessionProvider } from "@/components/auth/session-gate";
 import "./globals.css";
 
@@ -19,8 +18,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fa" dir="rtl">
+      <head>
+        <script src="/runtime-config.js" />
+      </head>
       <body className="antialiased">
-        <Script src="/runtime-config.js" strategy="beforeInteractive" />
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { DashboardSessionGate } from "@/components/auth/dashboard-session-gate";
 import "./globals.css";
 
@@ -17,8 +16,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fa" dir="rtl">
+      <head>
+        <script src="/runtime-config.js" />
+      </head>
       <body className="bg-background">
-        <Script src="/runtime-config.js" strategy="beforeInteractive" />
         <DashboardSessionGate>{children}</DashboardSessionGate>
       </body>
     </html>

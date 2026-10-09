@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -22,8 +21,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
     return (
         <html lang="fa" dir="rtl">
+            <head>
+                <script src="/runtime-config.js" />
+            </head>
             <body>
-                <Script src="/runtime-config.js" strategy="beforeInteractive" />
                 {children}
                 <Toaster dir="rtl" position="top-center" richColors closeButton />
             </body>

@@ -10,8 +10,8 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `F12-B02-R16 — IN_PROGRESS`
-- task فعال: `F12-T02-R16`, `F01-R08`
+- batch فعال: `ندارد`
+- task فعال: `ندارد`
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## پیشرفت کلان
@@ -50,12 +50,12 @@
 
 ## handoff فاز فعال
 
-## batch در حال اجرا — F12-B02-R16
+## آخرین batch تکمیل‌شده — F12-B02-R16
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-09 +03:30`
 Phase: `12-PRODUCTION-HARDENING` (shared-dev delivery and browser-runtime correctives)
-Batch status: `IN_PROGRESS`
+Batch status: `DONE`
 Contract baseline: Next services remain genuine development servers with bind-mounted source and HMR; the API keeps
 its OOM-safe compile-on-sync runtime. Unchanged bootstrap work must be skipped, and public runtime configuration must
 execute synchronously before hydration in web, app and dashboard.
@@ -78,7 +78,7 @@ Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/logs/ph
 
 - Task ID: `F01-R08`
   - Agent/Thread: `Codex /root`
-  - Status: `CLAIMED`
+  - Status: `DONE`
   - Depends on: accepted browser auth/session baseline and live dev evidence that client hydration never attaches.
   - Scope: load the generated public runtime configuration as a native blocking head script before Next client chunks
     in web, app and dashboard; cover the shared contract and retain secret-free public values.
@@ -86,6 +86,14 @@ Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/logs/ph
   - Shared/exclusive resource: browser runtime-config bootstrap only; no auth policy, API or secret change.
   - Expected verification: runtime-config loading contract, three frontend typechecks, web tests/build, live-browser
     hydration reproduction locally, and `git diff --check`.
+  - Review: PASS — runtime config now executes synchronously in the document head before any hydratable body content;
+    all three clients retain the same generated secret-free public values and no longer depend on Next's script
+    scheduler to begin hydration.
+  - Verification: runtime-config contract, web tests/build, serial web/app/dashboard typechecks, local browser header
+    hydration and intercepted login submission, and `git diff --check` PASS.
+  - External next action: push both accepted task commits to `dev`; after the workflow completes, verify the public
+    header leaves its account-checking skeleton and login submits to `https://dev-api.roxco.ir/v1/auth/login` rather
+    than navigating with `POST https://dev.roxco.ir/login`.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R15
 
