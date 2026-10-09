@@ -1,5 +1,54 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R18 — shared-dev synchronization corrective
+
+Task ID: F12-T02-R18
+Batch ID: F12-B02-R18
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Observed live failure:
+
+- Rsync reported `cannot delete non-empty directory: apps/api/src/generated` while preserving its excluded Prisma
+  child generated on the server.
+- The newly dispatched workflow then failed with `another dev sync is active` because the previous remote deployment
+  still held the kernel lock after GitHub dispatched the next run.
+
+Changed files:
+
+- `.github/workflows/dev-sync.yml`, `.github/CI.md`
+- `scripts/deploy-dev-vps.mjs`
+- `deploy/vps/deploy-dev.sh`
+- `scripts/test-vps-dev.sh`, `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- real lock contention simulation: second deployment waits and then completes → PASS
+- first, unchanged, dependency, API-only and frontend-only dev sync simulations → PASS
+- generated API directory preservation contract → PASS
+- `pnpm release:test` → PASS
+- `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** Shared-dev GitHub runs are queued instead of canceling a remote deployment mid-flight. A new
+  runner waits up to 600 seconds for the server lock before source upload, and the deployment repeats the bounded
+  lock acquisition defensively before mutation; the kernel lock remains the single-writer guard.
+- Rsync excludes the complete ignored `apps/api/src/generated/` directory, matching the repository's generated-file
+  boundary and preventing parent-directory deletion warnings.
+- No lock file is deleted and no concurrent deployment bypass is introduced.
+
+Known limitation:
+
+- If a genuinely running deployment holds the lock for more than ten minutes, the new run fails explicitly rather
+  than risking concurrent mutation. Live confirmation requires pushing the corrective to `dev`.
+
+Next work:
+
+- No new batch is claimed; continue Phase 12 according to its eligible task map after live confirmation.
+
 ## F12-T02-R17 — absolute shared-dev build-context corrective
 
 Task ID: F12-T02-R17

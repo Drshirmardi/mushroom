@@ -50,6 +50,36 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R18
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev sync serialization corrective)
+Batch status: `DONE`
+Contract baseline: a newly dispatched shared-dev sync must serialize behind an already-running remote sync instead
+of failing immediately, and rsync must preserve the complete server-generated API source directory.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R18`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R17` and live concurrent-sync/rsync warning evidence.
+  - Scope: queue GitHub runs, wait with a bounded timeout for the remote deploy lock before source upload and deploy,
+    and exclude the complete ignored API generated directory from source deletion.
+  - Owned paths: `.github/{workflows/dev-sync.yml,CI.md}`, `scripts/deploy-dev-vps.mjs`, `deploy/vps/deploy-dev.sh`,
+    `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev source sync and deployment lock only; no application, database, secret,
+    Caddy, staging or production-sim change.
+  - Expected verification: lock-contention simulation, generated-directory preservation contract, dev/release tests
+    and `git diff --check`.
+  - Review: PASS — GitHub no longer cancels an in-flight sync, source upload and deployment both wait up to ten
+    minutes for the remote kernel lock, and rsync preserves the complete ignored API generated directory rather than
+    attempting to delete its parent.
+  - Verification: live lock-contention simulation, first/unchanged/dependency/API/frontend dev sync cases,
+    `pnpm release:test` and `git diff --check` PASS.
+  - External next action: push the corrective to `dev`; do not delete `state/deploy.lock`. No server configuration
+    change is required.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R17
 
 Coordinator/Thread: `Codex /root`

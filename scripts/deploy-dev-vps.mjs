@@ -52,6 +52,9 @@ function run(command, args) {
 }
 
 run('ssh', [...sshOptions, target, 'install -d -m 700 "$HOME/mushroom/dev" "$HOME/mushroom/dev/workspace" "$HOME/mushroom/dev/cache" "$HOME/mushroom/dev/state"']);
+run('ssh', [...sshOptions, target,
+  'flock -w 600 "$HOME/mushroom/dev/state/deploy.lock" true || { printf "timed out waiting to upload dev source\\n" >&2; exit 1; }',
+]);
 
 const rsyncShell = [
   'ssh', ...sshOptions,
@@ -69,7 +72,7 @@ run('rsync', [
   '--exclude=**/node_modules/',
   '--exclude=**/.next/',
   '--exclude=**/dist/',
-  '--exclude=/apps/api/src/generated/prisma/',
+  '--exclude=/apps/api/src/generated/',
   '--exclude=/apps/web/public/runtime-config.js',
   '--exclude=/apps/app/public/runtime-config.js',
   '--exclude=/apps/dashboard/public/runtime-config.js',

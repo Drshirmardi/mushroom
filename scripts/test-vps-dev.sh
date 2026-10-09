@@ -192,6 +192,20 @@ run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 ! grep -q 'force-recreate' "$docker_log" \
   || fail 'frontend-only change unnecessarily recreated a watcher service'
 
+(
+  exec 8>"$dev_root/state/deploy.lock"
+  flock 8
+  : >"$scratch/lock-held"
+  sleep 1
+) &
+lock_holder=$!
+while [[ ! -f $scratch/lock-held ]]; do sleep 0.01; done
+: >"$docker_log"
+run_deploy 1111111111111111111111111111111111111111
+wait "$lock_holder"
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'serialized unchanged sync unnecessarily ran bootstrap'
+
 cp "$scratch/mushroom/staging/runtime.env" "$scratch/staging.original"
 sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3303/' "$scratch/staging.original" \
   >"$scratch/mushroom/staging/runtime.env"

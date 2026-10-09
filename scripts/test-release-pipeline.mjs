@@ -116,7 +116,7 @@ assert(releaseScript.includes("volume', 'rm', '--force'"), 'temporary Trivy cach
 for (const required of [
   'branches: [dev]',
   "vars.VPS_DEV_CD_ENABLED == 'true'",
-  'cancel-in-progress: true',
+  'cancel-in-progress: false',
   'VPS_KNOWN_HOSTS',
   'node scripts/deploy-dev-vps.mjs "$GITHUB_SHA"',
 ]) assert(devWorkflow.includes(required), `dev sync workflow is missing: ${required}`);
@@ -129,8 +129,9 @@ for (const required of [
   '--delete-delay',
   '--delay-updates',
   '--exclude=/.git/',
-  '--exclude=/apps/api/src/generated/prisma/',
+  '--exclude=/apps/api/src/generated/',
   '--exclude=/apps/web/public/runtime-config.js',
+  'flock -w 600 "$HOME/mushroom/dev/state/deploy.lock" true',
   'mushroom/dev/workspace',
 ]) assert(devSyncScript.includes(required), `dev source sync is missing: ${required}`);
 for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down']) {
@@ -147,6 +148,7 @@ assert(
 for (const required of [
   'MUSHROOM_ENVIRONMENT) == development',
   'COMPOSE_PROJECT_NAME) == mushroom-dev',
+  'flock -w 600 9',
   'DEV_INSTALL_DEPENDENCIES',
   'DEV_RUN_SEED',
   'DEV_BUILD_API_CLIENT',

@@ -47,8 +47,9 @@ release images and does not replace CI: it rsyncs the checked-out source over ho
 incremental bootstrap, and leaves the three Next.js development watchers running on the VPS. Web, app and dashboard
 source changes therefore become visible through HMR without a build or container restart. API source changes run one
 bounded transpilation and recreate only the API runtime because retaining its TypeScript compiler previously exceeded
-the isolated `1g` cgroup. Dependency or runtime changes still trigger a controlled full recreate. Newer pushes cancel
-an older in-flight dev sync.
+the isolated `1g` cgroup. Dependency or runtime changes still trigger a controlled full recreate. Dev pushes are
+queued instead of cancelling an in-flight remote sync, and each runner waits for the VPS deployment lock before it
+updates the shared workspace.
 
 The workflow is disabled unless repository variable `VPS_DEV_CD_ENABLED` is exactly `true`. It reuses only the four
 repository-scoped SSH inputs and optional `VPS_PORT`; it receives no package-write permission, GHCR credential or

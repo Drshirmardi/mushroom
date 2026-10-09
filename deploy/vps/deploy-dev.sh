@@ -27,7 +27,10 @@ lock_file="$state_root/deploy.lock"
 
 mkdir -p -- "$workspace" "$cache_root" "$state_root"
 exec 9>"$lock_file"
-flock -n 9 || die 'another dev sync is active'
+if ! flock -n 9; then
+  printf 'another dev sync is active; waiting for it to finish\n'
+  flock -w 600 9 || die 'timed out waiting for the active dev sync'
+fi
 
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
 [[ -f $compose_file ]] || die 'versioned dev Compose file is missing from the synced workspace'
