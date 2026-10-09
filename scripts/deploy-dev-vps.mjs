@@ -58,6 +58,7 @@ const rsyncShell = [
 ].map((part) => `'${part.replaceAll("'", "'\\''")}'`).join(' ');
 run('rsync', [
   '--archive',
+  '--checksum',
   '--compress',
   '--delete-delay',
   '--delay-updates',
@@ -68,6 +69,10 @@ run('rsync', [
   '--exclude=**/node_modules/',
   '--exclude=**/.next/',
   '--exclude=**/dist/',
+  '--exclude=/apps/api/src/generated/prisma/',
+  '--exclude=/apps/web/public/runtime-config.js',
+  '--exclude=/apps/app/public/runtime-config.js',
+  '--exclude=/apps/dashboard/public/runtime-config.js',
   '--exclude=**/.turbo/',
   '--exclude=**/.env',
   '--exclude=**/.env.*',

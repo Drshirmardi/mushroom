@@ -125,9 +125,12 @@ for (const forbidden of ['packages: write', 'GHCR_TOKEN', 'GITHUB_TOKEN', 'docke
 }
 for (const required of [
   'StrictHostKeyChecking=yes',
+  '--checksum',
   '--delete-delay',
   '--delay-updates',
   '--exclude=/.git/',
+  '--exclude=/apps/api/src/generated/prisma/',
+  '--exclude=/apps/web/public/runtime-config.js',
   'mushroom/dev/workspace',
 ]) assert(devSyncScript.includes(required), `dev source sync is missing: ${required}`);
 for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down']) {
@@ -142,6 +145,11 @@ for (const required of [
   'COMPOSE_PROJECT_NAME) == mushroom-dev',
   'DEV_INSTALL_DEPENDENCIES',
   'DEV_RUN_SEED',
+  'DEV_BUILD_API_CLIENT',
+  'DEV_GENERATE_PRISMA',
+  'DEV_RUN_MIGRATIONS',
+  'DEV_COMPILE_API',
+  'DEV_WRITE_RUNTIME_CONFIG',
   'probe api "http://$(env_value API_PORT)/v1/health/ready"',
   'compose logs --no-color --tail 200 "$name"',
 ]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
@@ -164,7 +172,7 @@ assert(
 );
 assert(
   devDeployScript.includes('compose up -d --no-deps --force-recreate api'),
-  'every source-only sync must restart the compiled API runtime exactly once',
+  'an API source change must restart the compiled API runtime exactly once',
 );
 assert(
   devServiceScript.includes('local path="/run/secrets/${name,,}"'),

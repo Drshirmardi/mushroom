@@ -109,12 +109,63 @@ hash_inputs() {
   sha256sum "${files[@]}" | sha256sum | cut -d' ' -f1
 }
 
+hash_paths() {
+  local -a files=()
+  local path
+  for path in "$@"; do
+    if [[ -f $path ]]; then
+      files+=("$path")
+    elif [[ -d $path ]]; then
+      while IFS= read -r file; do files+=("$file"); done < <(find "$path" -type f -print | sort)
+    else
+      die "fingerprint input is missing: $path"
+    fi
+  done
+  sha256sum "${files[@]}" | sha256sum | cut -d' ' -f1
+}
+
+hash_api_inputs() {
+  local -a files=(
+    "$workspace/apps/api/package.json"
+    "$workspace/apps/api/tsconfig.json"
+    "$workspace/apps/api/tsconfig.build.json"
+  )
+  while IFS= read -r file; do files+=("$file"); done < <(
+    find "$workspace/apps/api/src" \
+      -path "$workspace/apps/api/src/generated/prisma" -prune -o \
+      -type f -print | sort
+  )
+  sha256sum "${files[@]}" | sha256sum | cut -d' ' -f1
+}
+
 dependency_hash=$(hash_inputs dependencies)
 runtime_hash=$(hash_inputs runtime)
+api_client_hash=$(hash_paths \
+  "$workspace/packages/api-client/package.json" \
+  "$workspace/packages/api-client/tsconfig.json" \
+  "$workspace/packages/api-client/openapi.json" \
+  "$workspace/packages/api-client/src")
+prisma_hash=$(hash_paths \
+  "$workspace/apps/api/prisma.config.ts" \
+  "$workspace/apps/api/prisma")
+api_hash=$(hash_api_inputs)
+public_config_hash=$(
+  for key in PUBLIC_API_URL PUBLIC_WEB_URL PUBLIC_APP_URL PUBLIC_DASHBOARD_URL; do
+    printf '%s=%s\n' "$key" "$(env_value "$key")"
+  done | sha256sum | cut -d' ' -f1
+)
 previous_dependency_hash=''
 previous_runtime_hash=''
+previous_api_client_hash=''
+previous_prisma_hash=''
+previous_api_hash=''
+previous_public_config_hash=''
 [[ ! -f $state_root/dependencies.sha256 ]] || previous_dependency_hash=$(<"$state_root/dependencies.sha256")
 [[ ! -f $state_root/runtime.sha256 ]] || previous_runtime_hash=$(<"$state_root/runtime.sha256")
+[[ ! -f $state_root/api-client.sha256 ]] || previous_api_client_hash=$(<"$state_root/api-client.sha256")
+[[ ! -f $state_root/prisma.sha256 ]] || previous_prisma_hash=$(<"$state_root/prisma.sha256")
+[[ ! -f $state_root/api.sha256 ]] || previous_api_hash=$(<"$state_root/api.sha256")
+[[ ! -f $state_root/public-config.sha256 ]] || previous_public_config_hash=$(<"$state_root/public-config.sha256")
 
 runtime_changed=false
 if [[ $runtime_hash != "$previous_runtime_hash" ]] || ! docker image inspect mushroom-dev-runtime:local >/dev/null 2>&1; then
@@ -134,19 +185,63 @@ if [[ ! -f $state_root/seeded ]]; then
   run_seed=true
 fi
 
-DEV_INSTALL_DEPENDENCIES=$install_dependencies DEV_RUN_SEED=$run_seed \
-  compose --profile tools run --rm --no-deps bootstrap
+build_api_client=false
+generate_prisma=false
+run_migrations=false
+compile_api=false
+write_runtime_config=false
+if [[ $install_dependencies == true || $api_client_hash != "$previous_api_client_hash" \
+  || ! -f $workspace/packages/api-client/dist/index.js ]]; then
+  build_api_client=true
+fi
+if [[ $install_dependencies == true || $prisma_hash != "$previous_prisma_hash" \
+  || ! -d $workspace/apps/api/src/generated/prisma ]]; then
+  generate_prisma=true
+fi
+if [[ $prisma_hash != "$previous_prisma_hash" ]]; then
+  run_migrations=true
+fi
+if [[ $install_dependencies == true || $runtime_changed == true \
+  || $api_hash != "$previous_api_hash" || $api_client_hash != "$previous_api_client_hash" \
+  || $prisma_hash != "$previous_prisma_hash" || ! -f $workspace/apps/api/dist/main.js ]]; then
+  compile_api=true
+fi
+if [[ $public_config_hash != "$previous_public_config_hash" \
+  || ! -f $workspace/apps/web/public/runtime-config.js \
+  || ! -f $workspace/apps/app/public/runtime-config.js \
+  || ! -f $workspace/apps/dashboard/public/runtime-config.js ]]; then
+  write_runtime_config=true
+fi
+
+if [[ $install_dependencies == true || $run_seed == true || $build_api_client == true \
+  || $generate_prisma == true || $run_migrations == true || $compile_api == true \
+  || $write_runtime_config == true ]]; then
+  DEV_INSTALL_DEPENDENCIES=$install_dependencies \
+    DEV_RUN_SEED=$run_seed \
+    DEV_BUILD_API_CLIENT=$build_api_client \
+    DEV_GENERATE_PRISMA=$generate_prisma \
+    DEV_RUN_MIGRATIONS=$run_migrations \
+    DEV_COMPILE_API=$compile_api \
+    DEV_WRITE_RUNTIME_CONFIG=$write_runtime_config \
+    compose --profile tools run --rm --no-deps bootstrap
+fi
 
 printf '%s\n' "$dependency_hash" >"$state_root/dependencies.sha256"
 printf '%s\n' "$runtime_hash" >"$state_root/runtime.sha256"
+printf '%s\n' "$api_client_hash" >"$state_root/api-client.sha256"
+printf '%s\n' "$prisma_hash" >"$state_root/prisma.sha256"
+printf '%s\n' "$api_hash" >"$state_root/api.sha256"
+printf '%s\n' "$public_config_hash" >"$state_root/public-config.sha256"
 if [[ $run_seed == true ]]; then
   : >"$state_root/seeded"
 fi
 
 if [[ $runtime_changed == true || $install_dependencies == true ]]; then
   compose up -d --remove-orphans --force-recreate
-else
+elif [[ $compile_api == true ]]; then
   compose up -d --no-deps --force-recreate api
+  compose up -d --remove-orphans
+else
   compose up -d --remove-orphans
 fi
 

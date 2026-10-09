@@ -304,8 +304,12 @@ git push origin origin/main:refs/heads/dev
 ```
 
 از آن پس هر commit که باید فوری روی dev دیده شود روی همین branch push می‌شود. workflow `Sync shared dev VPS` سورس
-را sync، migrationهای forward-only را اجرا، فقط در اولین اجرا seed می‌کند و هر چهار URL را health-check می‌کند.
-merge به `main` همچنان مسیر کامل CI/CD production را طی می‌کند.
+را با checksum sync و هر چهار URL را health-check می‌کند. سه رابط Next.js واقعاً با `next dev` و HMR دائمی اجرا
+می‌شوند؛ بنابراین تغییر فقط در `web`، `app` یا `dashboard` نه build می‌گیرد و نه container را restart می‌کند.
+dependency install، API client build، Prisma generate/migrate و API transpile فقط وقتی ورودی همان بخش عوض شده باشد
+اجرا می‌شوند. API به‌دلیل سقف حافظهٔ VPS compiler دائمی ندارد: تغییر API یک transpile محدود انجام می‌دهد و فقط
+container API را recreate می‌کند. seed فقط در اولین اجراست. merge به `main` همچنان مسیر کامل CI/CD production را
+طی می‌کند.
 
 وضعیت جاری روی سرور:
 

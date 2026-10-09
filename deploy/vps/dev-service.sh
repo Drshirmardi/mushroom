@@ -43,16 +43,26 @@ case "$command_name" in
       pnpm install --frozen-lockfile
     fi
     [[ -d node_modules/.pnpm ]] || { printf 'workspace dependencies are not installed\n' >&2; exit 1; }
-    write_runtime_configs
-    pnpm --filter @sabz-zendegi/api-client build
-    pnpm --filter @sabz-zendegi/api prisma:generate
-    pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+    if [[ ${DEV_WRITE_RUNTIME_CONFIG:-false} == true ]]; then
+      write_runtime_configs
+    fi
+    if [[ ${DEV_BUILD_API_CLIENT:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api-client build
+    fi
+    if [[ ${DEV_GENERATE_PRISMA:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api prisma:generate
+    fi
+    if [[ ${DEV_RUN_MIGRATIONS:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+    fi
     if [[ ${DEV_RUN_SEED:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:seed
     fi
-    NODE_OPTIONS=--max-old-space-size=640 \
-      pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
-        --noCheck --declaration false --declarationMap false
+    if [[ ${DEV_COMPILE_API:-false} == true ]]; then
+      NODE_OPTIONS=--max-old-space-size=640 \
+        pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
+          --noCheck --declaration false --declarationMap false
+    fi
     ;;
   api)
     for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER \

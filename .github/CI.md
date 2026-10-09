@@ -44,9 +44,11 @@ baseline plus two sequential update rehearsals; local workflow checks cannot cla
 
 Pushes to the dedicated `dev` branch use `Sync shared dev VPS`. This path intentionally does not build or publish
 release images and does not replace CI: it rsyncs the checked-out source over host-key-pinned SSH, runs an idempotent
-dependency/Prisma bootstrap, and leaves four persistent development watchers running on the VPS. A source-only push
-therefore becomes visible as soon as the relevant watcher recompiles; dependency or runtime changes trigger a
-controlled recreate. Newer pushes cancel an older in-flight dev sync.
+incremental bootstrap, and leaves the three Next.js development watchers running on the VPS. Web, app and dashboard
+source changes therefore become visible through HMR without a build or container restart. API source changes run one
+bounded transpilation and recreate only the API runtime because retaining its TypeScript compiler previously exceeded
+the isolated `1g` cgroup. Dependency or runtime changes still trigger a controlled full recreate. Newer pushes cancel
+an older in-flight dev sync.
 
 The workflow is disabled unless repository variable `VPS_DEV_CD_ENABLED` is exactly `true`. It reuses only the four
 repository-scoped SSH inputs and optional `VPS_PORT`; it receives no package-write permission, GHCR credential or

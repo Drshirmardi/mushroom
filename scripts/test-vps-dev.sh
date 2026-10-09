@@ -15,7 +15,9 @@ dev_root="$scratch/mushroom/dev"
 workspace="$dev_root/workspace"
 fake_bin="$scratch/bin"
 docker_log="$scratch/docker.log"
-mkdir -p "$workspace/deploy/vps" "$workspace/apps/api" "$workspace/packages/api-client" \
+mkdir -p "$workspace/deploy/vps" "$workspace/apps/api/src" "$workspace/apps/api/prisma" \
+  "$workspace/apps/web/src" "$workspace/apps/web/public" "$workspace/apps/app/public" \
+  "$workspace/apps/dashboard/public" "$workspace/packages/api-client/src" \
   "$dev_root/cache" "$dev_root/state" "$dev_root/secrets" "$scratch/mushroom/staging" \
   "$scratch/mushroom/production-sim" "$fake_bin"
 
@@ -23,8 +25,14 @@ cp "$repo_root/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/Dockerfile.dev"
 cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.yaml"
 cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
-cp "$repo_root/apps/api/package.json" "$workspace/apps/api/package.json"
-cp "$repo_root/packages/api-client/package.json" "$workspace/packages/api-client/package.json"
+cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
+  "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$workspace/apps/api/"
+cp "$repo_root/packages/api-client/package.json" "$repo_root/packages/api-client/tsconfig.json" \
+  "$repo_root/packages/api-client/openapi.json" "$workspace/packages/api-client/"
+printf 'export {};\n' >"$workspace/apps/api/src/main.ts"
+printf 'generator client {}\n' >"$workspace/apps/api/prisma/schema.prisma"
+printf 'export {};\n' >"$workspace/packages/api-client/src/index.ts"
+printf 'export {};\n' >"$workspace/apps/web/src/synthetic.ts"
 
 uid=$(id -u)
 gid=$(id -g)
@@ -89,7 +97,11 @@ done
 cat >"$fake_bin/docker" <<'EOF'
 #!/usr/bin/env bash
 set -Eeuo pipefail
-printf '%s|install=%s|seed=%s\n' "$*" "${DEV_INSTALL_DEPENDENCIES:-unset}" "${DEV_RUN_SEED:-unset}" >>"$FAKE_DOCKER_LOG"
+printf '%s|install=%s|seed=%s|client=%s|prisma=%s|migrate=%s|compile=%s|config=%s\n' \
+  "$*" "${DEV_INSTALL_DEPENDENCIES:-unset}" "${DEV_RUN_SEED:-unset}" \
+  "${DEV_BUILD_API_CLIENT:-unset}" "${DEV_GENERATE_PRISMA:-unset}" \
+  "${DEV_RUN_MIGRATIONS:-unset}" "${DEV_COMPILE_API:-unset}" \
+  "${DEV_WRITE_RUNTIME_CONFIG:-unset}" >>"$FAKE_DOCKER_LOG"
 if [[ ${1:-} == compose && ${2:-} == version ]]; then exit 0; fi
 if [[ ${1:-} == image && ${2:-} == inspect ]]; then
   [[ -f $FAKE_IMAGE_MARKER ]]
@@ -98,6 +110,24 @@ fi
 if [[ " $* " == *' build bootstrap '* ]]; then : >"$FAKE_IMAGE_MARKER"; fi
 if [[ " $* " == *' run --rm --no-deps bootstrap '* && ${DEV_INSTALL_DEPENDENCIES:-false} == true ]]; then
   mkdir -p "$FAKE_WORKSPACE/node_modules/.pnpm"
+fi
+if [[ " $* " == *' run --rm --no-deps bootstrap '* ]]; then
+  if [[ ${DEV_BUILD_API_CLIENT:-false} == true ]]; then
+    mkdir -p "$FAKE_WORKSPACE/packages/api-client/dist"
+    : >"$FAKE_WORKSPACE/packages/api-client/dist/index.js"
+  fi
+  if [[ ${DEV_GENERATE_PRISMA:-false} == true ]]; then
+    mkdir -p "$FAKE_WORKSPACE/apps/api/src/generated/prisma"
+  fi
+  if [[ ${DEV_COMPILE_API:-false} == true ]]; then
+    mkdir -p "$FAKE_WORKSPACE/apps/api/dist"
+    : >"$FAKE_WORKSPACE/apps/api/dist/main.js"
+  fi
+  if [[ ${DEV_WRITE_RUNTIME_CONFIG:-false} == true ]]; then
+    for application in web app dashboard; do
+      printf 'synthetic\n' >"$FAKE_WORKSPACE/apps/$application/public/runtime-config.js"
+    done
+  fi
 fi
 EOF
 chmod +x "$fake_bin/docker"
@@ -121,6 +151,8 @@ run_deploy
 grep -q 'build bootstrap' "$docker_log" || fail 'first sync did not build the dev runtime'
 grep -q 'run --rm --no-deps bootstrap.*install=true.*seed=true' "$docker_log" \
   || fail 'first sync did not install dependencies and seed once'
+grep -q 'run --rm --no-deps bootstrap.*client=true.*prisma=true.*migrate=true.*compile=true.*config=true' "$docker_log" \
+  || fail 'first sync did not run every required bootstrap stage'
 grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
   || fail 'first sync did not recreate watcher services'
 [[ $(<"$dev_root/state/source.sha") == aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ]] \
@@ -129,12 +161,12 @@ grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
 : >"$docker_log"
 run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ! grep -q 'build bootstrap' "$docker_log" || fail 'unchanged runtime was rebuilt'
-grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false' "$docker_log" \
-  || fail 'unchanged source repeated install or seed'
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'source-only sync did not recreate the compiled API runtime'
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'unchanged inputs unnecessarily ran bootstrap'
+! grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'unchanged API inputs unnecessarily recreated the API runtime'
 ! grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
-  || fail 'source-only sync unnecessarily recreated frontend watcher services'
+  || fail 'unchanged inputs unnecessarily recreated watcher services'
 
 printf '\n' >>"$workspace/apps/api/package.json"
 : >"$docker_log"
@@ -144,10 +176,26 @@ grep -q 'run --rm --no-deps bootstrap.*install=true.*seed=false' "$docker_log" \
 grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
   || fail 'dependency change did not recreate watcher services'
 
+printf '\n' >>"$workspace/apps/api/src/main.ts"
+: >"$docker_log"
+run_deploy dddddddddddddddddddddddddddddddddddddddd
+grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
+  || fail 'API-only change did not run only the API compiler stage'
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'API-only change did not recreate the API runtime'
+
+printf '\n' >>"$workspace/apps/web/src/synthetic.ts"
+: >"$docker_log"
+run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'frontend-only change unnecessarily ran bootstrap'
+! grep -q 'force-recreate' "$docker_log" \
+  || fail 'frontend-only change unnecessarily recreated a watcher service'
+
 cp "$scratch/mushroom/staging/runtime.env" "$scratch/staging.original"
 sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3303/' "$scratch/staging.original" \
   >"$scratch/mushroom/staging/runtime.env"
-if run_deploy dddddddddddddddddddddddddddddddddddddddd >/dev/null 2>&1; then
+if run_deploy ffffffffffffffffffffffffffffffffffffffff >/dev/null 2>&1; then
   fail 'dev deployment accepted a staging port collision'
 fi
 

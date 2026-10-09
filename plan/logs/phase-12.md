@@ -1,5 +1,46 @@
 # Phase 12 Execution Evidence
 
+## F12-T02-R16 — incremental shared-dev sync corrective
+
+Task ID: F12-T02-R16
+Batch ID: F12-B02-R16
+Completed at: 2026-10-09 +03:30
+Coordinator/Thread: Codex /root
+Reviewed by: Codex /root
+
+Changed files:
+
+- `.github/CI.md`
+- `scripts/deploy-dev-vps.mjs`
+- `deploy/vps/deploy-dev.sh`, `deploy/vps/dev-service.sh`, `deploy/vps/README.md`
+- `scripts/test-vps-dev.sh`, `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`, `plan/logs/phase-12.md`
+
+Verification:
+
+- `bash scripts/test-vps-dev.sh` → PASS across first, unchanged, dependency, API-only and frontend-only syncs
+- `pnpm release:test` → PASS
+- shell/Node syntax and `git diff --check` → PASS
+
+Result:
+
+- **PASS / DONE.** The three Next.js services remain genuine persistent `next dev` servers with bind-mounted source
+  and HMR. An unchanged or frontend-only push skips bootstrap and all container recreation.
+- Dependency installation, API-client build, Prisma generation/migration, runtime-config generation and bounded API
+  transpilation are independently fingerprinted. API recreation happens only when its emitted runtime changes.
+- Rsync compares content and preserves server-generated Prisma/API-client/API outputs plus environment-specific public
+  runtime configuration instead of deleting or retransmitting them from each fresh GitHub runner.
+
+Known limitation:
+
+- GitHub-hosted runner allocation and SSH startup remain fixed external latency. The VPS path no longer performs
+  unrelated builds, but it is intentionally not a server-side `git pull` because that would require a repository
+  deploy credential on the VPS.
+
+Next task in the active batch:
+
+- `F01-R08` remains claimed for the browser hydration/runtime-config corrective.
+
 ## F12-T02-R15 — shared-dev API compiler/runtime isolation corrective
 
 Task ID: F12-T02-R15
