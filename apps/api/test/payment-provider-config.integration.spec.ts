@@ -4,6 +4,7 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createTestAccessToken } from './auth-test-support';
 import { createReleaseAdminTestPrincipal, disposeReleaseAdminTestPrincipal, type ReleaseAdminTestPrincipal } from './release-admin-test-support';
 
 describe('payment provider configuration (PostgreSQL API integration)', () => {
@@ -12,7 +13,7 @@ describe('payment provider configuration (PostgreSQL API integration)', () => {
   beforeAll(async () => { process.env.PAYMENT_CREDENTIAL_ENCRYPTION_KEY = Buffer.alloc(32, 9).toString('base64'); process.env.PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION = 'test-v1'; app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); tokens = app.get(AccessTokenService); }, 30_000);
   afterAll(async () => { if (configId) await prisma.$transaction(async (tx) => { await tx.$executeRawUnsafe('SET LOCAL session_replication_role = replica'); await tx.auditEvent.deleteMany({ where: { subjectType: 'PAYMENT_PROVIDER_CONFIG', subjectId: configId } }); await tx.paymentProviderConfigRevision.deleteMany({ where: { configId } }); await tx.paymentProviderCredentialVersion.deleteMany({ where: { configId } }); await tx.paymentProviderConfig.delete({ where: { id: configId } }); }); await disposeReleaseAdminTestPrincipal(prisma, admin); await app.close(); });
   it('is ADMIN-only, write-only, revision-idempotent and cannot enable Sadad', async () => {
-    const adminPrincipal = await createReleaseAdminTestPrincipal(prisma, tokens); admin = adminPrincipal; const staff = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] });
+    const adminPrincipal = await createReleaseAdminTestPrincipal(prisma, tokens); admin = adminPrincipal; const staff = (await createTestAccessToken(prisma, tokens, ['STAFF'])).token;
     expect((await app.inject({ method: 'GET', url: '/v1/admin/commerce/payment-providers', headers: headers(staff) })).statusCode).toBe(403);
     const key = `provider-${randomUUID()}`; const body = { credential: { terminalKey: 'synthetic-only', merchantId: 'synthetic-merchant' } };
     const first = await app.inject({ method: 'POST', url: '/v1/admin/commerce/payment-providers/sadad/config-revisions', headers: headers(adminPrincipal.token, key), payload: body }); expect(first.statusCode).toBe(201); expect(first.body).not.toContain('synthetic-only'); expect(first.json()).toMatchObject({ code: 'sadad', configured: true, enabled: false, isDefault: false, providerUnit: 'UNCONFIRMED' });

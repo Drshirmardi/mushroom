@@ -11,13 +11,14 @@ export type Role = Authentication["user"]["roles"][number];
 export type AuthSessionSnapshot =
   | { status: "checking"; authentication: null }
   | { status: "authenticated"; authentication: Authentication }
-  | { status: "anonymous" | "forbidden"; authentication: null };
+  | { status: "anonymous" | "forbidden" | "unavailable"; authentication: null };
 
 type ApiClient = ReturnType<typeof createApiClient>;
 type Listener = () => void;
 
 const DASHBOARD_ROLES: ReadonlySet<Role> = new Set(["ADMIN"]);
 const EXPIRY_SAFETY_WINDOW_MS = 5_000;
+const REFRESH_RETRY_DELAYS_MS = [250, 750, 1_500];
 
 export function canAccessDashboard(roles: readonly Role[]): boolean {
   return roles.some((role) => DASHBOARD_ROLES.has(role));
@@ -31,6 +32,7 @@ export class DashboardSessionManager {
   private readonly listeners = new Set<Listener>();
   private refreshInFlight: Promise<AuthSessionSnapshot> | null = null;
   private accessTokenExpiresAt = 0;
+  private refreshRetryAfter = 0;
 
   constructor(
     private readonly client: ApiClient,
@@ -48,7 +50,8 @@ export class DashboardSessionManager {
   async bootstrap(): Promise<AuthSessionSnapshot> {
     if (
       this.snapshot.status === "authenticated" &&
-      this.now() < this.accessTokenExpiresAt - EXPIRY_SAFETY_WINDOW_MS
+      (this.now() < this.accessTokenExpiresAt - EXPIRY_SAFETY_WINDOW_MS
+        || this.now() < this.refreshRetryAfter)
     ) {
       return this.snapshot;
     }
@@ -81,6 +84,7 @@ export class DashboardSessionManager {
       if (!response.ok) return false;
 
       this.accessTokenExpiresAt = 0;
+      this.refreshRetryAfter = 0;
       this.update({ status: "anonymous", authentication: null });
       return true;
     } catch {
@@ -93,24 +97,42 @@ export class DashboardSessionManager {
       this.update({ status: "checking", authentication: null });
     }
 
-    try {
-      const { data } = await withRequestTimeout(
-        this.client.POST("/v1/auth/refresh"),
-        this.refreshTimeoutMs,
-      );
-      if (!data) return this.clear("anonymous");
-      if (!canAccessDashboard(data.user.roles)) return this.clear("forbidden");
-
-      this.accessTokenExpiresAt = this.now() + data.expiresIn * 1_000;
-      return this.update({ status: "authenticated", authentication: data });
-    } catch {
-      return this.clear("anonymous");
+    for (const delay of [...REFRESH_RETRY_DELAYS_MS, null]) {
+      try {
+        const { data, response } = await withRequestTimeout(
+          this.client.POST("/v1/auth/refresh"),
+          this.refreshTimeoutMs,
+        );
+        if (data) {
+          if (!canAccessDashboard(data.user.roles)) return this.clear("forbidden");
+          this.accessTokenExpiresAt = this.now() + data.expiresIn * 1_000;
+          this.refreshRetryAfter = 0;
+          return this.update({ status: "authenticated", authentication: data });
+        }
+        if (response.status === 409 && delay !== null) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+        if (response.status === 401) return this.clear("anonymous");
+        return this.unavailable();
+      } catch {
+        return this.unavailable();
+      }
     }
+
+    return this.unavailable();
   }
 
   private clear(status: "anonymous" | "forbidden"): AuthSessionSnapshot {
     this.accessTokenExpiresAt = 0;
+    this.refreshRetryAfter = 0;
     return this.update({ status, authentication: null });
+  }
+
+  private unavailable(): AuthSessionSnapshot {
+    this.refreshRetryAfter = this.now() + 5_000;
+    if (this.snapshot.status === "authenticated") return this.snapshot;
+    return this.update({ status: "unavailable", authentication: null });
   }
 
   private update(snapshot: AuthSessionSnapshot): AuthSessionSnapshot {

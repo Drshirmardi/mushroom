@@ -267,6 +267,7 @@ describe('chat realtime Socket.IO integration', () => {
 
     const rotated = await app.inject({ method: 'POST', url: '/v1/auth/refresh', headers });
     expect(rotated.statusCode).toBe(200);
+    await fixture.prisma.session.update({ where: { id: principal.sessionId }, data: { previousRefreshTokenExpiresAt: new Date(Date.now() - 1) } });
     const received: unknown[] = [];
     socket.on('message:committed', (event) => received.push(event));
     const disconnected = new Promise<void>((resolve) => socket!.once('disconnect', () => resolve()));

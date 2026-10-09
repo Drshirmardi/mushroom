@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createTestAccessToken } from './auth-test-support';
 
 describe('commerce revenue (PostgreSQL API integration)', () => {
   let app: NestFastifyApplication;
@@ -74,7 +75,7 @@ describe('commerce revenue (PostgreSQL API integration)', () => {
     const inactive = await prisma.clinic.create({ data: { name: `Revenue isolation ${randomUUID()}`, timeZone: clinic.timeZone, status: 'INACTIVE' } }); clinicIds.add(inactive.id);
     const foreignPatient = await patient(inactive.id); const foreignRevision = await configRevision(inactive.id); await verifiedPayment(inactive.id, foreignPatient.id, foreignRevision.id, 777_777n, new Date('2026-03-20T20:30:00.000Z'));
     const adminToken = await admin();
-    const staff = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] });
+    const staff = (await createTestAccessToken(prisma, tokens, ['STAFF'])).token;
     const denied = await app.inject({ method: 'GET', url: '/v1/admin/commerce/revenue?from=2026-03-20&to=2026-03-21', headers: { authorization: `Bearer ${staff}` } }); expect(denied.statusCode).toBe(403);
     const response = await app.inject({ method: 'GET', url: `/v1/admin/commerce/revenue?clinicId=${clinic.id}&from=2026-03-20&to=2026-03-21&granularity=DAY`, headers: { authorization: `Bearer ${adminToken}` } });
     expect(response.statusCode).toBe(200); expect(response.json()).toMatchObject({ clinicId: clinic.id, currency: 'TOMAN', timeZone: clinic.timeZone, sourceStatus: 'current', revenueLabel: 'operational revenue', from: '2026-03-20', to: '2026-03-21', grossCapturedToman: '300000', completedRefundToman: '35000', netRevenueToman: '265000', successfulPaymentCount: 2, refundPending: pendingAtAsOf + 2, series: [{ date: '2026-03-20', grossCapturedToman: '100000', completedRefundToman: '20000', netRevenueToman: '80000', successfulPaymentCount: 1 }, { date: '2026-03-21', grossCapturedToman: '200000', completedRefundToman: '15000', netRevenueToman: '185000', successfulPaymentCount: 1 }] });

@@ -8,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
 import type { AuthenticatedRequest } from './access-token.guard';
-import { hasReleaseAdminRole } from './authorization.policy';
+import { SKIP_ACTIVE_SESSION_CHECK_KEY } from './active-session.decorator';
 import { PUBLIC_ROUTE_KEY } from './public.decorator';
 
 const unauthorized = (): UnauthorizedException =>
@@ -19,11 +19,10 @@ const unauthorized = (): UnauthorizedException =>
   });
 
 /**
- * Release-admin credentials are live authorizations, not durable JWT claims.
- * The later AuthorizationGuard still decides whether a route permits the
- * principal's role/permissions; this guard ensures an otherwise permitted
- * ADMIN has an active user and unrevoked, unexpired persisted session before
- * any administrative controller can run.
+ * Access tokens are short lived credentials, but the underlying account and
+ * session are live authorization state. This makes logout, password changes,
+ * account disabling, and session revocation effective on the next request for
+ * every role.
  */
 @Injectable()
 export class ReleaseAdminSessionGuard implements CanActivate {
@@ -39,14 +38,15 @@ export class ReleaseAdminSessionGuard implements CanActivate {
     );
     if (isPublic) return true;
 
+    const skipActiveSessionCheck = this.reflector.getAllAndOverride<boolean>(
+      SKIP_ACTIVE_SESSION_CHECK_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (skipActiveSessionCheck) return true;
+
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const principal = request.auth;
     if (!principal) throw unauthorized();
-
-    // The fixed Phase 11 boundary is intentionally narrow: the retained
-    // PATIENT/DOCTOR/STAFF self-service paths keep their established session
-    // semantics, while every ADMIN capability becomes immediately revocable.
-    if (!hasReleaseAdminRole(principal.roles)) return true;
 
     const session = await this.prisma.session.findFirst({
       where: {

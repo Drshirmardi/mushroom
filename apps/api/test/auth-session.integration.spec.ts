@@ -221,6 +221,10 @@ describe('login and refresh sessions (PostgreSQL API integration)', () => {
       where: { user: { phone } },
     });
     expect((await refresh(originalCookie.pair)).statusCode).toBe(200);
+    await prisma.session.update({
+      where: { id: session.id },
+      data: { previousRefreshTokenExpiresAt: new Date(Date.now() - 1_000) },
+    });
 
     const reuseResponse = await refresh(originalCookie.pair);
     const revokedSession = await prisma.session.findUniqueOrThrow({
@@ -234,7 +238,7 @@ describe('login and refresh sessions (PostgreSQL API integration)', () => {
     expect(revokedSession.revokedAt).toBeInstanceOf(Date);
   });
 
-  it('allows only one concurrent refresh and treats the other as reuse', async () => {
+  it('allows one concurrent refresh and asks the stale-cookie request to retry', async () => {
     const phone = await register();
     const loginResponse = await login(phone);
     const originalCookie = getCookie(getSetCookie(loginResponse.headers));
@@ -251,9 +255,11 @@ describe('login and refresh sessions (PostgreSQL API integration)', () => {
     });
 
     expect(responses.map(({ statusCode }) => statusCode).sort())
-      .toEqual([200, 401]);
+      .toEqual([200, 409]);
     expect(persisted.refreshGeneration).toBe(1);
-    expect(persisted.revokedReason).toBe('REFRESH_REUSE_DETECTED');
+    expect(persisted.revokedAt).toBeNull();
+    expect(responses.find(({ statusCode }) => statusCode === 409)?.json().code)
+      .toBe('REFRESH_CONCURRENT_RETRY');
   });
 
   it('revokes an active session when its user becomes disabled', async () => {

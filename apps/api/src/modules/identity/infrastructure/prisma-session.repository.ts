@@ -26,6 +26,8 @@ interface LockedSessionRow {
   id: string;
   userId: string;
   refreshTokenHash: string;
+  previousRefreshTokenHash: string | null;
+  previousRefreshTokenExpiresAt: Date | null;
   refreshGeneration: number;
   expiresAt: Date;
   revokedAt: Date | null;
@@ -73,6 +75,8 @@ export class PrismaSessionRepository extends SessionRepository {
           "id",
           "user_id" AS "userId",
           "refresh_token_hash" AS "refreshTokenHash",
+          "previous_refresh_token_hash" AS "previousRefreshTokenHash",
+          "previous_refresh_token_expires_at" AS "previousRefreshTokenExpiresAt",
           "refresh_generation" AS "refreshGeneration",
           "expires_at" AS "expiresAt",
           "revoked_at" AS "revokedAt"
@@ -90,10 +94,19 @@ export class PrismaSessionRepository extends SessionRepository {
         return { kind: 'INVALID' };
       }
 
-      if (!constantTimeRefreshHashEquals(
-        session.refreshTokenHash,
-        input.presentedTokenHash,
-      )) {
+      if (!constantTimeRefreshHashEquals(session.refreshTokenHash, input.presentedTokenHash)) {
+        if (
+          session.previousRefreshTokenHash !== null
+          && session.previousRefreshTokenExpiresAt !== null
+          && session.previousRefreshTokenExpiresAt.getTime() > input.usedAt.getTime()
+          && constantTimeRefreshHashEquals(
+            session.previousRefreshTokenHash,
+            input.presentedTokenHash,
+          )
+        ) {
+          return { kind: 'CONCURRENT_REFRESH' };
+        }
+
         await transaction.session.update({
           where: { id: session.id },
           data: {
@@ -144,6 +157,8 @@ export class PrismaSessionRepository extends SessionRepository {
         where: { id: session.id },
         data: {
           refreshTokenHash: input.replacementTokenHash,
+          previousRefreshTokenHash: session.refreshTokenHash,
+          previousRefreshTokenExpiresAt: new Date(input.usedAt.getTime() + 15_000),
           refreshGeneration: generation,
           lastUsedAt: input.usedAt,
           ipAddress: input.ipAddress,

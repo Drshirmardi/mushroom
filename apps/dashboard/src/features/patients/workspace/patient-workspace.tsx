@@ -177,7 +177,7 @@ function ClinicalRecordEditor({ record, accessToken, patientId, onChanged }: { r
 }
 
 function ClinicalNotes({ clinical, error, accessToken, patientId, onChanged }: { clinical: ClinicalWorkspace | null; error: ClinicalWorkspaceApiError | null; accessToken: string; patientId: string; onChanged: (value: ClinicalWorkspace) => void }) {
-  const [content, setContent] = useState(""); const [summary, setSummary] = useState(""); const [reason, setReason] = useState(""); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string | null>(null);
+  const [content, setContent] = useState(""); const [summary, setSummary] = useState(""); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string | null>(null);
   const refresh = async () => onChanged(await getClinicalWorkspace(accessToken, patientId));
   const create = async () => { const encounter = clinical?.encounters[0]; if (!encounter || !content.trim()) return; try { setBusy(true); await createClinicalNote(accessToken, patientId, encounter.id, { expectedRevision: 0, content, isPrivate: true, patientSummary: summary || null }); await refresh(); setContent(""); setSummary(""); } catch { setMessage("ایجاد یادداشت ممکن نشد."); } finally { setBusy(false); } };
   if (!clinical && !error) return <p className="text-sm text-muted-foreground">در حال دریافت تاریخچه بالینی…</p>;

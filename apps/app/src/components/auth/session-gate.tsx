@@ -31,17 +31,23 @@ interface AuthSessionContextValue {
 const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
 const SessionSnapshotContext = createContext<AuthSessionSnapshot | null>(null);
 
-function SessionStatus({ redirecting = false }: { redirecting?: boolean }) {
+function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "unavailable"; retry: () => void }) {
+  const unavailable = status === "unavailable";
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#e8ede8] px-6">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-background p-8 text-center shadow-sm">
         <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full bg-primary/20" />
         <p className="font-bold text-foreground">
-          {redirecting ? "در حال انتقال به صفحه ورود…" : "در حال بررسی حساب کاربری…"}
+          {status === "anonymous"
+            ? "در حال انتقال به صفحه ورود…"
+            : unavailable
+              ? "ارتباط با سرویس برقرار نشد"
+              : "در حال بررسی حساب کاربری…"}
         </p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          لطفاً چند لحظه صبر کنید.
+          {unavailable ? "نشست شما حذف نشده است. اتصال را بررسی کنید و دوباره تلاش کنید." : "لطفاً چند لحظه صبر کنید."}
         </p>
+        {unavailable && <button type="button" onClick={retry} className="mt-5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">تلاش دوباره</button>}
       </div>
     </div>
   );
@@ -92,7 +98,7 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
   }
 
   if (snapshot.status !== "authenticated") {
-    return <SessionStatus redirecting={snapshot.status === "anonymous"} />;
+    return <SessionStatus status={snapshot.status} retry={() => { void sessionManager.refresh(); }} />;
   }
 
   return children;

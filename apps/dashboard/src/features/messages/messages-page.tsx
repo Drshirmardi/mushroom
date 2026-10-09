@@ -17,14 +17,14 @@ export function MessagesPage() {
   const [connection, setConnection] = useState<Connection>("idle");
   const lastSequence = useRef("0");
   const canAccessChat = authentication.user.roles.includes("ADMIN") || authentication.user.roles.includes("DOCTOR");
+  const conversationId = chat?.conversation.id;
 
   useEffect(() => {
-    if (!chat) return;
-    lastSequence.current = chat.messages.at(-1)?.sequence ?? "0";
-    const socket = connectChat(authentication.accessToken, chat.conversation.id, () => lastSequence.current, (message) => setChat((current) => { if (!current) return current; const messages = reconcileChatMessages(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; }), setConnection);
-    const heartbeat = window.setInterval(() => socket.emit("presence:heartbeat", { conversationId: chat.conversation.id, lastSequence: lastSequence.current }), 15_000);
+    if (!conversationId) return;
+    const socket = connectChat(authentication.accessToken, conversationId, () => lastSequence.current, (message) => setChat((current) => { if (!current) return current; const messages = reconcileChatMessages(current.messages, message); lastSequence.current = messages.at(-1)?.sequence ?? lastSequence.current; return { ...current, messages }; }), setConnection);
+    const heartbeat = window.setInterval(() => socket.emit("presence:heartbeat", { conversationId, lastSequence: lastSequence.current }), 15_000);
     return () => { window.clearInterval(heartbeat); socket.disconnect(); };
-  }, [authentication.accessToken, chat?.conversation.id]);
+  }, [authentication.accessToken, conversationId]);
 
   if (!canAccessChat) return <div className="flex-1 p-7"><h1 className="text-xl font-bold">پیام‌ها</h1><p role="alert" className="mt-4 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">دسترسی کارکنان به گفتگوهای درمانی در MVP فعال نیست.</p></div>;
 

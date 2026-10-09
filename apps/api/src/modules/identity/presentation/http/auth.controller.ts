@@ -28,6 +28,7 @@ import {
 } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
+import { SkipActiveSessionCheck } from '../../../../common/auth/active-session.decorator';
 import { ACCESS_TOKEN_TTL_SECONDS } from '../../../../common/auth/access-token.service';
 import { RequirePermissions } from '../../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../../common/auth/authorization.policy';
@@ -51,6 +52,7 @@ import {
 } from '../../application/manage-sessions.use-case';
 import {
   InvalidRefreshTokenError,
+  ConcurrentRefreshError,
   RefreshRateLimitedError,
   RefreshSessionUseCase,
 } from '../../application/refresh-session.use-case';
@@ -269,6 +271,10 @@ export class AuthController {
     headers: REFRESH_COOKIE_RESPONSE_HEADERS,
   })
   @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Refresh token is invalid.')
+  @ApiErrorResponse(
+    HttpStatus.CONFLICT,
+    'A concurrent refresh has updated the browser cookie; retry shortly.',
+  )
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
   @ApiErrorResponse(
     HttpStatus.TOO_MANY_REQUESTS,
@@ -295,6 +301,14 @@ export class AuthController {
 
       return toResponse(result);
     } catch (error) {
+      if (error instanceof ConcurrentRefreshError) {
+        throw new ConflictException({
+          code: error.code,
+          message: error.message,
+          details: {},
+        });
+      }
+
       if (error instanceof InvalidRefreshTokenError) {
         this.refreshCookie.clear(reply);
         throw new UnauthorizedException({
@@ -317,6 +331,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @SkipActiveSessionCheck()
   @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
   @ApiBrowserOrigin()
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -351,6 +366,7 @@ export class AuthController {
   }
 
   @Post('logout-all')
+  @SkipActiveSessionCheck()
   @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
   @ApiBrowserOrigin()
   @HttpCode(HttpStatus.NO_CONTENT)

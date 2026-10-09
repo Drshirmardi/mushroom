@@ -193,6 +193,10 @@ describe('security audit trail (PostgreSQL API integration)', () => {
       },
     });
     expect(rotate.statusCode).toBe(200);
+    await prisma.session.updateMany({
+      where: { userId, revokedAt: null },
+      data: { previousRefreshTokenExpiresAt: new Date(Date.now() - 1) },
+    });
     const reuse = await app.inject({
       method: 'POST',
       url: '/v1/auth/refresh',

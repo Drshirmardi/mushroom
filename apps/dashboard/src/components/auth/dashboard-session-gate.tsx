@@ -33,20 +33,23 @@ interface DashboardSessionContextValue {
 
 const DashboardSessionContext = createContext<DashboardSessionContextValue | null>(null);
 
-function SessionStatus({ status }: { status: "checking" | "anonymous" | "forbidden" }) {
+function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "forbidden" | "unavailable"; retry: () => void }) {
   const message =
     status === "checking"
       ? "در حال بررسی دسترسی مدیریتی…"
       : status === "forbidden"
         ? "این حساب به داشبورد دسترسی ندارد؛ در حال انتقال…"
-        : "در حال انتقال به صفحه ورود…";
+        : status === "unavailable"
+          ? "ارتباط با سرویس برقرار نشد"
+          : "در حال انتقال به صفحه ورود…";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
         <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full bg-primary/20" />
         <p className="font-bold text-foreground">{message}</p>
-        <p className="mt-2 text-sm text-muted-foreground">لطفاً چند لحظه صبر کنید.</p>
+        <p className="mt-2 text-sm text-muted-foreground">{status === "unavailable" ? "نشست شما حذف نشده است. اتصال را بررسی کنید و دوباره تلاش کنید." : "لطفاً چند لحظه صبر کنید."}</p>
+        {status === "unavailable" && <button type="button" onClick={retry} className="mt-5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">تلاش دوباره</button>}
       </div>
     </div>
   );
@@ -71,7 +74,7 @@ export function DashboardSessionGate({ children }: { children: React.ReactNode }
   }, [snapshot.status]);
 
   if (snapshot.status !== "authenticated") {
-    return <SessionStatus status={snapshot.status} />;
+    return <SessionStatus status={snapshot.status} retry={() => { void sessionManager.refresh(); }} />;
   }
 
   const contextValue: DashboardSessionContextValue = {

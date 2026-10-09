@@ -31,6 +31,20 @@ export class RefreshRateLimitedError extends Error {
   }
 }
 
+/**
+ * Another same-browser request rotated this cookie moments earlier. The
+ * browser will have the replacement cookie shortly, so callers retry once
+ * without weakening replay detection for older tokens.
+ */
+export class ConcurrentRefreshError extends Error {
+  readonly code = 'REFRESH_CONCURRENT_RETRY';
+
+  constructor() {
+    super('Refresh is being completed by another request. Please retry.');
+    this.name = 'ConcurrentRefreshError';
+  }
+}
+
 export interface RefreshSessionCommand extends SecurityAuditContext {
   refreshToken: string | undefined;
   ipAddress: string;
@@ -88,6 +102,9 @@ export class RefreshSessionUseCase {
     if (rotation.kind === 'REVOKED') {
       this.sockets.disconnectSession(inspected.sessionId);
       throw new InvalidRefreshTokenError();
+    }
+    if (rotation.kind === 'CONCURRENT_REFRESH') {
+      throw new ConcurrentRefreshError();
     }
     if (rotation.kind !== 'ROTATED') throw new InvalidRefreshTokenError();
 
