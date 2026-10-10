@@ -1785,6 +1785,8 @@ Verification:
 - first, unchanged, dependency, API and individual web/app/dashboard sync simulations → PASS
 - release-pipeline contract suite and shell syntax checks → PASS
 - local Next 16 public-origin `/_next/hmr` handshake → `101 Switching Protocols`
+- GitHub shared-dev sync run `38015897226` for commit `4ef2d24` → PASS
+- fresh Chromium check on `https://dev.roxco.ir` → login/register visible, anonymous refresh `401`, no failed requests
 - `git diff --check` and owned-path review → PASS
 
 Result:
@@ -1806,5 +1808,6 @@ Known limitation:
 
 Next work:
 
-- Push `dev`, observe the automatic shared-dev sync and verify login/register hydration on the public dev domain.
+- No server-side action remains for this corrective. Add future remote/LAN hostnames to the explicit Next/API origin
+  lists before using them.
 

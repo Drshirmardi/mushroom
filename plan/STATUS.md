@@ -79,8 +79,10 @@ Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
     after bounded CDN/watcher warm-up retries before it records the synced source as ready.
   - Verification: focused origin parsing, all frontend typechecks, first/unchanged/dependency/API/per-frontend dev sync
     simulations, `pnpm release:test`, a live local browser-origin HMR handshake and `git diff --check` PASS.
-  - External next action: push the corrective to `dev` and verify the automatic shared-dev sync plus browser hydration.
-    Existing `APP_ORIGINS` supplies Next's allowlist, so no new server secret, database, port or Caddy change is planned.
+  - External verification: GitHub run `38015897226` synced commit `4ef2d24` successfully. A fresh Chromium session on
+    `https://dev.roxco.ir` rendered both login/register controls, observed the expected anonymous refresh `401` and
+    reported no failed browser requests. Existing `APP_ORIGINS` supplied Next's allowlist; no server secret, database,
+    port or Caddy change was required.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R19
 
