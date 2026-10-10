@@ -50,6 +50,32 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R22
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: the app remains a development watcher with fast source refresh, but its compiler process must stay
+resident after serving the first route.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R22`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R21` and live diagnostics showing Next Turbopack repeatedly exits cleanly after
+    detecting `next.config.ts`, with `RestartCount=16`, `OOM=false` and intermittent successful root responses.
+  - Scope: run only the unstable shared-dev app watcher on Next's webpack development compiler and preserve web and
+    dashboard Turbopack watchers.
+  - Owned paths: `deploy/vps/{dev-service.sh,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev app watcher command only.
+  - Expected verification: service command contract, dev/release deployment checks and `git diff --check`.
+  - Review: PASS — only `apps/app` selects webpack development mode; the existing dev server, bind mount, HMR and
+    isolated web/dashboard commands are preserved.
+  - Verification: shell syntax, full dev VPS simulation, release pipeline contract and `git diff --check` PASS.
+  - External next action: push to `dev` and verify the app watcher remains resident on the shared server.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R21
 
 Coordinator/Thread: `Codex /root`

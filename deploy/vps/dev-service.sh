@@ -76,7 +76,7 @@ case "$command_name" in
     exec pnpm --filter @sabz/web exec next dev --hostname 0.0.0.0 --port 3000
     ;;
   app)
-    exec pnpm --filter @sabz/app exec next dev --hostname 0.0.0.0 --port 3001
+    exec pnpm --filter @sabz/app exec next dev --webpack --hostname 0.0.0.0 --port 3001
     ;;
   dashboard)
     exec pnpm --filter @sabz/dashboard exec next dev --hostname 0.0.0.0 --port 3002

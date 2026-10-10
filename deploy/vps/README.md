@@ -293,6 +293,8 @@ dev-api.example.com {
 Protocols` پس از retry محدود warm-up موفق اعلام نمی‌شود. اگر یکی از watcherهای فرانت‌اند در readiness پاسخ ندهد،
 استقرار پس از ثبت وضعیت و لاگ آن سرویس فقط cache تولیدی `.next` همان برنامه را پاک می‌کند، watcher را یک‌بار
 recreate می‌کند و probe محدود دوم را اجرا می‌کند؛ شکست دوم deployment را بدون انتظار طولانی متوقف می‌کند.
+watcher مربوط به `apps/app` در shared dev از compiler توسعهٔ webpack استفاده می‌کند تا از restart loop مشاهده‌شدهٔ
+Turbopack روی bind mount این برنامه جلوگیری شود؛ `web` و `dashboard` همچنان با compiler پیش‌فرض سریع اجرا می‌شوند.
 `APP_ORIGINS` علاوه بر CORS API، پس از تبدیل URLها به
 hostname به `allowedDevOrigins` هر سه Next server داده می‌شود؛ بنابراین دامنه تازه باید ابتدا به همین فهرست اضافه
 شود.

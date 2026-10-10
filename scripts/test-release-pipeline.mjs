@@ -193,6 +193,10 @@ for (const required of ['NEXT_ALLOWED_DEV_ORIGINS', 'new URL', '.hostname', 'new
 for (const required of ['write_runtime_configs', 'apps/${application}/public/runtime-config.js']) {
   assert(devServiceScript.includes(required), `dev frontend runtime configuration is missing: ${required}`);
 }
+assert(
+  devServiceScript.includes('pnpm --filter @sabz/app exec next dev --webpack --hostname 0.0.0.0 --port 3001'),
+  'shared dev app must use the stable webpack development watcher',
+);
 for (const required of [
   'NODE_OPTIONS=--max-old-space-size=640',
   'pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json',

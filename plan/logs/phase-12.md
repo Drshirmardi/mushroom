@@ -1943,3 +1943,42 @@ Next work:
 
 - Push `dev`, verify the shared environment and record the external run outcome.
 
+## F12-T02-R22 — stabilize the shared-dev app watcher
+
+Task ID: F12-T02-R22
+Completed at: 2026-10-10 UTC
+Agent/Thread: Codex /root
+Batch ID: F12-B02-R22
+Reviewed by: Codex /root
+
+Changed files:
+
+- shared-dev `apps/app` watcher command in `deploy/vps/dev-service.sh`
+- release command contract and operator documentation
+- `plan/STATUS.md` and `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none
+
+Verification:
+
+- shell syntax and `bash scripts/test-vps-dev.sh` → PASS
+- `pnpm release:test` → PASS
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** Live recovery diagnostics proved the app served a root request but Turbopack repeatedly exited
+  cleanly after reporting `next.config.ts` changes (`RestartCount=16`, `OOM=false`).
+- Only the app now uses Next's webpack development compiler, retaining development HMR while avoiding the observed
+  Turbopack/bind-mount restart loop. Web and dashboard keep their existing default compiler.
+
+Known limitation:
+
+- This is deliberately scoped to the live-failing app watcher; it does not change production builds.
+
+Next work:
+
+- Push `dev` and verify all shared-dev frontend origins plus the public app HMR handshake.
+
