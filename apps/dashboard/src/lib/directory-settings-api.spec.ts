@@ -1,7 +1,7 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createAvailabilityRule, createDoctor, createDoctorService, createService, createSpecialty, getClinic, loadDirectorySettings, updateClinic } from "./directory-settings-api";
+import { createAvailabilityRule, createDoctor, createDoctorService, createService, createSpecialty, directoryMutationMessage, getClinic, loadDirectorySettings, updateClinic, updateSpecialty } from "./directory-settings-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock }) }));
@@ -42,6 +42,16 @@ describe("directory settings API", () => {
     await expect(getClinic("token")).resolves.toEqual(clinic);
     const request = fetchMock.mock.calls[0]?.[0] as Request;
     expect([request.method, new URL(request.url).pathname, request.headers.get("authorization")]).toEqual(["GET", "/v1/admin/clinic", "Bearer token"]);
+  });
+
+  it("preserves stable API errors and supports publishing a specialty", async () => {
+    fetchMock.mockResolvedValueOnce(json({ ...clinic, publicationStatus: "PUBLISHED" })).mockResolvedValueOnce(json({ code: "DIRECTORY_PUBLICATION_INVALID", message: "invalid", details: {} }, 409));
+    await updateSpecialty("token", clinic.id, { isActive: true, publicationStatus: "PUBLISHED" });
+    const request = fetchMock.mock.calls[0]?.[0] as Request;
+    expect([request.method, new URL(request.url).pathname]).toEqual(["PATCH", `/v1/admin/specialties/${clinic.id}`]);
+    const error = await createDoctor("token", { displayName: "پزشک", publicationStatus: "PUBLISHED" }).catch((reason: unknown) => reason);
+    expect(error).toMatchObject({ status: 409, code: "DIRECTORY_PUBLICATION_INVALID" });
+    expect(directoryMutationMessage(error)).toBe("پیش‌نیاز انتشار کامل نیست؛ تخصص، پزشک و خدمت باید فعال و منتشرشده باشند.");
   });
 
   it("uses generated bodies and bearer authentication for Phase 04 settings writes", async () => {

@@ -50,6 +50,36 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R4
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: dashboard settings must express the accepted directory publication prerequisites and keep each
+clinic, doctor, offering, schedule and calendar mutation visibly scoped to its own form.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R4`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Phase 04 directory/scheduling APIs and completed F12-T12-R3 dashboard navigation corrective.
+  - Scope: replace the ambiguous settings form with a guided clinic → specialty/doctor → service/offering → schedule
+    workflow, preserve backend error codes, repair refresh/success state handling, isolate form selections, and add
+    explicit payment-setting feedback without changing API or persistence contracts.
+  - Owned paths: `apps/dashboard/src/features/settings/**`, `apps/dashboard/src/lib/directory-settings-api*`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: existing generated API client is read-only; no API, database, OpenAPI or role change.
+  - Expected verification: focused adapter/workflow regression tests, dashboard test/typecheck/lint, supported build or
+    shared-dev route compilation, responsive source review and `git diff --check`.
+  - Review: PASS — new records follow API publication prerequisites in one guided path; old drafts have explicit
+    repair actions; mutation messages retain stable server error codes; successful writes are re-read before progress
+    changes; independent forms no longer overwrite one another's doctor or date selection.
+  - Verification: dashboard `69/69` tests across `21` files, TypeScript, ESLint, settings contract scan and
+    `git diff --check` PASS. Shared-dev `/settings` compilation remains the post-push build observation because this
+    executor cannot capture Next child-process output during a production build.
+  - External next action: push `dev`, verify the shared-dev workflow and request `/settings` from the live dashboard.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R3
 
 Coordinator/Thread: `Codex /root`

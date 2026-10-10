@@ -32,8 +32,8 @@ export type DirectorySettingsState =
   | { status: "error" };
 
 export class DirectorySettingsApiError extends Error {
-  constructor(public readonly status: number) {
-    super("Directory settings request failed.");
+  constructor(public readonly status: number, public readonly code: string | null = null) {
+    super(code ?? "DIRECTORY_SETTINGS_REQUEST_FAILED");
   }
 }
 
@@ -43,10 +43,11 @@ function statusFor(error: unknown) {
   return error instanceof DirectorySettingsApiError ? error.status : 0;
 }
 
-async function dataOrThrow<T>(request: Promise<{ data?: T; response: Response }>): Promise<T> {
+async function dataOrThrow<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   try {
-    const { data, response } = await withRequestTimeout(request);
-    if (!response.ok || !data) throw new DirectorySettingsApiError(response.status);
+    const { data, error, response } = await withRequestTimeout(request);
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
+    if (!response.ok || !data) throw new DirectorySettingsApiError(response.status, code);
     return data;
   } catch (error) {
     if (error instanceof DirectorySettingsApiError) throw error;
@@ -57,15 +58,16 @@ async function dataOrThrow<T>(request: Promise<{ data?: T; response: Response }>
 export async function loadDirectorySettings(client: ApiClient, accessToken: string): Promise<DirectorySettingsState> {
   try {
     const headers = authorization(accessToken);
+    const pageQuery = { page: 1, pageSize: 100 } as never;
     const [clinic, doctors, specialties, services, doctorServices, availabilityRules, closures, exceptions] = await Promise.all([
       dataOrThrow<Clinic>(client.GET("/v1/admin/clinic", { headers })),
-      dataOrThrow<components["schemas"]["DoctorPageResponseDto"]>(client.GET("/v1/admin/doctors", { headers })),
-      dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(client.GET("/v1/admin/specialties", { headers })),
-      dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(client.GET("/v1/admin/services", { headers })),
-      dataOrThrow<components["schemas"]["DoctorServicePageResponseDto"]>(client.GET("/v1/admin/doctor-services", { headers })),
-      dataOrThrow<components["schemas"]["AvailabilityRulePageResponseDto"]>(client.GET("/v1/admin/availability-rules", { headers })),
-      dataOrThrow<components["schemas"]["ClinicClosurePageResponseDto"]>(client.GET("/v1/admin/clinic-closures", { headers })),
-      dataOrThrow<components["schemas"]["DoctorAvailabilityExceptionPageResponseDto"]>(client.GET("/v1/admin/doctor-availability-exceptions", { headers })),
+      dataOrThrow<components["schemas"]["DoctorPageResponseDto"]>(client.GET("/v1/admin/doctors", { headers, params: { query: pageQuery } })),
+      dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(client.GET("/v1/admin/specialties", { headers, params: { query: pageQuery } })),
+      dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(client.GET("/v1/admin/services", { headers, params: { query: pageQuery } })),
+      dataOrThrow<components["schemas"]["DoctorServicePageResponseDto"]>(client.GET("/v1/admin/doctor-services", { headers, params: { query: pageQuery } })),
+      dataOrThrow<components["schemas"]["AvailabilityRulePageResponseDto"]>(client.GET("/v1/admin/availability-rules", { headers, params: { query: pageQuery } })),
+      dataOrThrow<components["schemas"]["ClinicClosurePageResponseDto"]>(client.GET("/v1/admin/clinic-closures", { headers, params: { query: pageQuery } })),
+      dataOrThrow<components["schemas"]["DoctorAvailabilityExceptionPageResponseDto"]>(client.GET("/v1/admin/doctor-availability-exceptions", { headers, params: { query: pageQuery } })),
     ]);
     return { status: "ready", data: { clinic, doctors: doctors.items, specialties: specialties.items, services: services.items, doctorServices: doctorServices.items, availabilityRules: availabilityRules.items, closures: closures.items, exceptions: exceptions.items } };
   } catch (error) {
@@ -82,6 +84,7 @@ export const getClinic = (accessToken: string) => dataOrThrow<Clinic>(apiClient.
 export const createDoctor = (accessToken: string, body: components["schemas"]["CreateDoctorDto"]) => dataOrThrow<Doctor>(apiClient.POST("/v1/admin/doctors", { headers: authorization(accessToken), body }));
 export const updateDoctor = (accessToken: string, doctorId: string, body: components["schemas"]["UpdateDoctorDto"]) => dataOrThrow<Doctor>(apiClient.PATCH("/v1/admin/doctors/{doctorId}", { headers: authorization(accessToken), params: { path: { doctorId } }, body }));
 export const createSpecialty = (accessToken: string, body: components["schemas"]["CreateSpecialtyDto"]) => dataOrThrow<Specialty>(apiClient.POST("/v1/admin/specialties", { headers: authorization(accessToken), body }));
+export const updateSpecialty = (accessToken: string, specialtyId: string, body: components["schemas"]["UpdateSpecialtyDto"]) => dataOrThrow<Specialty>(apiClient.PATCH("/v1/admin/specialties/{specialtyId}", { headers: authorization(accessToken), params: { path: { specialtyId } }, body }));
 export const createService = (accessToken: string, body: components["schemas"]["CreateServiceDto"]) => dataOrThrow<Service>(apiClient.POST("/v1/admin/services", { headers: authorization(accessToken), body }));
 export const updateService = (accessToken: string, serviceId: string, body: components["schemas"]["UpdateServiceDto"]) => dataOrThrow<Service>(apiClient.PATCH("/v1/admin/services/{serviceId}", { headers: authorization(accessToken), params: { path: { serviceId } }, body }));
 export const createDoctorService = (accessToken: string, body: components["schemas"]["CreateDoctorServiceDto"]) => dataOrThrow<DoctorService>(apiClient.POST("/v1/admin/doctor-services", { headers: authorization(accessToken), body }));
@@ -89,3 +92,16 @@ export const updateDoctorService = (accessToken: string, doctorServiceId: string
 export const createAvailabilityRule = (accessToken: string, body: components["schemas"]["CreateAvailabilityRuleDto"]) => dataOrThrow<AvailabilityRule>(apiClient.POST("/v1/admin/availability-rules", { headers: authorization(accessToken), body }));
 export const createClinicClosure = (accessToken: string, body: components["schemas"]["CreateClinicClosureDto"]) => dataOrThrow<ClinicClosure>(apiClient.POST("/v1/admin/clinic-closures", { headers: authorization(accessToken), body }));
 export const createDoctorException = (accessToken: string, body: components["schemas"]["CreateDoctorAvailabilityExceptionDto"]) => dataOrThrow<DoctorException>(apiClient.POST("/v1/admin/doctor-availability-exceptions", { headers: authorization(accessToken), body }));
+
+export function directoryMutationMessage(error: unknown): string {
+  if (!(error instanceof DirectorySettingsApiError) || error.status === 0) return "ارتباط با سرویس برقرار نشد؛ تغییر ذخیره نشد.";
+  if (error.status === 401) return "نشست شما منقضی شده است؛ دوباره وارد حساب شوید.";
+  if (error.status === 403) return "اجازهٔ انجام این تغییر را ندارید.";
+  if (error.code === "DIRECTORY_NAME_CONFLICT") return "رکوردی با این نام از قبل وجود دارد.";
+  if (error.code === "DIRECTORY_PUBLICATION_INVALID") return "پیش‌نیاز انتشار کامل نیست؛ تخصص، پزشک و خدمت باید فعال و منتشرشده باشند.";
+  if (error.code === "DOCTOR_SERVICE_CONFLICT") return "این پزشک قبلاً همین خدمت و نوع ویزیت را دارد.";
+  if (error.code === "AVAILABILITY_INTERVAL_OVERLAP") return "این بازه با برنامهٔ فعال دیگری تداخل دارد.";
+  if (error.code === "SCHEDULE_INTERVAL_INVALID") return "بازهٔ زمانی معتبر نیست؛ زمان پایان باید بعد از زمان شروع باشد.";
+  if (error.code === "DIRECTORY_INPUT_INVALID" || error.code === "DOCTOR_SERVICE_INPUT_INVALID") return "اطلاعات واردشده کامل یا معتبر نیست.";
+  return "ذخیره‌سازی انجام نشد؛ اطلاعات را بررسی و دوباره تلاش کنید.";
+}

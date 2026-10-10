@@ -2067,3 +2067,49 @@ Next work:
 - Push `dev`, watch the shared-dev workflow, and request representative dashboard routes from
   `https://dev-dashboard.roxco.ir` to confirm compilation.
 
+## F12-T12-R4 — Dashboard settings workflow corrective
+
+Date: `2026-10-10 UTC`
+
+Problem and accepted behavior:
+
+- the old UI created a doctor without a specialty and then attempted to publish it without `specialtyIds`, which the
+  accepted API correctly rejects;
+- specialties were created as unpublished but had no publish action, so the doctor publication prerequisite could not
+  be completed from the dashboard;
+- doctor, offering, availability and leave forms shared selection/date state, mutation errors discarded stable API
+  codes, fields remained populated after success, and a successful write followed by refresh failure looked like a
+  failed write;
+- payment credential failures produced no user-facing result.
+
+Implementation:
+
+- added a server-confirmed five-step progress model for published specialty, doctor, service, offering and schedule;
+- new specialty/doctor/service/offering records are created active and published with all accepted parent
+  prerequisites, while legacy drafts receive explicit completion actions;
+- preserved directory/scheduling error codes and mapped duplicate name/offering, invalid publication, invalid input
+  and overlap cases to Persian messages;
+- separated all form state, converted user-facing toman to the API's IRR contract, named ISO weekdays, retained old
+  data when a post-write refresh fails, and moved payment configuration into a collapsed advanced section;
+- directory settings now request up to 100 records per accepted list endpoint instead of silently relying on the
+  smaller default page.
+
+Verification:
+
+- dashboard Vitest → PASS, `21` files and `69/69` tests;
+- dashboard TypeScript and ESLint → PASS;
+- settings publication/placeholder scan and `git diff --check` → PASS;
+- focused tests cover draft-vs-operational progress, full readiness, specialty publication transport and stable API
+  error preservation;
+- Next production build remains unavailable in this executor because Next child-process stdout is suppressed; live
+  shared-dev `/settings` compilation is the external post-push gate.
+
+Result:
+
+- **PASS / DONE pending external compile observation.** No API, database, OpenAPI, generated-client, permission or
+  payment activation contract changed.
+
+Next work:
+
+- Push `dev`, observe the shared-dev sync and request `https://dev-dashboard.roxco.ir/settings`.
+
