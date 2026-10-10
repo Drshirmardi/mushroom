@@ -50,6 +50,34 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING` (public web visual asset and mobile corrective)
+Batch status: `DONE`
+Contract baseline: public web icons and typography must render from repository dependencies/assets without runtime
+font or icon services; the home page must keep a bounded mobile viewport through and after the footer.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T12-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed public web baseline and live mobile evidence that unresolved Material Symbols render as text
+    and the page wrapper adds blank space below the footer.
+  - Scope: replace font-based generic icons with local component icons, self-host Yekan Bakh typography, correct the
+    mobile footer/page boundary and verify responsive rendering without external asset requests.
+  - Owned paths: `apps/web/**`, root dependency manifests; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: root lockfile only; no API, authentication, database, app, dashboard or deployment
+    behavior change.
+  - Expected verification: focused tests/typecheck/build, mobile/desktop browser layout and asset-request checks,
+    live shared-dev sync and `git diff --check`.
+  - Review: PASS — all generic web icons are typed, tree-shaken Lucide SVG components; Yekan Bakh FaNum is a
+    self-hosted variable font; and the mobile page ends at the footer without the previous trailing padding.
+  - Verification: 12 web tests, web typecheck, supported webpack production build, Chromium at 320/390/768/1440px,
+    same-origin font request/no external icon request, zero horizontal overflow and `git diff --check` PASS.
+  - External next action: push to `dev` and verify the shared-dev sync plus public mobile rendering.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R20
 
 Coordinator/Thread: `Codex /root`

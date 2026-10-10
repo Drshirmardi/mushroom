@@ -1811,3 +1811,48 @@ Next work:
 - No server-side action remains for this corrective. Add future remote/LAN hostnames to the explicit Next/API origin
   lists before using them.
 
+## F12-T12-R1 — public web self-hosted visual assets and mobile corrective
+
+Task ID: F12-T12-R1
+Completed at: 2026-10-10 02:33 UTC
+Agent/Thread: Codex /root
+Batch ID: F12-B12-R1
+Reviewed by: Codex /root
+
+Changed files:
+
+- typed Lucide icon adapter and affected public-web content types
+- self-hosted Yekan Bakh FaNum variable font plus Next local-font wiring and typography tokens
+- public home page mobile boundary and hero heading typography
+- `plan/STATUS.md` and `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none; the existing `lucide-react` package is used and no runtime asset service was added
+
+Verification:
+
+- `pnpm --filter @sabz/web test` → PASS: 5 files / 12 tests
+- `pnpm --filter @sabz/web typecheck` → PASS
+- `pnpm --filter @sabz/web exec next build --webpack` → PASS: four static routes
+- Chromium widths 320, 390, 768 and 1440 → exact viewport width, zero horizontal document overflow
+- browser asset check → local Yekan Bakh WOFF2 loaded, 56 Lucide SVGs, zero Material Symbols or external icon/font request
+- mobile document boundary → footer bottom equals document height; no trailing page padding
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** Missing Material Symbols can no longer become visible icon names or stretch mobile cards. Each
+  existing icon token maps to a fitting local Lucide SVG and unsupported future tokens fail typecheck.
+- Public web body and display headings use a preloaded, same-origin Yekan Bakh FaNum variable font with local system
+  fallbacks, ligatures, kerning and antialiasing.
+- The home wrapper clips decorative horizontal paint and no longer adds 80 pixels below the mobile footer.
+
+Known limitation:
+
+- This focused corrective does not complete the broader `F12-T12` browser/device/accessibility release matrix.
+
+Next work:
+
+- Push `dev`, observe shared-dev sync and confirm the same asset/layout evidence on the public domain.
+
