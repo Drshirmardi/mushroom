@@ -50,6 +50,33 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R2
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 Asia/Tehran`
+Phase: `12-PRODUCTION-HARDENING` (public web alert severity corrective)
+Batch status: `DONE`
+Contract baseline: authentication/API failures must be visually destructive and accessible; success, information and
+warning notices must retain distinct semantic colors.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T12-R2`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: existing typed auth error mapping and live theme evidence that `destructive` has no web color token.
+  - Scope: define public-web semantic alert colors and preserve Sonner severity variants without changing auth/API
+    behavior or Persian error mappings.
+  - Owned paths: `apps/web/src/app/globals.css`, `apps/web/src/components/{auth/AuthErrorAlert.tsx,ui/sonner.tsx}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: none.
+  - Expected verification: web tests/typecheck/build, rendered semantic alert colors, accessibility role and
+    `git diff --check`.
+  - Review: PASS — inline auth/API failures now use the destructive red palette and Sonner success, information,
+    warning and error variants keep separate green, blue, amber and red palettes.
+  - Verification: 12 web tests, web typecheck, webpack production build, Chromium computed-style checks for the auth
+    `role=alert` and information toast, plus `git diff --check` PASS.
+  - External next action: push to `dev` and verify the public login error alert after shared-dev sync.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R1
 
 Coordinator/Thread: `Codex /root`

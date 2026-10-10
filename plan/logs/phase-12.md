@@ -1858,3 +1858,47 @@ Next work:
 
 - No server-side action remains for this corrective.
 
+## F12-T12-R2 — public web alert severity color corrective
+
+Task ID: F12-T12-R2
+Completed at: 2026-10-10 19:08 +03:30
+Agent/Thread: Codex /root
+Batch ID: F12-B12-R2
+Reviewed by: Codex /root
+
+Changed files:
+
+- public-web semantic color tokens
+- inline authentication error alert styling
+- Sonner severity variant styling
+- `plan/STATUS.md` and `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none
+
+Verification:
+
+- `pnpm --filter @sabz/web test` → PASS: 5 files / 12 tests
+- `pnpm --filter @sabz/web typecheck` → PASS
+- `pnpm --filter @sabz/web exec next build --webpack` → PASS: four static routes
+- Chromium login flow with unavailable API → Persian auth error rendered through `role=alert` with red
+  foreground/background/border
+- Chromium information toast → blue foreground/background/border
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** Existing API error codes and Persian message mapping are unchanged. Their inline authentication
+  presentation now has an explicit destructive theme token and a stronger red visual treatment.
+- Sonner no longer forces every severity onto the neutral card palette: success is green, information is blue,
+  warning is amber and error is red; default/loading notices remain neutral.
+
+Known limitation:
+
+- This focused corrective does not complete the broader `F12-T12` browser/device/accessibility release matrix.
+
+Next work:
+
+- Push `dev`, observe shared-dev sync and verify the public login failure state.
+
