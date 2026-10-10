@@ -290,8 +290,9 @@ dev-api.example.com {
 `reverse_proxy` در Caddy به‌صورت پیش‌فرض WebSocket را عبور می‌دهد. این رفتار برای Next development الزامی است:
 در Next 16، HTML اولیه تا اتصال موفق `/_next/hmr` hydrate نمی‌شود. deployment برای هر سه دامنه handshake واقعی
 مرورگر را با `Origin`، `Upgrade` و `Sec-WebSocket-Extensions` بررسی می‌کند و در صورت نگرفتن `101 Switching
-Protocols` موفق اعلام نمی‌شود. `APP_ORIGINS` علاوه بر CORS API، پس از تبدیل URLها به hostname به
-`allowedDevOrigins` هر سه Next server داده می‌شود؛ بنابراین دامنه تازه باید ابتدا به همین فهرست اضافه شود.
+Protocols` پس از retry محدود warm-up موفق اعلام نمی‌شود. `APP_ORIGINS` علاوه بر CORS API، پس از تبدیل URLها به
+hostname به `allowedDevOrigins` هر سه Next server داده می‌شود؛ بنابراین دامنه تازه باید ابتدا به همین فهرست اضافه
+شود.
 
 syncهای عادی build کامل فرانت اجرا نمی‌کنند. برای تغییر هرکدام از `apps/web`، `apps/app` یا `apps/dashboard` فقط
 همان Next dev container با source bind-mounted دوباره ساخته می‌شود؛ تغییر dependency یا runtime همچنان هر سه را

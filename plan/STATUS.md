@@ -76,7 +76,7 @@ Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
     probe contract, release/deployment checks and `git diff --check`.
   - Review: PASS — all three Next 16 development servers receive normalized explicit hostnames, changed frontend
     source recreates only its own persistent watcher, and deployment requires a public-origin HMR WebSocket `101`
-    before it records the synced source as ready.
+    after bounded CDN/watcher warm-up retries before it records the synced source as ready.
   - Verification: focused origin parsing, all frontend typechecks, first/unchanged/dependency/API/per-frontend dev sync
     simulations, `pnpm release:test`, a live local browser-origin HMR handshake and `git diff --check` PASS.
   - External next action: push the corrective to `dev` and verify the automatic shared-dev sync plus browser hydration.

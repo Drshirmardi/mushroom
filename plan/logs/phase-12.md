@@ -1795,8 +1795,8 @@ Result:
 - Shared-dev stays in true bind-mounted development mode and performs no full frontend build. A source-only change now
   recreates only the affected persistent watcher; dependency/runtime changes still recreate the complete compatible
   service set.
-- Deployment now performs a browser-realistic WebSocket handshake against every public frontend origin and records
-  successful input hashes only after HTTP and HMR readiness pass.
+- Deployment now performs a browser-realistic WebSocket handshake with bounded CDN/watcher warm-up retries against
+  every public frontend origin and records successful input hashes only after HTTP and HMR readiness pass.
 
 Known limitation:
 

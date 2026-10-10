@@ -302,23 +302,28 @@ probe() {
 probe_hmr() {
   local name=$1
   local origin=$2
+  local attempt
   local headers
   headers=$(mktemp "$state_root/hmr-${name}.XXXXXX")
 
-  curl --http1.1 --silent --max-time 3 \
-    --dump-header "$headers" --output /dev/null \
-    --header 'Connection: Upgrade' \
-    --header 'Upgrade: websocket' \
-    --header "Origin: $origin" \
-    --header 'Sec-WebSocket-Version: 13' \
-    --header 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' \
-    --header 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
-    "${origin%/}/_next/hmr?id=deploy-${source_sha}" || true
+  for attempt in {1..15}; do
+    : >"$headers"
+    curl --http1.1 --silent --max-time 3 \
+      --dump-header "$headers" --output /dev/null \
+      --header 'Connection: Upgrade' \
+      --header 'Upgrade: websocket' \
+      --header "Origin: $origin" \
+      --header 'Sec-WebSocket-Version: 13' \
+      --header 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' \
+      --header 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
+      "${origin%/}/_next/hmr?id=deploy-${source_sha}-${attempt}" || true
 
-  if grep -Eq '^HTTP/1\.1 101([[:space:]]|$)' "$headers"; then
-    rm -f -- "$headers"
-    return 0
-  fi
+    if grep -Eq '^HTTP/1\.1 101([[:space:]]|$)' "$headers"; then
+      rm -f -- "$headers"
+      return 0
+    fi
+    sleep 2
+  done
 
   cat "$headers" >&2
   rm -f -- "$headers"

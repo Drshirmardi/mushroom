@@ -170,6 +170,7 @@ for (const required of [
   'restarts={{.RestartCount}} oom={{.State.OOMKilled}}',
   'compose logs --no-color --tail 200 "$name"',
   'probe_hmr web "$(env_value PUBLIC_WEB_URL)"',
+  'for attempt in {1..15}',
   'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits',
 ]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
 assert(devCompose.includes('SADAD_TRANSPORT_MODE: disabled'), 'shared dev must keep Sadad disabled');
