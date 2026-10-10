@@ -50,6 +50,33 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R21
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: frontend readiness checks must fail within a bounded interval and attempt one safe recovery of a
+stalled Next development watcher before rejecting the synced source.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R21`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R20` and live evidence that `app` accepts a container start but never answers HTTP.
+  - Scope: bound frontend readiness retries, emit diagnostics promptly, clear only the affected derived `.next` cache,
+    recreate that watcher once and verify readiness again.
+  - Owned paths: `deploy/vps/{deploy-dev.sh,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev watcher lifecycle only; no database, secret, API contract or release behavior.
+  - Expected verification: stalled-app recovery simulation, dev/release deployment checks, shell syntax and
+    `git diff --check`.
+  - Review: PASS — a stalled frontend now produces diagnostics promptly, receives one isolated cache reset/recreate,
+    and either becomes ready or fails the deployment within a bounded interval.
+  - Verification: shell syntax, first/unchanged/per-service sync plus stalled-app recovery simulation,
+    `pnpm release:test` and `git diff --check` PASS.
+  - External next action: push to `dev`, observe the shared-dev sync and verify all three public frontend origins.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R2
 
 Coordinator/Thread: `Codex /root`

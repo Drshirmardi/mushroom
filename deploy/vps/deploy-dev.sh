@@ -277,17 +277,23 @@ else
   compose up -d --remove-orphans
 fi
 
-probe() {
-  local name=$1
-  local url=$2
-  local max_time=${3:-5}
+probe_attempts() {
+  local url=$1
+  local attempts=$2
+  local max_time=$3
   local attempt
-  for attempt in {1..60}; do
+  for ((attempt = 1; attempt <= attempts; attempt++)); do
     if curl --fail --silent --show-error --max-time "$max_time" "$url" >/dev/null; then
       return 0
     fi
-    sleep 2
+    sleep "${DEV_PROBE_RETRY_DELAY_SECONDS:-2}"
   done
+  return 1
+}
+
+print_service_diagnostics() {
+  local name=$1
+  local container_id
   compose ps "$name" >&2 || true
   container_id=$(compose ps -q "$name" 2>/dev/null || true)
   if [[ -n $container_id ]]; then
@@ -296,7 +302,37 @@ probe() {
       >&2 || true
   fi
   compose logs --no-color --tail 200 "$name" >&2 || true
+}
+
+probe() {
+  local name=$1
+  local url=$2
+  if probe_attempts "$url" 60 5; then
+    return 0
+  fi
+  print_service_diagnostics "$name"
   die "$name did not become ready at $url"
+}
+
+probe_frontend() {
+  local name=$1
+  local url=$2
+
+  if probe_attempts "$url" 6 5; then
+    return 0
+  fi
+
+  printf '%s frontend did not become ready; recreating its derived cache and watcher once\n' "$name" >&2
+  print_service_diagnostics "$name"
+  rm -rf -- "$workspace/apps/$name/.next"
+  compose up -d --no-deps --force-recreate "$name"
+
+  if probe_attempts "$url" 12 5; then
+    return 0
+  fi
+
+  print_service_diagnostics "$name"
+  die "$name did not become ready after one recovery attempt at $url"
 }
 
 probe_hmr() {
@@ -331,9 +367,9 @@ probe_hmr() {
 }
 
 probe api "http://$(env_value API_PORT)/v1/health/ready"
-probe web "http://$(env_value WEB_PORT)/" 30
-probe app "http://$(env_value APP_PORT)/" 30
-probe dashboard "http://$(env_value DASHBOARD_PORT)/" 30
+probe_frontend web "http://$(env_value WEB_PORT)/"
+probe_frontend app "http://$(env_value APP_PORT)/"
+probe_frontend dashboard "http://$(env_value DASHBOARD_PORT)/"
 probe_hmr web "$(env_value PUBLIC_WEB_URL)"
 probe_hmr app "$(env_value PUBLIC_APP_URL)"
 probe_hmr dashboard "$(env_value PUBLIC_DASHBOARD_URL)"

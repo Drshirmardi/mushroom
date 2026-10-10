@@ -1902,3 +1902,44 @@ Next work:
 
 - Push `dev`, observe shared-dev sync and verify the public login failure state.
 
+## F12-T02-R21 — shared-dev stalled frontend recovery
+
+Task ID: F12-T02-R21
+Completed at: 2026-10-10 UTC
+Agent/Thread: Codex /root
+Batch ID: F12-B02-R21
+Reviewed by: Codex /root
+
+Changed files:
+
+- bounded frontend readiness and one-time watcher recovery in `deploy/vps/deploy-dev.sh`
+- stalled-app recovery regression coverage in `scripts/test-vps-dev.sh`
+- release contract assertions and operator documentation
+- `plan/STATUS.md` and `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none
+
+Verification:
+
+- `bash -n deploy/vps/deploy-dev.sh scripts/test-vps-dev.sh` → PASS
+- `bash scripts/test-vps-dev.sh` → PASS, including six simulated app timeouts followed by isolated recovery
+- `pnpm release:test` → PASS
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** A Next development watcher that starts at the container level but does not answer HTTP can no
+  longer hold the workflow for repeated 30-second requests over tens of minutes.
+- Deployment prints service/container/OOM diagnostics, deletes only that application's derived `.next` cache,
+  recreates only that watcher once and runs a bounded second readiness window before accepting or rejecting source.
+
+Known limitation:
+
+- Recovery intentionally runs only once; a persistent application error fails deployment and keeps its diagnostics.
+
+Next work:
+
+- Push `dev`, verify the shared environment and record the external run outcome.
+

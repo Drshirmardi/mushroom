@@ -138,11 +138,21 @@ chmod +x "$fake_bin/docker"
 
 cat >"$fake_bin/curl" <<'EOF'
 #!/usr/bin/env bash
+set -Eeuo pipefail
 for argument in "$@"; do
   if [[ $argument == *hmr-*.?????? ]]; then
     printf 'HTTP/1.1 101 Switching Protocols\r\n\r\n' >"$argument"
   fi
 done
+if [[ -n ${FAKE_CURL_FAIL_MATCH:-} && " $* " == *"$FAKE_CURL_FAIL_MATCH"* ]]; then
+  count=0
+  [[ ! -f $FAKE_CURL_STATE ]] || count=$(<"$FAKE_CURL_STATE")
+  count=$((count + 1))
+  printf '%s\n' "$count" >"$FAKE_CURL_STATE"
+  if (( count <= ${FAKE_CURL_FAIL_COUNT:-0} )); then
+    exit 28
+  fi
+fi
 exit 0
 EOF
 chmod +x "$fake_bin/curl"
@@ -153,6 +163,8 @@ run_deploy() {
     FAKE_DOCKER_LOG="$docker_log" \
     FAKE_IMAGE_MARKER="$scratch/image-built" \
     FAKE_WORKSPACE="$workspace" \
+    FAKE_CURL_STATE="$scratch/curl-state" \
+    DEV_PROBE_RETRY_DELAY_SECONDS=0 \
     bash "$repo_root/deploy/vps/deploy-dev.sh" "${1:-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}"
 }
 
@@ -220,6 +232,19 @@ grep -q 'up -d --no-deps --force-recreate dashboard' "$docker_log" \
   || fail 'dashboard-only change did not recreate only the dashboard watcher'
 ! grep -q 'up -d --no-deps --force-recreate.* web' "$docker_log" \
   || fail 'dashboard-only change recreated the web watcher'
+
+mkdir -p "$workspace/apps/app/.next"
+printf 'stale\n' >"$workspace/apps/app/.next/stale"
+: >"$docker_log"
+rm -f -- "$scratch/curl-state"
+FAKE_CURL_FAIL_MATCH='127.0.0.1:3301/' FAKE_CURL_FAIL_COUNT=6 \
+  run_deploy 4444444444444444444444444444444444444444
+[[ ! -e $workspace/apps/app/.next ]] \
+  || fail 'stalled app recovery did not clear the derived Next cache'
+grep -q 'up -d --no-deps --force-recreate app' "$docker_log" \
+  || fail 'stalled app recovery did not recreate the app watcher'
+! grep -q 'up -d --no-deps --force-recreate web' "$docker_log" \
+  || fail 'stalled app recovery recreated the web watcher'
 
 (
   exec 8>"$dev_root/state/deploy.lock"
