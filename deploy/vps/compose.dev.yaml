@@ -97,7 +97,6 @@ services:
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
     ports: ["${WEB_PORT:?set the isolated dev web binding}:3000"]
     cpus: "${DEV_WEB_CPUS:-0.75}"
-    mem_limit: "${DEV_WEB_MEMORY:-768m}"
 
   app:
     <<: *node-service
@@ -108,7 +107,6 @@ services:
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
     ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
     cpus: "${DEV_APP_CPUS:-0.75}"
-    mem_limit: "${DEV_APP_MEMORY:-768m}"
 
   dashboard:
     <<: *node-service
@@ -120,7 +118,6 @@ services:
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
     ports: ["${DASHBOARD_PORT:?set the isolated dev dashboard binding}:3002"]
     cpus: "${DEV_DASHBOARD_CPUS:-0.75}"
-    mem_limit: "${DEV_DASHBOARD_MEMORY:-768m}"
 
 volumes:
   postgres_data:

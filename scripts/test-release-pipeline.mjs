@@ -194,9 +194,12 @@ for (const required of ['write_runtime_configs', 'apps/${application}/public/run
   assert(devServiceScript.includes(required), `dev frontend runtime configuration is missing: ${required}`);
 }
 assert(
-  devServiceScript.includes('pnpm --filter @sabz/app exec next dev --webpack --hostname 0.0.0.0 --port 3001'),
-  'shared dev app must use the stable webpack development watcher',
+  devServiceScript.includes('pnpm --filter @sabz/app exec next dev --hostname 0.0.0.0 --port 3001'),
+  'shared dev app must keep the default Next development watcher',
 );
+for (const memoryVariable of ['DEV_WEB_MEMORY', 'DEV_APP_MEMORY', 'DEV_DASHBOARD_MEMORY']) {
+  assert(!devCompose.includes(memoryVariable), `shared dev frontend memory ceiling is forbidden: ${memoryVariable}`);
+}
 for (const required of [
   'NODE_OPTIONS=--max-old-space-size=640',
   'pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json',

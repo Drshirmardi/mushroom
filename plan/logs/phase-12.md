@@ -1982,3 +1982,46 @@ Next work:
 
 - Push `dev` and verify all shared-dev frontend origins plus the public app HMR handshake.
 
+## F12-T02-R23 — remove shared-dev frontend memory ceilings
+
+Task ID: F12-T02-R23
+Completed at: 2026-10-10 UTC
+Agent/Thread: Codex /root
+Batch ID: F12-B02-R23
+Reviewed by: Codex /root
+
+Changed files:
+
+- restored the original shared-dev app Next command in `deploy/vps/dev-service.sh`
+- removed frontend-only memory limits from `deploy/vps/compose.dev.yaml`
+- release policy assertion and operator documentation
+- `plan/STATUS.md` and `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none
+
+Verification:
+
+- local app root compilation with Next webpack for diagnosis → PASS in 8 seconds, approximately 1.07 GiB
+  `next-server` RSS
+- shell syntax and `bash scripts/test-vps-dev.sh` → PASS
+- `pnpm release:test` → PASS
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** The previous 768 MiB cgroup ceiling was below the measured memory demand of the app's first root
+  compilation, so freeing host memory could not help the container. Web, app and dashboard may now use available host
+  RAM in shared dev.
+- App again uses the original default Next development compiler; this corrective does not change compilation mode,
+  production builds, API/database limits or staging configuration.
+
+Known limitation:
+
+- Host-level capacity still must be sufficient; stopped staging containers now make that capacity available to dev.
+
+Next work:
+
+- Push `dev`, verify the shared-dev sync and all public frontend origins.
+

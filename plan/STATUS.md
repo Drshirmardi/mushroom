@@ -50,6 +50,32 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B02-R23
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: shared-dev frontend watchers keep their original Next development compiler and may use available
+host memory during first-route compilation without a per-container memory ceiling.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R23`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: live app compilation repeatedly restarting under the 768 MiB container limit and a local root-route
+    compile measurement of approximately 1.07 GiB RSS.
+  - Scope: restore the original app Turbopack command and remove only the web/app/dashboard dev memory ceilings.
+  - Owned paths: `deploy/vps/{dev-service.sh,compose.dev.yaml,README.md}`,
+    `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev frontend resource policy only.
+  - Expected verification: original compiler command and absent frontend memory-ceiling contracts, full dev/release
+    deployment checks and `git diff --check`.
+  - Review: PASS — all frontend watchers retain the default Next development command, while their dev Compose
+    services no longer impose a memory cgroup below measured compilation demand.
+  - Verification: shell syntax, full dev VPS simulation, release pipeline contract and `git diff --check` PASS.
+  - External next action: push to `dev` and verify the app root compilation completes with available host RAM.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R22
 
 Coordinator/Thread: `Codex /root`
