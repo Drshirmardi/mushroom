@@ -140,6 +140,14 @@ describe('identity OpenAPI contract', () => {
       .toBe(true);
     expect(schemas.ChangePasswordDto.properties.newPassword.writeOnly)
       .toBe(true);
+    expect(Object.keys(schemas.SadadPaymentCredentialDto.properties)).toEqual([
+      'merchantId',
+      'terminalId',
+      'terminalKey',
+    ]);
+    expect(Object.values(schemas.SadadPaymentCredentialDto.properties).every(
+      (property) => (property as Record<string, unknown>).writeOnly === true,
+    )).toBe(true);
     expect(schemas.AuthenticatedUserDto.properties.roles.items.enum).toEqual([
       'PATIENT',
       'DOCTOR',

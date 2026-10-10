@@ -1,9 +1,15 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class SadadPaymentCredentialDto {
+  @ApiProperty({ maxLength: 128, writeOnly: true, description: 'Sadad merchant identifier issued to the clinic.' }) @IsString() @IsNotEmpty() @MaxLength(128) merchantId!: string;
+  @ApiProperty({ maxLength: 128, writeOnly: true, description: 'Sadad terminal identifier issued to the clinic.' }) @IsString() @IsNotEmpty() @MaxLength(128) terminalId!: string;
+  @ApiProperty({ maxLength: 4096, writeOnly: true, description: 'Sadad Base64 TripleDES terminal key; encrypted at rest and never returned.' }) @IsString() @IsNotEmpty() @MaxLength(4096) terminalKey!: string;
+}
+
 export class CreatePaymentProviderRevisionDto {
-  @ApiPropertyOptional({ type: 'object', additionalProperties: { type: 'string' }, description: 'Write-only secret values; never returned.' }) @IsOptional() @IsObject() credential?: Record<string, string>;
+  @ApiProperty({ type: SadadPaymentCredentialDto, description: 'Write-only Sadad credential set; values are encrypted and never returned.' }) @ValidateNested() @Type(() => SadadPaymentCredentialDto) credential!: SadadPaymentCredentialDto;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() enable?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isDefault?: boolean;
 }

@@ -5226,11 +5226,17 @@ export interface components {
             };
             updatedAt?: string | null;
         };
+        SadadPaymentCredentialDto: {
+            /** @description Sadad merchant identifier issued to the clinic. */
+            merchantId: string;
+            /** @description Sadad terminal identifier issued to the clinic. */
+            terminalId: string;
+            /** @description Sadad Base64 TripleDES terminal key; encrypted at rest and never returned. */
+            terminalKey: string;
+        };
         CreatePaymentProviderRevisionDto: {
-            /** @description Write-only secret values; never returned. */
-            credential?: {
-                [key: string]: string;
-            };
+            /** @description Write-only Sadad credential set; values are encrypted and never returned. */
+            credential: components["schemas"]["SadadPaymentCredentialDto"];
             enable?: boolean;
             isDefault?: boolean;
         };

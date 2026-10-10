@@ -18821,15 +18821,44 @@
           "capabilities"
         ]
       },
+      "SadadPaymentCredentialDto": {
+        "type": "object",
+        "properties": {
+          "merchantId": {
+            "type": "string",
+            "maxLength": 128,
+            "writeOnly": true,
+            "description": "Sadad merchant identifier issued to the clinic."
+          },
+          "terminalId": {
+            "type": "string",
+            "maxLength": 128,
+            "writeOnly": true,
+            "description": "Sadad terminal identifier issued to the clinic."
+          },
+          "terminalKey": {
+            "type": "string",
+            "maxLength": 4096,
+            "writeOnly": true,
+            "description": "Sadad Base64 TripleDES terminal key; encrypted at rest and never returned."
+          }
+        },
+        "required": [
+          "merchantId",
+          "terminalId",
+          "terminalKey"
+        ]
+      },
       "CreatePaymentProviderRevisionDto": {
         "type": "object",
         "properties": {
           "credential": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "Write-only secret values; never returned."
+            "description": "Write-only Sadad credential set; values are encrypted and never returned.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SadadPaymentCredentialDto"
+              }
+            ]
           },
           "enable": {
             "type": "boolean"
@@ -18837,7 +18866,10 @@
           "isDefault": {
             "type": "boolean"
           }
-        }
+        },
+        "required": [
+          "credential"
+        ]
       },
       "UpdatePaymentProviderConfigDto": {
         "type": "object",

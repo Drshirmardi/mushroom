@@ -50,6 +50,38 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R7
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: every settings entity exposes its accepted lifecycle (create, edit, activate/deactivate and guarded
+delete); Sadad configuration requires write-only `merchantId`, `terminalId` and `terminalKey` as one encrypted revision.
+Coordinator-only files: `plan/STATUS.md`, phase checklist/log, runtime OpenAPI and generated API client.
+
+- Task ID: `F12-T12-R7`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Phase 04 directory/scheduling CRUD, Phase 09 payment credential encryption, and F12-T12-R6.
+  - Scope: connect the existing update/delete endpoints for every dashboard settings category with explicit edit,
+    deactivate and confirmed-delete UX; map dependency conflicts to actionable feedback; define and validate the three
+    Sadad credential fields in backend/OpenAPI/client and replace the ambiguous dashboard secret input.
+  - Owned paths: `apps/dashboard/src/features/settings/**`, `apps/dashboard/src/lib/directory-settings-api*`,
+    `apps/api/src/modules/commerce/payments/**`, relevant API tests, `packages/api-client/{openapi.json,src/schema.generated.ts}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: OpenAPI/generated client single-writer; existing encrypted credential storage is reused;
+    no migration, payment enablement, role or permission change.
+  - Expected verification: API unit/integration and OpenAPI checks, generated-client drift check, dashboard adapter/UI
+    tests, API/dashboard typecheck/lint, desktop/mobile browser inspection, mutation safety review and `git diff --check`.
+  - Review: PASS — تمام رکوردهای directory/scheduling اکنون edit، activate/deactivate و confirmed delete دارند؛
+    delete وابسته با `DIRECTORY_RECORD_IN_USE` به غیرفعال‌سازی هدایت می‌شود. فرم سداد سه فیلد صریح دارد و API
+    همان سه مقدار را اجباری و write-only اعتبارسنجی و در credential revision رمزنگاری می‌کند.
+  - Verification: API test TypeScript، OpenAPI contract `7/7`، generated client build، dashboard TypeScript/ESLint،
+    dashboard `73/73` test در `22` فایل و `git diff --check` پاس شدند. build پیش‌فرض Next در sandbox هنگام bind
+    پردازشگر CSS Turbopack با `Operation not permitted` متوقف شد؛ این محدودیت محیط است و typecheck/lint/test پاس است.
+  - External next action: push `dev` و مشاهدهٔ deployment/browser روی shared dev.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R6
 
 Coordinator/Thread: `Codex /root`

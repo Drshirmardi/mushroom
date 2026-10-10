@@ -2188,3 +2188,40 @@ Next work:
 - Push `dev`, observe deployment, and verify overview/editor behavior at desktop and mobile widths without submitting
   any mutation.
 
+
+## F12-T12-R7 — Complete settings lifecycle and Sadad credential contract
+
+Date: `2026-10-10 UTC`
+
+Problem and accepted behavior:
+
+- settings records could be created and some could be published, but existing tariffs, schedules, closures and other directory records had no complete edit/delete lifecycle in the dashboard;
+- destructive actions must be explicit and dependency-aware, while records already used by bookings or other settings must remain available for deactivation;
+- the Sadad editor exposed one ambiguous secret although the runtime adapter requires Merchant ID, Terminal ID and a Base64 TripleDES Terminal Key.
+
+Implementation:
+
+- connected every existing directory and scheduling PATCH/DELETE endpoint to the settings UI, with prefilled edit forms, activate/deactivate controls, inline confirmed deletion and actionable `DIRECTORY_RECORD_IN_USE` feedback;
+- made doctor specialties multi-select, made every tariff field editable, and distinguished doctor leave from additional availability in schedule exceptions;
+- added typed dashboard adapters for scheduling updates and all supported deletes, including correct handling of empty `204` responses;
+- replaced the Sadad secret input with the three issued credential fields and clear replacement/write-only behavior;
+- defined the three-field credential DTO in the API/OpenAPI contract, made it required, rejected missing/extra/invalid data, verified the terminal key decodes to exactly 24 bytes, and retained encrypted revision rotation without exposing secret values;
+- regenerated the checked-in OpenAPI document and TypeScript client.
+
+Verification:
+
+- API test TypeScript → PASS;
+- API OpenAPI contract → PASS, `7/7` tests;
+- API production TypeScript/OpenAPI export and generated API-client build → PASS;
+- dashboard TypeScript and targeted ESLint → PASS;
+- dashboard Vitest → PASS, `22` files and `73/73` tests;
+- `git diff --check` → PASS;
+- default Next/Turbopack production build could not open its internal CSS worker port in the restricted workspace (`Operation not permitted`); direct TypeScript, ESLint and all dashboard tests passed. The webpack fallback reached Next's TypeScript config probe but hit the repository/toolchain `--showConfig` parsing failure.
+
+Result:
+
+- **PASS / DONE pending post-push shared-dev browser observation.** Payment enablement remains blocked and no migration, role or permission change was introduced.
+
+Next work:
+
+- push `dev`, observe the deployment, then inspect settings cards/editors on desktop and mobile and confirm the three Sadad labels without submitting real credentials.

@@ -1,7 +1,7 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createAvailabilityRule, createDoctor, createDoctorService, createService, createSpecialty, directoryMutationMessage, getClinic, loadDirectorySettings, updateClinic, updateSpecialty } from "./directory-settings-api";
+import { createAvailabilityRule, createDoctor, createDoctorService, createService, createSpecialty, deleteAvailabilityRule, deleteDoctorService, deleteSpecialty, directoryMutationMessage, getClinic, loadDirectorySettings, updateAvailabilityRule, updateClinic, updateSpecialty } from "./directory-settings-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock }) }));
@@ -69,5 +69,27 @@ describe("directory settings API", () => {
       ["PATCH", "/v1/admin/clinic"], ["POST", "/v1/admin/doctors"], ["POST", "/v1/admin/specialties"], ["POST", "/v1/admin/services"], ["POST", "/v1/admin/doctor-services"], ["POST", "/v1/admin/availability-rules"],
     ]);
     expect(requests.every((request) => request.headers.get("authorization") === "Bearer token")).toBe(true);
+  });
+
+  it("supports editing and deleting existing settings records", async () => {
+    fetchMock.mockResolvedValueOnce(json({ ...clinic, doctorId: clinic.id, visitMode: "ONLINE", isoWeekday: 2, startLocalTime: "10:00", endLocalTime: "12:00", isActive: true }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    await updateAvailabilityRule("token", clinic.id, { startLocalTime: "10:00", endLocalTime: "12:00" });
+    await deleteAvailabilityRule("token", clinic.id);
+    await deleteDoctorService("token", clinic.id);
+    const requests = fetchMock.mock.calls.map(([request]) => request as Request);
+    expect(requests.map((request) => [request.method, new URL(request.url).pathname])).toEqual([
+      ["PATCH", `/v1/admin/availability-rules/${clinic.id}`],
+      ["DELETE", `/v1/admin/availability-rules/${clinic.id}`],
+      ["DELETE", `/v1/admin/doctor-services/${clinic.id}`],
+    ]);
+    expect(requests.every((request) => request.headers.get("authorization") === "Bearer token")).toBe(true);
+  });
+
+  it("explains when a referenced directory record cannot be deleted", async () => {
+    fetchMock.mockResolvedValueOnce(json({ code: "DIRECTORY_RECORD_IN_USE", message: "in use", details: {} }, 409));
+    const error = await deleteSpecialty("token", clinic.id).catch((reason: unknown) => reason);
+    expect(directoryMutationMessage(error)).toBe("این رکورد در نوبت‌ها یا تنظیمات دیگر استفاده شده و قابل حذف نیست؛ آن را غیرفعال کنید.");
   });
 });

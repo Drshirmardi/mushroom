@@ -107,6 +107,9 @@ application نمی‌شود.
   هستند و تست رگرسیون URL تمام منابع directory و scheduling را کنترل می‌کند.
 - [x] `F12-T12-R6` — صفحهٔ تنظیمات ابتدا نمای کلی و کارت‌های دسته‌بندی read-first نشان می‌دهد؛ فرم‌های تغییر فقط
   در editor متمرکز، keyboard-accessible و واکنش‌گرا برای دسکتاپ و موبایل باز می‌شوند.
+- [x] `F12-T12-R7` — تمام رکوردهای تنظیمات directory و scheduling از همان editor قابلیت ویرایش،
+  فعال/غیرفعال‌سازی و حذف تأییدشده دارند؛ حذف رکورد وابسته پیام قابل اقدام می‌دهد و قرارداد سداد هر سه مقدار
+  `merchantId`، `terminalId` و `terminalKey` را به‌صورت اجباری، write-only و رمزنگاری‌شده می‌پذیرد.
 
 این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
 
