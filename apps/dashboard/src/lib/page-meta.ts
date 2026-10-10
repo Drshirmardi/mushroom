@@ -25,6 +25,7 @@ export const PAGE_META = {
   notifications: { title: "اعلان‌ها", subtitle: "مرکز مدیریت اعلان‌های سیستم" },
   automation: { title: "اتوماسیون", subtitle: "جریان‌های کاری خودکار" },
   content: { title: "مدیریت محتوا", subtitle: "مقالات، ویدیوها، بنرها و FAQ" },
+  audit: { title: "گزارش فعالیت‌ها", subtitle: "ردیابی عملیات ثبت‌شده در سامانه" },
   settings: { title: "تنظیمات", subtitle: "پیکربندی کلینیک و سیستم" },
   "bot-center": { title: "مرکز ربات‌های هوشمند", subtitle: "مدیریت ربات‌های تلگرام، بله و روبیکا" },
   "bot-flows": { title: "سازنده جریان ربات", subtitle: "طراحی بصری مکالمات خودکار" },

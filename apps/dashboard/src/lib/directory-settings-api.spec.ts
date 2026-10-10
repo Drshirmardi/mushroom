@@ -1,7 +1,7 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createAvailabilityRule, createDoctor, createDoctorService, createService, createSpecialty, loadDirectorySettings, updateClinic } from "./directory-settings-api";
+import { createAvailabilityRule, createDoctor, createDoctorService, createService, createSpecialty, getClinic, loadDirectorySettings, updateClinic } from "./directory-settings-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock }) }));
@@ -11,6 +11,8 @@ const clinic = { id: "00000000-0000-4000-8000-000000000001", name: "کلینیک
 const page = { items: [], page: 1, pageSize: 50, total: 0 };
 
 describe("directory settings API", () => {
+  beforeEach(() => fetchMock.mockReset());
+
   it("loads every Phase 04 settings source with the generated client", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>()
       .mockResolvedValueOnce(json(clinic))
@@ -33,6 +35,13 @@ describe("directory settings API", () => {
   it("keeps an unavailable service distinct from a valid empty configuration", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>().mockRejectedValue(new TypeError("offline"));
     await expect(loadDirectorySettings(createApiClient({ baseUrl: "https://api.example.test", fetch }), "token")).resolves.toEqual({ status: "unavailable" });
+  });
+
+  it("loads the authorized clinic for clinic-scoped dashboard features", async () => {
+    fetchMock.mockResolvedValueOnce(json(clinic));
+    await expect(getClinic("token")).resolves.toEqual(clinic);
+    const request = fetchMock.mock.calls[0]?.[0] as Request;
+    expect([request.method, new URL(request.url).pathname, request.headers.get("authorization")]).toEqual(["GET", "/v1/admin/clinic", "Bearer token"]);
   });
 
   it("uses generated bodies and bearer authentication for Phase 04 settings writes", async () => {

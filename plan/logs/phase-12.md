@@ -2025,3 +2025,45 @@ Next work:
 
 - Push `dev`, verify the shared-dev sync and all public frontend origins.
 
+## F12-T12-R3 — Dashboard operational truthfulness and responsive navigation
+
+Date: `2026-10-10 UTC`
+
+Scope:
+
+- removed fabricated order/message/bot counters and the unconditional message indicator;
+- removed mock marketing, automation and bot routes from operational navigation and made direct visits explicitly
+  unavailable without rendering sample data;
+- exposed the real audit viewer, removed the inert global search, and rendered session-backed account identity;
+- resolved the authorized clinic from `/v1/admin/clinic` for CRM instead of accepting a pasted UUID;
+- replaced raw chat appointment UUID entry with the real authorized appointment list while retaining server-side chat
+  authorization;
+- separated health patient-list failure from a valid empty list and added responsive dashboard navigation.
+
+Changed paths:
+
+- `apps/dashboard/src/{app/(app)/**,components/layout/**,features/{health-tracking,messages,store-crm}/**,lib/**}`
+- `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}`
+
+Verification:
+
+- dashboard Vitest → PASS, `20` files and `66/66` tests;
+- dashboard TypeScript and ESLint → PASS;
+- operational route/mock and fabricated-badge scans → PASS;
+- `git diff --check` → PASS;
+- direct `tsc --showConfig` → valid JSON and dashboard `tsc --noEmit` → PASS;
+- Next production build could not run inside this executor: Turbopack child CSS processing cannot bind an internal
+  port and the webpack path cannot capture child-process `tsc --showConfig` stdout. Both are executor restrictions;
+  shared-dev/CI route compilation remains the post-push external verification.
+
+Result:
+
+- **PASS / DONE pending external compile observation.** Operational dashboard navigation no longer reports fabricated
+  counts or presents mock feature data as real. Existing API authorization remains authoritative and no backend,
+  database, OpenAPI or generated-client contract changed.
+
+Next work:
+
+- Push `dev`, watch the shared-dev workflow, and request representative dashboard routes from
+  `https://dev-dashboard.roxco.ir` to confirm compilation.
+

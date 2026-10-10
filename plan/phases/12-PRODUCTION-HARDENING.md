@@ -92,6 +92,15 @@ application نمی‌شود.
 - [x] `F09-T04-R1` — فهرست، جست‌وجو و جزئیات محصول فعال برای کلینیک فعال release عمومی است؛ cart، wishlist،
   address، checkout، order و payment همچنان authentication، ownership و authorization فعلی را حفظ می‌کنند.
 
+## Change control — dashboard operational truthfulness
+
+مالک محصول در `2026-10-10` اصلاح داشبورد عملیاتی را تأیید کرد. این corrective زیر ماتریس مرورگر/دستگاه
+`F12-T12` اجرا می‌شود و backend، schema، نقش‌ها یا قابلیت‌های deferred را گسترش نمی‌دهد.
+
+- [x] `F12-T12-R3` — شمارنده‌ها و affordanceهای ساختگی از داشبورد حذف شدند؛ routeهای mock/deferred در منوی
+  عملیاتی دیده نمی‌شوند و در مراجعه مستقیم داده آزمایشی نمایش نمی‌دهند؛ Audit قابل کشف است؛ CRM و گفتگو از
+  scopeهای واقعی API استفاده می‌کنند؛ خطا از empty state جداست و پوسته در viewport باریک منوی قابل کنترل دارد.
+
 این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
 
 ## معیار خروج

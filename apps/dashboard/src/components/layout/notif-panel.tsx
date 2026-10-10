@@ -36,7 +36,7 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
   const unread = (items ?? []).filter((item) => !item.readAt);
   const isCurrent = loadedToken === authentication.accessToken;
   return (
-    <div ref={ref} className="absolute top-full left-0 mt-2 w-96 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden">
+    <div ref={ref} className="absolute top-full left-0 mt-2 w-[min(24rem,calc(100vw-1rem))] bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden">
       <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-bold text-foreground">اعلان‌ها</h3>

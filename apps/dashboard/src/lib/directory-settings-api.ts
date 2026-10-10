@@ -78,6 +78,7 @@ export async function loadDirectorySettings(client: ApiClient, accessToken: stri
 }
 
 export const updateClinic = (accessToken: string, body: components["schemas"]["UpdateClinicDto"]) => dataOrThrow<Clinic>(apiClient.PATCH("/v1/admin/clinic", { headers: authorization(accessToken), body }));
+export const getClinic = (accessToken: string) => dataOrThrow<Clinic>(apiClient.GET("/v1/admin/clinic", { headers: authorization(accessToken) }));
 export const createDoctor = (accessToken: string, body: components["schemas"]["CreateDoctorDto"]) => dataOrThrow<Doctor>(apiClient.POST("/v1/admin/doctors", { headers: authorization(accessToken), body }));
 export const updateDoctor = (accessToken: string, doctorId: string, body: components["schemas"]["UpdateDoctorDto"]) => dataOrThrow<Doctor>(apiClient.PATCH("/v1/admin/doctors/{doctorId}", { headers: authorization(accessToken), params: { path: { doctorId } }, body }));
 export const createSpecialty = (accessToken: string, body: components["schemas"]["CreateSpecialtyDto"]) => dataOrThrow<Specialty>(apiClient.POST("/v1/admin/specialties", { headers: authorization(accessToken), body }));

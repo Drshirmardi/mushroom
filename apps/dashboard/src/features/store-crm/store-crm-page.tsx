@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { RefreshCw, Search, ShoppingBag, Star, Users, Wallet } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { RefreshCw, ShoppingBag, Star, Users, Wallet } from "lucide-react";
 
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import {
@@ -12,6 +12,7 @@ import {
   type CommerceCustomerCrmSort,
 } from "@/lib/commerce-customer-crm-api";
 import { p } from "@/lib/utils";
+import { DirectorySettingsApiError, getClinic } from "@/lib/directory-settings-api";
 
 const segments: Array<{ value: CommerceCustomerCrmSegment | undefined; label: string }> = [
   { value: undefined, label: "همه" },
@@ -35,21 +36,22 @@ const formatDate = (value: string | null | undefined, timeZone: string) => value
 export function StoreCrmPage() {
   const { authentication } = useDashboardSession();
   const [clinicId, setClinicId] = useState("");
+  const [clinicName, setClinicName] = useState("");
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<CommerceCustomerCrmSegment>();
   const [sort, setSort] = useState<CommerceCustomerCrmSort>("NET_SPEND");
   const [data, setData] = useState<CommerceCustomerCrmPage | null>(null);
-  const [state, setState] = useState<"idle" | "loading" | "ready" | "error" | "forbidden">("idle");
+  const [state, setState] = useState<"loading" | "ready" | "error" | "forbidden">("loading");
 
   const load = useCallback(async (page = 1, overrides?: { segment?: CommerceCustomerCrmSegment; search?: string; sort?: CommerceCustomerCrmSort }) => {
     const nextSegment = overrides?.segment ?? segment;
     const nextSearch = overrides?.search ?? search;
     const nextSort = overrides?.sort ?? sort;
-    if (!clinicId.trim()) { setData(null); setState("idle"); return; }
+    if (!clinicId) { setData(null); setState("error"); return; }
     setState("loading");
     try {
       const response = await getCommerceCustomers(authentication.accessToken, {
-        clinicId: clinicId.trim(), page, pageSize: 25, search: nextSearch.trim() || undefined,
+        clinicId, page, pageSize: 25, search: nextSearch.trim() || undefined,
         segment: nextSegment, sort: nextSort, direction: "DESC",
       });
       setData(response); setState("ready");
@@ -59,24 +61,40 @@ export function StoreCrmPage() {
     }
   }, [authentication.accessToken, clinicId, search, segment, sort]);
 
+  const initialize = useCallback(async () => {
+    setState("loading");
+    try {
+      const clinic = await getClinic(authentication.accessToken);
+      setClinicId(clinic.id);
+      setClinicName(clinic.name);
+      try {
+        const response = await getCommerceCustomers(authentication.accessToken, { clinicId: clinic.id, page: 1, pageSize: 25, sort: "NET_SPEND", direction: "DESC" });
+        setData(response); setState("ready");
+      } catch (error) {
+        setData(null); setState(error instanceof CommerceCustomerCrmApiError && (error.status === 401 || error.status === 403) ? "forbidden" : "error");
+      }
+    } catch (error) {
+      setClinicId(""); setClinicName(""); setData(null);
+      setState(error instanceof DirectorySettingsApiError && (error.status === 401 || error.status === 403) ? "forbidden" : "error");
+    }
+  }, [authentication.accessToken]);
+
+  useEffect(() => { const timer = window.setTimeout(() => { void initialize(); }, 0); return () => window.clearTimeout(timer); }, [initialize]);
+
   const chooseSegment = (nextSegment: CommerceCustomerCrmSegment | undefined) => {
-    setSegment(nextSegment); if (clinicId.trim()) void load(1, { segment: nextSegment });
+    setSegment(nextSegment); if (clinicId) void load(1, { segment: nextSegment });
   };
   const chooseSort = (nextSort: CommerceCustomerCrmSort) => {
-    setSort(nextSort); if (clinicId.trim()) void load(1, { sort: nextSort });
+    setSort(nextSort); if (clinicId) void load(1, { sort: nextSort });
   };
   const pageCount = data ? Math.max(1, Math.ceil(data.totalCustomerCount / data.pageSize)) : 1;
 
   return <div className="flex-1 min-h-0 overflow-y-auto p-7 space-y-6">
     <div><h1 className="text-xl font-bold">مشتریان عملیاتی فروشگاه</h1><p className="mt-1 text-sm text-muted-foreground">این فهرست فقط از PatientProfile، Payment تأییدشده و Refund تکمیل‌شدهٔ کلینیک مجاز خوانده می‌شود؛ هیچ دادهٔ پزشکی یا بازاریابی نمایش داده نمی‌شود.</p></div>
-    <form className="rounded-2xl border border-border bg-card p-4 shadow-sm" onSubmit={(event) => { event.preventDefault(); void load(1); }}>
-      <label className="block text-sm font-bold" htmlFor="crm-clinic-id">شناسهٔ کلینیک مجاز</label><p className="mt-1 text-xs text-muted-foreground">نشست داشبورد کلینیک فعال ذخیره نمی‌کند؛ شناسه فقط برای درخواست scope ارسال و در سرور با دسترسی شما اعتبارسنجی می‌شود.</p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row"><input id="crm-clinic-id" value={clinicId} onChange={(event) => setClinicId(event.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" autoComplete="off" /><button type="submit" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"><Search size={16} /> نمایش مشتریان</button></div>
-    </form>
-    {state === "idle" && <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">برای مشاهدهٔ دادهٔ واقعی، شناسهٔ یک کلینیک مجاز را وارد کنید.</p>}
+    {clinicName && <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm shadow-sm"><span className="text-muted-foreground">کلینیک فعال:</span> <strong>{clinicName}</strong></div>}
     {state === "loading" && <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground" role="status">در حال دریافت مشتریان عملیاتی…</p>}
-    {state === "forbidden" && <Notice tone="forbidden" onRetry={() => void load(data?.page ?? 1)} />}
-    {state === "error" && <Notice tone="error" onRetry={() => void load(data?.page ?? 1)} />}
+    {state === "forbidden" && <Notice tone="forbidden" onRetry={() => { if (clinicId) void load(data?.page ?? 1); else void initialize(); }} />}
+    {state === "error" && <Notice tone="error" onRetry={() => { if (clinicId) void load(data?.page ?? 1); else void initialize(); }} />}
     {state === "ready" && data && <CrmResults data={data} search={search} setSearch={setSearch} segment={segment} chooseSegment={chooseSegment} sort={sort} chooseSort={chooseSort} pageCount={pageCount} load={load} />}
   </div>;
 }

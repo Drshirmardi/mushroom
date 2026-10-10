@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { CalendarDays, RefreshCw, Send } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { connectChat, loadChat, reconcileChatMessages, sendChat } from "@/lib/chat-api";
+import { dashboardAppointmentError, listAdminAppointments, type AdminAppointment } from "@/lib/appointment-api";
 
 type LoadedChat = Awaited<ReturnType<typeof loadChat>>;
 type Connection = "idle" | "connected" | "reconnecting" | "offline" | "read-only" | "recovery-failed";
+const appointmentStatus: Record<AdminAppointment["status"], string> = { PENDING: "در انتظار تأیید", CONFIRMED: "تأییدشده", CHECKED_IN: "پذیرش‌شده", QUEUED: "در صف", IN_PROGRESS: "در حال ویزیت", COMPLETED: "تکمیل‌شده", NO_SHOW: "عدم مراجعه", CANCELLED: "لغوشده" };
 
 export function MessagesPage() {
   const { authentication } = useDashboardSession();
   const [appointmentId, setAppointmentId] = useState("");
+  const [appointments, setAppointments] = useState<AdminAppointment[] | null>(null);
+  const [appointmentsError, setAppointmentsError] = useState<string | null>(null);
   const [chat, setChat] = useState<LoadedChat | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +22,17 @@ export function MessagesPage() {
   const lastSequence = useRef("0");
   const canAccessChat = authentication.user.roles.includes("ADMIN") || authentication.user.roles.includes("DOCTOR");
   const conversationId = chat?.conversation.id;
+
+  const loadAppointments = useCallback(() => {
+    setAppointments(null); setAppointmentsError(null);
+    void listAdminAppointments(authentication.accessToken).then((result) => {
+      const available = result.items.filter((appointment) => appointment.status !== "CANCELLED");
+      setAppointments(available);
+      setAppointmentId((current) => available.some((appointment) => appointment.id === current) ? current : available[0]?.id ?? "");
+    }, (reason: unknown) => setAppointmentsError(dashboardAppointmentError(reason)));
+  }, [authentication.accessToken]);
+
+  useEffect(() => { const timer = window.setTimeout(loadAppointments, 0); return () => window.clearTimeout(timer); }, [loadAppointments]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -42,5 +57,5 @@ export function MessagesPage() {
   const state = connection === "connected" ? "متصل" : connection === "reconnecting" ? "در حال اتصال مجدد…" : connection === "offline" ? "آفلاین؛ در حال تلاش مجدد…" : connection === "read-only" ? "فقط‌خواندنی" : connection === "recovery-failed" ? "بازیابی گفتگو ناموفق بود" : "یک نوبت را انتخاب کنید";
   const canSend = Boolean(chat) && connection === "connected";
 
-  return <div className="flex flex-1 min-h-0 flex-col overflow-hidden p-7"><div><h1 className="text-xl font-bold">گفتگوهای درمانی</h1><p className="mt-1 text-sm text-muted-foreground">هویت ارسال: {title} · {state}</p></div><div className="mt-5 flex max-w-2xl gap-2"><input value={appointmentId} onChange={(event) => setAppointmentId(event.target.value)} placeholder="شناسه نوبت آنلاین" className="flex-1 rounded-xl border border-border px-3 py-2 text-sm"/><button disabled={!appointmentId.trim()} onClick={() => void open()} className="rounded-xl bg-primary px-4 text-sm text-white">باز کردن گفتگو</button></div>{error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}<section className="mt-5 flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-card"><div className="flex-1 space-y-3 overflow-y-auto p-5">{chat?.messages.length === 0 && <p className="text-sm text-muted-foreground">هنوز پیامی ثبت نشده است.</p>}{chat?.messages.map((message) => <article key={message.id} className="max-w-xl rounded-2xl border border-border p-3 text-sm"><p>{message.body ?? message.tombstone ?? "محتوای این پیام بر اساس سیاست گفتگو محدود شده است."}</p><small className="text-muted-foreground">{message.createdAt}</small></article>)}</div><div className="flex gap-2 border-t border-border p-4"><input value={text} onChange={(event) => setText(event.target.value)} disabled={!canSend} maxLength={4000} placeholder={canSend ? "پیام متنی…" : "ارسال پیام در دسترس نیست"} className="flex-1 rounded-xl bg-secondary px-3 py-2 text-sm"/><button aria-label="ارسال پیام" disabled={!canSend || !text.trim()} onClick={() => void send()} className="rounded-xl bg-primary px-3 text-white"><Send size={16}/></button></div></section></div>;
+  return <div className="flex flex-1 min-h-0 flex-col overflow-hidden p-4 sm:p-7"><div><h1 className="text-xl font-bold">گفتگوهای درمانی</h1><p className="mt-1 text-sm text-muted-foreground">هویت ارسال: {title} · {state}</p></div><div className="mt-5 max-w-3xl rounded-2xl border border-border bg-card p-4"><label htmlFor="chat-appointment" className="flex items-center gap-2 text-sm font-bold"><CalendarDays size={16} />نوبت مشاوره آنلاین</label><p className="mt-1 text-xs text-muted-foreground">نوبت را از فهرست واقعی انتخاب کنید؛ دسترسی به گفتگو و آنلاین‌بودن نوبت در سرور بررسی می‌شود.</p><div className="mt-3 flex flex-col gap-2 sm:flex-row"><select id="chat-appointment" value={appointmentId} disabled={!appointments?.length} onChange={(event) => setAppointmentId(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm disabled:opacity-60"><option value="">{appointments === null ? "در حال دریافت نوبت‌ها…" : appointments.length === 0 ? "نوبتی برای انتخاب وجود ندارد" : "انتخاب نوبت"}</option>{appointments?.map((appointment) => <option key={appointment.id} value={appointment.id}>{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(appointment.startsAt))} · {appointmentStatus[appointment.status]}</option>)}</select><button disabled={!appointmentId} onClick={() => void open()} className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-50">باز کردن گفتگو</button></div>{appointmentsError && <div role="alert" className="mt-3 flex items-center gap-3 text-sm text-red-700"><span>{appointmentsError}</span><button type="button" onClick={loadAppointments} className="inline-flex items-center gap-1 font-bold"><RefreshCw size={14} />تلاش دوباره</button></div>}</div>{error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}<section className="mt-5 flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-card"><div className="flex-1 space-y-3 overflow-y-auto p-5">{!chat && <p className="text-sm text-muted-foreground">برای مشاهده پیام‌ها یک نوبت مشاوره آنلاین را انتخاب کنید.</p>}{chat?.messages.length === 0 && <p className="text-sm text-muted-foreground">هنوز پیامی ثبت نشده است.</p>}{chat?.messages.map((message) => <article key={message.id} className="max-w-xl rounded-2xl border border-border p-3 text-sm"><p>{message.body ?? message.tombstone ?? "محتوای این پیام بر اساس سیاست گفتگو محدود شده است."}</p><small className="text-muted-foreground">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(message.createdAt))}</small></article>)}</div><div className="flex gap-2 border-t border-border p-4"><input value={text} onChange={(event) => setText(event.target.value)} disabled={!canSend} maxLength={4000} placeholder={canSend ? "پیام متنی…" : "ارسال پیام در دسترس نیست"} className="min-w-0 flex-1 rounded-xl bg-secondary px-3 py-2 text-sm"/><button aria-label="ارسال پیام" disabled={!canSend || !text.trim()} onClick={() => void send()} className="rounded-xl bg-primary px-3 text-white disabled:opacity-50"><Send size={16}/></button></div></section></div>;
 }

@@ -2,27 +2,28 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, MessageSquare, Search } from "lucide-react";
+import { Bell, Menu, MessageSquare, UserRound } from "lucide-react";
+import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { metaForPathname } from "@/lib/page-meta";
 import { NotifPanel } from "./notif-panel";
 
-export function Header() {
+export function Header({ onMenuOpen }: { onMenuOpen: () => void }) {
   const [showNotif, setShowNotif] = useState(false);
+  const { authentication } = useDashboardSession();
   const router = useRouter();
   const pathname = usePathname();
   const { title, subtitle } = metaForPathname(pathname);
 
   return (
-    <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-7 h-16 flex items-center justify-between flex-shrink-0">
-      <div>
-        <h1 className="text-base font-bold text-foreground leading-none">{title}</h1>
-        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+    <header className="sticky top-0 z-20 flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-background/95 px-3 backdrop-blur sm:px-5 md:px-7">
+      <div className="flex min-w-0 items-center gap-3">
+        <button type="button" onClick={onMenuOpen} aria-label="باز کردن منوی داشبورد" className="rounded-xl p-2 hover:bg-secondary md:hidden"><Menu size={20} /></button>
+        <div className="min-w-0">
+          <h1 className="text-base font-bold text-foreground leading-none">{title}</h1>
+          {subtitle && <p className="mt-0.5 hidden truncate text-xs text-muted-foreground sm:block">{subtitle}</p>}
+        </div>
       </div>
       <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input placeholder="جستجو..." className="bg-secondary text-sm rounded-xl pr-8 pl-4 py-2 w-56 outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 placeholder:text-muted-foreground/50" />
-        </div>
         <div className="relative">
           <button onClick={() => setShowNotif(v => !v)} className="relative p-2 rounded-xl hover:bg-secondary transition-colors">
             <Bell size={17} className="text-muted-foreground" />
@@ -31,9 +32,8 @@ export function Header() {
         </div>
         <button onClick={() => router.push("/messages")} className="relative p-2 rounded-xl hover:bg-secondary transition-colors">
           <MessageSquare size={17} className="text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-violet-500 rounded-full border border-background" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm cursor-pointer">ا</div>
+        <div title={authentication.user.phone} aria-label={`حساب ${authentication.user.phone}`} className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary"><UserRound size={16} /></div>
       </div>
     </header>
   );

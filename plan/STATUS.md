@@ -50,6 +50,36 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R3
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: dashboard navigation and status affordances expose only API-backed operational capabilities;
+empty, loading and failure states remain distinct; the shell remains usable on narrow viewports.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R3`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Phase 05–11 dashboard connections and the deferred AI/bot/advanced-automation boundary.
+  - Scope: remove fabricated dashboard badges and mock/deferred navigation, remove false header affordances, expose
+    the real audit route, distinguish patient-list failure from an empty list, resolve the authorized clinic for CRM,
+    replace raw chat UUID entry with an API-backed appointment selector, and add responsive shell navigation.
+  - Owned paths: `apps/dashboard/src/**`; coordinator-only `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: dashboard navigation/session UI only; no API, database, OpenAPI or generated-client change.
+  - Expected verification: focused dashboard regression tests, dashboard typecheck/build, mock/navigation scan,
+    responsive browser inspection where available, and `git diff --check`.
+  - Review: PASS — operational navigation contains only API-backed features, deferred routes fail closed with an
+    explicit unavailable state, CRM/chat no longer require copied UUIDs, health loading/error/empty states are
+    distinct, and the responsive shell exposes an accessible mobile drawer.
+  - Verification: dashboard `66/66` tests, TypeScript, ESLint, route/mock scan and `git diff --check` PASS. The
+    sandbox cannot execute Next's child-process `tsc --showConfig` or Turbopack's internal bind, so production-build
+    verification is deferred to the post-push CI/shared-dev compile; direct TypeScript configuration output is valid.
+  - External next action: push to `dev`, verify the GitHub sync and compile representative dashboard routes on the
+    shared development origin.
+
 ## آخرین batch تکمیل‌شده — F12-B02-R23
 
 Coordinator/Thread: `Codex /root`
