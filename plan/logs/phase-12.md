@@ -2113,3 +2113,39 @@ Next work:
 
 - Push `dev`, observe the shared-dev sync and request `https://dev-dashboard.roxco.ir/settings`.
 
+## F12-T12-R5 — Dashboard settings pagination contract corrective
+
+Date: `2026-10-10 UTC`
+
+Problem and diagnosis:
+
+- an authenticated Chromium run against `https://dev-dashboard.roxco.ir/settings` confirmed login and refresh both
+  returned `200`, so session continuity and account access were valid;
+- `/v1/admin/clinic` returned `200`, while all seven paginated directory/scheduling requests returned
+  `400 BAD_REQUEST` with `pageSize must not be greater than 50` because the dashboard sent `pageSize=100`;
+- `loadDirectorySettings` intentionally aggregates the required sources, so those invalid queries correctly surfaced
+  as the generic settings load failure. The R4 assumption that `100` was accepted was incorrect.
+
+Implementation:
+
+- aligned the shared settings list query with the existing API maximum `pageSize=50`;
+- extended the adapter regression test to inspect every emitted list URL and require `page=1&pageSize=50`;
+- kept API, OpenAPI, database, session, role and permission contracts unchanged.
+
+Verification:
+
+- focused directory settings adapter test → PASS, `7/7` tests;
+- full dashboard Vitest → PASS, `21` files and `69/69` tests;
+- dashboard TypeScript and ESLint → PASS;
+- `git diff --check` → PASS.
+
+Result:
+
+- **PASS / DONE pending post-push shared-dev observation.** The authenticated failure is a frontend/API pagination
+  mismatch, not a session, credential or authorization failure.
+
+Next work:
+
+- Push `dev`, observe the shared-dev deployment, and repeat the authenticated browser run to confirm all settings list
+  requests return `2xx` and the settings workflow renders.
+

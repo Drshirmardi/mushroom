@@ -22,6 +22,8 @@ describe("directory settings API", () => {
     expect(result).toMatchObject({ status: "ready", data: { clinic, doctors: [], availabilityRules: [] } });
     expect(fetch.mock.calls).toHaveLength(8);
     expect((fetch.mock.calls[0]?.[0] as Request).headers.get("authorization")).toBe("Bearer token");
+    const listUrls = fetch.mock.calls.slice(1).map(([request]) => new URL((request as Request).url));
+    expect(listUrls.every((url) => url.searchParams.get("page") === "1" && url.searchParams.get("pageSize") === "50")).toBe(true);
   });
 
   it.each([

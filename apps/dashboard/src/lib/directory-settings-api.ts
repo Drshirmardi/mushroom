@@ -58,7 +58,7 @@ async function dataOrThrow<T>(request: Promise<{ data?: T; error?: unknown; resp
 export async function loadDirectorySettings(client: ApiClient, accessToken: string): Promise<DirectorySettingsState> {
   try {
     const headers = authorization(accessToken);
-    const pageQuery = { page: 1, pageSize: 100 } as never;
+    const pageQuery = { page: 1, pageSize: 50 } as never;
     const [clinic, doctors, specialties, services, doctorServices, availabilityRules, closures, exceptions] = await Promise.all([
       dataOrThrow<Clinic>(client.GET("/v1/admin/clinic", { headers })),
       dataOrThrow<components["schemas"]["DoctorPageResponseDto"]>(client.GET("/v1/admin/doctors", { headers, params: { query: pageQuery } })),

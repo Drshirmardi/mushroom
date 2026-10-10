@@ -103,6 +103,8 @@ application نمی‌شود.
 - [x] `F12-T12-R4` — تنظیمات داشبورد قرارداد انتشار directory را به جریان قابل مشاهدهٔ تخصص → پزشک → خدمت →
   تعرفه → ساعت کاری تبدیل می‌کند؛ پیش‌نویس‌های موجود مسیر تکمیل دارند، mutationها خطای پایدار و نتیجه refresh را
   نمایش می‌دهند و فرم‌های تعرفه، ساعت، تعطیلی و مرخصی state مستقل دارند.
+- [x] `F12-T12-R5` — queryهای لیستی تنظیمات داشبورد با سقف pagination پذیرفته‌شدهٔ API (`pageSize=50`) هم‌راستا
+  هستند و تست رگرسیون URL تمام منابع directory و scheduling را کنترل می‌کند.
 
 این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
 

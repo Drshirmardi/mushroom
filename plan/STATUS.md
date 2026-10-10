@@ -50,6 +50,35 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R5
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 18:03 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: every dashboard settings list request must respect the accepted API maximum `pageSize=50`; a
+single invalid list query must not make a valid authenticated settings session appear unavailable.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R5`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R4 settings workflow and the existing Phase 04 directory/scheduling list contracts.
+  - Scope: align dashboard settings list pagination with the API maximum, add a regression assertion for the emitted
+    queries, and verify the authenticated shared-dev settings route no longer fails with `BAD_REQUEST`.
+  - Owned paths: `apps/dashboard/src/lib/directory-settings-api*`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: generated API client is read-only; no API, database, OpenAPI, auth or role change.
+  - Expected verification: focused adapter test, dashboard test/typecheck/lint, `git diff --check`, then authenticated
+    browser observation after the `dev` deployment.
+  - Review: PASS — all seven paginated directory/scheduling reads now send the API-supported maximum `pageSize=50`;
+    the regression test inspects every emitted list URL, while authentication and authorization contracts are unchanged.
+  - Verification: authenticated shared-dev browser diagnosis reproduced `400 BAD_REQUEST` with
+    `pageSize must not be greater than 50` on all seven list endpoints; focused `7/7` tests, full dashboard `69/69`
+    tests, TypeScript, ESLint and `git diff --check` PASS.
+  - External next action: push `dev`, observe deployment, then repeat the authenticated browser request to confirm all
+    settings reads return `2xx` and the workflow renders server data.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R4
 
 Coordinator/Thread: `Codex /root`
