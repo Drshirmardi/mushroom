@@ -76,7 +76,9 @@ Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
     self-hosted variable font; and the mobile page ends at the footer without the previous trailing padding.
   - Verification: 12 web tests, web typecheck, supported webpack production build, Chromium at 320/390/768/1440px,
     same-origin font request/no external icon request, zero horizontal overflow and `git diff --check` PASS.
-  - External next action: push to `dev` and verify the shared-dev sync plus public mobile rendering.
+  - External verification: GitHub run `38017448280` synced commit `9453128` successfully. Fresh Chromium at 390px on
+    `https://dev.roxco.ir` loaded Yekan Bakh from the same origin, rendered 56 Lucide SVGs and zero Material Symbols,
+    had no failed requests or horizontal overflow, and ended the document at the footer.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R20
 

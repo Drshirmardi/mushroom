@@ -1838,6 +1838,8 @@ Verification:
 - Chromium widths 320, 390, 768 and 1440 → exact viewport width, zero horizontal document overflow
 - browser asset check → local Yekan Bakh WOFF2 loaded, 56 Lucide SVGs, zero Material Symbols or external icon/font request
 - mobile document boundary → footer bottom equals document height; no trailing page padding
+- GitHub shared-dev sync run `38017448280` for commit `9453128` → PASS
+- fresh public Chromium at 390px → same-origin Yekan Bakh, 56 Lucide SVGs, no failed requests/overflow/trailing space
 - `git diff --check` and owned-path review → PASS
 
 Result:
@@ -1854,5 +1856,5 @@ Known limitation:
 
 Next work:
 
-- Push `dev`, observe shared-dev sync and confirm the same asset/layout evidence on the public domain.
+- No server-side action remains for this corrective.
 
