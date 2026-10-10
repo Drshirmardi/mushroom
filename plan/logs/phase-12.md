@@ -2149,3 +2149,42 @@ Next work:
 - Push `dev`, observe the shared-dev deployment, and repeat the authenticated browser run to confirm all settings list
   requests return `2xx` and the settings workflow renders.
 
+## F12-T12-R6 — Responsive settings overview and focused editors
+
+Date: `2026-10-10 UTC`
+
+Problem and accepted behavior:
+
+- every settings form was expanded on initial load, making operational status difficult to scan and exposing all
+  mutations at once;
+- settings must open read-first with server-backed clinic/status summaries, then require an explicit category choice
+  before any editable control is shown;
+- the selected editor must remain usable on narrow mobile and desktop viewports, keep keyboard focus inside, close by
+  Escape/backdrop when idle, and discard unsaved drafts when closed.
+
+Implementation:
+
+- replaced the long initial form stack with a clinic overview, four operational counts, five readiness indicators and
+  eight descriptive category cards;
+- moved clinic, specialty, doctor, service, offering, schedule, closure/leave and payment forms into one focused
+  responsive dialog: full-height on mobile and bounded/scrollable on desktop;
+- added focus restore/trapping, body scroll lock, Escape/backdrop close, disabled close during directory/scheduling
+  writes and draft reset on open/close;
+- preserved every existing API mutation, validation, publication prerequisite, server refresh and stable error message.
+
+Verification:
+
+- dashboard Vitest → PASS, `21` files and `69/69` tests;
+- dashboard TypeScript and ESLint → PASS;
+- `git diff --check` → PASS.
+
+Result:
+
+- **PASS / DONE pending post-push responsive browser observation.** No API, database, OpenAPI, generated-client,
+  authentication, authorization or payment activation contract changed.
+
+Next work:
+
+- Push `dev`, observe deployment, and verify overview/editor behavior at desktop and mobile widths without submitting
+  any mutation.
+

@@ -105,6 +105,8 @@ application نمی‌شود.
   نمایش می‌دهند و فرم‌های تعرفه، ساعت، تعطیلی و مرخصی state مستقل دارند.
 - [x] `F12-T12-R5` — queryهای لیستی تنظیمات داشبورد با سقف pagination پذیرفته‌شدهٔ API (`pageSize=50`) هم‌راستا
   هستند و تست رگرسیون URL تمام منابع directory و scheduling را کنترل می‌کند.
+- [x] `F12-T12-R6` — صفحهٔ تنظیمات ابتدا نمای کلی و کارت‌های دسته‌بندی read-first نشان می‌دهد؛ فرم‌های تغییر فقط
+  در editor متمرکز، keyboard-accessible و واکنش‌گرا برای دسکتاپ و موبایل باز می‌شوند.
 
 این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
 

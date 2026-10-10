@@ -50,6 +50,36 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R6
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: settings opens as a read-first operational overview; mutations are available only inside an
+explicitly opened, focused editor and remain server-confirmed after submit.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R6`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R4 workflow and F12-T12-R5 pagination corrective.
+  - Scope: replace the always-open settings forms with a compact clinic overview and descriptive category cards;
+    open each editor in an accessible responsive modal/sheet, keep writes behind explicit submit actions, and preserve
+    existing directory/scheduling/payment API behavior and error feedback.
+  - Owned paths: `apps/dashboard/src/features/settings/**`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: no API, database, OpenAPI, generated-client, auth or role change.
+  - Expected verification: focused settings tests, dashboard test/typecheck/lint, responsive browser review on desktop
+    and mobile widths, keyboard dialog behavior, and `git diff --check`.
+  - Review: PASS — the initial route is read-first and contains only server-backed summary/status data plus descriptive
+    category cards; every form is isolated in an explicitly opened editor, draft input is discarded on close, and the
+    responsive dialog owns scroll/focus, Escape/backdrop close and keyboard focus wrapping.
+  - Verification: dashboard `69/69` tests across `21` files, TypeScript, ESLint and `git diff --check` PASS. Desktop
+    and mobile browser inspection remains the post-push shared-dev gate.
+  - External next action: push `dev`, verify the deployment, then inspect the overview and at least one editor at
+    desktop and mobile widths without submitting a mutation.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R5
 
 Coordinator/Thread: `Codex /root`
