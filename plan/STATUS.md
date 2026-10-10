@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-09`
+- آخرین به‌رورسانی: `2026-10-10`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -49,6 +49,38 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — F12-B02-R20
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev browser hydration and fast frontend sync corrective)
+Batch status: `DONE`
+Contract baseline: shared dev remains a bind-mounted Next development runtime without full frontend builds; browser
+hydration, dev-origin authorization and changed-service refresh must be verified after every source sync.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R20`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R19` and live evidence that the public dev page serves HTML while its Next client
+    does not hydrate, leaving the account header in its server-rendered checking state.
+  - Scope: allow explicit remote/LAN Next development origins, fingerprint frontend source independently, restart only
+    changed watcher services without production builds, and add a browser-realistic HMR deployment probe.
+  - Owned paths: `apps/{web,app,dashboard}/next.config.ts`, `deploy/vps/{compose.dev.yaml,deploy-dev.sh,
+    dev-env.example,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}` and a focused dev browser probe;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev frontend watcher lifecycle only; no authentication policy, API runtime,
+    database, secret, staging, production-sim or release artifact change.
+  - Expected verification: config parsing/typechecks, first/unchanged/per-frontend sync simulations, browser hydration
+    probe contract, release/deployment checks and `git diff --check`.
+  - Review: PASS — all three Next 16 development servers receive normalized explicit hostnames, changed frontend
+    source recreates only its own persistent watcher, and deployment requires a public-origin HMR WebSocket `101`
+    before it records the synced source as ready.
+  - Verification: focused origin parsing, all frontend typechecks, first/unchanged/dependency/API/per-frontend dev sync
+    simulations, `pnpm release:test`, a live local browser-origin HMR handshake and `git diff --check` PASS.
+  - External next action: push the corrective to `dev` and verify the automatic shared-dev sync plus browser hydration.
+    Existing `APP_ORIGINS` supplies Next's allowlist, so no new server secret, database, port or Caddy change is planned.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R19
 

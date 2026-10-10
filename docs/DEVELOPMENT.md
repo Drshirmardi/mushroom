@@ -132,6 +132,14 @@ pnpm dev
 APP_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://192.168.1.20:3000,http://192.168.1.20:3001,http://192.168.1.20:3002
 ```
 
+Next نیز assetها و WebSocket توسعه را فقط برای hostnameهای مجاز ارائه می‌کند. همان IP شبکه را پیش از
+اجرای workspace در اختیار هر سه Next dev server قرار دهید؛ مقدارها hostname هستند و scheme یا port ندارند:
+
+```bash
+export NEXT_ALLOWED_DEV_ORIGINS=192.168.1.20
+pnpm dev
+```
+
 سپس Web، App و Dashboard را با همان IP و پورت‌های ۳۰۰۰ تا ۳۰۰۲ باز کنید.
 `localhost` و IP را در یک نشست مخلوط نکنید؛ cookie توسعه host-only است و هر
 origin باید صریحاً در allowlist باشد. برای دامنهٔ توسعه نیز همین سه origin دقیق
@@ -314,6 +322,8 @@ pnpm dev
 - API به دیتابیس وصل نمی‌شود: `docker compose ps` و `docker compose logs postgres` را بررسی کنید.
 - API هنگام startup تنظیمات را رد می‌کند: placeholderهای JWT و refresh pepper را با مقدار تصادفی معتبر جایگزین کنید.
 - درخواست مرورگر CORS می‌گیرد: `APP_ORIGINS` باید دقیقاً originهای بازشده در مرورگر را، بدون path، شامل شود.
+- صفحه با HTML دیده می‌شود ولی تعاملی نیست: `NEXT_ALLOWED_DEV_ORIGINS` باید hostname شبکه/tunnel را داشته باشد و
+  proxy باید WebSocket مسیر `/_next/hmr` را با headerهای `Upgrade` و `Connection` عبور دهد.
 - Codespace از خواب برگشته است: PostgreSQL و `pnpm dev` را دوباره شروع کنید؛ processها هنگام توقف Codespace باقی
   نمی‌مانند.
 

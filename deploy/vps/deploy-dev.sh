@@ -141,6 +141,19 @@ hash_api_inputs() {
   sha256sum "${files[@]}" | sha256sum | cut -d' ' -f1
 }
 
+hash_frontend_inputs() {
+  local application=$1
+  local -a files=("$workspace/config/next-dev-origins.ts")
+  while IFS= read -r file; do files+=("$file"); done < <(
+    find "$workspace/apps/$application" \
+      \( -path "$workspace/apps/$application/.next" \
+        -o -path "$workspace/apps/$application/node_modules" \) -prune \
+      -o -path "$workspace/apps/$application/public/runtime-config.js" -prune \
+      -o -type f -print | sort
+  )
+  sha256sum "${files[@]}" | sha256sum | cut -d' ' -f1
+}
+
 dependency_hash=$(hash_inputs dependencies)
 runtime_hash=$(hash_inputs runtime)
 api_client_hash=$(hash_paths \
@@ -152,6 +165,9 @@ prisma_hash=$(hash_paths \
   "$workspace/apps/api/prisma.config.ts" \
   "$workspace/apps/api/prisma")
 api_hash=$(hash_api_inputs)
+web_hash=$(hash_frontend_inputs web)
+app_hash=$(hash_frontend_inputs app)
+dashboard_hash=$(hash_frontend_inputs dashboard)
 public_config_hash=$(
   for key in PUBLIC_API_URL PUBLIC_WEB_URL PUBLIC_APP_URL PUBLIC_DASHBOARD_URL; do
     printf '%s=%s\n' "$key" "$(env_value "$key")"
@@ -162,12 +178,18 @@ previous_runtime_hash=''
 previous_api_client_hash=''
 previous_prisma_hash=''
 previous_api_hash=''
+previous_web_hash=''
+previous_app_hash=''
+previous_dashboard_hash=''
 previous_public_config_hash=''
 [[ ! -f $state_root/dependencies.sha256 ]] || previous_dependency_hash=$(<"$state_root/dependencies.sha256")
 [[ ! -f $state_root/runtime.sha256 ]] || previous_runtime_hash=$(<"$state_root/runtime.sha256")
 [[ ! -f $state_root/api-client.sha256 ]] || previous_api_client_hash=$(<"$state_root/api-client.sha256")
 [[ ! -f $state_root/prisma.sha256 ]] || previous_prisma_hash=$(<"$state_root/prisma.sha256")
 [[ ! -f $state_root/api.sha256 ]] || previous_api_hash=$(<"$state_root/api.sha256")
+[[ ! -f $state_root/web.sha256 ]] || previous_web_hash=$(<"$state_root/web.sha256")
+[[ ! -f $state_root/app.sha256 ]] || previous_app_hash=$(<"$state_root/app.sha256")
+[[ ! -f $state_root/dashboard.sha256 ]] || previous_dashboard_hash=$(<"$state_root/dashboard.sha256")
 [[ ! -f $state_root/public-config.sha256 ]] || previous_public_config_hash=$(<"$state_root/public-config.sha256")
 
 runtime_changed=false
@@ -192,6 +214,9 @@ build_api_client=false
 generate_prisma=false
 run_migrations=false
 compile_api=false
+restart_web=false
+restart_app=false
+restart_dashboard=false
 write_runtime_config=false
 if [[ $install_dependencies == true || $api_client_hash != "$previous_api_client_hash" \
   || ! -f $workspace/packages/api-client/dist/index.js ]]; then
@@ -208,6 +233,15 @@ if [[ $install_dependencies == true || $runtime_changed == true \
   || $api_hash != "$previous_api_hash" || $api_client_hash != "$previous_api_client_hash" \
   || $prisma_hash != "$previous_prisma_hash" || ! -f $workspace/apps/api/dist/main.js ]]; then
   compile_api=true
+fi
+if [[ $web_hash != "$previous_web_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
+  restart_web=true
+fi
+if [[ $app_hash != "$previous_app_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
+  restart_app=true
+fi
+if [[ $dashboard_hash != "$previous_dashboard_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
+  restart_dashboard=true
 fi
 if [[ $public_config_hash != "$previous_public_config_hash" \
   || ! -f $workspace/apps/web/public/runtime-config.js \
@@ -229,22 +263,17 @@ if [[ $install_dependencies == true || $run_seed == true || $build_api_client ==
     compose --profile tools run --rm --no-deps bootstrap
 fi
 
-printf '%s\n' "$dependency_hash" >"$state_root/dependencies.sha256"
-printf '%s\n' "$runtime_hash" >"$state_root/runtime.sha256"
-printf '%s\n' "$api_client_hash" >"$state_root/api-client.sha256"
-printf '%s\n' "$prisma_hash" >"$state_root/prisma.sha256"
-printf '%s\n' "$api_hash" >"$state_root/api.sha256"
-printf '%s\n' "$public_config_hash" >"$state_root/public-config.sha256"
-if [[ $run_seed == true ]]; then
-  : >"$state_root/seeded"
-fi
-
 if [[ $runtime_changed == true || $install_dependencies == true ]]; then
   compose up -d --remove-orphans --force-recreate
-elif [[ $compile_api == true ]]; then
-  compose up -d --no-deps --force-recreate api
-  compose up -d --remove-orphans
 else
+  services=()
+  [[ $compile_api != true ]] || services+=(api)
+  [[ $restart_web != true ]] || services+=(web)
+  [[ $restart_app != true ]] || services+=(app)
+  [[ $restart_dashboard != true ]] || services+=(dashboard)
+  if (( ${#services[@]} > 0 )); then
+    compose up -d --no-deps --force-recreate "${services[@]}"
+  fi
   compose up -d --remove-orphans
 fi
 
@@ -270,10 +299,52 @@ probe() {
   die "$name did not become ready at $url"
 }
 
+probe_hmr() {
+  local name=$1
+  local origin=$2
+  local headers
+  headers=$(mktemp "$state_root/hmr-${name}.XXXXXX")
+
+  curl --http1.1 --silent --max-time 3 \
+    --dump-header "$headers" --output /dev/null \
+    --header 'Connection: Upgrade' \
+    --header 'Upgrade: websocket' \
+    --header "Origin: $origin" \
+    --header 'Sec-WebSocket-Version: 13' \
+    --header 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' \
+    --header 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
+    "${origin%/}/_next/hmr?id=deploy-${source_sha}" || true
+
+  if grep -Eq '^HTTP/1\.1 101([[:space:]]|$)' "$headers"; then
+    rm -f -- "$headers"
+    return 0
+  fi
+
+  cat "$headers" >&2
+  rm -f -- "$headers"
+  die "$name HMR websocket did not accept its public browser origin"
+}
+
 probe api "http://$(env_value API_PORT)/v1/health/ready"
 probe web "http://$(env_value WEB_PORT)/" 30
 probe app "http://$(env_value APP_PORT)/" 30
 probe dashboard "http://$(env_value DASHBOARD_PORT)/" 30
+probe_hmr web "$(env_value PUBLIC_WEB_URL)"
+probe_hmr app "$(env_value PUBLIC_APP_URL)"
+probe_hmr dashboard "$(env_value PUBLIC_DASHBOARD_URL)"
+
+printf '%s\n' "$dependency_hash" >"$state_root/dependencies.sha256"
+printf '%s\n' "$runtime_hash" >"$state_root/runtime.sha256"
+printf '%s\n' "$api_client_hash" >"$state_root/api-client.sha256"
+printf '%s\n' "$prisma_hash" >"$state_root/prisma.sha256"
+printf '%s\n' "$api_hash" >"$state_root/api.sha256"
+printf '%s\n' "$web_hash" >"$state_root/web.sha256"
+printf '%s\n' "$app_hash" >"$state_root/app.sha256"
+printf '%s\n' "$dashboard_hash" >"$state_root/dashboard.sha256"
+printf '%s\n' "$public_config_hash" >"$state_root/public-config.sha256"
+if [[ $run_seed == true ]]; then
+  : >"$state_root/seeded"
+fi
 
 printf '%s\n' "$source_sha" >"$state_root/source.sha"
 printf 'dev environment is ready at source %s\n' "$source_sha"

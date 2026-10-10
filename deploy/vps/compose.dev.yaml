@@ -12,6 +12,7 @@ x-node-service: &node-service
     PNPM_HOME: /home/dev/.local/share/pnpm
     NEXT_TELEMETRY_DISABLED: "1"
     TURBO_TELEMETRY_DISABLED: "1"
+    NEXT_ALLOWED_DEV_ORIGINS: "${APP_ORIGINS:?set explicit dev browser origins}"
   volumes: &node-volumes
     - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
     - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"

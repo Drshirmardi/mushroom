@@ -16,6 +16,8 @@ PUBLIC_WEB_URL=https://dev.example.com
 PUBLIC_APP_URL=https://dev-app.example.com
 PUBLIC_DASHBOARD_URL=https://dev-dashboard.example.com
 APP_ORIGINS=https://dev.example.com,https://dev-app.example.com,https://dev-dashboard.example.com
+# The same APP_ORIGINS list is normalized to hostnames and passed to Next's
+# allowedDevOrigins for dev assets and the /_next/hmr WebSocket.
 TRUSTED_PROXIES=127.0.0.1/32
 PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
 LOG_LEVEL=debug

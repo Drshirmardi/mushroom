@@ -1759,3 +1759,52 @@ Next work:
 - No new batch is claimed. `F12-T05` and `F12-T07` remain blocked on external provider evidence; `F12-T09` remains
   dependency-gated. `F12-T11` and `F12-T12` remain unclaimed.
 
+## F12-T02-R20 — shared-dev browser hydration and fast frontend sync corrective
+
+Task ID: F12-T02-R20
+Completed at: 2026-10-10 02:04 UTC
+Agent/Thread: Codex /root
+Batch ID: F12-B02-R20
+Reviewed by: Codex /root
+
+Changed files:
+
+- shared Next development-origin helper and all three frontend Next configurations
+- shared-dev Compose environment, deployment lifecycle, examples and operator documentation
+- focused origin, changed-watcher and release-pipeline contract tests
+- `plan/STATUS.md` and `plan/logs/phase-12.md`
+
+Migrations and dependencies:
+
+- none
+
+Verification:
+
+- focused development-origin parser checks → PASS
+- web, app and dashboard typechecks → PASS
+- first, unchanged, dependency, API and individual web/app/dashboard sync simulations → PASS
+- release-pipeline contract suite and shell syntax checks → PASS
+- local Next 16 public-origin `/_next/hmr` handshake → `101 Switching Protocols`
+- `git diff --check` and owned-path review → PASS
+
+Result:
+
+- **PASS / DONE.** The three Next development servers normalize the explicit `APP_ORIGINS` URLs into
+  `allowedDevOrigins`, so remote HTTPS domains and configured LAN hostnames can establish the HMR connection required
+  for client hydration.
+- Shared-dev stays in true bind-mounted development mode and performs no full frontend build. A source-only change now
+  recreates only the affected persistent watcher; dependency/runtime changes still recreate the complete compatible
+  service set.
+- Deployment now performs a browser-realistic WebSocket handshake against every public frontend origin and records
+  successful input hashes only after HTTP and HMR readiness pass.
+
+Known limitation:
+
+- A new public or LAN hostname still has to be added to the explicit origin environment. The deployment reuses the
+  existing `APP_ORIGINS`, while a local workspace uses `NEXT_ALLOWED_DEV_ORIGINS` for Next and `APP_ORIGINS` for API
+  CORS.
+
+Next work:
+
+- Push `dev`, observe the automatic shared-dev sync and verify login/register hydration on the public dev domain.
+

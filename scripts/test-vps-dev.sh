@@ -15,15 +15,17 @@ dev_root="$scratch/mushroom/dev"
 workspace="$dev_root/workspace"
 fake_bin="$scratch/bin"
 docker_log="$scratch/docker.log"
-mkdir -p "$workspace/deploy/vps" "$workspace/apps/api/src" "$workspace/apps/api/prisma" \
+mkdir -p "$workspace/config" "$workspace/deploy/vps" "$workspace/apps/api/src" "$workspace/apps/api/prisma" \
   "$workspace/apps/web/src" "$workspace/apps/web/public" "$workspace/apps/app/public" \
-  "$workspace/apps/dashboard/public" "$workspace/packages/api-client/src" \
+  "$workspace/apps/app/src" "$workspace/apps/dashboard/public" "$workspace/apps/dashboard/src" \
+  "$workspace/packages/api-client/src" \
   "$dev_root/cache" "$dev_root/state" "$dev_root/secrets" "$scratch/mushroom/staging" \
   "$scratch/mushroom/production-sim" "$fake_bin"
 
 cp "$repo_root/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/Dockerfile.dev"
 cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.yaml"
 cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
+cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
 cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
   "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$workspace/apps/api/"
@@ -33,6 +35,8 @@ printf 'export {};\n' >"$workspace/apps/api/src/main.ts"
 printf 'generator client {}\n' >"$workspace/apps/api/prisma/schema.prisma"
 printf 'export {};\n' >"$workspace/packages/api-client/src/index.ts"
 printf 'export {};\n' >"$workspace/apps/web/src/synthetic.ts"
+printf 'export {};\n' >"$workspace/apps/app/src/synthetic.ts"
+printf 'export {};\n' >"$workspace/apps/dashboard/src/synthetic.ts"
 
 uid=$(id -u)
 gid=$(id -g)
@@ -134,6 +138,11 @@ chmod +x "$fake_bin/docker"
 
 cat >"$fake_bin/curl" <<'EOF'
 #!/usr/bin/env bash
+for argument in "$@"; do
+  if [[ $argument == *hmr-*.?????? ]]; then
+    printf 'HTTP/1.1 101 Switching Protocols\r\n\r\n' >"$argument"
+  fi
+done
 exit 0
 EOF
 chmod +x "$fake_bin/curl"
@@ -189,8 +198,28 @@ printf '\n' >>"$workspace/apps/web/src/synthetic.ts"
 run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 ! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
   || fail 'frontend-only change unnecessarily ran bootstrap'
-! grep -q 'force-recreate' "$docker_log" \
-  || fail 'frontend-only change unnecessarily recreated a watcher service'
+grep -q 'up -d --no-deps --force-recreate web' "$docker_log" \
+  || fail 'web-only change did not recreate only the web watcher'
+! grep -q 'up -d --no-deps --force-recreate.* app' "$docker_log" \
+  || fail 'web-only change recreated the app watcher'
+! grep -q 'up -d --no-deps --force-recreate.* dashboard' "$docker_log" \
+  || fail 'web-only change recreated the dashboard watcher'
+
+printf '\n' >>"$workspace/apps/app/src/synthetic.ts"
+: >"$docker_log"
+run_deploy 2222222222222222222222222222222222222222
+grep -q 'up -d --no-deps --force-recreate app' "$docker_log" \
+  || fail 'app-only change did not recreate only the app watcher'
+! grep -q 'up -d --no-deps --force-recreate.* web' "$docker_log" \
+  || fail 'app-only change recreated the web watcher'
+
+printf '\n' >>"$workspace/apps/dashboard/src/synthetic.ts"
+: >"$docker_log"
+run_deploy 3333333333333333333333333333333333333333
+grep -q 'up -d --no-deps --force-recreate dashboard' "$docker_log" \
+  || fail 'dashboard-only change did not recreate only the dashboard watcher'
+! grep -q 'up -d --no-deps --force-recreate.* web' "$docker_log" \
+  || fail 'dashboard-only change recreated the web watcher'
 
 (
   exec 8>"$dev_root/state/deploy.lock"

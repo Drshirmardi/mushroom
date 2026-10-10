@@ -47,6 +47,9 @@ const devDeployScript = read('deploy/vps/deploy-dev.sh');
 const devCompose = read('deploy/vps/compose.dev.yaml');
 const devSyncScript = read('scripts/deploy-dev-vps.mjs');
 const devServiceScript = read('deploy/vps/dev-service.sh');
+const nextDevOriginConfig = read('config/next-dev-origins.ts');
+const nextConfigs = ['web', 'app', 'dashboard'].map((application) =>
+  read(`apps/${application}/next.config.ts`));
 
 for (const required of [
   "github.event.workflow_run.conclusion == 'success'",
@@ -156,17 +159,36 @@ for (const required of [
   'DEV_RUN_MIGRATIONS',
   'DEV_COMPILE_API',
   'DEV_WRITE_RUNTIME_CONFIG',
+  'hash_frontend_inputs',
+  'services+=(web)',
+  'services+=(app)',
+  'services+=(dashboard)',
   'probe api "http://$(env_value API_PORT)/v1/health/ready"',
   'probe web "http://$(env_value WEB_PORT)/" 30',
   'probe app "http://$(env_value APP_PORT)/" 30',
   'probe dashboard "http://$(env_value DASHBOARD_PORT)/" 30',
   'restarts={{.RestartCount}} oom={{.State.OOMKilled}}',
   'compose logs --no-color --tail 200 "$name"',
+  'probe_hmr web "$(env_value PUBLIC_WEB_URL)"',
+  'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits',
 ]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
 assert(devCompose.includes('SADAD_TRANSPORT_MODE: disabled'), 'shared dev must keep Sadad disabled');
 assert(devCompose.includes('ports: []'), 'shared dev database must not publish a host port');
 assert(devCompose.includes('postgres_data:'), 'shared dev requires its own project-scoped database volume');
 assert(devCompose.includes('cap_drop: [ALL]'), 'shared dev Node services must drop Linux capabilities');
+assert(
+  devCompose.includes('NEXT_ALLOWED_DEV_ORIGINS: "${APP_ORIGINS:?set explicit dev browser origins}"'),
+  'shared dev must pass its explicit browser origins to every Next watcher',
+);
+for (const config of nextConfigs) {
+  assert(
+    config.includes('allowedDevOriginsFromEnvironment'),
+    'every Next application must normalize explicit remote/LAN development origins',
+  );
+}
+for (const required of ['NEXT_ALLOWED_DEV_ORIGINS', 'new URL', '.hostname', 'new Set']) {
+  assert(nextDevOriginConfig.includes(required), `Next development origin helper is missing: ${required}`);
+}
 for (const required of ['write_runtime_configs', 'apps/${application}/public/runtime-config.js']) {
   assert(devServiceScript.includes(required), `dev frontend runtime configuration is missing: ${required}`);
 }
@@ -181,7 +203,8 @@ assert(
   'shared dev API container must not retain the TypeScript compiler watcher',
 );
 assert(
-  devDeployScript.includes('compose up -d --no-deps --force-recreate api'),
+  devDeployScript.includes('services+=(api)')
+    && devDeployScript.includes('compose up -d --no-deps --force-recreate "${services[@]}"'),
   'an API source change must restart the compiled API runtime exactly once',
 );
 assert(
@@ -216,6 +239,7 @@ run('bash', ['-n', 'deploy/vps/deploy-release.sh']);
 run('bash', ['-n', 'deploy/vps/deploy-dev.sh']);
 run('bash', ['-n', 'deploy/vps/dev-service.sh']);
 run('bash', ['-n', 'scripts/test-vps-dev.sh']);
+run(process.execPath, ['scripts/test-next-dev-origins.mjs']);
 run('bash', ['scripts/test-vps-dev.sh']);
 
 const scratch = mkdtempSync(join(tmpdir(), 'mushroom-release-pipeline-'));
@@ -302,6 +326,11 @@ try {
     assert(
       !rendered.services[service].healthcheck,
       `${service} must be warmed by the serialized deployment probe, not a concurrent Docker healthcheck`,
+    );
+    assert(
+      JSON.stringify(rendered.services[service].environment.NEXT_ALLOWED_DEV_ORIGINS.split(','))
+        === JSON.stringify(['https://dev.example.test', 'https://dev-app.example.test', 'https://dev-dashboard.example.test']),
+      `${service} must receive the exact configured dev browser origins`,
     );
   }
 } finally {
