@@ -43,6 +43,14 @@ env_value() {
   printf '%s' "$value"
 }
 
+env_value_or_default() {
+  local key=$1
+  local fallback=$2
+  local value
+  value=$(sed -n "s/^${key}=//p" "$runtime_env" | tail -n 1)
+  printf '%s' "${value:-$fallback}"
+}
+
 [[ $(env_value MUSHROOM_ENVIRONMENT) == development ]] || die 'runtime environment must be development'
 [[ $(env_value COMPOSE_PROJECT_NAME) == mushroom-dev ]] || die 'Compose project must be mushroom-dev'
 [[ $(env_value MUSHROOM_ENV_ROOT) == "$environment_root" ]] || die 'dev environment root boundary mismatch'
@@ -202,6 +210,15 @@ public_config_hash=$(
     printf '%s=%s\n' "$key" "$(env_value "$key")"
   done | sha256sum | cut -d' ' -f1
 )
+api_runtime_hash=$(
+  for key_and_default in \
+    'SMS_TRANSPORT_MODE disabled' \
+    'SMS_REQUEST_TIMEOUT_MS 5000' \
+    'SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION v1'; do
+    read -r key fallback <<<"$key_and_default"
+    printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "$fallback")"
+  done | sha256sum | cut -d' ' -f1
+)
 previous_dependency_hash=''
 previous_runtime_hash=''
 previous_api_client_hash=''
@@ -211,6 +228,7 @@ previous_web_hash=''
 previous_app_hash=''
 previous_dashboard_hash=''
 previous_public_config_hash=''
+previous_api_runtime_hash=''
 [[ ! -f $state_root/dependencies.sha256 ]] || previous_dependency_hash=$(<"$state_root/dependencies.sha256")
 [[ ! -f $state_root/runtime.sha256 ]] || previous_runtime_hash=$(<"$state_root/runtime.sha256")
 [[ ! -f $state_root/api-client.sha256 ]] || previous_api_client_hash=$(<"$state_root/api-client.sha256")
@@ -220,6 +238,7 @@ previous_public_config_hash=''
 [[ ! -f $state_root/app.sha256 ]] || previous_app_hash=$(<"$state_root/app.sha256")
 [[ ! -f $state_root/dashboard.sha256 ]] || previous_dashboard_hash=$(<"$state_root/dashboard.sha256")
 [[ ! -f $state_root/public-config.sha256 ]] || previous_public_config_hash=$(<"$state_root/public-config.sha256")
+[[ ! -f $state_root/api-runtime.sha256 ]] || previous_api_runtime_hash=$(<"$state_root/api-runtime.sha256")
 
 runtime_changed=false
 if [[ $runtime_hash != "$previous_runtime_hash" ]] || ! docker image inspect mushroom-dev-runtime:local >/dev/null 2>&1; then
@@ -246,6 +265,7 @@ compile_api=false
 restart_web=false
 restart_app=false
 restart_dashboard=false
+restart_api=false
 write_runtime_config=false
 if [[ $runtime_changed == true ]]; then
   build_api_client=true
@@ -286,6 +306,9 @@ if [[ $public_config_hash != "$previous_public_config_hash" \
   || ! -f $workspace/apps/dashboard/public/runtime-config.js ]]; then
   write_runtime_config=true
 fi
+if [[ $api_runtime_hash != "$previous_api_runtime_hash" ]]; then
+  restart_api=true
+fi
 
 if [[ $install_dependencies == true || $run_seed == true || $build_api_client == true \
   || $generate_prisma == true || $run_migrations == true || $compile_api == true \
@@ -305,7 +328,7 @@ if [[ $runtime_changed == true || $install_dependencies == true ]]; then
   compose up -d --remove-orphans --force-recreate
 else
   services=()
-  [[ $compile_api != true ]] || services+=(api)
+  [[ $compile_api != true && $restart_api != true ]] || services+=(api)
   [[ $restart_web != true ]] || services+=(web)
   [[ $restart_app != true ]] || services+=(app)
   [[ $restart_dashboard != true ]] || services+=(dashboard)
@@ -421,6 +444,7 @@ printf '%s\n' "$web_hash" >"$state_root/web.sha256"
 printf '%s\n' "$app_hash" >"$state_root/app.sha256"
 printf '%s\n' "$dashboard_hash" >"$state_root/dashboard.sha256"
 printf '%s\n' "$public_config_hash" >"$state_root/public-config.sha256"
+printf '%s\n' "$api_runtime_hash" >"$state_root/api-runtime.sha256"
 if [[ $run_seed == true ]]; then
   : >"$state_root/seeded"
 fi

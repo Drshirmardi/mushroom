@@ -57,6 +57,7 @@ PUBLIC_APP_URL=https://dev-app.example.test
 PUBLIC_DASHBOARD_URL=https://dev-dashboard.example.test
 APP_ORIGINS=https://dev.example.test,https://dev-app.example.test,https://dev-dashboard.example.test
 TRUSTED_PROXIES=127.0.0.1/32
+SMS_TRANSPORT_MODE=disabled
 API_PORT=127.0.0.1:3303
 WEB_PORT=127.0.0.1:3300
 APP_PORT=127.0.0.1:3301
@@ -191,6 +192,14 @@ run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   || fail 'unchanged API inputs unnecessarily recreated the API runtime'
 ! grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
   || fail 'unchanged inputs unnecessarily recreated watcher services'
+
+sed -i 's/^SMS_TRANSPORT_MODE=.*/SMS_TRANSPORT_MODE=live/' "$dev_root/runtime.env"
+: >"$docker_log"
+run_deploy 7777777777777777777777777777777777777777
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'SMS runtime-only change unnecessarily ran bootstrap'
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'SMS runtime-only change did not recreate the API runtime'
 
 printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
 : >"$docker_log"
