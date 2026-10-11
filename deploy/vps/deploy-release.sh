@@ -99,6 +99,7 @@ for key in COMPOSE_PROJECT_NAME MUSHROOM_ENV_ROOT POSTGRES_DB POSTGRES_USER API_
 done
 
 for secret in postgres_password database_url jwt_access_secret refresh_token_pepper \
+  otp_pepper sms_credential_encryption_key sms_credential_decryption_keys \
   payment_credential_encryption_key payment_credential_decryption_keys; do
   [[ -s "$environment_root/secrets/$secret" ]] || die "required secret file is missing: $secret"
 done

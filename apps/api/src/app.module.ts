@@ -22,6 +22,7 @@ import { ContentModule } from './modules/content/content.module';
 import { OutboxModule } from './modules/outbox/outbox.module';
 import { AdminCommerceCatalogModule } from './modules/commerce/catalog/admin-commerce-catalog.module';
 import { ChatModule } from './modules/communications/chat/chat.module';
+import { SmsModule } from './modules/communications/sms/sms.module';
 
 @Module({
   controllers: [HealthController],
@@ -51,7 +52,7 @@ import { ChatModule } from './modules/communications/chat/chat.module';
     AdminSchedulingModule,
     PatientAppointmentsModule,
     ClinicalModule,
-    HealthObservationsModule, NotificationsModule, ContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule,
+    HealthObservationsModule, NotificationsModule, ContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
   ],
 })
 export class AppModule {}

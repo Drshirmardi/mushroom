@@ -20,6 +20,9 @@ APP_ORIGINS=https://dev.example.com,https://dev-app.example.com,https://dev-dash
 # allowedDevOrigins for dev assets and the /_next/hmr WebSocket.
 TRUSTED_PROXIES=127.0.0.1/32
 PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_TRANSPORT_MODE=disabled
+SMS_REQUEST_TIMEOUT_MS=5000
 LOG_LEVEL=debug
 # Keep disabled until the callback, redirect profile, static outbound IP and encrypted merchant credential are ready.
 # Once set to live, the administrator still explicitly enables/defaults Sadad in Dashboard > Settings > Payments.

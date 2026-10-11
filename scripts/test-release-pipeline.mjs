@@ -280,7 +280,8 @@ try {
   const secrets = join(scratch, 'staging', 'secrets');
   mkdirSync(secrets, { recursive: true });
   for (const secret of [
-    'postgres_password', 'database_url', 'jwt_access_secret', 'refresh_token_pepper',
+    'postgres_password', 'database_url', 'jwt_access_secret', 'refresh_token_pepper', 'otp_pepper',
+    'sms_credential_encryption_key', 'sms_credential_decryption_keys',
     'payment_credential_encryption_key', 'payment_credential_decryption_keys',
   ]) writeFileSync(join(secrets, secret), 'synthetic');
   const envPath = join(scratch, 'release.env');
@@ -299,6 +300,7 @@ try {
     'APP_ORIGINS=https://staging.example.test,https://staging-app.example.test,https://staging-dashboard.example.test',
     'TRUSTED_PROXIES=127.0.0.1/32',
     'PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1',
+    'SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1',
     'API_PORT=127.0.0.1:3103',
     'WEB_PORT=127.0.0.1:3100',
     'APP_PORT=127.0.0.1:3101',
@@ -320,7 +322,8 @@ try {
   const secrets = join(devScratch, 'dev', 'secrets');
   mkdirSync(secrets, { recursive: true });
   for (const secret of [
-    'postgres_password', 'database_url', 'jwt_access_secret', 'refresh_token_pepper',
+    'postgres_password', 'database_url', 'jwt_access_secret', 'refresh_token_pepper', 'otp_pepper',
+    'sms_credential_encryption_key', 'sms_credential_decryption_keys',
     'payment_credential_encryption_key', 'payment_credential_decryption_keys',
   ]) writeFileSync(join(secrets, secret), 'synthetic');
   const envPath = join(devScratch, 'dev.env');

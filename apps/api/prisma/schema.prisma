@@ -565,6 +565,36 @@ enum CredentialVersionStatus {
   @@map("credential_version_status")
 }
 
+enum SmsProviderCredentialStatus {
+  ACTIVE
+  RETIRED
+  CRYPTO_SHREDDED
+
+  @@map("sms_provider_credential_status")
+}
+
+enum OtpChallengeStatus {
+  PENDING
+  ACCEPTED
+  FAILED
+  UNKNOWN
+  CONSUMED
+  EXPIRED
+  SUPERSEDED
+  LOCKED
+
+  @@map("otp_challenge_status")
+}
+
+enum SmsDeliveryAttemptStatus {
+  PENDING
+  ACCEPTED
+  FAILED
+  UNKNOWN
+
+  @@map("sms_delivery_attempt_status")
+}
+
 model User {
   id                             String                          @id @default(uuid()) @db.Uuid
   phone                          String                          @unique(map: "users_phone_key") @db.VarChar(13)
@@ -596,6 +626,7 @@ model User {
   clinicalClinicAccesses         ClinicalClinicAccess[]
   notifications                  Notification[]
   paymentProviderConfigRevisions PaymentProviderConfigRevision[] @relation("PaymentProviderConfigRevisionCreatedBy")
+  smsProviderConfigRevisions     SmsProviderConfigRevision[]     @relation("SmsProviderConfigRevisionCreatedBy")
   chatParticipants               ChatConversationParticipant[]
   chatMessages                   ChatMessage[]                   @relation("ChatMessageSender")
   chatReceipts                   ChatReceipt[]
@@ -624,25 +655,25 @@ model Credential {
 }
 
 model Session {
-  id                      String                   @id @default(uuid()) @db.Uuid
-  userId                  String                   @map("user_id") @db.Uuid
-  refreshTokenHash        String                   @unique(map: "sessions_refresh_token_hash_key") @map("refresh_token_hash") @db.Char(64)
-  previousRefreshTokenHash String?                 @map("previous_refresh_token_hash") @db.Char(64)
-  previousRefreshTokenExpiresAt DateTime?          @map("previous_refresh_token_expires_at") @db.Timestamptz(3)
-  refreshGeneration       Int                      @default(0) @map("refresh_generation")
-  remembered              Boolean                  @default(false)
-  userAgent               String?                  @map("user_agent") @db.VarChar(512)
-  ipAddress               String?                  @map("ip_address") @db.Inet
-  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  lastUsedAt              DateTime                 @default(now()) @map("last_used_at") @db.Timestamptz(3)
-  expiresAt               DateTime                 @map("expires_at") @db.Timestamptz(3)
-  revokedAt               DateTime?                @map("revoked_at") @db.Timestamptz(3)
-  revokedReason           SessionRevocationReason? @map("revoked_reason")
-  user                    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  auditEvents             AuditEvent[]
-  acceptedConsentRecords  PatientConsentRecord[]   @relation("ConsentAcceptedBySession")
-  withdrawnConsentRecords PatientConsentRecord[]   @relation("ConsentWithdrawnBySession")
-  patientAccessAudits     PatientAccessAudit[]     @relation("PatientAccessAuditSession")
+  id                            String                   @id @default(uuid()) @db.Uuid
+  userId                        String                   @map("user_id") @db.Uuid
+  refreshTokenHash              String                   @unique(map: "sessions_refresh_token_hash_key") @map("refresh_token_hash") @db.Char(64)
+  previousRefreshTokenHash      String?                  @map("previous_refresh_token_hash") @db.Char(64)
+  previousRefreshTokenExpiresAt DateTime?                @map("previous_refresh_token_expires_at") @db.Timestamptz(3)
+  refreshGeneration             Int                      @default(0) @map("refresh_generation")
+  remembered                    Boolean                  @default(false)
+  userAgent                     String?                  @map("user_agent") @db.VarChar(512)
+  ipAddress                     String?                  @map("ip_address") @db.Inet
+  createdAt                     DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastUsedAt                    DateTime                 @default(now()) @map("last_used_at") @db.Timestamptz(3)
+  expiresAt                     DateTime                 @map("expires_at") @db.Timestamptz(3)
+  revokedAt                     DateTime?                @map("revoked_at") @db.Timestamptz(3)
+  revokedReason                 SessionRevocationReason? @map("revoked_reason")
+  user                          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  auditEvents                   AuditEvent[]
+  acceptedConsentRecords        PatientConsentRecord[]   @relation("ConsentAcceptedBySession")
+  withdrawnConsentRecords       PatientConsentRecord[]   @relation("ConsentWithdrawnBySession")
+  patientAccessAudits           PatientAccessAudit[]     @relation("PatientAccessAuditSession")
 
   @@index([userId, revokedAt, expiresAt], map: "sessions_user_active_idx")
   @@map("sessions")
@@ -744,12 +775,12 @@ model AuditEvent {
 }
 
 model Clinic {
-  id                       String                        @id @default(uuid()) @db.Uuid
-  name                     String                        @db.VarChar(160)
-  timeZone                 String                        @default("Asia/Tehran") @map("time_zone") @db.VarChar(64)
-  status                   ClinicStatus                  @default(ACTIVE)
-  createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                       String                         @id @default(uuid()) @db.Uuid
+  name                     String                         @db.VarChar(160)
+  timeZone                 String                         @default("Asia/Tehran") @map("time_zone") @db.VarChar(64)
+  status                   ClinicStatus                   @default(ACTIVE)
+  createdAt                DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
   patientProfiles          PatientProfile[]
   clinicalClinicAccesses   ClinicalClinicAccess[]
   medicalIntakes           PatientMedicalIntake[]
@@ -821,38 +852,38 @@ model UserProfile {
 }
 
 model PatientProfile {
-  id                      String                         @id @default(uuid()) @db.Uuid
-  userId                  String                         @unique(map: "patient_profiles_user_id_key") @map("user_id") @db.Uuid
-  clinicId                String                         @map("clinic_id") @db.Uuid
-  createdAt               DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt               DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user                    User                           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  clinic                  Clinic                         @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  medicalIntake           PatientMedicalIntake?
-  consentRecords          PatientConsentRecord[]
-  reportedIntakeRevisions PatientMedicalIntakeRevision[] @relation("IntakeRevisionReportedPatient")
-  assessmentSubmissions   PatientAssessmentSubmission[]
-  mezajResults            MezajResult[]
-  notificationPreferences NotificationPreference[]
-  appointments            Appointment[]
-  operationalActivities   OperationalActivity[]
-  encounters              Encounter[]
-  clinicalNotes           ClinicalNote[]
-  diagnoses               Diagnosis[]
-  allergyRecords          AllergyRecord[]
-  conditionRecords        ConditionRecord[]
-  medicationStatements    MedicationStatement[]
-  patientAccessAudits     PatientAccessAudit[]
-  prescriptions           Prescription[]
-  treatmentPlans          TreatmentPlan[]
-  healthObservations      HealthObservation[]
-  commerceCart            CommerceCart?
-  wishlistItems           WishlistItem[]
-  commerceAddresses       CommerceAddress[]
-  commerceOrders          CommerceOrder[]
+  id                           String                         @id @default(uuid()) @db.Uuid
+  userId                       String                         @unique(map: "patient_profiles_user_id_key") @map("user_id") @db.Uuid
+  clinicId                     String                         @map("clinic_id") @db.Uuid
+  createdAt                    DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                    DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                         User                           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  clinic                       Clinic                         @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  medicalIntake                PatientMedicalIntake?
+  consentRecords               PatientConsentRecord[]
+  reportedIntakeRevisions      PatientMedicalIntakeRevision[] @relation("IntakeRevisionReportedPatient")
+  assessmentSubmissions        PatientAssessmentSubmission[]
+  mezajResults                 MezajResult[]
+  notificationPreferences      NotificationPreference[]
+  appointments                 Appointment[]
+  operationalActivities        OperationalActivity[]
+  encounters                   Encounter[]
+  clinicalNotes                ClinicalNote[]
+  diagnoses                    Diagnosis[]
+  allergyRecords               AllergyRecord[]
+  conditionRecords             ConditionRecord[]
+  medicationStatements         MedicationStatement[]
+  patientAccessAudits          PatientAccessAudit[]
+  prescriptions                Prescription[]
+  treatmentPlans               TreatmentPlan[]
+  healthObservations           HealthObservation[]
+  commerceCart                 CommerceCart?
+  wishlistItems                WishlistItem[]
+  commerceAddresses            CommerceAddress[]
+  commerceOrders               CommerceOrder[]
   commerceDiscountReservations CommerceDiscountReservation[]
-  paymentAttempts         PaymentAttempt[]
-  chatConversations       ChatConversation[]
+  paymentAttempts              PaymentAttempt[]
+  chatConversations            ChatConversation[]
 
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
@@ -1011,21 +1042,21 @@ model CommerceAddress {
 }
 
 model CommerceDiscount {
-  id                    String               @id @default(uuid()) @db.Uuid
-  clinicId              String               @map("clinic_id") @db.Uuid
-  code                  String               @db.VarChar(40)
-  title                 String               @db.VarChar(160)
+  id                    String                        @id @default(uuid()) @db.Uuid
+  clinicId              String                        @map("clinic_id") @db.Uuid
+  code                  String                        @db.VarChar(40)
+  title                 String                        @db.VarChar(160)
   kind                  CommerceDiscountKind
-  amountToman           BigInt?              @map("amount_toman")
-  percentageBasisPoints Int?                 @map("percentage_basis_points")
-  startsAt              DateTime?            @map("starts_at") @db.Timestamptz(3)
-  endsAt                DateTime?            @map("ends_at") @db.Timestamptz(3)
-  usageLimit            Int?                 @map("usage_limit")
-  perPatientUsageLimit  Int?                 @map("per_patient_usage_limit")
-  isActive              Boolean              @default(true) @map("is_active")
-  createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                Clinic               @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  amountToman           BigInt?                       @map("amount_toman")
+  percentageBasisPoints Int?                          @map("percentage_basis_points")
+  startsAt              DateTime?                     @map("starts_at") @db.Timestamptz(3)
+  endsAt                DateTime?                     @map("ends_at") @db.Timestamptz(3)
+  usageLimit            Int?                          @map("usage_limit")
+  perPatientUsageLimit  Int?                          @map("per_patient_usage_limit")
+  isActive              Boolean                       @default(true) @map("is_active")
+  createdAt             DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   reservations          CommerceDiscountReservation[]
 
   @@unique([clinicId, code], map: "commerce_discounts_clinic_code_key")
@@ -1070,28 +1101,28 @@ model CommerceShippingRate {
 }
 
 model CommerceOrder {
-  id                      String                 @id @default(uuid()) @db.Uuid
-  clinicId                String                 @map("clinic_id") @db.Uuid
-  patientId               String                 @map("patient_id") @db.Uuid
-  orderNumber             BigInt                 @default(autoincrement()) @unique(map: "commerce_orders_order_number_key") @map("order_number")
-  status                  CommerceOrderStatus    @default(PENDING_PAYMENT)
-  idempotencyKey          String                 @map("idempotency_key") @db.VarChar(240)
-  shippingMethod          CommerceShippingMethod @map("shipping_method")
-  shippingAddressSnapshot Json?                  @map("shipping_address_snapshot")
-  shippingDetailSnapshot  Json                   @default("{}") @map("shipping_detail_snapshot")
-  subtotalAmountToman     BigInt                 @map("subtotal_amount_toman")
-  taxAmountToman          BigInt                 @default(0) @map("tax_amount_toman")
-  discountAmountToman     BigInt                 @default(0) @map("discount_amount_toman")
-  shippingAmountToman     BigInt                 @default(0) @map("shipping_amount_toman")
-  totalAmountToman        BigInt                 @map("total_amount_toman")
-  carrierName             String?                @map("carrier_name") @db.VarChar(160)
-  trackingCode            String?                @map("tracking_code") @db.VarChar(160)
-  trackingUrl             String?                @map("tracking_url") @db.VarChar(2048)
-  trackingUpdatedAt       DateTime?              @map("tracking_updated_at") @db.Timestamptz(3)
-  createdAt               DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt               DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                  Clinic                 @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  patient                 PatientProfile         @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  id                      String                       @id @default(uuid()) @db.Uuid
+  clinicId                String                       @map("clinic_id") @db.Uuid
+  patientId               String                       @map("patient_id") @db.Uuid
+  orderNumber             BigInt                       @unique(map: "commerce_orders_order_number_key") @default(autoincrement()) @map("order_number")
+  status                  CommerceOrderStatus          @default(PENDING_PAYMENT)
+  idempotencyKey          String                       @map("idempotency_key") @db.VarChar(240)
+  shippingMethod          CommerceShippingMethod       @map("shipping_method")
+  shippingAddressSnapshot Json?                        @map("shipping_address_snapshot")
+  shippingDetailSnapshot  Json                         @default("{}") @map("shipping_detail_snapshot")
+  subtotalAmountToman     BigInt                       @map("subtotal_amount_toman")
+  taxAmountToman          BigInt                       @default(0) @map("tax_amount_toman")
+  discountAmountToman     BigInt                       @default(0) @map("discount_amount_toman")
+  shippingAmountToman     BigInt                       @default(0) @map("shipping_amount_toman")
+  totalAmountToman        BigInt                       @map("total_amount_toman")
+  carrierName             String?                      @map("carrier_name") @db.VarChar(160)
+  trackingCode            String?                      @map("tracking_code") @db.VarChar(160)
+  trackingUrl             String?                      @map("tracking_url") @db.VarChar(2048)
+  trackingUpdatedAt       DateTime?                    @map("tracking_updated_at") @db.Timestamptz(3)
+  createdAt               DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                  Clinic                       @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                 PatientProfile               @relation(fields: [patientId], references: [id], onDelete: Restrict)
   lines                   CommerceOrderLine[]
   snapshot                CommerceOrderSnapshot?
   reservations            InventoryReservation[]
@@ -1231,31 +1262,153 @@ model PaymentProviderConfigRevision {
   @@map("payment_provider_config_revisions")
 }
 
+model SmsProviderConfig {
+  id                 String                         @id @default(uuid()) @db.Uuid
+  providerCode       String                         @unique(map: "sms_provider_configs_provider_code_key") @map("provider_code") @db.VarChar(64)
+  enabled            Boolean                        @default(false)
+  isDefault          Boolean                        @default(false) @map("is_default")
+  activeRevisionId   String?                        @unique(map: "sms_provider_configs_active_revision_id_key") @map("active_revision_id") @db.Uuid
+  healthMetadata     Json                           @default("{}") @map("health_metadata")
+  createdAt          DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  activeRevision     SmsProviderConfigRevision?     @relation("SmsProviderConfigActiveRevision", fields: [activeRevisionId], references: [id], onDelete: Restrict)
+  revisions          SmsProviderConfigRevision[]    @relation("SmsProviderConfigRevisions")
+  credentialVersions SmsProviderCredentialVersion[]
+  deliveryAttempts   SmsDeliveryAttempt[]
+
+  @@map("sms_provider_configs")
+}
+
+model SmsProviderCredentialVersion {
+  id                   String                      @id @default(uuid()) @db.Uuid
+  configId             String                      @map("config_id") @db.Uuid
+  versionNumber        Int                         @map("version_number")
+  status               SmsProviderCredentialStatus @default(ACTIVE)
+  encryptedPayload     Bytes?                      @map("encrypted_payload")
+  encryptionNonce      Bytes?                      @map("encryption_nonce")
+  authenticationTag    Bytes?                      @map("authentication_tag")
+  encryptionKeyVersion String?                     @map("encryption_key_version") @db.VarChar(100)
+  cryptoShreddedAt     DateTime?                   @map("crypto_shredded_at") @db.Timestamptz(3)
+  createdAt            DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  config               SmsProviderConfig           @relation(fields: [configId], references: [id], onDelete: Restrict)
+  revisions            SmsProviderConfigRevision[]
+
+  @@unique([configId, versionNumber], map: "sms_provider_credential_versions_config_version_key")
+  @@map("sms_provider_credential_versions")
+}
+
+model SmsProviderConfigRevision {
+  id                  String                        @id @default(uuid()) @db.Uuid
+  configId            String                        @map("config_id") @db.Uuid
+  revisionNumber      Int                           @map("revision_number")
+  nonSecretConfig     Json                          @default("{}") @map("non_secret_config")
+  capabilitySnapshot  Json                          @default("{}") @map("capability_snapshot")
+  credentialVersionId String?                       @map("credential_version_id") @db.Uuid
+  createdByUserId     String?                       @map("created_by_user_id") @db.Uuid
+  idempotencyKey      String?                       @map("idempotency_key") @db.VarChar(240)
+  createdAt           DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  config              SmsProviderConfig             @relation("SmsProviderConfigRevisions", fields: [configId], references: [id], onDelete: Restrict)
+  credentialVersion   SmsProviderCredentialVersion? @relation(fields: [credentialVersionId], references: [id], onDelete: Restrict)
+  createdByUser       User?                         @relation("SmsProviderConfigRevisionCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  activeForConfigs    SmsProviderConfig[]           @relation("SmsProviderConfigActiveRevision")
+  deliveryAttempts    SmsDeliveryAttempt[]
+  otpChallenges       OtpChallenge[]
+
+  @@unique([configId, revisionNumber], map: "sms_provider_config_revisions_config_revision_key")
+  @@unique([configId, idempotencyKey], map: "sms_provider_config_revisions_config_idempotency_key")
+  @@map("sms_provider_config_revisions")
+}
+
+model OtpPolicy {
+  id                    String   @id @default("default") @db.VarChar(64)
+  enabled               Boolean  @default(true)
+  codeLength            Int      @default(6) @map("code_length")
+  expiresInSeconds      Int      @default(120) @map("expires_in_seconds")
+  resendCooldownSeconds Int      @default(60) @map("resend_cooldown_seconds")
+  maxVerifyAttempts     Int      @default(5) @map("max_verify_attempts")
+  phoneRequestLimit     Int      @default(3) @map("phone_request_limit")
+  requestWindowSeconds  Int      @default(900) @map("request_window_seconds")
+  updatedByUserId       String?  @map("updated_by_user_id") @db.Uuid
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("otp_policies")
+}
+
+model OtpChallenge {
+  id                       String                     @id @default(uuid()) @db.Uuid
+  purpose                  String                     @db.VarChar(64)
+  canonicalPhone           String                     @map("canonical_phone") @db.VarChar(13)
+  verifier                 String                     @db.Char(64)
+  status                   OtpChallengeStatus         @default(PENDING)
+  expiresAt                DateTime                   @map("expires_at") @db.Timestamptz(3)
+  resendAvailableAt        DateTime                   @map("resend_available_at") @db.Timestamptz(3)
+  verifyAttemptCount       Int                        @default(0) @map("verify_attempt_count")
+  maxVerifyAttempts        Int                        @map("max_verify_attempts")
+  remember                 Boolean                    @default(false)
+  idempotencyKey           String                     @map("idempotency_key") @db.VarChar(240)
+  requestIpHash            String?                    @map("request_ip_hash") @db.Char(64)
+  providerConfigRevisionId String?                    @map("provider_config_revision_id") @db.Uuid
+  consumedAt               DateTime?                  @map("consumed_at") @db.Timestamptz(3)
+  supersededAt             DateTime?                  @map("superseded_at") @db.Timestamptz(3)
+  createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  providerConfigRevision   SmsProviderConfigRevision? @relation(fields: [providerConfigRevisionId], references: [id], onDelete: SetNull)
+  deliveryAttempts         SmsDeliveryAttempt[]
+
+  @@unique([purpose, canonicalPhone, idempotencyKey], map: "otp_challenges_purpose_phone_idempotency_key")
+  @@index([canonicalPhone, createdAt], map: "otp_challenges_phone_created_at_idx")
+  @@index([status, expiresAt], map: "otp_challenges_status_expires_at_idx")
+  @@map("otp_challenges")
+}
+
+model SmsDeliveryAttempt {
+  id                       String                     @id @default(uuid()) @db.Uuid
+  challengeId              String?                    @map("challenge_id") @db.Uuid
+  providerConfigId         String?                    @map("provider_config_id") @db.Uuid
+  providerConfigRevisionId String?                    @map("provider_config_revision_id") @db.Uuid
+  recipientHash            String                     @map("recipient_hash") @db.Char(64)
+  recipientMasked          String                     @map("recipient_masked") @db.VarChar(32)
+  status                   SmsDeliveryAttemptStatus   @default(PENDING)
+  providerReference        String?                    @map("provider_reference") @db.VarChar(256)
+  errorCategory            String?                    @map("error_category") @db.VarChar(100)
+  isTest                   Boolean                    @default(false) @map("is_test")
+  createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  resolvedAt               DateTime?                  @map("resolved_at") @db.Timestamptz(3)
+  challenge                OtpChallenge?              @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  providerConfig           SmsProviderConfig?         @relation(fields: [providerConfigId], references: [id], onDelete: SetNull)
+  providerConfigRevision   SmsProviderConfigRevision? @relation(fields: [providerConfigRevisionId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt, id], map: "sms_delivery_attempts_created_at_id_idx")
+  @@index([challengeId], map: "sms_delivery_attempts_challenge_id_idx")
+  @@map("sms_delivery_attempts")
+}
+
 model PaymentAttempt {
-  id                       String                        @id @default(uuid()) @db.Uuid
-  clinicId                 String                        @map("clinic_id") @db.Uuid
-  patientId                String                        @map("patient_id") @db.Uuid
-  orderId                  String                        @map("order_id") @db.Uuid
-  providerConfigRevisionId String                        @map("provider_config_revision_id") @db.Uuid
-  providerOrderId          BigInt                        @unique(map: "payment_attempts_provider_order_id_key") @map("provider_order_id")
-  commerceAmountToman      BigInt                        @map("commerce_amount_toman")
-  providerAmount           BigInt?                       @map("provider_amount")
-  providerUnit             String                        @default("UNCONFIRMED") @map("provider_unit") @db.VarChar(32)
-  status                   PaymentAttemptStatus          @default(CREATED)
-  idempotencyKey           String                        @map("idempotency_key") @db.VarChar(240)
-  providerToken            String?                       @unique(map: "payment_attempts_provider_token_key") @map("provider_token") @db.VarChar(512)
-  providerResultCode       String?                       @map("provider_result_code") @db.VarChar(32)
-  callbackReceivedAt       DateTime?                     @map("callback_received_at") @db.Timestamptz(3)
-  verifiedAt               DateTime?                     @map("verified_at") @db.Timestamptz(3)
-  reconciliationEvidenceReference String?                @map("reconciliation_evidence_reference") @db.VarChar(512)
-  reconciledAt             DateTime?                     @map("reconciled_at") @db.Timestamptz(3)
-  createdAt                DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic                   Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  patient                  PatientProfile                @relation(fields: [patientId], references: [id], onDelete: Restrict)
-  order                    CommerceOrder                 @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  providerConfigRevision   PaymentProviderConfigRevision @relation(fields: [providerConfigRevisionId], references: [id], onDelete: Restrict)
-  payment                  Payment?
+  id                              String                        @id @default(uuid()) @db.Uuid
+  clinicId                        String                        @map("clinic_id") @db.Uuid
+  patientId                       String                        @map("patient_id") @db.Uuid
+  orderId                         String                        @map("order_id") @db.Uuid
+  providerConfigRevisionId        String                        @map("provider_config_revision_id") @db.Uuid
+  providerOrderId                 BigInt                        @unique(map: "payment_attempts_provider_order_id_key") @map("provider_order_id")
+  commerceAmountToman             BigInt                        @map("commerce_amount_toman")
+  providerAmount                  BigInt?                       @map("provider_amount")
+  providerUnit                    String                        @default("UNCONFIRMED") @map("provider_unit") @db.VarChar(32)
+  status                          PaymentAttemptStatus          @default(CREATED)
+  idempotencyKey                  String                        @map("idempotency_key") @db.VarChar(240)
+  providerToken                   String?                       @unique(map: "payment_attempts_provider_token_key") @map("provider_token") @db.VarChar(512)
+  providerResultCode              String?                       @map("provider_result_code") @db.VarChar(32)
+  callbackReceivedAt              DateTime?                     @map("callback_received_at") @db.Timestamptz(3)
+  verifiedAt                      DateTime?                     @map("verified_at") @db.Timestamptz(3)
+  reconciliationEvidenceReference String?                       @map("reconciliation_evidence_reference") @db.VarChar(512)
+  reconciledAt                    DateTime?                     @map("reconciled_at") @db.Timestamptz(3)
+  createdAt                       DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                       DateTime                      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                          Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient                         PatientProfile                @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  order                           CommerceOrder                 @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  providerConfigRevision          PaymentProviderConfigRevision @relation(fields: [providerConfigRevisionId], references: [id], onDelete: Restrict)
+  payment                         Payment?
 
   @@unique([patientId, idempotencyKey], map: "payment_attempts_patient_idempotency_key")
   @@index([orderId, createdAt, id], map: "payment_attempts_order_created_id_idx")
@@ -1376,17 +1529,17 @@ model ChatModerationReport {
 }
 
 model ChatModerationReportDecision {
-  id          String               @id @default(uuid()) @db.Uuid
-  clinicId    String               @map("clinic_id") @db.Uuid
-  reportId    String               @unique(map: "chat_moderation_report_decisions_report_id_key") @map("report_id") @db.Uuid
-  actorUserId String               @map("actor_user_id") @db.Uuid
+  id          String                     @id @default(uuid()) @db.Uuid
+  clinicId    String                     @map("clinic_id") @db.Uuid
+  reportId    String                     @unique(map: "chat_moderation_report_decisions_report_id_key") @map("report_id") @db.Uuid
+  actorUserId String                     @map("actor_user_id") @db.Uuid
   resolution  ChatReportResolution
   action      ChatReportResolutionAction
-  safeNote    String?              @map("safe_note") @db.VarChar(500)
-  decidedAt   DateTime             @default(now()) @map("decided_at") @db.Timestamptz(3)
-  clinic      Clinic               @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  report      ChatModerationReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
-  actor       User                 @relation("ChatReportDecisionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  safeNote    String?                    @map("safe_note") @db.VarChar(500)
+  decidedAt   DateTime                   @default(now()) @map("decided_at") @db.Timestamptz(3)
+  clinic      Clinic                     @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  report      ChatModerationReport       @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  actor       User                       @relation("ChatReportDecisionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
 
   @@index([clinicId, resolution, decidedAt, id], map: "chat_report_decisions_clinic_resolution_idx")
   @@map("chat_moderation_report_decisions")
@@ -1413,19 +1566,19 @@ model ChatConversationBlock {
 }
 
 model ChatMessageModerationAction {
-  id             String                        @id @default(uuid()) @db.Uuid
-  clinicId       String                        @map("clinic_id") @db.Uuid
-  conversationId String                        @map("conversation_id") @db.Uuid
-  messageId      String                        @map("message_id") @db.Uuid
-  actorUserId    String                        @map("actor_user_id") @db.Uuid
+  id             String                          @id @default(uuid()) @db.Uuid
+  clinicId       String                          @map("clinic_id") @db.Uuid
+  conversationId String                          @map("conversation_id") @db.Uuid
+  messageId      String                          @map("message_id") @db.Uuid
+  actorUserId    String                          @map("actor_user_id") @db.Uuid
   action         ChatMessageModerationActionType
-  reasonCategory ChatModerationReasonCategory? @map("reason_category")
-  safeNote       String?                       @map("safe_note") @db.VarChar(500)
-  createdAt      DateTime                      @default(now()) @map("created_at") @db.Timestamptz(3)
-  conversation   ChatConversation              @relation(fields: [conversationId, clinicId], references: [id, clinicId], onDelete: Restrict)
-  clinic         Clinic                        @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  message        ChatMessage                   @relation(fields: [messageId, conversationId, clinicId], references: [id, conversationId, clinicId], onDelete: Restrict)
-  actor          User                          @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  reasonCategory ChatModerationReasonCategory?   @map("reason_category")
+  safeNote       String?                         @map("safe_note") @db.VarChar(500)
+  createdAt      DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  conversation   ChatConversation                @relation(fields: [conversationId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  clinic         Clinic                          @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  message        ChatMessage                     @relation(fields: [messageId, conversationId, clinicId], references: [id, conversationId, clinicId], onDelete: Restrict)
+  actor          User                            @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
 
   @@index([clinicId, messageId, createdAt, id], map: "chat_message_moderation_actions_message_created_idx")
   @@map("chat_message_moderation_actions")

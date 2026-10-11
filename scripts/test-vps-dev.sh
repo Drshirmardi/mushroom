@@ -94,6 +94,7 @@ DASHBOARD_PORT=127.0.0.1:3202
 EOF
 
 for secret in postgres_password database_url jwt_access_secret refresh_token_pepper \
+  otp_pepper sms_credential_encryption_key sms_credential_decryption_keys \
   payment_credential_encryption_key payment_credential_decryption_keys; do
   printf 'synthetic-%s' "$secret" >"$dev_root/secrets/$secret"
   chmod 600 "$dev_root/secrets/$secret"

@@ -79,7 +79,28 @@ for other_environment in staging production-sim; do
   done
 done
 
+generate_dev_secret() {
+  local secret=$1
+  local secret_path="$environment_root/secrets/$secret"
+  [[ -e $secret_path ]] && return
+  umask 077
+  case "$secret" in
+    otp_pepper) openssl rand -hex 48 >"$secret_path" ;;
+    sms_credential_encryption_key) openssl rand -base64 32 | tr -d '\n' >"$secret_path" ;;
+    sms_credential_decryption_keys)
+      printf 'v0:' >"$secret_path"
+      openssl rand -base64 32 | tr -d '\n' >>"$secret_path"
+      ;;
+  esac
+}
+
+# Dev-only bootstrap: create newly introduced secrets on the VPS without exposing them to Git or workflow logs.
+for generated_secret in otp_pepper sms_credential_encryption_key sms_credential_decryption_keys; do
+  generate_dev_secret "$generated_secret"
+done
+
 for secret in postgres_password database_url jwt_access_secret refresh_token_pepper \
+  otp_pepper sms_credential_encryption_key sms_credential_decryption_keys \
   payment_credential_encryption_key payment_credential_decryption_keys; do
   secret_path="$environment_root/secrets/$secret"
   [[ -s $secret_path ]] || die "required dev secret is missing: $secret"

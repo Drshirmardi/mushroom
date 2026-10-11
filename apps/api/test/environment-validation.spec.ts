@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { environmentValidationSchema } from '../src/config/environment.validation';
 
-const base = { DATABASE_URL: 'postgresql://user:password@localhost:5432/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43) };
+const base = { DATABASE_URL: 'postgresql://user:password@localhost:5432/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43), OTP_PEPPER: 'c'.repeat(43) };
 
 describe('production-hardening environment validation', () => {
   it('accepts disabled Sadad settings and an explicitly complete live runtime', () => {
@@ -22,5 +22,12 @@ describe('production-hardening environment validation', () => {
     expect(environmentValidationSchema.validate({ ...base, PAYMENT_CREDENTIAL_ENCRYPTION_KEY: 'not-a-32-byte-key' }).error).toBeDefined();
     expect(environmentValidationSchema.validate({ ...base, PAYMENT_CREDENTIAL_DECRYPTION_KEYS: 'v1:not-a-32-byte-key' }).error).toBeDefined();
     expect(environmentValidationSchema.validate({ ...base, PAYMENT_CREDENTIAL_DECRYPTION_KEYS: `v1:${Buffer.alloc(32, 7).toString('base64')},v1:${Buffer.alloc(32, 8).toString('base64')}` }).error).toBeDefined();
+  });
+
+  it('keeps SMS transport disabled by default and requires an independent key in live mode', () => {
+    expect(environmentValidationSchema.validate(base).value.SMS_TRANSPORT_MODE).toBe('disabled');
+    expect(environmentValidationSchema.validate({ ...base, SMS_TRANSPORT_MODE: 'live' }).error).toBeDefined();
+    const live = environmentValidationSchema.validate({ ...base, SMS_TRANSPORT_MODE: 'live', SMS_CREDENTIAL_ENCRYPTION_KEY: Buffer.alloc(32, 4).toString('base64') });
+    expect(live.error).toBeUndefined();
   });
 });

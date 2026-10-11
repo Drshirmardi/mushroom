@@ -82,6 +82,9 @@ printf '%s' "$db_password" > secrets/postgres_password
 printf 'postgresql://mushroom_staging:%s@postgres:5432/mushroom_staging?schema=public' "$db_password" > secrets/database_url
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/jwt_access_secret
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/refresh_token_pepper
+openssl rand -base64 48 | tr -d '\n=+/' > secrets/otp_pepper
+openssl rand -base64 32 | tr -d '\n' > secrets/sms_credential_encryption_key
+printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/sms_credential_decryption_keys
 openssl rand -base64 32 | tr -d '\n' > secrets/payment_credential_encryption_key
 printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/payment_credential_decryption_keys
 chmod 600 runtime.env secrets/*
@@ -243,6 +246,9 @@ printf '%s' "$db_password" > secrets/postgres_password
 printf 'postgresql://mushroom_dev:%s@postgres:5432/mushroom_dev?schema=public' "$db_password" > secrets/database_url
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/jwt_access_secret
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/refresh_token_pepper
+openssl rand -base64 48 | tr -d '\n=+/' > secrets/otp_pepper
+openssl rand -base64 32 | tr -d '\n' > secrets/sms_credential_encryption_key
+printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/sms_credential_decryption_keys
 openssl rand -base64 32 | tr -d '\n' > secrets/payment_credential_encryption_key
 printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/payment_credential_decryption_keys
 chmod 600 runtime.env secrets/*

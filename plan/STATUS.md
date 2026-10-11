@@ -50,6 +50,26 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F01-B06-A
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: [`contracts/otp-sms-auth-v1.md`](contracts/otp-sms-auth-v1.md), owner-authorized OTP/SMS change control.
+
+- Task ID: `F01-R06-A`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: no active batch; contract frozen by the owner.
+  - Scope: ADR/change control, independent SMS schema/migration, credential encryption/runtime configuration, FarazSMS port/registry and ADMIN provider/policy backend.
+  - Owned paths: `apps/api/prisma/**`, `apps/api/src/modules/communications/sms/**`, API runtime/config/error wiring, deployment env/secret contract, `apps/api/package.json`, lockfile, and coordinator plan files.
+  - Shared/exclusive resource: Prisma, API module wiring, environment contract and lockfile are single-writer resources.
+  - Expected verification: migration replay/generate, SMS unit and admin authorization tests, API typecheck/build, deployment-env contract and `git diff --check`.
+  - Review: PASS — schema، AES-256-GCM keyring، runtime fail-closed، registry واقعی FarazSMS و API صرفاً ADMIN با credential write-only پیاده شدند.
+  - Verification: PostgreSQL 16 migration replay، API typecheck، SMS security tests، release/dev deployment contracts و shell syntax پاس شدند.
+  - Next eligible batch: `F01-B06-B` برای OTP engine و public auth/OpenAPI.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R12
 
 Coordinator/Thread: `Codex /root`

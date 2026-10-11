@@ -51,12 +51,15 @@ PUBLIC_DASHBOARD_URL=https://$environment-dashboard.example.test
 APP_ORIGINS=https://$environment.example.test,https://$environment-app.example.test,https://$environment-dashboard.example.test
 TRUSTED_PROXIES=127.0.0.1/32
 PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_TRANSPORT_MODE=disabled
 API_PORT=127.0.0.1:${port_prefix}3
 WEB_PORT=127.0.0.1:${port_prefix}0
 APP_PORT=127.0.0.1:${port_prefix}1
 DASHBOARD_PORT=127.0.0.1:${port_prefix}2
 EOF
   for secret in postgres_password database_url jwt_access_secret refresh_token_pepper \
+    otp_pepper sms_credential_encryption_key sms_credential_decryption_keys \
     payment_credential_encryption_key payment_credential_decryption_keys; do
     printf 'synthetic-%s-%s' "$environment" "$secret" >"$root/secrets/$secret"
   done

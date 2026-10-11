@@ -74,6 +74,9 @@ services:
       APP_ORIGINS: "${APP_ORIGINS:?set dev browser origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
+      SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
+      SMS_TRANSPORT_MODE: "${SMS_TRANSPORT_MODE:-disabled}"
+      SMS_REQUEST_TIMEOUT_MS: "${SMS_REQUEST_TIMEOUT_MS:-5000}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
       SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
@@ -86,6 +89,9 @@ services:
       - refresh_token_pepper
       - payment_credential_encryption_key
       - payment_credential_decryption_keys
+      - otp_pepper
+      - sms_credential_encryption_key
+      - sms_credential_decryption_keys
     depends_on:
       postgres:
         condition: service_healthy
@@ -146,3 +152,9 @@ secrets:
     file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/payment_credential_encryption_key"
   payment_credential_decryption_keys:
     file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/payment_credential_decryption_keys"
+  otp_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/otp_pepper"
+  sms_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/sms_credential_encryption_key"
+  sms_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/sms_credential_decryption_keys"

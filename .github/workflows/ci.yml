@@ -31,6 +31,7 @@ jobs:
       DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/sabz_zendegi?schema=public
       JWT_ACCESS_SECRET: ci-only-jwt-access-secret-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ
       REFRESH_TOKEN_PEPPER: ci-only-refresh-token-pepper-9876543210-ZYXWVUTSRQPONMLKJIHGFEDCBA
+      OTP_PEPPER: ci-only-otp-pepper-9876543210-ZYXWVUTSRQPONMLKJIHGFEDCBA
       NODE_ENV: test
       LOG_LEVEL: error
     steps:

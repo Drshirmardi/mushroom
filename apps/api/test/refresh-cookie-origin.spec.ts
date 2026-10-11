@@ -82,6 +82,7 @@ describe('refresh cookie and browser origin policy', () => {
       DATABASE_URL: 'postgresql://user:password@localhost:5432/database',
       JWT_ACCESS_SECRET: 'access-secret-that-is-long-enough-for-production-0123456789',
       REFRESH_TOKEN_PEPPER: 'refresh-pepper-that-is-independent-and-long-enough-9876543210',
+      OTP_PEPPER: 'otp-pepper-that-is-independent-and-long-enough-9876543210',
     };
 
     expect(environmentValidationSchema.validate(base).error).toBeDefined();

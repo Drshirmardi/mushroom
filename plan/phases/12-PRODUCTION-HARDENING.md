@@ -126,6 +126,20 @@ application نمی‌شود.
 
 این change control migration، role expansion، multi-clinic switching یا guest cart را مجاز نمی‌کند.
 
+## Change control — passwordless OTP and modular SMS delivery
+
+مالک محصول در `2026-10-11` extension رسمی `F01-R06` را برای تکمیل احراز هویت passwordless و مدیریت provider پیامک
+تأیید کرده است. قرارداد کامل، مرزها، معیارهای پذیرش و ترتیب وابستگی‌ها در
+[`../contracts/otp-sms-auth-v1.md`](../contracts/otp-sms-auth-v1.md) freeze شده‌اند.
+
+- [x] `F01-R06-A` — ADR، schema/migration، crypto/runtime، registry/adapter FarazSMS و API مدیریتی SMS/OTP.
+- [ ] `F01-R06-B` — engine OTP، endpointهای public auth، reuse session/account و OpenAPI/generated client.
+- [ ] `F01-R06-C` — UX OTP-first در web، مدیریت responsive در dashboard و evidence مرورگر/deployment.
+
+این change control قرارداد session در ADR-0001 را جایگزین نمی‌کند: verify موفق OTP همان access token، refresh cookie،
+Origin/CORS، RBAC و rotation موجود را reuse می‌کند. تا زمانی که runtime `SMS_TRANSPORT_MODE=live` و credential واقعی
+خارج از Git با اقدام ADMIN پیکربندی نشده، ارسال واقعی fail-closed باقی می‌ماند.
+
 ## معیار خروج
 
 - SLO/capacity با evidence ثبت شده است.

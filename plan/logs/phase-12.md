@@ -1,5 +1,39 @@
 # Phase 12 Execution Evidence
 
+## F01-R06-A — SMS provider foundation and administration
+
+Task ID: `F01-R06-A`
+Completed at: `2026-10-11 UTC`
+Agent/Thread: `Codex /root`
+Batch ID: `F01-B06-A`
+Reviewed by: `Codex /root`
+
+Changed files:
+
+- `plan/contracts/otp-sms-auth-v1.md`, `plan/decisions/ADR-0014-passwordless-otp-sms-boundary.md`
+- `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/20261011100000_otp_sms_auth/migration.sql`
+- `apps/api/src/modules/communications/sms/**`, runtime/deployment secret contracts and `farazsms@1.1.0`
+
+Tests run:
+
+- Prisma schema format/validate and PostgreSQL 16 full migration replay (34 migrations) → PASS.
+- `sms-otp-security.spec.ts`, environment/origin regression and API test typecheck → PASS.
+- release pipeline, VPS dev/release behavior, shell syntax and `git diff --check` → PASS.
+
+Result:
+
+- only the real FarazSMS adapter is registered; transport defaults to disabled and external calls require explicit live runtime;
+- SMS credentials are write-only, independently AES-256-GCM encrypted and revisioned; ADMIN controls provider state, policy, tests and safe logs;
+- new dev secrets are generated on the VPS without entering Git/logs, while release environments still require managed secret files.
+
+Known limitations:
+
+- no real provider credential or SMS was used; live activation remains an explicit ADMIN operation after setting runtime live.
+
+Next batch:
+
+- `F01-B06-B` — OTP engine, public auth and generated client.
+
 ## F12-T02-R19 — shared-dev Next watcher warm-up corrective
 
 Task ID: F12-T02-R19

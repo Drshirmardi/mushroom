@@ -76,6 +76,9 @@ importers:
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
+      farazsms:
+        specifier: 1.1.0
+        version: 1.1.0
       fastify:
         specifier: ^5.12.5
         version: 5.12.5
@@ -2799,6 +2802,10 @@ packages:
 
   exsolve@1.1.1:
     resolution: {integrity: sha512-9U/jZUgjnSGyntRr6y5Muu1MJcwFl6kPu7k8qLF0IMNfLqvw0NZ4nnVDq0RVoZ0RvCyumib4Ez3KYrVfilrw+g==}
+
+  farazsms@1.1.0:
+    resolution: {integrity: sha512-aPWRAG3shIf68QglxdNNGoGPeXEToQ0q/cvEBSl/+YZl2ZOpKN6AXCQP0xIiGzXflioWJFAla95bA+cuwxeReg==}
+    engines: {node: '>=18'}
 
   fast-check@3.23.2:
     resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
@@ -7054,6 +7061,8 @@ snapshots:
   expect-type@1.4.0: {}
 
   exsolve@1.1.1: {}
+
+  farazsms@1.1.0: {}
 
   fast-check@3.23.2:
     dependencies:

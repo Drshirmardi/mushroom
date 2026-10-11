@@ -163,6 +163,9 @@ try {
       `REFRESH_TOKEN_PEPPER=${randomBytes(48).toString('hex')}`,
 
       '-e',
+      `OTP_PEPPER=${randomBytes(48).toString('hex')}`,
+
+      '-e',
       'APP_ORIGINS=https://ci.invalid',
 
       '-e',

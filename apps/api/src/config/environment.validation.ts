@@ -76,6 +76,12 @@ const paymentCredentialHistoricalKeyringSchema = Joi.string()
   })
   .messages({ 'any.invalid': 'must be a comma-separated version:canonical-base64-32-byte-key keyring with unique versions' });
 
+const secretPepperSchema = Joi.string()
+  .min(43)
+  .max(256)
+  .pattern(/^[A-Za-z0-9_-]+$/)
+  .messages({ 'string.pattern.base': 'must be an URL-safe secret with at least 256 bits of entropy' });
+
 const sadadReturnUrlSchema = Joi.string()
   .allow('')
   .custom((value, helpers) => {
@@ -142,6 +148,12 @@ export const environmentValidationSchema = Joi.object({
     .invalid('replace-this-placeholder-with-a-unique-refresh-token-pepper')
     .invalid(Joi.ref('JWT_ACCESS_SECRET'))
     .required(),
+  OTP_PEPPER: secretPepperSchema.required().invalid(Joi.ref('JWT_ACCESS_SECRET'), Joi.ref('REFRESH_TOKEN_PEPPER')),
+  SMS_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.when('SMS_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
+  SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
+  SMS_CREDENTIAL_DECRYPTION_KEYS: paymentCredentialHistoricalKeyringSchema.optional(),
+  SMS_TRANSPORT_MODE: Joi.string().valid('disabled', 'live').default('disabled'),
+  SMS_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1_000).max(30_000).default(5_000),
   // Merchant credentials remain encrypted config revisions; live mode contains only deployment/network controls.
   PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
   PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
