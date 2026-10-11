@@ -59,9 +59,15 @@ case "$command_name" in
       pnpm --filter @sabz-zendegi/api prisma:seed
     fi
     if [[ ${DEV_COMPILE_API:-false} == true ]]; then
+      [[ ${DEV_API_SOURCE_HASH:-} =~ ^[0-9a-f]{64}$ ]] || {
+        printf 'DEV_API_SOURCE_HASH must be a SHA-256 fingerprint when compiling the API\n' >&2
+        exit 1
+      }
+      rm -rf -- apps/api/dist
       NODE_OPTIONS=--max-old-space-size=640 \
         pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
           --noCheck --declaration false --declarationMap false
+      printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
     fi
     ;;
   api)

@@ -126,6 +126,7 @@ if [[ " $* " == *' run --rm --no-deps bootstrap '* ]]; then
   if [[ ${DEV_COMPILE_API:-false} == true ]]; then
     mkdir -p "$FAKE_WORKSPACE/apps/api/dist"
     : >"$FAKE_WORKSPACE/apps/api/dist/main.js"
+    printf '%s\n' "$DEV_API_SOURCE_HASH" >"$FAKE_WORKSPACE/apps/api/dist/.source.sha256"
   fi
   if [[ ${DEV_WRITE_RUNTIME_CONFIG:-false} == true ]]; then
     for application in web app dashboard; do
@@ -188,6 +189,14 @@ run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   || fail 'unchanged API inputs unnecessarily recreated the API runtime'
 ! grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
   || fail 'unchanged inputs unnecessarily recreated watcher services'
+
+printf 'stale-artifact\n' >"$workspace/apps/api/dist/.source.sha256"
+: >"$docker_log"
+run_deploy 9999999999999999999999999999999999999999
+grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
+  || fail 'stale API artifact fingerprint did not force a clean recompile'
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'recompiled stale API artifact did not recreate the API runtime'
 
 printf '\n' >>"$workspace/apps/api/package.json"
 : >"$docker_log"

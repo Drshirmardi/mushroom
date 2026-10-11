@@ -165,6 +165,9 @@ prisma_hash=$(hash_paths \
   "$workspace/apps/api/prisma.config.ts" \
   "$workspace/apps/api/prisma")
 api_hash=$(hash_api_inputs)
+api_artifact_hash=''
+[[ ! -f $workspace/apps/api/dist/.source.sha256 ]] \
+  || api_artifact_hash=$(<"$workspace/apps/api/dist/.source.sha256")
 web_hash=$(hash_frontend_inputs web)
 app_hash=$(hash_frontend_inputs app)
 dashboard_hash=$(hash_frontend_inputs dashboard)
@@ -231,7 +234,8 @@ if [[ $prisma_hash != "$previous_prisma_hash" ]]; then
 fi
 if [[ $install_dependencies == true || $runtime_changed == true \
   || $api_hash != "$previous_api_hash" || $api_client_hash != "$previous_api_client_hash" \
-  || $prisma_hash != "$previous_prisma_hash" || ! -f $workspace/apps/api/dist/main.js ]]; then
+  || $prisma_hash != "$previous_prisma_hash" || $api_hash != "$api_artifact_hash" \
+  || ! -f $workspace/apps/api/dist/main.js ]]; then
   compile_api=true
 fi
 if [[ $web_hash != "$previous_web_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
@@ -259,6 +263,7 @@ if [[ $install_dependencies == true || $run_seed == true || $build_api_client ==
     DEV_GENERATE_PRISMA=$generate_prisma \
     DEV_RUN_MIGRATIONS=$run_migrations \
     DEV_COMPILE_API=$compile_api \
+    DEV_API_SOURCE_HASH=$api_hash \
     DEV_WRITE_RUNTIME_CONFIG=$write_runtime_config \
     compose --profile tools run --rm --no-deps bootstrap
 fi

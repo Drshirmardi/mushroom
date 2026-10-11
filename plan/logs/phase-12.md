@@ -2313,3 +2313,50 @@ External activation:
 
 - deploy the commit, apply the runbook values with the exact merchant-confirmed redirect profile, then use Dashboard to
   rotate the three credentials, enable Sadad and select it as default before the controlled low-value acceptance test.
+
+## F12-T12-R10 — Shared-dev API artifact integrity corrective
+
+Task ID: `F12-T12-R10`
+Completed at: `2026-10-11 UTC`
+Agent/Thread: `Codex /root`
+Batch ID: `F12-B12-R10`
+Reviewed by: `Codex /root`
+
+Changed files:
+
+- `deploy/vps/compose.dev.yaml`
+- `deploy/vps/deploy-dev.sh`
+- `deploy/vps/dev-service.sh`
+- `scripts/test-vps-dev.sh`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`
+- `plan/phases/12-PRODUCTION-HARDENING.md`
+- `plan/logs/phase-12.md`
+
+Migrations:
+
+- none.
+
+Tests run:
+
+- `bash -n deploy/vps/deploy-dev.sh deploy/vps/dev-service.sh scripts/test-vps-dev.sh` → PASS.
+- `bash scripts/test-vps-dev.sh` → PASS, including an incoherent artifact marker on an unchanged source tree.
+- `node scripts/test-release-pipeline.mjs` → PASS.
+- `git diff --check` → PASS.
+
+Result:
+
+- an API artifact is accepted only when `apps/api/dist/main.js` exists and `dist/.source.sha256` matches the current
+  API input fingerprint;
+- compilation removes the whole stale dist directory and writes the marker only after TypeScript emits successfully;
+- a same-SHA workflow rerun repairs stale JavaScript and recreates the API container instead of trusting state alone;
+- Sadad still defaults to `disabled`, while the explicitly authorized runtime value `live` remains deployable.
+
+Known limitations:
+
+- the real VPS readiness observation occurs after this commit is pushed; the repository tests use an isolated fake
+  Docker/Compose boundary and do not read or log any server runtime secret.
+
+Next task:
+
+- observe the shared-dev deployment and then complete the controlled Sadad credential/enablement acceptance flow.

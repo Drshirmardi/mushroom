@@ -50,6 +50,31 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: a shared-dev API artifact is runnable only when its recorded source fingerprint matches the current
+API inputs; a missing or stale artifact must trigger a clean compile before the API container is recreated.
+
+- Task ID: `F12-T12-R10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R9 live Sadad runtime and the existing incremental shared-dev deployment.
+  - Scope: bind the API dist artifact to its source fingerprint, clean stale output before compilation, and add a
+    regression proving a same-source rerun repairs an incoherent artifact rather than starting stale JavaScript.
+  - Owned paths: `deploy/vps/{deploy-dev.sh,dev-service.sh,compose.dev.yaml}`, deployment contract tests, and
+    coordinator plan files.
+  - Shared/exclusive resource: no runtime secret value, database, payment credential or provider call is changed.
+  - Expected verification: shell syntax, dev VPS deployment contract regression, release pipeline contract and
+    `git diff --check`, followed by push and shared-dev readiness observation.
+  - Review: PASS — the API dist directory is cleaned before compilation, receives its source SHA-256 marker only
+    after a successful emit, and any absent/mismatched marker forces compile plus API recreation on a same-source rerun.
+  - Verification: dev VPS sync regression and release pipeline contract checks passed; shell syntax and
+    `git diff --check` passed. Post-push shared-dev readiness remains the external acceptance observation.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R9
 
 Coordinator/Thread: `Codex /root`

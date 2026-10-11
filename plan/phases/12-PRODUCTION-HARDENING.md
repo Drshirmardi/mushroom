@@ -117,6 +117,8 @@ application نمی‌شود.
 - [x] `F12-T12-R9` — runtime واقعی سداد با mode معتبر `disabled/live`، PaymentRequest و redirect واقعی، callback
   عمومی rate-limited، Verify مرجع، reconciliation timeout و کنترل مستقل enabled/default در داشبورد متصل شده است؛
   credential در revision رمزنگاری‌شده می‌ماند و راهنمای فعال‌سازی VPS ثبت شده است.
+- [x] `F12-T12-R10` — خروجی کامپایل‌شدهٔ API در shared dev با اثرانگشت سورس خودش bind می‌شود؛ artifact بدون marker
+  یا ناسازگار پیش از recreate شدن API به‌صورت تمیز rebuild می‌شود و اجرای مجدد همان SHA نیز stale dist را ترمیم می‌کند.
 
 این change control migration، role expansion، multi-clinic switching یا guest cart را مجاز نمی‌کند.
 

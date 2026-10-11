@@ -50,6 +50,7 @@ services:
       <<: *node-environment
       DEV_INSTALL_DEPENDENCIES: "${DEV_INSTALL_DEPENDENCIES:-false}"
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
+      DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"

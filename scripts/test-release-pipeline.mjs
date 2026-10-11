@@ -111,7 +111,10 @@ assert(
 );
 assert(consentPolicy.title.includes('محیط آزمایشی'), 'rehearsal consent policy must be visibly non-production');
 
-assert(compose.includes('SADAD_TRANSPORT_MODE: disabled'), 'VPS rehearsal must keep Sadad disabled');
+assert(
+  compose.includes('SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"'),
+  'VPS runtime must keep Sadad disabled by default while allowing explicit activation',
+);
 assert(compose.includes('postgres_data:'), 'VPS rehearsal requires a project-scoped database volume');
 assert(releaseScript.includes(':/root/.cache/trivy'), 'four-image verification must share one temporary Trivy DB cache');
 assert(releaseScript.includes("volume', 'rm', '--force'"), 'temporary Trivy cache volume must be removed');
@@ -158,6 +161,8 @@ for (const required of [
   'DEV_GENERATE_PRISMA',
   'DEV_RUN_MIGRATIONS',
   'DEV_COMPILE_API',
+  'DEV_API_SOURCE_HASH',
+  'apps/api/dist/.source.sha256',
   'DEV_WRITE_RUNTIME_CONFIG',
   'hash_frontend_inputs',
   'services+=(web)',
@@ -173,7 +178,10 @@ for (const required of [
   'for attempt in {1..15}',
   'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits',
 ]) assert(devDeployScript.includes(required), `dev deployment boundary is missing: ${required}`);
-assert(devCompose.includes('SADAD_TRANSPORT_MODE: disabled'), 'shared dev must keep Sadad disabled');
+assert(
+  devCompose.includes('SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"'),
+  'shared dev must keep Sadad disabled by default while allowing explicit activation',
+);
 assert(devCompose.includes('ports: []'), 'shared dev database must not publish a host port');
 assert(devCompose.includes('postgres_data:'), 'shared dev requires its own project-scoped database volume');
 assert(devCompose.includes('cap_drop: [ALL]'), 'shared dev Node services must drop Linux capabilities');
