@@ -151,6 +151,21 @@ assert(
   devCompose.includes('context: "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}"'),
   'dev build context must be anchored to the validated absolute workspace path',
 );
+for (const control of [
+  'DEV_INSTALL_DEPENDENCIES',
+  'DEV_RUN_SEED',
+  'DEV_BUILD_API_CLIENT',
+  'DEV_GENERATE_PRISMA',
+  'DEV_RUN_MIGRATIONS',
+  'DEV_COMPILE_API',
+  'DEV_API_SOURCE_HASH',
+  'DEV_WRITE_RUNTIME_CONFIG',
+]) {
+  assert(
+    devCompose.includes(`${control}: "\${${control}:-`),
+    `shared dev bootstrap container is missing the ${control} control`,
+  );
+}
 for (const required of [
   'MUSHROOM_ENVIRONMENT) == development',
   'COMPOSE_PROJECT_NAME) == mushroom-dev',

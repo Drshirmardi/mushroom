@@ -50,6 +50,29 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: every build stage selected by `deploy-dev.sh` must be explicitly present in the bootstrap container
+environment; host-shell flags are not assumed to cross the Compose boundary.
+
+- Task ID: `F12-T12-R11`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: F12-T12-R10 artifact fingerprinting and live failure evidence from run `38113797757`.
+  - Scope: pass all selected dependency/client/Prisma/migration/API/runtime-config stages into bootstrap and lock the
+    Compose boundary with a regression contract.
+  - Owned paths: `deploy/vps/compose.dev.yaml`, deployment contract tests, and coordinator plan files.
+  - Shared/exclusive resource: no database schema, application runtime contract, secret value or provider call changes.
+  - Expected verification: deployment contract suites, shell syntax, `git diff --check`, then push and VPS readiness.
+  - Review: PASS — all eight bootstrap controls are now declared at the Compose environment boundary, including the
+    API source fingerprint; the contract suite asserts each mapping independently.
+  - Verification: full release pipeline contract, dev VPS sync regression, shell syntax and `git diff --check` passed.
+    Post-push shared-dev readiness remains the external acceptance observation.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R10
 
 Coordinator/Thread: `Codex /root`

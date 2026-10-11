@@ -2360,3 +2360,45 @@ Known limitations:
 Next task:
 
 - observe the shared-dev deployment and then complete the controlled Sadad credential/enablement acceptance flow.
+
+## F12-T12-R11 — Shared-dev bootstrap control propagation corrective
+
+Task ID: `F12-T12-R11`
+Completed at: `2026-10-11 UTC`
+Agent/Thread: `Codex /root`
+Batch ID: `F12-B12-R11`
+Reviewed by: `Codex /root`
+
+Changed files:
+
+- `deploy/vps/compose.dev.yaml`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`
+- `plan/phases/12-PRODUCTION-HARDENING.md`
+- `plan/logs/phase-12.md`
+
+Migrations:
+
+- none.
+
+Tests run:
+
+- `node scripts/test-release-pipeline.mjs` → PASS.
+- `bash -n deploy/vps/deploy-dev.sh deploy/vps/dev-service.sh scripts/test-vps-dev.sh` → PASS.
+- `bash scripts/test-vps-dev.sh` → PASS.
+- `git diff --check` → PASS.
+
+Result:
+
+- Compose now passes dependency install, seed, API client build, Prisma generation, migration, API compile, API source
+  fingerprint and public runtime-config controls into the one-shot bootstrap container;
+- the prior host-shell-only flags can no longer silently evaluate to `false` inside bootstrap;
+- the contract test checks every required Compose mapping and would fail if one is removed.
+
+Known limitations:
+
+- GitHub run `38113797757` provided the failure evidence; the repaired VPS observation follows the corrective push.
+
+Next task:
+
+- observe shared-dev API readiness, then continue the controlled Sadad credential/enablement acceptance flow.

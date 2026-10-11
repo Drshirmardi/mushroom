@@ -50,7 +50,12 @@ services:
       <<: *node-environment
       DEV_INSTALL_DEPENDENCIES: "${DEV_INSTALL_DEPENDENCIES:-false}"
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
+      DEV_BUILD_API_CLIENT: "${DEV_BUILD_API_CLIENT:-false}"
+      DEV_GENERATE_PRISMA: "${DEV_GENERATE_PRISMA:-false}"
+      DEV_RUN_MIGRATIONS: "${DEV_RUN_MIGRATIONS:-false}"
+      DEV_COMPILE_API: "${DEV_COMPILE_API:-false}"
       DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
+      DEV_WRITE_RUNTIME_CONFIG: "${DEV_WRITE_RUNTIME_CONFIG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
