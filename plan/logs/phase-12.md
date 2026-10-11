@@ -2558,4 +2558,10 @@ Result:
 Known limitations:
 
 - plain Turbopack build could not run in the managed sandbox because its CSS worker attempts a forbidden local port bind;
-  the equivalent webpack production builds and real Chromium E2E passed. Shared-dev deployment remains the external acceptance observation.
+  the equivalent webpack production builds and real Chromium E2E passed.
+
+Deployment observation:
+
+- GitHub Action [38173139936](https://github.com/Drshirmardi/mushroom/actions/runs/38173139936) for `23ffeae` passed in
+  2m40s on `2026-10-12`.
+- `https://dev-api.roxco.ir/v1/health/ready` returned `{"status":"ok"}` and `https://dev.roxco.ir/login` returned HTTP 200.

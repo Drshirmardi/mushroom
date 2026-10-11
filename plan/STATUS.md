@@ -67,7 +67,7 @@ Contract baseline: `F01-R06-B` commit `492d934` and generated OTP/admin API cont
   - Shared/exclusive resource: generated client is frozen by B; no schema/API change in this task.
   - Review: PASS — ورود و ثبت‌نام OTP-first هستند، password روش ثانویه و session/redirect موجود را reuse می‌کند؛ داشبورد provider/policy/log را بدون secret read-back مدیریت می‌کند.
   - Verification: web 13/13، dashboard 75/75، typecheckهای web/dashboard/API، Chrome OTP E2E (2/2) و build webpack هر دو frontend پاس شدند؛ Turbopack در sandbox روی CSS-worker port bind محدود بود.
-  - Next action: push `dev`، مشاهدهٔ workflow و shared-dev؛ تا تنظیم runtime live و credential توسط ADMIN، OTP عمداً fail-closed است.
+  - Deployment: GitHub Action `38173139936` برای commit `23ffeae` در `2026-10-12` PASS شد؛ shared-dev API readiness و `/login` هر دو پاسخ موفق دادند. تا تنظیم runtime live و credential توسط ADMIN، OTP عمداً fail-closed است.
 
 ## آخرین batch تکمیل‌شده — F01-B06-B
 
