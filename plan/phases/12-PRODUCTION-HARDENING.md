@@ -110,6 +110,9 @@ application نمی‌شود.
 - [x] `F12-T12-R7` — تمام رکوردهای تنظیمات directory و scheduling از همان editor قابلیت ویرایش،
   فعال/غیرفعال‌سازی و حذف تأییدشده دارند؛ حذف رکورد وابسته پیام قابل اقدام می‌دهد و قرارداد سداد هر سه مقدار
   `merchantId`، `terminalId` و `terminalKey` را به‌صورت اجباری، write-only و رمزنگاری‌شده می‌پذیرد.
+- [x] `F12-T12-R8` — تنظیمات پرداخت فهرست آداپتورهای واقعی رجیستری، وضعیت کلی پرداخت آنلاین، editor مستقل هر
+  آداپتور، callback مشتق‌شده از API عمومی همان محیط، credential rotation و کنترل enabled/default را نمایش می‌دهد؛
+  emergency disable همیشه مجاز است و activation سداد تا `goLiveReady` شدن fail-closed می‌ماند.
 
 این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
 

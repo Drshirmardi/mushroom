@@ -50,7 +50,42 @@
 
 ## handoff فاز فعال
 
-## آخرین batch تکمیل‌شده — F12-B12-R7
+## آخرین batch تکمیل‌شده — F12-B12-R8
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: the dashboard lists the provider registry dynamically, exposes each adapter's code-owned
+configuration and callback guidance, and controls enabled/default state through the existing authorized API. Sadad
+activation remains fail-closed while `goLiveReady=false`; deactivation and credential rotation remain available.
+Coordinator-only files: `plan/STATUS.md`, phase checklist/log.
+
+- Task ID: `F12-T12-R8`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R7 payment credential contract and the Phase 09 provider registry/config API.
+  - Scope: replace the single-form payment editor with adapter cards and a focused adapter detail view; show current
+    public API callback/back-link and provider redirect information; connect enable/disable and default-provider
+    controls to the existing API; preserve stable activation blockers and write-only credential rotation.
+  - Owned paths: `apps/dashboard/src/features/settings/payment-provider-settings.tsx`,
+    `apps/dashboard/src/lib/{api.ts,commerce-payment-provider-api*}`, provider-state service/tests under
+    `apps/api/src/modules/commerce/payments/` and relevant dashboard/API tests; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: no database, migration, API route, OpenAPI, generated client, credential-storage,
+    runtime transport or payment-attempt change.
+  - Expected verification: payment adapter URL/state unit tests, dashboard test/typecheck/lint, responsive read-only
+    browser inspection when environment permits, and `git diff --check`.
+  - Review: PASS — registry results are rendered as adapter cards; the selected adapter exposes environment-specific
+    callback, technical endpoints, write-only credential rotation and state controls. Disabling all adapters provides
+    the payment-wide off action; per-adapter disable also clears stale default state. Enable/default controls remain
+    unavailable when the server reports `goLiveReady=false`.
+  - Verification: dev runtime config confirms `apiUrl=https://dev-api.roxco.ir`, callback helper tests cover dev and
+    staging origins, dashboard TypeScript/ESLint and `75/75` tests across `22` files pass, API test TypeScript and
+    OpenAPI contract `7/7` pass, and `git diff --check` passes. Post-push shared-dev inspection remains external.
+  - External next action: push `dev`, observe deployment, and inspect adapter list/detail at desktop/mobile widths.
+
+## batch تکمیل‌شده — F12-B12-R7
 
 Coordinator/Thread: `Codex /root`
 Started at: `2026-10-10 UTC`

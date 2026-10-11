@@ -29,6 +29,8 @@ describe('payment provider configuration (PostgreSQL API integration)', () => {
     })));
     expect(rotations.map(({ statusCode }) => statusCode)).toEqual([201, 201]); expect(rotations.map((response) => response.json().activeRevisionNumber).sort()).toEqual([first.json().activeRevisionNumber + 1, first.json().activeRevisionNumber + 2]);
     const config = await prisma.paymentProviderConfig.findFirstOrThrow({ where: { providerCode: 'sadad' }, include: { credentialVersions: { orderBy: { versionNumber: 'asc' } } } }); configId = config.id; expect(config.credentialVersions).toHaveLength(3); expect(config.credentialVersions.map(({ status }) => status)).toEqual(['RETIRED', 'RETIRED', 'ACTIVE']); expect(Buffer.from(config.credentialVersions[0]!.encryptedPayload ?? []).toString('utf8')).not.toContain('synthetic-only');
+    await prisma.paymentProviderConfig.update({ where: { id: config.id }, data: { enabled: true, isDefault: true } });
+    const disabled = await app.inject({ method: 'PATCH', url: '/v1/admin/commerce/payment-providers/sadad', headers: headers(adminPrincipal.token), payload: { enabled: false } }); expect(disabled.statusCode).toBe(200); expect(disabled.json()).toMatchObject({ enabled: false, isDefault: false });
     const blocked = await app.inject({ method: 'PATCH', url: '/v1/admin/commerce/payment-providers/sadad', headers: headers(adminPrincipal.token), payload: { enabled: true } }); expect(blocked.statusCode).toBe(503); expect(blocked.json().code).toBe('SADAD_GO_LIVE_BLOCKED');
     const callback = await app.inject({ method: 'POST', url: '/v1/payments/providers/sadad/callback', payload: { OrderId: '1', Token: 'synthetic' } }); expect(callback.statusCode).toBe(503); expect(callback.json().code).toBe('SADAD_GO_LIVE_BLOCKED');
   });

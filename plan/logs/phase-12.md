@@ -2225,3 +2225,39 @@ Result:
 Next work:
 
 - push `dev`, observe the deployment, then inspect settings cards/editors on desktop and mobile and confirm the three Sadad labels without submitting real credentials.
+
+## F12-T12-R8 — Payment adapter control center and callback guidance
+
+Date: `2026-10-11 UTC`
+
+Problem and accepted behavior:
+
+- payment settings were a Sadad-only credential form and did not expose the registered adapters, per-adapter state, default selection or environment callback information;
+- the dashboard must derive public callback guidance from the current environment's public API URL, not from the dashboard/browser origin;
+- disabling payment must remain available as an emergency action, while enabling a provider must respect the server-owned `goLiveReady` gate.
+
+Implementation:
+
+- replaced the single form with a registry-driven adapter overview, aggregate online-payment state, adapter cards and a focused adapter detail view;
+- added per-adapter enable/disable and default-provider controls through the existing authorized provider-config endpoint, plus a payment-wide off action that disables all currently enabled adapters;
+- made provider disable clear `isDefault` atomically so a disabled adapter cannot remain the default;
+- added the Sadad credential editor inside its adapter detail and retained encrypted write-only revision rotation;
+- added copyable callback, PaymentRequest and Verify addresses, readiness explanation and capability summary;
+- built callback URLs from dashboard `PUBLIC_API_URL`, producing `https://dev-api.roxco.ir/v1/payments/providers/sadad/callback` in shared dev and the equivalent API origin in each other environment.
+
+Verification:
+
+- dashboard TypeScript and targeted ESLint → PASS;
+- dashboard Vitest → PASS, `22` files and `75/75` tests;
+- API test TypeScript → PASS;
+- API OpenAPI contract → PASS, `7/7` tests;
+- shared-dev runtime config inspection confirms `apiUrl=https://dev-api.roxco.ir`;
+- `git diff --check` → PASS.
+
+Result:
+
+- **PASS / DONE pending post-push shared-dev browser observation.** Sadad enable/default remains unavailable while `goLiveReady=false`; no transport, payment-attempt, schema, migration, OpenAPI or credential-storage contract changed.
+
+Next work:
+
+- push `dev`, observe deployment, then inspect adapter overview/detail and responsive callback/credential layouts without entering real credentials.
