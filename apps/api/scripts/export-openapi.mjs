@@ -17,6 +17,8 @@ process.env.JWT_ACCESS_SECRET ??=
   'openapi-export-placeholder-access-secret-not-for-runtime';
 process.env.REFRESH_TOKEN_PEPPER ??=
   'openapi-export-placeholder-refresh-pepper-not-for-runtime';
+process.env.OTP_PEPPER ??=
+  'openapi-export-placeholder-otp-pepper-not-for-runtime-1234567890';
 
 const require = createRequire(import.meta.url);
 const { createApiApplication } = require('../dist/app.factory.js');

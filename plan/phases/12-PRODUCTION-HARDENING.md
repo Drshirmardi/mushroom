@@ -133,7 +133,7 @@ application نمی‌شود.
 [`../contracts/otp-sms-auth-v1.md`](../contracts/otp-sms-auth-v1.md) freeze شده‌اند.
 
 - [x] `F01-R06-A` — ADR، schema/migration، crypto/runtime، registry/adapter FarazSMS و API مدیریتی SMS/OTP.
-- [ ] `F01-R06-B` — engine OTP، endpointهای public auth، reuse session/account و OpenAPI/generated client.
+- [x] `F01-R06-B` — engine OTP، endpointهای public auth، reuse session/account و OpenAPI/generated client.
 - [ ] `F01-R06-C` — UX OTP-first در web، مدیریت responsive در dashboard و evidence مرورگر/deployment.
 
 این change control قرارداد session در ADR-0001 را جایگزین نمی‌کند: verify موفق OTP همان access token، refresh cookie،

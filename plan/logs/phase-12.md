@@ -1,5 +1,39 @@
 # Phase 12 Execution Evidence
 
+## F01-R06-B — OTP authentication and session integration
+
+Task ID: `F01-R06-B`
+Completed at: `2026-10-11 UTC`
+Agent/Thread: `Codex /root`
+Batch ID: `F01-B06-B`
+Reviewed by: `Codex /root`
+
+Changed files:
+
+- `apps/api/src/modules/identity/application/{otp-authentication,session-issuer}.use-case.ts`
+- `apps/api/src/modules/identity/presentation/http/{auth.controller.ts,dto/otp.dto.ts}` and identity wiring
+- checked-in OpenAPI and generated TypeScript client
+
+Tests run:
+
+- PostgreSQL integration: request → verify → passwordless patient/profile/session result, second verify rejection and two-request concurrency → PASS.
+- password login/register/session regression (18 tests) and API test typecheck → PASS.
+- OpenAPI export plus `openapi-typescript --check` → PASS.
+
+Result:
+
+- public request/resend/verify endpoints are Origin validated, idempotent/rate-limited and do not reveal code or account existence;
+- verifier is context-bound HMAC-SHA-256, challenges expire/lock/supersede/consume explicitly and only one concurrent verify succeeds;
+- existing users and newly provisioned OTP-only patients receive the same access/refresh session contract; no fake Credential is created.
+
+Known limitations:
+
+- browser/provider acceptance remains in `F01-R06-C`; integration used an internal fake delivery seam and sent no external SMS.
+
+Next batch:
+
+- `F01-B06-C` — web/dashboard UX and deployment evidence.
+
 ## F01-R06-A — SMS provider foundation and administration
 
 Task ID: `F01-R06-A`

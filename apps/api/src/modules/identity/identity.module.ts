@@ -3,6 +3,9 @@ import { Module } from '@nestjs/common';
 import { AccessTokenService } from '../../common/auth/access-token.service';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { ChatModule } from '../communications/chat/chat.module';
+import { SmsModule } from '../communications/sms/sms.module';
+import { SmsDeliveryService } from '../communications/sms/sms-delivery.service';
+import { ConfigService } from '@nestjs/config';
 import { ClinicalModule } from '../clinical/clinical.module';
 import { ChatSocketRegistry } from '../communications/chat/realtime/chat-socket-registry';
 import { LoginSessionUseCase } from './application/login-session.use-case';
@@ -19,6 +22,8 @@ import { RefreshTokenManager } from './application/ports/refresh-token-manager';
 import { SessionRepository } from './application/ports/session.repository';
 import { RefreshSessionUseCase } from './application/refresh-session.use-case';
 import { RegisterUserUseCase } from './application/register-user.use-case';
+import { SessionIssuerUseCase } from './application/session-issuer.use-case';
+import { OtpAuthenticationUseCase } from './application/otp-authentication.use-case';
 import { Argon2PasswordHasher } from './infrastructure/password-hasher';
 import { PrismaAccountRepository } from './infrastructure/prisma-account.repository';
 import { HmacRefreshTokenManager } from './infrastructure/hmac-refresh-token-manager';
@@ -33,7 +38,7 @@ import { AuditViewerSessionGuard } from './audit/audit-viewer-session.guard';
 import { AuditViewerService } from './audit/audit-viewer.service';
 
 @Module({
-  imports: [ChatModule, ClinicalModule],
+  imports: [ChatModule, ClinicalModule, SmsModule],
   controllers: [AuthController, MeController, AuditViewerController],
   providers: [
     Argon2PasswordHasher,
@@ -87,6 +92,11 @@ import { AuditViewerService } from './audit/audit-viewer.service';
         new LoginUserUseCase(logins, passwords),
     },
     {
+      provide: SessionIssuerUseCase,
+      inject: [SessionRepository, RefreshTokenManager, AccessTokenService],
+      useFactory: (sessions: SessionRepository, refreshTokens: RefreshTokenManager, accessTokens: AccessTokenService) => new SessionIssuerUseCase(sessions, refreshTokens, accessTokens),
+    },
+    {
       provide: LoginSessionUseCase,
       inject: [
         LoginUserUseCase,
@@ -105,6 +115,11 @@ import { AuditViewerService } from './audit/audit-viewer.service';
         refreshTokens,
         accessTokens,
       ),
+    },
+    {
+      provide: OtpAuthenticationUseCase,
+      inject: [PrismaService, SmsDeliveryService, PublicAuthRateLimiter, SessionIssuerUseCase, ConfigService],
+      useFactory: (prisma: PrismaService, delivery: SmsDeliveryService, rateLimiter: PublicAuthRateLimiter, sessions: SessionIssuerUseCase, config: ConfigService) => new OtpAuthenticationUseCase(prisma, delivery, rateLimiter, sessions, config),
     },
     {
       provide: RefreshSessionUseCase,
@@ -161,6 +176,7 @@ import { AuditViewerService } from './audit/audit-viewer.service';
     ManageUserStatusUseCase,
     ManageAccountUseCase,
     PublicAuthRateLimiter,
+    SessionIssuerUseCase,
   ],
 })
 export class IdentityModule {}

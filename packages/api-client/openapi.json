@@ -29,6 +29,146 @@
         ]
       }
     },
+    "/v1/auth/otp/challenges": {
+      "post": {
+        "operationId": "authOtpChallengeCreate",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOtpChallengeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpChallengeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request an authentication OTP challenge",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/v1/auth/otp/challenges/{challengeId}/resend": {
+      "post": {
+        "operationId": "authOtpChallengeResend",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "challengeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpChallengeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resend an authentication OTP challenge",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/v1/auth/otp/challenges/{challengeId}/verify": {
+      "post": {
+        "operationId": "authOtpChallengeVerify",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "challengeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpChallengeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify OTP and create an authenticated session",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/v1/auth/register": {
       "post": {
         "operationId": "authRegister",
@@ -3541,6 +3681,302 @@
         "summary": "",
         "tags": [
           "Notifications"
+        ]
+      }
+    },
+    "/v1/admin/sms/providers": {
+      "get": {
+        "operationId": "adminSmsProvidersList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SmsProviderConfigDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      }
+    },
+    "/v1/admin/sms/providers/{providerCode}/revisions": {
+      "post": {
+        "operationId": "adminSmsProviderRevisionCreate",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSmsProviderRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsProviderConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      }
+    },
+    "/v1/admin/sms/providers/{providerCode}": {
+      "patch": {
+        "operationId": "adminSmsProviderStateUpdate",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSmsProviderStateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmsProviderConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      }
+    },
+    "/v1/admin/sms/providers/{providerCode}/test-connection": {
+      "post": {
+        "operationId": "adminSmsProviderConnectionTest",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      }
+    },
+    "/v1/admin/sms/providers/{providerCode}/test-message": {
+      "post": {
+        "operationId": "adminSmsProviderMessageTest",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestSmsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      }
+    },
+    "/v1/admin/sms/otp-policy": {
+      "get": {
+        "operationId": "adminOtpPolicyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpPolicyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      },
+      "patch": {
+        "operationId": "adminOtpPolicyUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOtpPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpPolicyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
+        ]
+      }
+    },
+    "/v1/admin/sms/delivery-attempts": {
+      "get": {
+        "operationId": "adminSmsDeliveryAttemptsList",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SmsDeliveryAttemptDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin SMS and OTP"
         ]
       }
     },
@@ -11155,6 +11591,118 @@
       }
     },
     "schemas": {
+      "CreateOtpChallengeDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string"
+          },
+          "remember": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "OtpChallengeResponseDto": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "resendAvailableAt": {
+            "type": "string"
+          },
+          "destinationMasked": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "challengeId",
+          "expiresAt",
+          "resendAvailableAt",
+          "destinationMasked"
+        ]
+      },
+      "VerifyOtpChallengeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "AuthenticatedUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+989123456789"
+          },
+          "roles": {
+            "type": "array",
+            "example": [
+              "PATIENT"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "PATIENT",
+                "DOCTOR",
+                "STAFF",
+                "ADMIN"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "roles"
+        ]
+      },
+      "AuthenticationResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "format": "jwt"
+          },
+          "tokenType": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ],
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 600
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthenticatedUserDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "user"
+        ]
+      },
       "RegisterRequestDto": {
         "type": "object",
         "properties": {
@@ -11396,68 +11944,6 @@
         "required": [
           "phone",
           "password"
-        ]
-      },
-      "AuthenticatedUserDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+989123456789"
-          },
-          "roles": {
-            "type": "array",
-            "example": [
-              "PATIENT"
-            ],
-            "items": {
-              "type": "string",
-              "enum": [
-                "PATIENT",
-                "DOCTOR",
-                "STAFF",
-                "ADMIN"
-              ]
-            }
-          }
-        },
-        "required": [
-          "id",
-          "phone",
-          "roles"
-        ]
-      },
-      "AuthenticationResponseDto": {
-        "type": "object",
-        "properties": {
-          "accessToken": {
-            "type": "string",
-            "format": "jwt"
-          },
-          "tokenType": {
-            "type": "string",
-            "enum": [
-              "Bearer"
-            ],
-            "example": "Bearer"
-          },
-          "expiresIn": {
-            "type": "number",
-            "example": 600
-          },
-          "user": {
-            "$ref": "#/components/schemas/AuthenticatedUserDto"
-          }
-        },
-        "required": [
-          "accessToken",
-          "tokenType",
-          "expiresIn",
-          "user"
         ]
       },
       "Object": {
@@ -13567,6 +14053,270 @@
       "PreferenceDto": {
         "type": "object",
         "properties": {}
+      },
+      "SmsProviderFieldDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "help": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "secret": {
+            "type": "boolean"
+          },
+          "defaultValue": {
+            "type": "string"
+          },
+          "placeholder": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "maxLength": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "help",
+          "type",
+          "required",
+          "secret",
+          "order",
+          "maxLength"
+        ]
+      },
+      "SmsProviderConfigDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SmsProviderFieldDto"
+            }
+          },
+          "runtimeAvailable": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "credentialConfigured": {
+            "type": "boolean"
+          },
+          "activeRevisionNumber": {
+            "type": "object",
+            "nullable": true
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "displayName",
+          "description",
+          "capabilities",
+          "fields",
+          "runtimeAvailable",
+          "enabled",
+          "isDefault",
+          "credentialConfigured",
+          "config"
+        ]
+      },
+      "CreateSmsProviderRevisionDto": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "credential": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "config"
+        ]
+      },
+      "UpdateSmsProviderStateDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TestSmsDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "OtpPolicyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "codeLength": {
+            "type": "number"
+          },
+          "expiresInSeconds": {
+            "type": "number"
+          },
+          "resendCooldownSeconds": {
+            "type": "number"
+          },
+          "maxVerifyAttempts": {
+            "type": "number"
+          },
+          "phoneRequestLimit": {
+            "type": "number"
+          },
+          "requestWindowSeconds": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "enabled",
+          "codeLength",
+          "expiresInSeconds",
+          "resendCooldownSeconds",
+          "maxVerifyAttempts",
+          "phoneRequestLimit",
+          "requestWindowSeconds",
+          "updatedAt"
+        ]
+      },
+      "UpdateOtpPolicyDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "codeLength": {
+            "type": "number"
+          },
+          "expiresInSeconds": {
+            "type": "number"
+          },
+          "resendCooldownSeconds": {
+            "type": "number"
+          },
+          "maxVerifyAttempts": {
+            "type": "number"
+          },
+          "phoneRequestLimit": {
+            "type": "number"
+          },
+          "requestWindowSeconds": {
+            "type": "number"
+          }
+        }
+      },
+      "SmsDeliveryAttemptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "recipientMasked": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "providerReference": {
+            "type": "object",
+            "nullable": true
+          },
+          "errorCategory": {
+            "type": "object",
+            "nullable": true
+          },
+          "isTest": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "resolvedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "providerCode": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "recipientMasked",
+          "status",
+          "isTest",
+          "createdAt"
+        ]
       },
       "SelfProfileResponseDto": {
         "type": "object",

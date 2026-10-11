@@ -50,6 +50,26 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F01-B06-B
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `F01-R06-A` commit `6dc106b` and the frozen OTP/SMS contract.
+
+- Task ID: `F01-R06-B`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F01-R06-A DONE`.
+  - Scope: HMAC OTP engine, rate-limit/idempotency/concurrency, passwordless account provisioning, session reuse, public endpoints and generated client.
+  - Owned paths: identity OTP/session code, auth controller/DTOs, OTP integration tests and OpenAPI/generated client.
+  - Shared/exclusive resource: identity session infrastructure and generated API contract are single-writer resources.
+  - Expected verification: API typecheck, PostgreSQL integration including single-use concurrency, password regression and OpenAPI drift.
+  - Review: PASS — OTP code فقط در memory ارسال، verifier به‌صورت HMAC، consume اتمیک و provisioning بدون credential جعلی انجام می‌شود؛ session همان زیرساخت موجود است.
+  - Verification: PostgreSQL integration single-use/concurrency، 18 تست regression رمز/session، API test typecheck و OpenAPI generated-client drift پاس شدند.
+  - Next eligible batch: `F01-B06-C` برای web/dashboard UX و evidence نهایی.
+
 ## آخرین batch تکمیل‌شده — F01-B06-A
 
 Coordinator/Thread: `Codex /root`

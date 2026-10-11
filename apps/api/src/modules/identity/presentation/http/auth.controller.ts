@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -63,6 +64,7 @@ import {
 } from '../../application/register-user.use-case';
 import { PhoneAlreadyRegisteredError } from '../../application/ports/registration.repository';
 import type { SecurityAuditContext } from '../../application/security-audit';
+import { OtpAuthenticationUseCase } from '../../application/otp-authentication.use-case';
 import { InvalidPhoneNumberError } from '../../domain/phone-number';
 import { PasswordPolicyError } from '../../domain/password-policy';
 import {
@@ -77,6 +79,7 @@ import {
   SessionListQueryDto,
   SessionListResponseDto,
 } from './dto/session.dto';
+import { CreateOtpChallengeDto, OtpChallengeResponseDto, VerifyOtpChallengeDto } from './dto/otp.dto';
 
 const passwordErrorMessages = {
   PASSWORD_TOO_SHORT: 'Password is too short.',
@@ -125,7 +128,42 @@ export class AuthController {
     private readonly manageSessions: ManageSessionsUseCase,
     private readonly refreshCookie: RefreshCookieService,
     private readonly browserOrigins: BrowserOriginService,
+    private readonly otp: OtpAuthenticationUseCase,
   ) {}
+
+  @Post('otp/challenges')
+  @Public()
+  @ApiBrowserOrigin()
+  @ApiOperation({ operationId: 'authOtpChallengeCreate', summary: 'Request an authentication OTP challenge' })
+  @ApiCreatedResponse({ type: OtpChallengeResponseDto })
+  async createOtpChallenge(@Body() body: CreateOtpChallengeDto, @Headers('idempotency-key') key: string | undefined, @Req() request: FastifyRequest) {
+    this.browserOrigins.assertAllowed(getOrigin(request));
+    return this.otp.request({ phone: body.phone, remember: body.remember ?? false, idempotencyKey: key, ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });
+  }
+
+  @Post('otp/challenges/:challengeId/resend')
+  @Public()
+  @ApiBrowserOrigin()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ operationId: 'authOtpChallengeResend', summary: 'Resend an authentication OTP challenge' })
+  @ApiOkResponse({ type: OtpChallengeResponseDto })
+  async resendOtpChallenge(@Param('challengeId', ParseUUIDPipe) challengeId: string, @Headers('idempotency-key') key: string | undefined, @Req() request: FastifyRequest) {
+    this.browserOrigins.assertAllowed(getOrigin(request));
+    return this.otp.resend(challengeId, key, { ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });
+  }
+
+  @Post('otp/challenges/:challengeId/verify')
+  @Public()
+  @ApiBrowserOrigin()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ operationId: 'authOtpChallengeVerify', summary: 'Verify OTP and create an authenticated session' })
+  @ApiOkResponse({ type: AuthenticationResponseDto, headers: REFRESH_COOKIE_RESPONSE_HEADERS })
+  async verifyOtpChallenge(@Param('challengeId', ParseUUIDPipe) challengeId: string, @Body() body: VerifyOtpChallengeDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply): Promise<AuthenticationResponseDto> {
+    this.browserOrigins.assertAllowed(getOrigin(request));
+    const result = await this.otp.verify(challengeId, body.code, { ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });
+    this.refreshCookie.set(reply, result.refreshToken, result.refreshExpiresAt);
+    return toResponse(result);
+  }
 
   @Post('register')
   @Public()

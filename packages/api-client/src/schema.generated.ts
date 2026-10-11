@@ -36,6 +36,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/otp/challenges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request an authentication OTP challenge */
+        post: operations["authOtpChallengeCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/challenges/{challengeId}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resend an authentication OTP challenge */
+        post: operations["authOtpChallengeResend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/challenges/{challengeId}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify OTP and create an authenticated session */
+        post: operations["authOtpChallengeVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/register": {
         parameters: {
             query?: never;
@@ -1049,6 +1100,118 @@ export interface paths {
             cookie?: never;
         };
         get: operations["adminNotificationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminSmsProvidersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSmsProviderRevisionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["adminSmsProviderStateUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSmsProviderConnectionTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}/test-message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSmsProviderMessageTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/otp-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOtpPolicyGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["adminOtpPolicyUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/sms/delivery-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminSmsDeliveryAttemptsList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3076,6 +3239,45 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CreateOtpChallengeDto: {
+            phone: string;
+            /** @default false */
+            remember?: boolean;
+        };
+        OtpChallengeResponseDto: {
+            /** Format: uuid */
+            challengeId: string;
+            expiresAt: string;
+            resendAvailableAt: string;
+            destinationMasked: string;
+        };
+        VerifyOtpChallengeDto: {
+            code: string;
+        };
+        AuthenticatedUserDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example +989123456789 */
+            phone: string;
+            /**
+             * @example [
+             *       "PATIENT"
+             *     ]
+             */
+            roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
+        };
+        AuthenticationResponseDto: {
+            /** Format: jwt */
+            accessToken: string;
+            /**
+             * @example Bearer
+             * @enum {string}
+             */
+            tokenType: "Bearer";
+            /** @example 600 */
+            expiresIn: number;
+            user: components["schemas"]["AuthenticatedUserDto"];
+        };
         RegisterRequestDto: {
             /** @example 09123456789 */
             phone: string;
@@ -3117,30 +3319,6 @@ export interface components {
             password: string;
             /** @default false */
             remember?: boolean;
-        };
-        AuthenticatedUserDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example +989123456789 */
-            phone: string;
-            /**
-             * @example [
-             *       "PATIENT"
-             *     ]
-             */
-            roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
-        };
-        AuthenticationResponseDto: {
-            /** Format: jwt */
-            accessToken: string;
-            /**
-             * @example Bearer
-             * @enum {string}
-             */
-            tokenType: "Bearer";
-            /** @example 600 */
-            expiresIn: number;
-            user: components["schemas"]["AuthenticatedUserDto"];
         };
         Object: Record<string, never>;
         SessionListItemDto: {
@@ -3755,6 +3933,80 @@ export interface components {
             nextCursor?: string | null;
         };
         PreferenceDto: Record<string, never>;
+        SmsProviderFieldDto: {
+            key: string;
+            label: string;
+            help: string;
+            type: string;
+            required: boolean;
+            secret: boolean;
+            defaultValue?: string;
+            placeholder?: string;
+            order: number;
+            maxLength: number;
+        };
+        SmsProviderConfigDto: {
+            code: string;
+            displayName: string;
+            description: string;
+            capabilities: string[];
+            fields: components["schemas"]["SmsProviderFieldDto"][];
+            runtimeAvailable: boolean;
+            enabled: boolean;
+            isDefault: boolean;
+            credentialConfigured: boolean;
+            activeRevisionNumber?: Record<string, never> | null;
+            config: {
+                [key: string]: string;
+            };
+            updatedAt?: Record<string, never> | null;
+        };
+        CreateSmsProviderRevisionDto: {
+            config: {
+                [key: string]: string;
+            };
+            credential?: {
+                [key: string]: string;
+            };
+        };
+        UpdateSmsProviderStateDto: {
+            enabled?: boolean;
+            isDefault?: boolean;
+        };
+        TestSmsDto: {
+            phone: string;
+        };
+        OtpPolicyDto: {
+            id: string;
+            enabled: boolean;
+            codeLength: number;
+            expiresInSeconds: number;
+            resendCooldownSeconds: number;
+            maxVerifyAttempts: number;
+            phoneRequestLimit: number;
+            requestWindowSeconds: number;
+            updatedAt: string;
+        };
+        UpdateOtpPolicyDto: {
+            enabled?: boolean;
+            codeLength?: number;
+            expiresInSeconds?: number;
+            resendCooldownSeconds?: number;
+            maxVerifyAttempts?: number;
+            phoneRequestLimit?: number;
+            requestWindowSeconds?: number;
+        };
+        SmsDeliveryAttemptDto: {
+            id: string;
+            recipientMasked: string;
+            status: string;
+            providerReference?: Record<string, never> | null;
+            errorCategory?: Record<string, never> | null;
+            isTest: boolean;
+            createdAt: string;
+            resolvedAt?: Record<string, never> | null;
+            providerCode?: Record<string, never> | null;
+        };
         SelfProfileResponseDto: {
             /** Format: uuid */
             patientId: string;
@@ -5399,6 +5651,86 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    authOtpChallengeCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOtpChallengeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpChallengeResponseDto"];
+                };
+            };
+        };
+    };
+    authOtpChallengeResend: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+            };
+            path: {
+                challengeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpChallengeResponseDto"];
+                };
+            };
+        };
+    };
+    authOtpChallengeVerify: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+            };
+            path: {
+                challengeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyOtpChallengeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    /** @description HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript. */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthenticationResponseDto"];
+                };
             };
         };
     };
@@ -7302,6 +7634,180 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminSmsProvidersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsProviderConfigDto"][];
+                };
+            };
+        };
+    };
+    adminSmsProviderRevisionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSmsProviderRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsProviderConfigDto"];
+                };
+            };
+        };
+    };
+    adminSmsProviderStateUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSmsProviderStateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsProviderConfigDto"];
+                };
+            };
+        };
+    };
+    adminSmsProviderConnectionTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminSmsProviderMessageTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestSmsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminOtpPolicyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpPolicyDto"];
+                };
+            };
+        };
+    };
+    adminOtpPolicyUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOtpPolicyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpPolicyDto"];
+                };
+            };
+        };
+    };
+    adminSmsDeliveryAttemptsList: {
+        parameters: {
+            query?: {
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsDeliveryAttemptDto"][];
+                };
             };
         };
     };
