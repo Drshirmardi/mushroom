@@ -179,6 +179,7 @@ for (const required of [
   'DEV_API_SOURCE_HASH',
   'apps/api/dist/.source.sha256',
   'DEV_WRITE_RUNTIME_CONFIG',
+  '$workspace/deploy/vps/deploy-dev.sh',
   'hash_frontend_inputs',
   'services+=(web)',
   'services+=(app)',

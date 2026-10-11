@@ -121,6 +121,8 @@ application نمی‌شود.
   یا ناسازگار پیش از recreate شدن API به‌صورت تمیز rebuild می‌شود و اجرای مجدد همان SHA نیز stale dist را ترمیم می‌کند.
 - [x] `F12-T12-R11` — تمام stageهای انتخاب‌شدهٔ bootstrap شامل client، Prisma، migration، compile و runtime config
   صریحاً از Compose عبور می‌کنند؛ تست قرارداد وجود هر flag را در environment کانتینر کنترل می‌کند.
+- [x] `F12-T12-R12` — تغییر قرارداد versioned دیپلوی، state قبلی bootstrap را invalid می‌کند و generated clientها،
+  Prisma، migrationهای idempotent، API artifact و runtime config را پیش از readiness دوباره reconcile می‌کند.
 
 این change control migration، role expansion، multi-clinic switching یا guest cart را مجاز نمی‌کند.
 

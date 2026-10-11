@@ -104,7 +104,12 @@ hash_inputs() {
       find "$workspace/apps" "$workspace/packages" -mindepth 2 -maxdepth 2 -name package.json -type f -print | sort
     )
   else
-    files+=("$workspace/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/dev-service.sh")
+    files+=(
+      "$workspace/deploy/vps/Dockerfile.dev"
+      "$workspace/deploy/vps/compose.dev.yaml"
+      "$workspace/deploy/vps/deploy-dev.sh"
+      "$workspace/deploy/vps/dev-service.sh"
+    )
   fi
   for file in "${files[@]}"; do
     [[ -f $file ]] || die "fingerprint input is missing: $file"
@@ -221,6 +226,13 @@ restart_web=false
 restart_app=false
 restart_dashboard=false
 write_runtime_config=false
+if [[ $runtime_changed == true ]]; then
+  build_api_client=true
+  generate_prisma=true
+  run_migrations=true
+  compile_api=true
+  write_runtime_config=true
+fi
 if [[ $install_dependencies == true || $api_client_hash != "$previous_api_client_hash" \
   || ! -f $workspace/packages/api-client/dist/index.js ]]; then
   build_api_client=true

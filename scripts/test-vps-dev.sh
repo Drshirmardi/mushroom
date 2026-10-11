@@ -24,6 +24,7 @@ mkdir -p "$workspace/config" "$workspace/deploy/vps" "$workspace/apps/api/src" "
 
 cp "$repo_root/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/Dockerfile.dev"
 cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.yaml"
+cp "$repo_root/deploy/vps/deploy-dev.sh" "$workspace/deploy/vps/deploy-dev.sh"
 cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
 cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
@@ -189,6 +190,14 @@ run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   || fail 'unchanged API inputs unnecessarily recreated the API runtime'
 ! grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
   || fail 'unchanged inputs unnecessarily recreated watcher services'
+
+printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
+: >"$docker_log"
+run_deploy 8888888888888888888888888888888888888888
+grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=true.*prisma=true.*migrate=true.*compile=true.*config=true' "$docker_log" \
+  || fail 'bootstrap contract change did not reconcile generated artifacts and migrations'
+grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
+  || fail 'bootstrap contract change did not recreate the shared dev services'
 
 printf 'stale-artifact\n' >"$workspace/apps/api/dist/.source.sha256"
 : >"$docker_log"

@@ -50,6 +50,31 @@
 
 ## handoff فاز فعال
 
+## آخرین batch تکمیل‌شده — F12-B12-R12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: a change to the versioned bootstrap/deployment contract invalidates prior stage state and must
+re-run idempotent migrations plus all generated runtime artifacts before service readiness is accepted.
+
+- Task ID: `F12-T12-R12`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: F12-T12-R11 flag propagation and live refresh `500` evidence after stale migration state.
+  - Scope: include the deployment orchestrator in the runtime fingerprint and make runtime-contract changes reconcile
+    API client, Prisma generation/migrations, API compilation and frontend runtime config.
+  - Owned paths: `deploy/vps/deploy-dev.sh`, dev deployment contract tests, and coordinator plan files.
+  - Shared/exclusive resource: existing versioned migrations may only run via idempotent `prisma migrate deploy`; no
+    schema or application auth contract changes.
+  - Expected verification: dev/release deployment contract suites, shell syntax, `git diff --check`, push, API health
+    and authenticated refresh observation.
+  - Review: PASS — the orchestrator is part of the runtime fingerprint and any runtime-contract change forces the
+    complete idempotent bootstrap reconciliation before all services are recreated and probed.
+  - Verification: dev VPS regression, release pipeline contract, shell syntax and `git diff --check` passed.
+    Post-push migration/refresh observation remains the external acceptance gate.
+
 ## آخرین batch تکمیل‌شده — F12-B12-R11
 
 Coordinator/Thread: `Codex /root`

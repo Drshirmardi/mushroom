@@ -2402,3 +2402,48 @@ Known limitations:
 Next task:
 
 - observe shared-dev API readiness, then continue the controlled Sadad credential/enablement acceptance flow.
+
+## F12-T12-R12 — Shared-dev bootstrap state reconciliation corrective
+
+Task ID: `F12-T12-R12`
+Completed at: `2026-10-11 UTC`
+Agent/Thread: `Codex /root`
+Batch ID: `F12-B12-R12`
+Reviewed by: `Codex /root`
+
+Changed files:
+
+- `deploy/vps/deploy-dev.sh`
+- `scripts/test-vps-dev.sh`
+- `scripts/test-release-pipeline.mjs`
+- `plan/STATUS.md`
+- `plan/phases/12-PRODUCTION-HARDENING.md`
+- `plan/logs/phase-12.md`
+
+Migrations:
+
+- no new migration; existing pending migrations are applied only through `prisma migrate deploy`.
+
+Tests run:
+
+- `bash -n deploy/vps/deploy-dev.sh deploy/vps/dev-service.sh scripts/test-vps-dev.sh` → PASS.
+- `bash scripts/test-vps-dev.sh` → PASS, including runtime-contract state reconciliation.
+- `node scripts/test-release-pipeline.mjs` → PASS.
+- `git diff --check` → PASS.
+
+Result:
+
+- `deploy-dev.sh` itself now participates in the runtime fingerprint, so orchestration changes cannot reuse a state
+  written by an older contract;
+- a runtime-contract change forces API client build, Prisma generation, `prisma migrate deploy`, clean API compile and
+  public runtime-config generation before service recreation;
+- this repairs the stale state that allowed new refresh-session SQL to run before its existing versioned migration.
+
+Known limitations:
+
+- the live authenticated refresh acceptance check follows deployment because it requires the server database and an
+  actual browser session; no credential or token is recorded in repository evidence.
+
+Next task:
+
+- verify shared-dev API health and browser refresh, then continue controlled Sadad activation.
