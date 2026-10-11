@@ -62,8 +62,7 @@ jobs:
           VPS_KNOWN_HOSTS_PATH: ${{ runner.temp }}/ssh/known_hosts
         run: |
           case "$MODE" in live|disabled) ;; *) exit 2 ;; esac
-          port="${VPS_PORT:-22}"
-          ssh -p "$port" -i "$VPS_SSH_KEY_PATH" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$VPS_KNOWN_HOSTS_PATH" "$VPS_USER@$VPS_HOST" "sed -i 's/^SMS_TRANSPORT_MODE=.*/SMS_TRANSPORT_MODE=$MODE/' \"\$HOME/mushroom/dev/runtime.env\""
+          node scripts/set-dev-sms-runtime.mjs "$MODE"
       - name: Sync source and verify shared dev
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
