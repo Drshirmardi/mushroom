@@ -160,6 +160,7 @@ import { AuditViewerService } from './audit/audit-viewer.service';
     ManageSessionsUseCase,
     ManageUserStatusUseCase,
     ManageAccountUseCase,
+    PublicAuthRateLimiter,
   ],
 })
 export class IdentityModule {}

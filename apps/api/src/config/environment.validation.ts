@@ -87,6 +87,17 @@ const sadadReturnUrlSchema = Joi.string()
   })
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /v1/payments/providers/sadad/callback with no query or fragment' });
 
+const sadadResultUrlSchema = Joi.string()
+  .allow('')
+  .custom((value, helpers) => {
+    if (!value) return value;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && url.pathname === '/store/order-success' && !url.search && !url.hash ? url.toString() : helpers.error('any.invalid');
+    } catch { return helpers.error('any.invalid'); }
+  })
+  .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /store/order-success with no query or fragment' });
+
 export const environmentValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
@@ -108,6 +119,7 @@ export const environmentValidationSchema = Joi.object({
     })
     .default('http://localhost:3000,http://localhost:3001,http://localhost:3002')
     .messages({ 'any.invalid': 'must be a comma-separated list of HTTP(S) origins' }),
+  PUBLIC_API_URL: Joi.string().custom((value, helpers) => isHttpOrigin(value) && new URL(value).protocol === 'https:' ? new URL(value).toString() : helpers.error('any.invalid')).when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.required(), otherwise: Joi.optional() }).messages({ 'any.invalid': 'must be a public HTTPS origin with no path, query or fragment' }),
   TRUSTED_PROXIES: Joi.when('NODE_ENV', {
     is: 'production',
     then: trustedProxySchema.required(),
@@ -130,12 +142,13 @@ export const environmentValidationSchema = Joi.object({
     .invalid('replace-this-placeholder-with-a-unique-refresh-token-pepper')
     .invalid(Joi.ref('JWT_ACCESS_SECRET'))
     .required(),
-  // Sadad remains disabled here: merchant credentials are encrypted config revisions, never environment values.
-  PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.optional(),
+  // Merchant credentials remain encrypted config revisions; live mode contains only deployment/network controls.
+  PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
   PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
   PAYMENT_CREDENTIAL_DECRYPTION_KEYS: paymentCredentialHistoricalKeyringSchema.optional(),
-  SADAD_TRANSPORT_MODE: Joi.string().valid('disabled').default('disabled'),
+  SADAD_TRANSPORT_MODE: Joi.string().valid('disabled', 'live').default('disabled'),
   SADAD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1_000).max(30_000).default(5_000),
-  SADAD_RETURN_URL: sadadReturnUrlSchema.optional(),
-  SADAD_REDIRECT_PROFILE: Joi.string().valid('', 'PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX').default(''),
+  SADAD_RETURN_URL: sadadReturnUrlSchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
+  SADAD_RESULT_URL: sadadResultUrlSchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
+  SADAD_REDIRECT_PROFILE: Joi.string().valid('', 'PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX').when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.string().default('') }),
 }).unknown(true);

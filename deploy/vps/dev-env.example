@@ -21,6 +21,14 @@ APP_ORIGINS=https://dev.example.com,https://dev-app.example.com,https://dev-dash
 TRUSTED_PROXIES=127.0.0.1/32
 PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
 LOG_LEVEL=debug
+# Keep disabled until the callback, redirect profile, static outbound IP and encrypted merchant credential are ready.
+# Once set to live, the administrator still explicitly enables/defaults Sadad in Dashboard > Settings > Payments.
+SADAD_TRANSPORT_MODE=disabled
+SADAD_REQUEST_TIMEOUT_MS=5000
+SADAD_RETURN_URL=https://dev-api.example.com/v1/payments/providers/sadad/callback
+SADAD_RESULT_URL=https://dev-app.example.com/store/order-success
+# Set exactly the redirect shape confirmed for this merchant: PDF_PURCHASE, PHP_VPG_PURCHASE or DOTNET_PURCHASE_INDEX.
+SADAD_REDIRECT_PROFILE=
 
 API_PORT=127.0.0.1:3303
 WEB_PORT=127.0.0.1:3300

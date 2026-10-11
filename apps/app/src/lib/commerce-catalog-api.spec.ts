@@ -43,9 +43,11 @@ describe("commerce catalog API adapter", () => {
 
   it("uses owned-order endpoints for payment and receipt without sending provider data", async () => {
     const orderId = "11111111-1111-4111-8111-111111111111";
+    vi.mocked(apiClient.POST).mockResolvedValueOnce({ data: { id: "22222222-2222-4222-8222-222222222222", redirectUrl: "https://sadad.shaparak.ir/VPG/Purchase?Token=synthetic" }, response: new Response(null, { status: 201 }) } as never);
+    await expect(createPaymentAttempt("access-token", orderId, "attempt-key")).resolves.toMatchObject({ redirectUrl: "https://sadad.shaparak.ir/VPG/Purchase?Token=synthetic" });
+    expect(apiClient.POST).toHaveBeenCalledWith("/v1/patients/me/orders/{orderId}/payment-attempts", { headers: { authorization: "Bearer access-token", "idempotency-key": "attempt-key" }, params: { path: { orderId } } });
     vi.mocked(apiClient.POST).mockResolvedValue({ error: { code: "SADAD_GO_LIVE_BLOCKED" }, response: new Response(null, { status: 503 }) } as never);
     await expect(createPaymentAttempt("access-token", orderId, "attempt-key")).rejects.toEqual(new CommerceRequestError(503, "SADAD_GO_LIVE_BLOCKED"));
-    expect(apiClient.POST).toHaveBeenCalledWith("/v1/patients/me/orders/{orderId}/payment-attempts", { headers: { authorization: "Bearer access-token", "idempotency-key": "attempt-key" }, params: { path: { orderId } } });
     vi.mocked(apiClient.GET).mockResolvedValue({ error: { code: "COMMERCE_RECEIPT_NOT_AVAILABLE" }, response: new Response(null, { status: 404 }) } as never);
     await expect(getCommerceReceipt("access-token", orderId)).rejects.toEqual(new CommerceRequestError(404, "COMMERCE_RECEIPT_NOT_AVAILABLE"));
     expect(apiClient.GET).toHaveBeenCalledWith("/v1/patients/me/orders/{orderId}/receipt", { headers: { authorization: "Bearer access-token" }, params: { path: { orderId } } });

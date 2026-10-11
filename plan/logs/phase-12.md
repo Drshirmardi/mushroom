@@ -2261,3 +2261,55 @@ Result:
 Next work:
 
 - push `dev`, observe deployment, then inspect adapter overview/detail and responsive callback/credential layouts without entering real credentials.
+
+## F12-T12-R9 — Sadad live runtime and administrator activation
+
+Date: `2026-10-11 UTC`
+
+Problem and accepted behavior:
+
+- the Sadad adapter had a complete dormant protocol implementation, but Nest always registered a blocked transport and
+  patient checkout could never receive a provider redirect;
+- deployment permission to contact Sadad and clinic administrator enable/default state must remain separate controls;
+- callbacks for an attempt already created must remain verifiable after an administrator disables new attempts, and no
+  redirect or browser callback may create a financial effect without a matching server-to-server Verify.
+
+Implementation:
+
+- added validated `disabled/live` runtime configuration, bounded request timeout, exact public API callback, result URL
+  and code-owned redirect profile; Compose and environment examples pass only these non-secret controls;
+- wired the live Nest adapter to the fixed Sadad PaymentRequest and Verify HTTPS endpoints, retaining encrypted
+  Merchant ID, Terminal ID and Terminal Key revisions in the database;
+- connected patient payment creation to the enabled/default operational revision, moved the external request outside
+  the database transaction, returned the allowlisted Sadad redirect to the app and made concurrent idempotent callers
+  wait for the same attempt result rather than issuing another OrderId;
+- implemented the public form callback, bounded its IP/order replay rate, correlated OrderId/Token, loaded the immutable
+  credential revision, ran Verify and redirected with only the internal order ID; `0/100` are authoritative success,
+  `-1/101` are non-success, and timeout/unknown results remain `REQUIRES_RECONCILIATION` on the same attempt;
+- made a live runtime expose activation availability to Dashboard; enabling a dormant configured provider atomically
+  promotes the credential reference into a new immutable `RIAL/goLiveReady` revision, while disabling clears default
+  state and blocks only new attempts;
+- regenerated OpenAPI/client artifacts, aligned the release/protocol contracts with the owner's explicit live-runtime
+  authorization, and added `deploy/sadad-live-runbook.md` with the exact shared-dev callback/result values.
+
+Verification:
+
+- clean disposable PostgreSQL 16: all `33` migrations plus development seed → PASS;
+- live provider configuration/activation/callback rate-limit integration → PASS, `1/1`;
+- disabled-mode checkout, concurrent idempotency, Verify `0/100/-1/101`, timeout, unknown response, mismatch and
+  exactly-one financial effect integration → PASS, `2/2`;
+- API test TypeScript and focused config/adapter/runtime/contract/OpenAPI suite → PASS, `5` files and `27/27` tests;
+- OpenAPI contract → PASS, `7/7`; generated API client drift check and TypeScript → PASS;
+- app TypeScript and Vitest → PASS, `13` files and `52/52` tests;
+- dashboard TypeScript, targeted ESLint and Vitest → PASS, `22` files and `75/75` tests;
+- API production TypeScript/OpenAPI export and `git diff --check` → PASS.
+
+Result:
+
+- **PASS / DONE.** The repository is live-capable and defaults every deployment to `disabled`. No real credential was
+  committed or logged, no external Sadad request was made, and no shared/production environment was mutated.
+
+External activation:
+
+- deploy the commit, apply the runbook values with the exact merchant-confirmed redirect profile, then use Dashboard to
+  rotate the three credentials, enable Sadad and select it as default before the controlled low-value acceptance test.

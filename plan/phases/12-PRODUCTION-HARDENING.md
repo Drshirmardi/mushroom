@@ -37,15 +37,16 @@ idempotency، validation/configuration، مستندسازی placeholderهای `.
 - credentialهای سداد در revisionهای رمزنگاری‌شدهٔ فعلی می‌مانند. کلید encryption خارج از database و Git نگهداری
   می‌شود و rotation آن نباید revisionهای پیشین را ناخوانا کند. `.env.example` فقط نام/توضیح/validation placeholder
   دارد؛ `.env` یا مقدار واقعی gate پذیرندگی را دور نمی‌زند.
-- `SADAD_GO_LIVE_BLOCKED` تا evidence پذیرندگی، تأیید کتبی static outbound egress IP لیارا، endpoint/callback،
-  credential خارج از Git و sign-off باقی می‌ماند. IP ورودی یا اختصاصی جایگزین static outbound IP نیست.
-- provisioning، خرید، credential واقعی، اتصال خارجی، enable/default و deploy در این change control یا baseline
-  مجاز نیستند. اگر لیارا static outbound egress مناسب را تأیید نکند، مالک پروژه تصمیم جایگزین را می‌گیرد و provider
-  خودکار تغییر نمی‌کند.
+- مالک محصول در `2026-10-11` خروج runtime سداد از حالت dormant را برای محیط VPS فعلی صریحاً تأیید کرد. انتخاب
+  `SADAD_TRANSPORT_MODE=live` اعلام عملیاتی deployer است که callback عمومی، egress، redirect profile و secret
+  encryption همان محیط آماده‌اند؛ این انتخاب به‌تنهایی provider کلینیک را فعال نمی‌کند.
+- enable/default فقط با اقدام ADMIN در تنظیمات داشبورد انجام می‌شود. غیرفعال‌سازی ADMIN ایجاد attempt جدید را
+  متوقف می‌کند، اما callback و Verify تلاش‌های از قبل ایجادشده را متوقف نمی‌کند. نبود runtime کامل یا provider
+  فعال/default همچنان با `SADAD_GO_LIVE_BLOCKED` fail-closed می‌شود.
 
 ## Sadad production acceptance gate
 
-پیش از هر enable/default یا اتصال واقعی سداد، Phase 12 باید evidence غیرمحرمانهٔ موارد زیر را ثبت کند:
+برای sign-off نهایی production سداد، Phase 12 باید evidence غیرمحرمانهٔ موارد زیر را ثبت کند:
 
 - environment و endpoint/redirect profile جاری;
 - static egress IP و HTTPS callback domain/path ثبت‌شده;
@@ -56,8 +57,8 @@ idempotency، validation/configuration، مستندسازی placeholderهای `.
 - monitoring و alert برای create، Verify retry، reconciliation و clock skew;
 - production enable/default و merchant/product-owner sign-off.
 
-تا این gate، `SADAD_GO_LIVE_BLOCKED` برای activation/runtime باقی می‌ماند؛ اما completion نرم‌افزاری Phase 09
-و taskهای بعدی آن را مسدود نمی‌کند.
+این فهرست همچنان شرط پذیرش نهایی و ادعای production-ready بودن است. نرم‌افزار می‌تواند با mode صریح `live` و
+فعال‌سازی ADMIN تراکنش کنترل‌شدهٔ پذیرش را اجرا کند؛ نتیجه redirect یا callback به‌تنهایی sign-off محسوب نمی‌شود.
 
 ## Change control — provider-neutral deployment artifact
 
@@ -113,8 +114,11 @@ application نمی‌شود.
 - [x] `F12-T12-R8` — تنظیمات پرداخت فهرست آداپتورهای واقعی رجیستری، وضعیت کلی پرداخت آنلاین، editor مستقل هر
   آداپتور، callback مشتق‌شده از API عمومی همان محیط، credential rotation و کنترل enabled/default را نمایش می‌دهد؛
   emergency disable همیشه مجاز است و activation سداد تا `goLiveReady` شدن fail-closed می‌ماند.
+- [x] `F12-T12-R9` — runtime واقعی سداد با mode معتبر `disabled/live`، PaymentRequest و redirect واقعی، callback
+  عمومی rate-limited، Verify مرجع، reconciliation timeout و کنترل مستقل enabled/default در داشبورد متصل شده است؛
+  credential در revision رمزنگاری‌شده می‌ماند و راهنمای فعال‌سازی VPS ثبت شده است.
 
-این change control migration، role expansion، multi-clinic switching، guest cart یا تغییر payment را مجاز نمی‌کند.
+این change control migration، role expansion، multi-clinic switching یا guest cart را مجاز نمی‌کند.
 
 ## معیار خروج
 

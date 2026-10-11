@@ -7,8 +7,9 @@
 ## Target release
 
 The first production release comprises the completed product capability set plus the approved `F12-T02` extension for
-real Sadad payment software completion. It does not authorize a real Sadad connection, provider provisioning, payment
-enable/default, production deployment, or external credentials. Those remain gated delivery work.
+real Sadad payment software completion. On `2026-10-11`, the project owner explicitly authorized a live-capable Sadad
+runtime on the current VPS deployment. Deployment `live` mode and administrator enable/default remain separate,
+deliberate controls; real credentials stay outside Git and a controlled transaction is still required for sign-off.
 
 ## Environment and promotion strategy
 
@@ -16,8 +17,8 @@ enable/default, production deployment, or external credentials. Those remain gat
 - A release candidate must be tested in staging; the same immutable artifact is the only artifact eligible for production promotion.
 - The project owner manually approves production promotion and rollback.
 - The project owner owns written confirmation that Liara supplies a static **outbound** egress IP acceptable to Sadad.
-  An inbound/dedicated IP is insufficient. A missing or negative confirmation blocks real Sadad connection and payment
-  sign-off; it does not silently select another provider or block unrelated F12-T01 completion.
+  An inbound/dedicated IP is insufficient. The operator selecting Sadad `live` mode asserts that the current provider's
+  outbound address is registered; missing evidence still blocks payment sign-off and never selects another provider.
 
 ## Provider-neutral artifact boundary
 
@@ -69,9 +70,9 @@ all other application failures are never excluded.
 F12-T02 owns only the approved software gap after inventorying existing adapter, callback, config and orchestration code:
 transport; request/redirect/callback/Verify wiring; timeout/ambiguous response; retry; reconciliation; idempotency;
 configuration validation; `.env.example` placeholders; and tests. It must preserve accepted Phase 09 work, credential
-revisions and the fail-closed gate. `SADAD_GO_LIVE_BLOCKED` remains until all non-secret acceptance evidence, merchant
-credentials outside Git, endpoint/callback profile, written egress confirmation, observability/runbooks, and project-owner
-sign-off exist. Environment placeholders never bypass this gate.
+revisions and the fail-closed gate. `SADAD_GO_LIVE_BLOCKED` remains when deployment mode is disabled or incomplete, or
+when no enabled/default operational revision exists. Live mode permits the controlled acceptance path only after the
+operator supplies the code-owned callback/result profile; administrator state remains the final clinic activation gate.
 
 ## External-gate register
 

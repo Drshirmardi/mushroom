@@ -1,9 +1,10 @@
 import { createCipheriv } from 'node:crypto';
-import { Injectable, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, Optional, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 import type { PaymentProviderPort, ProviderCallback, ProviderCreateInput, ProviderCreateResult, ProviderVerifyResult } from './payment-provider.port';
 import { PaymentProviderRegistry } from './payment-provider.registry';
+import { SadadRuntimeConfigService } from './sadad-runtime-config.service';
 
-const blocked = () => new ServiceUnavailableException({ code: 'SADAD_GO_LIVE_BLOCKED', message: 'Sadad is configured for review only until merchant acceptance is complete.', details: {} });
+const blocked = () => new ServiceUnavailableException({ code: 'SADAD_GO_LIVE_BLOCKED', message: 'Sadad live transport is disabled for this deployment.', details: {} });
 const invalid = () => new UnprocessableEntityException({ code: 'PAYMENT_PROVIDER_CONFIGURATION_INVALID', message: 'Sadad protocol input or response is invalid.', details: {} });
 export const SADAD_MAX_INT64 = 9_223_372_036_854_775_807n;
 const CALLBACK_MAX_FIELD_LENGTH = 512;
@@ -104,12 +105,12 @@ export const parseSadadResponseJson = (input: string) => {
   return response;
 };
 
-/** Runtime uses this until F12-T13 accepts merchant evidence; env values cannot turn it into a live connection. */
+/** Fail-closed transport used whenever the deployment has not explicitly selected live mode. */
 export class BlockedSadadTransport implements SadadTransport {
   async postJson(): Promise<unknown> { throw blocked(); }
 }
 
-/** Network implementation exists for the accepted protocol, but is never registered as the runtime transport here. */
+/** Bounded server-to-server transport selected only by the validated live deployment mode. */
 export class FetchSadadTransport implements SadadTransport {
   async postJson(input: { endpoint: string; body: SadadJson; timeoutMs: number }): Promise<unknown> {
     const controller = new AbortController();
@@ -145,6 +146,12 @@ const stringField = (input: Record<string, unknown>, field: string, optional = f
   if (value === undefined && optional) return undefined;
   if ((typeof value !== 'string' && typeof value !== 'number') || String(value).length === 0 || String(value).length > CALLBACK_MAX_FIELD_LENGTH) throw invalid();
   return String(value);
+};
+
+const resultCodeField = (input: Record<string, unknown>, field: string) => {
+  const value = stringField(input, field)!;
+  if (!/^-?\d{1,31}$/u.test(value)) throw invalid();
+  return value;
 };
 
 const integerField = (input: Record<string, unknown>, field: string, optional = false) => {
@@ -184,10 +191,10 @@ export const parseSadadFormCallback = (input: Record<string, unknown>): Provider
   const allowed = ['OrderId', 'Token', 'ResCode'] as const;
   const values = Object.fromEntries(allowed.map((field) => [field, input[field]]));
   if (Object.values(values).some((value) => typeof value !== 'string' || value.length === 0 || value.length > CALLBACK_MAX_FIELD_LENGTH) || !/^\d+$/u.test(values.OrderId as string)) throw invalid();
-  return { providerOrderId: BigInt(values.OrderId as string), token: values.Token as string, resultCode: values.ResCode as string };
+  return { providerOrderId: positiveInt64(BigInt(values.OrderId as string)), token: values.Token as string, resultCode: resultCodeField(values, 'ResCode') };
 };
 
-export const buildDormantSadadRedirect = (profile: SadadRedirectProfile, token: string) => {
+export const buildSadadRedirect = (profile: SadadRedirectProfile, token: string) => {
   if (!token || token.length > CALLBACK_MAX_FIELD_LENGTH) throw invalid();
   return SADAD_REDIRECT_PROFILES[profile].replace('{token}', encodeURIComponent(token));
 };
@@ -199,24 +206,30 @@ export const SADAD_DESCRIPTOR = {
   },
 } as const;
 
-/** Complete protocol adapter; production stays fail-closed while simulated tests inject a transport explicitly. */
+/** Complete protocol adapter; deployment mode chooses the blocked or live transport at application startup. */
 @Injectable()
 export class SadadPaymentProviderAdapter implements PaymentProviderPort {
   readonly descriptor = SADAD_DESCRIPTOR;
   protected transport: SadadTransport = new BlockedSadadTransport();
   protected now: () => Date = () => new Date();
   protected timeoutMs = DEFAULT_TIMEOUT_MS;
-  constructor(registry: PaymentProviderRegistry) { registry.register(this); }
+  constructor(registry: PaymentProviderRegistry, @Optional() runtime?: SadadRuntimeConfigService) {
+    registry.register(this);
+    if (runtime?.live) {
+      this.transport = new FetchSadadTransport();
+      this.timeoutMs = runtime.timeoutMs;
+    }
+  }
 
   async createPayment(input: ProviderCreateInput): Promise<ProviderCreateResult> {
     const secret = credential(input.credential); const amount = toSadadRial(input.commerceAmountToman); const providerOrderId = positiveInt64(input.providerOrderId);
     if (input.providerUnit !== 'RIAL' || input.providerAmount !== amount) throw invalid();
     const result = responseRecord(await this.transport.postJson({ endpoint: SADAD_ENDPOINTS.paymentRequest, timeoutMs: this.timeoutMs, body: { MerchantId: secret.merchantId, TerminalId: secret.terminalId, Amount: amount, OrderId: providerOrderId, LocalDateTime: formatSadadLocalDateTime(this.now()), ReturnUrl: returnUrl(input.returnUrl), SignData: this.signData(secret.terminalId, providerOrderId, amount, secret.terminalKey) } }));
-    const providerResultCode = stringField(result, 'ResCode')!;
+    const providerResultCode = resultCodeField(result, 'ResCode');
     if (providerResultCode !== '0') return { providerResultCode };
     const token = stringField(result, 'Token');
     if (!token) throw invalid();
-    return { providerResultCode, token, redirectUrl: buildDormantSadadRedirect(redirectProfile(input.redirectProfile), token) };
+    return { providerResultCode, token, redirectUrl: buildSadadRedirect(redirectProfile(input.redirectProfile), token) };
   }
 
   parseCallback(input: unknown): ProviderCallback { return parseSadadFormCallback(responseRecord(input)); }
@@ -225,7 +238,7 @@ export class SadadPaymentProviderAdapter implements PaymentProviderPort {
     if (!input.token || input.token.length > CALLBACK_MAX_FIELD_LENGTH) throw invalid();
     const secret = credential(input.credential);
     const result = responseRecord(await this.transport.postJson({ endpoint: SADAD_ENDPOINTS.verify, timeoutMs: this.timeoutMs, body: { Token: input.token, SignData: this.signVerifyToken(input.token, secret.terminalKey) } }));
-    const resultCode = stringField(result, 'ResCode')!;
+    const resultCode = resultCodeField(result, 'ResCode');
     if (resultCode !== '0' && resultCode !== '100') return { resultCode };
     const providerOrderId = integerField(result, 'OrderId'); const amount = integerField(result, 'Amount');
     if (providerOrderId === undefined || amount === undefined || amount <= 0n) throw invalid();

@@ -68,7 +68,12 @@ services:
       APP_ORIGINS: "${APP_ORIGINS:?set dev browser origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
-      SADAD_TRANSPORT_MODE: disabled
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
+      SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
+      SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
+      SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
+      SADAD_RESULT_URL: "${SADAD_RESULT_URL:-}"
+      SADAD_REDIRECT_PROFILE: "${SADAD_REDIRECT_PROFILE:-}"
     secrets:
       - database_url
       - jwt_access_secret

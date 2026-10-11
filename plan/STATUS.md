@@ -6,12 +6,12 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-10`
+- آخرین به‌رورسانی: `2026-10-11`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `ندارد`
-- task فعال: `ندارد`
+- batch فعال: `—`
+- task فعال: `—`
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## پیشرفت کلان
@@ -49,6 +49,42 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — F12-B12-R9
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: deployment mode proves that the server is permitted to contact Sadad; encrypted provider revisions
+snapshot `RIAL` readiness; an authorized dashboard administrator remains the sole owner of enabled/default state.
+Disabling stops new attempts while callbacks for already-created attempts remain processable.
+Coordinator-only files: Prisma/OpenAPI client, `plan/STATUS.md`, phase checklist/log.
+
+- Task ID: `F12-T12-R9`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Sadad protocol adapter/orchestration, F12-T12-R7 credential contract and F12-T12-R8 adapter controls.
+  - Scope: replace the dormant Sadad runtime with an explicit disabled/live deployment mode; wire real attempt,
+    redirect, callback and Verify orchestration; derive readiness from validated runtime configuration; keep final
+    enable/default and emergency disable in dashboard settings; return a redirect URL to the patient app.
+  - Owned paths: Sadad/payment services, controllers, DTOs/config/module wiring and tests under `apps/api`; payment
+    page/API under `apps/app`; payment settings status under `apps/dashboard`; deployment env/compose documentation;
+    generated OpenAPI/client artifacts; coordinator plan files.
+  - Shared/exclusive resource: OpenAPI/generated client single-writer; no credential values, external payment call,
+    production environment mutation or database migration in the repository task.
+  - Expected verification: config/adapter/unit tests, PostgreSQL integration when available, API/app/dashboard
+    typecheck and focused tests, OpenAPI drift check, disabled-mode regression and `git diff --check`.
+  - Review: PASS — runtime only selects the real bounded HTTPS transport under validated `live` configuration;
+    ADMIN enable/default remains independent, callback/Verify can finish after an administrative disable, and only a
+    matching successful Verify produces the single payment/order/inventory effect. Callback input is allowlisted and
+    rate-limited, unknown/timeout outcomes remain reconciliation-safe, and concurrent attempt reuse keeps one OrderId.
+  - Verification: clean PostgreSQL 16 replayed all `33` migrations and seed; live provider-config integration `1/1`
+    and disabled checkout/payment integration `2/2` passed. API TypeScript plus focused `27/27`, OpenAPI `7/7`, app
+    `52/52`, dashboard `75/75`, generated-client drift/typecheck and `git diff --check` all passed.
+  - External next action: deploy this commit, set the documented non-secret runtime values on the VPS using the exact
+    merchant-confirmed redirect profile, enter/rotate the three credentials in Dashboard, enable/default Sadad, then
+    execute the controlled low-value acceptance transaction. No real credential or Sadad transaction was used here.
 
 ## آخرین batch تکمیل‌شده — F12-B12-R8
 

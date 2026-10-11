@@ -10513,12 +10513,38 @@
       "post": {
         "operationId": "sadadPaymentCallback",
         "parameters": [],
-        "responses": {
-          "503": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "OrderId",
+                  "Token",
+                  "ResCode"
+                ],
+                "properties": {
+                  "OrderId": {
+                    "type": "string"
+                  },
+                  "Token": {
+                    "type": "string"
+                  },
+                  "ResCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           }
         },
-        "summary": "Dormant Sadad callback endpoint; transport activation awaits merchant acceptance evidence",
+        "responses": {
+          "429": {
+            "description": "Callback rate limit exceeded."
+          }
+        },
+        "summary": "Validate a Sadad browser callback, Verify server-to-server and redirect to the app result page",
         "tags": [
           "Provider Callbacks"
         ]
@@ -11301,6 +11327,7 @@
               "PAYMENT_VERIFICATION_FAILED",
               "PAYMENT_VERIFICATION_MISMATCH",
               "PAYMENT_RECONCILIATION_REQUIRED",
+              "PAYMENT_CALLBACK_RATE_LIMITED",
               "CHAT_FORBIDDEN",
               "CHAT_APPOINTMENT_NOT_ELIGIBLE",
               "CHAT_WINDOW_CLOSED",
@@ -18783,6 +18810,9 @@
           "configured": {
             "type": "boolean"
           },
+          "activationAvailable": {
+            "type": "boolean"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -18814,6 +18844,7 @@
           "code",
           "displayName",
           "configured",
+          "activationAvailable",
           "enabled",
           "isDefault",
           "providerUnit",
@@ -18906,6 +18937,10 @@
           },
           "providerUnit": {
             "type": "string"
+          },
+          "redirectUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [

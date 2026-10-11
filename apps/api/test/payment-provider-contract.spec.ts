@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments/payment-credential-crypto.service';
 import { PaymentProviderRegistry } from '../src/modules/commerce/payments/payment-provider.registry';
-import { SADAD_ENDPOINTS, SADAD_REDIRECT_PROFILES, SadadPaymentProviderAdapter, buildDormantSadadRedirect, formatSadadLocalDateTime, parseSadadFormCallback, toSadadRial } from '../src/modules/commerce/payments/sadad-payment-provider.adapter';
+import { SADAD_ENDPOINTS, SADAD_MAX_INT64, SADAD_REDIRECT_PROFILES, SadadPaymentProviderAdapter, buildSadadRedirect, formatSadadLocalDateTime, parseSadadFormCallback, toSadadRial } from '../src/modules/commerce/payments/sadad-payment-provider.adapter';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
 import { PaymentVerificationService } from '../src/modules/commerce/payments/payment-verification.service';
 
@@ -54,10 +54,11 @@ describe('payment provider contract', () => {
     expect(sadad.signVerifyToken('synthetic-token', key)).toBe(sadad.signVerifyToken('synthetic-token', key)); expect(sadad.signVerifyToken('synthetic-token', key)).not.toBe(sadad.signVerifyToken('other-token', key));
   });
   it('has deterministic dormant RIAL/date/redirect profiles without enabling Sadad', () => {
-    expect(toSadadRial(1n)).toBe(10n); expect(() => toSadadRial(922337203685477581n)).toThrow(/protocol input or response is invalid/u); expect(formatSadadLocalDateTime(new Date('2026-01-01T08:30:15.000Z'))).toMatch(/^\d{2}\/\d{2}\/\d{4} \d{1,2}:\d{2}:\d{2} (AM|PM)$/u); expect(Object.keys(SADAD_REDIRECT_PROFILES)).toEqual(['PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX']); expect(buildDormantSadadRedirect('PHP_VPG_PURCHASE', 'synthetic token')).toBe('https://sadad.shaparak.ir/VPG/Purchase?Token=synthetic%20token');
+    expect(toSadadRial(1n)).toBe(10n); expect(() => toSadadRial(922337203685477581n)).toThrow(/protocol input or response is invalid/u); expect(formatSadadLocalDateTime(new Date('2026-01-01T08:30:15.000Z'))).toMatch(/^\d{2}\/\d{2}\/\d{4} \d{1,2}:\d{2}:\d{2} (AM|PM)$/u); expect(Object.keys(SADAD_REDIRECT_PROFILES)).toEqual(['PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX']); expect(buildSadadRedirect('PHP_VPG_PURCHASE', 'synthetic token')).toBe('https://sadad.shaparak.ir/VPG/Purchase?Token=synthetic%20token');
   });
   it('parses only allowlisted Form Data and never retains PAN-like fields', () => {
     expect(parseSadadFormCallback({ OrderId: '42', Token: 'synthetic', ResCode: '0', PrimaryAccNo: '603799******0000', CardHolderFullName: 'private' })).toEqual({ providerOrderId: 42n, token: 'synthetic', resultCode: '0' }); expect(() => parseSadadFormCallback({ OrderId: 'not-number', Token: 'synthetic', ResCode: '0' })).toThrow(/protocol input or response is invalid/u);
+    expect(() => parseSadadFormCallback({ OrderId: (SADAD_MAX_INT64 + 1n).toString(), Token: 'synthetic', ResCode: '0' })).toThrow(/protocol input or response is invalid/u); expect(() => parseSadadFormCallback({ OrderId: '42', Token: 'synthetic', ResCode: '1'.repeat(32) })).toThrow(/protocol input or response is invalid/u);
   });
   it('records -1, 101 and timeout without creating a financial effect', async () => {
     const updates: unknown[] = []; const service = new PaymentVerificationService({} as never); const tx = { paymentAttempt: { updateMany: async (query: unknown) => { updates.push(query); return { count: 1 }; } } };
