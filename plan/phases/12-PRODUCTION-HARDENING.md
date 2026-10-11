@@ -134,7 +134,7 @@ application نمی‌شود.
 
 - [x] `F01-R06-A` — ADR، schema/migration، crypto/runtime، registry/adapter FarazSMS و API مدیریتی SMS/OTP.
 - [x] `F01-R06-B` — engine OTP، endpointهای public auth، reuse session/account و OpenAPI/generated client.
-- [ ] `F01-R06-C` — UX OTP-first در web، مدیریت responsive در dashboard و evidence مرورگر/deployment.
+- [x] `F01-R06-C` — UX OTP-first در web، مدیریت responsive در dashboard و evidence مرورگر/deployment.
 
 این change control قرارداد session در ADR-0001 را جایگزین نمی‌کند: verify موفق OTP همان access token، refresh cookie،
 Origin/CORS، RBAC و rotation موجود را reuse می‌کند. تا زمانی که runtime `SMS_TRANSPORT_MODE=live` و credential واقعی

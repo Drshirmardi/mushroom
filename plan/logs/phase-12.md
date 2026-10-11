@@ -2515,3 +2515,47 @@ Known limitations:
 Next task:
 
 - verify shared-dev API health and browser refresh, then continue controlled Sadad activation.
+
+## F01-R06-C — OTP-first web and SMS settings UX
+
+Task ID: `F01-R06-C`
+Completed at: `2026-10-12 UTC`
+Agent/Thread: `Codex /root`
+Batch ID: `F01-B06-C`
+Reviewed by: `Codex /root`
+
+Changed files:
+
+- `apps/web/src/components/auth/{LoginForm,SignupForm,OtpAuthForm}.tsx`
+- `apps/web/src/services/auth.{ts,test.ts}`
+- `apps/dashboard/src/features/settings/{settings-page,sms-settings}.tsx`
+- `apps/dashboard/src/lib/sms-settings-api.ts`
+- `tests/e2e/phase-12/otp-auth.spec.ts`
+- `playwright.otp.config.ts`
+
+Migrations:
+
+- none; the OTP/SMS schema migration and API contract are owned by `F01-R06-A/B`.
+
+Tests run:
+
+- web typecheck → PASS; web Vitest → 5 files / 13 tests PASS.
+- dashboard typecheck → PASS; dashboard Vitest → 22 files / 75 tests PASS.
+- API typecheck → PASS.
+- Chrome browser OTP E2E with intercepted fake transport → 2/2 PASS: request, code input, credentialed verify response,
+  refresh cookie and patient-app redirect; password UI regression also passed. No external provider or real SMS was used.
+- `next build --webpack` for web and dashboard → PASS.
+- `git diff --check` → PASS.
+
+Result:
+
+- login and signup present OTP first and retain password as the explicit alternate route; OTP form supports normalized Persian digits,
+  browser autofill/paste, expiry/resend, phone correction, Persian errors and role-aware redirects.
+- ADMIN has a responsive read-first SMS settings panel with dynamic provider fields, write-only secret preservation, enable/default,
+  controlled connection/test-SMS actions, OTP policy and safe delivery-attempt history.
+- default runtime remains fail-closed until an authorized administrator supplies credentials and enables a live provider.
+
+Known limitations:
+
+- plain Turbopack build could not run in the managed sandbox because its CSS worker attempts a forbidden local port bind;
+  the equivalent webpack production builds and real Chromium E2E passed. Shared-dev deployment remains the external acceptance observation.

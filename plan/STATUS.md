@@ -10,8 +10,8 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `—`
-- task فعال: `—`
+- batch فعال: ندارد
+- task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## پیشرفت کلان
@@ -49,6 +49,25 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — F01-B06-C
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `F01-R06-B` commit `492d934` and generated OTP/admin API contract.
+
+- Task ID: `F01-R06-C`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F01-R06-A` and `F01-R06-B DONE`.
+  - Scope: OTP-first/password-secondary web UX, responsive dashboard SMS/provider/policy/log UX, frontend regressions and deployment observation.
+  - Owned paths: `apps/web` auth UI/service/tests, dashboard SMS settings/API/settings integration and final coordinator evidence.
+  - Shared/exclusive resource: generated client is frozen by B; no schema/API change in this task.
+  - Review: PASS — ورود و ثبت‌نام OTP-first هستند، password روش ثانویه و session/redirect موجود را reuse می‌کند؛ داشبورد provider/policy/log را بدون secret read-back مدیریت می‌کند.
+  - Verification: web 13/13، dashboard 75/75، typecheckهای web/dashboard/API، Chrome OTP E2E (2/2) و build webpack هر دو frontend پاس شدند؛ Turbopack در sandbox روی CSS-worker port bind محدود بود.
+  - Next action: push `dev`، مشاهدهٔ workflow و shared-dev؛ تا تنظیم runtime live و credential توسط ADMIN، OTP عمداً fail-closed است.
 
 ## آخرین batch تکمیل‌شده — F01-B06-B
 

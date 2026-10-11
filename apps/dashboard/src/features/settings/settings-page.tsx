@@ -5,10 +5,12 @@ import {
   ArrowLeft, BriefcaseMedical, Building2, CalendarDays, Check, CheckCircle2,
   Clock, CreditCard, LoaderCircle, Pencil, Power, RefreshCw, Save, ShieldAlert,
   Stethoscope, Trash2, Wallet, X,
+  MessageSquareText,
 } from "lucide-react";
 
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { PaymentProviderSettings } from "@/features/settings/payment-provider-settings";
+import { SmsSettings } from "@/features/settings/sms-settings";
 import { settingsProgress } from "@/features/settings/settings-flow";
 import { apiClient } from "@/lib/api";
 import {
@@ -28,7 +30,7 @@ const dangerButton = "inline-flex items-center justify-center gap-2 rounded-xl b
 const WEEKDAYS = ["دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه", "یکشنبه"];
 
 type Area = "clinic" | "specialty" | "doctor" | "service" | "offering" | "schedule" | "closure" | "leave";
-type SettingsPanel = Exclude<Area, "closure" | "leave"> | "calendar" | "payment";
+type SettingsPanel = Exclude<Area, "closure" | "leave"> | "calendar" | "payment" | "sms";
 type Feedback = { area: Area; tone: "success" | "error"; message: string } | null;
 
 function Notice({ state, onRetry }: { state: Exclude<DirectorySettingsState["status"], "ready">; onRetry: () => void }) {
@@ -210,6 +212,7 @@ function SettingsForms({ data, accessToken, refresh }: { data: DirectorySettings
       <OverviewCard icon={Clock} title="ساعات کاری" description="برنامه هفتگی حضوری و آنلاین" summary={`${data.availabilityRules.length.toLocaleString("fa-IR")} بازه کاری`} ready={complete("schedule")} onClick={() => openPanel("schedule")} />
       <OverviewCard icon={CalendarDays} title="تعطیلی و استثناها" description="تعطیلی کلینیک، مرخصی و حضور اضافه پزشک" summary={`${(data.closures.length + data.exceptions.length).toLocaleString("fa-IR")} بازه ثبت‌شده`} onClick={() => openPanel("calendar")} />
       <OverviewCard icon={CreditCard} title="درگاه پرداخت" description="شناسه‌ها و کلید پذیرندگی سداد" summary="تنظیمات محرمانه" onClick={() => openPanel("payment")} />
+      <OverviewCard icon={MessageSquareText} title="پیامک و کد یک‌بارمصرف" description="آداپتور ارسال، سیاست امنیتی و گزارش تحویل" summary="تنظیمات احراز هویت" onClick={() => openPanel("sms")} />
     </div></section>
 
     {activePanel && <SettingsDialog onClose={closePanel} busy={busyArea !== null}>
@@ -251,6 +254,7 @@ function SettingsForms({ data, accessToken, refresh }: { data: DirectorySettings
         <div className="mt-5 grid gap-4 lg:grid-cols-2"><div><h3 className="text-sm font-bold">تعطیلی‌های ثبت‌شده</h3><div className="mt-2 space-y-3">{data.closures.map((item) => <article key={item.id} className={`rounded-xl border p-3 text-sm ${isEditing("closure", item.id) ? "border-primary bg-primary/5" : "border-border"}`}><div className="flex items-start justify-between gap-2"><div><p className="font-bold">{item.label}</p><p className="mt-1 text-xs text-muted-foreground">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: data.clinic.timeZone }).format(new Date(item.startsAt))}</p></div><StatusPill published active={item.isActive} /></div>{actions("closure", item.id, item.isActive, () => { setEditing({ area: "closure", id: item.id }); setClosureLabel(item.label); setClosureStart(localDateTime(item.startsAt)); setClosureEnd(localDateTime(item.endsAt)); setFeedback(null); }, () => void mutate("closure", () => updateClinicClosure(accessToken, item.id, { isActive: !item.isActive }), item.isActive ? "تعطیلی غیرفعال شد." : "تعطیلی فعال شد."), () => deleteClinicClosure(accessToken, item.id))}</article>)}{data.closures.length === 0 && <p className="text-sm text-muted-foreground">تعطیلی ثبت نشده است.</p>}</div></div><div><h3 className="text-sm font-bold">استثناهای پزشکان</h3><div className="mt-2 space-y-3">{data.exceptions.map((item) => <article key={item.id} className={`rounded-xl border p-3 text-sm ${isEditing("leave", item.id) ? "border-primary bg-primary/5" : "border-border"}`}><div className="flex items-start justify-between gap-2"><div><p className="font-bold">{doctorNames.get(item.doctorId) ?? "پزشک نامشخص"} · {item.kind === "AVAILABLE" ? "حضور اضافه" : "مرخصی"}</p><p className="mt-1 text-xs text-muted-foreground">{typeof item.label === "string" && item.label ? item.label : "بدون توضیح"} · {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: data.clinic.timeZone }).format(new Date(item.startsAt))}</p></div><StatusPill published active={item.isActive} /></div>{actions("leave", item.id, item.isActive, () => { setEditing({ area: "leave", id: item.id }); setLeaveDoctorId(item.doctorId); setLeaveKind(item.kind as "AVAILABLE" | "UNAVAILABLE"); setLeaveMode((item.visitMode || "IN_PERSON") as "IN_PERSON" | "ONLINE"); setLeaveLabel(typeof item.label === "string" ? item.label : ""); setLeaveStart(localDateTime(item.startsAt)); setLeaveEnd(localDateTime(item.endsAt)); setFeedback(null); }, () => void mutate("leave", () => updateDoctorException(accessToken, item.id, { isActive: !item.isActive }), item.isActive ? "استثنا غیرفعال شد." : "استثنا فعال شد."), () => deleteDoctorException(accessToken, item.id))}</article>)}{data.exceptions.length === 0 && <p className="text-sm text-muted-foreground">استثنایی ثبت نشده است.</p>}</div></div></div>
       </Section>}
       {activePanel === "payment" && <Section icon={CreditCard} title="تنظیمات درگاه پرداخت" description="اطلاعات پذیرندگی سداد را به‌صورت یک نسخه رمزنگاری‌شده ثبت یا جایگزین کنید."><PaymentProviderSettings accessToken={accessToken} /></Section>}
+      {activePanel === "sms" && <Section icon={MessageSquareText} title="پیامک و کد یک‌بارمصرف" description="آداپتور واقعی، credentialهای write-only، سیاست OTP و گزارش ارسال‌ها را مدیریت کنید."><SmsSettings accessToken={accessToken} /></Section>}
     </SettingsDialog>}
   </div>;
 }

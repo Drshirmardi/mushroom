@@ -101,4 +101,17 @@ describe("web auth service", () => {
             message: "ارتباط با سرویس برقرار نشد؛ اتصال اینترنت خود را بررسی کنید.",
         });
     });
+
+    it("requests and verifies OTP through the credentialed public contract", async () => {
+        const fetch = vi.fn<typeof globalThis.fetch>()
+            .mockResolvedValueOnce(response({ challengeId: "11111111-1111-4111-8111-111111111111", expiresAt: "2026-10-11T10:02:00.000Z", resendAvailableAt: "2026-10-11T10:01:00.000Z", destinationMasked: "+9891***67" }, 201))
+            .mockResolvedValueOnce(response(authentication, 200));
+        const service = createAuthService(createApiClient({ baseUrl: "https://api.example.test", fetch }));
+        const challenge = await service.requestOtp({ phone: "+989121234567", remember: true });
+        expect(challenge.ok).toBe(true);
+        const first = fetch.mock.calls[0]?.[0] as Request;
+        expect(first.headers.get("idempotency-key")).toBeTruthy();
+        await expect(service.verifyOtp("11111111-1111-4111-8111-111111111111", "123456")).resolves.toEqual({ ok: true, roles: ["PATIENT"] });
+        expect((fetch.mock.calls[1]?.[0] as Request).credentials).toBe("include");
+    });
 });
