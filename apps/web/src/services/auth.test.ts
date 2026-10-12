@@ -102,6 +102,31 @@ describe("web auth service", () => {
         });
     });
 
+    it("maps OTP provisioning and idempotency errors", async () => {
+        const expectedMessages = [
+            ["OTP_ACCOUNT_PROVISIONING_UNAVAILABLE", "ساخت حساب در این لحظه ممکن نیست؛ کمی بعد دوباره تلاش کنید."],
+            ["IDEMPOTENCY_KEY_INVALID", "درخواست معتبر نبود؛ صفحه را دوباره بارگذاری و تلاش کنید."],
+        ] as const;
+
+        for (const [code, message] of expectedMessages) {
+            const service = createAuthService(createApiClient({
+                baseUrl: "https://api.example.test",
+                fetch: vi.fn<typeof globalThis.fetch>().mockResolvedValue(response({
+                    code,
+                    message: "Request failed",
+                    requestId: "request-id",
+                    details: {},
+                }, 503)),
+            }));
+
+            await expect(service.login({
+                phone: "+989121234567",
+                password: "safe-password-long",
+                remember: false,
+            })).resolves.toEqual({ ok: false, message });
+        }
+    });
+
     it("requests and verifies OTP through the credentialed public contract", async () => {
         const fetch = vi.fn<typeof globalThis.fetch>()
             .mockResolvedValueOnce(response({ challengeId: "11111111-1111-4111-8111-111111111111", expiresAt: "2026-10-11T10:02:00.000Z", resendAvailableAt: "2026-10-11T10:01:00.000Z", destinationMasked: "+9891***67" }, 201))

@@ -2565,3 +2565,55 @@ Deployment observation:
 - GitHub Action [38173139936](https://github.com/Drshirmardi/mushroom/actions/runs/38173139936) for `23ffeae` passed in
   2m40s on `2026-10-12`.
 - `https://dev-api.roxco.ir/v1/health/ready` returned `{"status":"ok"}` and `https://dev.roxco.ir/login` returned HTTP 200.
+
+## F01-R06-B-R1 — حفظ کدهای پایدار خطای API و تکمیل قرارداد OTP
+
+Task ID: F01-R06-B-R1
+Completed at: 2026-10-12 Asia/Tehran
+Agent/Thread: Codex /root
+Batch ID: F01-B06-B-R1
+Reviewed by: Codex /root
+
+Changed files:
+
+- `apps/api/src/common/errors/api-error.ts`
+- `apps/api/src/modules/identity/presentation/http/auth.controller.ts`
+- `apps/api/test/http-exception.filter.spec.ts`
+- `apps/api/test/otp-error-contract.integration.spec.ts`
+- `apps/api/test/openapi-contract.spec.ts`
+- `apps/api/test/treatment-plan.integration.spec.ts`
+- `apps/web/src/services/auth.ts`
+- `apps/web/src/services/auth.test.ts`
+- `packages/api-client/openapi.json`
+- `packages/api-client/src/schema.generated.ts`
+- `plan/STATUS.md`
+- `plan/phases/12-PRODUCTION-HARDENING.md`
+- `plan/logs/phase-12.md`
+
+Migrations:
+
+- none.
+
+Tests run:
+
+- API typecheck → PASS.
+- Filter, OpenAPI contract and OTP HTTP integration tests → 3 files / 11 tests PASS; wrong OTP returns HTTP 401 with `OTP_INVALID`.
+- Treatment plan integration → 1 file / 3 tests PASS, including registered `CLINICAL_RESOURCE_FORBIDDEN` response.
+- API client generation, tests (5/5) and build → PASS.
+- Web typecheck and tests (5 files / 14 tests) → PASS.
+- `git diff --check` → PASS.
+- Full API suite was attempted; it exposed unrelated reminders/outbox and database-fixture/config failures (including suites without `DATABASE_URL`). These remain outside this task and are not represented as passing.
+
+Result:
+
+- Stable literal API error codes are recognized instead of being collapsed into status fallbacks; unknown codes retain the fallback behavior.
+- OTP response codes are documented in runtime OpenAPI and generated client types, with UI messages for the OTP account-provisioning and idempotency errors.
+- Attachment assessment: the core diagnosis was correct, but limiting the fix to OTP-only registry entries would leave other emitted literal API errors unmapped. The registry now covers those literals as well; non-error role constants are excluded.
+
+Known limitations:
+
+- The broader API test suite has pre-existing/environment-dependent failures described above; focused task acceptance checks pass.
+
+Next batch:
+
+- No batch started; continue the existing Phase 12 eligibility/blockers after this handoff.

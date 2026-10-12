@@ -142,7 +142,7 @@ describe('treatment-plan API (PostgreSQL integration)', () => {
     await prisma.clinicalClinicAccess.deleteMany({ where: { userId: clinician.id } });
     const denied = await request('GET', `/v1/admin/patients/${patient.id}/treatment-plans/${plan.id}`, doctorToken);
     expect(denied.statusCode).toBe(403);
-    expect(denied.json()).toMatchObject({ code: 'FORBIDDEN' });
+    expect(denied.json()).toMatchObject({ code: 'CLINICAL_RESOURCE_FORBIDDEN' });
   });
 
   it('declares the F07-T04 routes in runtime OpenAPI without synchronizing the checked-in client', async () => {

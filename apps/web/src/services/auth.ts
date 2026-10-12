@@ -44,6 +44,8 @@ const messages: Record<string, string> = {
     OTP_INVALID: "کد واردشده درست نیست یا قبلاً استفاده شده است.",
     OTP_EXPIRED: "زمان اعتبار کد تمام شده است؛ کد تازه بگیرید.",
     OTP_ATTEMPTS_EXHAUSTED: "تعداد تلاش‌ها تمام شد؛ کد تازه بگیرید.",
+    OTP_ACCOUNT_PROVISIONING_UNAVAILABLE: "ساخت حساب در این لحظه ممکن نیست؛ کمی بعد دوباره تلاش کنید.",
+    IDEMPOTENCY_KEY_INVALID: "درخواست معتبر نبود؛ صفحه را دوباره بارگذاری و تلاش کنید.",
 };
 
 function errorMessage(error: ApiError | undefined): string {

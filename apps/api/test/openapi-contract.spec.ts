@@ -32,6 +32,12 @@ const identityOperations = [
   ['/v1/me/change-password', 'post'],
 ] as const;
 
+const otpOperations = [
+  ['/v1/auth/otp/challenges', 'post'],
+  ['/v1/auth/otp/challenges/{challengeId}/resend', 'post'],
+  ['/v1/auth/otp/challenges/{challengeId}/verify', 'post'],
+] as const;
+
 describe('identity OpenAPI contract', () => {
   let app: NestFastifyApplication;
   let document: Record<string, any>;
@@ -78,6 +84,31 @@ describe('identity OpenAPI contract', () => {
         });
       }
     }
+  });
+
+  it('documents OTP error responses and preserves stable OTP error codes', () => {
+    const operations = otpOperations.map(([path, method]) =>
+      document.paths[path][method]);
+
+    for (const operation of operations) {
+      expect(Object.keys(operation.responses).some((status) =>
+        Number(status) >= 400)).toBe(true);
+      for (const [status, response] of Object.entries(operation.responses)) {
+        if (Number(status) < 400) continue;
+        expect(response).toMatchObject({
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ApiErrorResponseDto' },
+            },
+          },
+        });
+      }
+    }
+
+    const codes = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
+    expect(codes).toContain('OTP_INVALID');
+    expect(codes).toContain('OTP_EXPIRED');
+    expect(codes).toContain('SMS_PROVIDER_ACTIVATION_BLOCKED');
   });
 
   it('documents bearer and refresh-cookie security without a refresh request body', () => {

@@ -129,13 +129,18 @@ export class AuthController {
     private readonly refreshCookie: RefreshCookieService,
     private readonly browserOrigins: BrowserOriginService,
     private readonly otp: OtpAuthenticationUseCase,
-  ) {}
+  ) { }
 
   @Post('otp/challenges')
   @Public()
   @ApiBrowserOrigin()
   @ApiOperation({ operationId: 'authOtpChallengeCreate', summary: 'Request an authentication OTP challenge' })
   @ApiCreatedResponse({ type: OtpChallengeResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
+  @ApiErrorResponse(HttpStatus.CONFLICT, 'Idempotency key is invalid.')
+  @ApiErrorResponse(HttpStatus.TOO_MANY_REQUESTS, 'OTP request rate limit exceeded.')
+  @ApiErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, 'OTP delivery is unavailable.')
   async createOtpChallenge(@Body() body: CreateOtpChallengeDto, @Headers('idempotency-key') key: string | undefined, @Req() request: FastifyRequest) {
     this.browserOrigins.assertAllowed(getOrigin(request));
     return this.otp.request({ phone: body.phone, remember: body.remember ?? false, idempotencyKey: key, ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });
@@ -147,6 +152,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ operationId: 'authOtpChallengeResend', summary: 'Resend an authentication OTP challenge' })
   @ApiOkResponse({ type: OtpChallengeResponseDto })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'OTP challenge is invalid.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
+  @ApiErrorResponse(HttpStatus.CONFLICT, 'OTP resend cooldown is active.')
+  @ApiErrorResponse(HttpStatus.TOO_MANY_REQUESTS, 'OTP request rate limit exceeded.')
+  @ApiErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, 'OTP delivery is unavailable.')
   async resendOtpChallenge(@Param('challengeId', ParseUUIDPipe) challengeId: string, @Headers('idempotency-key') key: string | undefined, @Req() request: FastifyRequest) {
     this.browserOrigins.assertAllowed(getOrigin(request));
     return this.otp.resend(challengeId, key, { ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });
@@ -158,6 +169,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ operationId: 'authOtpChallengeVerify', summary: 'Verify OTP and create an authenticated session' })
   @ApiOkResponse({ type: AuthenticationResponseDto, headers: REFRESH_COOKIE_RESPONSE_HEADERS })
+  @ApiErrorResponse(HttpStatus.BAD_REQUEST, 'Request validation failed.')
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'OTP code is invalid or expired.')
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed.')
+  @ApiErrorResponse(HttpStatus.TOO_MANY_REQUESTS, 'OTP verification attempts are exhausted.')
+  @ApiErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, 'OTP account provisioning is unavailable.')
   async verifyOtpChallenge(@Param('challengeId', ParseUUIDPipe) challengeId: string, @Body() body: VerifyOtpChallengeDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply): Promise<AuthenticationResponseDto> {
     this.browserOrigins.assertAllowed(getOrigin(request));
     const result = await this.otp.verify(challengeId, body.code, { ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });

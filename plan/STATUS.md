@@ -6,7 +6,7 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-11`
+- آخرین به‌رورسانی: `2026-10-12`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
@@ -49,6 +49,28 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — F01-B06-B-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-12 Asia/Tehran`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `F01-R06-B` / `F01-R06-C` و قرارداد freeze‌شدهٔ `contracts/otp-sms-auth-v1.md`.
+
+- Task ID: `F01-R06-B-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F01-R06-B DONE` و قرارداد OTP/SMS پذیرفته‌شده.
+  - Scope: حفظ کدهای خطای OTP/SMS از فیلتر HTTP، انتشار پاسخ‌های OTP در OpenAPI/client و regression test.
+  - Owned paths: `apps/api/src/common/errors/api-error.ts`، `apps/api/src/modules/identity/presentation/http/auth.controller.ts`، `apps/api/test/**`، `packages/api-client/openapi.json`، `packages/api-client/src/schema.generated.ts`، `apps/web/src/services/auth.ts`، `plan/STATUS.md`، `plan/phases/12-PRODUCTION-HARDENING.md`، `plan/logs/phase-12.md`.
+  - Shared/exclusive resource: API error registry و generated OpenAPI/client، single-writer.
+  - Expected verification: filter regression، API test typecheck، OTP integration در صورت وجود DATABASE_URL، OpenAPI runtime drift/client generation، frontend typecheck/test و `git diff --check`.
+  - Contract: هر کد خطای literal که از API پرتاب می‌شود باید در registry بماند؛ مقدارهای غیرخطا مثل role code وارد enum نمی‌شوند. رفتار fallback برای کد ناشناخته حفظ می‌شود.
+  - Review: PASS — کدهای error literal ثبت شدند؛ OTP error responses در OpenAPI مستند و client بازتولید شد؛ fallback ناشناخته حفظ شد.
+  - Verification: API typecheck، filter/OpenAPI/OTP integration و treatment-plan integration، client test/build و web typecheck/test پاس شدند. اجرای کل API suite شکست‌های مستقل reminders/database fixtures/config داشت که در `plan/logs/phase-12.md` ثبت شده‌اند.
+  - Commit: در این handoff ایجاد می‌شود.
+  - Next eligible work: F12 blockers و ترتیب جاری Phase 12؛ batch جدیدی در این handoff شروع نمی‌شود.
 
 ## آخرین batch تکمیل‌شده — F01-B06-C
 
