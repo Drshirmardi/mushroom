@@ -23,6 +23,10 @@ services:
       PORT: "3003"
       HOSTNAME: "0.0.0.0"
       DATABASE_URL_FILE: /run/secrets/database_url
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
+      JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
+      COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"
       JWT_ACCESS_SECRET_FILE: /run/secrets/jwt_access_secret
       REFRESH_TOKEN_PEPPER_FILE: /run/secrets/refresh_token_pepper
       OTP_PEPPER_FILE: /run/secrets/otp_pepper

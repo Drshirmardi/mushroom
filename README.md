@@ -7,6 +7,7 @@ artifact مستقل OCI برای استقرار تولید دارد.
 ## شروع کار
 
 - [راه‌اندازی Development و GitHub Codespaces](docs/DEVELOPMENT.md)
+- [راهنمای کامل متغیرهای محیطی و secretها](docs/ENVIRONMENT.md)
 - [ساخت imageها و استقرار Production](docs/PRODUCTION.md)
 - [راه‌اندازی CI/CD روی VPS آزمایشی](deploy/vps/README.md)
 - [راهنمای artifactهای استقرار](deploy/README.md)

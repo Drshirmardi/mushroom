@@ -212,9 +212,22 @@ public_config_hash=$(
 )
 api_runtime_hash=$(
   for key_and_default in \
+    'LOG_LEVEL debug' \
+    'JWT_ACCESS_ISSUER sabz-zendegi-api' \
+    'JWT_ACCESS_AUDIENCE sabz-zendegi-frontends' \
+    'COMMERCE_RESERVATION_TTL_MINUTES 20' \
+    'APP_ORIGINS http://localhost:3000,http://localhost:3001,http://localhost:3002' \
+    'TRUSTED_PROXIES 127.0.0.1/32' \
+    'PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION v1' \
     'SMS_TRANSPORT_MODE disabled' \
     'SMS_REQUEST_TIMEOUT_MS 5000' \
-    'SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION v1'; do
+    'SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION v1' \
+    'PUBLIC_API_URL http://localhost:3003' \
+    'SADAD_TRANSPORT_MODE disabled' \
+    'SADAD_REQUEST_TIMEOUT_MS 5000' \
+    'SADAD_RETURN_URL -' \
+    'SADAD_RESULT_URL -' \
+    'SADAD_REDIRECT_PROFILE -'; do
     read -r key fallback <<<"$key_and_default"
     printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "$fallback")"
   done | sha256sum | cut -d' ' -f1

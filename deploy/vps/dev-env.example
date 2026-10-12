@@ -19,11 +19,14 @@ APP_ORIGINS=https://dev.example.com,https://dev-app.example.com,https://dev-dash
 # The same APP_ORIGINS list is normalized to hostnames and passed to Next's
 # allowedDevOrigins for dev assets and the /_next/hmr WebSocket.
 TRUSTED_PROXIES=127.0.0.1/32
+LOG_LEVEL=debug
+JWT_ACCESS_ISSUER=sabz-zendegi-api
+JWT_ACCESS_AUDIENCE=sabz-zendegi-frontends
+COMMERCE_RESERVATION_TTL_MINUTES=20
 PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
 SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
 SMS_TRANSPORT_MODE=disabled
 SMS_REQUEST_TIMEOUT_MS=5000
-LOG_LEVEL=debug
 # Keep disabled until the callback, redirect profile, static outbound IP and encrypted merchant credential are ready.
 # Once set to live, the administrator still explicitly enables/defaults Sadad in Dashboard > Settings > Payments.
 SADAD_TRANSPORT_MODE=disabled
@@ -49,3 +52,8 @@ DEV_APP_CPUS=0.75
 DEV_APP_MEMORY=768m
 DEV_DASHBOARD_CPUS=0.75
 DEV_DASHBOARD_MEMORY=768m
+
+# Secret values are intentionally not placed in runtime.env. Create these files under:
+# /home/deploy/mushroom/dev/secrets/{postgres_password,database_url,jwt_access_secret,
+# refresh_token_pepper,otp_pepper,sms_credential_encryption_key,sms_credential_decryption_keys,
+# payment_credential_encryption_key,payment_credential_decryption_keys}
