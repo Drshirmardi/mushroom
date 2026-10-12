@@ -58,3 +58,7 @@ pnpm-debug.log*
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# skills
+
+.agents/skills
