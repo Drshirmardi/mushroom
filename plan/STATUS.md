@@ -1,3 +1,4 @@
+> PATIENT UI WORKTREE COORDINATION: authoritative active-claim registry is X:/Git/mushroom/plan/STATUS.md. Read that file before any claim or write. This branch-local STATUS MUST NOT be used as an independent claim registry. If the registry is inaccessible, STOP. PUI-B01 / PUI-T01 owned by Codex /root; branch feat/patient-app-ui; scope and acceptance in plan/patient-ui.md. Main Phase12 remains active. Current handoff: PUI-T01 DONE after review; evidence in plan/logs/patient-ui.md. Coordinator releases the authoritative claim after the task commit. No next batch is claimed.
 # وضعیت زنده اجرای پروژه
 
 > این فایل فقط وضعیت فعلی، ownership، blocker و handoff کوتاه را نگه می‌دارد. شواهد taskهای

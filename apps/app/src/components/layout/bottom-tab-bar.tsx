@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   ClipboardList,
   Heart,
@@ -34,11 +34,12 @@ const TAB_ITEMS: TabItem[] = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const reducedMotion = useReducedMotion();
   const cart = useCartStore((s) => s.items);
   const count = cartCount(cart);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border z-20">
+    <nav aria-label="ناوبری اصلی" className="patient-shell-nav absolute bottom-0 left-0 right-0 bg-white border-t border-border z-20">
       <div className="flex items-end justify-around px-1 pt-2 pb-4">
         {TAB_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -52,18 +53,19 @@ export function BottomTabBar() {
             <Link
               key={item.label}
               href={href}
+              aria-current={isActive ? "page" : undefined}
               className="flex flex-col items-center gap-1 min-w-[52px] relative"
             >
-              {isActive && <motion.div layoutId="nav-indicator" className="absolute -top-2 w-8 h-1 bg-primary rounded-full" />}
+              {isActive && (reducedMotion ? <div className="absolute -top-2 w-8 h-1 bg-primary rounded-full" /> : <motion.div layoutId="nav-indicator" className="absolute -top-2 w-8 h-1 bg-primary rounded-full" />)}
               {item.tab === "home" && count > 0 && (
                 <span className="absolute -top-1 right-1 w-4 h-4 bg-primary rounded-full text-[8px] text-white font-bold flex items-center justify-center">{toP(count)}</span>
               )}
-              <Icon size={22} className={isActive ? "text-primary" : "text-muted-foreground"} strokeWidth={isActive ? 2.2 : 1.8} />
+              <Icon aria-hidden="true" size={22} className={isActive ? "text-primary" : "text-muted-foreground"} strokeWidth={isActive ? 2.2 : 1.8} />
               <span className={`text-[10px] font-semibold leading-none ${isActive ? "text-primary" : "text-muted-foreground"}`}>{item.label}</span>
             </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
