@@ -62,3 +62,11 @@ pnpm-debug.log*
 # skills
 
 .agents/skills
+
+# Local agent tooling
+.codex/hooks.json
+.codex/skills/
+skills-lock.json
+
+# Generated Graphify artifacts
+graphify-out/
