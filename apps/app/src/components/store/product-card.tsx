@@ -21,11 +21,11 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, authent
   return <article className="store-product" aria-busy={busy || undefined}>
     <div className="store-product__media">
       <Link href={`/store/products/${encodeURIComponent(product.id)}`} className="store-product__media-link" aria-label={`مشاهدهٔ ${product.title}`}><span className="store-product__category">{product.category.name}</span></Link>
-      <Button variant="secondary" className="store-product__favorite" disabled={busy}
+      {/* <Button variant="secondary" className="store-product__favorite" disabled={busy}
         aria-label={`${saved ? "حذف از" : "افزودن به"} علاقه‌مندی‌ها: ${product.title}`}
         aria-pressed={saved} onClick={() => onFavorite(sku.id)}>
         <Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} />
-      </Button>
+      </Button> */}
     </div>
     <div className="store-product__body">
       <Link href={`/store/products/${encodeURIComponent(product.id)}`} className="store-product__title"><h2>{product.title}</h2></Link>
@@ -33,7 +33,7 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, authent
       <Button busy={busy} aria-label={`افزودن به سبد: ${product.title}`} onClick={() => onAdd(sku.id)}>
         <ShoppingCart aria-hidden="true" size={18} /><span>{busy ? "در حال انجام…" : "افزودن"}</span>
       </Button>
-      <p className="store-product__feedback" role="status">{busy ? "درخواست در حال انجام است…" : !authenticated ? "برای خرید وارد شوید" : inCart ? "در سبد خرید شما" : "قابل انتخاب"}</p>
+      {/* <p className="store-product__feedback" role="status">{busy ? "درخواست در حال انجام است…" : !authenticated ? "برای خرید وارد شوید" : inCart ? "در سبد خرید شما" : "قابل انتخاب"}</p> */}
     </div>
   </article>;
 }
