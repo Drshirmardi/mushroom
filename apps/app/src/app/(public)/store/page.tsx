@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Heart, Search, ShoppingCart, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Heart, Search, ShoppingCart, X } from "lucide-react";
 import { useOptionalAuthSession } from "@/components/auth/session-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/store/product-card";
+import { StoreCollection } from "@/components/store/store-collection";
 import {
   commerceErrorMessage,
   getCommerceCart,
@@ -52,9 +53,15 @@ export default function StorePage() {
     return () => { cancelled = true; };
   }, [session]);
 
-  const categories = useMemo(() => [...new Map((products?.items ?? []).map((product) => [product.category.id, product.category])).values()], [products]);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const shown = (products?.items ?? []).filter((product) => !categoryId || product.category.id === categoryId);
+  const [catalogView, setCatalogView] = useState(false);
+  const isFiltering = catalogView || search.trim().length > 0;
+  const shown = products?.items ?? [];
+  const renderProduct = (product: NonNullable<typeof products>["items"][number]) => {
+    const sku = product.skus[0];
+    if (!sku) return null;
+    return <ProductCard key={product.id} product={product} saved={wishlist.includes(sku.id)} inCart={cart.some(item => item.skuId === sku.id)}
+      busy={busySku === sku.id} authenticated={!!session} onAdd={id => void updateCart(id)} onFavorite={id => void toggleWishlist(id)} />;
+  };
   const updateCart = async (skuId: string) => { if (!session) { navigateScreen("CartScreen"); return; } const current = cart.find((item) => item.skuId === skuId)?.qty ?? 0; setBusySku(skuId); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, skuId, Math.min(current + 1, 100))); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusySku(null); } };
   const toggleWishlist = async (skuId: string) => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusySku(skuId); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, skuId, !wishlist.includes(skuId))); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusySku(null); } };
 
@@ -71,27 +78,28 @@ export default function StorePage() {
         </Button>
       </div>
     </header>
-    <label className="store-search-label" htmlFor="store-search">جست‌وجوی محصول</label>
-    <div className="store-search">
-      <Search aria-hidden="true" size={20} />
+    <label className="sr-only" htmlFor="store-search">جست‌وجوی محصول</label>
+    <div className="store-search" role="search" aria-label="جست‌وجوی محصولات فروشگاه">
+      <span className="store-search__icon"><Search aria-hidden="true" size={20} /></span>
       <Input id="store-search" name="product-search" type="search" autoComplete="off" dir="auto" value={search}
-        onChange={(event) => setSearch(event.target.value)} placeholder="نام محصول را جست‌وجو کنید…" />
-      {search && <Button variant="ghost" className="store-icon-button" aria-label="پاک کردن جست‌وجو" onClick={() => setSearch("")}><X aria-hidden="true" size={18} /></Button>}
+        onChange={(event) => setSearch(event.target.value)} placeholder="جست‌وجو در فروشگاه…" />
+      {search ? <Button variant="ghost" className="store-icon-button" aria-label="پاک کردن جست‌وجو" onClick={() => setSearch("")}><X aria-hidden="true" size={18} /></Button> : <span className="store-search__clear-space" aria-hidden="true" />}
     </div>
-    {categories.length > 1 && <nav className="store-categories" aria-label="دسته‌بندی محصولات">
-      {[{ id: null, name: "همه" }, ...categories].map((category) => <Button variant="secondary" key={category.id ?? "all"}
-        aria-pressed={categoryId === category.id} onClick={() => setCategoryId(category.id)}>
-        {categoryId === category.id && <Check aria-hidden="true" size={16} />}{category.name}
-      </Button>)}
-    </nav>}
     {!products && !error && <div className="store-state" role="status"><p>در حال دریافت محصولات…</p><div className="store-skeleton" aria-hidden="true"><span /><span /></div></div>}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}
-    {products && shown.length === 0 && <div className="store-state"><Search aria-hidden="true" size={28} /><h2>محصولی یافت نشد</h2><p>با کلمات دیگری جست‌وجو کنید یا فیلتر را پاک کنید.</p><Button variant="secondary" onClick={() => { setSearch(""); setCategoryId(null); }}>پاک کردن فیلتر</Button></div>}
-    <div id="store-products" tabIndex={-1} className="store-grid" aria-label="محصولات">
-      {shown.map((product) => { const sku = product.skus[0]; if (!sku) return null;
-        return <ProductCard key={product.id} product={product} saved={wishlist.includes(sku.id)} inCart={cart.some((item) => item.skuId === sku.id)}
-          busy={busySku === sku.id} authenticated={!!session} onAdd={(id) => void updateCart(id)} onFavorite={(id) => void toggleWishlist(id)} />;
-      })}
+    {products && shown.length === 0 && <div className="store-state"><Search aria-hidden="true" size={28} /><h2>محصولی یافت نشد</h2><p>با کلمات دیگری جست‌وجو کنید یا جست‌وجو را پاک کنید.</p><Button variant="secondary" onClick={() => setSearch("")}>پاک کردن جست‌وجو</Button></div>}
+    <div id="store-products" tabIndex={-1} aria-label="محصولات">
+      {products && shown.length > 0 && !isFiltering && <>
+        <StoreCollection title="محصولات فروشگاه" id="store-discover-heading" onViewAll={() => setCatalogView(true)}>
+          {shown.slice(0, 8).map(renderProduct)}
+        </StoreCollection>
+      </>}
+      {products && shown.length > 0 && isFiltering && <>
+        <header className="store-collection__header store-results-heading"><h2>{search.trim() ? "نتایج جست‌وجو" : "همهٔ محصولات"}</h2>
+          <Button variant="ghost" onClick={() => { setSearch(""); setCatalogView(false); }}>بازگشت به فروشگاه</Button>
+        </header>
+        <div className="store-grid">{shown.map(renderProduct)}</div>
+      </>}
     </div>
   </main>;
 }
