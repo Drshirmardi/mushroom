@@ -1,4 +1,3 @@
-> PATIENT UI WORKTREE COORDINATION: read authoritative X:/Git/mushroom/plan/STATUS.md before any claim/write; stop if inaccessible. PUI-B02/PUI-T02 DONE after review; central claim released after task commit, Codex /root, feat/patient-app-ui; plan/patient-ui.md. No independent branch-local registry.
 # وضعیت زنده اجرای پروژه
 
 > این فایل فقط وضعیت فعلی، ownership، blocker و handoff کوتاه را نگه می‌دارد. شواهد taskهای
@@ -11,9 +10,35 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد
-- task فعال: ندارد
+- batch فعال: `none`
+- task فعال: `none`
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
+
+## Current Patient UI workspace — owner override 2026-10-13
+
+Active checkout: X:/Git/mushroom; implementation branch: front, based on dev 2bb6f8f and retaining PUI-T01 0a99208 and PUI-T02 2e4e2b0. Previous worktree and port notes below are historical and superseded.
+Authoritative coordination: this checkout's plan/STATUS.md; independent scope: plan/patient-ui.md. No cross-worktree claim procedure is needed for the current single-checkout UI work. Existing eligibility/review/commit gates remain mandatory. No active UI batch; no next task started.
+No dev merge/push; dev reference remains unchanged. Services are stopped. X:/Git/mushroom-patient-ui is inactive and preserved with its existing uncommitted changes; do not execute or implement there.
+
+## Patient UI coordination — PUI-B01 closed
+
+PUI-T01 DONE; PUI-B01 DONE; claim RELEASED on 2026-10-13 after coordinator review and task commit.
+Owner/reviewer: Codex /root — Mushroom Patient App UI conversation.
+Independent plan/evidence: X:/Git/mushroom-patient-ui/plan/patient-ui.md and plan/logs/patient-ui.md.
+Implementation: feat/patient-app-ui; commit 0a99208e57d7d01811b8a990548d5dc947f2810d — feat(PUI-T01): implement patient foundations and Store catalog.
+Verification: app typecheck, 59 tests, staged diff check, actual local API catalog and Playwright mobile/desktop/RTL/font/keyboard/recovery passed. Purchase mutations/payments and complete checkout journey not verified.
+No active Patient UI paths remain claimed; no next batch started. Product detail/cart are a proposal only and require scope/eligibility review before claim.
+For future claims, main dev worktree plan/STATUS.md remains the authoritative local registry; UI worktree STATUS links here. Read authority before writes and stop if inaccessible. This local coordination exception does not authorize changing other dev source or bypassing Phase12 gates.
+Main dev HEAD unchanged. UI code not merged/pushed; Phase12 stays active. Original frontend localhost3001 and API3003 running; UI preview localhost3002/store uses an already-allowed, previously free origin. Dashboard not started; 3002 must be reassigned before a future Dashboard startup.
+## Patient UI coordination — PUI-B02 closed
+
+PUI-T02 DONE; PUI-B02 DONE; claim RELEASED on 2026-10-13 after coordinator review and task commit.
+Owner/reviewer: Codex /root; branch feat/patient-app-ui; worktree X:/Git/mushroom-patient-ui.
+Commit: 2e4e2b06d8ae82d3e53aa6de79c256ed03ce5883 — feat(PUI-T02): unify Store detail cart and favorites UI.
+Scope completed: Product Details + Cart + Favorites; shared Store components and consistent existing bottom navigation.
+Evidence: plan/logs/patient-ui.md in UI worktree; typecheck, 65 tests, diff check, Playwright mobile390x844/desktop1440x900, RTL/keyboard/empty/loading/error/recovery and reversible synthetic cart/favorite operations PASS. Initial memberships and quantities restored. No orders/payments/SMS; complete checkout unverified.
+Runtime now supersedes PUI-B01 ports: Patient UI normal dev localhost3001; existing API3003. Old servers stopped. Main application source unchanged; only this approved coordination file updated.
+No active UI paths claimed. Independent plan and UI STATUS point to this authority. Phase12 unchanged; no push/merge. Next proposed batch: checkout presentation, requires normal eligibility/claim before implementation; not started.
 
 ## پیشرفت کلان
 

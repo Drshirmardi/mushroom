@@ -105,3 +105,7 @@ Next proposed scope: Product detail و Cart، ابتدا criteria/fixture و dep
 پالت contrast قبلی معتبر reuse شد؛ keyboard/focus/targets بررسی محدودند، ادعای WCAG کامل یا axe جامع نداریم. تصویر/stock/gallery جدید اختراع نشده؛ قرارداد محصول فعلی image ندارد. Guest redirect در این batch مرورگر مستقلاً تست نشد، destination و auth logic با diff حفظ شد. Checkout فقط destination موجود؛ خرید کامل و پرداخت تأیید نشده. محیط dev است؛ production build/device matrix اجرا نشده. Figma QA ناتمام مرجع است و pixel-perfect ادعا نمی‌شود.
 
 پیشنهاد batch بعدی: presentation checkout با قراردادها و validation موجود، بدون ثبت سفارش/پرداخت؛ eligibility/claim مستقل قبل از اجرا. این run پس از PUI-T02 متوقف می‌شود.
+
+## انتقال checkout — 2026-10-13
+
+به درخواست مالک، شاخهٔ front در X:/Git/mushroom از feat/patient-app-ui ایجاد و فعال شد؛ دو commit پذیرفته‌شدهٔ PUI-T01/PUI-T02 حفظ شدند. dev روی2bb6f8f بدون تغییر است؛ merge/push انجام نشد. وضعیت هماهنگی قبلی قبل از switch بیرون source backup شد و تاریخچهٔ claimهای بسته حفظ گردید. hash فایل‌های کاربر AGENTS.md و .gitignore پیش/پس از switch یکسان است. checkout قدیمی با تغییرات ذخیره‌نشده نگه داشته شده ولی محل کار فعلی نیست. STATUS و independent plan مسیر/شاخه و authority جدید را نشان می‌دهند؛ task تازه claim نشده است. فقط مستندات انتقال تغییر کردند، تست application دوباره اجرا نشد. سرویس‌ها خاموش باقی ماندند.

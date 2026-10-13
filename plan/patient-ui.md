@@ -4,7 +4,7 @@ Owner approval: 2026-10-13. This is a product-design track, not an extension of 
 
 ## Coordination
 
-Authoritative active claims: X:/Git/mushroom/plan/STATUS.md, approved main dev worktree. Always read it before writes/claims, including after interruption. UI branch STATUS is only a pointer and handoff. Do not start an overlapping or second batch. If authority is inaccessible, STOP. Main dev STATUS is the only allowed main-worktree write.
+Owner override 2026-10-13: all future Patient UI implementation runs in X:/Git/mushroom on branch front. Authoritative active claims: this checkout's plan/STATUS.md. The previous feat/patient-app-ui checkout is inactive, preserved for safety and not used for implementation. Historical task paths below describe past execution only. PUI-T01 and PUI-T02 commits are retained on front; dev is unchanged. Read STATUS before each claim; preserve the existing plan eligibility, review and task commit gates. No batch is active and no next task is started by this relocation.
 
 ## PUI-T01 — Patient foundations and Store catalog
 
