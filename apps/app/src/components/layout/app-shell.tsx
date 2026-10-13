@@ -14,21 +14,21 @@ import { useUiStore } from "@/stores/ui";
  * scrollable content area, bottom tab bar, splash overlay and global sheet.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isStore = pathname === "/store" || pathname.startsWith("/store/products/") || pathname === "/store/cart" || pathname === "/store/wishlist";
-  const splashSeen = useUiStore((s) => s.splashSeen);
-  const markSplashSeen = useUiStore((s) => s.markSplashSeen);
-  const navigateScreen = useScreenNavigation();
+    const pathname = usePathname();
+    const isStore = pathname === "/store" || pathname.startsWith("/store/products/") || pathname === "/store/cart" || pathname === "/store/wishlist";
+    const splashSeen = useUiStore((s) => s.splashSeen);
+    const markSplashSeen = useUiStore((s) => s.markSplashSeen);
+    const navigateScreen = useScreenNavigation();
 
-  return (
-    <div className={`min-h-screen bg-[#e8ede8] flex items-center justify-center ${isStore ? "patient-store-shell" : ""}`}>
-      <div className="relative w-full max-w-[720px] h-[100dvh] bg-background flex flex-col shadow-2xl overflow-hidden">
-        <AnimatePresence>
-          {!splashSeen && <SplashScreen onDone={markSplashSeen} />}
-        </AnimatePresence>
+    return (
+        <div className={`min-h-screen bg-[#e8ede8] flex items-center justify-center ${isStore ? "patient-store-shell" : ""}`}>
+            <div className="relative w-full max-w-[720px] h-[100dvh] bg-background flex flex-col shadow-2xl overflow-hidden">
+                <AnimatePresence>
+                    {!splashSeen && <SplashScreen onDone={markSplashSeen} />}
+                </AnimatePresence>
 
-        {/* Header */}
-        <div className="patient-shell-header flex items-center justify-between px-5 pt-3 pb-1 bg-background flex-shrink-0">
+                {/* Header */}
+                {/* <div className="patient-shell-header flex items-center justify-between px-5 pt-3 pb-1 bg-background flex-shrink-0">
           <div>
             {isStore ? <p className="text-xl font-bold text-foreground">دکتر شیرمردی</p> : <h1 className="text-xl font-bold text-foreground">دکتر شیرمردی</h1>}
           </div>
@@ -38,14 +38,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="absolute top-1.5 left-1.5 w-2 h-2 bg-primary rounded-full" />
             </button>
           </div>
+        </div> */}
+
+                {/* Screen content */}
+                <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">{children}</div>
+
+                <BottomTabBar />
+                <GlobalSheet />
+            </div>
         </div>
-
-        {/* Screen content */}
-        <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">{children}</div>
-
-        <BottomTabBar />
-        <GlobalSheet />
-      </div>
-    </div>
-  );
+    );
 }
