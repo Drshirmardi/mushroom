@@ -75,3 +75,33 @@ capture اولیه after-mobile زیر splash نامعتبر بود؛ پس از 
 این batch فقط foundations و کاتالوگ است. عدم رگرسیون خواندن کاتالوگ، filter و navigation بررسی شد؛ mutation واقعی سبد/علاقه‌مندی، ورود مهمان، checkout، پرداخت و کل سفر خرید تأیید نشده‌اند. Screenreader/device matrix و axe جامع اجرا نشده‌اند. Splash قدیمی خارج scope هنوز motion خودش را دارد؛ reduced motion کل اپ ادعا نمی‌شود. typography عمومی و viewportهای دیگر review مستقل لازم دارند. سازگاری pixel-perfect با Figma ادعا نشده؛ QA پیشین Figma متوقف بوده است.
 
 Next proposed scope: Product detail و Cart، ابتدا criteria/fixture و dependencies در همین برنامه تعریف و سپس پس از review مالک claim شوند. هیچ task دوم در این run شروع نمی‌شود. commit فقط PUI-T01؛ release claim مرکزی پس از commit؛ dev sync فقط merge عادی پس از بررسی و تست، بدون push/merge خودکار.
+
+
+## PUI-T02 — DONE / PUI-B02 — 2026-10-13
+
+مالک و reviewer: Codex /root. مجوز batch یکپارچهٔ Product Details، Cart و Favorites در independent plan؛ claim مرکزی main dev قبل از source writes کنترل شد. Phase12 و checklist آن تغییر نکرد. commit مستقل پس از gate؛ بدون push/merge و بدون شروع task بعدی.
+
+### تغییرات
+
+- سه route موجود بازطراحی شدند؛ ProductCard و ProductPrice، QuantityControl، CartItem، StoreHeader و StoreState مشترک. API، auth، cart total، cap100 و quantity0/removal حفظ شدند. Favorites از SKU ذخیره‌شدهٔ واقعی استفاده می‌کند؛ catalog/details همچنان SKU اول. محصول فاقد SKU state امن دارد، خرید جعلی ایجاد نمی‌کند.
+- رنگ‌های ConceptA، Vazirmatn موجود، grid موبایل/دسکتاپ، قیمت bdi/LTR، کد SKU ایزوله، targets44 و CTA48، disabled/busy/selected و status/alert. خطای mutation جزئیات محصول را پنهان نمی‌کند.
+- علت تفاوت navbar قبلی selector اختصاصی patient-store-shell بود. قواعد presentation navbar در همان shared component به تمام Patient modules اعمال شد؛ هیچ navbar دوم ساخته نشد و سایر صفحه‌ها بازطراحی نشدند.
+- scope source: سه page، globals.css، app-shell.tsx، product-card.tsx، store-ui.tsx جدید، patient-ui.test.ts. bottom-tab-bar.tsx در این task تغییر نکرد؛ کد مشترک موجود reuse شد. plan/status/log مستقل نیز هماهنگ شد.
+
+### verification و review
+
+- @sabz/app typecheck PASS؛ test PASS: ۱۴ فایل / ۶۵ تست، شامل۶ تست جدید قیمت، quantity limits/busy/removal، link و feedback سبد، recovery و savedSKU callbacks. git diff --check PASS. coordinator review قراردادها و کل diff PASS؛ user-owned AGENTS/.gitignore خارج staging. هیچ source اصلی main dev، backend، schema، API client، lockfile، dependency یا configuration تغییر نکرد.
+- API واقعی محلی3003 و Patient dev معمول3001 از worktree UI؛ serverهای قبلی3001/3002/API متوقف و سپس همین دو runtime موجود اجرا شدند؛ بدون migration/seed. Dashboard اجرا نشد. Graphify AST update PASS؛ parsers SQL/HCL موجود نیستند و warning قبلی chat.service.ts باقی است؛ graph ignored و خارج commit.
+- Playwright: سه صفحه در390×844 و1440×900 و عکس‌ها بازبینی شدند؛ ظرف720 دسکتاپ، بدون overflow صفحه در موارد بررسی‌شده، Vazirmatn computed و RTL واقعی. detail targets44 و CTA48 اندازه‌گیری شد. Enter روی کنترل افزایش مقدار۱→۲، focus outline solid #087F85؛ قیمت bdi/LTR تست شد.
+- navbar خانه و Store: هر دو height72.8، target48، label12px، primary#176b9a؛ safe-area padding در محیط آزمون0. سایر module navigation destinations از component موجود بدون تغییر باقی‌اند؛ کل صفحات پزشکی audit نشده‌اند.
+- API واقعی: سبد قبل و بعد qtyهای۱ و۲ برای دو محصول synthetic و جمع۳۰۰٬۰۰۰؛ افزایش۲→۳→۲، حذف تا empty و افزودن از detail تا quantities اولیه PASS. Favorites افزودن/حذف محصول اول، empty با حذف محصول synthetic موجود و سپس restore آن PASS؛ عضویت اولیه همان محصول ef5edbdf است. حذف/افزودن مجدد ممکن است شناسهٔ داخلی row را عوض کند؛ membership/quantity/total بازگردانده شد، ادعای rollback byte-for-byte دیتابیس نداریم.
+- loading سبد/favorites با gate درخواست واقعی، error با abort درخواست GET و retry به API واقعی PASS؛ response جعلی جای API عادی استفاده نشد. product GET error و retry نیز PASS. تمام interceptionها برداشته شدند. console خطاهای شبکهٔ عمدی fault simulation دارد؛ خطای runtime در جریان عادی مشاهده نشد. warning reduced motion موجود است.
+- Screenshot cart desktop اولیه splash داشت و نامعتبر بود؛ با تصویر نهایی پس از مخفی‌شدن overlay جایگزین شد. selector عمومی role=alert به announcer خود Next نیز می‌خورد؛ بررسی نهایی به main محدود و recovery پاس شد. این دو مسئلهٔ ابزار بررسی بودند، نقص UI اعلام نشدند.
+
+### شواهد و محدودیت‌ها
+
+تصاویر بیرون source: C:/Users/R3dPi/.codex/visualizations/2026/10/12/01a12f3d-98b3-7950-94c1-a2e20c5c510e/pui-t02-{detail,cart,favorites}-{mobile,desktop}.png و pui-t02-{cart,favorites}-empty-mobile.png. فقط محصولات مصنوعی محلی؛ هیچ اطلاعات بیمار، SMS، order submission یا payment initiation بررسی/ایجاد نشد.
+
+پالت contrast قبلی معتبر reuse شد؛ keyboard/focus/targets بررسی محدودند، ادعای WCAG کامل یا axe جامع نداریم. تصویر/stock/gallery جدید اختراع نشده؛ قرارداد محصول فعلی image ندارد. Guest redirect در این batch مرورگر مستقلاً تست نشد، destination و auth logic با diff حفظ شد. Checkout فقط destination موجود؛ خرید کامل و پرداخت تأیید نشده. محیط dev است؛ production build/device matrix اجرا نشده. Figma QA ناتمام مرجع است و pixel-perfect ادعا نمی‌شود.
+
+پیشنهاد batch بعدی: presentation checkout با قراردادها و validation موجود، بدون ثبت سفارش/پرداخت؛ eligibility/claim مستقل قبل از اجرا. این run پس از PUI-T02 متوقف می‌شود.

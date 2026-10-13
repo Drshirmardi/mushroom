@@ -25,3 +25,13 @@ Store product details and cart: propose scope after review of PUI-T01. Checkout/
 ## Dev sync
 
 Review fetched origin/dev before normal merge in the UI branch; preserve user changes, rerun affected checks. Do not merge unverified updates. No dev push or feature-to-dev merge without owner approval.
+
+## PUI-T02 — Product Details + Cart + Favorites
+
+- [x] PUI-T02 DONE; batch PUI-B02; owner Codex /root; approved2026-10-13.
+- Dependencies: PUI-T01 DONE and existing commerce contracts. Single coherent multi-screen UI task.
+- Frozen contract: product firstSKU; favorites use their savedSKU; cart 0removes/max100; product quantity1..100; existing cart totals/current API and destinations; no image/stock fields invented.
+- Owned paths and central coordination: active PUI-B02 record in X:/Git/mushroom/plan/STATUS.md. Three route files, Store components, globals.css, shared shell/navigation, focused UI tests, plan/status/log only.
+- Acceptance: all three rendered interfaces follow ConceptA, reusable card/price/quantity/state; shared navbar consistent across Patient modules. Real API compatibility, responsive390x844/1440x900, RTL/numeric isolation, keyboard/focus, empty/error/loading/busy, passing typecheck/tests and coordinator review. Read-only state fault simulation and reversible synthetic cart/favorite changes; no orders/payments/SMS.
+- Runtime override by owner: regular Patient dev on3001, not alternate3002/3004; prior servers stopped. API existing runtime3003; no secrets copied or backend changes.
+- Completion: record evidence, mark checklist after gates, one task-level commit, release central claim; stop. Checkout/order/payment next proposal only.

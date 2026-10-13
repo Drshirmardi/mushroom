@@ -14,7 +14,8 @@ import { useUiStore } from "@/stores/ui";
  * scrollable content area, bottom tab bar, splash overlay and global sheet.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const isStore = usePathname() === "/store";
+  const pathname = usePathname();
+  const isStore = pathname === "/store" || pathname.startsWith("/store/products/") || pathname === "/store/cart" || pathname === "/store/wishlist";
   const splashSeen = useUiStore((s) => s.splashSeen);
   const markSplashSeen = useUiStore((s) => s.markSplashSeen);
   const navigateScreen = useScreenNavigation();

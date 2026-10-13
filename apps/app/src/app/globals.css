@@ -290,9 +290,9 @@
 .patient-store-shell .patient-shell-header { min-height: 64px; }
 .patient-store-shell .patient-shell-header :is(h1, p) { font-size: 18px; }
 .patient-store-shell .patient-shell-header button { width: 44px; height: 44px; }
-.patient-store-shell .patient-shell-nav { padding-bottom: env(safe-area-inset-bottom); }
-.patient-store-shell .patient-shell-nav a { min-height: 48px; min-width: 52px; justify-content: center; }
-.patient-store-shell .patient-shell-nav a span:last-child { font-size: 12px; line-height: 20px; }
+.patient-shell-nav { padding-bottom: env(safe-area-inset-bottom); }
+.patient-shell-nav a { min-height: 48px; min-width: 52px; justify-content: center; }
+.patient-shell-nav a span:last-child { font-size: 12px; line-height: 20px; }
 .patient-store-shell :is(a, button):focus-visible, .patient-button:focus-visible, .patient-input:focus-visible {
   outline: 2px solid var(--patient-focus); outline-offset: 2px;
 }
@@ -362,7 +362,55 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .patient-button { transition: none; }
-  .patient-store-shell .patient-shell-nav * { animation: none !important; transition: none !important; }
+  .patient-shell-nav * { animation: none !important; transition: none !important; }
 }
 .store-product__media-link { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 56px 12px 16px; }
 .patient-input[aria-invalid="true"] { border-color: var(--patient-error); }
+
+/* One shared bottom navigation, regardless of the active Patient module. */
+.patient-shell-nav { --primary: var(--patient-action); --muted-foreground: var(--patient-muted); --border: var(--patient-divider); }
+.patient-shell-nav a:focus-visible { outline: 2px solid var(--patient-focus); outline-offset: 2px; }
+.store-page { padding: 8px 16px 24px; color: var(--patient-ink); }
+.store-page-header { display: flex; align-items: center; gap: 12px; padding-block: 12px 24px; }
+.store-page-header h1 { font-size: 24px; line-height: 36px; font-weight: 700; }
+.store-page h2 { font-size: 20px; line-height: 32px; font-weight: 600; }
+.store-page h3 { font-size: 16px; line-height: 28px; font-weight: 600; }
+.store-detail { display: grid; gap: 24px; }
+.store-detail__media { display: flex; align-items: center; justify-content: center; min-height: 220px; background: var(--patient-warm); border-radius: 20px; padding: 24px; color: var(--patient-muted); text-align: center; overflow-wrap: anywhere; }
+.store-detail__information { min-width: 0; }
+.store-detail__title { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.store-detail__title h2 { font-size: 26px; line-height: 40px; overflow-wrap: anywhere; }
+.store-eyebrow, .store-sku { color: var(--patient-muted); font-size: 14px; line-height: 24px; }
+.store-sku { margin-top: 12px; }
+.store-detail__price { padding-block: 20px; }
+.store-price--large { font-size: 24px; line-height: 36px; }
+.store-tax { font-size: 12px; line-height: 20px; color: var(--patient-muted); margin-top: 8px; }
+.store-tax .store-price { font-size: 14px; }
+.store-description { border-block-start: 1px solid var(--patient-divider); padding-block: 20px; }
+.store-description p { margin-top: 8px; font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.store-purchase { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block: 16px; }
+.store-quantity { display: inline-flex; align-items: center; gap: 8px; padding: 4px; border-radius: 12px; border: 1px solid var(--patient-divider); background: white; }
+.store-quantity output { min-width: 32px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.store-full-button { width: 100%; }
+.store-inline-status { min-height: 24px; margin-top: 12px; font-size: 14px; line-height: 24px; color: var(--patient-muted); }
+.store-cart-layout, .store-cart-list { display: grid; gap: 16px; }
+.store-cart-item { padding: 16px; background: white; border: 1px solid var(--patient-divider); border-radius: 16px; }
+.store-cart-item__heading { display: flex; align-items: center; gap: 12px; }
+.store-cart-item__heading > div { min-width: 0; }
+.store-cart-item__heading h2 { font-size: 16px; line-height: 28px; overflow-wrap: anywhere; }
+.store-cart-item__heading a:hover { text-decoration: underline; }
+.store-cart-item__media { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; flex-shrink: 0; border-radius: 12px; background: var(--patient-warm); color: var(--patient-muted); }
+.store-cart-item__controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.store-cart-item__status { font-size: 12px; line-height: 20px; color: var(--patient-muted); }
+.store-summary { padding: 24px; border-radius: 16px; border: 1px solid var(--patient-divider); background: white; }
+.store-summary__total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; margin-block: 20px; }
+.store-summary > p { font-size: 14px; line-height: 24px; color: var(--patient-muted); margin-bottom: 20px; }
+.store-page .store-grid { margin-top: 12px; }
+.store-page .store-product__title h2 { font-size: 14px; line-height: 24px; }
+@media (min-width: 600px) {
+  .store-detail { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; }
+  .store-detail__media { min-height: 300px; }
+  .store-cart-layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: start; }
+  .store-summary { padding: 20px; }
+  .store-page .store-product__title h2 { font-size: 16px; line-height: 28px; }
+}

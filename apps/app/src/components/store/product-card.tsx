@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Heart, ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import type { CommerceProduct } from "../../lib/commerce-catalog-api";
-import { formatPrice } from "../../lib/format";
+import { ProductPrice } from "./store-ui";
 
 type Props = {
   product: CommerceProduct;
+  skuOverride?: CommerceProduct["skus"][number];
   saved: boolean;
   inCart: boolean;
   busy: boolean;
@@ -14,8 +15,8 @@ type Props = {
   onFavorite: (skuId: string) => void;
 };
 
-export function ProductCard({ product, saved, inCart, busy, authenticated, onAdd, onFavorite }: Props) {
-  const sku = product.skus[0];
+export function ProductCard({ product, skuOverride, saved, inCart, busy, authenticated, onAdd, onFavorite }: Props) {
+  const sku = skuOverride ?? product.skus[0];
   if (!sku) return null;
   return <article className="store-product" aria-busy={busy || undefined}>
     <div className="store-product__media">
@@ -28,7 +29,7 @@ export function ProductCard({ product, saved, inCart, busy, authenticated, onAdd
     </div>
     <div className="store-product__body">
       <Link href={`/store/products/${encodeURIComponent(product.id)}`} className="store-product__title"><h2>{product.title}</h2></Link>
-      <p className="store-price"><bdi dir="ltr">{formatPrice(Number(sku.currentPriceToman))}</bdi><span>تومان</span></p>
+      <ProductPrice amount={Number(sku.currentPriceToman)} />
       <Button busy={busy} aria-label={`افزودن به سبد: ${product.title}`} onClick={() => onAdd(sku.id)}>
         <ShoppingCart aria-hidden="true" size={18} /><span>{busy ? "در حال انجام…" : "افزودن"}</span>
       </Button>
