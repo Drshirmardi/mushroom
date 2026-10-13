@@ -70,3 +70,6 @@ skills-lock.json
 
 # Generated Graphify artifacts
 graphify-out/
+
+
+.playwright-mcp

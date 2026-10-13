@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, MotionConfig } from "motion/react";
 
 import { useAuthSession } from "@/components/auth/session-gate";
 import { Button } from "@/components/ui/button";
@@ -10,23 +11,77 @@ import { CartItem, ProductPrice, StoreHeader, StoreState } from "@/components/st
 import { commerceErrorMessage, getCommerceCart, updateCommerceCart, type CommerceCart } from "@/lib/commerce-catalog-api";
 
 import { useScreenNavigation } from "@/lib/navigation";
-import { cartTotal, useCartStore } from "@/stores/cart";
+import { cartTotal, cartCount, useCartStore } from "@/stores/cart";
+import { toP } from "@/lib/format";
+import { useRecentStore } from "@/stores/recently-viewed";
+import { RecentCard } from "@/components/store/recent-card";
+import { StoreCollection } from "@/components/store/store-collection";
+import { EMPTY_CART_ART } from "@/stores/empty-art";
 
 const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity })));
 
 export default function CartPage() {
   const { authentication } = useAuthSession(); const router = useRouter(); const navigateScreen = useScreenNavigation();
   const items = useCartStore((state) => state.items); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [busy, setBusy] = useState<string | null>(null);
+  const recent = useRecentStore((state) => state.items);
+  /** Undo window for removals (matches the progress-bar animation in CSS). */
+  const UNDO_MS = 5000;
+  const [removingIds, setRemovingIds] = useState<string[]>([]);
+  const removeTimers = useRef<Map<string, number>>(new Map());
+  const clearRemoveTimer = (skuId: string) => {
+    const timer = removeTimers.current.get(skuId);
+    if (timer !== undefined) { window.clearTimeout(timer); removeTimers.current.delete(skuId); }
+  };
+  useEffect(() => () => {
+    removeTimers.current.forEach((timer) => window.clearTimeout(timer));
+    removeTimers.current.clear();
+  }, []);
   const load = useCallback(async () => { setLoading(true); setError(null); try { cache(await getCommerceCart(authentication.accessToken)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setLoading(false); } }, [authentication.accessToken]);
   useEffect(() => { void load(); }, [load]);
   const change = async (skuId: string, quantity: number) => { setBusy(skuId); setError(null); try { cache(await updateCommerceCart(authentication.accessToken, skuId, quantity)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(null); } };
+  const requestRemove = (skuId: string) => {
+    clearRemoveTimer(skuId);
+    setRemovingIds((ids) => (ids.includes(skuId) ? ids : [...ids, skuId]));
+    removeTimers.current.set(skuId, window.setTimeout(() => {
+      removeTimers.current.delete(skuId);
+      setRemovingIds((ids) => ids.filter((id) => id !== skuId));
+      void change(skuId, 0);
+    }, UNDO_MS));
+  };
+  const undoRemove = (skuId: string) => { clearRemoveTimer(skuId); setRemovingIds((ids) => ids.filter((id) => id !== skuId)); };
+  const onQty = (skuId: string, quantity: number) => { if (quantity === 0) requestRemove(skuId); else void change(skuId, quantity); };
+  const [emptyVisible, setEmptyVisible] = useState(false);
+  const prevLength = useRef(items.length);
+  useEffect(() => {
+    const wasNonEmpty = prevLength.current > 0;
+    prevLength.current = items.length;
+    if (loading || error || items.length > 0) { setEmptyVisible(false); return; }
+    if (wasNonEmpty) {
+      const timer = window.setTimeout(() => setEmptyVisible(true), 300);
+      return () => window.clearTimeout(timer);
+    }
+    setEmptyVisible(true);
+  }, [loading, error, items.length]);
   const total = cartTotal(items);
   return <main className="store-page"><StoreHeader title="سبد خرید" onBack={() => router.back()} />
     {loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
     {error && <StoreState title="سبد به‌روزرسانی نشد" description={error} error action="تلاش دوباره" onAction={() => void load()} />}
-    {!loading && !error && items.length === 0 && <StoreState title="سبد خرید خالی است" description="محصولات مورد نظر را از فروشگاه انتخاب کنید." action="رفتن به فروشگاه" onAction={() => router.push("/store")} />}
-    {!loading && items.length > 0 && <div className="store-cart-layout"><div className="store-cart-list">{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} onChange={quantity => void change(item.skuId, quantity)} />)}</div>
-      <aside className="store-summary" aria-label="خلاصهٔ سبد"><h2>خلاصهٔ خرید</h2><div className="store-summary__total"><span>جمع کالاها</span><ProductPrice amount={total} large /></div><p>هزینهٔ ارسال و مبلغ نهایی در مرحلهٔ تکمیل خرید تعیین می‌شود.</p><Button className="store-full-button" disabled={loading || !!busy} onClick={() => navigateScreen("CheckoutScreen")}>ادامه و تکمیل خرید</Button></aside>
+    {!loading && !error && emptyVisible && <div className="store-empty">
+      <img src={EMPTY_CART_ART} alt="" width={120} height={120} loading="lazy" draggable={false} />
+      <h2>سبد خرید شما خالی است!</h2>
+      <p>اگر به فروشگاه سر بزنید، دست‌پر برمی‌گردید.</p>
+      <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>
     </div>}
+    {!loading && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
+    {!loading && !error && items.length > 0 && <div className="store-cart-bar" aria-label="خلاصهٔ سبد">
+      <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
+      <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا</span><ProductPrice amount={total} /></div>
+    </div>}
+    {recent.length > 0 && <>
+      <div className="store-divider" aria-hidden="true" />
+      <StoreCollection title="بازدیدهای اخیر" id="store-recent">
+        {recent.map((item) => <RecentCard key={item.productId} item={item} />)}
+      </StoreCollection>
+    </>}
   </main>;
 }

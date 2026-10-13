@@ -1,22 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Check, Heart, ShoppingCart } from "lucide-react";
+import { BadgeCheck, Heart, Share2, ShieldCheck, ShoppingCart, Star, Store } from "lucide-react";
 import { useOptionalAuthSession } from "@/components/auth/session-gate";
-import { commerceErrorMessage, getCommerceCart, getCommerceProduct, getCommerceWishlist, updateCommerceCart, updateCommerceWishlist, type CommerceCart, type CommerceProduct, type CommerceWishlist } from "@/lib/commerce-catalog-api";
+import { commerceErrorMessage, getCommerceCart, getCommerceProduct, getCommerceWishlist, listCommerceProducts, updateCommerceCart, updateCommerceWishlist, type CommerceCart, type CommerceProduct, type CommerceWishlist } from "@/lib/commerce-catalog-api";
 import { Button } from "@/components/ui/button";
+import { ProductCard } from "@/components/store/product-card";
+import { AddedToCartToast } from "@/components/store/added-to-cart-toast";
+import { ProductGallery } from "@/components/store/product-gallery";
+import { ProductQuestions } from "@/components/store/product-questions";
+import { ProductReviews } from "@/components/store/product-reviews";
+import { ProductSpecs } from "@/components/store/product-specs";
+import { productExtras, productGallery } from "@/stores/product-extras";
+import { toP } from "@/lib/format";
 import { ProductPrice, QuantityControl, StoreHeader, StoreState } from "@/components/store/store-ui";
 import { useScreenNavigation } from "@/lib/navigation";
 import { useCartStore } from "@/stores/cart";
 import { useWishlistStore } from "@/stores/wishlist";
+import { useRecentStore } from "@/stores/recently-viewed";
 
 const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity })));
 const cacheWishlist = (wishlist: CommerceWishlist) => useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
 
 export default function ProductDetailPage() {
   const session = useOptionalAuthSession(); const router = useRouter(); const { id } = useParams<{ id: string }>(); const navigateScreen = useScreenNavigation();
-  const [product, setProduct] = useState<CommerceProduct | null>(null); const [error, setError] = useState<string | null>(null); const [quantity, setQuantity] = useState(1); const [busy, setBusy] = useState(false); const cart = useCartStore((state) => state.items); const wishlist = useWishlistStore((state) => state.ids);
+  const [product, setProduct] = useState<CommerceProduct | null>(null); const [error, setError] = useState<string | null>(null); const [busy, setBusy] = useState(false); const cart = useCartStore((state) => state.items); const wishlist = useWishlistStore((state) => state.ids);
+  const [related, setRelated] = useState<CommerceProduct[] | null>(null);
+  const pushRecent = useRecentStore((state) => state.push);
+  const [notice, setNotice] = useState("");
+  const [toast, setToast] = useState(false);
+  const noticeTimer = useRef<number | null>(null);
+  const toastTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current); if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); }, []);
   const load = useCallback(async () => { setProduct(null); setError(null); try { setProduct(await getCommerceProduct(id)); } catch (cause) { setError(commerceErrorMessage(cause)); } }, [id]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
@@ -27,25 +43,77 @@ export default function ProductDetailPage() {
       .catch(() => undefined);
     return () => { cancelled = true; };
   }, [session]);
+  useEffect(() => {
+    if (!product) return;
+    let cancelled = false;
+    setRelated(null);
+    void listCommerceProducts({ categoryId: product.category.id, pageSize: 9 })
+      .then((page) => { if (!cancelled) setRelated(page.items.filter((item) => item.id !== product.id).slice(0, 4)); })
+      .catch(() => { if (!cancelled) setRelated([]); });
+    return () => { cancelled = true; };
+  }, [product]);
+  useEffect(() => {
+    if (!product || !product.skus[0]) return;
+    pushRecent({ productId: product.id, title: product.title, price: Number(product.skus[0].currentPriceToman) });
+  }, [product, pushRecent]);
   if (!product) return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
   const sku = product.skus[0];
   if (!sku) return <main className="store-page"><StoreHeader title={product.title} onBack={() => router.back()} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
   const saved = wishlist.includes(sku.id); const current = cart.find((item) => item.skuId === sku.id)?.qty ?? 0;
-  const add = async () => { if (!session) { navigateScreen("CartScreen"); return; } setBusy(true); setError(null); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, sku.id, Math.min(current + quantity, 100))); navigateScreen("CartScreen"); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
+  const extra = productExtras(product.id);
+  const gallery = productGallery(product.id);
+  const flashNotice = (message: string) => { setNotice(message); if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current); noticeTimer.current = window.setTimeout(() => setNotice(""), 4000); };
+  const setQty = async (next: number) => { if (!session) { navigateScreen("CartScreen"); return; } if (next < 0 || next > 100) return; const firstAdd = current === 0 && next > 0; setBusy(true); setError(null); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, sku.id, next)); if (firstAdd) { setToast(true); if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); toastTimer.current = window.setTimeout(() => setToast(false), 3500); } } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
   const toggle = async () => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); setError(null); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, sku.id, !saved)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
+  const share = async () => { try { if (navigator.share) { await navigator.share({ title: product.title, url: window.location.href }); } else { await navigator.clipboard.writeText(window.location.href); flashNotice("پیوند محصول کپی شد."); } } catch { /* dismissed by user */ } };
+  const quickToggle = async (skuId: string) => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, skuId, !wishlist.includes(skuId))); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
   return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} />
     <div className="store-detail">
-      <div className="store-detail__media"><span>{product.category.name}</span></div>
-      <div className="store-detail__information">
-        <div className="store-detail__title"><div><p className="store-eyebrow">{product.category.name}</p><h2>{product.title}</h2></div><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div>
+      <ProductGallery official={gallery.official} buyer={gallery.buyer} title={product.title} />
+      <div className="store-detail__sheet">
+        <div className="store-detail__handle" aria-hidden="true" />
+        <div className="store-crumb-row"><span className="store-brand">{extra.brand}</span><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
+        <div className="store-detail__title"><div><h2>{product.title}</h2></div></div>
+        <div className="store-rating-row" aria-label={`امتیاز ${toP(extra.rating.average)} از ${toP(extra.rating.count)} دیدگاه (نمایشی)`}>
+          <Star size={16} className="store-rating-star" fill="currentColor" aria-hidden="true" />
+          <span className="store-rating-score">{toP(extra.rating.average)}</span>
+          <span className="store-rating-count">({toP(extra.rating.count)} دیدگاه)</span>
+        </div>
+        <section className="store-seller" aria-label="فروشنده">
+          <h3>فروشنده</h3>
+          <div className="store-seller__row">
+            <span className="store-seller__icon"><Store size={20} aria-hidden="true" /></span>
+            <span className="store-seller__name">{extra.seller.name}</span>
+            {extra.seller.verified && <BadgeCheck size={16} className="store-seller__verified" role="img" aria-label="فروشنده تأییدشده" />}
+          </div>
+          <div className="store-seller__chips">
+            <span className="store-mini-chip">رضایت از کالا <strong>{toP(extra.seller.satisfaction)}٪</strong></span>
+            <span className="store-mini-chip">عملکرد <strong>{extra.seller.performance}</strong></span>
+          </div>
+          <ul className="store-seller__guarantees">
+            {extra.guarantees.map((guarantee) => (
+              <li key={guarantee}><ShieldCheck size={16} aria-hidden="true" />{guarantee}</li>
+            ))}
+          </ul>
+        </section>
         <p className="store-sku">کد محصول: <bdi dir="ltr">{sku.code}</bdi></p>
-        <div className="store-detail__price"><ProductPrice amount={Number(sku.currentPriceToman)} large />{sku.currentTaxToman !== "0" && <div className="store-tax">مالیات مشمول قیمت: <ProductPrice amount={Number(sku.currentTaxToman)} /></div>}</div>
         {product.description && <section className="store-description"><h3>دربارهٔ محصول</h3><p>{product.description}</p></section>}
+        <ProductSpecs specs={extra.specs} />
+        <ProductReviews extra={extra} />
+        <ProductQuestions questions={extra.questions} count={extra.questionsCount} />
         {error && <StoreState title="درخواست انجام نشد" description={error} error />}
-        <div className="store-purchase"><span>تعداد</span><QuantityControl value={quantity} busy={busy} label={product.title} onChange={setQuantity} /></div>
-        <Button className="store-full-button" busy={busy} onClick={() => void add()}>{current > 0 ? <Check aria-hidden="true" size={20} /> : <ShoppingCart aria-hidden="true" size={20} />}{busy ? "در حال انجام…" : session ? (current > 0 ? "افزودن بیشتر به سبد" : "افزودن به سبد") : "ورود برای خرید"}</Button>
-        <p className="store-inline-status" role="status">{saved ? "در علاقه‌مندی‌های شما ذخیره شده است" : current > 0 ? "این محصول در سبد شماست" : ""}</p>
+        <p className="store-inline-status" role="status">{saved ? "در علاقه‌مندی‌های شما ذخیره شده است" : notice || (current > 0 ? "این محصول در سبد شماست" : "")}</p>
       </div>
+        {related !== null && related.length > 0 && <section className="store-related" aria-label="محصولات مرتبط"><h3>محصولات مرتبط</h3><div className="store-grid">{related.map((item) => { const itemSku = item.skus[0]; if (!itemSku) return null; return <ProductCard key={item.id} product={item} saved={wishlist.includes(itemSku.id)} inCart={cart.some((entry) => entry.skuId === itemSku.id)} busy={busy} onFavorite={(id) => void quickToggle(id)} />; })}</div></section>}
+        <div className="store-purchase-bar" role="group" aria-label={`خرید ${product.title}`}>
+          <div className="store-purchase-bar__action">
+            {current === 0
+              ? <Button className="store-full-button" busy={busy} onClick={() => void setQty(1)}><ShoppingCart aria-hidden="true" size={20} />{busy ? "در حال انجام…" : session ? "افزودن به سبد" : "ورود برای خرید"}</Button>
+              : <QuantityControl value={current} min={0} busy={busy} label={product.title} onChange={(value) => void setQty(value)} />}
+          </div>
+          <div className="store-purchase-bar__price"><ProductPrice amount={Number(sku.currentPriceToman) * Math.max(current, 1)} large /></div>
+        </div>
     </div>
+    <AddedToCartToast open={toast} onClose={() => setToast(false)} onGoCart={() => navigateScreen("CartScreen")} />
   </main>;
 }

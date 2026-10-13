@@ -57,8 +57,8 @@ export function BottomTabBar() {
               className="flex flex-col items-center gap-1 min-w-[52px] relative"
             >
               {isActive && (reducedMotion ? <div className="absolute -top-2 w-8 h-1 bg-primary rounded-full" /> : <motion.div layoutId="nav-indicator" className="absolute -top-2 w-8 h-1 bg-primary rounded-full" />)}
-              {item.tab === "home" && count > 0 && (
-                <span className="absolute -top-1 right-1 w-4 h-4 bg-primary rounded-full text-[8px] text-white font-bold flex items-center justify-center">{toP(count)}</span>
+              {item.tab === "storemain" && count > 0 && (
+                <span className="absolute -top-1 right-1 min-w-4 h-4 px-0.5 bg-(--patient-like) rounded-full text-[8px] text-white font-bold flex items-center justify-center">{toP(count)}</span>
               )}
               <Icon aria-hidden="true" size={22} className={isActive ? "text-primary" : "text-muted-foreground"} strokeWidth={isActive ? 2.2 : 1.8} />
               <span className={`text-[10px] font-semibold leading-none ${isActive ? "text-primary" : "text-muted-foreground"}`}>{item.label}</span>

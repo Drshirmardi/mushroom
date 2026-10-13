@@ -1,23 +1,36 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 
 /** A collection is derived from catalog data, never an implied promotion. */
-export function StoreCollection({ title, id, onViewAll, children }: {
+export function StoreCollection({ title, id, onViewAll, railClassName, header, children }: {
   title: string;
   id: string;
-  onViewAll: () => void;
+  onViewAll?: () => void;
+  railClassName?: string;
+  header?: ReactNode;
   children: ReactNode;
 }) {
   const rail = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ previous: false, next: false });
+  const drag = useRef({ active: false, moved: false, x: 0, origin: 0 });
+  const [dragging, setDragging] = useState(false);
+  const velocity = useRef(0);
+  const lastTime = useRef(0);
+  const inertia = useRef<number | null>(null);
+  const cancelInertia = () => {
+    if (inertia.current !== null) { cancelAnimationFrame(inertia.current); inertia.current = null; }
+  };
+  useEffect(() => () => cancelInertia(), []);
   const updateEdges = () => {
     const element = rail.current;
     if (!element) return;
     const position = Math.abs(element.scrollLeft);
-    setEdges({ previous: position > 2, next: position < element.scrollWidth - element.clientWidth - 2 });
+    const previous = position > 2;
+    const next = position < element.scrollWidth - element.clientWidth - 2;
+    setEdges((current) => (current.previous === previous && current.next === next ? current : { previous, next }));
   };
   useEffect(() => {
     const element = rail.current;
@@ -33,15 +46,66 @@ export function StoreCollection({ title, id, onViewAll, children }: {
     const direction = getComputedStyle(element).direction === "rtl" ? -1 : 1;
     element.scrollBy({ left: direction * (forward ? 1 : -1) * element.clientWidth * .8, behavior: "auto" });
   };
+  /** Mouse drag-to-scroll: pointer follows content in both LTR and RTL. Touch keeps native scrolling. */
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "mouse" || event.button !== 0) return;
+    cancelInertia();
+    drag.current = { active: true, moved: false, x: event.clientX, origin: event.clientX };
+    velocity.current = 0;
+    lastTime.current = event.timeStamp;
+    setDragging(true);
+  };
+  const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const state = drag.current;
+    const element = rail.current;
+    if (!state.active || !element) return;
+    const dx = event.clientX - state.x;
+    const dt = Math.max(event.timeStamp - lastTime.current, 1);
+    velocity.current = velocity.current * 0.7 + (dx / dt) * 0.3;
+    lastTime.current = event.timeStamp;
+    if (Math.abs(event.clientX - state.origin) > 6) state.moved = true;
+    if (dx !== 0) element.scrollBy({ left: -dx, behavior: "auto" });
+    state.x = event.clientX;
+  };
+  const endDrag = () => {
+    if (!drag.current.active) return;
+    drag.current.active = false;
+    setDragging(false);
+    /** Native-like glide after release, same direction mapping as the drag. */
+    const start = velocity.current;
+    velocity.current = 0;
+    if (drag.current.moved && Math.abs(start) > 0.15) {
+      let current = start;
+      let last = performance.now();
+      const step = (now: number) => {
+        const dt = Math.min(now - last, 50);
+        last = now;
+        const element = rail.current;
+        if (!element) { inertia.current = null; return; }
+        element.scrollBy({ left: -current * dt, behavior: "auto" });
+        current *= Math.pow(0.94, dt / 16.7);
+        if (Math.abs(current) < 0.02) { inertia.current = null; return; }
+        inertia.current = requestAnimationFrame(step);
+      };
+      inertia.current = requestAnimationFrame(step);
+    }
+  };
+  /** A drag ending on a link must not navigate. */
+  const onClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (drag.current.moved) {
+      drag.current.moved = false;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
   return <section className="store-collection" aria-labelledby={id}>
-    <header className="store-collection__header">
+    {header ?? <header className="store-collection__header">
       <h2 id={id}>{title}</h2>
-      <Button variant="ghost" onClick={onViewAll} aria-label={`مشاهده همهٔ ${title}`}>مشاهده همه</Button>
-    </header>
-    <div className="store-collection__controls">
-      <Button variant="secondary" className="store-icon-button" aria-label={`محصولات قبلی ${title}`} aria-controls={`${id}-rail`} disabled={!edges.previous} onClick={() => move(false)}><ChevronRight aria-hidden="true" size={20} /></Button>
-      <Button variant="secondary" className="store-icon-button" aria-label={`محصولات بعدی ${title}`} aria-controls={`${id}-rail`} disabled={!edges.next} onClick={() => move(true)}><ChevronLeft aria-hidden="true" size={20} /></Button>
-    </div>
-    <div ref={rail} id={`${id}-rail`} className="store-product-rail" onScroll={updateEdges} tabIndex={0} role="region" aria-labelledby={id}>{children}</div>
+      {onViewAll && <Button variant="ghost" onClick={onViewAll} aria-label={`مشاهده همهٔ ${title}`}>مشاهده همه</Button>}
+    </header>}
+    <div ref={rail} id={`${id}-rail`} className={`store-product-rail${dragging ? " store-product-rail--dragging" : ""}${railClassName ? ` ${railClassName}` : ""}`}
+      onScroll={updateEdges} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag} onPointerLeave={endDrag} onWheel={cancelInertia}
+      onDragStart={(event) => event.preventDefault()} onClickCapture={onClickCapture}
+      tabIndex={0} role="region" aria-labelledby={id}>{children}</div>
   </section>;
 }

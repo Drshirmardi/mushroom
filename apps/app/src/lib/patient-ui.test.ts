@@ -26,36 +26,31 @@ const product: CommerceProduct = {
   category: { id: "synthetic-category", name: "دستهٔ آزمایشی", slug: "synthetic-category" },
   skus: [{ id: "synthetic-sku", code: "TEST-1", currentPriceToman: "125000", currentTaxToman: "0" }],
 };
-const cardProps = { product, saved: false, inCart: false, busy: false, authenticated: false, onAdd: () => {}, onFavorite: () => {} };
+const cardProps = { product, saved: false, inCart: false, busy: false, onFavorite: () => {} };
 
 describe("Store ProductCard presentation contract", () => {
-  it("preserves product destination, real price value and guest feedback", () => {
+  it("preserves product destination, real price value and test imagery", () => {
     const html = renderToStaticMarkup(createElement(ProductCard, cardProps));
     expect(html.match(/href="\/store\/products\/synthetic-product"/g)).toHaveLength(2);
     expect(html).toContain('dir="ltr"'); expect(html).toContain("۱۲۵٬۰۰۰");
-    expect(html).toContain("برای خرید وارد شوید");
+    expect(html).toContain("dkstatics-public.digikala.com");
+    expect(html).not.toContain("افزودن به سبد");
   });
   it("makes pending controls disabled and favorites selected without color alone", () => {
-    const html = renderToStaticMarkup(createElement(ProductCard, { ...cardProps, saved: true, busy: true, authenticated: true }));
-    expect(html.match(/disabled=""/g)).toHaveLength(2);
+    const html = renderToStaticMarkup(createElement(ProductCard, { ...cardProps, saved: true, busy: true }));
+    expect(html.match(/disabled=""/g)).toHaveLength(1);
     expect(html).toContain('aria-pressed="true"'); expect(html).toContain('aria-busy="true"');
-    expect(html).toContain("در حال انجام…");
   });
   it("does not invent a purchasable SKU for an empty product", () => {
     expect(renderToStaticMarkup(createElement(ProductCard, { ...cardProps, product: { ...product, skus: [] } }))).toBe("");
   });
 });
 
-it("forwards the existing first SKU to cart and wishlist callbacks", () => {
-  const additions: string[] = []; const favorites: string[] = [];
-  const tree = ProductCard({ ...cardProps, onAdd: id => additions.push(id), onFavorite: id => favorites.push(id) });
-  const visit = (node: ReactNode): void => {
-    if (!isValidElement<{ children?: ReactNode; onClick?: () => void; "aria-label"?: string }>(node)) return;
-    if (node.type === Button) node.props.onClick?.();
-    Children.forEach(node.props.children, visit);
-  };
-  visit(tree);
-  expect(additions).toEqual(["synthetic-sku"]); expect(favorites).toEqual(["synthetic-sku"]);
+it("exposes a labeled favorite control bound to the product", () => {
+  const html = renderToStaticMarkup(createElement(ProductCard, { ...cardProps, saved: true }));
+  expect(html).toContain("حذف از علاقه‌مندی‌ها: محصول آزمایشی Test");
+  expect(html).toContain('aria-pressed="true"');
+  expect(html).not.toContain("افزودن به سبد");
 });
 import { CartItem, ProductPrice, QuantityControl, StoreState } from "../components/store/store-ui";
 
@@ -64,6 +59,7 @@ describe("Store shared presentation controls", () => {
     const html = renderToStaticMarkup(createElement(ProductPrice, { amount: 125000 }));
     expect(html).toContain('<bdi dir="ltr">۱۲۵٬۰۰۰</bdi>');
     expect(html).toContain("تومان");
+    expect(html).toContain("<svg");
   });
   it("disables quantity controls at the existing limits and while pending", () => {
     const props = { label: "آزمایشی", onChange: () => {} };
@@ -86,27 +82,23 @@ describe("Store shared presentation controls", () => {
     expect(renderToStaticMarkup(tree)).toContain("حذف آزمایشی");
   });
   it("preserves cart product links and announces pending updates", () => {
-    const html = renderToStaticMarkup(createElement(CartItem, { item: { name: "آزمایشی", productId: "synthetic-product", price: 125000, qty: 1 }, busy: true, onChange: () => {} }));
+    const html = renderToStaticMarkup(createElement(CartItem, { item: { name: "آزمایشی", productId: "synthetic-product", price: 125000, qty: 1 }, busy: true, removing: false, onChange: () => {}, onUndo: () => {} }));
     expect(html).toContain('href="/store/products/synthetic-product"');
     expect(html).toContain("در حال به‌روزرسانی…");
     expect(html).toContain('aria-live="polite"');
+  });
+  it("covers a pending removal with an undo affordance", () => {
+    const html = renderToStaticMarkup(createElement(CartItem, { item: { name: "آزمایشی", productId: "synthetic-product", price: 125000, qty: 1 }, busy: false, removing: true, onChange: () => {}, onUndo: () => {} }));
+    expect(html).toContain("کالای موردنظر شما حذف شد");
+    expect(html).toContain("انصراف");
+    expect(html).toContain('role="alert"');
   });
   it("exposes recovery and pending states without fabricated data", () => {
     expect(renderToStaticMarkup(createElement(StoreState, { title: "خطا", error: true, action: "تلاش دوباره", onAction: () => {} }))).toContain('role="alert"');
     expect(renderToStaticMarkup(createElement(StoreState, { title: "دریافت…", pending: true }))).toContain('role="status"');
   });
-  it("uses the saved SKU price and callbacks for favorites", () => {
+  it("uses the saved SKU price", () => {
     const sku = { ...product.skus[0], id: "saved-sku", currentPriceToman: "225000" };
-    const ids: string[] = [];
-    const props = { ...cardProps, skuOverride: sku, onAdd: (id: string) => ids.push(id), onFavorite: (id: string) => ids.push(id) };
-    const tree = ProductCard(props);
-    const visit = (node: ReactNode): void => {
-      if (!isValidElement<{ children?: ReactNode; onClick?: () => void }>(node)) return;
-      if (node.type === Button) node.props.onClick?.();
-      Children.forEach(node.props.children, visit);
-    };
-    visit(tree);
-    expect(ids).toEqual(["saved-sku", "saved-sku"]);
-    expect(renderToStaticMarkup(createElement(ProductCard, props))).toContain("۲۲۵٬۰۰۰");
+    expect(renderToStaticMarkup(createElement(ProductCard, { ...cardProps, skuOverride: sku }))).toContain("۲۲۵٬۰۰۰");
   });
 });

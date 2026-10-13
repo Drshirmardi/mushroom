@@ -1,14 +1,20 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { motion } from "motion/react";
+import { ArrowRight, BadgeCheck, Minus, Plus, ShoppingBag, Store, Trash2, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { formatPrice, toP } from "../../lib/format";
+import { resolveProductImage, useProductImageStore } from "../../stores/product-images";
+import { productExtras } from "../../stores/product-extras";
+import { TomanIcon } from "./toman-icon";
 
 export function StoreHeader({ title, onBack }: { title: string; onBack: () => void }) {
   return <header className="store-page-header"><Button variant="ghost" className="store-icon-button" onClick={onBack} aria-label="بازگشت"><ArrowRight aria-hidden="true" size={22} /></Button><h1>{title}</h1></header>;
 }
 
 export function ProductPrice({ amount, large = false }: { amount: number; large?: boolean }) {
-  return <p className={`store-price ${large ? "store-price--large" : ""}`}><bdi dir="ltr">{formatPrice(amount)}</bdi><span>تومان</span></p>;
+  return <p className={`store-price ${large ? "store-price--large" : ""}`}><bdi dir="ltr">{formatPrice(amount)}</bdi><TomanIcon /><span className="sr-only">تومان</span></p>;
 }
 
 export function QuantityControl({ value, min = 1, max = 100, busy = false, label, onChange }: { value: number; min?: number; max?: number; busy?: boolean; label: string; onChange: (value: number) => void }) {
@@ -28,9 +34,39 @@ export function StoreState({ title, description, error = false, pending = false,
   </div>;
 }
 
-export function CartItem({ item, busy, onChange }: { item: { name: string; productId: string; price: number; qty: number }; busy: boolean; onChange: (quantity: number) => void }) {
-  return <article className="store-cart-item" aria-busy={busy || undefined}>
-    <div className="store-cart-item__heading"><span className="store-cart-item__media" aria-hidden="true"><ShoppingBag size={24} /></span><div><Link href={`/store/products/${encodeURIComponent(item.productId)}`}><h2>{item.name}</h2></Link><ProductPrice amount={item.price} /></div></div>
-    <div className="store-cart-item__controls"><QuantityControl value={item.qty} min={0} busy={busy} label={item.name} onChange={onChange} /><span className="store-cart-item__status" role="status">{busy ? "در حال به‌روزرسانی…" : ""}</span></div>
-  </article>;
+export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { name: string; productId: string; price: number; qty: number }; busy: boolean; removing: boolean; onChange: (quantity: number) => void; onUndo: () => void }) {
+  const overrides = useProductImageStore((state) => state.overrides);
+  const seller = productExtras(item.productId).seller;
+  const href = `/store/products/${encodeURIComponent(item.productId)}`;
+  return <motion.article
+    className="store-cart-item"
+    aria-busy={busy || undefined}
+    exit={{ x: "100%", opacity: 0, transition: { duration: 0.28, ease: "easeIn" } }}
+  >
+    <div className="store-cart-item__side">
+      <Link href={href} className="store-cart-item__media" aria-label={`مشاهدهٔ ${item.name}`}>
+        <img src={resolveProductImage(item.productId, overrides)} alt="" loading="lazy" draggable={false} />
+      </Link>
+      <QuantityControl value={item.qty} min={0} busy={busy} label={item.name} onChange={onChange} />
+    </div>
+    <div className="store-cart-item__main">
+      <Link href={href} className="store-cart-item__title"><h2>{item.name}</h2></Link>
+      <p className="store-cart-item__seller"><Store size={14} aria-hidden="true" />{seller.name}{seller.verified && <BadgeCheck size={14} aria-hidden="true" />}</p>
+      <div className="store-cart-item__price"><ProductPrice amount={item.price * item.qty} /></div>
+      <span className="store-cart-item__status" role="status">{busy ? "در حال به‌روزرسانی…" : ""}</span>
+    </div>
+    {removing && <div className="store-cart-item__removing" role="alert">
+      <p>کالای موردنظر شما حذف شد</p>
+      <div className="store-undo-bar" aria-hidden="true"><span /></div>
+      <button
+        type="button"
+        className="store-undo-cancel"
+        onClick={onUndo}
+        autoFocus
+        onKeyDown={(event) => { if (event.key === "Escape") onUndo(); }}
+      >
+        <Undo2 size={16} aria-hidden="true" />انصراف
+      </button>
+    </div>}
+  </motion.article>;
 }
