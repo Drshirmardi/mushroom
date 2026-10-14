@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/store/product-card";
 import { AddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { ProductGallery } from "@/components/store/product-gallery";
+import { ProductDetailPanel } from "@/components/store/product-detail-panel";
 import { ProductContentSections } from "@/components/store/product-content-sections";
 import { productImageAlt, productImageUrl } from "@/lib/product-image";
 import { ProductPrice, QuantityControl, StoreHeader, StoreState } from "@/components/store/store-ui";
@@ -63,19 +64,15 @@ export default function ProductDetailPage() {
   const toggle = async () => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); setError(null); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, sku.id, !saved)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
   const share = async () => { try { if (navigator.share) { await navigator.share({ title: product.title, url: window.location.href }); } else { await navigator.clipboard.writeText(window.location.href); flashNotice("پیوند محصول کپی شد."); } } catch { /* dismissed by user */ } };
   const quickToggle = async (skuId: string) => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, skuId, !wishlist.includes(skuId))); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
-  return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} />
-    <div className="store-detail">
-      <ProductGallery key={product.id} official={imageUrl ? [imageUrl] : []} buyer={[]} title={productImageAlt(product.image, product.title)} />
-      <div className="store-detail__sheet">
-        <div className="store-detail__handle" aria-hidden="true" />
-        <div className="store-crumb-row"><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
-        <div className="store-detail__title"><div><h2>{product.title}</h2></div></div>
+  return <main className="store-page store-product-page"><StoreHeader title={product.title} onBack={() => router.back()} />
+    <ProductDetailPanel key={product.id} gallery={<ProductGallery official={imageUrl ? [imageUrl] : []} buyer={[]} title={productImageAlt(product.image, product.title)} />}>
+        <div className="store-detail__title"><div><h2>{product.title}</h2></div><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
         <ProductContentSections product={product} />
         <p className="store-sku">کد محصول: <bdi dir="ltr">{sku.code}</bdi></p>
         {error && <StoreState title="درخواست انجام نشد" description={error} error />}
         <p className="store-inline-status" role="status">{saved ? "در علاقه‌مندی‌های شما ذخیره شده است" : notice || (current > 0 ? "این محصول در سبد شماست" : "")}</p>
-      </div>
         {related !== null && related.length > 0 && <section className="store-related" aria-label="محصولات مرتبط"><h3>محصولات مرتبط</h3><div className="store-grid">{related.map((item) => { const itemSku = item.skus[0]; if (!itemSku) return null; return <ProductCard key={item.id} product={item} saved={wishlist.includes(itemSku.id)} inCart={cart.some((entry) => entry.skuId === itemSku.id)} busy={busy} onFavorite={(id) => void quickToggle(id)} />; })}</div></section>}
+    </ProductDetailPanel>
         <div className="store-purchase-bar" role="group" aria-label={`خرید ${product.title}`}>
           <div className="store-purchase-bar__action">
             {current === 0
@@ -84,7 +81,6 @@ export default function ProductDetailPage() {
           </div>
           <div className="store-purchase-bar__price"><ProductPrice amount={Number(sku.currentPriceToman) * Math.max(current, 1)} large /></div>
         </div>
-    </div>
     <AddedToCartToast open={toast} onClose={() => setToast(false)} onGoCart={() => navigateScreen("CartScreen")} />
   </main>;
 }

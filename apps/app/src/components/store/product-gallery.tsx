@@ -23,7 +23,7 @@ export function ProductGallery({ official, buyer, title }: { official: string[];
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const drag = useRef({ active: false, x: 0 });
+  const drag = useRef({ active: false, x: 0, y: 0, rubber: false });
   // Product switching or replacement resets the position; length alone is not enough.
   useEffect(() => { setIndex(0); }, [fingerprint]);
   const onScroll = () => {
@@ -58,26 +58,60 @@ export function ProductGallery({ official, buyer, title }: { official: string[];
     element.scrollBy({ left, behavior: "auto" });
   };
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== "mouse" || event.button !== 0) return;
-    drag.current = { active: true, x: event.clientX };
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    drag.current = { active: true, x: event.clientX, y: event.clientY, rubber: false };
+    const element = track.current;
+    if (element) element.style.transition = "";
     setDragging(true);
   };
   const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const state = drag.current;
     const element = track.current;
     if (!state.active || !element) return;
+    const canScroll = element.scrollWidth > element.clientWidth + 1;
+    if (!canScroll) {
+      // Single slide: nothing to scroll toward, so answer the gesture with an
+      // elastic nudge instead of dead silence. Purely visual; never moves layout.
+      const dx = event.clientX - state.x;
+      const dy = event.clientY - state.y;
+      if (Math.abs(dy) > Math.abs(dx) * 1.2) {
+        if (state.rubber) { state.rubber = false; element.style.transform = ""; }
+        return;
+      }
+      const clamped = Math.max(-72, Math.min(72, dx * 0.35));
+      state.rubber = true;
+      element.style.transform = `translate3d(${clamped}px,0,0)`;
+      return;
+    }
+    if (event.pointerType !== "mouse") return;
     const dx = event.clientX - state.x;
     if (dx !== 0) element.scrollBy({ left: -dx, behavior: "auto" });
     state.x = event.clientX;
   };
   const endDrag = () => {
-    if (!drag.current.active) return;
-    drag.current.active = false;
+    const state = drag.current;
+    if (!state.active) return;
+    state.active = false;
     setDragging(false);
+    const element = track.current;
+    if (element && state.rubber) {
+      state.rubber = false;
+      element.style.transition = "transform 280ms cubic-bezier(.2,.8,.3,1)";
+      element.style.transform = "";
+    }
   };
   if (images.length === 0) {
     return <div className="store-gallery">
-      <div className="store-gallery__strip">
+      <div
+        ref={track}
+        className={`store-gallery__strip store-gallery__strip--single${dragging ? " store-gallery__strip--dragging" : ""}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerLeave={endDrag}
+      >
         <div className="store-gallery__slide" role="group" aria-roledescription="slide" aria-label={`تصویر ${title}`}>
           <ProductImage src={null} alt={title} />
         </div>
@@ -87,7 +121,7 @@ export function ProductGallery({ official, buyer, title }: { official: string[];
   return <div className="store-gallery">
     <div
       ref={track}
-      className={`store-gallery__strip${dragging ? " store-gallery__strip--dragging" : ""}`}
+      className={`store-gallery__strip${dragging ? " store-gallery__strip--dragging" : ""}${images.length <= 1 ? " store-gallery__strip--single" : ""}`}
       onScroll={onScroll}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

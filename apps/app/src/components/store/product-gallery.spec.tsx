@@ -22,4 +22,13 @@ describe("Product gallery selection", () => {
     expect(html).not.toContain("store-gallery__counter");
     expect(html).not.toContain("store-mosaic");
   });
+
+  it("marks single-photo rails for elastic feedback without changing scroll behavior", () => {
+    const single = renderToStaticMarkup(createElement(ProductGallery, { official: ["/only.jpg"], buyer: [], title: "محصول" }));
+    expect(single).toContain("store-gallery__strip--single");
+    expect(single).not.toContain("store-gallery__counter");
+    const multi = renderToStaticMarkup(createElement(ProductGallery, { official: ["/first.jpg", "/second.jpg"], buyer: [], title: "محصول" }));
+    expect(multi).not.toContain("store-gallery__strip--single");
+    expect(multi).toContain("store-gallery__counter");
+  });
 });

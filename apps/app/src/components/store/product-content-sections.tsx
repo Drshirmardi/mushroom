@@ -1,5 +1,7 @@
 "use client";
 
+import { TriangleAlert } from "lucide-react";
+
 import type { CommerceProduct } from "../../lib/commerce-catalog-api";
 
 const text = (value: string | null | undefined): string | null =>
@@ -24,10 +26,10 @@ export function ProductContentSections({ product }: { product: CommerceProduct }
 
   return <>
     {shortDescription && (
-      <p className="mt-3 text-[15px] font-semibold leading-7 text-foreground">{shortDescription}</p>
+      <p className="store-lede">{shortDescription}</p>
     )}
     {(brand || manufacturer) && (
-      <dl aria-label="برند و تولیدکننده" className="mt-3 space-y-1.5 rounded-2xl border border-border bg-white p-4">
+      <dl aria-label="برند و تولیدکننده" className="store-facts">
         {brand && (
           <div className="flex items-center justify-between gap-3 text-sm">
             <dt className="text-muted-foreground">برند</dt>
@@ -52,10 +54,10 @@ export function ProductContentSections({ product }: { product: CommerceProduct }
       <section className="store-description" aria-label="دستور مصرف"><h3>دستور مصرف</h3><p>{usage}</p></section>
     )}
     {warnings && (
-      <section className="store-description" aria-label="هشدارها"><h3>هشدارها</h3><p>{warnings}</p></section>
+      <section className="store-description store-description--warning" aria-label="هشدارها"><h3><TriangleAlert size={17} aria-hidden="true" />هشدارها</h3><p>{warnings}</p></section>
     )}
     {contraindications && (
-      <section className="store-description" aria-label="موارد منع مصرف"><h3>موارد منع مصرف</h3><p>{contraindications}</p></section>
+      <section className="store-description store-description--warning" aria-label="موارد منع مصرف"><h3><TriangleAlert size={17} aria-hidden="true" />موارد منع مصرف</h3><p>{contraindications}</p></section>
     )}
   </>;
 }
