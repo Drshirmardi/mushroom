@@ -108,9 +108,12 @@ export default function ProductContentEditor({
   const [draft, setDraft] = useState<ContentDraft>(emptyContentDraft);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [conflicted, setConflicted] = useState(false);
+  const [confirmReload, setConfirmReload] = useState(false);
+  const [reloading, setReloading] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
-  const busy = saving || approving;
+  const busy = saving || approving || reloading;
   const dirty = server !== null && isContentDirty(draft, contentDraftFromServer(server));
   const provenanceProblem = provenanceError(draft);
 
@@ -138,8 +141,10 @@ export default function ProductContentEditor({
     return () => {
       mounted = false;
     };
+    // The parent keys this editor by product. Token rotation must not reset its
+    // draft; the shared session-aware transport supplies current credentials.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.id, accessToken]);
+  }, [product.id]);
   useEffect(() => {
     const element = dialog.current;
     element?.showModal();
@@ -159,19 +164,27 @@ export default function ProductContentEditor({
     setConfirmDiscard(false);
   };
 
-  const reloadKeepDraft = async (message: string) => {
+  const reloadAfterConflict = async () => {
+    if (busy || !conflicted || !confirmReload) return;
+    setReloading(true);
     try {
       const current = await productContentApi().load(product.id, accessToken);
       setServer(current);
-      setNotice({ kind: "conflict", text: message });
+      setDraft(contentDraftFromServer(current));
+      setConflicted(false);
+      setConfirmReload(false);
+      setConfirmDiscard(false);
+      setNotice({ kind: "info", text: "نسخهٔ تازه دریافت شد. تغییرهای موردنظر را پس از بازبینی دوباره وارد کنید." });
     } catch (error) {
       const status = error instanceof ProductContentApiError ? error.status : 0;
       setNotice({ kind: "error", text: productContentErrorMessage(status, error instanceof ProductContentApiError ? error.code : "") });
+    } finally {
+      setReloading(false);
     }
   };
 
   const save = async () => {
-    if (!server || busy) return;
+    if (!server || busy || conflicted) return;
     if (provenanceProblem) {
       setNotice({ kind: "error", text: provenanceProblem });
       document.getElementById("product-content-sourceKind")?.focus();
@@ -206,7 +219,8 @@ export default function ProductContentEditor({
       const status = error instanceof ProductContentApiError ? error.status : 0;
       const code = error instanceof ProductContentApiError ? error.code : "";
       if (status === 409) {
-        await reloadKeepDraft("نسخهٔ محتوا روی سرور تغییر کرده است. نسخهٔ تازه دریافت شد؛ تغییرهای شما حفظ شده — بازبینی و ذخیرهٔ مجدد لازم است. سرور رونویسی خودکار نکرد.");
+        setConflicted(true);
+        setNotice({ kind: "conflict", text: "نسخهٔ محتوا روی سرور تغییر کرده است. پیش‌نویس شما حفظ شده؛ تا دریافت و بازبینی نسخهٔ تازه، ذخیره و تأیید متوقف است." });
       } else {
         setNotice({ kind: "error", text: productContentErrorMessage(status, code) });
       }
@@ -216,7 +230,7 @@ export default function ProductContentEditor({
   };
 
   const approve = async () => {
-    if (!server || busy || dirty) return;
+    if (!server || busy || dirty || conflicted) return;
     setApproving(true);
     setNotice(null);
     try {
@@ -232,7 +246,8 @@ export default function ProductContentEditor({
       const status = error instanceof ProductContentApiError ? error.status : 0;
       const code = error instanceof ProductContentApiError ? error.code : "";
       if (status === 409) {
-        await reloadKeepDraft("تأیید انجام نشد چون نسخهٔ سرور عوض شده است. نسخهٔ تازه دریافت شد؛ پس از بازبینی دوباره تأیید کنید.");
+        setConflicted(true);
+        setNotice({ kind: "conflict", text: "تأیید انجام نشد چون نسخهٔ سرور عوض شده است. پیش‌نویس شما حفظ شده؛ ابتدا نسخهٔ تازه را دریافت و بازبینی کنید." });
       } else {
         setNotice({ kind: "error", text: productContentErrorMessage(status, code) });
       }
@@ -389,7 +404,7 @@ export default function ProductContentEditor({
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-                <button type="button" disabled={busy || !dirty} onClick={() => void save()} className={primary}>
+                <button type="button" disabled={busy || conflicted || !dirty} onClick={() => void save()} className={primary}>
                   {saving ? "در حال ذخیره…" : "ذخیره محتوا"}
                 </button>
                 {server.status === "APPROVED" ? (
@@ -400,7 +415,7 @@ export default function ProductContentEditor({
                 ) : (
                   <button
                     type="button"
-                    disabled={!canApproveContent(server.status, dirty, busy, draft)}
+                    disabled={conflicted || !canApproveContent(server.status, dirty, busy, draft)}
                     onClick={() => void approve()}
                     className={secondary}
                     title={dirty ? "اول تغییرها را ذخیره کنید" : undefined}
@@ -427,6 +442,21 @@ export default function ProductContentEditor({
               >
                 {notice.text}
               </p>
+            )}
+            {conflicted && (
+              <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <p className="text-sm text-amber-950">برای رفع تعارض، نسخهٔ سرور را دریافت کنید. پیش‌نویس فعلی فقط با تأیید شما جایگزین می‌شود؛ پیش از ادامه، تغییرهای لازم را برای خود نگه دارید.</p>
+                {confirmReload ? (
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" disabled={busy} onClick={() => void reloadAfterConflict()} className={secondary}>
+                      {reloading ? "در حال دریافت…" : "جایگزینی پیش‌نویس با نسخهٔ سرور"}
+                    </button>
+                    <button type="button" disabled={busy} onClick={() => setConfirmReload(false)} className={secondary}>حفظ پیش‌نویس</button>
+                  </div>
+                ) : (
+                  <button type="button" disabled={busy} onClick={() => setConfirmReload(true)} className={secondary}>دریافت نسخهٔ تازه</button>
+                )}
+              </div>
             )}
             {confirmDiscard && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3" role="alert">

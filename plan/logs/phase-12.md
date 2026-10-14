@@ -3086,3 +3086,76 @@ Known limitations:
   - Playwright harness needed one correction during development (resave-synced Escape closes directly); implementation was correct throughout
 Next task:
   - none (STOP after B1B per instruction; B1C/B2 NOT started, no push/deploy)
+
+## F12-PD-B1B-R1 — focused conflict and session review corrections
+
+Task: F12-PD-B1B-R1; batch PD-B1B-R1; completed 2026-10-14 Asia/Tehran.
+Owner/coordinator/reviewer: Codex /root, one agent, no subagents.
+Authority: explicit owner continuation of the interrupted independent review, limited to two high-risk
+issues; B1B baseline front@8ebfdbe, B1A 78c7209 and unchanged frozen B1 content contract.
+Claim recorded before implementation in STATUS/checklist; baseline worktree clean, no other claim.
+Verdict: PASS WITH FIXES for these two issues. Historical B1B evidence above is preserved; this entry
+supersedes its claim that automatic refetch + full-draft resave safely resolves conflicts.
+
+Confirmed causes (High):
+- On save/approval 409, reloadKeepDraft advanced the server baseline while retaining all stale draft
+  fields. The next full-field PATCH could erase another administrator's changes at the new revision.
+- Initial content-loading effect depended on accessToken; a successful session refresh restarted GET
+  and replaced unsaved fields, even when the original save subsequently failed.
+
+Before-fix reproduction:
+- Added focused browser tests before editing application code, using fully intercepted API requests.
+- First harness run exposed an invalid mock category=null; corrected the fixture to the actual catalog
+  shape (no application fix for that harness error).
+- Desktop regression run then failed on both intended assertions: Save enabled after 409; refreshed
+  session replaced brand "پیش‌نویس نشست" with "برند 1" following a deliberately rejected PATCH.
+
+Corrections:
+- Preserve both draft and its original revision after 409; no automatic content GET or second mutation.
+  Block save and approval in handlers and controls. Explicit two-step reload warns that current draft
+  will be replaced; cancellation and failed reload retain it and keep the conflict gate. Successful
+  reload installs one coherent current snapshot; re-entered changes preserve the other editor's fields.
+- Initial load now follows product identity, not bearer-token rotation. Existing session-aware fetch
+  supplies fresh credentials. Existing product key and the added authenticated-user key isolate editor
+  lifetimes; current props/session gate continue to control operations. No new authorization claims.
+- Updated the original mock conflict flow to require explicit resolution; mock material edits now
+  faithfully mark content PENDING_APPROVAL instead of retaining a stale status.
+
+Changed files:
+- apps/dashboard/src/features/store/product-content-editor.tsx
+- apps/dashboard/src/features/store/store-page.tsx (authenticated-user identity key only)
+- apps/dashboard/e2e/product-content-regressions.mjs (new focused browser regressions)
+- apps/dashboard/e2e/product-content.spec.ts
+- apps/dashboard/e2e/product-content-browser.mjs
+- plan/STATUS.md, plan/phases/12-PRODUCTION-HARDENING.md, this log.
+
+Verification (actual results):
+- pnpm exec playwright test --config apps/dashboard/e2e/playwright.product-content.config.ts
+  --project desktop --grep regression: before application fix, 0/2 PASS, both intended defects observed.
+- pnpm exec playwright test --config apps/dashboard/e2e/playwright.product-content.config.ts:
+  after fixes, 6/6 PASS (desktop 1440x900 and mobile 390x844). Covers save/approval revisions, retained
+  draft and blocked mutations on 409, explicit reload/cancel/failure/retry, remote field preservation,
+  approval conflict, unchanged-content approval preservation, token refresh + failed save + retry using
+  fresh bearer, product switching/discard guard, account editor isolation, session role-loss unmount,
+  existing 403 feedback, RTL/overflow and media-editor entry.
+- pnpm --filter @sabz/dashboard test -- src/features/store/product-content-draft.spec.ts
+  src/lib/commerce-product-content-api.spec.ts: 2 files / 10 tests PASS.
+- pnpm --filter @sabz/dashboard typecheck: PASS.
+- pnpm exec eslint src/features/store/product-content-editor.tsx src/features/store/store-page.tsx
+  e2e/product-content-browser.mjs e2e/product-content-regressions.mjs e2e/product-content.spec.ts
+  (cwd apps/dashboard): PASS, no diagnostics.
+- git diff --check: PASS. Scoped diff and acceptance reviewed; no unrelated changes.
+- graphify update .: PASS, AST-only; ignored graph outputs updated. Tool reported existing optional
+  SQL/HCL parser gaps and an unrelated chat extraction warning; no installs or unrelated corrections.
+
+Environment/limitations:
+- Reused existing Dashboard dev server on localhost:3002. A start attempt returned EADDRINUSE;
+  no existing process was stopped/restarted. Browser API calls were all mocked, with no database/R2 CRUD.
+- No backend, Prisma, migration, database, generated-client, frozen-contract, dependency or other
+  Dashboard feature changes. No real backend acceptance claimed; persistent B1A migration remains an
+  external prerequisite per owner instruction and was not investigated/applied.
+- Review correction scope only; earlier Medium/Low observations are not promoted into new work.
+  Server ADMIN + commerce:manage + clinic authorization remains authoritative; no new permission API.
+- Real B1B local acceptance is the next handoff under separate authorization. B1C/B2 not started;
+  production readiness, deployment, merge and push are not claimed or performed.
+Final gate: DONE, claim released; one corrective task-level commit, no next batch started.

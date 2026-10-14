@@ -10,9 +10,23 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد (`PD-B1B DONE` و آزاد شد؛ B1C/B2 خودکار شروع نمی‌شوند)
+- batch فعال: ندارد — `PD-B1B-R1` DONE; claim RELEASED
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
+
+## Product Details B1B — independent review corrections accepted (2026-10-14)
+
+`F12-PD-B1B-R1 DONE`; batch `PD-B1B-R1` claim RELEASED; owner/coordinator/reviewer Codex /root;
+one agent; baseline front@8ebfdbe, initially clean. Explicit owner continuation covered only conflict
+auto-rebase and unsaved-draft loss during token refresh. Both reproduced before application edits.
+Review PASS WITH FIXES: 409 keeps the old draft/revision and gates save/approve until confirmed
+replacement with current server content; token rotation preserves the draft, product/account keys
+isolate editors and existing session/permission enforcement stays authoritative.
+6 mocked desktop/mobile browser tests, 10 focused unit tests, dashboard typecheck and scoped lint PASS.
+[Evidence and limitations](logs/phase-12.md#f12-pd-b1b-r1--focused-conflict-and-session-review-corrections).
+No backend/schema/DB/generated-client/frozen-contract changes, real backend acceptance, push or deploy.
+Next action is separately authorized real B1B local acceptance after its database prerequisite; this
+review did not apply migrations. B1C/B2 NOT started; no automatic next batch.
 
 ## Product Details V1 — B1A backend accepted (2026-10-14)
 

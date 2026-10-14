@@ -81,6 +81,7 @@ export async function verifyProductContentBrowser(page, origin) {
         current.provenance = nextProv;
         if (material) {
           current.contentRevision += 1;
+          current.status = "PENDING_APPROVAL";
           current.approvedContentRevision = null;
           current.contentApprovedAt = null;
           current.contentApprovedByUserId = null;
@@ -154,6 +155,10 @@ export async function verifyProductContentBrowser(page, origin) {
   await dialog.getByRole("button", { name: "ذخیره محتوا" }).click();
   await dialog.getByText("نسخهٔ محتوا روی سرور تغییر کرده", { exact: false }).waitFor({ timeout: 15_000 });
   assert.equal(await dialog.getByLabel("برند").inputValue(), "برند درگیری");
+  assert.equal(await dialog.getByRole("button", { name: "ذخیره محتوا" }).isDisabled(), true);
+  await dialog.getByRole("button", { name: "دریافت نسخهٔ تازه", exact: true }).click();
+  await dialog.getByRole("button", { name: "جایگزینی پیش‌نویس با نسخهٔ سرور", exact: true }).click();
+  await dialog.getByLabel("برند").fill("برند درگیری");
   await dialog.getByRole("button", { name: "ذخیره محتوا" }).click();
   await dialog.getByText("نگارش ۲", { exact: false }).first().waitFor({ timeout: 15_000 });
   // Resave synced the draft: nothing unsaved, so Escape closes directly with no confirm.

@@ -172,6 +172,11 @@ declare a completed cross-application feature.
 - [x] `F12-PD-B1B` — Dashboard product-content editor; batch `PD-B1B`; DONE, Muse Spark;
   review PASS, claim RELEASED 2026-10-14; [evidence/handoff](../logs/phase-12.md#f12-pd-b1b--dashboard-product-content-editor).
   Depends on B1A DONE, accepted Commerce/media baselines and frozen B1 contract.
+- [x] `F12-PD-B1B-R1` — independent B1B review corrective: prevent conflict auto-rebase/full-field
+  overwrite and preserve unsaved content across token refresh; DONE, Codex /root, PD-B1B-R1;
+  review PASS WITH FIXES, claim RELEASED 2026-10-14. Depends on B1B/8ebfdbe.
+  [Reproductions/verification](../logs/phase-12.md#f12-pd-b1b-r1--focused-conflict-and-session-review-corrections).
+  Mocked acceptance only; real backend acceptance remains separate. No later batch started.
 - [ ] `F12-PD-B1C` — Customer PDP real content and demo-claim retirement; batch `PD-B1C`;
   NOT_ELIGIBLE until B1A/B1B DONE and their generated contract/editor acceptance is available.
 - [ ] `F12-PD-B2` — Category templates, typed attributes, variants/availability and order integrity;
