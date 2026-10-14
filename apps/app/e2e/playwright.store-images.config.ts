@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 export default defineConfig({
   testDir: ".",
-  testMatch: "store-images.spec.ts",
+  testMatch: ["store-images.spec.ts", "product-content.spec.ts"],
   workers: 1,
   timeout: 180_000,
   outputDir: join(tmpdir(), "mushroom-store-images-playwright"),

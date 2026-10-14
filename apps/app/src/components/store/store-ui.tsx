@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight, BadgeCheck, Minus, Plus, ShoppingBag, Store, Trash2, Undo2 } from "lucide-react";
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { formatPrice, toP } from "../../lib/format";
 import { ProductImage } from "./product-image";
-import { productExtras } from "../../stores/product-extras";
 import { TomanIcon } from "./toman-icon";
 
 export function StoreHeader({ title, onBack }: { title: string; onBack: () => void }) {
@@ -35,7 +34,6 @@ export function StoreState({ title, description, error = false, pending = false,
 }
 
 export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { name: string; productId: string; price: number; qty: number; imageUrl?: string | null }; busy: boolean; removing: boolean; onChange: (quantity: number) => void; onUndo: () => void }) {
-  const seller = productExtras(item.productId).seller;
   const href = `/store/products/${encodeURIComponent(item.productId)}`;
   return <motion.article
     className="store-cart-item"
@@ -50,7 +48,6 @@ export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { n
     </div>
     <div className="store-cart-item__main">
       <Link href={href} className="store-cart-item__title"><h2>{item.name}</h2></Link>
-      <p className="store-cart-item__seller"><Store size={14} aria-hidden="true" />{seller.name}{seller.verified && <BadgeCheck size={14} aria-hidden="true" />}</p>
       <div className="store-cart-item__price"><ProductPrice amount={item.price * item.qty} /></div>
       <span className="store-cart-item__status" role="status">{busy ? "در حال به‌روزرسانی…" : ""}</span>
     </div>

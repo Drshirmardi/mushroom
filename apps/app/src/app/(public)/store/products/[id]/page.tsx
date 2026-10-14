@@ -2,19 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { BadgeCheck, Heart, Share2, ShieldCheck, ShoppingCart, Star, Store } from "lucide-react";
+import { Heart, Share2, ShoppingCart } from "lucide-react";
 import { useOptionalAuthSession } from "@/components/auth/session-gate";
 import { commerceErrorMessage, getCommerceCart, getCommerceProduct, getCommerceWishlist, listCommerceProducts, updateCommerceCart, updateCommerceWishlist, type CommerceCart, type CommerceProduct, type CommerceWishlist } from "@/lib/commerce-catalog-api";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/store/product-card";
 import { AddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { ProductGallery } from "@/components/store/product-gallery";
-import { ProductQuestions } from "@/components/store/product-questions";
-import { ProductReviews } from "@/components/store/product-reviews";
-import { ProductSpecs } from "@/components/store/product-specs";
-import { productExtras } from "@/stores/product-extras";
+import { ProductContentSections } from "@/components/store/product-content-sections";
 import { productImageAlt, productImageUrl } from "@/lib/product-image";
-import { toP } from "@/lib/format";
 import { ProductPrice, QuantityControl, StoreHeader, StoreState } from "@/components/store/store-ui";
 import { useScreenNavigation } from "@/lib/navigation";
 import { useCartStore } from "@/stores/cart";
@@ -61,7 +57,6 @@ export default function ProductDetailPage() {
   const sku = product.skus[0];
   if (!sku) return <main className="store-page"><StoreHeader title={product.title} onBack={() => router.back()} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
   const saved = wishlist.includes(sku.id); const current = cart.find((item) => item.skuId === sku.id)?.qty ?? 0;
-  const extra = productExtras(product.id);
   const imageUrl = productImageUrl(product);
   const flashNotice = (message: string) => { setNotice(message); if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current); noticeTimer.current = window.setTimeout(() => setNotice(""), 4000); };
   const setQty = async (next: number) => { if (!session) { navigateScreen("CartScreen"); return; } if (next < 0 || next > 100) return; const firstAdd = current === 0 && next > 0; setBusy(true); setError(null); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, sku.id, next)); if (firstAdd) { setToast(true); if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); toastTimer.current = window.setTimeout(() => setToast(false), 3500); } } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
@@ -73,35 +68,10 @@ export default function ProductDetailPage() {
       <ProductGallery key={product.id} official={imageUrl ? [imageUrl] : []} buyer={[]} title={productImageAlt(product.image, product.title)} />
       <div className="store-detail__sheet">
         <div className="store-detail__handle" aria-hidden="true" />
-        <div className="store-crumb-row"><span className="store-brand">{extra.brand}</span><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
+        <div className="store-crumb-row"><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
         <div className="store-detail__title"><div><h2>{product.title}</h2></div></div>
-        <div className="store-rating-row" aria-label={`امتیاز ${toP(extra.rating.average)} از ${toP(extra.rating.count)} دیدگاه (نمایشی)`}>
-          <Star size={16} className="store-rating-star" fill="currentColor" aria-hidden="true" />
-          <span className="store-rating-score">{toP(extra.rating.average)}</span>
-          <span className="store-rating-count">({toP(extra.rating.count)} دیدگاه)</span>
-        </div>
-        <section className="store-seller" aria-label="فروشنده">
-          <h3>فروشنده</h3>
-          <div className="store-seller__row">
-            <span className="store-seller__icon"><Store size={20} aria-hidden="true" /></span>
-            <span className="store-seller__name">{extra.seller.name}</span>
-            {extra.seller.verified && <BadgeCheck size={16} className="store-seller__verified" role="img" aria-label="فروشنده تأییدشده" />}
-          </div>
-          <div className="store-seller__chips">
-            <span className="store-mini-chip">رضایت از کالا <strong>{toP(extra.seller.satisfaction)}٪</strong></span>
-            <span className="store-mini-chip">عملکرد <strong>{extra.seller.performance}</strong></span>
-          </div>
-          <ul className="store-seller__guarantees">
-            {extra.guarantees.map((guarantee) => (
-              <li key={guarantee}><ShieldCheck size={16} aria-hidden="true" />{guarantee}</li>
-            ))}
-          </ul>
-        </section>
+        <ProductContentSections product={product} />
         <p className="store-sku">کد محصول: <bdi dir="ltr">{sku.code}</bdi></p>
-        {product.description && <section className="store-description"><h3>دربارهٔ محصول</h3><p>{product.description}</p></section>}
-        <ProductSpecs specs={extra.specs} />
-        <ProductReviews extra={extra} />
-        <ProductQuestions questions={extra.questions} count={extra.questionsCount} />
         {error && <StoreState title="درخواست انجام نشد" description={error} error />}
         <p className="store-inline-status" role="status">{saved ? "در علاقه‌مندی‌های شما ذخیره شده است" : notice || (current > 0 ? "این محصول در سبد شماست" : "")}</p>
       </div>

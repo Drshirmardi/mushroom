@@ -3159,3 +3159,43 @@ Environment/limitations:
 - Real B1B local acceptance is the next handoff under separate authorization. B1C/B2 not started;
   production readiness, deployment, merge and push are not claimed or performed.
 Final gate: DONE, claim released; one corrective task-level commit, no next batch started.
+
+## F12-PD-B1C — Customer Product Details Integration
+
+Task ID: F12-PD-B1C
+Completed at: 2026-10-14 Asia/Tehran
+Agent/Thread: Muse Spark (single agent, no subagents per task instruction)
+Batch ID: PD-B1C
+Reviewed by: Muse Spark (coordinator self-review; combined diff scope-checked)
+Authority: explicit owner B1C implementation instruction; ADR-0016 and frozen store-product-details-v1 1.0.
+Baseline: B1A 78c7209 + B1B 8ebfdbe + B1B-R1 43fa0ba DONE; clean worktree at claim.
+Changed files:
+  - apps/app/src/components/store/product-content-sections.tsx (new: conditional A-E sections from public DTO, plain-text only, no fake claims)
+  - apps/app/src/app/(public)/store/products/[id]/page.tsx (PDP wired to real content + metadata alt; rating/seller/specs/reviews/questions blocks removed)
+  - apps/app/src/components/store/store-ui.tsx (fake CartItem seller row removed; cart logic untouched)
+  - apps/app/src/stores/product-extras.ts + product-extras.spec.ts (DELETED)
+  - apps/app/src/components/store/product-specs.tsx + product-reviews.tsx + product-questions.tsx (DELETED, PDP-only)
+  - apps/app/src/lib/patient-ui.test.ts (5 new content/cart presentation tests)
+  - apps/app/e2e/product-content.spec.ts + product-content-browser.mjs (new: mock-API desktop/mobile)
+  - apps/app/e2e/playwright.store-images.config.ts (second spec file registered)
+  - plan/STATUS.md (batch claim + release)
+Tests run (working directory apps/app unless stated):
+  - pnpm --filter @sabz/app typecheck → PASS
+  - pnpm --filter @sabz/app test → 22 files / 99 tests PASS (product-images suite retired with its module; net +5 B1C tests)
+  - Playwright store PDP content (desktop 1440x900 + mobile 390x844, deterministic mock API) → 2/2 PASS: approved sections, legacy description, pending emptiness, no fabricated claims, image fallback intact, RTL, no overflow, purchase flow intact
+  - Existing store-images Playwright suite re-ran in the same run → 2/2 PASS (no image regression)
+  - Real dev API probed read-only: 4 products exist but carry no image/content/descriptions, so approved-content rendering was verified against mocks only (no product data mutated, per instruction)
+  - No backend/Prisma/dashboard/R2 tests touched
+Result:
+  - approved public fields render (brand/manufacturer/short/full/ingredients/usage/warnings/contra) with legacy/top-level fallbacks exactly per visibility table → PASS
+  - missing/unapproved fields render nothing; no approval badges or source claims invented → PASS
+  - hardcoded ratings/counts, fake reviews/Q&A, fictional seller verification/satisfaction/warranties, hardcoded specs, cart seller row removed → PASS
+  - plain text stays plain (escaping test) and warnings are never collapsed → PASS
+  - title/image/SKU/price/cart/wishlist/navigation/loading/error preserved; no variant selector → PASS
+Known limitations:
+  - Hero banners/shortcuts/offers still hotlink Digikala (separate batch, untouched per instruction)
+  - Local dev catalog has no approved products yet, so the approved PDP path is mock-verified; first real approval should be eyeballed after B1B-R1 acceptance data exists
+  - Cart/wishlist browser coverage still deferred (auth routes); unit-covered
+  - App has no lint script; typecheck + tests + diff check stand in
+Next task:
+  - none (STOP after B1C per instruction; B2 NOT started, no push/deploy)

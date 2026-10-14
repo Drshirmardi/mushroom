@@ -177,8 +177,9 @@ declare a completed cross-application feature.
   review PASS WITH FIXES, claim RELEASED 2026-10-14. Depends on B1B/8ebfdbe.
   [Reproductions/verification](../logs/phase-12.md#f12-pd-b1b-r1--focused-conflict-and-session-review-corrections).
   Mocked acceptance only; real backend acceptance remains separate. No later batch started.
-- [ ] `F12-PD-B1C` — Customer PDP real content and demo-claim retirement; batch `PD-B1C`;
-  NOT_ELIGIBLE until B1A/B1B DONE and their generated contract/editor acceptance is available.
+- [x] `F12-PD-B1C` — Customer PDP real content and demo-claim retirement; batch `PD-B1C`; DONE, Muse Spark;
+  review PASS, claim RELEASED 2026-10-14; [evidence/handoff](../logs/phase-12.md#f12-pd-b1c--customer-product-details-integration).
+  Depends on B1A/B1B DONE and their generated contract/editor acceptance.
 - [ ] `F12-PD-B2` — Category templates, typed attributes, variants/availability and order integrity;
   batch `PD-B2`; BLOCKED_OWNER_DECISIONS until B1C DONE, explicit initial category definitions and
   the B2 contract appendix are approved/frozen. Architecture approval is not definition approval.

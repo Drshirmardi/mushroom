@@ -125,6 +125,7 @@ describe("Store shared presentation controls", () => {
 
 import { ProductGallery } from "../components/store/product-gallery";
 import { ProductImage } from "../components/store/product-image";
+import { ProductContentSections } from "../components/store/product-content-sections";
 import { RecentCard } from "../components/store/recent-card";
 
 describe("Store real product image presentation (Phase 04C)", () => {
@@ -170,5 +171,71 @@ describe("Store real product image presentation (Phase 04C)", () => {
     const legacy = renderToStaticMarkup(createElement(RecentCard, { item: { productId: "p1", title: "قدیمی", price: 1000, viewedAt: 0 } }));
     expect(legacy).toContain("data:image/svg+xml,");
     expect(legacy).not.toContain("dkstatics");
+  });
+});
+
+const approvedContent = {
+  brand: "برند واقعی",
+  manufacturer: "تولیدکننده واقعی",
+  shortDescription: "معرفی کوتاه واقعی",
+  description: "توضیح تأییدشده",
+  ingredients: "ماده واقعی",
+  usageInstructions: "دستور واقعی",
+  warnings: "هشدار واقعی",
+  contraindications: "منع واقعی",
+  contentRevision: 3,
+};
+const approvedProduct: CommerceProduct = {
+  ...product,
+  brand: null,
+  shortDescription: null,
+  description: null,
+  content: approvedContent,
+};
+
+describe("Store real product content sections (Phase B1C)", () => {
+  it("renders every nonempty approved field and nothing else", () => {
+    const html = renderToStaticMarkup(createElement(ProductContentSections, { product: approvedProduct }));
+    for (const text of ["معرفی کوتاه واقعی", "برند واقعی", "تولیدکننده واقعی", "توضیح تأییدشده", "ماده واقعی", "دستور واقعی", "هشدار واقعی", "منع واقعی"]) {
+      expect(html).toContain(text);
+    }
+    for (const heading of ["دربارهٔ محصول", "ترکیبات", "دستور مصرف", "هشدارها", "موارد منع مصرف"]) {
+      expect(html).toContain(heading);
+    }
+  });
+
+  it("omits missing sections without placeholders or approval claims", () => {
+    const html = renderToStaticMarkup(createElement(ProductContentSections, { product }));
+    expect(html).not.toContain("دربارهٔ محصول");
+    expect(html).not.toContain("ترکیبات");
+    expect(html).not.toContain("هشدارها");
+    expect(html).not.toContain("تأیید");
+  });
+
+  it("renders legacy descriptions and top-level brand fallbacks", () => {
+    const legacy = renderToStaticMarkup(
+      createElement(ProductContentSections, { product: { ...product, description: "توضیح قدیمی", brand: "برند فهرست", shortDescription: null, content: null } }),
+    );
+    expect(legacy).toContain("توضیح قدیمی");
+    expect(legacy).toContain("برند فهرست");
+    expect(legacy).not.toContain("ترکیبات");
+  });
+
+  it("renders plain text escaped without fabricating ratings, sellers or reviews", () => {
+    const html = renderToStaticMarkup(
+      createElement(ProductContentSections, { product: { ...approvedProduct, content: { ...approvedContent, description: "<b>bold</b> & سقوط" } } }),
+    );
+    expect(html).toContain("&lt;b&gt;bold&lt;/b&gt;");
+    expect(html).not.toContain("<b>bold</b>");
+    for (const fake of ["امتیاز", "دیدگاه", "فروشنده", "تأییدشده", "رضایت", "ستاره"]) {
+      expect(html).not.toContain(fake);
+    }
+  });
+
+  it("keeps cart items free of seller claims without touching cart behavior", () => {
+    const html = renderToStaticMarkup(createElement(CartItem, { item: { name: "آزمایشی", productId: "synthetic-product", price: 125000, qty: 2 }, busy: false, removing: false, onChange: () => {}, onUndo: () => {} }));
+    expect(html).not.toContain("فروشنده");
+    expect(html).not.toContain("تأییدشده");
+    expect(html).toContain('href="/store/products/synthetic-product"');
   });
 });
