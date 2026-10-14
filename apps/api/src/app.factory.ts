@@ -5,6 +5,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import fastifyCookie from '@fastify/cookie';
+import fastifyMultipart from '@fastify/multipart';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -61,9 +62,11 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
     .split(',');
 
   await app.register(fastifyCookie as never);
+  await app.register(fastifyMultipart as never, { limits: { files: 1, fields: 1, parts: 2, fileSize: 5 * 1024 * 1024 } });
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
+    exposedHeaders: ['ETag', 'x-request-id'],
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 

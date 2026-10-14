@@ -105,6 +105,13 @@ const sadadResultUrlSchema = Joi.string()
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /store/order-success with no query or fragment' });
 
 export const environmentValidationSchema = Joi.object({
+  PRODUCT_MEDIA_STORAGE_MODE: Joi.string().valid('disabled', 'r2').default('disabled').when('NODE_ENV', { is: 'production', then: Joi.valid(Joi.override, 'disabled') }),
+  R2_ENDPOINT: Joi.string().uri({ scheme: ['https'] }).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_BUCKET: Joi.string().pattern(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_REGION: Joi.string().valid('auto').default('auto'),
+  R2_ACCESS_KEY_ID: Joi.string().trim().min(1).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_SECRET_ACCESS_KEY: Joi.string().trim().min(1).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1000).max(10000).default(5000),
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),

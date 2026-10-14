@@ -919,10 +919,35 @@ model CommerceProduct {
   clinic      Clinic                @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   category    CommerceCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   skus        CommerceSku[]
+  image       CommerceProductImage?
 
   @@unique([clinicId, slug], map: "commerce_products_clinic_slug_key")
   @@index([clinicId, status, id], map: "commerce_products_clinic_status_id_idx")
   @@map("commerce_products")
+}
+
+enum CommerceProductImageStatus {
+  READY
+  DELETE_PENDING
+
+  @@map("commerce_product_image_status")
+}
+
+model CommerceProductImage {
+  id          String                     @id @default(uuid()) @db.Uuid
+  productId   String                     @unique @map("product_id") @db.Uuid
+  objectKey   String                     @unique @map("object_key") @db.VarChar(512)
+  mimeType    String                     @map("mime_type") @db.VarChar(40)
+  sizeBytes   Int                        @map("size_bytes")
+  width       Int
+  height      Int
+  altText     String                     @map("alt_text") @db.VarChar(240)
+  status      CommerceProductImageStatus @default(READY)
+  createdAt   DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  product     CommerceProduct            @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("commerce_product_images")
 }
 
 model CommerceSku {

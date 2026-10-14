@@ -2617,3 +2617,100 @@ Known limitations:
 Next batch:
 
 - No batch started; continue the existing Phase 12 eligibility/blockers after this handoff.
+
+## F12-T06-R1 — Store product media backend foundation
+
+Task ID: F12-T06-R1
+Status: DONE (backend development slice only)
+Completed at: 2026-10-14 Asia/Tehran
+Batch ID: F12-MEDIA-B01A / Store Phase 04A
+Agent/Thread and reviewer: Codex /root, Store media chat (one agent)
+Authority: explicit product-owner storage re-entry approval, recorded in ADR-0015 and the historical F12-T06 decision addendum. Dependencies complete; no competing active owner. Initial-release N/A and independently blocked F12-T05/F12-T07 remain unchanged.
+Task commit: `feat(F12-T06-R1): add private product media backend` (created after this evidence and final diff gate).
+
+### Changed files
+
+- `apps/api/.env.example`
+- `apps/api/package.json`
+- `pnpm-lock.yaml`
+- `apps/api/prisma/schema.prisma`
+- `apps/api/prisma/migrations/20261014120000_store_product_image/migration.sql`
+- `apps/api/src/app.factory.ts`
+- `apps/api/src/common/errors/api-error.ts`
+- `apps/api/src/config/environment.validation.ts`
+- `apps/api/src/modules/commerce/media/product-image.dto.ts`
+- `apps/api/src/modules/commerce/media/product-image.errors.ts`
+- `apps/api/src/modules/commerce/media/product-image-processor.ts`
+- `apps/api/src/modules/commerce/media/product-image-storage.ts`
+- `apps/api/src/modules/commerce/media/product-image-storage.module.ts`
+- `apps/api/src/modules/commerce/media/product-image.service.ts`
+- `apps/api/src/modules/commerce/media/product-image.controller.ts`
+- `apps/api/src/modules/commerce/catalog/admin-commerce-catalog.dto.ts`
+- `apps/api/src/modules/commerce/catalog/admin-commerce-catalog.module.ts`
+- `apps/api/src/modules/commerce/catalog/admin-commerce-catalog.service.ts`
+- `apps/api/src/modules/commerce/catalog/patient-commerce-catalog.dto.ts`
+- `apps/api/src/modules/commerce/catalog/patient-commerce-catalog.service.ts`
+- `apps/api/src/modules/commerce/cart/patient-commerce-cart.service.ts`
+- `apps/api/src/modules/outbox/outbox.module.ts`
+- `apps/api/src/modules/outbox/outbox.worker.ts`
+- `apps/api/src/modules/outbox/product-image-cleanup.handler.ts`
+- `apps/api/test/product-image-configuration.spec.ts`
+- `apps/api/test/product-image-processor.spec.ts`
+- `apps/api/test/product-image-storage.spec.ts`
+- `apps/api/test/product-image.integration.spec.ts`
+- `apps/api/test/product-image-migration.integration.spec.ts`
+- `deploy/docker/api-entrypoint.mjs`
+- `packages/api-client/openapi.json`
+- `packages/api-client/src/schema.generated.ts`
+- `plan/decisions/ADR-0015-store-product-media-development.md`
+- `plan/contracts/store-product-media-v1.md`
+- `plan/contracts/phase-12-object-storage-decision.md`
+- `plan/phases/12-PRODUCTION-HARDENING.md`
+- `plan/STATUS.md`
+- `plan/logs/phase-12.md`
+
+No dashboard/app source, protected slider-data.ts/justforcheck.md, historical migration, existing test assertion or unrelated user change was modified. Start baseline: branch `front`, clean HEAD `0e9141b16cc5e23ba5412bbc868791797656ef2c`.
+
+### Migration and compatibility
+
+New additive table `commerce_product_images` and READY/DELETE_PENDING enum; unique product ID and object key, restrict FK, WebP/size/dimension checks. Existing CommerceProduct/SKU data and relations are preserved. No backfill or binary database column. Products without an image return nullable metadata. The optional nullable DTO addition preserves existing generated-client consumers.
+
+PostgreSQL 16 disposable container `mushroom-media-04a`, localhost port 55439/database media_04a and synthetic credentials: all 36 migrations and seed PASS. Upgrade test separately replays all 35 prior migrations into its own randomly named database, creates an old product, applies the new migration, proves the product unchanged with image:null, and checks uniqueness/WebP/dimension constraints. Test guard refuses other hosts/ports/databases; only its own database is dropped. The owned test container and its image-created anonymous data volume were removed after verification, with no remaining container using that volume. No existing development/production database was accessed.
+
+### Implementation and review
+
+- Installed runtime inspected: NestJS 11.2.7/Fastify 5.12.5; official `@fastify/multipart` 10.1.3 request.parts handles multipart PUT. No Express upload interceptor. AWS SDK v3 client-s3 3.1151.0 and sharp 0.35.5 are backend dependencies; no Uppy/UI dependency installed.
+- One primary processed image per product. JPEG/PNG/WebP extension/MIME/signature/decode validation; one file named file, optional altText <=240 chars; 5 MiB, 20 million input pixels, max8192px input side; animated/unsupported/malformed rejection. WebP output max1600px with metadata stripped. Original buffers are transient only.
+- Existing authentication/COMMERCE_MANAGE and active-clinic product ownership; mutation audit. Per-instance maximum two uploads, 30s operation deadline, image processing timeout, bounded storage/body read and existing DB-backed IP/user rate limiter.
+- If-Match image generation plus durable fingerprint/result idempotency. Product-row lock serializes publication; a failed/concurrent replacement cannot overwrite the committed image. Cleanup intent commits before any R2 write; unknown writes remain unpublished and get reclaimed after the upload deadline plus safety delay. Old-key cleanup never removes a current READY reference and deletes pending DB metadata only for the matching generation. Outbox retries survive worker restarts.
+- Controlled public reads require current READY image, active clinic/product/category and an active SKU; eligibility is checked again after remote I/O. Admin preview supports drafts with permission/ownership. Bytes use no-store and nosniff, and no object key/provider URL is returned. R2 errors are redacted.
+- Validated disabled-by-default config with incomplete enabled config rejected, server-side _FILE credential injection and production-mode activation blocked. No real R2 connection, credentials request or deployment.
+- Existing export/generation scripts produced OpenAPI and typed clients; no manual edits to generated contracts.
+- Main-agent review PASS: implementation, acceptance criteria, ownership, transaction/cleanup boundaries, fault/concurrency assertions, generated contract and combined diff. All required backend gates passed; no remaining backend blocker.
+
+### Verification
+
+- `prisma generate` and disposable-DB `prisma migrate deploy`/seed -> PASS.
+- `pnpm generate:api-client` -> PASS (includes API build/typecheck and runtime OpenAPI export).
+- `pnpm --filter @sabz-zendegi/api-client build` -> PASS (freshness and TypeScript).
+- API `tsc -p tsconfig.test.json --noEmit` -> PASS; rerun after final test-fixture cleanup change -> PASS.
+- Sequential API Vitest selection -> 10 files / 44 tests PASS: product-image processor/configuration/storage/integration/migration; existing patient-commerce-catalog, patient-cart.authorization, admin-commerce-catalog, environment-validation and openapi-contract.
+- Final product-image-configuration repeat -> 3/3 PASS, including child-process file-backed secrets without printing values. This repeat is not counted as additional distinct tests.
+- `pnpm --filter @sabz-zendegi/api-client test` -> 5/5 PASS and generated freshness PASS.
+- `graphify update .` -> PASS, AST-only/no LLM calls; graph outputs remain ignored. Existing optional SQL/HCL parser omissions and unrelated chat extraction warning were reported by the tool and were not changed by this task.
+- `git diff --check` and staged diff gate -> PASS.
+
+The integration suite covers success/normalized bytes, no-image null/ETag and OpenAPI schema, unauthorized/staff/cross-clinic access, invalid/oversized/extra-file uploads, disabled/rate-limit/busy states, replace/remove, concurrent 412, committed replay and changed-key conflict, pending/expired attempt replay, ambiguous R2 failure, DB failure after put, durable orphan cleanup and cleanup retry through the actual worker, old cleanup versus a later generation, catalog/cart/wishlist metadata, and draft/category/SKU/clinic visibility (including visibility changed during remote read).
+
+### Known limits and exact Batch 01B handoff
+
+No live R2 connectivity/IAM/private-bucket configuration or Linux deployment/native sharp runtime was tested; no UI/browser end-to-end acceptance occurred. Limits are per API instance. Production retention, recovery and activation require separate approval. Backend acceptance does not make Store media production-ready. Historical initial-release gates remain independent.
+
+Batch 01B is the next Store slice, not started here. It must claim its own task/paths and use existing dashboard components/session refresh with Uppy core/react Headless + xhr-upload and Persian/RTL localization; do not build an upload engine. Contract: [store-product-media-v1](../contracts/store-product-media-v1.md).
+
+1. GET `/v1/admin/commerce/products/{productId}/image` returns metadata or null and ETag (`"none"` or quoted image UUID). CORS exposes ETag. Keep this as the version for the next intent.
+2. PUT that path with exactly one multipart `file` and optional altText, Bearer auth, If-Match and idempotency-key. Snapshot the payload, original ETag and operation key for retries; do not change headers/body for a replay. 200 returns committed metadata and ETag. Refetch current metadata after completion/replay because another operation may already have advanced the generation.
+3. DELETE that path with If-Match/idempotency-key; 204 hides the image immediately. Refresh metadata afterward. Concurrent mutations return 412; reload before a new user intent. Pending operation returns 409 COMMERCE_IMAGE_OPERATION_PENDING; expired returns 409 COMMERCE_IMAGE_OPERATION_EXPIRED and requires reload/new operation key. Changed payload with the same key returns IDEMPOTENCY_KEY_REUSED. Do not silently resubmit conflicts as fresh mutations.
+4. Admin preview GET adds `/content` and needs Bearer auth; fetch through the authenticated client as a blob, release object URLs, and respect no-store. Private R2 URLs/object keys never reach UI. Customer DTO contentPath is for Batch 01C, not this dashboard task.
+5. Show actual progress, preview, errors, retry, replacement/removal and busy/disabled states using existing styling. Client restrictions improve UX; backend remains authoritative. Reuse existing refresh flow for expired access tokens. Avoid XHR/OpenAPI JSON serialization of binary FormData.
+6. Dashboard integration and eventual customer integration require their own focused tests/acceptance. No live bucket test or production switch is implied by this handoff. Stop at the backend task commit; no Batch 01B/01C execution.
