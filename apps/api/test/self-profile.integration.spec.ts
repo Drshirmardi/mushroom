@@ -112,6 +112,21 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
     ]);
   });
 
+  it('persists profile gender and returns it on subsequent reads', async () => {
+    const { user } = await createPatient();
+    const initial = await profiles.get(user.id);
+    expect(initial.gender).toBeNull();
+
+    const updated = await profiles.update(user.id, { firstName: 'سامان', lastName: 'رحیمی', gender: 'MALE' });
+    expect(updated.gender).toBe('MALE');
+
+    const reread = await profiles.get(user.id);
+    expect(reread).toMatchObject({ firstName: 'سامان', lastName: 'رحیمی', gender: 'MALE' });
+
+    const cleared = await profiles.update(user.id, { gender: null });
+    expect(cleared.gender).toBeNull();
+  });
+
   it('reflects the current active consent and the intake revision pointer without medical payload leakage', async () => {
     const { clinic, user, patient } = await createPatient();
     await profiles.update(user.id, { firstName: 'مینا', lastName: 'احمدی' });

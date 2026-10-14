@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { ConsentPolicyPanel } from "@/components/onboarding/consent-policy-panel";
 import { MedicalDeclarationField, type MedicalDeclaration } from "@/components/onboarding/medical-declaration-field";
-import { ProfileFields, type ProfileDraft } from "@/components/onboarding/profile-fields";
+import { ProfileFields, validateEmail, type ProfileDraft } from "@/components/onboarding/profile-fields";
 import { acceptConsent, completeMedicalIntake, loadPatientOnboarding, onboardingErrorMessage, saveMedicalIntake, type ConsentPolicy, type MedicalIntake, type OnboardingStatus, type SaveIntakeDraft, updateSelfProfile, withdrawConsent } from "@/lib/onboarding/patient-onboarding";
 
 type IntakeEnum<K extends "sexAtBirth" | "bloodType" | "sleepDurationBand" | "exerciseFrequency" | "stressLevel" | "tobaccoUse"> = Exclude<SaveIntakeDraft[K], null | undefined>;
@@ -39,11 +39,10 @@ function intakeBody(intake: IntakeDraft, expectedRevision: number): SaveIntakeDr
 }
 type ValidationIssue = { step: number; message: string };
 const today = () => new Date().toISOString().slice(0, 10);
-const validEmail = (value: string) => value.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(value.trim());
 const validNumber = (value: string, minimum: number, maximum: number) => value === "" || (Number.isFinite(Number(value)) && Number(value) >= minimum && Number(value) <= maximum);
 const profileIssue = (profile: ProfileDraft): ValidationIssue | null => {
   if (!profile.firstName.trim() || !profile.lastName.trim()) return { step: 0, message: "نام و نام خانوادگی را کامل کنید." };
-  if (!validEmail(profile.email)) return { step: 0, message: "ایمیل را با قالب معتبر وارد کنید یا خالی بگذارید." };
+  if (validateEmail(profile.email) !== null) return { step: 0, message: "ایمیل را با قالب معتبر وارد کنید یا خالی بگذارید." };
   return null;
 };
 const baseIssue = (profile: ProfileDraft, intake: IntakeDraft, requireAll: boolean): ValidationIssue | null => {
@@ -66,10 +65,10 @@ const lifestyleIssue = (intake: IntakeDraft): ValidationIssue | null => {
 
 export default function OnboardingPage() {
   const router = useRouter(); const { authentication } = useAuthSession();
-  const [step, setStep] = useState(0); const [profile, setProfile] = useState<ProfileDraft>({ firstName: "", lastName: "", email: "", cityName: "" }); const [phone, setPhone] = useState<string>(); const [intake, setIntake] = useState<IntakeDraft>(EMPTY_INTAKE); const [policy, setPolicy] = useState<ConsentPolicy | null>(null); const [status, setStatus] = useState<OnboardingStatus | null>(null); const [revision, setRevision] = useState(0); const [accepted, setAccepted] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null);
+  const [step, setStep] = useState(0); const [profile, setProfile] = useState<ProfileDraft>({ firstName: "", lastName: "", email: "", cityName: "", gender: "" }); const [phone, setPhone] = useState<string>(); const [intake, setIntake] = useState<IntakeDraft>(EMPTY_INTAKE); const [policy, setPolicy] = useState<ConsentPolicy | null>(null); const [status, setStatus] = useState<OnboardingStatus | null>(null); const [revision, setRevision] = useState(0); const [accepted, setAccepted] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null);
   const steps = ["اطلاعات پایه", "اطلاعات خوداظهاری", "سبک زندگی", "رضایت"];
   const updateIntake = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => setIntake((current) => ({ ...current, [key]: value }));
-  const load = useCallback(async () => { setLoading(true); setError(null); try { const response = await loadPatientOnboarding(authentication.accessToken); setProfile({ firstName: toText(response.profile.firstName), lastName: toText(response.profile.lastName), email: toText(response.profile.email), cityName: toText(response.profile.cityName) }); setPhone(response.profile.phone); setStatus(response.status); setPolicy(response.policy); setAccepted(Boolean(response.policy.acceptedConsentRecordId)); setRevision(response.intake.currentRevision); setIntake(toDraft(response.intake.snapshot)); } catch (cause) { setError(onboardingErrorMessage(cause, "load")); } finally { setLoading(false); } }, [authentication.accessToken]);
+  const load = useCallback(async () => { setLoading(true); setError(null); try { const response = await loadPatientOnboarding(authentication.accessToken); const serverGender = response.profile.gender; setProfile({ firstName: toText(response.profile.firstName), lastName: toText(response.profile.lastName), email: toText(response.profile.email), cityName: toText(response.profile.cityName), gender: serverGender === "FEMALE" || serverGender === "MALE" ? serverGender : "" }); setPhone(response.profile.phone); setStatus(response.status); setPolicy(response.policy); setAccepted(Boolean(response.policy.acceptedConsentRecordId)); setRevision(response.intake.currentRevision); setIntake(toDraft(response.intake.snapshot)); } catch (cause) { setError(onboardingErrorMessage(cause, "load")); } finally { setLoading(false); } }, [authentication.accessToken]);
   useEffect(() => { void load(); }, [load]);
   const showIssue = (issue: ValidationIssue | null) => { if (!issue) return false; setStep(issue.step); setError(issue.message); setNotice(null); return true; };
   const currentStepIssue = () => step === 0 ? baseIssue(profile, intake, true) : step === 1 ? declarationsIssue(intake, true) : step === 2 ? lifestyleIssue(intake) : !policy?.acceptedConsentRecordId ? { step: 3, message: "ابتدا رضایت را ثبت کنید." } : null;

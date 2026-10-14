@@ -472,6 +472,8 @@
 .store-promo__action:hover:not(:disabled) { background: #f0f7f0; color: var(--patient-action-hover); }
 .store-collection__controls { display: none; }
 .store-menu > button + button { border-top: 1px solid var(--border); }
+.profile-scope { background: #f8fafc; --muted: #f1f5f9; --muted-foreground: #64748b; }
+.profile-scope :is(a, button):focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
 .store-offers { margin-top: 20px; border-radius: 20px; background: linear-gradient(225deg, #d22c4e 0%, #ee384e 100%); padding: 16px; }
 .store-offers .store-collection { margin-block: 0; }
 .store-offers .store-product-rail { margin-inline: 0; padding-inline: 0; }

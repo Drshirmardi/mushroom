@@ -17,6 +17,7 @@ type SelfProfile = {
   lastName: string | null;
   email: string | null;
   cityName: string | null;
+  gender: 'FEMALE' | 'MALE' | null;
   updatedAt: Date | null;
 };
 
@@ -60,6 +61,7 @@ export class SelfProfileService {
       lastName: profile.lastName,
       email: profile.email,
       cityName: profile.cityName,
+      gender: profile.gender as SelfProfile['gender'],
       updatedAt: profile.updatedAt,
     };
   }
@@ -185,6 +187,9 @@ export class SelfProfileService {
       if (input.cityName !== undefined) {
         data.cityName = input.cityName === null ? null : canonicalizePatientText(input.cityName);
       }
+      if (input.gender !== undefined) {
+        data.gender = input.gender;
+      }
       return data;
     } catch (error) {
       if (error instanceof PatientDomainError) {
@@ -208,6 +213,7 @@ export class SelfProfileService {
       lastName: profile?.lastName ?? null,
       email: profile?.email ?? null,
       cityName: profile?.cityName ?? null,
+      gender: (profile?.gender as SelfProfile['gender'] | undefined) ?? null,
       updatedAt: profile?.updatedAt ?? null,
     };
   }

@@ -55,6 +55,9 @@ export const getCommerceAddresses = (accessToken: string) =>
 export const createCommerceAddress = (accessToken: string, body: components["schemas"]["CreateCommerceAddressDto"]) =>
   expectData<CommerceAddress>(apiClient.POST("/v1/patients/me/commerce/addresses", { headers: authorization(accessToken), body }));
 
+export const updateCommerceAddress = (accessToken: string, addressId: string, body: components["schemas"]["UpdateCommerceAddressDto"]) =>
+  expectData<CommerceAddress>(apiClient.PATCH("/v1/patients/me/commerce/addresses/{addressId}", { headers: authorization(accessToken), params: { path: { addressId } }, body }));
+
 export const getCommerceShippingOptions = (accessToken: string) =>
   expectData<CommerceShippingOption[]>(apiClient.GET("/v1/patients/me/commerce/shipping-options", { headers: authorization(accessToken) }));
 

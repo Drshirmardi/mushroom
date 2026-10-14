@@ -1,10 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
+  IsIn,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
+
+export const profileGenderValues = ['FEMALE', 'MALE'] as const;
+export type ProfileGender = (typeof profileGenderValues)[number];
 
 export class UpdateSelfProfileDto {
   @ApiPropertyOptional({ type: String, maxLength: 80, nullable: true })
@@ -30,6 +34,11 @@ export class UpdateSelfProfileDto {
   @IsString()
   @MaxLength(100)
   cityName?: string | null;
+
+  @ApiPropertyOptional({ enum: profileGenderValues, nullable: true })
+  @IsOptional()
+  @IsIn(profileGenderValues)
+  gender?: ProfileGender | null;
 }
 
 export class SelfProfileResponseDto {
@@ -53,6 +62,9 @@ export class SelfProfileResponseDto {
 
   @ApiPropertyOptional({ type: String, nullable: true })
   cityName!: string | null;
+
+  @ApiPropertyOptional({ enum: profileGenderValues, nullable: true })
+  gender!: ProfileGender | null;
 
   @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' })
   updatedAt!: Date | null;

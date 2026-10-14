@@ -4019,6 +4019,8 @@ export interface components {
             /** Format: email */
             email?: string | null;
             cityName?: string | null;
+            /** @enum {string|null} */
+            gender?: "FEMALE" | "MALE" | null;
             /** Format: date-time */
             updatedAt?: string | null;
         };
@@ -4028,6 +4030,8 @@ export interface components {
             /** Format: email */
             email?: string | null;
             cityName?: string | null;
+            /** @enum {string|null} */
+            gender?: "FEMALE" | "MALE" | null;
         };
         OnboardingStatusResponseDto: {
             /** @enum {string} */

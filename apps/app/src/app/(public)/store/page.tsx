@@ -30,6 +30,15 @@ import { TEST_SHORTCUTS, type StoreShortcut } from "@/stores/shortcuts";
 import { useWishlistStore } from "@/stores/wishlist";
 
 const price = (value: string) => Number(value);
+const deliveryKey = (userId: string) => `store-delivery-address:${userId}`;
+const readStoredDelivery = (userId: string | null): string | null => {
+  if (!userId || typeof window === "undefined") return null;
+  try { return window.localStorage.getItem(deliveryKey(userId)); } catch { return null; }
+};
+const storeDelivery = (userId: string | null, addressId: string) => {
+  if (!userId || typeof window === "undefined") return;
+  try { window.localStorage.setItem(deliveryKey(userId), addressId); } catch { /* private-mode storage may be unavailable */ }
+};
 const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: price(item.sku.currentPriceToman), qty: item.quantity })));
 const cacheWishlist = (wishlist: CommerceWishlist) => useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
 
@@ -54,8 +63,21 @@ export default function StorePage() {
   useEffect(() => {
     if (!session) { setAddresses([]); setDelivery(null); return; }
     let cancelled = false;
+    const userId = session.authentication.user.id;
     void getCommerceAddresses(session.authentication.accessToken)
-      .then((list) => { if (!cancelled) { setAddresses(list); setDelivery(list.find((item) => item.isDefault) ?? list[0] ?? null); } })
+      .then((list) => {
+        if (cancelled) return;
+        setAddresses(list);
+        // Never clobber an explicit pick with the server default on refetch:
+        // keep the current selection when it still exists, else restore the
+        // stored pick, else fall back to the default/first address.
+        setDelivery((current) => {
+          if (current && list.some((item) => item.id === current.id)) return current;
+          const stored = readStoredDelivery(userId);
+          const storedMatch = stored ? list.find((item) => item.id === stored) : undefined;
+          return storedMatch ?? list.find((item) => item.isDefault) ?? list[0] ?? null;
+        });
+      })
       .catch(() => { if (!cancelled) { setAddresses([]); setDelivery(null); } });
     return () => { cancelled = true; };
   }, [session]);
@@ -72,7 +94,7 @@ export default function StorePage() {
   const [addresses, setAddresses] = useState<CommerceAddress[]>([]);
   const [delivery, setDelivery] = useState<CommerceAddress | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
-  const selectDelivery = (address: CommerceAddress) => { setDelivery(address); };
+  const selectDelivery = (address: CommerceAddress) => { setDelivery(address); storeDelivery(session?.authentication.user.id ?? null, address.id); };
   const isFiltering = catalogView || search.trim().length > 0;
   const shown = products?.items ?? [];
   const renderProduct = (product: NonNullable<typeof products>["items"][number]) => {

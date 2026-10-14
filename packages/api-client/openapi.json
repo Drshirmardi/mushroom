@@ -14575,6 +14575,14 @@
             "type": "string",
             "nullable": true
           },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE"
+            ],
+            "nullable": true
+          },
           "updatedAt": {
             "type": "string",
             "nullable": true,
@@ -14609,6 +14617,14 @@
           "cityName": {
             "type": "string",
             "maxLength": 100,
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE"
+            ],
             "nullable": true
           }
         }

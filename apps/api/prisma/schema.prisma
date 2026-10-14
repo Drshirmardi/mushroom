@@ -844,6 +844,7 @@ model UserProfile {
   lastName  String?  @map("last_name") @db.VarChar(100)
   email     String?  @db.VarChar(254)
   cityName  String?  @map("city_name") @db.VarChar(100)
+  gender    String?  @db.VarChar(20)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
