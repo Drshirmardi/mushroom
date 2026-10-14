@@ -2,6 +2,7 @@ import { ProductImageDto } from '../media/product-image.dto';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PublicProductContentDto } from './product-content.dto';
 
 export class PatientCommerceListQueryDto {
   @ApiPropertyOptional({ type: Number, minimum: 1, default: 1 }) @Type(() => Number) @IsOptional() @IsInt() @Min(1) page = 1;
@@ -12,5 +13,5 @@ export class PatientCommerceListQueryDto {
 
 export class PatientCommerceCategoryDto { @ApiProperty() id!: string; @ApiProperty() name!: string; @ApiProperty() slug!: string; }
 export class PatientCommerceSkuDto { @ApiProperty() id!: string; @ApiProperty() code!: string; @ApiPropertyOptional({ type: String, nullable: true }) title!: string | null; @ApiProperty({ type: String, description: 'Integer TOMAN.' }) currentPriceToman!: string; @ApiProperty({ type: String, description: 'Integer TOMAN.' }) currentTaxToman!: string; }
-export class PatientCommerceProductDto { @ApiPropertyOptional({ type: ProductImageDto, nullable: true }) image?: ProductImageDto | null; @ApiProperty() id!: string; @ApiProperty() title!: string; @ApiProperty() slug!: string; @ApiPropertyOptional({ type: String, nullable: true }) description!: string | null; @ApiProperty({ type: PatientCommerceCategoryDto }) category!: PatientCommerceCategoryDto; @ApiProperty({ type: PatientCommerceSkuDto, isArray: true }) skus!: PatientCommerceSkuDto[]; }
+export class PatientCommerceProductDto { @ApiPropertyOptional({ type: ProductImageDto, nullable: true }) image?: ProductImageDto | null; @ApiProperty() id!: string; @ApiProperty() title!: string; @ApiProperty() slug!: string; @ApiPropertyOptional({ type: String, nullable: true }) description!: string | null; @ApiPropertyOptional({ type: String, nullable: true }) brand?: string | null; @ApiPropertyOptional({ type: String, nullable: true }) shortDescription?: string | null; @ApiPropertyOptional({ type: PublicProductContentDto, nullable: true, description: 'Approved content embedded on detail only; no provenance or approver identity.' }) content?: PublicProductContentDto | null; @ApiProperty({ type: PatientCommerceCategoryDto }) category!: PatientCommerceCategoryDto; @ApiProperty({ type: PatientCommerceSkuDto, isArray: true }) skus!: PatientCommerceSkuDto[]; }
 export class PatientCommerceProductPageDto { @ApiProperty({ type: PatientCommerceProductDto, isArray: true }) items!: PatientCommerceProductDto[]; @ApiProperty() page!: number; @ApiProperty() pageSize!: number; @ApiProperty() total!: number; }

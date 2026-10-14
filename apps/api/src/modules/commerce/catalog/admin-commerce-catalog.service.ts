@@ -1,9 +1,12 @@
 import { imageMetadata, type ImageRecord } from '../media/product-image.dto';
-import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { CommerceProductStatus, Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
 import type { CommerceListQueryDto, CreateCommerceCategoryDto, CreateCommerceProductDto, CreateCommerceSkuDto, UpdateCommerceCategoryDto, UpdateCommerceProductDto, UpdateCommerceSkuDto, UpdateInventoryDto } from './admin-commerce-catalog.dto';
+import { PERMISSIONS, permissionsFor, type RoleCode } from '../../../common/auth/authorization.policy';
+import type { UpdateProductContentDto } from './product-content.dto';
+import { adminContent, auditContent, CONTENT_KEYS, contentInvalid, isContentApproved, lockContentProduct, normalizeContent, revisionConflict, saveContent, type ContentRecord } from './product-content.policy';
 
 type AuditContext = { actorUserId: string; actorSessionId: string; requestId: string; ipAddress: string };
 const invalid = (fields: string[]) => new UnprocessableEntityException({ code: 'COMMERCE_INPUT_INVALID', message: 'Commerce input is invalid.', details: { fields } });
@@ -20,8 +23,76 @@ export class AdminCommerceCatalogService {
   async listCategories() { const clinic = await this.clinic(); const records = await this.prisma.commerceCategory.findMany({ where: { clinicId: clinic.id }, orderBy: [{ name: 'asc' }, { id: 'asc' }], include: { _count: { select: { products: true } } } }); return records.map((record) => this.category(record)); }
   async createCategory(body: CreateCommerceCategoryDto, context: AuditContext) { const clinic = await this.clinic(); try { return await this.prisma.$transaction(async (tx) => { const record = await tx.commerceCategory.create({ data: { clinicId: clinic.id, name: text(body.name, 'name', 120), slug: slug(body.slug, 'slug', 140), isActive: body.isActive ?? true }, include: { _count: { select: { products: true } } } }); await this.audit(tx, 'COMMERCE_CATEGORY_CREATED', record.id, context, ['created']); return this.category(record); }); } catch (error) { if (this.unique(error)) throw conflict(); throw error; } }
   async updateCategory(id: string, body: UpdateCommerceCategoryDto, context: AuditContext) { if (!Object.keys(body).length) throw invalid(['body']); const clinic = await this.clinic(); try { return await this.prisma.$transaction(async (tx) => { const current = await tx.commerceCategory.findFirst({ where: { id, clinicId: clinic.id } }); if (!current) throw missing('CATEGORY'); const record = await tx.commerceCategory.update({ where: { id }, data: { ...(body.name === undefined ? {} : { name: text(body.name, 'name', 120) }), ...(body.slug === undefined ? {} : { slug: slug(body.slug, 'slug', 140) }), ...(body.isActive === undefined ? {} : { isActive: body.isActive }) }, include: { _count: { select: { products: true } } } }); await this.audit(tx, 'COMMERCE_CATEGORY_UPDATED', id, context, Object.keys(body)); return this.category(record); }); } catch (error) { if (this.unique(error)) throw conflict(); throw error; } }
-  async createProduct(body: CreateCommerceProductDto, context: AuditContext) { const clinic = await this.clinic(); try { return await this.prisma.$transaction(async (tx) => { await this.categoryExists(tx, clinic.id, body.categoryId); const record = await tx.commerceProduct.create({ data: { clinicId: clinic.id, categoryId: body.categoryId, title: text(body.title, 'title', 240), slug: slug(body.slug, 'slug', 260), description: body.description === undefined ? null : text(body.description, 'description', 5000), status: CommerceProductStatus.DRAFT }, include: this.productInclude }); await this.audit(tx, 'COMMERCE_PRODUCT_CREATED', record.id, context, ['created']); return this.product(record); }); } catch (error) { if (this.unique(error)) throw conflict(); throw error; } }
-  async updateProduct(id: string, body: UpdateCommerceProductDto, context: AuditContext) { if (!Object.keys(body).length) throw invalid(['body']); const clinic = await this.clinic(); try { return await this.prisma.$transaction(async (tx) => { const current = await tx.commerceProduct.findFirst({ where: { id, clinicId: clinic.id } }); if (!current) throw missing('PRODUCT'); if (body.categoryId) await this.categoryExists(tx, clinic.id, body.categoryId); if (body.status && !((current.status === 'DRAFT' && body.status === 'ACTIVE') || (current.status === 'ACTIVE' && body.status === 'ARCHIVED') || body.status === current.status)) throw lifecycle(); const record = await tx.commerceProduct.update({ where: { id }, data: { ...(body.categoryId ? { categoryId: body.categoryId } : {}), ...(body.title === undefined ? {} : { title: text(body.title, 'title', 240) }), ...(body.slug === undefined ? {} : { slug: slug(body.slug, 'slug', 260) }), ...(body.description === undefined ? {} : { description: body.description === null ? null : text(body.description, 'description', 5000) }), ...(body.status ? { status: body.status } : {}) }, include: this.productInclude }); await this.audit(tx, 'COMMERCE_PRODUCT_UPDATED', id, context, Object.keys(body)); return this.product(record); }); } catch (error) { if (this.unique(error)) throw conflict(); throw error; } }
+  async createProduct(body: CreateCommerceProductDto, context: AuditContext) {
+    const clinic = await this.clinic();
+    const content = normalizeContent(body.content, body.description);
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await this.categoryExists(tx, clinic.id, body.categoryId);
+        const record = await tx.commerceProduct.create({ data: {
+          clinicId: clinic.id, categoryId: body.categoryId, title: text(body.title, 'title', 240), slug: slug(body.slug, 'slug', 260),
+          ...content.fields, sourceKind: content.provenance?.sourceKind ?? null, sourceReference: content.provenance?.sourceReference ?? null,
+          contentRevision: Object.values(content.fields).some((value) => value !== null) ? 1 : 0,
+          legacyContent: false, status: CommerceProductStatus.DRAFT,
+        }, include: this.productInclude });
+        await this.audit(tx, 'COMMERCE_PRODUCT_CREATED', record.id, context, ['created']);
+        await auditContent(tx, record.id, context, 'COMMERCE_PRODUCT_CONTENT_CREATED', null, record, Object.keys(content.fields));
+        return this.product(record);
+      });
+    } catch (error) { if (this.unique(error)) throw conflict(); throw error; }
+  }
+  async updateProduct(id: string, body: UpdateCommerceProductDto, context: AuditContext) {
+    if (!Object.values(body).some((value) => value !== undefined)) throw invalid(['body']);
+    const clinic = await this.clinic();
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const current = await lockContentProduct(tx, id, clinic.id);
+        if (body.categoryId) await this.categoryExists(tx, clinic.id, body.categoryId);
+        if (body.status && !((current.status === 'DRAFT' && body.status === 'ACTIVE') || (current.status === 'ACTIVE' && body.status === 'ARCHIVED') || body.status === current.status)) throw lifecycle();
+        if (body.content) this.requireContentPatch(body.content, body.description);
+        await saveContent(tx, current, body.content, context, body.content?.expectedContentRevision, body.description);
+        const record = await tx.commerceProduct.update({ where: { id }, data: {
+          ...(body.categoryId ? { categoryId: body.categoryId } : {}),
+          ...(body.title === undefined ? {} : { title: text(body.title, 'title', 240) }),
+          ...(body.slug === undefined ? {} : { slug: slug(body.slug, 'slug', 260) }),
+          ...(body.status ? { status: body.status } : {}),
+        }, include: this.productInclude });
+        await this.audit(tx, 'COMMERCE_PRODUCT_UPDATED', id, context, Object.keys(body));
+        return this.product(record);
+      });
+    } catch (error) { if (this.unique(error)) throw conflict(); throw error; }
+  }
+  async getContent(id: string) {
+    const clinic = await this.clinic();
+    const product = await this.prisma.commerceProduct.findFirst({ where: { id, clinicId: clinic.id } });
+    if (!product) throw missing('PRODUCT');
+    return adminContent(product);
+  }
+  async updateContent(id: string, body: UpdateProductContentDto, context: AuditContext) {
+    this.requireContentPatch(body);
+    const clinic = await this.clinic();
+    return this.prisma.$transaction(async (tx) => {
+      const current = await lockContentProduct(tx, id, clinic.id);
+      return adminContent(await saveContent(tx, current, body, context, body.expectedContentRevision));
+    });
+  }
+  async approveContent(id: string, expectedRevision: number, context: AuditContext, roles: RoleCode[]) {
+    if (!roles.includes('ADMIN') || !permissionsFor(roles).has(PERMISSIONS.COMMERCE_MANAGE)) throw new ForbiddenException({ code: 'FORBIDDEN', message: 'Insufficient permissions.', details: {} });
+    const clinic = await this.clinic();
+    return this.prisma.$transaction(async (tx) => {
+      const current = await lockContentProduct(tx, id, clinic.id);
+      if (current.contentRevision !== expectedRevision) throw revisionConflict(current.contentRevision);
+      if (isContentApproved(current)) return adminContent(current);
+      if (!CONTENT_KEYS.some((key) => current[key] !== null)) throw contentInvalid(['fields']);
+      if (!current.sourceKind || !current.sourceReference) throw new UnprocessableEntityException({ code: 'COMMERCE_CONTENT_SOURCE_REQUIRED', message: 'A reviewed content source is required.', details: { fields: ['provenance'] } });
+      const approved = await tx.commerceProduct.update({ where: { id }, data: { approvedContentRevision: current.contentRevision, contentApprovedAt: new Date(), contentApprovedByUserId: context.actorUserId } });
+      await auditContent(tx, id, context, 'COMMERCE_PRODUCT_CONTENT_APPROVED', current, approved, []);
+      return adminContent(approved);
+    });
+  }
+  private requireContentPatch(body: UpdateProductContentDto, description?: string | null) {
+    if (body.provenance === undefined && description === undefined && !CONTENT_KEYS.some((key) => body.fields?.[key] !== undefined)) throw contentInvalid(['body']);
+  }
   async createSku(productId: string, body: CreateCommerceSkuDto, context: AuditContext) { const clinic = await this.clinic(); try { return await this.prisma.$transaction(async (tx) => { const product = await tx.commerceProduct.findFirst({ where: { id: productId, clinicId: clinic.id } }); if (!product) throw missing('PRODUCT'); const initialOnHandQuantity = body.initialOnHandQuantity ?? 0; const sku = await tx.commerceSku.create({ data: { clinicId: clinic.id, productId, code: text(body.code, 'code', 80), title: body.title === undefined ? null : text(body.title, 'title', 240), currentPriceToman: BigInt(body.currentPriceToman), currentTaxToman: BigInt(body.currentTaxToman ?? 0), isActive: body.isActive ?? true, inventoryItem: { create: { clinicId: clinic.id, onHandQuantity: initialOnHandQuantity } } }, include: { inventoryItem: true } }); if (sku.inventoryItem) await this.inventory.recordInitialReceipt(tx, { clinicId: clinic.id, inventoryItemId: sku.inventoryItem.id, skuId: sku.id, quantity: initialOnHandQuantity }); await this.audit(tx, 'COMMERCE_SKU_CREATED', sku.id, context, ['created']); return this.sku(sku); }); } catch (error) { if (this.unique(error)) throw conflict(); throw error; } }
   async updateSku(id: string, body: UpdateCommerceSkuDto, context: AuditContext) { if (!Object.keys(body).length) throw invalid(['body']); const clinic = await this.clinic(); try { return await this.prisma.$transaction(async (tx) => { const sku = await tx.commerceSku.findFirst({ where: { id, clinicId: clinic.id } }); if (!sku) throw missing('SKU'); const updated = await tx.commerceSku.update({ where: { id }, data: { ...(body.code === undefined ? {} : { code: text(body.code, 'code', 80) }), ...(body.title === undefined ? {} : { title: body.title === null ? null : text(body.title, 'title', 240) }), ...(body.currentPriceToman === undefined ? {} : { currentPriceToman: BigInt(body.currentPriceToman) }), ...(body.currentTaxToman === undefined ? {} : { currentTaxToman: BigInt(body.currentTaxToman) }), ...(body.isActive === undefined ? {} : { isActive: body.isActive }) }, include: { inventoryItem: true } }); await this.audit(tx, 'COMMERCE_SKU_UPDATED', id, context, Object.keys(body)); return this.sku(updated); }); } catch (error) { if (this.unique(error)) throw conflict(); throw error; } }
   async updateInventory(skuId: string, body: UpdateInventoryDto, context: AuditContext) { const clinic = await this.clinic(); return this.prisma.$transaction(async (tx) => { const updated = await this.inventory.setAdminOnHand(tx, { clinicId: clinic.id, skuId, onHandQuantity: body.onHandQuantity }); await this.audit(tx, 'COMMERCE_INVENTORY_UPDATED', updated.inventoryItemId, context, ['onHandQuantity']); const { inventoryItemId: _inventoryItemId, ...response } = updated; return response; }); }
@@ -30,7 +101,7 @@ export class AdminCommerceCatalogService {
   private async categoryExists(tx: Prisma.TransactionClient, clinicId: string, id: string) { const record = await tx.commerceCategory.findFirst({ where: { id, clinicId } }); if (!record) throw missing('CATEGORY'); }
   private category(record: { id: string; name: string; slug: string; isActive: boolean; _count: { products: number } }) { return { id: record.id, name: record.name, slug: record.slug, isActive: record.isActive, productCount: record._count.products }; }
   private sku(record: { id: string; code: string; title: string | null; currentPriceToman: bigint; currentTaxToman: bigint; isActive: boolean; inventoryItem: { onHandQuantity: number; reservedQuantity: number } | null }) { return { id: record.id, code: record.code, title: record.title, currentPriceToman: record.currentPriceToman.toString(), currentTaxToman: record.currentTaxToman.toString(), isActive: record.isActive, onHandQuantity: record.inventoryItem?.onHandQuantity ?? 0, reservedQuantity: record.inventoryItem?.reservedQuantity ?? 0 }; }
-  private product(record: { id: string; title: string; slug: string; description: string | null; image?: ImageRecord | null; status: string; category: { id: string; name: string; slug: string; isActive: boolean; _count: { products: number } }; skus: Array<{ id: string; code: string; title: string | null; currentPriceToman: bigint; currentTaxToman: bigint; isActive: boolean; inventoryItem: { onHandQuantity: number; reservedQuantity: number } | null }> }) { return { image: imageMetadata(record.id, record.image, true), id: record.id, title: record.title, slug: record.slug, description: record.description, status: record.status, category: this.category(record.category), skus: record.skus.map((sku) => this.sku(sku)) }; }
+  private product(record: ContentRecord & { id: string; title: string; slug: string; image?: ImageRecord | null; status: string; category: { id: string; name: string; slug: string; isActive: boolean; _count: { products: number } }; skus: Array<{ id: string; code: string; title: string | null; currentPriceToman: bigint; currentTaxToman: bigint; isActive: boolean; inventoryItem: { onHandQuantity: number; reservedQuantity: number } | null }> }) { return { image: imageMetadata(record.id, record.image, true), id: record.id, title: record.title, slug: record.slug, description: record.description, content: adminContent(record), status: record.status, category: this.category(record.category), skus: record.skus.map((sku) => this.sku(sku)) }; }
   private unique(error: unknown) { return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'; }
   private async audit(tx: Prisma.TransactionClient, action: string, subjectId: string, context: AuditContext, changedFields: string[]) { const actor = await tx.user.findUnique({ where: { id: context.actorUserId }, select: { id: true } }); const session = actor ? await tx.session.findFirst({ where: { id: context.actorSessionId, userId: actor.id }, select: { id: true } }) : null; await tx.auditEvent.create({ data: { action, actorUserId: actor?.id ?? null, actorSessionId: session?.id ?? null, subjectType: 'COMMERCE_CATALOG', subjectId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { changedFields } } }); }
 }

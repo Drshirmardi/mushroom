@@ -2923,3 +2923,124 @@ Known limitations / remaining owner decisions:
   - Independent Phase 12 production blockers remain; no deployment/start authorization is implied.
 Next batch:
   - F12-PD-B1A only after a separate start instruction and fresh eligibility/claim. Do not start now.
+
+## F12-PD-B1A — Product content backend foundation
+
+Task ID: F12-PD-B1A
+Completed at: 2026-10-14 Asia/Tehran
+Agent/Thread: Codex /root; one agent, no subagents
+Batch ID: PD-B1A
+Reviewed by: Codex /root (main-agent scoped implementation, contract and acceptance review)
+Authority: explicit owner B1A implementation instruction; ADR-0016 and frozen store-product-details-v1 1.0.
+Baseline: front@e681517; clean worktree, five commits ahead of the local origin/front reference.
+Changed files:
+  - apps/api/prisma/schema.prisma
+  - apps/api/prisma/migrations/20261014150000_product_content_v1/migration.sql
+  - apps/api/src/common/errors/api-error.ts
+  - apps/api/src/modules/commerce/catalog/product-content.dto.ts
+  - apps/api/src/modules/commerce/catalog/product-content.policy.ts
+  - apps/api/src/modules/commerce/catalog/admin-product-content.controller.ts
+  - apps/api/src/modules/commerce/catalog/admin-commerce-catalog.controller.ts
+  - apps/api/src/modules/commerce/catalog/admin-commerce-catalog.dto.ts
+  - apps/api/src/modules/commerce/catalog/admin-commerce-catalog.module.ts
+  - apps/api/src/modules/commerce/catalog/admin-commerce-catalog.service.ts
+  - apps/api/src/modules/commerce/catalog/patient-commerce-catalog.dto.ts
+  - apps/api/src/modules/commerce/catalog/patient-commerce-catalog.service.ts
+  - apps/api/src/modules/commerce/cart/patient-commerce-cart.service.ts
+  - apps/api/test/product-content.integration.spec.ts
+  - apps/api/test/product-content-migration.integration.spec.ts
+  - packages/api-client/openapi.json
+  - packages/api-client/src/schema.generated.ts
+  - plan/STATUS.md
+  - plan/phases/12-PRODUCTION-HARDENING.md
+  - plan/logs/phase-12.md
+Migrations:
+  - 20261014150000_product_content_v1: optional editorial fields and source enum/pair; nonnegative
+    revision; nullable exact-revision approval metadata and approver FK; four metadata consistency checks.
+    No additional index, historical migration, SKU/inventory/order/image column or money contract changed.
+  - Existing rows classified legacy revision 0 with absent approval/source; description/status/timestamps
+    preserved byte-for-byte. New-row default is managed/unapproved. No normalization/destructive backfill.
+  - Existing persistent local PostgreSQL was not migrated, reset or cleaned.
+Environment/isolation:
+  - Task-owned postgres:16-alpine container mushroom-pd-b1a-test, no volume, loopback port 55439;
+    media_04a disposable database reused solely to satisfy the existing media regression test guard.
+  - Migration upgrade test creates/drops its own random pd_b1a_upgrade_* database within this temporary
+    instance. Tests refuse any other host/port/database or non-test NODE_ENV.
+  - Synthetic authenticated users/products and dummy test-only environment secrets; real R2/SMS/Sadad
+    disabled for acceptance. Existing media test replaces storage with a deterministic mock; no real CRUD.
+  - Temporary container identity checked and stopped/auto-removed after acceptance. Original PostgreSQL
+    sabz-zendegi-postgres-1 on port 5432 remained running; no existing service/config/credential altered.
+Tests run (working directories apps/api or packages/api-client unless stated):
+  - pnpm exec prisma validate -> PASS.
+  - pnpm exec prisma generate -> PASS, existing Prisma 7.10.0, ignored generated runtime client.
+  - pnpm exec prisma migrate deploy against EMPTY disposable database -> PASS, all 37 migrations.
+  - pnpm exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+    against that same database -> PASS, no difference detected.
+  - pnpm exec tsc --noEmit and pnpm exec tsc -p tsconfig.test.json --noEmit -> PASS.
+  - pnpm run openapi:export -> PASS; regenerated through established runtime exporter, no manual edits.
+  - Client pnpm run generate/build/typecheck and pnpm test -> PASS, generated freshness and 5 tests.
+  - pnpm exec vitest run test/product-content.integration.spec.ts
+    test/product-content-migration.integration.spec.ts test/admin-commerce-catalog.integration.spec.ts
+    test/patient-commerce-catalog.integration.spec.ts test/commerce-checkout.integration.spec.ts
+    test/product-image.integration.spec.ts test/openapi-contract.spec.ts --no-file-parallelism --silent
+    -> PASS, 7 files / 62 tests, 33.29s; 34 new content/migration cases plus 28 existing regression cases.
+  - Final UUID/error documentation completion: re-export/regenerate followed by direct content + existing
+    OpenAPI contract suites -> PASS, 2 files / 41 tests; final client freshness/typecheck PASS.
+  - Existing frontend consumer pnpm --dir apps/app exec tsc --noEmit and corresponding dashboard
+    command from repository root -> PASS; no frontend source changed or frontend task started.
+  - Scoped diff hygiene, forbidden-path review and staged task-only scope -> PASS before commit.
+  - graphify update . -> unavailable: pre-existing uv trampoline cannot canonicalize its script path.
+    No tooling/dependency installation or graph reconstruction was performed to bypass this limitation.
+Implementation/debug review:
+  - Initial tests exposed nested relation disconnect issuing a separate SQL update and violating the
+    approval tuple constraint. Fixed by one atomic scalar approval-clear/revision UPDATE; subsequent
+    real PostgreSQL edit/approval/replay/race and rollback tests pass. Assertions were not weakened.
+  - Initial migration fixture attempted another ACTIVE clinic despite the existing one-active-clinic
+    constraint. Fixture now uses the migration-established active clinic; release scoping is unchanged.
+  - Raw UTF-8 request limit is installed on the relevant existing/new product write routes before
+    registration; whitespace-heavy JSON is rejected with 413/PAYLOAD_TOO_LARGE, no global/media change.
+Acceptance results:
+  - Optional approved fields, NFKC/edge trimming with paragraph retention, post-normalization limits,
+    omission/null/no-op/clear and 128 KiB body boundary -> PASS.
+  - Malformed/unknown nested input, forged approval metadata, duplicate description, invalid source,
+    empty approval and unsupported source-kind rejection -> PASS; stable safe errors registered.
+  - Approval requires existing ADMIN role + COMMERCE_MANAGE and active-clinic product ownership;
+    unauthenticated/staff/patient/foreign-clinic and direct unauthorized service approval denied -> PASS.
+  - Exact expected revision, row-lock serialization, atomic save/invalidation/approval/audit, one effective
+    approval replay and audit-failure rollback -> PASS. All approval metadata clears on material edits.
+  - Legacy description remains public/unreviewed; managed pending content is hidden; approved values
+    embedded in detail; summaries in list/cart/wishlist have no draft/source/approver leakage -> PASS.
+  - Product visibility, nullable image identity/path, SKU price/id, persisted cart/wishlist and existing
+    checkout/media/OpenAPI regression -> PASS. No checkout/inventory/media code or frozen wire changed.
+  - Task complete and reviewed; checkbox/status synchronized and claim released. Commit contains only
+    the 20 owned implementation/test/generated/evidence paths above; no push/next batch.
+Known limitations:
+  - Persistent development database must receive this forward migration before the new runtime is used;
+    this task deliberately did not apply it there. Production deployment/readiness remains unauthorized.
+  - Legacy description-only PATCH has the frozen compatibility limitation: old clients without an
+    expected revision cannot detect a stale form, but edits still invalidate approval. New editor must
+    always use strict revision-aware content endpoints; no automatic approval or conflict overwrite.
+  - Graphify auxiliary update unavailable as above; API/generated-client freshness is verified.
+  - Existing pg client concurrency deprecation warning is non-blocking; no dependency upgrade in scope.
+  - API ran locally on Windows with real PostgreSQL in Linux Docker; this is not Linux API/container or
+    production acceptance. Existing storage/production prerequisites remain independent.
+Exact B1B handoff (not started):
+  - Depend on this accepted B1A task and frozen contract; obtain a separate start instruction and normal
+    claim before dashboard edits. No B1C/B2/production authorization is implied.
+  - Existing admin product responses embed content. GET /v1/admin/commerce/products/{productId}/content
+    (adminProductContentGet) returns the latest fields/revision/status/provenance/approval metadata.
+  - PATCH same path (adminProductContentUpdate) sends expectedContentRevision plus fields and/or
+    provenance. Omit unchanged fields; null clears values; provenance is null or the full source pair.
+    Save and approval must be distinct actions; pending managed content is hidden publicly.
+  - POST same path + /approve (adminProductContentApprove) sends expectedContentRevision ONLY.
+    Use the revision from successful save/read, never a hardcoded revision or image ETag/idempotency key.
+  - Consume generated AdminProductContentDto, UpdateProductContentDto, ProductContentFieldsDto,
+    ProductContentProvenanceDto and ApproveProductContentDto. Status: LEGACY_UNREVIEWED /
+    PENDING_APPROVAL / APPROVED. Show legacy/no-approval honestly; no medical/certification badge.
+  - Handle 409 COMMERCE_CONTENT_REVISION_CONFLICT/currentRevision with deliberate refetch/review,
+    retaining unsaved form; 422 field/source errors; normal session/403 and 413. Never auto-approve/retry
+    an overwrite. Warn that a material edit hides controlled public content until explicit approval.
+  - Existing Store editor/design/RTL/session conventions and Uppy/media editor remain intact; focused
+    dashboard/editor/keyboard/mobile tests and browser evidence are B1B's own acceptance gate.
+Next batch:
+  - F12-PD-B1B is eligible for a future separate instruction/claim; STOP after B1A.

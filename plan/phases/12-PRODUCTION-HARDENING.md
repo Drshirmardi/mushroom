@@ -157,8 +157,8 @@ Future eligible handoff after R2 acceptance: Batch 01C customer image UI; not st
 
 Authority: explicit owner architecture/governance approval; [ADR-0016](../decisions/ADR-0016-store-product-details-v1.md)
 and [version 1.0 contract](../contracts/store-product-details-v1.md). This is a scoped Phase 12 extension,
-not a reopened Phase 09 or new phase-management system. G01 authorizes documentation only; no
-implementation task is claimed or started. Initial-release boundaries and independent production
+not a reopened Phase 09 or new phase-management system. G01 authorized documentation only; the
+separate B1A implementation instruction and evidence below govern its later acceptance. Initial-release boundaries and independent production
 blockers remain unchanged. The split below is owner-approved staged delivery; B1A/B1B alone do not
 declare a completed cross-application feature.
 
@@ -166,17 +166,19 @@ declare a completed cross-application feature.
 
 - [x] `F12-PD-G01` — ADR/contract/task governance finalization; documentation-only review PASS;
   implementation NOT_STARTED. Evidence: [G01](../logs/phase-12.md#f12-pd-g01--product-details-v1-architecture-approval-and-governance).
-- [ ] `F12-PD-B1A` — Product content backend foundation; batch `PD-B1A`; PLANNED, awaiting start instruction.
+- [x] `F12-PD-B1A` — Product content backend foundation; batch `PD-B1A`; DONE, Codex /root;
+  review PASS, claim RELEASED 2026-10-14; [evidence/handoff](../logs/phase-12.md#f12-pd-b1a--product-content-backend-foundation).
   Depends on G01 DONE, accepted Commerce/media baselines and frozen B1 contract.
-- [ ] `F12-PD-B1B` — Dashboard product-content editor; batch `PD-B1B`; NOT_ELIGIBLE until B1A DONE.
+- [ ] `F12-PD-B1B` — Dashboard product-content editor; batch `PD-B1B`; dependency B1A DONE,
+  PLANNED/awaiting separate start instruction and fresh claim.
 - [ ] `F12-PD-B1C` — Customer PDP real content and demo-claim retirement; batch `PD-B1C`;
   NOT_ELIGIBLE until B1A/B1B DONE and their generated contract/editor acceptance is available.
 - [ ] `F12-PD-B2` — Category templates, typed attributes, variants/availability and order integrity;
   batch `PD-B2`; BLOCKED_OWNER_DECISIONS until B1C DONE, explicit initial category definitions and
   the B2 contract appendix are approved/frozen. Architecture approval is not definition approval.
 
-The first future eligible implementation candidate is B1A; it still needs an explicit instruction
-to start, a fresh eligibility/ownership check and normal STATUS claim. No batch automatically follows
+The next eligible implementation candidate after accepted B1A is B1B; it still needs an explicit
+instruction to start, a fresh eligibility/ownership check and normal STATUS claim. No batch automatically follows
 G01 or any completed implementation batch. One agent/no subagents applies to these planned batches.
 
 ### B1A — exact scope and owned paths

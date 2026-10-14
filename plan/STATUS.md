@@ -10,11 +10,24 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد (04C-B01C DONE و آزاد شد؛ فاز بعدی خودکار شروع نمی‌شود)
+- batch فعال: ندارد (`PD-B1A DONE` و آزاد شد؛ B1B شروع نمی‌شود)
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
-## Product Details V1 — governance accepted, implementation not started (2026-10-14)
+## Product Details V1 — B1A backend accepted (2026-10-14)
+
+`F12-PD-B1A DONE`; `PD-B1A` claim RELEASED; coordinator/owner/reviewer Codex /root; one agent.
+Authority: separate owner B1A instruction, G01/e681517, ADR-0016 and frozen content contract 1.0.
+Backend content/provenance/revision/explicit approval, legacy preservation, public projection and
+generated OpenAPI/client accepted. Evidence and exact editor handoff:
+[B1A](logs/phase-12.md#f12-pd-b1a--product-content-backend-foundation).
+37-migration clean replay/legacy upgrade, 62 focused API tests, 5 client tests, schema drift/API/test/
+client/consumer typechecks PASS. Temporary PostgreSQL removed; persistent DB not migrated.
+Next eligible candidate: `F12-PD-B1B`, Dashboard Content Editor, requires its own start instruction
+and fresh normal claim. No B1B/B1C/B2 started; no frontend/source-media/checkout/production changes.
+Graphify update was attempted but the pre-existing uv trampoline is unavailable; API/client freshness passed.
+
+## Product Details V1 — governance accepted (2026-10-14)
 
 `F12-PD-G01 DONE`; documentation-only claim RELEASED; coordinator/reviewer Codex /root.
 Authority/rationale: [ADR-0016](decisions/ADR-0016-store-product-details-v1.md).
@@ -22,9 +35,8 @@ Authority/rationale: [ADR-0016](decisions/ADR-0016-store-product-details-v1.md).
 legacy visibility and API compatibility; B2 architecture/order integrity gates are accepted but initial
 category definitions and its wire appendix remain owner decisions. [Phase 12 task map](phases/12-PRODUCTION-HARDENING.md#product-details-v1--approved-governance-and-planned-batches-2026-10-14);
 evidence: [G01](logs/phase-12.md#f12-pd-g01--product-details-v1-architecture-approval-and-governance).
-Next candidate: `F12-PD-B1A` (backend content/provenance/approval only), eligible for a future start
-instruction and fresh normal claim; not started/claimed by this approval. B1B depends on accepted B1A;
-B1C on B1A/B1B; B2 on B1C plus explicit owner definitions/frozen appendix. No implementation active.
+G01 approval alone did not start implementation; the separate accepted B1A instruction above controls.
+B1B depends on accepted B1A; B1C on B1A/B1B; B2 on B1C plus explicit owner definitions/frozen appendix.
 Closed Phase 09, initial-release/media contracts and independent production blockers are unchanged.
 
 ## Local R2 acceptance — F12-MEDIA-S01 closed

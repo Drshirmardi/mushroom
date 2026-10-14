@@ -9751,6 +9751,315 @@
         ]
       }
     },
+    "/v1/admin/commerce/products/{productId}/content": {
+      "get": {
+        "operationId": "adminProductContentGet",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductContentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed product identifier or content request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found in the active clinic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read draft product content and exact revision approval metadata",
+        "tags": [
+          "Admin Product Content"
+        ]
+      },
+      "patch": {
+        "operationId": "adminProductContentUpdate",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductContentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed content request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found in the active clinic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Content revision has changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content request exceeds 128 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Content is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save content with revision precondition and invalidate prior approval",
+        "tags": [
+          "Admin Product Content"
+        ]
+      }
+    },
+    "/v1/admin/commerce/products/{productId}/content/approve": {
+      "post": {
+        "operationId": "adminProductContentApprove",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveProductContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductContentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed approval request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found in the active clinic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Content revision has changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content request exceeds 128 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Content or its source is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Explicitly approve the exact source-supported content revision",
+        "tags": [
+          "Admin Product Content"
+        ]
+      }
+    },
     "/v1/admin/commerce/products/{productId}/image": {
       "get": {
         "operationId": "adminCommerceProductImageGet",
@@ -10407,6 +10716,36 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Malformed product/content request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Product content exceeds 128 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Product content is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10567,8 +10906,38 @@
               }
             }
           },
+          "400": {
+            "description": "Malformed product/content request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
           "409": {
-            "description": "Invalid lifecycle transition.",
+            "description": "Invalid lifecycle transition or stale content revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Product content exceeds 128 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Product content is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -12350,6 +12719,9 @@
           "code": {
             "type": "string",
             "enum": [
+              "COMMERCE_CONTENT_REVISION_CONFLICT",
+              "COMMERCE_CONTENT_INVALID",
+              "COMMERCE_CONTENT_SOURCE_REQUIRED",
               "COMMERCE_IMAGE_INVALID",
               "COMMERCE_IMAGE_TOO_LARGE",
               "COMMERCE_IMAGE_BUSY",
@@ -19243,6 +19615,199 @@
           }
         }
       },
+      "ProductContentProvenanceDto": {
+        "type": "object",
+        "properties": {
+          "sourceKind": {
+            "type": "string",
+            "enum": [
+              "MANUFACTURER_DOCUMENT",
+              "PACKAGING",
+              "SUPPLIER_DOCUMENT",
+              "OTHER_DOCUMENT"
+            ]
+          },
+          "sourceReference": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "sourceKind",
+          "sourceReference"
+        ]
+      },
+      "AdminProductContentDto": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "nullable": true
+          },
+          "manufacturer": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "ingredients": {
+            "type": "string",
+            "nullable": true
+          },
+          "usageInstructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "warnings": {
+            "type": "string",
+            "nullable": true
+          },
+          "contraindications": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "LEGACY_UNREVIEWED",
+              "PENDING_APPROVAL",
+              "APPROVED"
+            ]
+          },
+          "provenance": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductContentProvenanceDto"
+              }
+            ]
+          },
+          "approvedContentRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "contentApprovedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "contentApprovedByUserId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "brand",
+          "manufacturer",
+          "shortDescription",
+          "description",
+          "ingredients",
+          "usageInstructions",
+          "warnings",
+          "contraindications",
+          "contentRevision",
+          "status",
+          "provenance",
+          "approvedContentRevision",
+          "contentApprovedAt",
+          "contentApprovedByUserId"
+        ]
+      },
+      "ProductContentFieldsDto": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 240
+          },
+          "manufacturer": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 240
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "ingredients": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "usageInstructions": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "warnings": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "contraindications": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          }
+        }
+      },
+      "UpdateProductContentDto": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "$ref": "#/components/schemas/ProductContentFieldsDto"
+          },
+          "provenance": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductContentProvenanceDto"
+              }
+            ]
+          },
+          "expectedContentRevision": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "expectedContentRevision"
+        ]
+      },
+      "ApproveProductContentDto": {
+        "type": "object",
+        "properties": {
+          "expectedContentRevision": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "expectedContentRevision"
+        ]
+      },
       "ProductImageDto": {
         "type": "object",
         "properties": {
@@ -19381,6 +19946,9 @@
             "type": "string",
             "nullable": true
           },
+          "content": {
+            "$ref": "#/components/schemas/AdminProductContentDto"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -19470,6 +20038,23 @@
           }
         }
       },
+      "CreateProductContentDto": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "$ref": "#/components/schemas/ProductContentFieldsDto"
+          },
+          "provenance": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductContentProvenanceDto"
+              }
+            ]
+          }
+        }
+      },
       "CreateCommerceProductDto": {
         "type": "object",
         "properties": {
@@ -19487,7 +20072,11 @@
           },
           "description": {
             "type": "string",
+            "nullable": true,
             "maxLength": 5000
+          },
+          "content": {
+            "$ref": "#/components/schemas/CreateProductContentDto"
           }
         },
         "required": [
@@ -19523,6 +20112,9 @@
               "ACTIVE",
               "ARCHIVED"
             ]
+          },
+          "content": {
+            "$ref": "#/components/schemas/UpdateProductContentDto"
           }
         }
       },
@@ -19617,6 +20209,58 @@
           "reservedQuantity"
         ]
       },
+      "PublicProductContentDto": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "nullable": true
+          },
+          "manufacturer": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "ingredients": {
+            "type": "string",
+            "nullable": true
+          },
+          "usageInstructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "warnings": {
+            "type": "string",
+            "nullable": true
+          },
+          "contraindications": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentRevision": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "brand",
+          "manufacturer",
+          "shortDescription",
+          "description",
+          "ingredients",
+          "usageInstructions",
+          "warnings",
+          "contraindications",
+          "contentRevision"
+        ]
+      },
       "PatientCommerceCategoryDto": {
         "type": "object",
         "properties": {
@@ -19689,6 +20333,24 @@
           "description": {
             "type": "string",
             "nullable": true
+          },
+          "brand": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "nullable": true,
+            "description": "Approved content embedded on detail only; no provenance or approver identity.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicProductContentDto"
+              }
+            ]
           },
           "category": {
             "$ref": "#/components/schemas/PatientCommerceCategoryDto"

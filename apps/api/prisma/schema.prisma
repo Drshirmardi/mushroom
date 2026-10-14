@@ -627,6 +627,7 @@ model User {
   notifications                  Notification[]
   paymentProviderConfigRevisions PaymentProviderConfigRevision[] @relation("PaymentProviderConfigRevisionCreatedBy")
   smsProviderConfigRevisions     SmsProviderConfigRevision[]     @relation("SmsProviderConfigRevisionCreatedBy")
+  approvedProductContents        CommerceProduct[]               @relation("CommerceProductContentApprovedBy")
   chatParticipants               ChatConversationParticipant[]
   chatMessages                   ChatMessage[]                   @relation("ChatMessageSender")
   chatReceipts                   ChatReceipt[]
@@ -913,6 +914,21 @@ model CommerceProduct {
   title       String                @db.VarChar(240)
   slug        String                @db.VarChar(260)
   description String?               @db.Text
+  brand                     String? @db.VarChar(240)
+  manufacturer              String? @db.VarChar(240)
+  shortDescription          String? @map("short_description") @db.VarChar(500)
+  ingredients               String? @db.Text
+  usageInstructions         String? @map("usage_instructions") @db.Text
+  warnings                  String? @db.Text
+  contraindications         String? @db.Text
+  contentRevision           Int @default(0) @map("content_revision")
+  legacyContent             Boolean @default(false) @map("legacy_content")
+  sourceKind                CommerceProductContentSourceKind? @map("source_kind")
+  sourceReference           String? @map("source_reference") @db.VarChar(1000)
+  approvedContentRevision   Int? @map("approved_content_revision")
+  contentApprovedAt         DateTime? @map("content_approved_at") @db.Timestamptz(3)
+  contentApprovedByUserId   String? @map("content_approved_by_user_id") @db.Uuid
+  contentApprovedBy         User? @relation("CommerceProductContentApprovedBy", fields: [contentApprovedByUserId], references: [id], onDelete: Restrict, map: "commerce_product_content_approver_fkey")
   status      CommerceProductStatus @default(DRAFT)
   createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -924,6 +940,15 @@ model CommerceProduct {
   @@unique([clinicId, slug], map: "commerce_products_clinic_slug_key")
   @@index([clinicId, status, id], map: "commerce_products_clinic_status_id_idx")
   @@map("commerce_products")
+}
+
+enum CommerceProductContentSourceKind {
+  MANUFACTURER_DOCUMENT
+  PACKAGING
+  SUPPLIER_DOCUMENT
+  OTHER_DOCUMENT
+
+  @@map("commerce_product_content_source_kind")
 }
 
 enum CommerceProductImageStatus {
