@@ -3,8 +3,8 @@
  * Do not treat these as catalog content. They mirror the exact fields the
  * backend must add to ProductDto (see the P0 list in the store UI notes);
  * until then every product renders these placeholders so the layout exists.
+ * (Product images left this module in Phase 04C; gallery is API-driven now.)
  */
-import { productGalleryImages } from "./product-images";
 
 export type ProductSpec = { key: string; value: string };
 export type ProductReview = { id: string; name: string; rating: number; date: string; text: string; likes: number };
@@ -58,11 +58,6 @@ export function productExtras(productId: string): ProductExtras {
   return { ...DEFAULT_EXTRAS, ...(OVERRIDES[productId] ?? {}) };
 }
 
-/** Test gallery grouping (official vs buyer photos) mirroring the backend images[] shape. */
-export function productGallery(productId: string): { official: string[]; buyer: string[] } {
-  const images = productGalleryImages(productId, 3);
-  return { official: images.slice(0, 2), buyer: images.slice(2) };
-}
 /** Test-only override point (e.g. Storybook-style previews). */
 export function setProductExtrasOverride(productId: string, extras: Partial<ProductExtras>): void {
   OVERRIDES[productId] = extras;

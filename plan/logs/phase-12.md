@@ -2822,3 +2822,55 @@ Next Store slice: Phase04C / Batch01C Customer Image Integration, requires its s
 3. Preserve meaningful null/loading/error/fallback states and Persian alt text; handle404 after replacement/unpublication and503 disabled/unavailable storage. A versioned path is not permanent authority: respect the backend's no-store/revocation contract when selecting the image loader/cache behavior.
 4. Integrate only the existing customer Store cards/detail/cart/wishlist surfaces approved for04C; retain independent product/cart/order behavior. This dashboard editor is reusable for admin operations only; do not port upload/auth logic into the customer app.
 5. Run focused app typecheck/lint/tests and isolated mock-API browser coverage of actual image loading, RTL/mobile, null/error fallbacks and generation changes. Real R2 or deployment needs separate authorization. Keep the original release N/A and production gates independent.
+
+## 04C-T01 — Customer Store real product image integration
+
+Task ID: 04C-T01
+Completed at: 2026-10-14
+Agent/Thread: Muse Spark (single agent, no subagents per task instruction)
+Batch ID: 04C-B01C
+Reviewed by: Muse Spark (coordinator self-review; combined diff scope-checked)
+Changed files:
+  - apps/app/src/lib/product-image.ts (new: URL resolver + alt helper + local neutral placeholder)
+  - apps/app/src/lib/product-image.spec.ts (new: 5 tests)
+  - apps/app/src/components/store/product-image.tsx (new: single img path with error guard)
+  - apps/app/src/components/store/product-card.tsx (real image)
+  - apps/app/src/components/store/product-gallery.tsx (resilient imgs, empty fallback, switching reset)
+  - apps/app/src/components/store/product-gallery.spec.tsx (empty-fallback contract)
+  - apps/app/src/components/store/store-ui.tsx (CartItem imageUrl)
+  - apps/app/src/components/store/recent-card.tsx (snapshot imageUrl)
+  - apps/app/src/stores/cart.ts (imageUrl threading, no extra requests)
+  - apps/app/src/stores/recently-viewed.ts (imageUrl snapshot, legacy-safe)
+  - apps/app/src/stores/product-extras.ts (gallery fabrication removed; reviews/specs untouched)
+  - apps/app/src/stores/product-extras.spec.ts (gallery test removed)
+  - apps/app/src/stores/product-images.ts + product-images.spec.ts (DELETED: Digikala pool/mapping)
+  - apps/app/src/app/(public)/store/page.tsx (cart cache imageUrl)
+  - apps/app/src/app/(public)/store/products/[id]/page.tsx (real gallery + key + recent snapshot + metadata alt)
+  - apps/app/src/app/(app)/store/cart/page.tsx (cart cache imageUrl)
+  - apps/app/src/lib/patient-ui.test.ts (imagery contract rewritten + 6 new presentation tests)
+  - apps/app/vitest.config.mts (new: e2e exclusion, mirrors dashboard)
+  - apps/app/e2e/playwright.store-images.config.ts + store-images.spec.ts + store-images-browser.mjs (new: mock-API desktop/mobile)
+  - plan/STATUS.md (batch claim + release)
+Migrations:
+  - none (main local DB product-media migration stays unapplied per instruction; dev API returns imageless products so the neutral fallback path is what local dev shows)
+Tests run:
+  - pnpm --filter @sabz/app typecheck → PASS
+  - pnpm --filter @sabz/app test → 23 files / 97 tests PASS (was 89; +8 new)
+  - Playwright store-images (desktop 1440x900 + mobile 390x844, mock API, real PNG bytes, 404 case) → 2/2 PASS
+  - No backend/dashboard/R2 tests touched; F12-T06-S1/R2 storage tests not repeated per instruction
+Result:
+  - catalog cards render API images, neutral fallback otherwise → PASS
+  - PDP single API image, metadata Persian alt, no fabricated gallery → PASS
+  - cart/wishlist images from embedded response metadata, zero extra requests → PASS
+  - recent rail snapshots imageUrl, legacy entries fall back → PASS
+  - null/404/removed/replaced/unpublished states fall back; no loops; no stale on switch (key + src-reset) → PASS
+  - Digikala product-image mappings removed (grep-clean in product slots) → PASS
+  - layout/aspect/RTL/keyboard unchanged; plain img without Next optimization caching → PASS
+Known limitations:
+  - Hero banners, shortcuts rail and incredible-offers still use Digikala hotlinks (explicitly out of scope, separate batch)
+  - product rating/seller/specs/reviews/questions remain test placeholders (explicitly out of scope)
+  - Main local DB lacks the product-media migration, so local dev API serves imageless products; production acceptance needs the migration applied (recorded for final development acceptance)
+  - App has no lint script; typecheck + tests + diff check stand in
+  - Cart/wishlist browser coverage deferred (routes require auth); covered by unit presentation tests
+Next task:
+  - none (stop after Phase 04C per instruction; no next phase started)

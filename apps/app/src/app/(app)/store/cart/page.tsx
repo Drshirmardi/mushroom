@@ -13,12 +13,13 @@ import { commerceErrorMessage, getCommerceCart, updateCommerceCart, type Commerc
 import { useScreenNavigation } from "@/lib/navigation";
 import { cartTotal, cartCount, useCartStore } from "@/stores/cart";
 import { toP } from "@/lib/format";
+import { productImageUrl } from "@/lib/product-image";
 import { useRecentStore } from "@/stores/recently-viewed";
 import { RecentCard } from "@/components/store/recent-card";
 import { StoreCollection } from "@/components/store/store-collection";
 import { EMPTY_CART_ART } from "@/stores/empty-art";
 
-const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity })));
+const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity, imageUrl: productImageUrl(item.product) })));
 
 export default function CartPage() {
   const { authentication } = useAuthSession(); const router = useRouter(); const navigateScreen = useScreenNavigation();

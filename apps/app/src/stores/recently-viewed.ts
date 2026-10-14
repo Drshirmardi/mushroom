@@ -6,6 +6,8 @@ export type RecentProduct = {
   title: string;
   /** Unit price snapshot in toman at view time. */
   price: number;
+  /** Resolved API image URL snapshot (string only; never binary). Absent for legacy entries. */
+  imageUrl?: string | null;
   viewedAt: number;
 };
 

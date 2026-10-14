@@ -24,6 +24,7 @@ import {
   type CommerceWishlist,
 } from "@/lib/commerce-catalog-api";
 import { toP } from "@/lib/format";
+import { productImageUrl } from "@/lib/product-image";
 import { useScreenNavigation } from "@/lib/navigation";
 import { cartCount, useCartStore } from "@/stores/cart";
 import { TEST_SHORTCUTS, type StoreShortcut } from "@/stores/shortcuts";
@@ -39,7 +40,7 @@ const storeDelivery = (userId: string | null, addressId: string) => {
   if (!userId || typeof window === "undefined") return;
   try { window.localStorage.setItem(deliveryKey(userId), addressId); } catch { /* private-mode storage may be unavailable */ }
 };
-const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: price(item.sku.currentPriceToman), qty: item.quantity })));
+const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: price(item.sku.currentPriceToman), qty: item.quantity, imageUrl: productImageUrl(item.product) })));
 const cacheWishlist = (wishlist: CommerceWishlist) => useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
 
 export default function StorePage() {

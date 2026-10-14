@@ -15,7 +15,11 @@ describe("Product gallery selection", () => {
     expect(html).toContain("رسمی");
   });
 
-  it("renders nothing when no photos exist", () => {
-    expect(renderToStaticMarkup(createElement(ProductGallery, { official: [], buyer: [], title: "محصول" }))).toBe("");
+  it("renders the neutral fallback inside the gallery layout when no photos exist", () => {
+    const html = renderToStaticMarkup(createElement(ProductGallery, { official: [], buyer: [], title: "محصول" }));
+    expect(html).toContain("store-gallery__slide");
+    expect(html).toContain("data:image/svg+xml,");
+    expect(html).not.toContain("store-gallery__counter");
+    expect(html).not.toContain("store-mosaic");
   });
 });

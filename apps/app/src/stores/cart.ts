@@ -6,6 +6,8 @@ export type CartItem = {
   name: string;
   price: number;
   qty: number;
+  /** Resolved API image URL snapshot; embedded metadata, never an extra request. */
+  imageUrl?: string | null;
 };
 
 type CartState = {

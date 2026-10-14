@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FileImage } from "lucide-react";
 import { toP } from "../../lib/format";
+import { ProductImage } from "./product-image";
 
 function Counter({ index, total }: { index: number; total: number }) {
   return <div className="store-gallery__counter" aria-hidden="true">
@@ -18,10 +19,13 @@ function Counter({ index, total }: { index: number; total: number }) {
 /** Photos stay in the page; thumbnails and keyboard controls select the main image. */
 export function ProductGallery({ official, buyer, title }: { official: string[]; buyer: string[]; title: string }) {
   const images = [...official, ...buyer];
+  const fingerprint = images.join("|");
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [dragging, setDragging] = useState(false);
   const drag = useRef({ active: false, x: 0 });
+  // Product switching or replacement resets the position; length alone is not enough.
+  useEffect(() => { setIndex(0); }, [fingerprint]);
   const onScroll = () => {
     const element = track.current;
     if (!element || images.length === 0) return;
@@ -71,7 +75,15 @@ export function ProductGallery({ official, buyer, title }: { official: string[];
     drag.current.active = false;
     setDragging(false);
   };
-  if (images.length === 0) return null;
+  if (images.length === 0) {
+    return <div className="store-gallery">
+      <div className="store-gallery__strip">
+        <div className="store-gallery__slide" role="group" aria-roledescription="slide" aria-label={`تصویر ${title}`}>
+          <ProductImage src={null} alt={title} />
+        </div>
+      </div>
+    </div>;
+  }
   return <div className="store-gallery">
     <div
       ref={track}
@@ -96,14 +108,14 @@ export function ProductGallery({ official, buyer, title }: { official: string[];
     >
       {images.map((src, slide) => (
         <div key={`${src}-${slide}`} className="store-gallery__slide" role="group" aria-roledescription="slide" aria-label={`${toP(slide + 1)} از ${toP(images.length)}`}>
-          <img src={src} alt={slide === 0 ? title : ""} loading={slide === 0 ? "eager" : "lazy"} draggable={false} />
+          <ProductImage src={src} alt={slide === 0 ? title : ""} eager={slide === 0} />
         </div>
       ))}
     </div>
     {images.length > 1 && <Counter index={index} total={images.length} />}
     {images.length > 1 && <div className="store-mosaic store-mosaic--pair">
       {images.map((src, tile) => <button key={`${src}-${tile}`} type="button" className="store-mosaic__tile" aria-label={`نمایش تصویر ${toP(tile + 1)} ${title}`} aria-pressed={index === tile} onClick={() => selectImage(tile)}>
-        <img src={src} alt="" loading="lazy" draggable={false} />
+        <ProductImage src={src} alt="" />
         {tile === 0 && official.length > 0 && <span className="store-mosaic__tag">رسمی</span>}
         {tile === official.length && buyer.length > 0 && <span className="store-mosaic__tag">خریدار</span>}
       </button>)}

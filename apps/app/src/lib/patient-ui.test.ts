@@ -21,20 +21,40 @@ describe("Patient primitives", () => {
 import { ProductCard } from "../components/store/product-card";
 import type { CommerceProduct } from "./commerce-catalog-api";
 
+const productImage = {
+  id: "11111111-1111-4000-8000-000000000001",
+  contentPath: "/v1/commerce/products/synthetic-product/images/11111111-1111-4000-8000-000000000001",
+  mimeType: "image/webp" as const,
+  sizeBytes: 1200,
+  width: 800,
+  height: 600,
+  altText: "عکس محصول آزمایشی",
+};
 const product: CommerceProduct = {
   id: "synthetic-product", title: "محصول آزمایشی Test", slug: "synthetic-product",
   category: { id: "synthetic-category", name: "دستهٔ آزمایشی", slug: "synthetic-category" },
   skus: [{ id: "synthetic-sku", code: "TEST-1", currentPriceToman: "125000", currentTaxToman: "0" }],
 };
+const imagedProduct: CommerceProduct = { ...product, image: productImage };
 const cardProps = { product, saved: false, inCart: false, busy: false, onFavorite: () => {} };
 
 describe("Store ProductCard presentation contract", () => {
-  it("preserves product destination, real price value and test imagery", () => {
+  it("preserves product destination, real price value and imagery source", () => {
     const html = renderToStaticMarkup(createElement(ProductCard, cardProps));
     expect(html.match(/href="\/store\/products\/synthetic-product"/g)).toHaveLength(2);
     expect(html).toContain('dir="ltr"'); expect(html).toContain("۱۲۵٬۰۰۰");
-    expect(html).toContain("dkstatics-public.digikala.com");
     expect(html).not.toContain("افزودن به سبد");
+  });
+  it("renders the resolved API image when the product carries one", () => {
+    const html = renderToStaticMarkup(createElement(ProductCard, { ...cardProps, product: imagedProduct }));
+    expect(html).toContain("/v1/commerce/products/synthetic-product/images/11111111-1111-4000-8000-000000000001");
+    expect(html).not.toContain("dkstatics-public.digikala.com");
+  });
+  it("renders the neutral fallback and no Digikala imagery when the product has none", () => {
+    const html = renderToStaticMarkup(createElement(ProductCard, cardProps));
+    expect(html).toContain("data:image/svg+xml,");
+    expect(html).not.toContain("dkstatics-public.digikala.com");
+    expect(html).not.toContain("https://");
   });
   it("makes pending controls disabled and favorites selected without color alone", () => {
     const html = renderToStaticMarkup(createElement(ProductCard, { ...cardProps, saved: true, busy: true }));
@@ -100,5 +120,55 @@ describe("Store shared presentation controls", () => {
   it("uses the saved SKU price", () => {
     const sku = { ...product.skus[0], id: "saved-sku", currentPriceToman: "225000" };
     expect(renderToStaticMarkup(createElement(ProductCard, { ...cardProps, skuOverride: sku }))).toContain("۲۲۵٬۰۰۰");
+  });
+});
+
+import { ProductGallery } from "../components/store/product-gallery";
+import { ProductImage } from "../components/store/product-image";
+import { RecentCard } from "../components/store/recent-card";
+
+describe("Store real product image presentation (Phase 04C)", () => {
+  it("renders the API image with alt text and lazy loading", () => {
+    const html = renderToStaticMarkup(createElement(ProductImage, { src: "https://api.test/v1/commerce/products/p/images/i", alt: "عکس محصول" }));
+    expect(html).toContain('src="https://api.test/v1/commerce/products/p/images/i"');
+    expect(html).toContain('alt="عکس محصول"');
+    expect(html).toContain('loading="lazy"');
+  });
+
+  it("renders the neutral local fallback for missing images without remote URLs", () => {
+    const html = renderToStaticMarkup(createElement(ProductImage, { src: null, alt: "عنوان" }));
+    expect(html).toContain("data:image/svg+xml,");
+    expect(html).toContain('alt=""');
+    expect(html).not.toContain("dkstatics");
+    expect(html).not.toContain("https://");
+  });
+
+  it("shows a single API image on the gallery without counter or mosaic", () => {
+    const html = renderToStaticMarkup(createElement(ProductGallery, { official: ["https://api.test/img-a"], buyer: [], title: "محصول" }));
+    expect(html).toContain("https://api.test/img-a");
+    expect(html).not.toContain("store-gallery__counter");
+    expect(html).not.toContain("store-mosaic");
+  });
+
+  it("renders the neutral fallback inside the gallery layout when imageless", () => {
+    const html = renderToStaticMarkup(createElement(ProductGallery, { official: [], buyer: [], title: "محصول" }));
+    expect(html).toContain("store-gallery__slide");
+    expect(html).toContain("data:image/svg+xml,");
+    expect(html).not.toContain("store-gallery__counter");
+  });
+
+  it("presents cart item images from embedded metadata without extra requests", () => {
+    const withImage = renderToStaticMarkup(createElement(CartItem, { item: { name: "آزمایشی", productId: "synthetic-product", price: 125000, qty: 1, imageUrl: "https://api.test/img-a" }, busy: false, removing: false, onChange: () => {}, onUndo: () => {} }));
+    expect(withImage).toContain("https://api.test/img-a");
+    const withoutImage = renderToStaticMarkup(createElement(CartItem, { item: { name: "آزمایشی", productId: "synthetic-product", price: 125000, qty: 1 }, busy: false, removing: false, onChange: () => {}, onUndo: () => {} }));
+    expect(withoutImage).toContain("data:image/svg+xml,");
+  });
+
+  it("presents recent items with snapshots and falls back for legacy entries", () => {
+    const withImage = renderToStaticMarkup(createElement(RecentCard, { item: { productId: "p1", title: "قدیمی", price: 1000, imageUrl: "https://api.test/img-a", viewedAt: 0 } }));
+    expect(withImage).toContain("https://api.test/img-a");
+    const legacy = renderToStaticMarkup(createElement(RecentCard, { item: { productId: "p1", title: "قدیمی", price: 1000, viewedAt: 0 } }));
+    expect(legacy).toContain("data:image/svg+xml,");
+    expect(legacy).not.toContain("dkstatics");
   });
 });

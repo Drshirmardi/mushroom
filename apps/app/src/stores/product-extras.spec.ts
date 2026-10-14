@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { productExtras, productGallery, setProductExtrasOverride } from "./product-extras";
+import { productExtras, setProductExtrasOverride } from "./product-extras";
 
 describe("product test extras", () => {
   it("returns placeholder extras for any product", () => {
@@ -13,13 +13,6 @@ describe("product test extras", () => {
     setProductExtrasOverride("p1", { reviewsCount: 3 });
     expect(productExtras("p1").reviewsCount).toBe(3);
     expect(productExtras("p2").reviewsCount).not.toBe(3);
-  });
-
-  it("groups gallery photos into official and buyer sets", () => {
-    const gallery = productGallery("any-id");
-    expect(gallery.official.length).toBe(2);
-    expect(gallery.buyer.length).toBe(1);
-    expect(new Set([...gallery.official, ...gallery.buyer]).size).toBe(3);
   });
 
   it("ships placeholder specs and reviews for layout", () => {

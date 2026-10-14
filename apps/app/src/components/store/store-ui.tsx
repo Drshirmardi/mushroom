@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { ArrowRight, BadgeCheck, Minus, Plus, ShoppingBag, Store, Trash2, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { formatPrice, toP } from "../../lib/format";
-import { resolveProductImage, useProductImageStore } from "../../stores/product-images";
+import { ProductImage } from "./product-image";
 import { productExtras } from "../../stores/product-extras";
 import { TomanIcon } from "./toman-icon";
 
@@ -34,8 +34,7 @@ export function StoreState({ title, description, error = false, pending = false,
   </div>;
 }
 
-export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { name: string; productId: string; price: number; qty: number }; busy: boolean; removing: boolean; onChange: (quantity: number) => void; onUndo: () => void }) {
-  const overrides = useProductImageStore((state) => state.overrides);
+export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { name: string; productId: string; price: number; qty: number; imageUrl?: string | null }; busy: boolean; removing: boolean; onChange: (quantity: number) => void; onUndo: () => void }) {
   const seller = productExtras(item.productId).seller;
   const href = `/store/products/${encodeURIComponent(item.productId)}`;
   return <motion.article
@@ -45,7 +44,7 @@ export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { n
   >
     <div className="store-cart-item__side">
       <Link href={href} className="store-cart-item__media" aria-label={`مشاهدهٔ ${item.name}`}>
-        <img src={resolveProductImage(item.productId, overrides)} alt="" loading="lazy" draggable={false} />
+        <ProductImage src={item.imageUrl ?? null} alt="" />
       </Link>
       <QuantityControl value={item.qty} min={0} busy={busy} label={item.name} onChange={onChange} />
     </div>

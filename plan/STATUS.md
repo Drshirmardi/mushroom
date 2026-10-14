@@ -10,7 +10,7 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد
+- batch فعال: ندارد (04C-B01C DONE و آزاد شد؛ فاز بعدی خودکار شروع نمی‌شود)
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
@@ -93,6 +93,29 @@ No active UI paths claimed. Independent plan and UI STATUS point to this authori
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — 04C-B01C
+
+04C-T01 DONE 2026-10-14؛ single agent Muse Spark؛ review gate PASS (scope/discipline/tests). شواهد کامل: [phase-12 log](logs/phase-12.md#04c-t01--customer-store-real-product-image-integration). هیچ batch بعدی شروع نشده است.
+
+```text
+Batch ID: 04C-B01C
+Coordinator/Thread: Muse Spark (single agent, no subagents per task instruction)
+Started at: 2026-10-14 Asia/Tehran
+Phase: Phase 04C — Customer Store real product image integration
+Batch status: IN_PROGRESS
+Contract baseline: plan/contracts/store-product-media-v1.md (frozen); baselines 44d472e / e49e615 / e80573c; S1 handoff plan/logs/phase-12.md#f12-t06-r2
+Coordinator-only files: plan/STATUS.md, plan/logs/phase-12.md (04C entry on completion)
+Tasks:
+  - Task ID: 04C-T01
+    Agent/Thread: Muse Spark (single agent)
+    Status: CLAIMED
+    Depends on: F12-T06-R1 DONE, F12-T06-R2 DONE, F12-T06-S1 DONE; frozen media contract
+    Scope: Customer App image integration only (catalog/detail/cart/wishlist/recent + neutral fallback + Digikala mapping removal + focused tests + Playwright)
+    Owned paths: apps/app/src/components/store/**, apps/app/src/stores/product-images.ts, apps/app/src/app/(public)/store/**, apps/app/src/app/(app)/store/**, apps/app/src/lib/patient-ui.test.ts (or focused new spec), apps/app test config for Playwright scenario
+    Shared/exclusive resource: none (no Prisma, no OpenAPI client, no dashboard, no R2 changes; main local DB migration stays unapplied per instruction)
+    Expected verification: app typecheck, focused vitest, Playwright desktop+mobile mock-API render, git diff --check
+```
 
 ## آخرین batch تکمیل‌شده — F01-B06-B-R1
 
