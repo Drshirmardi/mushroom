@@ -147,7 +147,9 @@ Product-owner authorization: [ADR-0015](../decisions/ADR-0015-store-product-medi
 
 - [x] `F12-T06-R1` — Phase 04A backend product media foundation. Dependencies: F12-T06 DONE plus explicit storage re-entry (accepted). One primary image, private R2 adapter, safe multipart/processing, metadata migration, optimistic/idempotent upload/replace/remove, controlled public/admin reads, durable cleanup, additive OpenAPI/client and focused isolated PostgreSQL/mock-R2 tests. No real R2, deployment or UI. Completion is backend-only and does not declare Store media production-ready. Review PASS; evidence and Batch 01B handoff in [phase-12 log](../logs/phase-12.md#f12-t06-r1--store-product-media-backend-foundation).
 
-Future eligible handoff after R1 acceptance: Batch 01B dashboard Uppy uploader; Batch 01C customer image UI. Neither starts in R1.
+- [x] `F12-T06-R2` — Phase 04B / Batch 01B dashboard product image uploader, explicitly approved 2026-10-14. Depends on F12-T06-R1 DONE (44d472e) and frozen media contract. Uppy Headless/XHR, existing Store editor/session/UI conventions, Persian RTL, authenticated previews, real progress, immutable mutation preconditions/idempotency and deliberate conflict handling; focused dashboard and deterministic mock-API browser verification. No backend/schema/customer UI/live R2/deployment changes. Review PASS; evidence and Phase04C handoff in [phase-12 log](../logs/phase-12.md#f12-t06-r2--dashboard-product-image-uploader).
+
+Future eligible handoff after R2 acceptance: Batch 01C customer image UI; not started by R2. Initial-release envelope and production readiness remain independent.
 
 ## معیار خروج (initial release, unchanged)
 

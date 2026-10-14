@@ -2714,3 +2714,76 @@ Batch 01B is the next Store slice, not started here. It must claim its own task/
 4. Admin preview GET adds `/content` and needs Bearer auth; fetch through the authenticated client as a blob, release object URLs, and respect no-store. Private R2 URLs/object keys never reach UI. Customer DTO contentPath is for Batch 01C, not this dashboard task.
 5. Show actual progress, preview, errors, retry, replacement/removal and busy/disabled states using existing styling. Client restrictions improve UX; backend remains authoritative. Reuse existing refresh flow for expired access tokens. Avoid XHR/OpenAPI JSON serialization of binary FormData.
 6. Dashboard integration and eventual customer integration require their own focused tests/acceptance. No live bucket test or production switch is implied by this handoff. Stop at the backend task commit; no Batch 01B/01C execution.
+
+## F12-T06-R2 — Dashboard product image uploader
+
+Task ID: F12-T06-R2
+Status: DONE (Phase04B / development dashboard slice only)
+Completed at: 2026-10-14 Asia/Tehran
+Batch ID: F12-MEDIA-B01B
+Agent/Thread and reviewer: Codex /root, Store media chat; one agent, no subagents
+Approval: explicit product-owner Phase04B Dashboard Product Image Uploader request. Dependency F12-T06-R1 DONE, frozen store-product-media-v1 and ADR-0015 remain unchanged. No ownership conflict. Historical initial-release N/A, Phase12 state and unrelated blockers remain intact.
+Baseline: clean branch front, commit 44d472ee355775015b7c0d9e5b2ec7e66ae2c7d5.
+Task commit: `feat(F12-T06-R2): add dashboard product image uploader`, created after this evidence/final staged review gate.
+
+### Changed files
+
+- `apps/dashboard/package.json`
+- `pnpm-lock.yaml`
+- `apps/dashboard/src/components/auth/dashboard-session-gate.tsx`
+- `apps/dashboard/src/features/store/store-page.tsx`
+- `apps/dashboard/src/features/store/product-image-editor.tsx`
+- `apps/dashboard/src/features/store/product-image-controller.ts`
+- `apps/dashboard/src/features/store/product-image-controller.spec.ts`
+- `apps/dashboard/src/lib/commerce-product-image-api.ts`
+- `apps/dashboard/src/lib/commerce-product-image-api.spec.ts`
+- `apps/dashboard/e2e/product-image-browser.mjs`
+- `apps/dashboard/e2e/product-image.spec.ts`
+- `apps/dashboard/e2e/playwright.product-image.config.ts`
+- `plan/STATUS.md`
+- `plan/phases/12-PRODUCTION-HARDENING.md`
+- `plan/logs/phase-12.md`
+
+No API/schema/migration/generated contract, customer app, checkout/payment, bucket/deployment config, protected slider-data.ts/justforcheck.md or unrelated source was changed.
+
+### Packages and UI integration
+
+Pinned runtime dependencies: @uppy/core 5.2.0, @uppy/react 5.2.0, @uppy/xhr-upload 5.2.0, @uppy/locales 5.3.0 (fa_IR). Peer compatibility inspected for the installed Next16.3.8/React19.3.0 workspace. Provisional Uppy6 was rejected during dependency review because its Headless components requested unrelated Google-picker peers; only the final compatible 5.2 set is committed. Original autoInstallPeers workspace setting is preserved. Lockfile contains the required upstream transitives, including Uppy companion-client; no Companion service/plugin, Dashboard, Tus or AWS-S3 plugin is configured or added as a direct dependency. Uppy introduces use-sync-external-store, which pnpm also binds to Zustand's existing optional peer without changing the application's source or Zustand version.
+
+Existing Store ProductCard gains a media-management action; product creation, lifecycle, pricing, inventory and categories are retained. The editor loads through next/dynamic with ssr:false only when opened. No generic upload platform or duplicate product-management route. Existing dashboard token classes, fonts and Persian/RTL conventions are reused; there are no shared Button/Input/Dialog primitives in this dashboard to duplicate. The browser's native dialog is used with the existing settings editor's focus-cycle convention.
+
+UppyContextProvider and useDropzone own drag/drop, native file selection and keyboard selection; custom markup only composes the dashboard UI. The upstream generated Dropzone hardcodes an English label, so its supported Headless hook is used for full Persian labels. Uppy owns transient files, multipart PUT and real XHR progress. One JPEG/PNG/WebP up to5MiB, autoProceed:false; client validation is usability only. Separate local and saved previews, optional altText<=240, upload/replace, explicit saved-image removal, loading/success/error/conflict feedback and busy-action disabling are implemented. No image transforms or binary/token persistence. Real image decode, mobile width and keyboard picker/focus/escape were checked.
+
+### Frozen API, authentication and mutation behavior
+
+- Generated-client GET metadata accepts null and requires the exact server ETag, including quotes; unavailable ETag fails closed. The backend already exposes ETag through CORS; no backend/proxy change needed.
+- XHRUpload sends PUT, formData:true, fieldName:file, allowedMetaFields:[altText], bundle:false, limit:1. onBeforeRequest uses the existing DashboardSessionManager bootstrap through a minimal exported accessor and attaches current Bearer, captured If-Match and idempotency-key. No second refresh system, token metadata/storage/logging or Next proxy.
+- Native XHR35s deadline covers a lost response; Uppy stalled-progress feedback alone does not settle all lost-response cases. The supported request hook connects native timeout to the existing Uppy error path. Automatic transport retries are disabled.
+- Each deliberate mutation captures an immutable key/precondition/payload. Same-intent retry preserves key/body/original ETag after reconciliation; changed payload/new action gets a new key. 409 pending remains unresolved; expired/other409 and412 stop, load current state, and require a deliberate new action (the UI labels fresh-version submission). Unresolved operations cannot edit/clear the file, change altText or start another mutation.
+- Ambiguous/time-out/error outcomes reload current metadata without treating a different generation as proof of this upload. A known accepted response can settle via a successful reload without resending. Replay success always reloads the current generation, never replaces it with an old result. 100% transfer is not a persistence success message.
+- DELETE uses the same captured-key/precondition rules and expects204; queue removal never deletes persisted media. Success reloads metadata/preview and refreshes the existing catalog state, which is the dashboard's current catalog cache.
+- Protected preview uses the existing authorized generated client with parseAs:blob and no-store. Object URLs are revoked on replacement/queue removal/unmount. Per-product controller/Uppy identities and read-generation checks prevent stale reads crossing editors. On unmount, UI/URL/read cleanup is immediate; an already authorized bounded mutation settles under its original intent before releasing Uppy, avoiding the upstream async-auth-hook abort/send race. It cannot update the new editor or catalog after disposal.
+
+### Verification and main-agent review
+
+- Dashboard `tsc --noEmit` -> PASS, including focused tests/browser test config.
+- ESLint on all changed dashboard source/test files with --max-warnings0 -> PASS, zero errors/warnings. No unrelated full-monorepo build/audit.
+- Vitest four files -> 37 tests PASS: product-image-controller (15), product-image-api (5), existing auth/session (13), existing commerce-catalog-api (4). Real Uppy multipart/XHR path is exercised with deterministic test XHR; generated API requests use real openapi-fetch with controlled responses.
+- Saved Chrome scenario: `node node_modules/@playwright/test/cli.js test --config apps/dashboard/e2e/playwright.product-image.config.ts --reporter=line` -> 1/1 PASS after final review. Isolated Next preview on localhost3102; every /v1 request intercepted, public fake API localhost3199, no real backend/R2/database.
+- Playwright MCP also ran the saved scenario successfully through its VM adapter: 7 mutation requests, 4 logical mock uploads, 1 deletion; desktop1440x900/mobile390x844, empty-state, real bytes preview, drag/drop, focus/Escape, fields/headers, progress-before-confirmation, replace/remove, deliberate412, expired-token refresh, ambiguous commit/replay, protected preview, product switching and URL cleanup. MCP's file-chooser modal interrupts long code calls, so native keyboard chooser was additionally covered by the complete saved Chrome test; MCP uses the same harness with that chooser step bypassed.
+- The browser scenario exposed and drove a real Tab-wrap correction in the dialog; assertions were preserved and rerun. Earlier provisional tests/tool-environment failures were resolved before acceptance. No backend tests were changed or weakened.
+- Graphify final AST-only update -> PASS; generated ignored graph refreshed. Existing optional SQL/HCL extractor omissions/unrelated chat parse warning remain outside scope.
+- Combined diff, ownership, frozen-contract adherence, session reuse, concurrency/idempotency, navigation lifecycle, lazy-loading boundary and required acceptance criteria -> main-agent review PASS.
+- `git diff --check` and final staged diff gate -> PASS. Preview is stopped after acceptance; no deployment or Phase04C start.
+
+### Limits and exact Phase04C handoff
+
+No live Cloudflare R2 end-to-end test, bucket/IAM validation, production activation, customer integration, production bundle-size benchmark or full browser/device release matrix is claimed. Verification is deterministic mock API plus the separately accepted backend tests from04A. Backend storage remains disabled by default. Store images are not declared production-ready; independent initial-release and Phase12 gates remain in place.
+
+Next Store slice: Phase04C / Batch01C Customer Image Integration, requires its separate instruction and ownership claim; not started.
+
+1. Use the frozen generated nullable image metadata already present in customer catalog/detail/cart/wishlist DTOs: id, contentPath, mimeType, sizeBytes, width, height, altText. Backend/schema/generated contract remain frozen; report any blocking contract issue rather than rewrite them.
+2. Customer bytes come from public `/v1/commerce/products/{productId}/images/{imageId}` via the configured API origin. Never use protected admin preview routes, internal keys, R2 credentials or private bucket URLs in customer UI. The public endpoint rechecks current READY/published eligibility.
+3. Preserve meaningful null/loading/error/fallback states and Persian alt text; handle404 after replacement/unpublication and503 disabled/unavailable storage. A versioned path is not permanent authority: respect the backend's no-store/revocation contract when selecting the image loader/cache behavior.
+4. Integrate only the existing customer Store cards/detail/cart/wishlist surfaces approved for04C; retain independent product/cart/order behavior. This dashboard editor is reusable for admin operations only; do not port upload/auth logic into the customer app.
+5. Run focused app typecheck/lint/tests and isolated mock-API browser coverage of actual image loading, RTL/mobile, null/error fallbacks and generation changes. Real R2 or deployment needs separate authorization. Keep the original release N/A and production gates independent.

@@ -14,11 +14,17 @@
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
+## Store media dashboard handoff — F12-MEDIA-B01B closed
+
+F12-T06-R2 DONE; coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after review and dashboard acceptance. Explicit Phase04B product-owner approval; dependency F12-T06-R1 DONE (44d472e); frozen backend contract unchanged.
+Evidence, version pins and exact Phase04C handoff: [phase-12 log](logs/phase-12.md#f12-t06-r2--dashboard-product-image-uploader).
+Next Store slice: Phase04C / Batch01C customer image integration, requires its separate instruction/claim; not started. No active media paths claimed. No live R2, backend/schema/customer source changes, production activation or deployment. Historical initial-release envelope and independent Phase12 blockers remain unchanged.
+
 ## Store media handoff — F12-MEDIA-B01A closed
 
 F12-T06-R1 DONE; coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after backend acceptance and review. Evidence and exact Batch 01B handoff: [phase-12 log](logs/phase-12.md#f12-t06-r1--store-product-media-backend-foundation).
 Authority: [ADR-0015](decisions/ADR-0015-store-product-media-development.md); [frozen development contract](contracts/store-product-media-v1.md). Historical F12-T06 initial-release N/A, Phase12 state and independent blockers remain unchanged.
-Next eligible Store slice: Batch 01B dashboard Uppy uploader, subject to its separate scope/dependencies and ownership claim; not started. Batch 01C, live R2, production activation and deployment are not authorized by this backend handoff. No active media paths remain claimed.
+Backend handoff superseded by the accepted dashboard F12-T06-R2 handoff above. Phase04C, live R2, production activation and deployment are not authorized by either completed slice. No backend media paths remain claimed.
 
 ## Current Patient UI workspace — owner override 2026-10-13
 
