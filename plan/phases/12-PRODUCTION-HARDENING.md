@@ -153,6 +153,112 @@ Future eligible handoff after R2 acceptance: Batch 01C customer image UI; not st
 
 - [x] `F12-T06-S1` — explicitly approved local real R2 acceptance before Phase04C. R1/R2 dependencies and ADR-0015 addendum satisfied; existing Dashboard/API/Prisma/adapter exercised against dev-sabz with disposable data. Upload/preview/public eligibility/replace/remove, ETag/idempotency replay, interrupted-response recovery, invalid-file/ownership checks and normal outbox cleanup PASS; three objects removed, six cleanup events DELIVERED. API13 + dashboard24 focused tests PASS. Scratch database/configuration/fixtures removed; original data and bucket settings preserved. Windows only; Linux, exclusive IAM-policy inspection and production requirements remain separate. Evidence: logs/phase-12.md F12-T06-S1. Phase04C not started.
 
+## Product Details V1 — approved governance and planned batches (2026-10-14)
+
+Authority: explicit owner architecture/governance approval; [ADR-0016](../decisions/ADR-0016-store-product-details-v1.md)
+and [version 1.0 contract](../contracts/store-product-details-v1.md). This is a scoped Phase 12 extension,
+not a reopened Phase 09 or new phase-management system. G01 authorizes documentation only; no
+implementation task is claimed or started. Initial-release boundaries and independent production
+blockers remain unchanged. The split below is owner-approved staged delivery; B1A/B1B alone do not
+declare a completed cross-application feature.
+
+### Checklist and dependency order
+
+- [x] `F12-PD-G01` — ADR/contract/task governance finalization; documentation-only review PASS;
+  implementation NOT_STARTED. Evidence: [G01](../logs/phase-12.md#f12-pd-g01--product-details-v1-architecture-approval-and-governance).
+- [ ] `F12-PD-B1A` — Product content backend foundation; batch `PD-B1A`; PLANNED, awaiting start instruction.
+  Depends on G01 DONE, accepted Commerce/media baselines and frozen B1 contract.
+- [ ] `F12-PD-B1B` — Dashboard product-content editor; batch `PD-B1B`; NOT_ELIGIBLE until B1A DONE.
+- [ ] `F12-PD-B1C` — Customer PDP real content and demo-claim retirement; batch `PD-B1C`;
+  NOT_ELIGIBLE until B1A/B1B DONE and their generated contract/editor acceptance is available.
+- [ ] `F12-PD-B2` — Category templates, typed attributes, variants/availability and order integrity;
+  batch `PD-B2`; BLOCKED_OWNER_DECISIONS until B1C DONE, explicit initial category definitions and
+  the B2 contract appendix are approved/frozen. Architecture approval is not definition approval.
+
+The first future eligible implementation candidate is B1A; it still needs an explicit instruction
+to start, a fresh eligibility/ownership check and normal STATUS claim. No batch automatically follows
+G01 or any completed implementation batch. One agent/no subagents applies to these planned batches.
+
+### B1A — exact scope and owned paths
+
+Shared optional Product brand/manufacturer/short/full description/ingredients/usage/warnings/
+contraindications; additive columns/provenance/revision/approval metadata; legacy preservation;
+strict content save/read/approve API; legacy create/PATCH description integration; permission and
+clinic ownership; atomic revision/approval/audit; centralized public projection; stable errors;
+OpenAPI and generated client. No Dashboard/customer source, templates, SKU/checkout/order/media,
+R2 runtime, existing migrations, auth-role expansion or dependencies change.
+
+Planned exclusive writer paths: `apps/api/prisma/schema.prisma`, one new owned migration under
+`apps/api/prisma/migrations/`, `apps/api/src/modules/commerce/catalog/**`, directly required catalog
+projection code under `apps/api/src/modules/commerce/cart/**`, `apps/api/src/common/errors/api-error.ts`,
+focused API tests, `packages/api-client/openapi.json`, `packages/api-client/src/schema.generated.ts`.
+Coordinator-only plan paths: STATUS, this phase checklist and phase-12 evidence. A required path
+outside this set must be reviewed/reassigned before editing, not treated as blanket Commerce ownership.
+
+Acceptance: isolated PostgreSQL clean replay and upgrade preserve every legacy description/status/order;
+new content stays pending; source/nonempty approval rules; omitted/null/no-op behavior; strict and legacy
+write invalidation; approval/edit races and stale revisions; anonymous/non-admin/foreign-resource denial;
+no draft/provenance leaks through list/detail/cart/wishlist; stable error/OpenAPI freshness; API/client
+targeted checks and focused regression tests. Record exact commands/results; no broad monorepo tests.
+Review and independent task commit required. Backend-only foundation is not full V1 acceptance.
+
+### B1B — exact scope and owned paths
+
+Depends on accepted B1A API/client. Existing Store editor presents fields, provenance, revision/status,
+explicit save versus approve and visibility warning. Persian RTL, accessible input/error feedback,
+session refresh, preserved unsaved form and deliberate conflict reload. No implied medical/brand
+certification. No API/schema/generated-client/media-uploader/template/customer changes.
+
+Planned paths: directly relevant `apps/dashboard/src/features/store/**`, existing Store API wrapper
+and focused dashboard/editor tests; coordinator plan/evidence only. Confirm precise wrapper/test paths
+at claim; exclude Uppy/image editor implementation from source writes.
+Acceptance: validation/null/clear/save/approval flow, failure recovery, stale-revision conflicts,
+role/resource denial, no automatic approval, existing media editor regression; focused dashboard
+typecheck/tests plus scoped desktop/mobile/RTL/keyboard browser validation using development fixtures.
+Review/evidence/task commit required before B1C.
+
+### B1C — exact scope and owned paths
+
+Depends on B1A/B1B DONE. Customer PDP uses embedded approved content and preserved legacy description,
+omits pending/null sections and removes fabricated ratings/counts/reviews/Q&A/seller verification/
+satisfaction/warranties/hardcoded specifications. Retire corresponding fake seller claims in cart.
+Preserve real product/media/pricing, cart/wishlist/navigation and unrelated banners/offers/assets.
+No UGC, seller, warranty or campaign API; no SKU selection/templates/checkout changes.
+
+Planned paths: `apps/app/src/app/(public)/store/products/[id]/page.tsx`, directly affected
+`apps/app/src/components/store/**`, `apps/app/src/stores/product-extras.ts` and its affected consumers/tests,
+existing Store API wrapper only for generated-type adoption, focused customer tests; coordinator plan/evidence.
+Acceptance: approved/pending/legacy/no-content fixtures; no visible or accessible fabricated claims;
+no extra editorial fetch waterfall; escaped content; image/no-store/fallback unchanged; real API handling,
+cart/wishlist regressions, Persian RTL/accessibility and mobile/desktop browser evidence. Report any
+unavailable real fixture separately. Review/evidence/task commit required; B1 content slice accepted here.
+
+### B2 — exact scope, pending decisions and acceptance gates
+
+After B1C, owner approves actual initial categories/fields, scope, units, required/allowed values,
+meaningful variant keys and health-attribute approval linkage. Freeze the B2 API/migration appendix
+including bounds and publication/category-transition rules before eligibility/claim.
+
+Implement immutable database template versions and exact product pins; typed bounded JSONB Product/SKU
+values; scope/type/unit/duplicate validation; transactional repin/category validation; admin template
+and attribute editors; manual SKU creation/selection; per-SKU availability and selected-SKU continuity
+in customer cart/wishlist; additive immutable SKU-title/variant order-line snapshots and versioned
+order-payload/read compatibility. No generator/EAV/scripts/filter engine or personalized clinical content.
+
+Planned exclusive shared paths: Prisma/new migrations, relevant Commerce catalog/cart/inventory read/
+checkout snapshot/order-response code, stable errors and generated API/client; existing dashboard Store
+and customer Store surfaces/tests. Exact claim must enumerate the narrow paths before work and keep
+one writer for schema, OpenAPI and shared contracts. Existing inventory/payment authority is preserved.
+
+Acceptance: definition validation/version immutability/FK scoping; duplicate/wrong-type/scope/unit rejection;
+missing required values; category/repin rollback; legacy/no-template products; approval-linked health
+attributes; chosen-SKU title/attributes/price/availability/cart/reservation agreement; immutable meaningful
+order snapshots after later catalog edits; old/new snapshot and previous-application compatibility;
+additive migration/upgrade/rollback; checkout idempotency/stock races; focused API/dashboard/customer
+checks and end-to-end variant/order fixtures. New differentiated multi-SKU purchasing cannot be enabled
+before the snapshot compatibility gate passes. B1 never silently changes checkout. Final review,
+evidence and task commit are mandatory; no production-readiness claim follows from this development slice.
+
 ## معیار خروج (initial release, unchanged)
 
 - SLO/capacity با evidence ثبت شده است.

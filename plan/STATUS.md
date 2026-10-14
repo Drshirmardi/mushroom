@@ -14,6 +14,19 @@
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
+## Product Details V1 — governance accepted, implementation not started (2026-10-14)
+
+`F12-PD-G01 DONE`; documentation-only claim RELEASED; coordinator/reviewer Codex /root.
+Authority/rationale: [ADR-0016](decisions/ADR-0016-store-product-details-v1.md).
+[Version 1.0 contract](contracts/store-product-details-v1.md) freezes B1 revision-bound admin approval,
+legacy visibility and API compatibility; B2 architecture/order integrity gates are accepted but initial
+category definitions and its wire appendix remain owner decisions. [Phase 12 task map](phases/12-PRODUCTION-HARDENING.md#product-details-v1--approved-governance-and-planned-batches-2026-10-14);
+evidence: [G01](logs/phase-12.md#f12-pd-g01--product-details-v1-architecture-approval-and-governance).
+Next candidate: `F12-PD-B1A` (backend content/provenance/approval only), eligible for a future start
+instruction and fresh normal claim; not started/claimed by this approval. B1B depends on accepted B1A;
+B1C on B1A/B1B; B2 on B1C plus explicit owner definitions/frozen appendix. No implementation active.
+Closed Phase 09, initial-release/media contracts and independent production blockers are unchanged.
+
 ## Local R2 acceptance — F12-MEDIA-S01 closed
 
 F12-T06-S1 DONE; owner/coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after local real-storage acceptance and review. One agent; explicit product-owner development-only approval; dependencies R1 (44d472e), R2 (e49e615), frozen wire contract unchanged. Independent production blockers remain intact.

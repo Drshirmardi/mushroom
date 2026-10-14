@@ -2874,3 +2874,52 @@ Known limitations:
   - Cart/wishlist browser coverage deferred (routes require auth); covered by unit presentation tests
 Next task:
   - none (stop after Phase 04C per instruction; no next phase started)
+
+## F12-PD-G01 — Product Details V1 architecture approval and governance
+
+Task ID: F12-PD-G01
+Completed at: 2026-10-14 Asia/Tehran
+Agent/Thread: Codex /root (one agent, no subagents)
+Batch ID: F12-PD-G01 (documentation/governance only)
+Reviewed by: Codex /root (main-agent document consistency/compatibility review)
+Authority:
+  - Explicit owner message: Product Details V1 Product Owner Architecture Approval & Governance.
+  - Authorization is limited to architecture documentation, ADR, contract freeze and task planning;
+    the owner expressly says not to start implementation.
+Baseline: front@ee0a21c; clean working tree; ahead 4 relative to the local origin/front reference.
+Changed files:
+  - plan/decisions/ADR-0016-store-product-details-v1.md (new ACCEPTED architecture)
+  - plan/contracts/store-product-details-v1.md (new version 1.0)
+  - plan/phases/12-PRODUCTION-HARDENING.md (scoped extension, task dependencies/scopes/gates)
+  - plan/STATUS.md (governance-only claim/release and future candidate)
+  - plan/logs/phase-12.md (this evidence)
+Migrations:
+  - none; no schema/source/client/dependency/database/runtime changes.
+Verification:
+  - Existing role/permission and content/catalog contract dependencies inspected; approval requires
+    existing ADMIN release role plus COMMERCE_MANAGE and product clinic/resource ownership.
+  - Document review: controlled fields/source/revision/no-op/null/edit invalidation, explicit exact-revision
+    approval, concurrency and public/private projection defined; no automatic/clinical certification.
+  - Legacy migration compatibility: preserve descriptions/status/publication as unreviewed; no automatic
+    approval, structured health conversion or migration unpublication. Explicit later edits enter the
+    pending lifecycle with an editor visibility warning.
+  - B2 review: template version pins, strict Product/SKU scopes, no invented definitions, mandatory
+    immutable selected-SKU title/meaningful-attribute order snapshots and old-order compatibility.
+  - Local Markdown file links and plan/ADR/contract/task dependency consistency -> PASS.
+  - Git diff hygiene/document-only scope -> PASS; final staged scope checked before task commit.
+  - Builds, application tests, migrations, browser tests, Prisma/database/R2 operations -> NOT RUN
+    (not authorized or needed for this documentation task; future checks are acceptance plans only).
+Result:
+  - ADR-0016 accepted without superseding historical ADR-0009/ADR-0015 -> PASS.
+  - B1 architecture/API version 1.0 frozen; B2 definitions/wire appendix explicitly pending -> PASS.
+  - B1A/B1B/B1C/B2 sequential scopes, ownership, tests and acceptance mapped in existing Phase 12 -> PASS.
+  - Customer demo-claim retirement approved in B1C; UGC/marketplace/warranty/campaign scope excluded -> PASS.
+  - G01 DONE/claim RELEASED; all four implementation tasks unchecked and unclaimed -> PASS.
+Known limitations / remaining owner decisions:
+  - B2 needs actual initial category templates, required fields, units/options, meaningful variant keys,
+    health-attribute approval linkage and finalized publication/category-transition/wire appendix.
+  - No real product facts or source material are supplied by this governance task; administrators must
+    supply and explicitly approve source-supported content during authorized future implementation/use.
+  - Independent Phase 12 production blockers remain; no deployment/start authorization is implied.
+Next batch:
+  - F12-PD-B1A only after a separate start instruction and fresh eligibility/claim. Do not start now.
