@@ -1,5 +1,40 @@
 # Phase 12 Execution Evidence
 
+## F12-T06-S1 — local real R2 product media acceptance
+
+Completed/reviewed: 2026-10-14 UTC; batch F12-MEDIA-S01; coordinator/reviewer Codex /root, one agent. Baseline front / e49e615eac1a18cd045121c4695d534d3fd41a26, initially clean. Dependencies backend44d472e/dashboarde49e615 accepted. Explicit owner authorization covers disposable local development CRUD in dev-sabz only; ADR-0015 and frozen-contract addenda record this subsequent permission without rewriting historical release decisions. No Phase04C, deployment, bucket configuration or production activation.
+
+### Environment and credentials
+
+- Existing Docker sabz-zendegi-postgres-1 / PostgreSQL16.14 at localhost5432 retained. Original development database had35 migrations and lacked the media migration; it was never migrated, reset or seeded. Created only mushroom_r2_smoke_1065e55bc20f, deployed all36 existing migrations and ran existing development seed there. Used the owner-provided synthetic admin identity only in that disposable database.
+- Existing API dev command ran on127.0.0.1:3003; existing Dashboard Next dev command with --hostname127.0.0.1 --webpack on3002. API live/ready and Dashboard/store returned200. Process-local overlay selected scratch DATABASE_URL, development mode and disabled SMS/payment transports; no tracked default activation changed.
+- R2 keys already existed in ignored/untracked apps/api/.env; validated endpoint/account, bucketdev-sabz, regionauto and moder2 without displaying keys. Dashboard environment contained no R2 credentials. Task overlay and fixtures were also ignored/untracked; no secret entered tracked config, clients or browser. Credentials were passed in memory, never extracted into stdout.
+- Existing R2ProductImageStorage initialized successfully; DNS/TCP443/TLS and SDK HeadBucket returned200. Real put/read/delete proved the credentials' required operations on dev-sabz. Exclusive token-policy scope beyond this bucket was not inspected, and no other bucket was accessed.
+- Owner attested Public Development URL and every Custom Domain disabled. Unsigned path-style and virtual-host S3 requests returned400 InvalidArgument while a task object existed; no anonymous bytes were returned. This is the observed response, not a claimed403 or independent Cloudflare control-plane privacy audit. No public access/settings were enabled or modified.
+
+### Real browser/application evidence
+
+Playwright MCP removed previous mock routes and used the actual local Dashboard, API and R2. Product09b2057e-e55f-4d81-b9f3-9aafe18e30e5 / r2-smoke-1065e55bc20f was created through the Dashboard in the synthetic development clinic.
+
+1. Uppy uploaded a2,886,499-byte1200×800 PNG through the editor; PUT200, imagec3feefb9-4b95-42b1-b227-d88cd59adefe and matching quoted ETag. Persisted image READY; existing adapter HeadObject200 and read matched Prisma size658,188. Sharp outputWebP1200×800 without EXIF/ICC/XMP. Authenticated preview200 matched the R2 SHA-256 04268832ff67e5a065e67e76c2bb6db1703eb70bc77fc4c1a4c753ace43f1bc3.
+2. Draft public delivery404. Added an active disposable SKU via existing admin endpoint201 and published the fixture200; public delivery200 with bytes identical to authenticated preview. No real patient or production records used.
+3. Uppy replacement200 with If-Match of the first generation, new ETag/image8c4a1a28-19c9-41f7-b853-de69970775a6;2000×1200 input became1600×960 WebP /2,812 bytes. Old public generation immediately404; old R2 object eventually404 through normal outbox.
+4. Invalid PNG content reached the real API and returned422 with the expected Persian error; current image retained. SVG rejected by Uppy before upload. No unsupported format was accepted.
+5. Safely simulated a lost response after a successful real PUT using Playwright route.fetch followed by abort; backend/R2 committed normally. UI offered explicit same-operation retry. Replay200 returned the same image531101f6-f30c-455d-b62e-4175fd18088b, same idempotency key and original If-Match. Real progressbar observed; UI success awaited server confirmation. No database/storage outage injection.
+6. Valid multipart request with fresh operation key and stale If-Match returned412 / COMMERCE_IMAGE_REVISION_CONFLICT. Unauthenticated private preview401; authenticated access to a scratch product in another inactive clinic404.
+7. Dashboard removal204 / ETag "none" with the current generation's If-Match. Exact DELETE replay204; public route immediately404; editor displayed its no-image fallback.
+
+### Cleanup, verification and issues
+
+- Existing outbox worker completed all six COMMERCE_PRODUCT_IMAGE_CLEANUP events, each DELIVERED on attempt1. No deadline/queue mutation or direct diagnostic deletion. Existing adapter HeadObject returned404 for all three recorded object identities; Prisma image rows for the fixture were0. No unrelated object was listed/deleted.
+- API focused storage/processor/configuration tests:3 files /13 PASS. Dashboard controller/API/catalog tests:3 files /24 PASS. API build/Prisma generation and live watcher compilation passed; native Windows Sharp executed successfully. No code changes justified additional generated-contract rebuilds or broad audits.
+- Initial diagnostic commands encountered shell/Node stdin quoting and crypto binding issues; corrected only diagnostic execution. Corepack/network and local socket sandbox restrictions required normal approved execution outside the sandbox. No application runtime fix was made.
+- Two attempts to replay raw browser multipart request buffers through APIRequestContext returned500 and were discarded as invalid harness evidence; they are not proof of contract replay/conflict behavior. Subsequent actual Uppy same-intent replay200 and correctly constructed multipart stale-version412 establish those checks. Browser selection timing/retained-file restriction was handled by waiting and clearing selection through the existing UI; no upload code changed.
+- Automatic review rejected credential stdout extraction and broad Chrome debugging/profile enumeration. Neither executed; continued using owner-supplied credentials and the existing isolated MCP browser, with no profile enumeration or credential stdout workaround.
+- Owned API/Dashboard processes stopped and ports3002/3003 released. Dropped only the guarded, task-owned scratch database after R2 cleanup. Removed guarded ignored task overlay/fixtures. Original database remained35 migrations with zero media migration; Docker PostgreSQL and original apps/api/.env preserved.
+
+Main-agent review: scope, frozen contract, real evidence, cleanup, secret handling and remaining limits PASS. Only five governance/evidence documents changed; no application code, database schema/migration, dependency, generated client or architecture change. Diff gate passed before the independent task commit. Local development acceptance DONE; exclusive IAM-policy/control-plane audit, Linux container Sharp execution, production activation and independent Phase12 blockers remain separate. Phase04C is eligible for its separate instruction/claim and has not started.
+
 ## F01-R06-B — OTP authentication and session integration
 
 Task ID: `F01-R06-B`

@@ -31,3 +31,9 @@ API CPU/memory and outbound requests require bounded concurrency and deadlines. 
 ## Implementation impact and revisit
 
 Owned surfaces: Commerce media/catalog/cart, schema plus one additive migration, outbox media dispatch, API environment/entrypoint, API dependency lock and generated client. Dashboard/app source is excluded. Revisit before production activation, multi-image/SKU media, direct upload, public CDN, medical/chat files, or additional API replicas.
+
+## Addendum — authorized local real-storage smoke, 2026-10-14
+
+The product owner explicitly authorizes F12-T06-S1 to exercise the existing Dashboard → NestJS → Prisma → R2 workflow locally against dev-sabz only: create/read/replace/delete disposable processed test images, verify delivery/idempotency/concurrency and durable cleanup. This is a new development-test authorization following accepted04A/04B, not a rewrite of their historical no-live-test boundary.
+
+Use existing local development commands, existing adapter and securely configured ignored environment/secrets. Isolate synthetic products/users in a task-owned disposable development database; never reset or alter real patient/production records. Bucket policy, CORS, lifecycle, access tokens, public access and production activation/deployment remain excluded. Record safe object identities and delete only task-owned objects through the application/outbox. Report inaccessible privacy-control evidence distinctly from anonymous S3 access checks. Linux/container compatibility and production requirements remain separate. No Phase04C.

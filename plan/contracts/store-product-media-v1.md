@@ -24,3 +24,7 @@ Credentials stay server-side; R2 access is disabled by default. Enabling incompl
 ## Acceptance / future handoff
 
 Isolated PostgreSQL migration replay and mocked R2 API/security/fault/concurrency tests, image processing tests and generated OpenAPI freshness must pass. Batch 01B later uses Uppy core/react headless/xhr-upload/fa_IR with existing session refresh, one-file limits, real progress, retries with the same operation key and the server ETag. Batch 01C integrates image fields in customer cards/details/cart/wishlist. Neither UI batch starts in 04A.
+
+## Authorization addendum — local smoke only (2026-10-14)
+
+Wire/API/lifecycle contract remains frozen. The subsequent explicit product-owner approval permits F12-T06-S1 real local development smoke against dev-sabz with disposable test images, per the ADR-0015 addendum. The original no-live-R2 statements describe04A/04B authorization and are historically preserved. Production, public bucket activation, bucket-setting changes and Phase04C are not authorized by this addendum.

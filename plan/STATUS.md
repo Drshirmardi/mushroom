@@ -14,6 +14,12 @@
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
+## Local R2 acceptance — F12-MEDIA-S01 closed
+
+F12-T06-S1 DONE; owner/coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after local real-storage acceptance and review. One agent; explicit product-owner development-only approval; dependencies R1 (44d472e), R2 (e49e615), frozen wire contract unchanged. Independent production blockers remain intact.
+Real Dashboard/Uppy → NestJS → disposable PostgreSQL → dev-sabz upload, authenticated/public eligibility, replace/remove, ETag, same-key replay, interrupted-response recovery, invalid-file and ownership checks PASS. Three task objects deleted by normal outbox; six cleanup jobs DELIVERED; temporary database/configuration/fixtures removed; owned services stopped. Original persistent database remains at35 migrations without media migration. Evidence: [phase-12 log](logs/phase-12.md#f12-t06-s1--local-real-r2-product-media-acceptance).
+Only governance/evidence files changed; no runtime fixes, schema/wire/source changes, bucket-setting changes or deployment. Privacy controls are owner-attested disabled; unsigned S3 returned400 InvalidArgument, not a claimed403/control-plane audit. Windows Sharp verified; Linux/container, exclusive IAM-policy inspection and production approval remain separate. Next Store slice Phase04C requires separate instruction/claim; not started.
+
 ## Store media dashboard handoff — F12-MEDIA-B01B closed
 
 F12-T06-R2 DONE; coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after review and dashboard acceptance. Explicit Phase04B product-owner approval; dependency F12-T06-R1 DONE (44d472e); frozen backend contract unchanged.

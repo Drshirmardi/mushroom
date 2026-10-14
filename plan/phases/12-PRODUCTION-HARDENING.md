@@ -151,6 +151,8 @@ Product-owner authorization: [ADR-0015](../decisions/ADR-0015-store-product-medi
 
 Future eligible handoff after R2 acceptance: Batch 01C customer image UI; not started by R2. Initial-release envelope and production readiness remain independent.
 
+- [x] `F12-T06-S1` — explicitly approved local real R2 acceptance before Phase04C. R1/R2 dependencies and ADR-0015 addendum satisfied; existing Dashboard/API/Prisma/adapter exercised against dev-sabz with disposable data. Upload/preview/public eligibility/replace/remove, ETag/idempotency replay, interrupted-response recovery, invalid-file/ownership checks and normal outbox cleanup PASS; three objects removed, six cleanup events DELIVERED. API13 + dashboard24 focused tests PASS. Scratch database/configuration/fixtures removed; original data and bucket settings preserved. Windows only; Linux, exclusive IAM-policy inspection and production requirements remain separate. Evidence: logs/phase-12.md F12-T06-S1. Phase04C not started.
+
 ## معیار خروج (initial release, unchanged)
 
 - SLO/capacity با evidence ثبت شده است.
