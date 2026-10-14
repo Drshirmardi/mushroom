@@ -10,7 +10,7 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد (`PD-B1A DONE` و آزاد شد؛ B1B شروع نمی‌شود)
+- batch فعال: ندارد (`PD-B1B DONE` و آزاد شد؛ B1C/B2 خودکار شروع نمی‌شوند)
 - task فعال: ندارد
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
@@ -118,6 +118,10 @@ No active UI paths claimed. Independent plan and UI STATUS point to this authori
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — PD-B1B
+
+`F12-PD-B1B DONE` 2026-10-14؛ single agent Muse Spark؛ review gate PASS (scope/contract/tests). شواهد کامل: [phase-12 log](logs/phase-12.md#f12-pd-b1b--dashboard-product-content-editor). هیچ batch بعدی شروع نشده است (B1C/B2 منوط به دستور جدا).
 
 ## آخرین batch تکمیل‌شده — 04C-B01C
 

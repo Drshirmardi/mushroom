@@ -3043,4 +3043,46 @@ Exact B1B handoff (not started):
   - Existing Store editor/design/RTL/session conventions and Uppy/media editor remain intact; focused
     dashboard/editor/keyboard/mobile tests and browser evidence are B1B's own acceptance gate.
 Next batch:
-  - F12-PD-B1B is eligible for a future separate instruction/claim; STOP after B1A.
+  - none (STOP after B1A per its instruction; B1B started later under its own instruction/claim).
+
+## F12-PD-B1B — Dashboard product content editor
+
+Task ID: F12-PD-B1B
+Completed at: 2026-10-14 Asia/Tehran
+Agent/Thread: Muse Spark (single agent, no subagents per task instruction)
+Batch ID: PD-B1B
+Reviewed by: Muse Spark (coordinator self-review; combined diff scope-checked)
+Authority: explicit owner B1B implementation instruction; ADR-0016 and frozen store-product-details-v1 1.0.
+Baseline: front@78c7209 (B1A) + e681517 (governance); clean worktree at claim.
+Changed files:
+  - apps/dashboard/src/lib/commerce-product-content-api.ts (new: GET/PATCH/approve wrappers, status+code error class, Persian messages)
+  - apps/dashboard/src/lib/commerce-product-content-api.spec.ts (new: 5 tests)
+  - apps/dashboard/src/features/store/product-content-draft.ts (new: sections, limits, dirty, null-conversion, provenance, approval rules)
+  - apps/dashboard/src/features/store/product-content-draft.spec.ts (new: 5 tests)
+  - apps/dashboard/src/features/store/product-content-editor.tsx (new: dialog, 5 Persian RTL sections, revision-safe save, explicit approval, dirty guard, conflict flow)
+  - apps/dashboard/src/features/store/store-page.tsx (integration only: content button + status line + editor wiring)
+  - apps/dashboard/e2e/playwright.product-content.config.ts + product-content.spec.ts + product-content-browser.mjs (new: mock-API desktop/mobile)
+  - plan/STATUS.md (batch claim + release)
+Tests run (working directory apps/dashboard unless stated):
+  - pnpm --filter @sabz/dashboard typecheck → PASS
+  - eslint on all 6 touched source/test files --max-warnings 0 → PASS (one set-state-in-effect corrected via queued microtask, mirroring the image editor)
+  - vitest focused (content-api + draft specs) → 2 files / 10 tests PASS
+  - vitest full dashboard suite → 27 files / 106 tests PASS, no regressions
+  - Playwright product-content (desktop 1440x900 + mobile 390x844, deterministic mock API) → 2/2 PASS: status badge, five sections, save rev+invalidation, explicit approval, dirty guard, 409 conflict with draft kept + deliberate resave, 403 denial staying pending, RTL, no overflow, image-editor entry intact
+  - No backend/Prisma/R2/customer-app tests touched; B1A storage suites not repeated
+Result:
+  - editor integrated in existing Store workflow (per-card button + status line) → PASS
+  - all eight B1 fields + provenance pair-or-null with server limits → PASS
+  - existing data preserved (draft initialized from server; legacy description untouched until edited) → PASS
+  - save and approval independent; approval never automatic; no-op save keeps approval → PASS (client disables approve while dirty; server authority unchanged)
+  - stale-revision conflicts reload server state, keep draft, require deliberate resave; no auto-overwrite/retry → PASS
+  - approval status from server only; unauthorized approve surfaces 403 safely → PASS
+  - Persian RTL, responsive, focus trap, Escape/discard guard, role=status/alert → PASS
+  - legacy first-edit visibility warning + pending-hidden note shown → PASS
+  - no unrelated changes (image editor, SKU, pricing, inventory, checkout untouched) → PASS
+Known limitations:
+  - Persistent development database still lacks the B1A migration (deliberate); UI verified against mock API only — real runtime acceptance remains pending and is reported, not claimed
+  - Client cannot distinguish ADMIN-without-COMMERCE_MANAGE before attempting approval; conservative always-enabled button + safe 403 handling stands in
+  - Playwright harness needed one correction during development (resave-synced Escape closes directly); implementation was correct throughout
+Next task:
+  - none (STOP after B1B per instruction; B1C/B2 NOT started, no push/deploy)

@@ -169,8 +169,9 @@ declare a completed cross-application feature.
 - [x] `F12-PD-B1A` — Product content backend foundation; batch `PD-B1A`; DONE, Codex /root;
   review PASS, claim RELEASED 2026-10-14; [evidence/handoff](../logs/phase-12.md#f12-pd-b1a--product-content-backend-foundation).
   Depends on G01 DONE, accepted Commerce/media baselines and frozen B1 contract.
-- [ ] `F12-PD-B1B` — Dashboard product-content editor; batch `PD-B1B`; dependency B1A DONE,
-  PLANNED/awaiting separate start instruction and fresh claim.
+- [x] `F12-PD-B1B` — Dashboard product-content editor; batch `PD-B1B`; DONE, Muse Spark;
+  review PASS, claim RELEASED 2026-10-14; [evidence/handoff](../logs/phase-12.md#f12-pd-b1b--dashboard-product-content-editor).
+  Depends on B1A DONE, accepted Commerce/media baselines and frozen B1 contract.
 - [ ] `F12-PD-B1C` — Customer PDP real content and demo-claim retirement; batch `PD-B1C`;
   NOT_ELIGIBLE until B1A/B1B DONE and their generated contract/editor acceptance is available.
 - [ ] `F12-PD-B2` — Category templates, typed attributes, variants/availability and order integrity;
