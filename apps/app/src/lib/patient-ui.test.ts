@@ -194,6 +194,18 @@ const approvedProduct: CommerceProduct = {
 };
 
 describe("Store real product content sections (Phase B1C)", () => {
+  it("links navigation only to sections with real product content", () => {
+    const html = renderToStaticMarkup(createElement(ProductContentSections, { product: approvedProduct }));
+    for (const id of ["product-about", "product-ingredients", "product-usage", "product-warnings", "product-contraindications"]) {
+      expect(html).toContain(`href="#${id}"`);
+      expect(html).toContain(`id="${id}"`);
+    }
+    const singleSection = renderToStaticMarkup(createElement(ProductContentSections, {
+      product: { ...product, content: null, description: "توضیح واقعی" },
+    }));
+    expect(singleSection).not.toContain("<nav");
+  });
+
   it("renders every nonempty approved field and nothing else", () => {
     const html = renderToStaticMarkup(createElement(ProductContentSections, { product: approvedProduct }));
     for (const text of ["معرفی کوتاه واقعی", "برند واقعی", "تولیدکننده واقعی", "توضیح تأییدشده", "ماده واقعی", "دستور واقعی", "هشدار واقعی", "منع واقعی"]) {

@@ -584,9 +584,16 @@
 .store-detail__handle-button { position: sticky; top: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 44px; background: white; color: var(--patient-muted); border: 0; border-radius: 18px 18px 0 0; cursor: grab; touch-action: none; }
 .store-detail__handle-button:active { cursor: grabbing; }
 .store-detail__handle-button .store-detail__handle { margin: 0; }
-.store-detail__handle-label { font-size: 12px; line-height: 20px; }
+.store-detail__handle-label { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 20px; }
+.store-detail__handle-chevron { flex-shrink: 0; color: var(--patient-action); }
+.store-detail__sheet[data-expanded="true"] .store-detail__handle-chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .store-detail__handle-chevron { transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .store-detail__handle-button .store-detail__handle { transition: background-color 200ms ease, width 200ms ease; }
+}
 .store-detail--panel .store-related { margin-top: 16px; }
 .store-product-page {
+  font-family: var(--font-vazirmatn), sans-serif;
   --patient-ink: #14213d;
   --patient-muted: #455473;
   --patient-action: #2458d8;
@@ -607,33 +614,56 @@
 .store-product-page .store-gallery__slide img { max-width: 560px; padding: clamp(6px, 2cqi, 16px); }
 .store-product-page .store-detail__sheet { --store-sheet-gutter: clamp(10px, 4cqi, 24px); padding-inline: var(--store-sheet-gutter); border-radius: 24px 24px 0 0; box-shadow: 0 -6px 24px rgb(36 88 216 / 10%); }
 .store-product-page .store-detail__handle-button { width: calc(100% + var(--store-sheet-gutter) + var(--store-sheet-gutter)); margin-inline: calc(-1 * var(--store-sheet-gutter)); min-height: 48px; border-bottom: 1px solid #e1e8ee; border-radius: 22px 22px 0 0; margin-bottom: 12px; color: #334d63; }
+.store-product-page .store-detail__handle-button:hover { color: var(--patient-action); }
+.store-product-page .store-detail__handle-button:hover .store-detail__handle { width: 56px; background: var(--patient-action); }
+.store-product-page .store-detail__sheet[data-expanded="true"] .store-detail__handle-button { border-bottom-color: #d7e3ff; }
 .store-product-page .store-detail__sheet[data-expanded="true"], .store-product-page .store-detail__sheet[data-expanded="true"] > .store-detail__handle-button { border-radius: 0; }
 .store-product-page .store-detail__handle { width: 44px; background: #758da0; }
 .store-product-page .store-detail__handle-label { font-size: 12px; font-weight: 600; }
+.store-product-page :is(.store-page-header h1, .store-detail__title h2, .store-description h3, .store-related h3) { font-family: var(--font-digikala); }
 .store-product-page .store-detail__title { flex-wrap: wrap; gap: 4px 12px; }
 .store-product-page .store-detail__title > div:first-child { flex: 1 1 150px; }
 .store-product-page .store-detail__title h2 { margin-block: 8px 12px; font-size: clamp(18px, 5.4cqi, 26px); line-height: 1.5; font-weight: 750; color: var(--patient-ink); }
 .store-product-page .store-detail__actions { gap: 8px; padding-top: 8px; }
 .store-product-page dl dd { overflow-wrap: anywhere; }
 .store-product-page .store-lede { margin-block: 4px 20px; padding: 0; font-size: clamp(15px, 4.3cqi, 17px); font-weight: 500; line-height: 1.9; color: #455473; overflow-wrap: anywhere; }
-.store-product-page .store-facts { margin-block: 16px 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; padding: 16px; border: 0; border-radius: 16px; background: #f3f6ff; }
-.store-product-page .store-facts > div { display: grid; min-width: 0; gap: 6px; align-content: start; }
-.store-product-page .store-facts dd { min-width: 0; max-width: 100%; overflow-wrap: anywhere; color: var(--patient-ink); }
-.store-product-page .store-facts dt { font-size: 12px; font-weight: 500; color: var(--patient-muted); }
+.store-product-page .store-facts { margin-block: 16px; border: 1px solid var(--patient-divider); border-radius: 16px; background: #fff; overflow: hidden; }
+.store-product-page .store-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 13px 16px; }
+.store-product-page .store-facts > div + div { border-top: 1px solid #edf1f6; }
+.store-product-page .store-facts dt { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--patient-muted); }
+.store-product-page .store-facts dt svg { flex-shrink: 0; color: var(--patient-blue-600); }
+.store-product-page .store-facts dd { min-width: 0; font-family: var(--font-digikala); font-size: 15px; font-weight: 700; line-height: 1.7; color: var(--patient-ink); text-align: left; overflow-wrap: anywhere; }
+.store-product-page .store-facts__code { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+.store-product-page .store-description .store-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow: hidden; }
+.store-product-page .store-more { margin-top: 12px; min-height: 44px; padding-inline: 16px; border: 1px solid #d9e2f2; border-radius: 12px; background: #fff; color: var(--patient-action); font-size: 13px; font-weight: 700; cursor: pointer; }
+.store-product-page .store-more:hover { background: #edf3ff; }
+.store-product-page .store-more:focus-visible { outline: 2px solid var(--patient-action); outline-offset: 2px; }
+.store-product-page .store-content-nav { position: sticky; top: 60px; z-index: 2; display: flex; flex-wrap: nowrap; gap: 8px; padding-block: 8px 12px; border-bottom: 1px solid var(--patient-divider); background: #fff; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; -ms-overflow-style: none; }
+.store-product-page .store-content-nav::-webkit-scrollbar { display: none; }
+.store-product-page .store-content-nav a { flex-shrink: 0; white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; padding-inline: 14px; border-radius: 12px; background: #f4f6fb; color: #34476b; font-size: 13px; font-weight: 600; text-decoration: none; }
+.store-product-page .store-content-nav a:hover { background: #e8efff; color: #1d49bd; }
+.store-product-page .store-content-nav a[aria-current="true"] { background: var(--patient-action); color: #fff; box-shadow: 0 4px 12px rgb(36 88 216 / 28%); }
+@media (prefers-reduced-motion: no-preference) {
+  .store-product-page .store-content-nav a { transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
+}
 .store-product-page .store-description { margin-top: 0; padding-block: 20px; padding-inline: 0; border: 0; border-bottom: 1px solid #edf0f6; border-radius: 0; background: #fff; }
+.store-product-page .store-description { scroll-margin-top: 64px; }
+.store-product-page .store-section-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 10px; background: #edf3ff; color: #2458d8; }
 .store-product-page .store-description h3 { display: flex; align-items: center; gap: 8px; font-size: clamp(15px, 4.4cqi, 18px); line-height: 1.65; font-weight: 700; color: #14213d; overflow-wrap: anywhere; }
-.store-product-page .store-description p { color: #334363; font-size: clamp(14px, 4.1cqi, 16px); line-height: 1.85; }
+.store-product-page .store-description p { max-width: 65ch; margin-top: 12px; color: #334363; font-size: clamp(14px, 4.1cqi, 16px); line-height: 1.95; font-weight: 400; }
 .store-product-page .store-related h3 { display: flex; align-items: center; gap: 8px; }
 .store-product-page .store-related h3::before { content: ""; width: 4px; height: 20px; border-radius: 999px; background: var(--patient-blue-600); flex-shrink: 0; }
 .store-product-page .store-purchase-bar__price .store-price { color: var(--patient-blue-600); font-size: clamp(17px, 5.5cqi, 22px); }
 .store-product-page .store-description[aria-label="دستور مصرف"] { margin-block: 16px; padding: clamp(12px, 4cqi, 18px); border: 0; border-radius: 16px; background: #ecf8f4; }
 .store-product-page .store-description[aria-label="دستور مصرف"] h3 { color: #126452; }
+.store-product-page .store-description[aria-label="دستور مصرف"] .store-section-icon { background: #d6eee4; color: #126452; }
 .store-product-page .store-description:is([aria-label="هشدارها"], [aria-label="موارد منع مصرف"]) { margin-block: 12px; padding: clamp(12px, 4cqi, 18px); border: 0; border-radius: 16px; background: #fff7e8; }
 .store-product-page .store-description h3 svg { flex-shrink: 0; }
 @container (max-width: 320px) {
-  .store-product-page .store-facts { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .store-product-page .store-facts > div { padding-inline: 12px; }
 }
 .store-product-page .store-description:is([aria-label="هشدارها"], [aria-label="موارد منع مصرف"]) h3 { color: #754508; }
+.store-product-page .store-description--warning .store-section-icon { background: #ffebc3; color: #754508; }
 .store-product-page .store-sku { margin-top: 20px; font-size: 13px; overflow-wrap: anywhere; }
 .store-product-page .store-purchase-bar { border-top-color: #b4c9d9; box-shadow: 0 -4px 16px rgb(21 46 64 / 12%); }
 @media (max-height: 500px) {

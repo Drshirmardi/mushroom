@@ -5,6 +5,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Catalog surfaces stay scoped to Store management and its native editors. */
+.catalog-workspace { --muted-foreground: #4b6358; --border: #dce6e0; }
+.dark .catalog-workspace { --muted-foreground: #a5b9ad; --border: #344b3c; }
+.catalog-workspace :is(input, select, textarea) { min-width: 0; }
+.catalog-workspace dialog > header { position: sticky; top: 0; z-index: 2; background: var(--card); }
+.catalog-workspace table { font-variant-numeric: tabular-nums; }
+.catalog-workspace table th { white-space: nowrap; }
+.catalog-workspace table td { min-width: 100px; }
+
 :root {
   --font-size: 15px;
   --background: #F6FAF8;

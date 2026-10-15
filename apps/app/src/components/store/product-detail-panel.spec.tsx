@@ -16,4 +16,15 @@ describe("Product detail panel", () => {
     expect(html).toContain('type="button"');
     expect(html).toContain("details</p></section>");
   });
+
+  it("labels the collapsed handle and shows a directional chevron affordance", () => {
+    const html = renderToStaticMarkup(createElement(ProductDetailPanel, {
+      gallery: createElement("div", {}, "photo"),
+      children: createElement("p", {}, "details"),
+    }));
+    expect(html).toContain("مشخصات و توضیحات");
+    expect(html).toContain("store-detail__handle-chevron");
+    expect(html).toContain('data-expanded="false"');
+    expect(html).not.toContain("برگشت به تصویر");
+  });
 });
