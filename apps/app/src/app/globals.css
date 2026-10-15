@@ -304,9 +304,6 @@
 .patient-store-shell .patient-shell-header { min-height: 64px; }
 .patient-store-shell .patient-shell-header :is(h1, p) { font-size: 18px; }
 .patient-store-shell .patient-shell-header button { width: 44px; height: 44px; }
-.patient-shell-nav { padding-bottom: env(safe-area-inset-bottom); }
-.patient-shell-nav a { min-height: 48px; min-width: 52px; justify-content: center; }
-.patient-shell-nav a span:last-child { font-size: 12px; line-height: 20px; }
 .patient-store-shell :is(a, button):focus-visible, .patient-button:focus-visible, .patient-input:focus-visible {
   outline: 2px solid var(--patient-focus); outline-offset: 2px;
 }
@@ -509,7 +506,77 @@
 .patient-input[aria-invalid="true"] { border-color: var(--patient-error); }
 
 /* One shared bottom navigation, regardless of the active Patient module. */
-.patient-shell-nav { --primary: var(--patient-action); --muted-foreground: var(--patient-muted); --border: var(--patient-divider); }
+.patient-shell-nav {
+  --primary: var(--patient-action);
+  --muted-foreground: var(--patient-muted);
+  --border: var(--patient-divider);
+  padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: transparent;
+}
+.patient-shell-nav__dock {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px;
+  background: var(--patient-surface);
+  border: 1px solid var(--patient-divider);
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgb(23 60 83 / 14%);
+}
+.patient-shell-nav__item {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  min-width: 0;
+  border-radius: 18px;
+  color: var(--patient-muted);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.patient-shell-nav__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: var(--patient-soft);
+  z-index: 0;
+}
+.patient-shell-nav__item > svg,
+.patient-shell-nav__item > .patient-shell-nav__label {
+  position: relative;
+  z-index: 1;
+}
+.patient-shell-nav__item[aria-current="page"] {
+  color: var(--patient-action);
+}
+.patient-shell-nav__label {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.patient-shell-nav__badge {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  transform: translateX(10px);
+  z-index: 2;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--patient-like);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .patient-shell-nav a:focus-visible { outline: 2px solid var(--patient-focus); outline-offset: 2px; }
 .store-page { padding: 8px 16px 24px; color: var(--patient-ink); }
 .store-page-header { display: flex; align-items: center; gap: 12px; padding-block: 12px 24px; }

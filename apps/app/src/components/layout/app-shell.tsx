@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div> */}
 
                 {/* Screen content */}
-                <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">{children}</div>
+                <div className="flex-1 overflow-y-auto pb-[calc(96px+env(safe-area-inset-bottom,0px))] scrollbar-hide">{children}</div>
 
                 <BottomTabBar />
                 <GlobalSheet />
