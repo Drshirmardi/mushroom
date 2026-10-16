@@ -12,6 +12,11 @@ const contextFor = (handler: Function, roles: string[]): ExecutionContext => ({
   switchToHttp: () => ({ getRequest: () => ({ auth: { roles } }) }),
 } as unknown as ExecutionContext);
 
+// Terminal/compatibility checks only; actual transaction/race/rollback proof uses PostgreSQL.
+const transactionalService = (db: object) => new AdminAssessmentsService({ ...db,
+  $transaction: async (run: (tx: unknown) => unknown) => run({ ...db, $queryRaw: async () => [{ id: 'owned' }], $executeRaw: async () => 0 }),
+} as never);
+
 describe('Admin assessment authorization and lifecycle contract', () => {
   const guard = new AuthorizationGuard(new Reflector());
   const handlers = [
@@ -39,7 +44,7 @@ describe('Admin assessment authorization and lifecycle contract', () => {
   it('duplicates into a distinct draft identity while retaining the canonical content hash', async () => {
     const source = { id: '00000000-0000-4000-8000-000000000001', clinicId: '00000000-0000-4000-8000-000000000002', assessmentKey: 'MAIN', locale: 'fa-IR', versionNumber: 1, title: 'فرم', structure: { schemaVersion: 1, sections: [] }, contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(), retiredAt: null, publishedByUserId: '00000000-0000-4000-8000-000000000003', createdAt: new Date(), updatedAt: new Date() };
     const created = { ...source, id: '00000000-0000-4000-8000-000000000004', versionNumber: 2, status: 'DRAFT', publishedAt: null, publishedByUserId: null };
-    const service = new AdminAssessmentsService({ clinic: { findFirst: async () => ({ id: source.clinicId }) }, assessmentVersion: { findFirst: async () => source, aggregate: async () => ({ _max: { versionNumber: 1 } }), create: async () => created }, auditEvent: { create: async () => undefined } } as never);
+    const service = transactionalService({ clinic: { findFirst: async () => ({ id: source.clinicId }) }, assessmentVersion: { findFirst: async () => source, aggregate: async () => ({ _max: { versionNumber: 1 } }), create: async () => created }, auditEvent: { create: async () => undefined } });
     const result = await service.duplicate(source.id, { actorUserId: source.publishedByUserId!, actorSessionId: '00000000-0000-4000-8000-000000000005', requestId: 'request', ipAddress: '127.0.0.1' });
     expect(result).toMatchObject({ id: created.id, status: 'DRAFT', versionNumber: 2, contentHash: source.contentHash });
     expect(result.id).not.toBe(source.id);
@@ -48,7 +53,7 @@ describe('Admin assessment authorization and lifecycle contract', () => {
   it('makes publishing an already published version idempotent without a write', async () => {
     const version = { id: '00000000-0000-4000-8000-000000000001', clinicId: '00000000-0000-4000-8000-000000000002', assessmentKey: 'MAIN', locale: 'fa-IR', versionNumber: 1, title: 'فرم', structure: { schemaVersion: 1, sections: [] }, contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(), retiredAt: null, publishedByUserId: '00000000-0000-4000-8000-000000000003', createdAt: new Date(), updatedAt: new Date() };
     let writes = 0;
-    const service = new AdminAssessmentsService({ clinic: { findFirst: async () => ({ id: version.clinicId }) }, assessmentVersion: { findFirst: async () => version, update: async () => { writes += 1; return version; } } } as never);
+    const service = transactionalService({ clinic: { findFirst: async () => ({ id: version.clinicId }) }, assessmentVersion: { findFirst: async () => version, update: async () => { writes += 1; return version; } } });
     await expect(service.publish(version.id, { actorUserId: version.publishedByUserId!, actorSessionId: '00000000-0000-4000-8000-000000000005', requestId: 'request', ipAddress: '127.0.0.1' })).resolves.toMatchObject({ status: 'PUBLISHED' });
     expect(writes).toBe(0);
   });
@@ -56,7 +61,7 @@ describe('Admin assessment authorization and lifecycle contract', () => {
   it('rejects changes to a published version before writing', async () => {
     const version = { id: '00000000-0000-4000-8000-000000000001', clinicId: '00000000-0000-4000-8000-000000000002', assessmentKey: 'MAIN', locale: 'fa-IR', versionNumber: 1, title: 'فرم', structure: { schemaVersion: 1, sections: [] }, contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(), retiredAt: null, publishedByUserId: '00000000-0000-4000-8000-000000000003', createdAt: new Date(), updatedAt: new Date() };
     let writes = 0;
-    const service = new AdminAssessmentsService({ clinic: { findFirst: async () => ({ id: version.clinicId }) }, assessmentVersion: { findFirst: async () => version, update: async () => { writes += 1; return version; } } } as never);
+    const service = transactionalService({ clinic: { findFirst: async () => ({ id: version.clinicId }) }, assessmentVersion: { findFirst: async () => version, update: async () => { writes += 1; return version; } } });
     await expect(service.update(version.id, { title: 'نسخهٔ ویرایش‌شده' }, {} as never)).rejects.toMatchObject({ response: { code: 'ASSESSMENT_VERSION_IMMUTABLE' } });
     expect(writes).toBe(0);
   });

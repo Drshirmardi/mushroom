@@ -4,6 +4,10 @@ Owner authorization: 2026-10-16, explicit implementation request following read-
 
 ## Current scope and task routing
 
+Owner decisions (2026-10-16): age minimum18; invitations have no automatic expiry until explicitly accepted by the authenticated invitee, not GET/open; purchase cancellation currently disabled. Keep medical/data-use consent revocation separate, and do not infer a blanket refund denial. Questionnaire weights/taxonomy, joint algorithm, qualified content approval, actual consent text and retention/refund exceptions remain unresolved. Build reusable infrastructure while release stays gated.
+
+- [x] F12-PJ-R03 — DONE/review PASS/released: existing questionnaire authoring structural validation, safe version allocation/row locking and transactional audit. Three pre-fix defects reproduced; 11 new PostgreSQL +18 validator tests; evidence Phase12 log. No clinical choices; assessment-authoring-reliability-v1.
+
 - [x] F12-PJ-R01 — technical assessment concurrency/revision/idempotency/audit correction. PJ-R01 DONE/released after real PostgreSQL checks, generated contracts, consumer type compatibility and main-agent review. Exact scope: ADR-0018 and assessment-reliability-v1; evidence in Phase12 log. No full individual/couples or clinical-release acceptance follows from this correction.
 - [x] F12-PJ-R02 — DONE/review PASS/released; frozen assessment-discovery-v1; owned discovery/exact historical questionnaire/provenance. Preserved existing historic submission command semantics, no new clinical policy. 10 new real PostgreSQL HTTP tests; evidence Phase12 log. Review/publication gates remain separate.
 - [x] F12-PJ-J01 — DONE/review PASS, PJ-J01 released; frozen patient-journey-v1 summary/action contract. Reused onboarding, eligibility, appointments, billing intents and published treatment references; no journey persistence table. Backend-only, 13 real PostgreSQL HTTP acceptance cases; evidence in Phase12 log.

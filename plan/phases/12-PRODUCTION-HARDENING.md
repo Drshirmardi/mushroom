@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-R03` — technical questionnaire authoring/scoring-structure validation, concurrent version/state edits and atomic audit; PJ-R03 DONE/review PASS/released, Codex /root; assessment-authoring-reliability-v1. Three pre-fix defects reproduced; 106 focused API + client5/type/freshness checks PASS, evidence phase-12 log. No clinical algorithm, schema or permission change.
+
 - [x] `F12-PJ-O01` — append-only individual/couples offering draft configuration and release-readiness blockers; PJ-O01 DONE/review PASS/released, Codex /root; ADR-0019/assessment-offering-drafts-v1. 72 focused API + client5, fresh44/upgrade/no drift/generated/consumer checks PASS; evidence phase-12 log. Publication disabled, no invented clinical/commercial policies or runtime billing change.
 
 - [x] `F12-PJ-R02` — owned assessment discovery, exact historical questionnaire and persisted technical scoring provenance; PJ-R02 DONE/review PASS/released, Codex /root; assessment-discovery-v1. 60 focused API + client5 tests and generated/consumer types PASS; evidence phase-12 log. Preserved existing historic commands; no clinical algorithm invention, new schema or frontend.
