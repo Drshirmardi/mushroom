@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { PaymentCredentialRetentionService } from '../src/modules/commerce/payments/payment-credential-retention.service';
 
 describe('payment credential retention', () => {
+  it('keeps credentials needed by shared billing reconciliation or recent settlement', async () => {
+    let erased = false;
+    const tx = { billingGatewayAttempt: { count: async (query: unknown) => { expect(query).toMatchObject({ where: { revision: { credentialVersionId: 'needed' }, OR: [{ status: { notIn: ['VERIFIED', 'FAILED'] } }, { verifiedAt: { gt: expect.any(Date) } }, { updatedAt: { gt: expect.any(Date) } }] } }); return 1; } }, paymentProviderCredentialVersion: { findMany: async () => [{ id: 'needed' }], updateMany: async () => { erased = true; return { count: 1 }; } } };
+    const service = new PaymentCredentialRetentionService({ $transaction: async (fn: (value: typeof tx) => Promise<number>) => fn(tx) } as never, { now: () => new Date('2026-10-16T00:00:00Z') } as never);
+    expect(await service.shredDue()).toBe(0); expect(erased).toBe(false);
+  });
   it('crypto-shreds only retired credentials after 90 days and only with terminal dependencies', async () => {
     const updates: unknown[] = [];
-    const tx = { paymentProviderCredentialVersion: { findMany: async (query: unknown) => { expect(query).toMatchObject({ where: { status: 'RETIRED', revisions: { every: { activeForConfigs: { none: {} }, paymentAttempts: { every: { status: { in: ['VERIFIED', 'FAILED', 'EXPIRED', 'CANCELLED'] } } } } } } }); return [{ id: 'synthetic-id' }]; }, updateMany: async (query: unknown) => { updates.push(query); return { count: 1 }; } } };
+    const tx = { billingGatewayAttempt: { count: async () => 0 }, paymentProviderCredentialVersion: { findMany: async (query: unknown) => { expect(query).toMatchObject({ where: { status: 'RETIRED', revisions: { every: { activeForConfigs: { none: {} }, paymentAttempts: { every: { status: { in: ['VERIFIED', 'FAILED', 'EXPIRED', 'CANCELLED'] } } } } } } }); return [{ id: 'synthetic-id' }]; }, updateMany: async (query: unknown) => { updates.push(query); return { count: 1 }; } } };
     const now = new Date('2026-09-11T00:00:00.000Z');
     const service = new PaymentCredentialRetentionService({ $transaction: async (fn: (value: typeof tx) => Promise<number>) => fn(tx) } as never, { now: () => now } as never);
     expect(await service.shredDue()).toBe(1);

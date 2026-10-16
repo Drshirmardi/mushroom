@@ -139,6 +139,7 @@ export const environmentValidationSchema = Joi.object({
     otherwise: trustedProxySchema.allow('').default(''),
   }),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('info'),
+  BILLING_BOOKING_HOLD_MINUTES: Joi.number().integer().min(1).max(30).default(10),
   COMMERCE_RESERVATION_TTL_MINUTES: Joi.number().integer().min(1).max(1_440).default(20),
   JWT_ACCESS_SECRET: Joi.string()
     .min(43)

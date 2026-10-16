@@ -64,6 +64,7 @@ export class CommerceOrderLineDto {
 }
 
 export class CommerceOrderDto {
+  @ApiPropertyOptional({ type: String, nullable: true }) paymentMethod?: string | null;
   @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty({ type: String }) orderNumber!: string; @ApiProperty() status!: string;
   @ApiProperty({ enum: shippingMethods }) shippingMethod!: (typeof shippingMethods)[number];
   @ApiPropertyOptional({ type: CommerceAddressDto, nullable: true }) shippingAddress!: CommerceAddressDto | null;
@@ -81,6 +82,7 @@ export class CommerceOrderPageDto {
 }
 
 export class PatientCommerceReceiptDto {
+  @ApiPropertyOptional({ enum: ['GATEWAY', 'WALLET', 'FREE'] }) method?: string;
   @ApiProperty({ format: 'uuid' }) orderId!: string; @ApiProperty({ type: String }) orderNumber!: string;
   @ApiProperty({ type: String }) totalAmountToman!: string; @ApiProperty() status!: string; @ApiProperty() verifiedAt!: string;
   @ApiPropertyOptional({ type: String, nullable: true }) providerReferenceId!: string | null; @ApiPropertyOptional({ type: String, nullable: true }) providerTraceNumber!: string | null;

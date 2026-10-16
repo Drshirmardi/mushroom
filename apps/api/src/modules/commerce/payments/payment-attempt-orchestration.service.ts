@@ -27,6 +27,10 @@ export class PaymentAttemptOrchestrationService {
         if (existing.orderId !== input.orderId || existing.providerConfigRevisionId !== input.providerConfigRevisionId) throw invalid();
         return { attempt: existing, shouldRequest: false };
       }
+      await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`billing-order:${input.orderId}`}, 0))::text AS locked`);
+      await tx.$queryRaw(Prisma.sql`SELECT id FROM commerce_orders WHERE id = ${input.orderId}::uuid FOR UPDATE`);
+      const billingPending = await tx.billingGatewayAttempt.count({ where: { intent: { orderId: input.orderId }, status: { in: ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } });
+      if (billingPending) throw invalid();
       const order = await tx.commerceOrder.findFirst({ where: { id: input.orderId, patientId: input.patientId, status: 'PENDING_PAYMENT' }, select: { clinicId: true, totalAmountToman: true } });
       const revision = await tx.paymentProviderConfigRevision.findUnique({ where: { id: input.providerConfigRevisionId }, include: { config: true } });
       if (!order || !revision || revision.config.clinicId !== order.clinicId || revision.config.providerCode !== input.provider.descriptor.code || revision.providerUnit !== input.providerUnit) throw invalid();

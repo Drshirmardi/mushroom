@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { BillingModule } from '../billing/billing.module';
+import { AppointmentBillingTarget } from './appointment-billing.target';
 
 import { PatientAssessmentsModule } from '../assessments/patient/patient-assessments.module';
 import { ClinicalModule } from '../clinical/clinical.module';
@@ -10,8 +12,8 @@ import { AdminAppointmentsService } from './admin-appointments.service';
 import { OutboxModule } from '../outbox/outbox.module';
 
 @Module({
-  imports: [PatientAssessmentsModule, AdminSchedulingModule, ClinicalModule, OutboxModule],
+  imports: [BillingModule, PatientAssessmentsModule, AdminSchedulingModule, ClinicalModule, OutboxModule],
   controllers: [PatientAppointmentsController, AdminAppointmentsController, AdminAppointmentReportingController],
-  providers: [PatientAppointmentsService, AdminAppointmentsService],
+  providers: [AppointmentBillingTarget, PatientAppointmentsService, AdminAppointmentsService],
 })
 export class PatientAppointmentsModule {}

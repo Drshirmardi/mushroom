@@ -422,6 +422,7 @@ enum HealthObservationUnit {
 }
 
 enum NotificationCategory {
+  FINANCIAL
   REMINDER
   TREATMENT
   CONTENT
@@ -596,6 +597,8 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  walletJournals WalletJournal[]
+  walletCommands WalletCommand[]
   id                             String                          @id @default(uuid()) @db.Uuid
   phone                          String                          @unique(map: "users_phone_key") @db.VarChar(13)
   status                         UserStatus                      @default(ACTIVE)
@@ -641,6 +644,151 @@ model User {
   chatAuditEvents                ChatAuditEvent[]
 
   @@map("users")
+}
+
+model WalletAccount {
+  currency String @default("IRR") @db.Char(3)
+  id String @id @default(uuid()) @db.Uuid
+  ownerKey String @unique @map("owner_key") @db.VarChar(100)
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String? @unique @map("patient_id") @db.Uuid
+  balanceRial BigInt @default(0) @map("balance_rial")
+  version Int @default(0)
+  frozen Boolean @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile? @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  journals WalletJournal[] @relation("WalletCustomerJournal")
+  counterJournals WalletJournal[] @relation("WalletCounterJournal")
+  entries WalletEntry[]
+  @@index([clinicId, patientId])
+  @@map("wallet_accounts")
+}
+
+model WalletJournal {
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "wallet_journal_actor_fkey")
+  id String @id @default(uuid()) @db.Uuid
+  accountId String @map("account_id") @db.Uuid
+  counterAccountId String @map("counter_account_id") @db.Uuid
+  deltaRial BigInt @map("delta_rial")
+  beforeRial BigInt @map("before_rial")
+  afterRial BigInt @map("after_rial")
+  version Int
+  kind String @db.VarChar(40)
+  reference String @unique @db.VarChar(240)
+  actorUserId String? @map("actor_user_id") @db.Uuid
+  reason String? @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  account WalletAccount @relation("WalletCustomerJournal", fields: [accountId], references: [id], onDelete: Restrict)
+  counterAccount WalletAccount @relation("WalletCounterJournal", fields: [counterAccountId], references: [id], onDelete: Restrict)
+  entries WalletEntry[]
+  payment Payment?
+  refunds BillingRefund[]
+  @@unique([accountId, version])
+  @@index([accountId, createdAt, id])
+  @@map("wallet_journals")
+}
+
+model WalletEntry {
+  id String @id @default(uuid()) @db.Uuid
+  journalId String @map("journal_id") @db.Uuid
+  accountId String @map("account_id") @db.Uuid
+  deltaRial BigInt @map("delta_rial")
+  journal WalletJournal @relation(fields: [journalId], references: [id], onDelete: Restrict)
+  account WalletAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  @@unique([journalId, accountId])
+  @@index([accountId])
+  @@map("wallet_entries")
+}
+
+model WalletCommand {
+  actor User @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "wallet_command_actor_fkey")
+  id String @id @default(uuid()) @db.Uuid
+  actorUserId String @map("actor_user_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(240)
+  fingerprint String @db.Char(64)
+  response Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  @@unique([actorUserId, idempotencyKey])
+  @@map("wallet_commands")
+}
+
+model BillingIntent {
+  currency String @default("IRR") @db.Char(3)
+  id String @id @default(uuid()) @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  purpose String @db.VarChar(20)
+  amountRial BigInt @map("amount_rial")
+  status String @default("PENDING") @db.VarChar(32)
+  method String? @db.VarChar(16)
+  actorUserId String @map("actor_user_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(240)
+  fingerprint String @db.Char(64)
+  orderId String? @unique @map("order_id") @db.Uuid
+  holdId String? @unique @map("hold_id") @db.Uuid
+  appointmentId String? @unique @map("appointment_id") @db.Uuid
+  snapshot Json @default("{}")
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(3)
+  paidAt DateTime? @map("paid_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  order CommerceOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  hold AppointmentHold? @relation(fields: [holdId], references: [id], onDelete: Restrict)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  attempts BillingGatewayAttempt[]
+  refunds BillingRefund[]
+  @@unique([actorUserId, idempotencyKey])
+  @@index([clinicId, status, createdAt, id])
+  @@index([patientId, createdAt, id])
+  @@index([status, expiresAt])
+  @@map("billing_intents")
+}
+
+model BillingGatewayAttempt {
+  compensated Boolean @default(false)
+  payment Payment?
+  id String @id @default(uuid()) @db.Uuid
+  intentId String @map("intent_id") @db.Uuid
+  revisionId String @map("revision_id") @db.Uuid
+  providerOrderId BigInt @unique @map("provider_order_id")
+  amountRial BigInt @map("amount_rial")
+  status String @default("CREATED") @db.VarChar(32)
+  idempotencyKey String @map("idempotency_key") @db.VarChar(240)
+  providerToken String? @unique @map("provider_token") @db.VarChar(512)
+  resultCode String? @map("result_code") @db.VarChar(32)
+  reference String? @unique @db.VarChar(128)
+  traceNumber String? @map("trace_number") @db.VarChar(128)
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  intent BillingIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  revision PaymentProviderConfigRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  @@unique([intentId, idempotencyKey])
+  @@index([status, updatedAt])
+  @@map("billing_gateway_attempts")
+}
+
+model BillingRefund {
+  id String @id @default(uuid()) @db.Uuid
+  intentId String @map("intent_id") @db.Uuid
+  amountRial BigInt @map("amount_rial")
+  status String @db.VarChar(24)
+  idempotencyKey String @map("idempotency_key") @db.VarChar(240)
+  fingerprint String @db.Char(64)
+  journalId String? @map("journal_id") @db.Uuid
+  reason String @db.VarChar(500)
+  evidenceReference String? @map("evidence_reference") @db.VarChar(512)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+  intent BillingIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  journal WalletJournal? @relation(fields: [journalId], references: [id], onDelete: Restrict)
+  @@unique([intentId, idempotencyKey])
+  @@index([status, createdAt])
+  @@map("billing_refunds")
 }
 
 model Credential {
@@ -776,6 +924,8 @@ model AuditEvent {
 }
 
 model Clinic {
+  walletAccounts WalletAccount[]
+  billingIntents BillingIntent[]
   id                       String                         @id @default(uuid()) @db.Uuid
   name                     String                         @db.VarChar(160)
   timeZone                 String                         @default("Asia/Tehran") @map("time_zone") @db.VarChar(64)
@@ -854,6 +1004,8 @@ model UserProfile {
 }
 
 model PatientProfile {
+  walletAccount WalletAccount?
+  billingIntents BillingIntent[]
   id                           String                         @id @default(uuid()) @db.Uuid
   userId                       String                         @unique(map: "patient_profiles_user_id_key") @map("user_id") @db.Uuid
   clinicId                     String                         @map("clinic_id") @db.Uuid
@@ -1152,6 +1304,7 @@ model CommerceShippingRate {
 }
 
 model CommerceOrder {
+  billingIntent BillingIntent?
   id                      String                       @id @default(uuid()) @db.Uuid
   clinicId                String                       @map("clinic_id") @db.Uuid
   patientId               String                       @map("patient_id") @db.Uuid
@@ -1292,6 +1445,7 @@ model PaymentProviderCredentialVersion {
 }
 
 model PaymentProviderConfigRevision {
+  billingAttempts BillingGatewayAttempt[]
   id                  String                            @id @default(uuid()) @db.Uuid
   configId            String                            @map("config_id") @db.Uuid
   revisionNumber      Int                               @map("revision_number")
@@ -1674,19 +1828,24 @@ model ChatAuditEvent {
 }
 
 model Payment {
+  billingAttemptId String? @unique @map("billing_attempt_id") @db.Uuid
+  billingAttempt BillingGatewayAttempt? @relation(fields: [billingAttemptId], references: [id], onDelete: Restrict)
+  method              String         @default("GATEWAY") @db.VarChar(16)
+  walletJournalId     String?        @unique @map("wallet_journal_id") @db.Uuid
+  walletJournal       WalletJournal? @relation(fields: [walletJournalId], references: [id], onDelete: Restrict)
   id                  String         @id @default(uuid()) @db.Uuid
   orderId             String         @unique(map: "payments_order_id_key") @map("order_id") @db.Uuid
-  paymentAttemptId    String         @unique(map: "payments_payment_attempt_id_key") @map("payment_attempt_id") @db.Uuid
+  paymentAttemptId    String?        @unique(map: "payments_payment_attempt_id_key") @map("payment_attempt_id") @db.Uuid
   commerceAmountToman BigInt         @map("commerce_amount_toman")
-  providerAmount      BigInt         @map("provider_amount")
-  providerUnit        String         @map("provider_unit") @db.VarChar(32)
+  providerAmount      BigInt?        @map("provider_amount")
+  providerUnit        String?        @map("provider_unit") @db.VarChar(32)
   providerReferenceId String?        @unique(map: "payments_provider_reference_id_key") @map("provider_reference_id") @db.VarChar(128)
   providerTraceNumber String?        @map("provider_trace_number") @db.VarChar(128)
   status              PaymentStatus  @default(VERIFIED)
   verifiedAt          DateTime       @map("verified_at") @db.Timestamptz(3)
   createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   order               CommerceOrder  @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  paymentAttempt      PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+  paymentAttempt      PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
   refunds             Refund[]
 
   @@map("payments")
@@ -2207,6 +2366,7 @@ model DoctorAvailabilityException {
 }
 
 model Appointment {
+  billingIntent BillingIntent?
   id                     String                     @id @default(uuid()) @db.Uuid
   clinicId               String                     @map("clinic_id") @db.Uuid
   patientId              String                     @map("patient_id") @db.Uuid
@@ -2250,6 +2410,7 @@ model Appointment {
 }
 
 model AppointmentHold {
+  billingIntent BillingIntent?
   id              String        @id @default(uuid()) @db.Uuid
   clinicId        String        @map("clinic_id") @db.Uuid
   doctorServiceId String        @map("doctor_service_id") @db.Uuid

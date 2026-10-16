@@ -9264,6 +9264,1175 @@
         ]
       }
     },
+    "/v1/patients/me/wallet": {
+      "get": {
+        "operationId": "patientWalletGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/wallet/transactions": {
+      "get": {
+        "operationId": "patientWalletTransactionsList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletTransactionPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/wallet/topups": {
+      "post": {
+        "operationId": "patientWalletTopupCreate",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletAmountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/order-intents": {
+      "post": {
+        "operationId": "patientOrderBillingIntentCreate",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingOrderIntentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/appointment-intents": {
+      "post": {
+        "operationId": "patientAppointmentBillingIntentCreate",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingAppointmentIntentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/intents/{id}": {
+      "get": {
+        "operationId": "patientBillingIntentGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/intents/{id}/cancel": {
+      "post": {
+        "operationId": "patientBillingIntentCancel",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/intents/{id}/wallet-payment": {
+      "post": {
+        "operationId": "patientBillingWalletPay",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/intents/{id}/gateway-attempts": {
+      "post": {
+        "operationId": "patientBillingGatewayAttemptCreate",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingGatewayAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Wallet and Billing"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/wallet/appointment-intents": {
+      "post": {
+        "operationId": "adminPatientAppointmentBillingIntentCreate",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingAppointmentIntentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Patient Wallet"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/wallet": {
+      "get": {
+        "operationId": "adminPatientWalletGet",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Patient Wallet"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/wallet/transactions": {
+      "get": {
+        "operationId": "adminPatientWalletTransactionsList",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletTransactionPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Patient Wallet"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/wallet/adjustments": {
+      "post": {
+        "operationId": "adminPatientWalletAdjust",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletAdjustmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletAdjustmentResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Patient Wallet"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/wallet/status": {
+      "post": {
+        "operationId": "adminPatientWalletStatusSet",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletStatusResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Patient Wallet"
+        ]
+      }
+    },
+    "/v1/admin/billing/intents": {
+      "get": {
+        "operationId": "adminBillingIntentsList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "purpose",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TOPUP",
+                "ORDER",
+                "APPOINTMENT"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "PAID",
+                "EXPIRED",
+                "CANCELLED",
+                "COMPENSATED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/intents/{id}": {
+      "get": {
+        "operationId": "adminBillingIntentGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/reconciliation": {
+      "get": {
+        "operationId": "adminBillingReconciliationList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingReconciliationPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/summary": {
+      "get": {
+        "operationId": "adminBillingSummaryGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/intents/{id}/refunds": {
+      "post": {
+        "operationId": "adminBillingRefundCreate",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingRefundRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingRefundDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/refunds/{id}/complete": {
+      "post": {
+        "operationId": "adminBillingRefundComplete",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingRefundCompleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingRefundDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/attempts/{id}/retry": {
+      "post": {
+        "operationId": "adminBillingAttemptRetry",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingGatewayAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/admin/billing/attempts/{id}/resolve-failed": {
+      "post": {
+        "operationId": "adminBillingAttemptResolveFailed",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingRefundCompleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingGatewayAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Resolve an ambiguous attempt as failed using reviewed non-sensitive evidence; never manually mark a bank payment successful",
+        "tags": [
+          "Admin Billing Operations"
+        ]
+      }
+    },
     "/v1/patients/me/health-observations": {
       "post": {
         "operationId": "patientHealthObservationCreate",
@@ -12719,6 +13888,19 @@
           "code": {
             "type": "string",
             "enum": [
+              "WALLET_INSUFFICIENT_FUNDS",
+              "WALLET_VERSION_CONFLICT",
+              "WALLET_FROZEN",
+              "BILLING_INPUT_INVALID",
+              "BILLING_INTENT_NOT_FOUND",
+              "BILLING_STATE_CONFLICT",
+              "BILLING_PAYMENT_PENDING",
+              "BILLING_HOLD_EXPIRED",
+              "BILLING_REFUND_EXCEEDS_PAYMENT",
+              "BILLING_REFUND_REQUIRED",
+              "BILLING_RATE_LIMITED",
+              "APPOINTMENT_PAYMENT_REQUIRED",
+              "APPOINTMENT_REPRICE_REQUIRED",
               "COMMERCE_CONTENT_REVISION_CONFLICT",
               "COMMERCE_CONTENT_INVALID",
               "COMMERCE_CONTENT_SOURCE_REQUIRED",
@@ -19367,6 +20549,720 @@
           "items"
         ]
       },
+      "WalletSummaryDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "balanceRial": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "frozen": {
+            "type": "boolean"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "patientId",
+          "currency",
+          "balanceRial",
+          "version",
+          "frozen",
+          "asOf"
+        ]
+      },
+      "WalletTransactionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "deltaRial": {
+            "type": "string"
+          },
+          "balanceAfterRial": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ADMIN projection only"
+          },
+          "actorDisplayName": {
+            "type": "string",
+            "nullable": true,
+            "description": "ADMIN projection only"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "ADMIN projection only"
+          },
+          "balanceBeforeRial": {
+            "type": "string",
+            "description": "ADMIN projection only"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "deltaRial",
+          "balanceAfterRial",
+          "reference",
+          "createdAt"
+        ]
+      },
+      "WalletTransactionPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletTransactionDto"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "items"
+        ]
+      },
+      "WalletAmountDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "string",
+            "description": "Integer TOMAN; normalized Persian and Arabic digits accepted."
+          }
+        },
+        "required": [
+          "amountToman"
+        ]
+      },
+      "BillingPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "WALLET",
+              "GATEWAY"
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "balanceRial": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "available",
+          "balanceRial"
+        ]
+      },
+      "BillingAttemptStatusDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reference",
+          "traceNumber",
+          "verifiedAt"
+        ]
+      },
+      "BillingRefundDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "amountRial",
+          "completedAt"
+        ]
+      },
+      "BillingIntentDto": {
+        "type": "object",
+        "properties": {
+          "methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingPaymentMethodDto"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingAttemptStatusDto"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingRefundDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "status",
+          "method",
+          "amountRial",
+          "currency",
+          "orderId",
+          "appointmentId",
+          "expiresAt",
+          "paidAt",
+          "createdAt"
+        ]
+      },
+      "BillingOrderIntentDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "orderId"
+        ]
+      },
+      "BillingAppointmentIntentDto": {
+        "type": "object",
+        "properties": {
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "doctorServiceId",
+          "startsAt"
+        ]
+      },
+      "BillingGatewayAttemptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "redirectUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "intentId",
+          "status",
+          "amountRial",
+          "currency",
+          "redirectUrl"
+        ]
+      },
+      "WalletAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "string",
+            "description": "Integer TOMAN; normalized Persian and Arabic digits accepted."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CREDIT",
+              "DEBIT",
+              "SET_BALANCE"
+            ]
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "amountToman",
+          "type",
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "WalletAdjustmentResultDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "beforeRial": {
+            "type": "string"
+          },
+          "balanceRial": {
+            "type": "string"
+          },
+          "deltaRial": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "journalId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "patientId",
+          "currency",
+          "beforeRial",
+          "balanceRial",
+          "deltaRial",
+          "version",
+          "journalId"
+        ]
+      },
+      "WalletStatusDto": {
+        "type": "object",
+        "properties": {
+          "frozen": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "frozen",
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "WalletStatusResultDto": {
+        "type": "object",
+        "properties": {
+          "frozen": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "frozen",
+          "version"
+        ]
+      },
+      "AdminBillingIntentDto": {
+        "type": "object",
+        "properties": {
+          "methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingPaymentMethodDto"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingAttemptStatusDto"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingRefundDto"
+            }
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "status",
+          "method",
+          "amountRial",
+          "currency",
+          "orderId",
+          "appointmentId",
+          "expiresAt",
+          "paidAt",
+          "createdAt",
+          "patientId"
+        ]
+      },
+      "BillingIntentPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminBillingIntentDto"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "items"
+        ]
+      },
+      "BillingReconciliationItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerOrderId": {
+            "type": "string"
+          },
+          "resultCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reference",
+          "traceNumber",
+          "verifiedAt",
+          "providerOrderId",
+          "resultCode",
+          "intentId",
+          "amountRial",
+          "createdAt"
+        ]
+      },
+      "BillingReconciliationPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingReconciliationItemDto"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "items"
+        ]
+      },
+      "BillingSummaryDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "asOf": {
+            "type": "string"
+          },
+          "walletLiabilityRial": {
+            "type": "string"
+          },
+          "gatewayReceivedRial": {
+            "type": "string"
+          },
+          "topupReceivedRial": {
+            "type": "string"
+          },
+          "orderPaidRial": {
+            "type": "string"
+          },
+          "appointmentPaidRial": {
+            "type": "string"
+          },
+          "refundedRial": {
+            "type": "string"
+          },
+          "administrativeCreditRial": {
+            "type": "string"
+          },
+          "administrativeDebitRial": {
+            "type": "string"
+          },
+          "ledgerMismatchCount": {
+            "type": "number"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "asOf",
+          "walletLiabilityRial",
+          "gatewayReceivedRial",
+          "topupReceivedRial",
+          "orderPaidRial",
+          "appointmentPaidRial",
+          "refundedRial",
+          "administrativeCreditRial",
+          "administrativeDebitRial",
+          "ledgerMismatchCount",
+          "source"
+        ]
+      },
+      "BillingRefundRequestDto": {
+        "type": "object",
+        "properties": {
+          "amountRial": {
+            "type": "string",
+            "description": "Exact integer IRR, including service-price remainders smaller than one TOMAN."
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "amountRial",
+          "reason"
+        ]
+      },
+      "BillingRefundCompleteDto": {
+        "type": "object",
+        "properties": {
+          "evidenceReference": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "evidenceReference"
+        ]
+      },
       "CreateHealthObservationDto": {
         "type": "object",
         "properties": {
@@ -20766,6 +22662,10 @@
       "CommerceOrderDto": {
         "type": "object",
         "properties": {
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -20859,6 +22759,14 @@
       "PatientCommerceReceiptDto": {
         "type": "object",
         "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "GATEWAY",
+              "WALLET",
+              "FREE"
+            ]
+          },
           "orderId": {
             "type": "string",
             "format": "uuid"

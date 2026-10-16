@@ -6,13 +6,24 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-14`
+- آخرین به‌رورسانی: `2026-10-16`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد (`PD-B1C DONE` و آزاد شد؛ B2 خودکار شروع نمی‌شود)
-- task فعال: ندارد
+- batch فعال: ندارد؛ `WAL-BE01` backend review gate PASS و claim آزاد شد.
+- task فعال: ندارد؛ `F12-WAL-BE01 DONE`، فقط دامنهٔ بک‌اند.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
+
+## Wallet backend — accepted handoff (2026-10-16)
+
+Batch: WAL-BE01; Task: F12-WAL-BE01; Coordinator/owner/reviewer: Codex /root; DONE, claim RELEASED.
+Baseline: front@06780a1; pre-existing frontend edits and proposal preserved. Contract: ADR-0017 and wallet-billing-v1.
+Owner request explicitly covers all backend scope; staged frontend tasks are not started.
+Owned paths: new billing module; Prisma/schema/new migrations/development-admin seed; directly related commerce payment/order/inventory/reporting adapters; appointments and scheduling payment/capacity seams; common auth/errors, configuration; outbox financial handler; API wiring; focused API tests and isolated wallet CI step; generated OpenAPI/client; plan governance/evidence.
+Exclusive: Prisma, OpenAPI/client, auth and disposable PostgreSQL, all single writer. No user frontend edits, persistent DB migration, secrets, live PSP, push or deploy.
+Verification PASS: 42-migration replay/legacy financial upgrade, no schema drift; 70 distinct API tests + 5 client tests; API/test/client/app/dashboard/web typechecks; contract freshness, unchanged old API paths, source review and scoped diff check. Disposable PostgreSQL removed; persistent database unchanged. Graphify launcher remains unavailable.
+Evidence: [Phase 12 log](logs/phase-12.md#f12-wal-be01--shared-wallet-and-prepaid-booking-backend). [Exact API/UI/rollout handoff](contracts/wallet-backend-handoff.md).
+Next eligible wallet work: patient and dashboard integration against the frozen contract, including the result page and prepaid booking flow, under a separate frontend claim. No next task started; backend completion never marks UI, real PSP acceptance or production readiness done.
 
 ## Product Details B1B — independent review corrections accepted (2026-10-14)
 

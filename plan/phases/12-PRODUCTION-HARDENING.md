@@ -268,6 +268,12 @@ checks and end-to-end variant/order fixtures. New differentiated multi-SKU purch
 before the snapshot compatibility gate passes. B1 never silently changes checkout. Final review,
 evidence and task commit are mandatory; no production-readiness claim follows from this development slice.
 
+## Wallet shared-payment backend — owner-requested extension (2026-10-16)
+
+Authority: explicit backend implementation request after wallet planning, including full payment before final booking and ADMIN credit/debit/set balance from patient detail. [ADR-0017](../decisions/ADR-0017-shared-wallet-backend.md), [frozen backend contract](../contracts/wallet-billing-v1.md).
+
+- [x] `F12-WAL-BE01` — all backend persistence/ledger/admin adjustments/shared payment/top-up/order/appointment/refund/reporting/authorization/OpenAPI and isolated verification. DONE; WAL-BE01 review gate PASS; Codex /root; single writer; claim released. One inseparable financial shared-contract operation replaces the proposal's backend G01/G02/B01–B05 task split. [Evidence](../logs/phase-12.md#f12-wal-be01--shared-wallet-and-prepaid-booking-backend), [handoff](../contracts/wallet-backend-handoff.md). Frontend and live rollout remain separate and are not complete.
+
 ## معیار خروج (initial release, unchanged)
 
 - SLO/capacity با evidence ثبت شده است.

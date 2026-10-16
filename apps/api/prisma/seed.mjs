@@ -218,6 +218,12 @@ try {
       SELECT $1, id, CURRENT_TIMESTAMP FROM roles WHERE code = 'ADMIN'
       ON CONFLICT (user_id, role_id) DO NOTHING
     `, [adminUserId]);
+    // Wallet administration uses the same explicit clinic scope as other protected resources.
+    await client.query(`
+      INSERT INTO clinical_clinic_accesses (user_id, clinic_id)
+      VALUES ($1, $2)
+      ON CONFLICT (user_id, clinic_id) DO NOTHING
+    `, [adminUserId, clinicId]);
     await client.query('DELETE FROM login_attempts WHERE phone = $1', [developmentAdminPhone]);
   }
   console.log('Development seed completed: identity roles, clinic directory/schedule records, and non-sensitive Phase 09 catalog data are available.');

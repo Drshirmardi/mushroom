@@ -3199,3 +3199,66 @@ Known limitations:
   - App has no lint script; typecheck + tests + diff check stand in
 Next task:
   - none (STOP after B1C per instruction; B2 NOT started, no push/deploy)
+
+
+## F12-WAL-BE01 — Shared wallet and prepaid booking backend
+
+Task ID: F12-WAL-BE01
+Completed at: 2026-10-16 Asia/Tehran
+Agent/Thread: Codex /root; one agent, no delegated workers
+Batch ID: WAL-BE01
+Reviewed by: Codex /root (source/combined-contract/scope review); PASS WITH FIXES
+Authority: explicit owner request for all backend wallet work; arbitrary online top-up, wallet as a payment method everywhere, full payment before final booking, ADMIN credit/debit/set-balance from patient detail. No user withdrawals/transfers. ADR-0017 freezes one inseparable shared-contract backend operation; app/dashboard/live release are separate.
+Baseline: front@06780a104dc2bcd7bc5b145a0b13814bcaf55f0c. Pre-existing customer-app changes, motion folder and planning proposal preserved and excluded from this commit.
+
+Changed files (complete groups within the task write set):
+- apps/api/src/modules/billing/*: ledger, commands, intent/target registry, gateway recovery/reconciliation, DTO/controllers, reports and maintenance worker.
+- apps/api/prisma/schema.prisma; five additive migrations 20261016120000 through 20261016120400; prisma/seed.mjs explicit development ADMIN clinic grant.
+- appointments/{appointment-billing.target,patient-appointments.service,admin-appointments.service,patient-appointments.module}; paid booking, capacity, cancellation/refund and paid reprice guard.
+- commerce/payments/{order-billing.target,payment-providers.module,payment-attempt-orchestration.service,payment-attempt.service,payment-verification.service,payment-credential-retention.service,payment-provider.port,sadad-payment-provider.adapter}; shared existing provider infrastructure, callback dispatch and legacy interoperability.
+- commerce/catalog/admin-commerce-catalog.module; checkout DTO/service; inventory service; orders/commerce-order-operations.service; outbox/outbox.worker.
+- common/auth/authorization.policy; common/errors/api-error; config/environment.validation; .env.example.
+- test/wallet-billing.integration.spec.ts; wallet-migration-upgrade.mjs; patient-appointments.integration.spec.ts (isolated free legacy fixtures and cleanup); payment-credential-retention.spec.ts; payment-live-runtime.spec.ts (required billing dependency mock).
+- .github/workflows/ci.yml: dedicated wallet_test database step; immutable financial fixtures never share the normal regression database.
+- packages/api-client/openapi.json and src/schema.generated.ts.
+- plan/decisions/ADR-0017-shared-wallet-backend.md; contracts/wallet-billing-v1.md and wallet-backend-handoff.md; STATUS/Phase12 checklist/this evidence.
+
+Skills/plugins/tools actually used:
+- Installed graphify skill: initial scoped graph audit; CLI query/update attempted, pre-existing uv trampoline failure. Existing graph inspected through Python/NetworkX during audit; no claim that it was rebuilt.
+- nestjs-feature-audit for the preceding feature audit; nestjs-best-practices for module ownership, DI, transaction/error/security boundaries; ponytail for reuse and scope.
+- Installed Prisma client API/CLI skills including transaction reference; installed Context7 MCP fetched Prisma transaction documentation. The implementation uses installed Prisma 7.10 API, existing NestJS/PostgreSQL and existing PSP adapter; no new runtime package/service was added.
+- Plugin Management discovery inspected relevant backend tooling; no new external account, plugin install, live credential, cloud database or paid service was needed. This is source review and correctness verification, not a claimed Codex Security scan.
+
+Verification (all local, synthetic credentials/PSP, real PostgreSQL 16):
+- Isolated container mushroom-wallet-be01, bound only 127.0.0.1:55417; wallet_test, wallet_regression and wallet_upgrade databases. Original sabz-zendegi-postgres-1:5432 never migrated/reset.
+- Prisma migrate deploy: clean 41-migration replay plus final additive migration; final 42-migration full replay through test/wallet-migration-upgrade.mjs PASS. Upgrade fixture inserts a legacy verified bank attempt/payment and completed refund after the 37 old migrations, applies all five new migrations, compares every old payment/attempt field, refund evidence, and absence of invented wallet balances: PASS.
+- prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code: no difference, PASS.
+- Final financial run: 36 tests / 6 files PASS: wallet-billing.integration (13 real DB scenarios), payment-provider-contract, payment-live-runtime, sadad-payment-provider.adapter, payment-credential-retention, patient-appointments.authorization. WALLET_BILLING_TEST_ISOLATED=1; database wallet_test.
+- Regression run: 20 tests / 7 files PASS: patient-appointments.integration + authorization, commerce-checkout.integration, inventory-concurrency.integration, inventory-reservation-expiry.integration, payment-provider-order-id.integration, commerce-revenue.integration. Separate wallet_regression database.
+- payment-provider-config.integration: 1 PASS with live operational settings and synthetic HTTPS domains/credentials; no real PSP traffic. Initial disabled-shell-env fixture failure and retained credential count were resolved by the test's intended live shell configuration and its normal scratch cleanup; no provider implementation weakened.
+- authorization.guard + security-audit.integration: 16 tests PASS. Across those four API reports: 70 DISTINCT API tests (duplicate appointment authorization execution deduplicated), all PASS. API-client: 5 tests PASS.
+- API build and test TypeScript checks PASS; OpenAPI export from the actual initialized app PASS; generated client freshness/build/test PASS; app, dashboard and web TypeScript checks against the final generated client PASS.
+- OpenAPI baseline comparison: no old paths removed; 22 new paths; operation IDs unique. New receipt method fields are additive/optional in existing commerce DTOs.
+- Development-only seed with synthetic admin, NODE_ENV=development on scratch DB: explicit clinic grant exists exactly once, PASS. Production seed credential restriction preserved.
+- EXPLAIN ANALYZE/BUFFERS for bounded journal history on actual synthetic DB: Bitmap Index Scan using wallet_journals_account_id_version_key, 4 rows; 0.172ms observed execution. This justifies the account lookup index, not a production load/SLO claim.
+- CI YAML parses. Dedicated database/opt-in suite wired for remote CI; remote CI itself not run. Direct installed Node/Prisma/TypeScript/Vitest CLIs used because local Corepack pnpm resolution tried unavailable registry access.
+- git diff --check on owned paths PASS. Unrelated frontend changes not staged. Graphify update attempted and blocked by the existing launcher error, recorded separately; no graph outputs modified.
+
+Acceptance/source review:
+- Immutable double-entry journal, checked projection and nonnegative customer balances; direct raw balance overwrite, journal/entry mutation, balanced-entry-without-projection insertion and deletion of bank/refund financial history rejected by DB.
+- 100 concurrent debits against 100 IRR at 3 IRR each: exactly 33 accepted, remaining 1 IRR, ledger mismatch count zero. Admin CREDIT/DEBIT/SET_BALANCE including zero, replay/conflicting payload/stale version, clinic/role rejection, patient redaction and admin actor display verified.
+- Real checkout wallet debit/Payment/inventory/discount settlement atomic; duplicate wallet request no second debit; refund cap serialized; bank orders retain their own verified proof. Legacy refund dispatch depends on actual payment source, not mere intent existence.
+- TOPUP never creates a commerce sale/order. Concurrent repeated Verify credits once; original provider revision retained; credentials needed by pending/recent billing attempts cannot be shredded. Timeout remains reconcilable.
+- Callback token recovery requires authoritative exact amount and OrderId, even after reviewed manual failure. A callback can settle before the original request response without VERIFIED being overwritten. Browser result code never establishes success.
+- Appointment creation only after full wallet/bank payment; unpaid capacity held/expired/cancelled safely; late bank success compensated to wallet without an appointment. Same-price reschedule retained; different paid price requires cancel/rebook. Cancellation refunds remaining wallet amount or opens an evidenced bank refund. One-rial service refund verified without rounding.
+- Patient/admin APIs authenticated, permission- and clinic-scoped, input validated, bounded and rate limited; immutable actor/reason/audit and transactional financial outbox notifications preserved. Required DI now fails startup rather than silently bypassing billing hooks.
+- Summary separates liability, manual credits/debits, actual gateway receipts, top-ups, service/order totals and refunds. Existing commerce revenue remains based on real order Payment/Refund facts.
+
+Known limitations / exact next action:
+- Backend only. App wallet/payment-result/payment selection/prepaid booking and dashboard patient wallet controls are NOT implemented. Follow wallet-backend-handoff.md under a separately claimed frontend task; no next batch started.
+- No persistent development/staging/production migration, real PSP acceptance, deployment, push, merge or secret change. Backend cannot be rolled out alone while the old paid-booking UI still uses direct creation. Production monitoring/restore/PSP gates and existing Phase12 infrastructure blockers remain open.
+- Token-less ambiguous requests require verified callback proof or reviewed manual failure; automatic retry cannot fabricate a lost token. Gateway refunds are manual with evidence; no user cash-out/transfer endpoint.
+- Full repository suite/browser acceptance/remote CI/production capacity were not claimed; targeted checks above passed. Graphify launcher needs independent repair before a future graph update.
+- Task-owned PostgreSQL container and all synthetic DBs removed after verification; original container remains running on 5432.
+
+Final gate: F12-WAL-BE01 DONE; WAL-BE01 claim RELEASED. One task-level commit owns backend/contract/evidence changes only. Whole wallet feature and Phase12 are not marked complete.

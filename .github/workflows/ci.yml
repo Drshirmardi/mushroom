@@ -51,6 +51,16 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Wallet financial integration in an isolated disposable database
+        env:
+          DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/wallet_test?schema=public
+          WALLET_BILLING_TEST_ISOLATED: '1'
+        run: |
+          docker exec ${{ job.services.postgres.id }} createdb -U sabz_zendegi wallet_test
+          pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+          pnpm --filter @sabz-zendegi/api prisma:seed
+          export PAYMENT_CREDENTIAL_ENCRYPTION_KEY="$(node -e 'process.stdout.write(Buffer.alloc(32, 7).toString("base64"))')"
+          pnpm --filter @sabz-zendegi/api exec vitest run test/wallet-billing.integration.spec.ts --no-file-parallelism
       - run: pnpm build
       - name: Install browser for existing access smoke suite
         run: pnpm exec playwright install --with-deps chromium

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BillingGatewayService } from '../../billing/billing-gateway.service';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { PaymentAttemptOrchestrationService } from './payment-attempt-orchestration.service';
 import { PaymentCredentialCryptoService } from './payment-credential-crypto.service';
@@ -17,6 +18,7 @@ export class PaymentAttemptService {
     private readonly orchestration: PaymentAttemptOrchestrationService,
     private readonly crypto: PaymentCredentialCryptoService,
     private readonly sadadRuntime: SadadRuntimeConfigService,
+    private readonly billingGateway: BillingGatewayService,
   ) {}
 
   async createForOrder(userId: string, orderId: string, idempotencyKey: string | undefined) {
@@ -45,6 +47,7 @@ export class PaymentAttemptService {
     const runtime = this.sadadRuntime.settings();
     const provider = this.registry.resolve('sadad');
     const callback = provider.parseCallback(body);
+    if (await this.billingGateway.owns(callback.providerOrderId)) return this.billingGateway.callback(body);
     await this.orchestration.processCallback(callback);
     let attempt = await this.prisma.paymentAttempt.findUnique({ where: { providerOrderId: callback.providerOrderId }, include: { providerConfigRevision: { include: { config: true, credentialVersion: true } } } });
     if (!attempt || attempt.providerConfigRevision.config.providerCode !== 'sadad') throw missing();
