@@ -13,7 +13,8 @@ const root = new URL('../prisma/migrations/', import.meta.url);
 const latest = '20261016170000_assessment_submission_reliability';
 try {
   assert.equal((await db.query("SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema='public'")).rows[0].n, 0, 'Database must be empty.');
-  const migrations = (await readdir(root)).filter(name => /^\d+_/.test(name)).sort();
+  // This historical proof intentionally covers the original R01 boundary, even after later additive migrations.
+  const migrations = (await readdir(root)).filter(name => /^\d+_/.test(name) && name <= latest).sort();
   assert.equal(migrations.at(-1), latest, 'Review this proof when another migration is added.');
   for (const name of migrations.filter(name => name !== latest)) await db.query(await readFile(new URL(`${name}/migration.sql`, root), 'utf8'));
 

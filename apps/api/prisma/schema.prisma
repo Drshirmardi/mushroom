@@ -597,6 +597,7 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  assessmentOfferingVersions AssessmentOfferingVersion[]
   walletJournals WalletJournal[]
   walletCommands WalletCommand[]
   id                             String                          @id @default(uuid()) @db.Uuid
@@ -924,6 +925,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  assessmentOfferingVersions AssessmentOfferingVersion[]
   walletAccounts WalletAccount[]
   billingIntents BillingIntent[]
   id                       String                         @id @default(uuid()) @db.Uuid
@@ -2118,6 +2120,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  offeringVersions          AssessmentOfferingVersion[]
   id                        String                        @id @default(uuid()) @db.Uuid
   clinicId                  String                        @map("clinic_id") @db.Uuid
   assessmentKey             String                        @map("assessment_key") @db.VarChar(100)
@@ -2141,6 +2144,38 @@ model AssessmentVersion {
   @@unique([clinicId, assessmentKey, locale, versionNumber], map: "assessment_versions_version_key")
   @@unique([id, clinicId], map: "assessment_versions_id_clinic_key")
   @@map("assessment_versions")
+}
+
+model AssessmentOfferingVersion {
+  id                     String            @id @default(uuid()) @db.Uuid
+  clinicId               String            @map("clinic_id") @db.Uuid
+  offeringKey            String            @map("offering_key") @db.VarChar(80)
+  versionNumber          Int               @map("version_number")
+  kind                   String            @db.VarChar(16)
+  title                  String            @db.VarChar(255)
+  locale                 String            @db.VarChar(16)
+  status                 String            @default("DRAFT") @db.VarChar(16)
+  assessmentVersionId    String            @map("assessment_version_id") @db.Uuid
+  priceMode              String            @map("price_mode") @db.VarChar(8)
+  paymentPoint           String?           @map("payment_point") @db.VarChar(24)
+  amountRial             BigInt?           @map("amount_rial")
+  currency               String            @db.Char(3)
+  algorithmId            String?           @map("algorithm_id") @db.VarChar(80)
+  algorithmVersion       Int?              @map("algorithm_version")
+  policyDraft            Json              @default("{}") @map("policy_draft")
+  createdByUserId        String            @map("created_by_user_id") @db.Uuid
+  idempotencyKey         String            @map("idempotency_key") @db.VarChar(200)
+  payloadHash            String            @map("payload_hash") @db.Char(64)
+  createdAt              DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  retiredAt              DateTime?         @map("retired_at") @db.Timestamptz(3)
+  clinic                 Clinic            @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  assessmentVersion      AssessmentVersion @relation(fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "assessment_offerings_questionnaire_clinic_fkey")
+  createdBy              User              @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([clinicId, offeringKey, versionNumber], map: "assessment_offerings_version_key")
+  @@unique([createdByUserId, idempotencyKey], map: "assessment_offerings_command_key")
+  @@index([clinicId, createdAt, id], map: "assessment_offerings_clinic_created_idx")
+  @@map("assessment_offering_versions")
 }
 
 model PatientAssessmentSubmission {

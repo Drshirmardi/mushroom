@@ -6394,6 +6394,218 @@
         ]
       }
     },
+    "/v1/admin/assessment-offerings/versions": {
+      "post": {
+        "operationId": "adminAssessmentOfferingVersionCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssessmentOfferingVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOfferingVersionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Offering identity or idempotency key conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Draft configuration is inconsistent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an immutable offering draft version; publication remains unavailable",
+        "tags": [
+          "Assessment Offering Drafts"
+        ]
+      }
+    },
+    "/v1/admin/assessment-offerings": {
+      "get": {
+        "operationId": "adminAssessmentOfferingsList",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "COUPLES"
+              ]
+            }
+          },
+          {
+            "name": "offeringKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOfferingPageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List clinic-owned assessment offering draft versions",
+        "tags": [
+          "Assessment Offering Drafts"
+        ]
+      }
+    },
+    "/v1/admin/assessment-offerings/{id}": {
+      "get": {
+        "operationId": "adminAssessmentOfferingGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOfferingVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a clinic-owned offering configuration and missing release gates",
+        "tags": [
+          "Assessment Offering Drafts"
+        ]
+      }
+    },
+    "/v1/admin/assessment-offerings/{id}/retire": {
+      "post": {
+        "operationId": "adminAssessmentOfferingRetire",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOfferingVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Retire a draft idempotently without rewriting its configuration",
+        "tags": [
+          "Assessment Offering Drafts"
+        ]
+      }
+    },
     "/v1/admin/clinic": {
       "get": {
         "operationId": "adminClinicGet",
@@ -14152,6 +14364,9 @@
           "code": {
             "type": "string",
             "enum": [
+              "ASSESSMENT_OFFERING_NOT_FOUND",
+              "ASSESSMENT_OFFERING_INVALID",
+              "ASSESSMENT_OFFERING_CONFLICT",
               "WALLET_INSUFFICIENT_FUNDS",
               "WALLET_VERSION_CONFLICT",
               "WALLET_FROZEN",
@@ -19122,6 +19337,274 @@
           "started",
           "completed",
           "completionRate"
+        ]
+      },
+      "OfferingPolicyDraftDto": {
+        "type": "object",
+        "properties": {
+          "minimumAgeYears": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 120
+          },
+          "quoteTtlSeconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "entitlementValidityDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "invitationTtlHours": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 720
+          },
+          "refundPolicyRef": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "retentionPolicyRef": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "resultVisibilityPolicyRef": {
+            "type": "string",
+            "maxLength": 80
+          }
+        }
+      },
+      "CreateAssessmentOfferingVersionDto": {
+        "type": "object",
+        "properties": {
+          "offeringKey": {
+            "type": "string",
+            "maxLength": 80,
+            "pattern": "^[A-Z][A-Z0-9_]{0,79}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "paymentPoint": {
+            "type": "string",
+            "enum": [
+              "PRE_START",
+              "PRE_RESULT_UNLOCK"
+            ],
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "algorithmId": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 80
+          },
+          "algorithmVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "nullable": true
+          },
+          "policyDraft": {
+            "$ref": "#/components/schemas/OfferingPolicyDraftDto"
+          }
+        },
+        "required": [
+          "offeringKey",
+          "kind",
+          "title",
+          "assessmentVersionId",
+          "priceMode",
+          "currency"
+        ]
+      },
+      "AssessmentOfferingReadinessDto": {
+        "type": "object",
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ready",
+          "blockers"
+        ]
+      },
+      "AssessmentOfferingVersionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offeringKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "RETIRED"
+            ]
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "paymentPoint": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "PRE_START",
+              "PRE_RESULT_UNLOCK"
+            ]
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "algorithmId": {
+            "type": "string",
+            "nullable": true
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "policyDraft": {
+            "$ref": "#/components/schemas/OfferingPolicyDraftDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retiredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "releaseReadiness": {
+            "$ref": "#/components/schemas/AssessmentOfferingReadinessDto"
+          }
+        },
+        "required": [
+          "id",
+          "offeringKey",
+          "versionNumber",
+          "kind",
+          "title",
+          "locale",
+          "status",
+          "assessmentVersionId",
+          "priceMode",
+          "paymentPoint",
+          "amountRial",
+          "currency",
+          "algorithmId",
+          "algorithmVersion",
+          "policyDraft",
+          "createdAt",
+          "retiredAt",
+          "releaseReadiness"
+        ]
+      },
+      "AssessmentOfferingPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentOfferingVersionResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
         ]
       },
       "ClinicResponseDto": {
