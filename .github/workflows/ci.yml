@@ -62,6 +62,15 @@ jobs:
           export PAYMENT_CREDENTIAL_ENCRYPTION_KEY="$(node -e 'process.stdout.write(Buffer.alloc(32, 7).toString("base64"))')"
           pnpm --filter @sabz-zendegi/api exec vitest run test/wallet-billing.integration.spec.ts --no-file-parallelism
       - run: pnpm build
+      - name: Assessment reliability in an isolated disposable database
+        env:
+          DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/patient_journey_test?schema=public
+          PATIENT_JOURNEY_TEST_ISOLATED: '1'
+        run: |
+          docker exec ${{ job.services.postgres.id }} createdb -U sabz_zendegi patient_journey_test
+          pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+          pnpm --filter @sabz-zendegi/api prisma:seed
+          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts --no-file-parallelism
       - name: Install browser for existing access smoke suite
         run: pnpm exec playwright install --with-deps chromium
       - name: Browser session and access smoke

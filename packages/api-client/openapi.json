@@ -5980,6 +5980,16 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "Assessment revision is stale or the submission is immutable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -6016,6 +6026,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAssessmentDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -6023,6 +6043,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Assessment revision, completion state or idempotency key conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
                 }
               }
             }
@@ -13943,6 +13983,7 @@
               "ASSESSMENT_NOT_FOUND",
               "ASSESSMENT_STRUCTURE_INVALID",
               "ASSESSMENT_SUBMISSION_IMMUTABLE",
+              "ASSESSMENT_SUBMISSION_REVISION_CONFLICT",
               "ASSESSMENT_SUBMISSION_NOT_FOUND",
               "ASSESSMENT_VERSION_ALREADY_PUBLISHED",
               "ASSESSMENT_VERSION_IMMUTABLE",
@@ -18133,6 +18174,10 @@
           "attemptNumber": {
             "type": "number"
           },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
           "state": {
             "type": "string",
             "enum": [
@@ -18176,6 +18221,12 @@
       "SaveAssessmentAnswersDto": {
         "type": "object",
         "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Optional for legacy clients; protects a changing command from stale answers."
+          },
           "answers": {
             "type": "object",
             "additionalProperties": true
@@ -18184,6 +18235,17 @@
         "required": [
           "answers"
         ]
+      },
+      "SubmitAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Optional for legacy clients; protects a changing command from stale answers."
+          }
+        }
       },
       "MezajResultResponseDto": {
         "type": "object",

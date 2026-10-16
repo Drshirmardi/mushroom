@@ -274,6 +274,12 @@ Authority: explicit backend implementation request after wallet planning, includ
 
 - [x] `F12-WAL-BE01` — all backend persistence/ledger/admin adjustments/shared payment/top-up/order/appointment/refund/reporting/authorization/OpenAPI and isolated verification. DONE; WAL-BE01 review gate PASS; Codex /root; single writer; claim released. One inseparable financial shared-contract operation replaces the proposal's backend G01/G02/B01–B05 task split. [Evidence](../logs/phase-12.md#f12-wal-be01--shared-wallet-and-prepaid-booking-backend), [handoff](../contracts/wallet-backend-handoff.md). Frontend and live rollout remain separate and are not complete.
 
+## Patient Journey backend — owner-authorized technical correction (2026-10-16)
+
+Authority: explicit owner implementation request after the patient journey review. Backend-first scope; no closed phase reopened. [ADR-0018](../decisions/ADR-0018-patient-journey-assessment-reliability.md), [additive contract](../contracts/assessment-reliability-v1.md), [implementation routing](../patient-journey-backend.md).
+
+- [x] `F12-PJ-R01` — assessment start/save/submit concurrency, optional revision preconditions, same-resource idempotency, transactional sensitive audit and valid-source Mezaj read. Batch PJ-R01 DONE/released; Codex /root single writer/reviewer. 78 focused API tests + 5 client tests, 43-migration fresh/legacy/duplicate-refusal checks, no drift, generated contracts and consumer types PASS. [Evidence](../logs/phase-12.md#f12-pj-r01--assessment-concurrency-revisions-and-transactional-audit). No clinical/scoring/publication/booking policy, frontend or billing/provider changes. This is the first technical slice of the brief's assessment foundation, not acceptance of all its requirements.
+
 ## معیار خروج (initial release, unchanged)
 
 - SLO/capacity با evidence ثبت شده است.

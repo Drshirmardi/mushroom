@@ -2148,6 +2148,7 @@ model PatientAssessmentSubmission {
   patientId                String                 @map("patient_id") @db.Uuid
   assessmentVersionId      String                 @map("assessment_version_id") @db.Uuid
   attemptNumber            Int                    @default(1) @map("attempt_number")
+  revision                 Int                    @default(0)
   state                    PatientAssessmentState @default(IN_PROGRESS)
   answers                  Json                   @default("{}")
   score                    Decimal?               @db.Decimal(8, 2)

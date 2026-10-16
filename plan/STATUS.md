@@ -10,9 +10,22 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد؛ `WAL-BE01` backend review gate PASS و claim آزاد شد.
-- task فعال: ندارد؛ `F12-WAL-BE01 DONE`، فقط دامنهٔ بک‌اند.
+- batch فعال: ندارد؛ `PJ-R01 DONE` و claim آزاد شد.
+- task فعال: ندارد؛ `F12-PJ-R01 DONE`، فقط technical assessment reliability backend.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
+
+## Patient Journey backend — R01 accepted handoff (2026-10-16)
+
+Authority: owner explicitly requested backend implementation after reviewing the patient journey report and comprehensive requirements. The backend-first instruction overrides frontend delivery for this scoped task; whole-product acceptance remains separate. Baseline: front@ebbb2b3, clean working tree. Phase 12 remains active; no closed phase is reopened.
+
+Batch: PJ-R01; Task: F12-PJ-R01; DONE; claim RELEASED; owner/coordinator/reviewer Codex /root; one agent.
+Contract baseline: ADR-0018 and assessment-reliability-v1 additive extension; frozen assessment-booking-v1 remains unchanged.
+Dependencies: accepted Phase 03/08 assessment persistence and API, existing identity/session and Phase 12 test infrastructure; no clinical/provider decision required for this technical correction.
+Owned paths: assessment patient service/controller/DTO and audit action constants; PatientAssessmentSubmission revision field and one new migration; shared error-code allowlist; directly affected assessment tests and new isolated PostgreSQL reliability/upgrade tests; dedicated isolated test step in existing CI; generated OpenAPI/client via official commands; this status, Phase12 checklist/log, new scoped ADR/contract and patient-journey-backend task map.
+Exclusive resources: Prisma/schema/migration, generated OpenAPI/client and disposable PostgreSQL, all single writer. No frontend, billing/provider, lockfile or historical contract writes.
+Verification PASS: three pre-fix defects reproduced; 78 distinct focused API tests (including 21 isolated PostgreSQL reliability cases) and 5 client tests; 43-migration fresh replay/legacy upgrade/duplicate-active refusal and no schema drift; API/test/client/app/dashboard/web types and generated-contract freshness; main-agent diff/security review. All 217 previous API paths retained. Temporary PostgreSQL removed; persistent DB unchanged.
+Evidence: [Phase12 log](logs/phase-12.md#f12-pj-r01--assessment-concurrency-revisions-and-transactional-audit). Legacy revision omission remains serialized last-write-wins; new clients must send expectedRevision for stale-edit protection. Migration must precede runtime activation and refuses existing duplicate active attempts for reviewed resolution. Graphify update remains blocked by the existing uv launcher failure.
+Next candidate: F12-PJ-J01 derived journey API after normal additive DTO/action-contract freeze and claim, within the existing owner implementation authorization. No next task started, honoring the per-task execution boundary. Historical questionnaire resume/review, offerings, couples, guidance and programs are not completed by R01; clinical/product decisions stay explicit.
 
 ## Wallet backend — accepted handoff (2026-10-16)
 
