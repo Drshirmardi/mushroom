@@ -5,7 +5,8 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException, 
 import { AssessmentVersionStatus, PatientAssessmentState, Prisma, type PatientAssessmentSubmission } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS } from '../application/assessment-audit';
-import { AssessmentAnswerError, scoreAssessment } from '../domain/assessment-scoring';
+import { AssessmentAnswerError, ASSESSMENT_SCORING_IDENTITY, scoreAssessment } from '../domain/assessment-scoring';
+import type { PatientAssessmentHistoryQueryDto } from './patient-assessments.dto';
 
 interface AuditContext { actorUserId: string; actorSessionId: string; requestId: string; ipAddress: string }
 const notFound = () => new NotFoundException({ code: 'ASSESSMENT_NOT_FOUND', message: 'Assessment was not found.', details: {} });
@@ -16,6 +17,58 @@ const keyReused = () => new ConflictException({ code: 'IDEMPOTENCY_KEY_REUSED', 
 @Injectable()
 export class PatientAssessmentsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async history(userId: string, query: PatientAssessmentHistoryQueryDto, context: AuditContext) {
+    return this.prisma.$transaction(async tx => {
+      const patient = await this.patient(userId, tx);
+      const where = { patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, ...(query.state ? { state: query.state } : {}) };
+      const [rows, total] = await Promise.all([
+        tx.patientAssessmentSubmission.findMany({ where, orderBy: [{ startedAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize,
+          select: { id: true, assessmentVersionId: true, attemptNumber: true, revision: true, state: true, startedAt: true, updatedAt: true, completedAt: true, invalidatedAt: true,
+            assessmentVersion: { select: { assessmentKey: true, versionNumber: true, locale: true, title: true, status: true } } } }),
+        tx.patientAssessmentSubmission.count({ where }),
+      ]);
+      await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.HISTORY_READ, patient.id, context, 'PATIENT_ASSESSMENT_HISTORY');
+      return { items: rows.map(({ assessmentVersion: version, invalidatedAt, ...row }) => ({ ...row, assessmentKey: version.assessmentKey,
+        versionNumber: version.versionNumber, locale: version.locale, title: version.title,
+        resumeAvailable: row.state === 'IN_PROGRESS' && invalidatedAt === null && version.status !== 'DRAFT',
+      })), page: query.page, pageSize: query.pageSize, total };
+    }, { isolationLevel: 'RepeatableRead' });
+  }
+
+  async questionnaire(id: string, userId: string, context: AuditContext) {
+    return this.prisma.$transaction(async tx => {
+      const patient = await this.patient(userId, tx);
+      const submission = await tx.patientAssessmentSubmission.findFirst({
+        where: { id, patientId: patient.id, state: { in: ['IN_PROGRESS', 'COMPLETE'] }, invalidatedAt: null,
+          assessmentVersion: { clinicId: patient.clinicId, status: { in: ['PUBLISHED', 'RETIRED'] } } },
+        select: { id: true, state: true, assessmentVersion: { select: { id: true, assessmentKey: true, versionNumber: true, locale: true, title: true, status: true, contentHash: true, structure: true } } },
+      });
+      if (!submission) throw submissionNotFound();
+      await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.QUESTIONNAIRE_READ, id, context);
+      const { id: assessmentVersionId, ...version } = submission.assessmentVersion;
+      return { submissionId: id, assessmentVersionId, ...version, resumeAvailable: submission.state === 'IN_PROGRESS' };
+    });
+  }
+
+  async provenance(id: string, userId: string, context: AuditContext) {
+    return this.prisma.$transaction(async tx => {
+      const patient = await this.patient(userId, tx);
+      const submission = await tx.patientAssessmentSubmission.findFirst({
+        where: { id, patientId: patient.id, state: 'COMPLETE', invalidatedAt: null, assessmentVersion: { clinicId: patient.clinicId } },
+        select: { assessmentVersionId: true, completedAt: true, resultSnapshot: true, assessmentVersion: { select: { contentHash: true } } },
+      });
+      if (!submission) throw submissionNotFound();
+      const snapshot = submission.resultSnapshot as Record<string, unknown> | null;
+      const algorithmId = typeof snapshot?.algorithmId === 'string' ? snapshot.algorithmId : null;
+      const algorithmVersion = typeof snapshot?.algorithmVersion === 'number' && Number.isInteger(snapshot.algorithmVersion) && snapshot.algorithmVersion > 0 ? snapshot.algorithmVersion : null;
+      const answerPayloadHash = typeof snapshot?.answerPayloadHash === 'string' ? snapshot.answerPayloadHash : null;
+      await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.PROVENANCE_READ, id, context);
+      return { submissionId: id, assessmentVersionId: submission.assessmentVersionId, questionnaireContentHash: submission.assessmentVersion.contentHash,
+        provenanceStatus: algorithmId && algorithmVersion && answerPayloadHash ? 'RECORDED' : 'LEGACY_UNRECORDED',
+        algorithmId, algorithmVersion, answerPayloadHash, completedAt: submission.completedAt };
+    });
+  }
 
   async list(userId: string) {
     const patient = await this.patient(userId, this.prisma);
@@ -122,7 +175,8 @@ export class PatientAssessmentsService {
         data: {
           state: PatientAssessmentState.COMPLETE, completedAt: new Date(), revision: { increment: 1 },
           completionIdempotencyKey: idempotencyKey, completionPayloadHash: payloadHash, score: evaluation.score,
-          resultSnapshot: { snapshotVersion: 1, answers: evaluation.answers, score: evaluation.score, resultBand: evaluation.resultBand },
+          resultSnapshot: { snapshotVersion: 1, answers: evaluation.answers, score: evaluation.score, resultBand: evaluation.resultBand,
+            ...ASSESSMENT_SCORING_IDENTITY, questionnaireContentHash: submission.assessmentVersion.contentHash, answerPayloadHash: payloadHash },
         },
       });
       if (submission.assessmentVersion.assessmentKey === 'MEZAJ') {
@@ -199,8 +253,8 @@ export class PatientAssessmentsService {
 
   private hash(value: Prisma.JsonValue) { return createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
 
-  private async audit(tx: Prisma.TransactionClient, action: string, subjectId: string, context: AuditContext) {
+  private async audit(tx: Prisma.TransactionClient, action: string, subjectId: string, context: AuditContext, subjectType = 'PATIENT_ASSESSMENT_SUBMISSION') {
     await tx.auditEvent.create({ data: { action, actorUserId: context.actorUserId, actorSessionId: context.actorSessionId,
-      subjectType: 'PATIENT_ASSESSMENT_SUBMISSION', subjectId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: {} } });
+      subjectType, subjectId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: {} } });
   }
 }

@@ -48,8 +48,8 @@ export class PatientJourneyService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 6, select: { id: true, totalAmountToman: true } }),
         tx.treatmentPlan.findMany({ where: { ...scope, state: { in: ['ACTIVE', 'COMPLETED'] } },
           orderBy: [{ state: 'asc' }, { updatedAt: 'desc' }, { id: 'desc' }], take: 6, select: { id: true, state: true, updatedAt: true } }),
-        // Action selection must not be starved by five newer retired drafts in the bounded summary.
-        tx.patientAssessmentSubmission.findFirst({ where: { ...assessmentScope, state: 'IN_PROGRESS', assessmentVersion: { clinicId: patient.clinicId, status: 'PUBLISHED' } },
+        // Exact historical questionnaires are available for owned published/retired attempts.
+        tx.patientAssessmentSubmission.findFirst({ where: { ...assessmentScope, state: 'IN_PROGRESS', assessmentVersion: { clinicId: patient.clinicId, status: { in: ['PUBLISHED', 'RETIRED'] } } },
           orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], select: { id: true } }),
         tx.patientAssessmentSubmission.findFirst({ where: { ...assessmentScope, state: 'COMPLETE', completedAt: { not: null } },
           orderBy: [{ completedAt: 'desc' }, { id: 'desc' }], select: { id: true } }),
@@ -60,8 +60,8 @@ export class PatientJourneyService {
       ]);
       const assessments = page(attempts.map(({ assessmentVersion, ...attempt }) => ({ ...attempt,
         assessmentKey: assessmentVersion.assessmentKey, title: assessmentVersion.title, versionNumber: assessmentVersion.versionNumber,
-        resumeAvailable: attempt.state === 'IN_PROGRESS' && assessmentVersion.status === 'PUBLISHED',
-        resumeBlocker: attempt.state === 'IN_PROGRESS' && assessmentVersion.status !== 'PUBLISHED' ? 'VERSION_NOT_PUBLISHED' : null,
+        resumeAvailable: attempt.state === 'IN_PROGRESS' && assessmentVersion.status !== 'DRAFT',
+        resumeBlocker: attempt.state === 'IN_PROGRESS' && assessmentVersion.status === 'DRAFT' ? 'VERSION_NOT_PUBLISHED' : null,
       })));
       const { state, isComplete, requiredCount, answeredRequiredCount, missingFields, blockerCodes, nextAction: onboardingAction } = status;
       const summary = {

@@ -1272,6 +1272,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/assessment-submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List owned assessment attempt summaries */
+        get: operations["patientAssessmentHistoryList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/questionnaire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve the exact owned attempt questionnaire, including retired versions */
+        get: operations["patientAssessmentQuestionnaireGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/provenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get recorded result provenance without inventing legacy algorithm identity */
+        get: operations["patientAssessmentProvenanceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/assessments": {
         parameters: {
             query?: never;
@@ -4617,6 +4668,64 @@ export interface components {
             treatmentPlans: components["schemas"]["JourneyPlansDto"];
             /** @description Shopping is independent of medical onboarding */
             storeAvailable: boolean;
+        };
+        PatientAssessmentHistoryItemDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentKey: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            attemptNumber: number;
+            revision: number;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+            resumeAvailable: boolean;
+        };
+        PatientAssessmentHistoryResponseDto: {
+            items: components["schemas"]["PatientAssessmentHistoryItemDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PatientAssessmentQuestionnaireResponseDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentKey: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            /** @enum {string} */
+            status: "PUBLISHED" | "RETIRED";
+            contentHash: string;
+            resumeAvailable: boolean;
+            structure: {
+                [key: string]: unknown;
+            };
+        };
+        PatientAssessmentProvenanceResponseDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            questionnaireContentHash: string;
+            /** @enum {string} */
+            provenanceStatus: "RECORDED" | "LEGACY_UNRECORDED";
+            algorithmId: string | null;
+            algorithmVersion: number | null;
+            answerPayloadHash: string | null;
+            /** Format: date-time */
+            completedAt: string;
         };
         PatientAssessmentListItemDto: {
             /** Format: uuid */
@@ -8955,6 +9064,89 @@ export interface operations {
             };
             /** @description Sensitive audit is unavailable. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentHistoryList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentHistoryResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentQuestionnaireGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentQuestionnaireResponseDto"];
+                };
+            };
+            /** @description Owned assessment questionnaire was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentProvenanceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentProvenanceResponseDto"];
+                };
+            };
+            /** @description Owned completed assessment was not found. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

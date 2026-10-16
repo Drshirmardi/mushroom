@@ -1,5 +1,8 @@
 import type { Prisma } from '../../../generated/prisma/client';
 
+// Technical implementation identity, not evidence of clinical validity. Bump before changing semantics.
+export const ASSESSMENT_SCORING_IDENTITY = { algorithmId: 'WEIGHTED_SUM', algorithmVersion: 1 } as const;
+
 export class AssessmentAnswerError extends Error {
   constructor(public readonly code: string, message: string) { super(message); }
 }

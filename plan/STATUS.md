@@ -10,11 +10,13 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد؛ `PJ-J01 DONE` و claim آزاد شد؛ اجرای پیوسته مجاز است.
-- task فعال: ندارد؛ `F12-PJ-J01 DONE` — derived patient journey API.
+- batch فعال: ندارد؛ `PJ-R02 DONE` و claim آزاد شد؛ ادامهٔ پیوسته مجاز است.
+- task فعال: ندارد؛ `F12-PJ-R02 DONE` — discovery, historical questionnaire and provenance.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-R02: F12-PJ-R02 DONE/review PASS/claim RELEASED; Codex /root coordinator/owner/reviewer, one agent; baseline front@79badad clean. Dependencies R01/J01 DONE. Frozen additive contract assessment-discovery-v1. Preserved existing owned historic get/save/submit behavior; added missing questionnaire retrieval/discovery and explicit technical provenance, no clinical retirement/eligibility policy change. Owned: assessment patient service/controller/DTO/audit/scoring identity; journey resume projection/test; discovery PostgreSQL tests and CI; official generated contracts; scoped plan/evidence. No schema/migration, frontend, billing or role changes. Verification PASS: 60 focused API tests (10 new discovery, 13 journey, 21 reliability, 3 scoring, 5 assessment authorization, 8 eligibility), client5; API/test/client/consumer types and generated freshness; 218 old API paths preserved plus3. Main-agent scoped review PASS; evidence phase-12 log. Disposable DB remains task-owned for subsequent serialized checks. Next candidate F12-PJ-O01 configurable offering/version/release-readiness foundation; actual price, age, algorithms, clinical review/retention/refund rules remain owner decisions and new publication must fail closed.
 
 Owner explicitly requested nonstop implementation of the remaining backend. This supersedes the prior stop-after-task boundary for this track; tasks remain serialized, independently verified/reviewed/documented/committed. No frontend, production release, live provider or persistent database migration authorization is inferred. Clinical questionnaire weights, result taxonomy and approved content remain undefined; owner described roughly 10–15 questions and possible mixed temperaments, not an approved algorithm. Infrastructure may proceed with new clinical release disabled.
 

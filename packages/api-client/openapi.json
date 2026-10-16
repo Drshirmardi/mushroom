@@ -4366,6 +4366,163 @@
         ]
       }
     },
+    "/v1/patients/me/assessment-submissions": {
+      "get": {
+        "operationId": "patientAssessmentHistoryList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IN_PROGRESS",
+                "COMPLETE",
+                "INVALIDATED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentHistoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List owned assessment attempt summaries",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/questionnaire": {
+      "get": {
+        "operationId": "patientAssessmentQuestionnaireGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentQuestionnaireResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned assessment questionnaire was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Retrieve the exact owned attempt questionnaire, including retired versions",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/provenance": {
+      "get": {
+        "operationId": "patientAssessmentProvenanceGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentProvenanceResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned completed assessment was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get recorded result provenance without inventing legacy algorithm identity",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
     "/v1/assessments": {
       "get": {
         "operationId": "patientAssessmentsList",
@@ -17359,6 +17516,205 @@
           "pendingOrders",
           "treatmentPlans",
           "storeAvailable"
+        ]
+      },
+      "PatientAssessmentHistoryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "attemptNumber": {
+            "type": "number"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resumeAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "assessmentKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "attemptNumber",
+          "revision",
+          "state",
+          "startedAt",
+          "updatedAt",
+          "completedAt",
+          "resumeAvailable"
+        ]
+      },
+      "PatientAssessmentHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAssessmentHistoryItemDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "PatientAssessmentQuestionnaireResponseDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "RETIRED"
+            ]
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "resumeAvailable": {
+            "type": "boolean"
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "submissionId",
+          "assessmentVersionId",
+          "assessmentKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "status",
+          "contentHash",
+          "resumeAvailable",
+          "structure"
+        ]
+      },
+      "PatientAssessmentProvenanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionnaireContentHash": {
+            "type": "string"
+          },
+          "provenanceStatus": {
+            "type": "string",
+            "enum": [
+              "RECORDED",
+              "LEGACY_UNRECORDED"
+            ]
+          },
+          "algorithmId": {
+            "type": "string",
+            "nullable": true
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "answerPayloadHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "submissionId",
+          "assessmentVersionId",
+          "questionnaireContentHash",
+          "provenanceStatus",
+          "algorithmId",
+          "algorithmVersion",
+          "answerPayloadHash",
+          "completedAt"
         ]
       },
       "PatientAssessmentListItemDto": {

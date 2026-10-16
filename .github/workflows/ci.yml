@@ -70,7 +70,7 @@ jobs:
           docker exec ${{ job.services.postgres.id }} createdb -U sabz_zendegi patient_journey_test
           pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
           pnpm --filter @sabz-zendegi/api prisma:seed
-          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts test/patient-journey.integration.spec.ts --no-file-parallelism
+          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts test/patient-journey.integration.spec.ts test/assessment-discovery.integration.spec.ts --no-file-parallelism
       - name: Install browser for existing access smoke suite
         run: pnpm exec playwright install --with-deps chromium
       - name: Browser session and access smoke

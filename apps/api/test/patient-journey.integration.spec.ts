@@ -79,17 +79,18 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     const foreign = await attempt(p, 'PUBLISHED', clinic.id); const response = await get(p);
     expect(response.body).not.toContain(foreign.id);
   });
-  it('exposes retired draft references without promising resume or leaking answers', async () => {
+  it('exposes owned retired resume references after historical questionnaire support without leaking answers', async () => {
     const p = await patient(); const draft = await attempt(p, 'RETIRED'); const response = await get(p);
-    expect(response.json().assessments.items[0]).toMatchObject({ id: draft.id, resumeAvailable: false, resumeBlocker: 'VERSION_NOT_PUBLISHED' });
+    expect(response.json().assessments.items[0]).toMatchObject({ id: draft.id, resumeAvailable: true, resumeBlocker: null });
     expect(response.body).not.toContain('privateAnswer'); expect(response.body).not.toContain('must not leak');
   });
-  it('caps all Home collections and preserves resume action behind newer retired drafts', async () => {
+  it('caps all Home collections and preserves an independently selected resumable action', async () => {
     const p = await patient(true); const valid = await attempt(p);
     for (let n = 0; n < 7; n++) { await attempt(p, 'RETIRED'); await intent(p); await db.treatmentPlan.create({ data: { clinicId, patientId: p.patientId, state: 'ACTIVE', title: 'Private treatment title' } }); }
     const response = await get(p); const body = response.json();
     for (const key of ['assessments', 'pendingPayments', 'treatmentPlans']) { expect(body[key].items).toHaveLength(5); expect(body[key].hasMore).toBe(true); }
-    expect(body.nextAction).toEqual({ code: 'RESUME_ASSESSMENT', resourceId: valid.id });
+    expect(body.nextAction.code).toBe('RESUME_ASSESSMENT');
+    expect(await db.patientAssessmentSubmission.findFirst({ where: { id: body.nextAction.resourceId, patientId: p.patientId, state: 'IN_PROGRESS' } })).not.toBeNull();
     expect(response.body).not.toContain('Private treatment title');
   });
   it('excludes expired payments and draft treatment plans; preserves integer currency', async () => {
