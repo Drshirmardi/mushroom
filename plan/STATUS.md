@@ -10,9 +10,15 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد؛ `PJ-R01 DONE` و claim آزاد شد.
-- task فعال: ندارد؛ `F12-PJ-R01 DONE`، فقط technical assessment reliability backend.
+- batch فعال: ندارد؛ `PJ-J01 DONE` و claim آزاد شد؛ اجرای پیوسته مجاز است.
+- task فعال: ندارد؛ `F12-PJ-J01 DONE` — derived patient journey API.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
+
+## Patient Journey continuous backend execution (2026-10-16)
+
+Owner explicitly requested nonstop implementation of the remaining backend. This supersedes the prior stop-after-task boundary for this track; tasks remain serialized, independently verified/reviewed/documented/committed. No frontend, production release, live provider or persistent database migration authorization is inferred. Clinical questionnaire weights, result taxonomy and approved content remain undefined; owner described roughly 10–15 questions and possible mixed temperaments, not an approved algorithm. Infrastructure may proceed with new clinical release disabled.
+
+Batch PJ-J01; task F12-PJ-J01; DONE/review PASS/claim RELEASED; coordinator/owner/reviewer Codex /root; one agent; baseline front@82fa9c4, clean. Contract: patient-journey-v1; dependencies R01 and accepted onboarding/booking/billing/clinical modules. Delivered bounded self-only derived Home/Next Action API, repeatable-read composition and atomic sensitive audit, no state table or new clinical/payment rules. Owned paths: new patients/journey module; SelfProfileService and PatientBookingEligibilityService transaction-aware read seams; app.module.ts; focused journey PostgreSQL tests and CI invocation; official generated OpenAPI/client; scoped plan/contract/checklist/log. Prisma schema/migrations and frontend unchanged. Verification: 45 distinct focused API tests (13 new journey, 21 reliability, 8 eligibility, 3 self-profile), client5; API/test/client/consumer types and generated freshness PASS; 217 old paths preserved, one new. Main-agent scoped review PASS; no claim of full clinical/product acceptance. Disposable PostgreSQL remains task-owned for the next serialized verification; persistent DB unchanged. Graphify launcher still fails before execution. Next candidate R02 owned attempt discovery/historical questionnaire/provenance using preserved existing submission behavior, then inactive offerings/clinical release foundation; normal freeze/claim before edits.
 
 ## Patient Journey backend — R01 accepted handoff (2026-10-16)
 

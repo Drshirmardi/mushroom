@@ -4299,6 +4299,406 @@
         ]
       }
     },
+    "/v1/patients/me/journey": {
+      "get": {
+        "operationId": "patientJourneyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientJourneyResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sensitive audit is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get derived patient Home state and next action",
+        "tags": [
+          "Patient Journey"
+        ]
+      }
+    },
+    "/v1/assessments": {
+      "get": {
+        "operationId": "patientAssessmentsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List published assessments for the patient clinic",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessments/{assessmentVersionId}/submissions": {
+      "post": {
+        "operationId": "patientAssessmentSubmissionStart",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assessment was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start or resume an assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}": {
+      "get": {
+        "operationId": "patientAssessmentSubmissionGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the patient assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      },
+      "put": {
+        "operationId": "patientAssessmentSubmissionSave",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAssessmentAnswersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Assessment revision is stale or the submission is immutable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save answers for an in-progress assessment submission",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/submit": {
+      "post": {
+        "operationId": "patientAssessmentSubmissionSubmit",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAssessmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Assessment revision, completion state or idempotency key conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Submit an assessment submission exactly once",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/assessment-submissions/{id}/result": {
+      "get": {
+        "operationId": "patientAssessmentSubmissionResult",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an immutable assessment result",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/mezaj": {
+      "get": {
+        "operationId": "patientMezajResultGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MezajResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the latest immutable Mezaj result derived from a completed versioned assessment",
+        "tags": [
+          "Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/booking-eligibility": {
+      "get": {
+        "operationId": "patientBookingEligibilityGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get booking eligibility without using assessment score",
+        "tags": [
+          "Patient Booking"
+        ]
+      }
+    },
     "/v1/patients/me/consent-policy": {
       "get": {
         "operationId": "patientGetConsentPolicy",
@@ -5834,339 +6234,6 @@
         "summary": "Get clinic-scoped assessment reporting aggregates",
         "tags": [
           "Admin Reporting"
-        ]
-      }
-    },
-    "/v1/assessments": {
-      "get": {
-        "operationId": "patientAssessmentsList",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentListResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "List published assessments for the patient clinic",
-        "tags": [
-          "Patient Assessments"
-        ]
-      }
-    },
-    "/v1/assessments/{assessmentVersionId}/submissions": {
-      "post": {
-        "operationId": "patientAssessmentSubmissionStart",
-        "parameters": [
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Assessment was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Start or resume an assessment submission",
-        "tags": [
-          "Patient Assessments"
-        ]
-      }
-    },
-    "/v1/assessment-submissions/{id}": {
-      "get": {
-        "operationId": "patientAssessmentSubmissionGet",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get the patient assessment submission",
-        "tags": [
-          "Patient Assessments"
-        ]
-      },
-      "put": {
-        "operationId": "patientAssessmentSubmissionSave",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveAssessmentAnswersDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Assessment revision is stale or the submission is immutable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Save answers for an in-progress assessment submission",
-        "tags": [
-          "Patient Assessments"
-        ]
-      }
-    },
-    "/v1/assessment-submissions/{id}/submit": {
-      "post": {
-        "operationId": "patientAssessmentSubmissionSubmit",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "maxLength": 255
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SubmitAssessmentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Assessment revision, completion state or idempotency key conflicts.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Submit an assessment submission exactly once",
-        "tags": [
-          "Patient Assessments"
-        ]
-      }
-    },
-    "/v1/assessment-submissions/{id}/result": {
-      "get": {
-        "operationId": "patientAssessmentSubmissionResult",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get an immutable assessment result",
-        "tags": [
-          "Patient Assessments"
-        ]
-      }
-    },
-    "/v1/patients/me/mezaj": {
-      "get": {
-        "operationId": "patientMezajResultGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MezajResultResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get the latest immutable Mezaj result derived from a completed versioned assessment",
-        "tags": [
-          "Patient Assessments"
-        ]
-      }
-    },
-    "/v1/patients/me/booking-eligibility": {
-      "get": {
-        "operationId": "patientBookingEligibilityGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get booking eligibility without using assessment score",
-        "tags": [
-          "Patient Booking"
         ]
       }
     },
@@ -16872,6 +16939,594 @@
           "currentRevision"
         ]
       },
+      "JourneyOnboardingDto": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "isComplete": {
+            "type": "boolean"
+          },
+          "requiredCount": {
+            "type": "number"
+          },
+          "answeredRequiredCount": {
+            "type": "number"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blockerCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextAction": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "isComplete",
+          "requiredCount",
+          "answeredRequiredCount",
+          "missingFields",
+          "blockerCodes",
+          "nextAction"
+        ]
+      },
+      "PatientBookingEligibilityResponseDto": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "ELIGIBLE",
+              "PROFILE_INCOMPLETE",
+              "MAIN_ASSESSMENT_REQUIRED",
+              "ASSESSMENT_EXPIRED",
+              "LATEST_VERSION_REQUIRED"
+            ]
+          },
+          "nextAction": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "eligible",
+          "reason"
+        ]
+      },
+      "JourneyActionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "OPEN_APPOINTMENT",
+              "COMPLETE_PROFILE",
+              "CONSENT_UNAVAILABLE",
+              "REVIEW_CONSENT",
+              "START_MEDICAL_INTAKE",
+              "CONTINUE_MEDICAL_INTAKE",
+              "COMPLETE_ONBOARDING",
+              "REVIEW_BOOKING_REQUIREMENTS",
+              "RESUME_ASSESSMENT",
+              "CONTINUE_PAYMENT",
+              "VIEW_TREATMENT_PLAN",
+              "VIEW_ASSESSMENT_RESULT",
+              "BOOK_CONSULTATION"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "code",
+          "resourceId"
+        ]
+      },
+      "JourneyAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "revision": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "resumeAvailable": {
+            "type": "boolean"
+          },
+          "resumeBlocker": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "VERSION_NOT_PUBLISHED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "assessmentKey",
+          "title",
+          "versionNumber",
+          "state",
+          "revision",
+          "updatedAt",
+          "resumeAvailable",
+          "resumeBlocker"
+        ]
+      },
+      "JourneyAssessmentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyAssessmentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "startsAt",
+          "endsAt",
+          "status",
+          "visitMode"
+        ]
+      },
+      "JourneyAppointmentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyAppointmentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyPaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string",
+            "description": "Integer rial amount, serialized without precision loss"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "amountRial",
+          "currency",
+          "expiresAt"
+        ]
+      },
+      "JourneyPaymentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyPaymentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "totalAmountToman": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "TOMAN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "totalAmountToman",
+          "currency"
+        ]
+      },
+      "JourneyOrdersDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyOrderDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED"
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "updatedAt"
+        ]
+      },
+      "JourneyPlansDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyPlanDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "PatientJourneyResponseDto": {
+        "type": "object",
+        "properties": {
+          "evaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "onboarding": {
+            "$ref": "#/components/schemas/JourneyOnboardingDto"
+          },
+          "bookingEligibility": {
+            "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
+          },
+          "nextAction": {
+            "$ref": "#/components/schemas/JourneyActionDto"
+          },
+          "assessments": {
+            "$ref": "#/components/schemas/JourneyAssessmentsDto"
+          },
+          "appointments": {
+            "$ref": "#/components/schemas/JourneyAppointmentsDto"
+          },
+          "pendingPayments": {
+            "$ref": "#/components/schemas/JourneyPaymentsDto"
+          },
+          "pendingOrders": {
+            "$ref": "#/components/schemas/JourneyOrdersDto"
+          },
+          "treatmentPlans": {
+            "$ref": "#/components/schemas/JourneyPlansDto"
+          },
+          "storeAvailable": {
+            "type": "boolean",
+            "description": "Shopping is independent of medical onboarding"
+          }
+        },
+        "required": [
+          "evaluatedAt",
+          "onboarding",
+          "bookingEligibility",
+          "nextAction",
+          "assessments",
+          "appointments",
+          "pendingPayments",
+          "pendingOrders",
+          "treatmentPlans",
+          "storeAvailable"
+        ]
+      },
+      "PatientAssessmentListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "structure"
+        ]
+      },
+      "PatientAssessmentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAssessmentListItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PatientAssessmentSubmissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attemptNumber": {
+            "type": "number"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "attemptNumber",
+          "state",
+          "answers",
+          "startedAt"
+        ]
+      },
+      "SaveAssessmentAnswersDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Optional for legacy clients; protects a changing command from stale answers."
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "SubmitAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Optional for legacy clients; protects a changing command from stale answers."
+          }
+        }
+      },
+      "MezajResultResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentSubmissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultBand": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "assessedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "assessmentSubmissionId",
+          "resultBand",
+          "assessedAt"
+        ]
+      },
       "ConsentPolicyResponseDto": {
         "type": "object",
         "properties": {
@@ -18111,198 +18766,6 @@
           "started",
           "completed",
           "completionRate"
-        ]
-      },
-      "PatientAssessmentListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentKey": {
-            "type": "string"
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "structure": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "required": [
-          "id",
-          "assessmentKey",
-          "versionNumber",
-          "locale",
-          "title",
-          "structure"
-        ]
-      },
-      "PatientAssessmentListResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PatientAssessmentListItemDto"
-            }
-          }
-        },
-        "required": [
-          "items"
-        ]
-      },
-      "PatientAssessmentSubmissionResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "attemptNumber": {
-            "type": "number"
-          },
-          "revision": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "IN_PROGRESS",
-              "COMPLETE",
-              "INVALIDATED"
-            ]
-          },
-          "answers": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "resultSnapshot": {
-            "type": "object",
-            "nullable": true,
-            "additionalProperties": true
-          },
-          "score": {
-            "type": "string",
-            "nullable": true
-          },
-          "startedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "completedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "assessmentVersionId",
-          "attemptNumber",
-          "state",
-          "answers",
-          "startedAt"
-        ]
-      },
-      "SaveAssessmentAnswersDto": {
-        "type": "object",
-        "properties": {
-          "expectedRevision": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 2147483647,
-            "description": "Optional for legacy clients; protects a changing command from stale answers."
-          },
-          "answers": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "required": [
-          "answers"
-        ]
-      },
-      "SubmitAssessmentDto": {
-        "type": "object",
-        "properties": {
-          "expectedRevision": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 2147483647,
-            "description": "Optional for legacy clients; protects a changing command from stale answers."
-          }
-        }
-      },
-      "MezajResultResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentSubmissionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "resultBand": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "assessedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "assessmentVersionId",
-          "assessmentSubmissionId",
-          "resultBand",
-          "assessedAt"
-        ]
-      },
-      "PatientBookingEligibilityResponseDto": {
-        "type": "object",
-        "properties": {
-          "eligible": {
-            "type": "boolean"
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "ELIGIBLE",
-              "PROFILE_INCOMPLETE",
-              "MAIN_ASSESSMENT_REQUIRED",
-              "ASSESSMENT_EXPIRED",
-              "LATEST_VERSION_REQUIRED"
-            ]
-          },
-          "nextAction": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "eligible",
-          "reason"
         ]
       },
       "ClinicResponseDto": {

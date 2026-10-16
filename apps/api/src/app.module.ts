@@ -13,6 +13,7 @@ import { PatientAssessmentsModule } from './modules/assessments/patient/patient-
 import { AdminDirectoryModule } from './modules/directory/admin-directory.module';
 import { IntakeModule } from './modules/patients/intake/intake.module';
 import { SelfProfileModule } from './modules/patients/self-profile/self-profile.module';
+import { PatientJourneyModule } from './modules/patients/journey/patient-journey.module';
 import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.module';
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
@@ -44,6 +45,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     DatabaseModule,
     IdentityModule,
     SelfProfileModule,
+    PatientJourneyModule,
     IntakeModule,
     AdminPatientsModule,
     AdminAssessmentsModule,

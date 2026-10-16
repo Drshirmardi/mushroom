@@ -1,6 +1,7 @@
 import { Injectable, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 
 import { PrismaService } from '../../../database/prisma/prisma.service';
+import type { Prisma } from '../../../generated/prisma/client';
 import {
   PatientDomainError,
   canonicalizePatientText,
@@ -66,13 +67,13 @@ export class SelfProfileService {
     };
   }
 
-  async getOnboardingStatus(userId: string): Promise<SelfOnboardingStatus> {
-    const patient = await this.ensurePatientProfile(userId);
+  async getOnboardingStatus(userId: string, db: Prisma.TransactionClient = this.prisma): Promise<SelfOnboardingStatus> {
+    const patient = await this.ensurePatientProfile(userId, db);
     const [intake, activePolicy, hasConsentDecision] = await Promise.all([
-      this.prisma.patientMedicalIntake.findUnique({
+      db.patientMedicalIntake.findUnique({
         where: { patientId: patient.id },
       }),
-      this.prisma.consentPolicyVersion.findFirst({
+      db.consentPolicyVersion.findFirst({
         where: {
           clinicId: patient.clinicId,
           policyKey: PROFILE_POLICY_KEY,
@@ -81,13 +82,13 @@ export class SelfProfileService {
         },
         select: { id: true },
       }),
-      this.prisma.patientConsentRecord.findFirst({
+      db.patientConsentRecord.findFirst({
         where: { patientId: patient.id },
         select: { id: true },
       }),
     ]);
     const currentRevision = intake && intake.currentRevisionNumber > 0
-      ? await this.prisma.patientMedicalIntakeRevision.findUnique({
+      ? await db.patientMedicalIntakeRevision.findUnique({
         where: {
           intakeId_revisionNumber: {
             intakeId: intake.id,
@@ -97,7 +98,7 @@ export class SelfProfileService {
       })
       : null;
     const activeConsent = activePolicy
-      ? await this.prisma.patientConsentRecord.findFirst({
+      ? await db.patientConsentRecord.findFirst({
         where: {
           patientId: patient.id,
           policyVersionId: activePolicy.id,
@@ -141,14 +142,14 @@ export class SelfProfileService {
     };
   }
 
-  private async ensurePatientProfile(userId: string) {
-    const existing = await this.prisma.patientProfile.findUnique({
+  private async ensurePatientProfile(userId: string, db: Prisma.TransactionClient = this.prisma) {
+    const existing = await db.patientProfile.findUnique({
       where: { userId },
       include: { user: { include: { userProfile: true } } },
     });
     if (existing) return existing;
 
-    const clinic = await this.prisma.clinic.findFirst({
+    const clinic = await db.clinic.findFirst({
       where: { status: 'ACTIVE' },
       select: { id: true },
     });
@@ -160,7 +161,7 @@ export class SelfProfileService {
       });
     }
 
-    return this.prisma.patientProfile.upsert({
+    return db.patientProfile.upsert({
       where: { userId },
       create: { userId, clinicId: clinic.id },
       update: {},

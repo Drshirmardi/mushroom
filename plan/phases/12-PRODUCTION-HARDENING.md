@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-J01` — self-only derived Patient Journey/Next Action API; PJ-J01 DONE/review PASS/released, Codex /root; contract patient-journey-v1. 45 focused API + 5 client tests, generated contracts/consumer types PASS; evidence in phase-12 log. No journey table, frontend or new clinical/provider policy. Owner explicitly authorizes serialized continuation beyond independent task commits.
+
 - SLO/capacity با evidence ثبت شده است.
 - restore و rollback موفق ثبت شده‌اند.
 - alertها owner و runbook دارند.
