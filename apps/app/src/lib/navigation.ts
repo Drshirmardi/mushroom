@@ -46,6 +46,7 @@ export const SCREEN_ROUTES: Record<string, string> = {
   BookStep1: "/appointments/book",
   BookStep2: "/appointments/book/schedule",
   BookStep3: "/appointments/book/confirm",
+  BookPayment: "/appointments/book/pay",
   BookSuccess: "/appointments/book/success",
   OnlineWaitingRoom: "/appointments/waiting-room",
   ConsultationSummary: "/appointments/summary",
@@ -64,6 +65,7 @@ export const SCREEN_ROUTES: Record<string, string> = {
   SecurityScreen: "/profile/security",
   NotifSettings: "/profile/notifications",
   WalletScreen: "/profile/wallet",
+  WalletPaymentResult: "/profile/wallet/payment-result",
   MedicalHistory: "/profile/history",
   HealthRecord: "/profile/health-record",
 };

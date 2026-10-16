@@ -399,6 +399,45 @@
 .store-empty__action { min-width: 140px; border: 1px solid var(--patient-action); background: transparent; color: var(--patient-action); }
 .store-skeleton { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
 .store-skeleton span { height: 120px; border-radius: 12px; background: var(--patient-soft); }
+
+/* Shared skeleton / spinner primitives (platform tokens). */
+.skeleton {
+  position: relative;
+  overflow: clip;
+  contain: content;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  translate: -100% 0;
+  animation: skeleton-shine 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shine {
+  to { translate: 100% 0; }
+}
+[dir="rtl"] .skeleton::after {
+  animation-name: skeleton-shine-rtl;
+}
+@keyframes skeleton-shine-rtl {
+  from { translate: 100% 0; }
+  to { translate: -100% 0; }
+}
+.spinner {
+  border: 3px solid var(--patient-soft);
+  border-top-color: var(--patient-action);
+  border-radius: 999px;
+  animation: skeleton-spin 0.8s linear infinite;
+}
+@keyframes skeleton-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after,
+  [dir="rtl"] .skeleton::after { animation: none; opacity: 0; }
+  .spinner { animation: none; }
+}
 .store-skip-link { position: absolute; inset-inline-start: 16px; top: 8px; transform: translateY(-200%); background: white; color: var(--patient-ink); padding: 12px; z-index: 30; border-radius: 8px; }
 .store-skip-link:focus { transform: none; }
 @media (min-width: 600px) {
@@ -875,3 +914,25 @@
   .store-summary { padding: 20px; }
   .store-page .store-product__title h2 { font-size: 16px; line-height: 28px; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Wallet & shared billing (patient app)                               */
+/* ------------------------------------------------------------------ */
+
+.wallet-notice { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; font-size: 13px; line-height: 22px; font-weight: 600; }
+.wallet-notice--frozen { background: var(--patient-error-surface); color: var(--patient-error); }
+.wallet-notice--info { background: var(--patient-soft); color: var(--patient-ink); }
+
+/* Shared payment chooser */
+.wallet-chooser { display: grid; gap: 10px; }
+.wallet-method { display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: start; padding: 14px; border: 1.5px solid var(--patient-divider); border-radius: 16px; background: #fff; cursor: pointer; }
+.wallet-method[disabled] { opacity: .6; cursor: not-allowed; }
+.wallet-method[aria-pressed="true"] { border-color: var(--patient-action); box-shadow: 0 0 0 3px rgb(23 107 154 / 12%); }
+.wallet-method__icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: var(--patient-soft); color: var(--patient-action); }
+.wallet-method__body { flex: 1; min-width: 0; }
+.wallet-method__title { font-size: 14px; font-weight: 700; color: var(--patient-ink); }
+.wallet-method__hint { margin-top: 2px; font-size: 12px; line-height: 20px; color: var(--patient-muted); }
+
+.wallet-amount-total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px; border-radius: 16px; background: var(--patient-soft); }
+.wallet-amount-total span { font-size: 13px; color: var(--patient-muted); }
+.wallet-amount-total strong { font-family: var(--font-digikala); font-size: 22px; font-weight: 800; color: var(--patient-ink); font-variant-numeric: tabular-nums; }
