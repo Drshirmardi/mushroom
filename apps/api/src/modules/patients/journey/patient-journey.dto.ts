@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PatientBookingEligibilityResponseDto } from '../../assessments/patient/patient-booking-eligibility.dto';
+import { CoupleSessionSummaryDto } from '../../assessments/couples/couple-link.dto';
 
 export const JOURNEY_ACTIONS = ['OPEN_APPOINTMENT', 'COMPLETE_PROFILE', 'CONSENT_UNAVAILABLE', 'REVIEW_CONSENT', 'START_MEDICAL_INTAKE', 'CONTINUE_MEDICAL_INTAKE', 'COMPLETE_ONBOARDING', 'REVIEW_BOOKING_REQUIREMENTS', 'RESUME_ASSESSMENT', 'CONTINUE_PAYMENT', 'VIEW_TREATMENT_PLAN', 'VIEW_ASSESSMENT_RESULT', 'BOOK_CONSULTATION'] as const;
 export class JourneyActionDto {
@@ -71,6 +72,10 @@ export class JourneyPlansDto {
   @ApiProperty({ type: [JourneyPlanDto], maxItems: 5 }) items!: JourneyPlanDto[];
   @ApiProperty() hasMore!: boolean;
 }
+export class JourneyCoupleLinksDto {
+  @ApiProperty({ type: [CoupleSessionSummaryDto], maxItems: 5 }) items!: CoupleSessionSummaryDto[];
+  @ApiProperty() hasMore!: boolean;
+}
 export class PatientJourneyResponseDto {
   @ApiProperty({ format: 'date-time' }) evaluatedAt!: Date;
   @ApiProperty({ type: JourneyOnboardingDto }) onboarding!: JourneyOnboardingDto;
@@ -81,5 +86,6 @@ export class PatientJourneyResponseDto {
   @ApiProperty({ type: JourneyPaymentsDto }) pendingPayments!: JourneyPaymentsDto;
   @ApiProperty({ type: JourneyOrdersDto }) pendingOrders!: JourneyOrdersDto;
   @ApiProperty({ type: JourneyPlansDto }) treatmentPlans!: JourneyPlansDto;
+  @ApiProperty({ type: JourneyCoupleLinksDto }) coupleLinks!: JourneyCoupleLinksDto;
   @ApiProperty({ description: 'Shopping is independent of medical onboarding' }) storeAvailable!: boolean;
 }

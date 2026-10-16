@@ -6,13 +6,15 @@ import { pathToFileURL } from 'node:url';
 import { Client } from 'pg';
 
 const POLICY_KEY = 'MEDICAL_INTAKE_PROCESSING';
+const POLICY_KEYS = new Set([POLICY_KEY, 'COUPLES_ACCOUNT_LINKING']);
 const supportedCommands = new Set(['publish', 'validate', 'verify']);
 
 function fail(message) {
   throw new Error(`Consent policy: ${message}`);
 }
 
-export async function readPolicyDocument(path, environment) {
+export async function readPolicyDocument(path, environment, expectedPolicyKey = POLICY_KEY) {
+  if (!POLICY_KEYS.has(expectedPolicyKey)) fail('unsupported consent policy purpose');
   if (!path) fail('a policy document path is required');
   let value;
   try {
@@ -22,7 +24,7 @@ export async function readPolicyDocument(path, environment) {
   }
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail('document root must be an object');
   if (value.schemaVersion !== 1) fail('schemaVersion must be 1');
-  if (value.policyKey !== POLICY_KEY) fail(`policyKey must be ${POLICY_KEY}`);
+  if (value.policyKey !== expectedPolicyKey) fail(`policyKey must be ${expectedPolicyKey}`);
   if (!Number.isSafeInteger(value.versionNumber) || value.versionNumber < 1) fail('versionNumber must be a positive integer');
   if (value.locale !== 'fa-IR') fail('locale must be fa-IR');
   if (typeof value.title !== 'string' || value.title.trim().length === 0 || value.title.length > 255) fail('title must be 1..255 characters');
@@ -57,7 +59,7 @@ async function activeClinic(client, lock = false) {
   return result.rows[0].id;
 }
 
-async function verify(client) {
+async function verify(client, policyKey = POLICY_KEY) {
   const clinicId = await activeClinic(client);
   const result = await client.query(`
     SELECT id, version_number
@@ -66,8 +68,8 @@ async function verify(client) {
       AND policy_key = $2
       AND locale = 'fa-IR'
       AND status = 'ACTIVE'
-  `, [clinicId, POLICY_KEY]);
-  if (result.rows.length !== 1) fail(`expected exactly one active ${POLICY_KEY}/fa-IR policy, found ${result.rows.length}`);
+  `, [clinicId, policyKey]);
+  if (result.rows.length !== 1) fail(`expected exactly one active ${policyKey}/fa-IR policy, found ${result.rows.length}`);
   process.stdout.write(`consent policy ready: version ${result.rows[0].version_number}\n`);
 }
 
@@ -141,9 +143,11 @@ async function main() {
   const command = process.argv[2];
   if (!supportedCommands.has(command)) fail('usage: manage-consent-policy.mjs <validate|publish|verify>');
   const environment = process.env.MUSHROOM_ENVIRONMENT;
+  const policyKey = process.env.CONSENT_POLICY_KEY || POLICY_KEY;
+  if (!POLICY_KEYS.has(policyKey)) fail('unsupported consent policy purpose');
   const document = command === 'verify'
     ? null
-    : await readPolicyDocument(process.env.CONSENT_POLICY_DOCUMENT_FILE, environment);
+    : await readPolicyDocument(process.env.CONSENT_POLICY_DOCUMENT_FILE, environment, policyKey);
   if (command === 'validate') {
     process.stdout.write(`consent policy document valid: version ${document.versionNumber}\n`);
     return;
@@ -152,7 +156,7 @@ async function main() {
   const client = new Client({ connectionString: process.env.DATABASE_URL });
   try {
     await client.connect();
-    if (command === 'verify') await verify(client);
+    if (command === 'verify') await verify(client, policyKey);
     else await publish(client, document, process.env.CONSENT_POLICY_RELEASE_REF);
   } finally {
     await client.end();

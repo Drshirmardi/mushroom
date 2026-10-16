@@ -10,11 +10,15 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد؛ `PJ-R03 DONE` و claim آزاد شد؛ ادامهٔ پیوسته مجاز است.
-- task فعال: ندارد؛ `F12-PJ-R03 DONE` — questionnaire authoring reliability.
+- batch فعال: ندارد؛ `PJ-C01 DONE` و claim آزاد شد؛ ادامهٔ پیوسته مجاز است.
+- task فعال: ندارد؛ `F12-PJ-C01 DONE` — adult couple account linking, no medical-processing/payment grant.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-C01 pre-release review addendum frozen: couple-account-link-privacy-v1. Registered-phone-only routing would disclose membership through201/422; require the recipient's privately shared existing patient-profile address as well as normalized phone, retain independent authentication+secret acceptance, and redact the address. No public contact lookup/new identity engine. This is part of the same uncommitted C01 privacy acceptance, not a new task or modification of a frozen base contract.
+
+PJ-C01 DONE/review PASS/claim RELEASED; F12-PJ-C01; baseline front@b8cb39d clean; Codex /root single coordinator/owner/reviewer. ADR-0020/couple-account-link-v1 plus frozen pre-release privacy addendum. Delivered three same-clinic link/invitation/consent models (migration45), eight self APIs, explicit independent adult consent and intended-recipient auth, one-time hashed secret/no automatic expiry, final privacy withdrawal and bounded Journey references. Recipient must share its existing profile routing address plus phone; no phone-only membership lookup. No answers/results/entitlement/payment granted; assessmentReady=false. Verification PASS: 21 new PostgreSQL couple cases + prior106 + consent CLI4/security9 =140 API tests, client5; fresh45 replay/44→45 populated legacy preservation, no drift, all225 prior paths plus7 (eight operations), API/test/client/consumer types/freshness and main-agent review. Resolved clock rollback blocking withdrawal with monotonic evidence timestamp and recipient-phone enumeration before release; no migration rewrite. Evidence phase-12 log. Actual owner legal policy not seeded/published; registered-recipient-only and no frontend remain explicit. Disposable DB remains task-owned; persistent/providers unchanged. Next independent scope: versioned educational guidance snapshots/mappings using existing content; proposed qualified reviewer boundary (linked active doctor, clinic scope, existing clinical-sign permission; no ordinary ADMIN approval) is pending owner reply, so approval activation must await that reply. No scientific/clinical definition inferred.
 
 Owner policy decisions received: minimum participant age18; invitations must not automatically expire and remain usable until explicit authenticated acceptance (opening/prefetching a link is not acceptance); purchase cancellation disabled for now. Consent withdrawal/data-access revocation remains separate from purchase cancellation. No blanket refund-denial or scientific algorithm approval is inferred. Next couples identity/invitation foundation must enforce these choices; actual questionnaire/joint algorithm, qualified health content, consent text, refund exceptions/retention remain undefined.
 

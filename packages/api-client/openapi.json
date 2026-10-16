@@ -6606,6 +6606,972 @@
         ]
       }
     },
+    "/v1/patients/me/couple-link-policy": {
+      "get": {
+        "operationId": "patientCoupleLinkPolicyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleLinkPolicyDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the owner-published account-link policy; no medical-processing permission is implied",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-sessions": {
+      "post": {
+        "operationId": "patientCoupleSessionCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoupleLinkConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an adult couple account-link session after independent consent",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      },
+      "get": {
+        "operationId": "patientCoupleSessionsList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleSessionPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List own minimized couple link history",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-sessions/{id}": {
+      "get": {
+        "operationId": "patientCoupleSessionGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an owned couple link without partner private identity or answers",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-sessions/{id}/invitations": {
+      "post": {
+        "operationId": "patientCoupleInvitationCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoupleInvitationCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleInvitationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Issue or deliberately replace a nonexpiring registered-recipient invitation; plaintext secret only once",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-invitations/preview": {
+      "post": {
+        "operationId": "patientCoupleInvitationPreview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoupleInvitationTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleInvitationPreviewDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Preview account-link policy without accepting or consuming the invitation",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-invitations/accept": {
+      "post": {
+        "operationId": "patientCoupleInvitationAccept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoupleInvitationAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Accept as the intended adult account; no proxy identity or private response disclosure",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-sessions/{id}/consent-withdrawal": {
+      "post": {
+        "operationId": "patientCoupleConsentWithdraw",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation or explicit consent is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "An active independent session is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned session or intended-recipient invitation was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session, consent version or idempotency state conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult self-reported birth date or registered recipient is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "An owner-published account-link policy is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Withdraw own linking consent and block future shared access; no purchase cancellation/refund",
+        "tags": [
+          "Couple Account Linking"
+        ]
+      }
+    },
     "/v1/admin/clinic": {
       "get": {
         "operationId": "adminClinicGet",
@@ -14364,6 +15330,14 @@
           "code": {
             "type": "string",
             "enum": [
+              "COUPLE_SESSION_NOT_FOUND",
+              "COUPLE_INVITATION_NOT_FOUND",
+              "COUPLE_INVITATION_UNAVAILABLE",
+              "COUPLE_PARTICIPANT_INELIGIBLE",
+              "COUPLE_POLICY_UNAVAILABLE",
+              "COUPLE_CONSENT_POLICY_CHANGED",
+              "COUPLE_STATE_CONFLICT",
+              "COUPLE_RATE_LIMITED",
               "ASSESSMENT_OFFERING_NOT_FOUND",
               "ASSESSMENT_OFFERING_INVALID",
               "ASSESSMENT_OFFERING_CONFLICT",
@@ -17684,6 +18658,111 @@
           "hasMore"
         ]
       },
+      "CoupleParticipantSummaryDto": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "string",
+            "enum": [
+              "INITIATOR",
+              "PARTNER"
+            ]
+          },
+          "isSelf": {
+            "type": "boolean"
+          },
+          "consentState": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED",
+              "REVOKED"
+            ]
+          }
+        },
+        "required": [
+          "slot",
+          "isSelf",
+          "consentState"
+        ]
+      },
+      "CoupleSessionSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "AWAITING_PARTNER",
+              "LINKED",
+              "CONSENT_REVOKED"
+            ]
+          },
+          "minimumAgeYears": {
+            "type": "number",
+            "enum": [
+              18
+            ]
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "participants": {
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleParticipantSummaryDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "assessmentReady": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Account linking grants no medical-processing, payment entitlement or joint-result access"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "minimumAgeYears",
+          "consentPolicyVersionId",
+          "participants",
+          "createdAt",
+          "updatedAt",
+          "assessmentReady"
+        ]
+      },
+      "JourneyCoupleLinksDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
       "PatientJourneyResponseDto": {
         "type": "object",
         "properties": {
@@ -17715,6 +18794,9 @@
           "treatmentPlans": {
             "$ref": "#/components/schemas/JourneyPlansDto"
           },
+          "coupleLinks": {
+            "$ref": "#/components/schemas/JourneyCoupleLinksDto"
+          },
           "storeAvailable": {
             "type": "boolean",
             "description": "Shopping is independent of medical onboarding"
@@ -17730,6 +18812,7 @@
           "pendingPayments",
           "pendingOrders",
           "treatmentPlans",
+          "coupleLinks",
           "storeAvailable"
         ]
       },
@@ -19605,6 +20688,212 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "CoupleLinkPolicyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "policyKey": {
+            "type": "string",
+            "enum": [
+              "COUPLES_ACCOUNT_LINKING"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "fa-IR"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "versionNumber",
+          "policyKey",
+          "locale",
+          "title",
+          "body",
+          "contentHash"
+        ]
+      },
+      "CoupleLinkConsentDto": {
+        "type": "object",
+        "properties": {
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "consentPolicyVersionId",
+          "consentAccepted"
+        ]
+      },
+      "CoupleSessionPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "CoupleInvitationCreateDto": {
+        "type": "object",
+        "properties": {
+          "recipientPatientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Existing self-profile routing address deliberately shared by the recipient; does not authenticate or grant consent"
+          },
+          "recipientPhone": {
+            "type": "string",
+            "maxLength": 32,
+            "description": "Registered recipient mobile; normalized with the existing identity rules and never copied into invitation records"
+          }
+        },
+        "required": [
+          "recipientPatientId",
+          "recipientPhone"
+        ]
+      },
+      "CoupleInvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "invitationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "REVOKED"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Always null: invitations have no automatic deadline"
+          },
+          "invitationToken": {
+            "type": "string",
+            "nullable": true,
+            "description": "Returned only on first issuance; replay cannot recover the plaintext secret"
+          }
+        },
+        "required": [
+          "invitationId",
+          "sessionId",
+          "status",
+          "expiresAt",
+          "invitationToken"
+        ]
+      },
+      "CoupleInvitationTokenDto": {
+        "type": "object",
+        "properties": {
+          "invitationToken": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "invitationToken"
+        ]
+      },
+      "CoupleInvitationPreviewDto": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CoupleLinkPolicyDto"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "session",
+          "policy",
+          "expiresAt"
+        ]
+      },
+      "CoupleInvitationAcceptDto": {
+        "type": "object",
+        "properties": {
+          "invitationToken": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "writeOnly": true
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "invitationToken",
+          "consentPolicyVersionId",
+          "consentAccepted"
         ]
       },
       "ClinicResponseDto": {

@@ -11,6 +11,7 @@ import { AdminPatientsModule } from './modules/patients/admin/admin-patients.mod
 import { AdminAssessmentsModule } from './modules/assessments/admin/admin-assessments.module';
 import { PatientAssessmentsModule } from './modules/assessments/patient/patient-assessments.module';
 import { AssessmentOfferingsModule } from './modules/assessments/offerings/assessment-offerings.module';
+import { CoupleLinkModule } from './modules/assessments/couples/couple-link.module';
 import { AdminDirectoryModule } from './modules/directory/admin-directory.module';
 import { IntakeModule } from './modules/patients/intake/intake.module';
 import { SelfProfileModule } from './modules/patients/self-profile/self-profile.module';
@@ -52,6 +53,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AdminAssessmentsModule,
     PatientAssessmentsModule,
     AssessmentOfferingsModule,
+    CoupleLinkModule,
     AdminDirectoryModule,
     AdminSchedulingModule,
     PatientAppointmentsModule,

@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-C01` — adult independent couple account-link/invitation/linking-consent foundation; PJ-C01 DONE/review PASS/released, Codex /root; ADR-0020/couple-account-link-v1/privacy addendum. Owner age18/nonexpiry; no private answer/result/payment processing or actual legal-text publication. 140 focused API + client5/fresh45/upgrade/no drift/types PASS, evidence phase-12 log. Registered recipient address+phone, independent auth and explicit consent required; no ordinary phone membership oracle.
+
 - [x] `F12-PJ-R03` — technical questionnaire authoring/scoring-structure validation, concurrent version/state edits and atomic audit; PJ-R03 DONE/review PASS/released, Codex /root; assessment-authoring-reliability-v1. Three pre-fix defects reproduced; 106 focused API + client5/type/freshness checks PASS, evidence phase-12 log. No clinical algorithm, schema or permission change.
 
 - [x] `F12-PJ-O01` — append-only individual/couples offering draft configuration and release-readiness blockers; PJ-O01 DONE/review PASS/released, Codex /root; ADR-0019/assessment-offering-drafts-v1. 72 focused API + client5, fresh44/upgrade/no drift/generated/consumer checks PASS; evidence phase-12 log. Publication disabled, no invented clinical/commercial policies or runtime billing change.

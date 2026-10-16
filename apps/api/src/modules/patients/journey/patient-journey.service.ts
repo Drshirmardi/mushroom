@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { PatientBookingEligibilityService } from '../../assessments/patient/patient-booking-eligibility.service';
+import { coupleSessionSelect, coupleSessionSummary } from '../../assessments/couples/couple-link.projection';
 import { ClinicalAccessAuditService, type ClinicalAuditContext } from '../../clinical/clinical-access-audit.service';
 import { SelfProfileService } from '../self-profile/self-profile.service';
 import type { JourneyActionDto, PatientJourneyResponseDto } from './patient-journey.dto';
@@ -26,7 +27,7 @@ export class PatientJourneyService {
       const status = await this.profiles.getOnboardingStatus(userId, tx);
       const bookingEligibility = await this.eligibility.get(userId, tx, status, evaluatedAt);
       const assessmentScope = { patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, invalidatedAt: null };
-      const [attempts, appointments, intents, orders, plans, resumable, latestResult, nearAppointment] = await Promise.all([
+      const [attempts, appointments, intents, orders, plans, resumable, latestResult, nearAppointment, coupleLinks] = await Promise.all([
         tx.patientAssessmentSubmission.findMany({
           where: { patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, state: { in: ['IN_PROGRESS', 'COMPLETE'] }, invalidatedAt: null },
           orderBy: [{ state: 'asc' }, { updatedAt: 'desc' }, { id: 'desc' }], take: 6,
@@ -57,6 +58,8 @@ export class PatientJourneyService {
           { status: 'CONFIRMED', endsAt: { gte: new Date(evaluatedAt.getTime() - 3_600_000) } },
           { status: { in: ['CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, endsAt: { gte: new Date(evaluatedAt.getTime() - 4 * 3_600_000) } },
         ] }, orderBy: [{ startsAt: 'asc' }, { id: 'asc' }], select: { id: true } }),
+        tx.coupleSession.findMany({ where: { clinicId: patient.clinicId, participants: { some: { patientId: patient.id } } },
+          orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], take: 6, select: coupleSessionSelect }),
       ]);
       const assessments = page(attempts.map(({ assessmentVersion, ...attempt }) => ({ ...attempt,
         assessmentKey: assessmentVersion.assessmentKey, title: assessmentVersion.title, versionNumber: assessmentVersion.versionNumber,
@@ -71,6 +74,7 @@ export class PatientJourneyService {
         pendingPayments: page(intents.map((intent) => ({ ...intent, amountRial: intent.amountRial.toString() }))),
         pendingOrders: page(orders.map((order) => ({ id: order.id, totalAmountToman: order.totalAmountToman.toString(), currency: 'TOMAN' }))),
         treatmentPlans: page(plans), storeAvailable: true,
+        coupleLinks: page(coupleLinks.map(row => coupleSessionSummary(row, patient.id))),
       };
       const nextAction = this.nextAction(summary, resumable?.id, latestResult?.id, nearAppointment?.id);
       await this.audit.record({ ...scope, action: 'READ', resourceType: 'PATIENT_JOURNEY',

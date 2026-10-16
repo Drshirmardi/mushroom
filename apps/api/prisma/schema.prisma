@@ -597,6 +597,7 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  coupleLinkConsents CoupleParticipant[]
   assessmentOfferingVersions AssessmentOfferingVersion[]
   walletJournals WalletJournal[]
   walletCommands WalletCommand[]
@@ -925,6 +926,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  coupleSessions CoupleSession[]
   assessmentOfferingVersions AssessmentOfferingVersion[]
   walletAccounts WalletAccount[]
   billingIntents BillingIntent[]
@@ -1006,6 +1008,10 @@ model UserProfile {
 }
 
 model PatientProfile {
+  initiatedCoupleSessions CoupleSession[] @relation("CoupleSessionInitiator")
+  coupleParticipations CoupleParticipant[]
+  receivedCoupleInvitations CoupleInvitation[] @relation("CoupleInvitationRecipient")
+  issuedCoupleInvitations CoupleInvitation[] @relation("CoupleInvitationIssuer")
   walletAccount WalletAccount?
   billingIntents BillingIntent[]
   id                           String                         @id @default(uuid()) @db.Uuid
@@ -2069,6 +2075,8 @@ model PatientMedicalIntakeRevision {
 }
 
 model ConsentPolicyVersion {
+  coupleSessions CoupleSession[]
+  coupleLinkConsents CoupleParticipant[]
   id                String                 @id @default(uuid()) @db.Uuid
   clinicId          String                 @map("clinic_id") @db.Uuid
   policyKey         String                 @map("policy_key") @db.VarChar(100)
@@ -2144,6 +2152,75 @@ model AssessmentVersion {
   @@unique([clinicId, assessmentKey, locale, versionNumber], map: "assessment_versions_version_key")
   @@unique([id, clinicId], map: "assessment_versions_id_clinic_key")
   @@map("assessment_versions")
+}
+
+model CoupleSession {
+  id                       String   @id @default(uuid()) @db.Uuid
+  clinicId                 String   @map("clinic_id") @db.Uuid
+  initiatorPatientId       String   @map("initiator_patient_id") @db.Uuid
+  state                    String   @default("AWAITING_PARTNER") @db.VarChar(24)
+  minimumAgeYears          Int      @default(18) @map("minimum_age_years")
+  consentPolicyVersionId   String   @map("consent_policy_version_id") @db.Uuid
+  consentContentHash       String   @map("consent_content_hash") @db.Char(64)
+  idempotencyKey           String   @map("idempotency_key") @db.VarChar(200)
+  payloadHash              String   @map("payload_hash") @db.Char(64)
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic                   Clinic   @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  initiator                PatientProfile @relation("CoupleSessionInitiator", fields: [initiatorPatientId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "couple_sessions_initiator_clinic_fkey")
+  consentPolicy            ConsentPolicyVersion @relation(fields: [consentPolicyVersionId], references: [id], onDelete: Restrict)
+  participants             CoupleParticipant[]
+  invitations              CoupleInvitation[]
+
+  @@unique([id, clinicId], map: "couple_sessions_id_clinic_key")
+  @@unique([initiatorPatientId, idempotencyKey], map: "couple_sessions_command_key")
+  @@index([clinicId, createdAt, id], map: "couple_sessions_clinic_created_idx")
+  @@map("couple_sessions")
+}
+
+model CoupleParticipant {
+  id                       String   @id @default(uuid()) @db.Uuid
+  sessionId                String   @map("session_id") @db.Uuid
+  clinicId                 String   @map("clinic_id") @db.Uuid
+  patientId                String   @map("patient_id") @db.Uuid
+  slot                     String   @db.VarChar(16)
+  consentPolicyVersionId   String   @map("consent_policy_version_id") @db.Uuid
+  consentContentHash       String   @map("consent_content_hash") @db.Char(64)
+  acceptedByUserId         String   @map("accepted_by_user_id") @db.Uuid
+  acceptedSessionId        String   @map("accepted_session_id") @db.Uuid
+  acceptedAt               DateTime @default(now()) @map("accepted_at") @db.Timestamptz(3)
+  revokedAt                DateTime? @map("revoked_at") @db.Timestamptz(3)
+  session                  CoupleSession @relation(fields: [sessionId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "couple_participants_session_clinic_fkey")
+  patient                  PatientProfile @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "couple_participants_patient_clinic_fkey")
+  consentPolicy            ConsentPolicyVersion @relation(fields: [consentPolicyVersionId], references: [id], onDelete: Restrict)
+  acceptedBy               User @relation(fields: [acceptedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, slot], map: "couple_participants_slot_key")
+  @@unique([sessionId, patientId], map: "couple_participants_patient_key")
+  @@index([patientId, sessionId], map: "couple_participants_patient_session_idx")
+  @@map("couple_participants")
+}
+
+model CoupleInvitation {
+  id                       String   @id @default(uuid()) @db.Uuid
+  sessionId                String   @map("session_id") @db.Uuid
+  clinicId                 String   @map("clinic_id") @db.Uuid
+  issuerPatientId          String   @map("issuer_patient_id") @db.Uuid
+  recipientPatientId       String   @map("recipient_patient_id") @db.Uuid
+  tokenHash                String   @unique(map: "couple_invitations_token_key") @map("token_hash") @db.Char(64)
+  status                   String   @default("PENDING") @db.VarChar(16)
+  idempotencyKey           String   @map("idempotency_key") @db.VarChar(200)
+  payloadHash              String   @map("payload_hash") @db.Char(64)
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  acceptedAt               DateTime? @map("accepted_at") @db.Timestamptz(3)
+  revokedAt                DateTime? @map("revoked_at") @db.Timestamptz(3)
+  session                  CoupleSession @relation(fields: [sessionId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "couple_invitations_session_clinic_fkey")
+  issuer                   PatientProfile @relation("CoupleInvitationIssuer", fields: [issuerPatientId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "couple_invitations_issuer_clinic_fkey")
+  recipient                PatientProfile @relation("CoupleInvitationRecipient", fields: [recipientPatientId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "couple_invitations_recipient_clinic_fkey")
+
+  @@unique([issuerPatientId, idempotencyKey], map: "couple_invitations_command_key")
+  @@index([sessionId, status], map: "couple_invitations_session_status_idx")
+  @@map("couple_invitations")
 }
 
 model AssessmentOfferingVersion {

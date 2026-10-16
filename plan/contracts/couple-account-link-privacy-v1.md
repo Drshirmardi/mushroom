@@ -1,0 +1,9 @@
+# Couple account-link v1 — pre-release privacy addendum
+
+Frozen during the F12-PJ-C01 review, before its task commit, 2026-10-16. Extends ADR-0020/couple-account-link-v1 without editing the frozen base. No released client exists for C01.
+
+Review finding: registered-phone-only invitation routing would distinguish a registered patient (201) from an unknown number (422), enabling authenticated membership enumeration despite rate limits. Do not expose that discovery capability.
+
+Invitation creation therefore requires both recipientPhone and recipientPatientId (UUID), shared deliberately by the registered recipient through their existing self-profile identity/address. This is a routing address, never authentication, consent or permission; acceptance still requires the independent intended account and its one-time invitation secret. No public recipient-search endpoint, new identity table or phone copy. The backend matches address + normalized phone + clinic before creating an invitation, and uses one generic ineligible response for every mismatch. Missing address is a uniform DTO error for registered/unregistered phone alike. Canonical command hash includes normalized address/phone/session so a key cannot be reused to retarget.
+
+The future frontend can exchange the existing self-profile address through a QR/share affordance; no frontend is implemented here. Registered-recipient-only remains an explicit limitation, not a claim to support unregistered contact invitations. Redact routing address along with phone/token if a request body is logged. Read DTOs/audits never include the peer address. Tests must verify correct phone + wrong/missing address gives no membership oracle, and retain all independent-auth/token/clinic/age/consent checks. All other base contract choices, including age18, no automatic expiry and privacy revocation, remain unchanged.
