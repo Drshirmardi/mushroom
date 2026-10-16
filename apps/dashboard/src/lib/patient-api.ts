@@ -29,9 +29,25 @@ function authorization(accessToken: string) {
   return { authorization: `Bearer ${accessToken}` };
 }
 
-export async function getAdminPatients(accessToken: string): Promise<AdminPatientList> {
+export interface AdminPatientListQuery {
+  query?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export async function getAdminPatients(
+  accessToken: string,
+  query: AdminPatientListQuery = {},
+): Promise<AdminPatientList> {
+  const params = {
+    query: {
+      ...(query.query?.trim() ? { query: query.query.trim() } : {}),
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 20,
+    } as never,
+  };
   const { data, response } = await withRequestTimeout(
-    apiClient.GET("/v1/admin/patients", { headers: authorization(accessToken) }),
+    apiClient.GET("/v1/admin/patients", { headers: authorization(accessToken), params }),
   );
   if (!data) throw new PatientApiError(response.status);
   return data;
