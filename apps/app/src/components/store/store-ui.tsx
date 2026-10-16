@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { formatPrice, toP } from "../../lib/format";
+import { LoadingState } from "../shared/skeletons";
 import { ProductImage } from "./product-image";
 import { TomanIcon } from "./toman-icon";
 
@@ -26,9 +27,9 @@ export function QuantityControl({ value, min = 1, max = 100, busy = false, label
 }
 
 export function StoreState({ title, description, error = false, pending = false, action, onAction }: { title: string; description?: string; error?: boolean; pending?: boolean; action?: string; onAction?: () => void }) {
+  if (pending) return <LoadingState label={title} />;
   return <div className={`store-state ${error ? "store-state--error" : ""}`} role={error ? "alert" : "status"}>
-    {!error && !pending && <ShoppingBag aria-hidden="true" size={28} />}<h2>{title}</h2>{description && <p>{description}</p>}
-    {pending && <div className="store-skeleton" aria-hidden="true"><span /><span /></div>}
+    {!error && <ShoppingBag aria-hidden="true" size={28} />}<h2>{title}</h2>{description && <p>{description}</p>}
     {action && <Button variant="secondary" onClick={onAction}>{action}</Button>}
   </div>;
 }

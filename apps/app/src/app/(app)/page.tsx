@@ -19,6 +19,7 @@ import {
   SkeletonCard,
   SkeletonProductCard,
 } from "@/components/shared/skeletons";
+import { AnimatedGroup } from "@/components/motion/animated-group";
 import { ARTICLES } from "@/lib/data/articles";
 import { DEFAULT_MEZAJ } from "@/lib/data/mezaj";
 import { NOTIFICATIONS } from "@/lib/data/catalog";
@@ -107,7 +108,7 @@ export default function HomePage() {
               <h2 className="text-base font-bold text-foreground">اعلان‌های اخیر</h2>
               <button onClick={() => navigateScreen("NotificationCenter")} className="text-primary text-xs font-semibold">همه</button>
             </div>
-            <div className="space-y-2">
+            <AnimatedGroup className="space-y-2" preset="slide">
               {NOTIFICATIONS.filter(n => !n.read).map(n => (
                 <div key={n.id} className="bg-primary/5 border border-primary/15 rounded-2xl p-3 flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
@@ -118,7 +119,7 @@ export default function HomePage() {
                   <span className="text-[10px] text-muted-foreground flex-shrink-0">{n.time}</span>
                 </div>
               ))}
-            </div>
+            </AnimatedGroup>
           </div>
 
           {/* Articles */}
@@ -127,7 +128,7 @@ export default function HomePage() {
               <h2 className="text-base font-bold text-foreground">مقالات آموزشی</h2>
               <button onClick={() => navigateScreen("ArticlesList")} className="text-primary text-xs font-semibold">همه مقالات</button>
             </div>
-            <div className="space-y-3">
+            <AnimatedGroup className="space-y-3" preset="slide">
               {ARTICLES.slice(0, 2).map(a => (
                 <button key={a.title} onClick={() => navigateScreen("ArticleDetail", { title: a.title })} className="w-full bg-white rounded-2xl p-3.5 border border-border shadow-sm flex items-center gap-3 text-right">
                   <div className="w-14 h-14 bg-accent rounded-xl flex-shrink-0 flex items-center justify-center"><BookOpen size={20} className="text-primary" /></div>
@@ -140,7 +141,7 @@ export default function HomePage() {
                   </div>
                 </button>
               ))}
-            </div>
+            </AnimatedGroup>
           </div>
         </>
       )}

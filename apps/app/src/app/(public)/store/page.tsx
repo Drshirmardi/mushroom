@@ -11,6 +11,8 @@ import { IncredibleOffers } from "@/components/store/incredible-offers";
 import { AddressSheet } from "@/components/store/address-sheet";
 import { StoreHeroSlider } from "@/components/store/store-hero-slider";
 import { StoreShortcuts } from "@/components/store/store-shortcuts";
+import { LoadingState } from "@/components/shared/skeletons";
+import { AnimatedGroup } from "@/components/motion/animated-group";
 import { StoreCollection } from "@/components/store/store-collection";
 import {
   commerceErrorMessage,
@@ -148,7 +150,7 @@ export default function StorePage() {
         <Button variant="secondary" className="store-promo__action" onClick={() => setCatalogView(true)}><Sparkles aria-hidden="true" size={18} />مشاهده همه</Button>
       </section>
     </>}
-    {!products && !error && <div className="store-state" role="status"><p>در حال دریافت محصولات…</p><div className="store-skeleton" aria-hidden="true"><span /><span /></div></div>}
+    {!products && !error && <LoadingState label="در حال دریافت محصولات…" variant="grid" />}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}
     {products && shown.length === 0 && <div className="store-state"><Search aria-hidden="true" size={28} /><h2>محصولی یافت نشد</h2><p>با کلمات دیگری جست‌وجو کنید یا جست‌وجو را پاک کنید.</p><Button variant="secondary" onClick={() => setSearch("")}>پاک کردن جست‌وجو</Button></div>}
     <div id="store-products" tabIndex={-1} aria-label="محصولات">
@@ -161,7 +163,7 @@ export default function StorePage() {
         <header className="store-collection__header store-results-heading"><h2>{search.trim() ? "نتایج جست‌وجو" : "همهٔ محصولات"}</h2>
           <Button variant="ghost" onClick={() => { setSearch(""); setCatalogView(false); }}>بازگشت به فروشگاه</Button>
         </header>
-        <div className="store-grid">{shown.map(renderProduct)}</div>
+        <AnimatedGroup className="store-grid" preset="slide">{shown.map(renderProduct)}</AnimatedGroup>
       </>}
     </div>
     <AnimatePresence>

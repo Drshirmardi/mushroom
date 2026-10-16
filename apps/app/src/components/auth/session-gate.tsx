@@ -14,6 +14,7 @@ import {
   type AuthSessionSnapshot,
 } from "@/auth/session";
 import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
+import { Spinner } from "@/components/shared/skeletons";
 
 const sessionManager = new AuthSessionManager(authApiClient);
 setAccessTokenProvider(async () => {
@@ -36,7 +37,7 @@ function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#e8ede8] px-6">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-background p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full bg-primary/20" />
+        <Spinner className="mx-auto mb-4 h-10 w-10" />
         <p className="font-bold text-foreground">
           {status === "anonymous"
             ? "در حال انتقال به صفحه ورود…"
