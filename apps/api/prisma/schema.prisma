@@ -597,6 +597,9 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  assessmentGuidanceAuthorships AssessmentGuidanceVersion[] @relation("AssessmentGuidanceAuthor")
+  assessmentGuidanceApprovals AssessmentGuidanceVersion[] @relation("AssessmentGuidanceApprover")
+  assessmentGuidanceRevocations AssessmentGuidanceVersion[] @relation("AssessmentGuidanceRevoker")
   guidanceAuthorships GuidanceContentVersion[] @relation("GuidanceAuthor")
   guidanceApprovals GuidanceContentVersion[] @relation("GuidanceApprover")
   guidanceRevocations GuidanceContentVersion[] @relation("GuidanceRevoker")
@@ -809,6 +812,8 @@ model Credential {
 }
 
 model Session {
+  assessmentGuidanceApprovals AssessmentGuidanceVersion[] @relation("AssessmentGuidanceApprovalSession")
+  assessmentGuidanceRevocations AssessmentGuidanceVersion[] @relation("AssessmentGuidanceRevocationSession")
   guidanceApprovals GuidanceContentVersion[] @relation("GuidanceApprovalSession")
   guidanceRevocations GuidanceContentVersion[] @relation("GuidanceRevocationSession")
   id                            String                   @id @default(uuid()) @db.Uuid
@@ -931,6 +936,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  assessmentGuidanceVersions AssessmentGuidanceVersion[]
   guidanceContentVersions GuidanceContentVersion[]
   coupleSessions CoupleSession[]
   assessmentOfferingVersions AssessmentOfferingVersion[]
@@ -2135,6 +2141,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  guidanceVersions AssessmentGuidanceVersion[]
   offeringVersions          AssessmentOfferingVersion[]
   id                        String                        @id @default(uuid()) @db.Uuid
   clinicId                  String                        @map("clinic_id") @db.Uuid
@@ -2320,6 +2327,7 @@ model BookingEligibilityPolicy {
 }
 
 model DoctorProfile {
+  assessmentGuidanceApprovals AssessmentGuidanceVersion[]
   guidanceApprovals GuidanceContentVersion[]
   id                String                        @id @default(uuid()) @db.Uuid
   clinicId          String                        @map("clinic_id") @db.Uuid
@@ -3084,4 +3092,44 @@ model GuidanceContentVersion {
   @@unique([clinicId, createdByUserId, idempotencyKey], map: "guidance_content_versions_command_key")
   @@index([clinicId, status, createdAt, id], map: "guidance_content_versions_clinic_status_created_idx")
   @@map("guidance_content_versions")
+}
+
+model AssessmentGuidanceVersion {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  assessmentVersionId String @map("assessment_version_id") @db.Uuid
+  resultBandId String @map("result_band_id") @db.VarChar(100)
+  versionNumber Int @map("version_number")
+  questionnaireContentHash String @map("questionnaire_content_hash") @db.Char(64)
+  algorithmId String @map("algorithm_id") @db.VarChar(80)
+  algorithmVersion Int @map("algorithm_version")
+  resultBandSnapshot Json @map("result_band_snapshot")
+  contentReferences Json @map("content_references")
+  serviceReferences Json @map("service_references")
+  recommendConsultation Boolean @map("recommend_consultation")
+  status String @default("DRAFT") @db.VarChar(20)
+  contentHash String @map("content_hash") @db.VarChar(64)
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  approvedByUserId String? @map("approved_by_user_id") @db.Uuid
+  approvedDoctorId String? @map("approved_doctor_id") @db.Uuid
+  approvedSessionId String? @map("approved_session_id") @db.Uuid
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(3)
+  revokedByUserId String? @map("revoked_by_user_id") @db.Uuid
+  revokedSessionId String? @map("revoked_session_id") @db.Uuid
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  assessmentVersion AssessmentVersion @relation(fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  author User @relation("AssessmentGuidanceAuthor", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  approver User? @relation("AssessmentGuidanceApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  doctor DoctorProfile? @relation(fields: [approvedDoctorId], references: [id], onDelete: Restrict)
+  approvalSession Session? @relation("AssessmentGuidanceApprovalSession", fields: [approvedSessionId], references: [id], onDelete: Restrict)
+  revoker User? @relation("AssessmentGuidanceRevoker", fields: [revokedByUserId], references: [id], onDelete: Restrict)
+  revocationSession Session? @relation("AssessmentGuidanceRevocationSession", fields: [revokedSessionId], references: [id], onDelete: Restrict)
+  @@unique([assessmentVersionId, resultBandId, versionNumber], map: "assessment_guidance_versions_source_version_key")
+  @@unique([clinicId, createdByUserId, idempotencyKey], map: "assessment_guidance_versions_command_key")
+  @@index([clinicId, status, createdAt, id], map: "assessment_guidance_versions_clinic_status_created_idx")
+  @@map("assessment_guidance_versions")
 }

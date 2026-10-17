@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-G02` — DONE/review PASS/released; PJ-G02, Codex /root; exact assessment educational mapping and own guidance delivery, assessment-guidance-v1;187 focused API +client5/fresh47/upgrade/no drift/types PASS, evidence Phase12 log. G01/directory/audit reused; no actual clinical taxonomy/new engine/paid activation.
+
 - [x] `F12-PJ-G01` — DONE/review PASS/released; PJ-G01, Codex /root; immutable educational snapshots and physician-only publication, guidance-content-v1/ADR-0021. 18 new PostgreSQL cases;167 focused API +client5/fresh46/upgrade/no drift/types PASS; evidence Phase12 log. Backend-only, no clinical content invented or seeded; mappings later.
 
 - [x] `F12-PJ-C01` — adult independent couple account-link/invitation/linking-consent foundation; PJ-C01 DONE/review PASS/released, Codex /root; ADR-0020/couple-account-link-v1/privacy addendum. Owner age18/nonexpiry; no private answer/result/payment processing or actual legal-text publication. 140 focused API + client5/fresh45/upgrade/no drift/types PASS, evidence phase-12 log. Registered recipient address+phone, independent auth and explicit consent required; no ordinary phone membership oracle.

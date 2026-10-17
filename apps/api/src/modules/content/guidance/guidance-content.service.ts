@@ -3,6 +3,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException, U
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { Prisma, type GuidanceContentVersion } from '../../../generated/prisma/client';
 import type { GuidanceApprovalDto, GuidanceContentCreateDto, GuidanceContentQueryDto, GuidanceSafetyDto, GuidanceSourceDto } from './guidance-content.dto';
+import { GuidanceAuthorityService } from './guidance-authority.service';
 
 type Context = { actorUserId: string; actorSessionId: string; requestId: string; ipAddress: string };
 type Mode = 'admin' | 'doctor' | 'patient';
@@ -16,7 +17,7 @@ const hash = (value: unknown) => createHash('sha256').update(canonical(value)).d
 
 @Injectable()
 export class GuidanceContentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService) {}
 
   async create(body: GuidanceContentCreateDto, rawKey: string | undefined, ctx: Context) {
     const key = rawKey?.trim();
@@ -114,34 +115,16 @@ export class GuidanceContentService {
     }, { maxWait: 30_000, timeout: 15_000 });
   }
 
-  private async scope(tx: Prisma.TransactionClient, mode: Mode, ctx: Context) {
-    // Keep current account/session and scope stable through sensitive writes/read projection.
-    const session = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT s.id FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.id=${ctx.actorSessionId}::uuid AND s.user_id=${ctx.actorUserId}::uuid AND s.revoked_at IS NULL AND s.expires_at>CURRENT_TIMESTAMP AND u.status='ACTIVE' FOR SHARE OF s,u`);
-    if (!session.length) throw forbidden();
-    if (mode === 'patient') {
-      const profile = await tx.patientProfile.findFirst({ where: { userId: ctx.actorUserId, clinic: { status: 'ACTIVE' } }, select: { clinicId: true } });
-      if (!profile) throw missing();
-      return profile.clinicId;
-    }
-    const clinics = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT c.id FROM clinics c JOIN clinical_clinic_accesses a ON a.clinic_id=c.id WHERE c.status='ACTIVE' AND a.user_id=${ctx.actorUserId}::uuid FOR SHARE OF c,a`);
-    if (!clinics.length) throw forbidden();
-    const clinicId = clinics[0]!.id;
-    if (mode === 'doctor') await this.doctor(tx, clinicId, ctx.actorUserId);
-    if (mode === 'admin') {
-      const roles = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT r.id FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=${ctx.actorUserId}::uuid AND r.code='ADMIN' FOR SHARE OF ur,r`);
-      if (!roles.length) throw forbidden();
-    }
-    return clinicId;
-  }
+  private scope(tx: Prisma.TransactionClient, mode: Mode, ctx: Context) { return this.authority.scope(tx, mode, ctx); }
+  private doctor(tx: Prisma.TransactionClient, clinicId: string, userId: string, lock = false) { return this.authority.doctor(tx, clinicId, userId, lock); }
 
-  private async doctor(tx: Prisma.TransactionClient, clinicId: string, userId: string, lock = false) {
-    const [authority] = lock
-      ? await tx.$queryRaw<{ id: string | null }[]>(Prisma.sql`SELECT guidance_lock_doctor(${userId}::uuid,${clinicId}::uuid) AS id`)
-      : await tx.$queryRaw<{ id: string | null }[]>(Prisma.sql`SELECT guidance_doctor_id(${userId}::uuid,${clinicId}::uuid) AS id`);
-    if (!authority?.id) throw forbidden();
-    return authority.id;
+  async approvedVersions(tx: Prisma.TransactionClient, clinicId: string, ids: string[]) {
+    if (!ids.length) return [];
+    const available = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT id FROM guidance_content_versions WHERE clinic_id=${clinicId}::uuid AND id IN (${Prisma.join(ids.map(id => Prisma.sql`${id}::uuid`))}) AND status='APPROVED' AND guidance_doctor_id(approved_by_user_id,clinic_id)=approved_doctor_id`);
+    const rows = await tx.guidanceContentVersion.findMany({ where: { clinicId, id: { in: available.map(row => row.id) } } });
+    return ids.flatMap(id => { const row = rows.find(item => item.id === id); return row ? [row] : []; });
   }
-
+  project(row: GuidanceContentVersion) { return this.response(row); }
   private async audit(tx: Prisma.TransactionClient, action: string, id: string, ctx: Context) {
     await tx.auditEvent.create({ data: { action, actorUserId: ctx.actorUserId, actorSessionId: ctx.actorSessionId, subjectType: 'GUIDANCE_CONTENT', subjectId: id, requestId: ctx.requestId.slice(0, 128), ipAddress: ctx.ipAddress, metadata: {} } });
   }
