@@ -31,6 +31,15 @@ afterEach(() => {
 });
 
 describe('release-managed consent policy document', () => {
+  it('requires an explicit joint-result disclosure purpose and exact environment/hash', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic joint-result disclosure fixture only. Not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'COUPLES_RESULT_SHARING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic disclosure', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'joint-disclosure.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'COUPLES_ACCOUNT_LINKING').status).toBe(1);
+    expect(validate('staging', path, 'COUPLES_RESULT_SHARING').status).toBe(0); expect(validate('production', path, 'COUPLES_RESULT_SHARING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'COUPLES_RESULT_SHARING').stderr).toContain('contentHash does not match');
+  });
   it('requires explicit assessment-processing purpose and exact owner document/environment', () => {
     const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
     const body = 'Synthetic test-only assessment processing document, not approved legal text.';

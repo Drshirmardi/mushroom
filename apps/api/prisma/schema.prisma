@@ -597,6 +597,9 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  coupleProtocolAuthors CoupleResultProtocolVersion[] @relation("CoupleProtocolAuthor")
+  coupleProtocolApprovals CoupleResultProtocolVersion[] @relation("CoupleProtocolApprover")
+  coupleProtocolRevocations CoupleResultProtocolVersion[] @relation("CoupleProtocolRevoker")
   commercialPublications AssessmentOfferingPublication[] @relation("CommercialPublisher")
   commercialRetirements AssessmentOfferingPublication[] @relation("CommercialRetirer")
   assessmentProtocolReviews AssessmentProtocolReview[]
@@ -819,6 +822,9 @@ model Credential {
 }
 
 model Session {
+  coupleProtocolCreations CoupleResultProtocolVersion[] @relation("CoupleProtocolCreationSession")
+  coupleProtocolApprovals CoupleResultProtocolVersion[] @relation("CoupleProtocolApprovalSession")
+  coupleProtocolRevocations CoupleResultProtocolVersion[] @relation("CoupleProtocolRevocationSession")
   commercialPublications AssessmentOfferingPublication[] @relation("CommercialPublishingSession")
   commercialRetirements AssessmentOfferingPublication[] @relation("CommercialRetiringSession")
   assessmentProtocolReviews AssessmentProtocolReview[]
@@ -946,6 +952,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentPurchases AssessmentPurchase[]
   assessmentAccessGrants AssessmentAccessGrant[]
   assessmentCommercialPublications AssessmentOfferingPublication[]
@@ -2104,6 +2111,7 @@ model PatientMedicalIntakeRevision {
 }
 
 model ConsentPolicyVersion {
+  coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentCommercialPublications AssessmentOfferingPublication[]
   assessmentProtocolReviews AssessmentProtocolReview[]
   coupleSessions CoupleSession[]
@@ -2162,6 +2170,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentAccessGrants AssessmentAccessGrant[]
   protocolReviews AssessmentProtocolReview[]
   guidanceVersions AssessmentGuidanceVersion[]
@@ -2354,6 +2363,7 @@ model BookingEligibilityPolicy {
 }
 
 model DoctorProfile {
+  coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceApprovals AssessmentGuidanceVersion[]
   guidanceApprovals GuidanceContentVersion[]
@@ -3163,6 +3173,7 @@ model AssessmentGuidanceVersion {
 }
 
 model AssessmentProtocolReview {
+  coupleResultProtocols CoupleResultProtocolVersion[]
   commercialPublications AssessmentOfferingPublication[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -3282,4 +3293,48 @@ model AssessmentAccessGrant {
   @@unique([purchaseId, slot], map: "assessment_grants_purchase_slot_key")
   @@index([clinicId, patientId, assessmentVersionId], map: "assessment_grants_patient_source_idx")
   @@map("assessment_access_grants")
+}
+
+model CoupleResultProtocolVersion {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  assessmentVersionId String @map("assessment_version_id") @db.Uuid
+  protocolReviewId String @map("protocol_review_id") @db.Uuid
+  disclosurePolicyVersionId String @map("disclosure_policy_version_id") @db.Uuid
+  disclosureContentHash String @map("disclosure_content_hash") @db.Char(64)
+  questionnaireContentHash String @map("questionnaire_content_hash") @db.Char(64)
+  versionNumber Int @map("version_number")
+  algorithmId String @default("APPROVED_PAIR_LOOKUP") @map("algorithm_id") @db.VarChar(80)
+  algorithmVersion Int @default(1) @map("algorithm_version")
+  pairs Json @db.JsonB
+  contentReferences Json @map("content_references") @db.JsonB
+  contentHash String @map("content_hash") @db.Char(64)
+  status String @default("DRAFT") @db.VarChar(20)
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  createdSessionId String @map("created_session_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  approvedByUserId String? @map("approved_by_user_id") @db.Uuid
+  approvedDoctorId String? @map("approved_doctor_id") @db.Uuid
+  approvedSessionId String? @map("approved_session_id") @db.Uuid
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(3)
+  revokedByUserId String? @map("revoked_by_user_id") @db.Uuid
+  revokedSessionId String? @map("revoked_session_id") @db.Uuid
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  assessmentVersion AssessmentVersion @relation(fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  protocolReview AssessmentProtocolReview @relation(fields: [protocolReviewId], references: [id], onDelete: Restrict)
+  disclosurePolicy ConsentPolicyVersion @relation(fields: [disclosurePolicyVersionId], references: [id], onDelete: Restrict)
+  author User @relation("CoupleProtocolAuthor", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  creationSession Session @relation("CoupleProtocolCreationSession", fields: [createdSessionId], references: [id], onDelete: Restrict)
+  approver User? @relation("CoupleProtocolApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  doctor DoctorProfile? @relation(fields: [approvedDoctorId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  approvalSession Session? @relation("CoupleProtocolApprovalSession", fields: [approvedSessionId], references: [id], onDelete: Restrict)
+  revoker User? @relation("CoupleProtocolRevoker", fields: [revokedByUserId], references: [id], onDelete: Restrict)
+  revocationSession Session? @relation("CoupleProtocolRevocationSession", fields: [revokedSessionId], references: [id], onDelete: Restrict)
+  @@unique([assessmentVersionId, versionNumber], map: "couple_result_protocol_source_number_key")
+  @@unique([clinicId, createdByUserId, idempotencyKey], map: "couple_result_protocol_command_key")
+  @@index([clinicId, status, createdAt, id], map: "couple_result_protocol_clinic_status_created_idx")
+  @@map("couple_result_protocol_versions")
 }
