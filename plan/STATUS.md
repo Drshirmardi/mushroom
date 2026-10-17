@@ -6,15 +6,17 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-16`
+- آخرین به‌رورسانی: `2026-10-17`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد؛ `PJ-C01 DONE` و claim آزاد شد؛ ادامهٔ پیوسته مجاز است.
-- task فعال: ندارد؛ `F12-PJ-C01 DONE` — adult couple account linking, no medical-processing/payment grant.
+- batch فعال: ندارد؛ `PJ-G01 DONE` و claim آزاد شد؛ ادامهٔ پیوسته مجاز است.
+- task فعال: ندارد؛ `F12-PJ-G01 DONE` — immutable educational guidance and qualified physician publication.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-G01 DONE/review PASS/claim RELEASED (2026-10-17); F12-PJ-G01; baseline front@bf64ace clean; Codex /root single coordinator/owner/reviewer. Owner explicitly approved linked active same-clinic physician plus existing clinical-sign permission; ordinary ADMIN cannot approve. Frozen guidance-content-v1/ADR-0021. One retained immutable Article-derived model (migration46), nine admin/physician/self-patient APIs, provenance/safety/hash-bound approval and final revocation. No real health content or grants seeded; old Article publication unchanged and never medical approval. Verification PASS: 18 new PostgreSQL cases;167 distinct focused API tests plus client5, fresh46/45→46 populated all-legacy-table preservation/no drift, API/test/client/consumer types, official241-path contracts (all232 prior retained), main-agent scoped review. Evidence phase-12 log. No live provider/persistent DB/frontend/production acceptance. Earlier generation was temporarily denied because approval-review usage quota was unavailable; resumed with fresh approved execution after explicit user continuation, no bypass. Next eligible candidate: separately freeze/claim exact result-band-to-approved-content/service mapping and patient delivery; technical WEIGHTED_SUM provenance is not clinical validity, actual content/taxonomy/legal/refund/retention remain release gates. Disposable DB remains task-owned.
 
 PJ-C01 pre-release review addendum frozen: couple-account-link-privacy-v1. Registered-phone-only routing would disclose membership through201/422; require the recipient's privately shared existing patient-profile address as well as normalized phone, retain independent authentication+secret acceptance, and redact the address. No public contact lookup/new identity engine. This is part of the same uncommitted C01 privacy acceptance, not a new task or modification of a frozen base contract.
 

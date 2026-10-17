@@ -597,6 +597,9 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  guidanceAuthorships GuidanceContentVersion[] @relation("GuidanceAuthor")
+  guidanceApprovals GuidanceContentVersion[] @relation("GuidanceApprover")
+  guidanceRevocations GuidanceContentVersion[] @relation("GuidanceRevoker")
   coupleLinkConsents CoupleParticipant[]
   assessmentOfferingVersions AssessmentOfferingVersion[]
   walletJournals WalletJournal[]
@@ -806,6 +809,8 @@ model Credential {
 }
 
 model Session {
+  guidanceApprovals GuidanceContentVersion[] @relation("GuidanceApprovalSession")
+  guidanceRevocations GuidanceContentVersion[] @relation("GuidanceRevocationSession")
   id                            String                   @id @default(uuid()) @db.Uuid
   userId                        String                   @map("user_id") @db.Uuid
   refreshTokenHash              String                   @unique(map: "sessions_refresh_token_hash_key") @map("refresh_token_hash") @db.Char(64)
@@ -926,6 +931,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  guidanceContentVersions GuidanceContentVersion[]
   coupleSessions CoupleSession[]
   assessmentOfferingVersions AssessmentOfferingVersion[]
   walletAccounts WalletAccount[]
@@ -1892,6 +1898,7 @@ model ArticleCategory {
 }
 
 model Article {
+  guidanceContentVersions GuidanceContentVersion[]
   id                String                   @id @default(uuid()) @db.Uuid
   clinicId          String                   @map("clinic_id") @db.Uuid
   categoryId        String                   @map("category_id") @db.Uuid
@@ -2313,6 +2320,7 @@ model BookingEligibilityPolicy {
 }
 
 model DoctorProfile {
+  guidanceApprovals GuidanceContentVersion[]
   id                String                        @id @default(uuid()) @db.Uuid
   clinicId          String                        @map("clinic_id") @db.Uuid
   userId            String?                       @unique(map: "doctor_profiles_user_id_key") @map("user_id") @db.Uuid
@@ -3037,4 +3045,43 @@ model TreatmentProgressEvent {
 
   @@index([treatmentPlanId, occurredAt, id], map: "treatment_progress_events_plan_occurred_idx")
   @@map("treatment_progress_events")
+}
+
+model GuidanceContentVersion {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  articleId String @map("article_id") @db.Uuid
+  versionNumber Int @map("version_number")
+  locale String @db.VarChar(40)
+  kind String @db.VarChar(40)
+  status String @default("DRAFT") @db.VarChar(20)
+  title String @db.VarChar(240)
+  summary String? @db.VarChar(500)
+  body String @db.Text
+  provenance Json
+  safety Json
+  contentHash String @map("content_hash") @db.VarChar(64)
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  approvedByUserId String? @map("approved_by_user_id") @db.Uuid
+  approvedDoctorId String? @map("approved_doctor_id") @db.Uuid
+  approvedSessionId String? @map("approved_session_id") @db.Uuid
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(3)
+  revokedByUserId String? @map("revoked_by_user_id") @db.Uuid
+  revokedSessionId String? @map("revoked_session_id") @db.Uuid
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Restrict)
+  author User @relation("GuidanceAuthor", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  approver User? @relation("GuidanceApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  doctor DoctorProfile? @relation(fields: [approvedDoctorId], references: [id], onDelete: Restrict)
+  approvalSession Session? @relation("GuidanceApprovalSession", fields: [approvedSessionId], references: [id], onDelete: Restrict)
+  revoker User? @relation("GuidanceRevoker", fields: [revokedByUserId], references: [id], onDelete: Restrict)
+  revocationSession Session? @relation("GuidanceRevocationSession", fields: [revokedSessionId], references: [id], onDelete: Restrict)
+  @@unique([clinicId, articleId, locale, versionNumber], map: "guidance_content_versions_article_version_key")
+  @@unique([clinicId, createdByUserId, idempotencyKey], map: "guidance_content_versions_command_key")
+  @@index([clinicId, status, createdAt, id], map: "guidance_content_versions_clinic_status_created_idx")
+  @@map("guidance_content_versions")
 }

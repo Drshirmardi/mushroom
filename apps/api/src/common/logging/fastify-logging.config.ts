@@ -37,6 +37,8 @@ export const createFastifyLoggingOptions = (
         'req.body.invitationToken',
         'req.body.recipientPhone',
         'req.body.recipientPatientId',
+        'req.body.provenance',
+        'req.body.safety',
         'req.body.refreshToken',
         'req.body.accessToken',
       ],

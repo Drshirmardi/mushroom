@@ -22,6 +22,7 @@ import { ClinicalModule } from './modules/clinical/clinical.module';
 import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
 import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
 import { ContentModule } from './modules/content/content.module';
+import { GuidanceContentModule } from './modules/content/guidance/guidance-content.module';
 import { OutboxModule } from './modules/outbox/outbox.module';
 import { AdminCommerceCatalogModule } from './modules/commerce/catalog/admin-commerce-catalog.module';
 import { ChatModule } from './modules/communications/chat/chat.module';
@@ -58,7 +59,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AdminSchedulingModule,
     PatientAppointmentsModule,
     ClinicalModule,
-    HealthObservationsModule, NotificationsModule, ContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
+    HealthObservationsModule, NotificationsModule, ContentModule, GuidanceContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
   ],
 })
 export class AppModule {}
