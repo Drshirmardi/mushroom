@@ -25,6 +25,7 @@ import { SelfProfileModule } from './modules/patients/self-profile/self-profile.
 import { PatientJourneyModule } from './modules/patients/journey/patient-journey.module';
 import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.module';
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
+import { AssignedAppointmentModule } from './modules/appointments/assigned/assigned-appointment.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
 import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
 import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
@@ -66,6 +67,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AdminDirectoryModule,
     AdminSchedulingModule,
     PatientAppointmentsModule,
+    AssignedAppointmentModule,
     ClinicalModule,
     HealthObservationsModule, NotificationsModule, ContentModule, GuidanceContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
     AssessmentGuidanceModule,

@@ -16763,6 +16763,490 @@
         ]
       }
     },
+    "/v1/clinical/appointments": {
+      "get": {
+        "operationId": "assignedAppointmentsList",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "CONFIRMED",
+                "CHECKED_IN",
+                "QUEUED",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "NO_SHOW",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedAppointmentPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict bounded query or empty mutation body required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active physician session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current qualified physician clinical capability required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assigned consultation unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Current visit state, window or doctor operation conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List only current physician assigned visit metadata; no medical or financial payload",
+        "tags": [
+          "Assigned consultation operations"
+        ]
+      }
+    },
+    "/v1/clinical/appointments/{appointmentId}/consultation-context": {
+      "get": {
+        "operationId": "assignedConsultationContext",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedConsultationContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict bounded query or empty mutation body required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active physician session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current qualified physician clinical capability required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assigned consultation unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Current visit state, window or doctor operation conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read assigned operational visit/encounter/text references and current actions without creating a session",
+        "tags": [
+          "Assigned consultation operations"
+        ]
+      }
+    },
+    "/v1/clinical/appointments/{appointmentId}/start": {
+      "post": {
+        "operationId": "assignedConsultationStart",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedConsultationContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict bounded query or empty mutation body required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active physician session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current qualified physician clinical capability required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assigned consultation unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Current visit state, window or doctor operation conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start only this physician checked-in/queued appointment using the existing atomic visit workflow",
+        "tags": [
+          "Assigned consultation operations"
+        ]
+      }
+    },
+    "/v1/clinical/appointments/{appointmentId}/complete": {
+      "post": {
+        "operationId": "assignedConsultationComplete",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedConsultationContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict bounded query or empty mutation body required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active physician session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current qualified physician clinical capability required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assigned consultation unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Current visit state, window or doctor operation conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Complete only this physician current encounter using the existing atomic visit workflow",
+        "tags": [
+          "Assigned consultation operations"
+        ]
+      }
+    },
     "/v1/patients/me/health-observations": {
       "post": {
         "operationId": "patientHealthObservationCreate",
@@ -22042,6 +22526,7 @@
             "enum": [
               "COUPLE_JOINT_RESULT_UNAVAILABLE",
               "ASSESSMENT_CARE_NOT_FOUND",
+              "ASSIGNED_CONSULTATION_NOT_FOUND",
               "ASSESSMENT_CARE_CONFLICT",
               "COUPLE_JOINT_RESULT_NOT_READY",
               "COUPLE_ASSESSMENT_NOT_FOUND",
@@ -33036,6 +33521,244 @@
           "completionRate",
           "averageWaitMinutes",
           "items"
+        ]
+      },
+      "AssignedAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
+            ]
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "patientDisplayName",
+          "doctorServiceId",
+          "serviceName",
+          "visitMode",
+          "status",
+          "startsAt",
+          "endsAt",
+          "startedAt",
+          "completedAt"
+        ]
+      },
+      "AssignedAppointmentPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedAppointmentDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AssignedEncounterDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state"
+        ]
+      },
+      "AssignedConsultationContextDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
+            ]
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "canStart": {
+            "type": "boolean"
+          },
+          "canComplete": {
+            "type": "boolean"
+          },
+          "canOpenAssessmentContext": {
+            "type": "boolean"
+          },
+          "encounter": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssignedEncounterDto"
+              }
+            ]
+          },
+          "textConsultationSupported": {
+            "type": "boolean"
+          },
+          "conversationId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "voiceSupported": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "videoSupported": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "patientDisplayName",
+          "doctorServiceId",
+          "serviceName",
+          "visitMode",
+          "status",
+          "startsAt",
+          "endsAt",
+          "startedAt",
+          "completedAt",
+          "canStart",
+          "canComplete",
+          "canOpenAssessmentContext",
+          "encounter",
+          "textConsultationSupported",
+          "conversationId",
+          "voiceSupported",
+          "videoSupported"
         ]
       },
       "CreateHealthObservationDto": {

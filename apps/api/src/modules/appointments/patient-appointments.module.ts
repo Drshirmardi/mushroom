@@ -15,5 +15,6 @@ import { OutboxModule } from '../outbox/outbox.module';
   imports: [BillingModule, PatientAssessmentsModule, AdminSchedulingModule, ClinicalModule, OutboxModule],
   controllers: [PatientAppointmentsController, AdminAppointmentsController, AdminAppointmentReportingController],
   providers: [AppointmentBillingTarget, PatientAppointmentsService, AdminAppointmentsService],
+  exports: [AdminAppointmentsService],
 })
 export class PatientAppointmentsModule {}
