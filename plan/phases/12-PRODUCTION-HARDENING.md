@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-C03` — DONE/review PASS/released; exact independent couple participation consent/final privacy withdrawal, couple-assessment-participation-v1/ADR-0026.16 new PostgreSQL cases;115 focused API+client5/fresh53/121-table upgrade/no drift/types PASS; evidence Phase12 log. No charge/grant/shared result generation.
+
 - [x] `F12-PJ-C02` — DONE/review PASS/released; qualified exact versioned joint educational protocol, couple-result-protocol-v1/readiness addendum/ADR-0025.15 new PostgreSQL cases;129 focused API+client5/fresh52/120-table upgrade/no drift/types PASS; evidence Phase12 log. Paid couple participation and actual medical/legal release remain separate.
 
 - [x] `F12-PJ-P02` — DONE/review PASS/released; shared paid individual assessment purchase/access/existing engine integration; assessment-purchase-access-v1/privacy-retirement addendum/ADR-0024.23 new real PostgreSQL cases;306 focused API+client5/fresh51/upgrade/no drift/types PASS; evidence Phase12 log. No couples checkout/actual medical or legal content/provider activation/full-product acceptance.
