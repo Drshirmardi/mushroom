@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { Client } from 'pg';
 
 const POLICY_KEY = 'MEDICAL_INTAKE_PROCESSING';
-const POLICY_KEYS = new Set([POLICY_KEY, 'COUPLES_ACCOUNT_LINKING']);
+const POLICY_KEYS = new Set([POLICY_KEY, 'COUPLES_ACCOUNT_LINKING', 'ASSESSMENT_PROCESSING']);
 const supportedCommands = new Set(['publish', 'validate', 'verify']);
 
 function fail(message) {

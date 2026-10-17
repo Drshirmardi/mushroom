@@ -597,6 +597,7 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceAuthorships AssessmentGuidanceVersion[] @relation("AssessmentGuidanceAuthor")
   assessmentGuidanceApprovals AssessmentGuidanceVersion[] @relation("AssessmentGuidanceApprover")
   assessmentGuidanceRevocations AssessmentGuidanceVersion[] @relation("AssessmentGuidanceRevoker")
@@ -812,6 +813,7 @@ model Credential {
 }
 
 model Session {
+  assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceApprovals AssessmentGuidanceVersion[] @relation("AssessmentGuidanceApprovalSession")
   assessmentGuidanceRevocations AssessmentGuidanceVersion[] @relation("AssessmentGuidanceRevocationSession")
   guidanceApprovals GuidanceContentVersion[] @relation("GuidanceApprovalSession")
@@ -936,6 +938,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceVersions AssessmentGuidanceVersion[]
   guidanceContentVersions GuidanceContentVersion[]
   coupleSessions CoupleSession[]
@@ -2088,6 +2091,7 @@ model PatientMedicalIntakeRevision {
 }
 
 model ConsentPolicyVersion {
+  assessmentProtocolReviews AssessmentProtocolReview[]
   coupleSessions CoupleSession[]
   coupleLinkConsents CoupleParticipant[]
   id                String                 @id @default(uuid()) @db.Uuid
@@ -2141,6 +2145,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  protocolReviews AssessmentProtocolReview[]
   guidanceVersions AssessmentGuidanceVersion[]
   offeringVersions          AssessmentOfferingVersion[]
   id                        String                        @id @default(uuid()) @db.Uuid
@@ -2327,6 +2332,7 @@ model BookingEligibilityPolicy {
 }
 
 model DoctorProfile {
+  assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceApprovals AssessmentGuidanceVersion[]
   guidanceApprovals GuidanceContentVersion[]
   id                String                        @id @default(uuid()) @db.Uuid
@@ -3132,4 +3138,38 @@ model AssessmentGuidanceVersion {
   @@unique([clinicId, createdByUserId, idempotencyKey], map: "assessment_guidance_versions_command_key")
   @@index([clinicId, status, createdAt, id], map: "assessment_guidance_versions_clinic_status_created_idx")
   @@map("assessment_guidance_versions")
+}
+
+model AssessmentProtocolReview {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  assessmentVersionId String @map("assessment_version_id") @db.Uuid
+  reviewNumber Int @map("review_number")
+  decision String @db.VarChar(20)
+  questionnaireContentHash String @map("questionnaire_content_hash") @db.Char(64)
+  algorithmId String @map("algorithm_id") @db.VarChar(80)
+  algorithmVersion Int @map("algorithm_version")
+  consentPolicyVersionId String @map("consent_policy_version_id") @db.Uuid
+  consentContentHash String @map("consent_content_hash") @db.Char(64)
+  protocolHash String @map("protocol_hash") @db.Char(64)
+  actorUserId String @map("actor_user_id") @db.Uuid
+  actorSessionId String @map("actor_session_id") @db.Uuid
+  doctorProfileId String @map("doctor_profile_id") @db.Uuid
+  withdrawalOfId String? @unique(map: "assessment_protocol_reviews_withdrawal_key") @map("withdrawal_of_id") @db.Uuid
+  withdrawalReason String? @map("withdrawal_reason") @db.VarChar(500)
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  assessmentVersion AssessmentVersion @relation(fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  consentPolicy ConsentPolicyVersion @relation(fields: [consentPolicyVersionId], references: [id], onDelete: Restrict)
+  actorUser User @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  actorSession Session @relation(fields: [actorSessionId], references: [id], onDelete: Restrict)
+  doctorProfile DoctorProfile @relation(fields: [doctorProfileId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  withdrawalOf AssessmentProtocolReview? @relation("AssessmentProtocolWithdrawal", fields: [withdrawalOfId], references: [id], onDelete: Restrict)
+  withdrawal AssessmentProtocolReview? @relation("AssessmentProtocolWithdrawal")
+  @@unique([assessmentVersionId, reviewNumber], map: "assessment_protocol_reviews_source_number_key")
+  @@unique([clinicId, actorUserId, idempotencyKey], map: "assessment_protocol_reviews_command_key")
+  @@index([clinicId, createdAt, id], map: "assessment_protocol_reviews_clinic_created_idx")
+  @@map("assessment_protocol_reviews")
 }

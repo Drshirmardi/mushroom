@@ -23,7 +23,7 @@ jobs:
           POSTGRES_DB: sabz_zendegi
           POSTGRES_USER: sabz_zendegi
           POSTGRES_PASSWORD: ci-password
-        ports: ['5432:5432']
+        ports: ['5432:5432', '55419:5432']
         options: >-
           --health-cmd "pg_isready -U sabz_zendegi -d sabz_zendegi"
           --health-interval 10s --health-timeout 5s --health-retries 5
@@ -64,13 +64,13 @@ jobs:
       - run: pnpm build
       - name: Assessment reliability in an isolated disposable database
         env:
-          DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/patient_journey_test?schema=public
+          DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:55419/patient_journey_test?schema=public
           PATIENT_JOURNEY_TEST_ISOLATED: '1'
         run: |
           docker exec ${{ job.services.postgres.id }} createdb -U sabz_zendegi patient_journey_test
           pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
           pnpm --filter @sabz-zendegi/api prisma:seed
-          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts test/patient-journey.integration.spec.ts test/assessment-discovery.integration.spec.ts test/assessment-offerings.integration.spec.ts test/assessment-authoring.integration.spec.ts test/couple-link.integration.spec.ts test/guidance-content.integration.spec.ts test/assessment-guidance.integration.spec.ts --no-file-parallelism
+          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts test/patient-journey.integration.spec.ts test/assessment-discovery.integration.spec.ts test/assessment-offerings.integration.spec.ts test/assessment-authoring.integration.spec.ts test/couple-link.integration.spec.ts test/guidance-content.integration.spec.ts test/assessment-guidance.integration.spec.ts test/assessment-protocol.integration.spec.ts --no-file-parallelism
       - name: Install browser for existing access smoke suite
         run: pnpm exec playwright install --with-deps chromium
       - name: Browser session and access smoke

@@ -10,11 +10,13 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: ندارد؛ `PJ-P01 DONE` و claim آزاد شد؛ ادامهٔ پیوسته مجاز است.
-- task فعال: ندارد؛ `F12-PJ-P01 DONE` — shared billing effects preserve domain ownership.
+- batch فعال: ندارد؛ `PJ-O02 DONE/review PASS/claim RELEASED`.
+- task فعال: ندارد؛ next eligible candidate is separately contracted qualified-protocol-bound configurable offering publication.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-O02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-O02; baseline front@76cd380 clean; Codex /root single coordinator/owner/reviewer. Frozen assessment-protocol-review-v1/ADR-0022. One retained append-only exact questionnaire/scoring/ASSESSMENT_PROCESSING consent physician review ledger, seven operations/six new paths, bounded nonpatient source preview/queue/history; explicit withdrawal/review revision/idempotency and current physician authority. Reused G01 authority/SQL, existing engine and unchanged canonical authoring hash. No offering/payment activation or actual clinical/legal text seeded. Verification PASS:19 new PostgreSQL cases;200 focused tests17 files plus8 OpenAPI=208 distinct API tests;client5/freshness/build and API/test/App/Dashboard/Web types;fresh48 replay/populated47-to48 all-legacy preservation/no schema drift; indexed latest-review EXPLAIN; main review/staged check. Dedicated CI port aligned to existing isolated test guards, new suite added; hosted CI not executed locally. Graphify update now succeeded (8554 nodes/23245 edges), superseding earlier launcher limitation for this run; SQL/HCL parser dependencies absent and one existing chat extraction warning, no packages installed. Evidence phase-12 log. Next prerequisite is configurable commercial publication referencing exact draft/protocol/consent, then shared assessment purchase/entitlement and all result-route enforcement under separate claims. Owner decisions PRE_START/no ordinary refunds/min18/no invitation expiry preserved; actual source/legal/retention/joint algorithm remain release data gates.
 
 Owner digital assessment decisions (2026-10-17): successful assessment purchases have no ordinary refunds/cancellation; payment is before starting; results remain stored in the owning account with approved relevant recommendations. Individual/couples assessment prices must be configurable via dashboard administrative APIs, never fixed/hardcoded; preserve per-purchase tariff snapshots when later configurations change. Do not alter independent Store/appointment refund policies or conflate duplicate/late verified financial compensation with an ordinary assessment refund. Digital purchase/release contracts must enforce PRE_START, no ordinary assessment refund and configurable versioned price. Existing legacy free assessments retain their frozen behavior until explicitly scoped digital contexts exist.
 

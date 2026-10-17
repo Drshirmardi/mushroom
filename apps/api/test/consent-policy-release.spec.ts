@@ -31,6 +31,15 @@ afterEach(() => {
 });
 
 describe('release-managed consent policy document', () => {
+  it('requires explicit assessment-processing purpose and exact owner document/environment', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic test-only assessment processing document, not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'ASSESSMENT_PROCESSING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic processing', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'assessment.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'COUPLES_ACCOUNT_LINKING').status).toBe(1);
+    const result = validate('staging', path, 'ASSESSMENT_PROCESSING'); expect(result.status, result.stderr).toBe(0); expect(validate('production', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').stderr).toContain('contentHash does not match');
+  });
   it('accepts the exact reviewed document in rehearsal environments', () => {
     for (const environment of ['staging', 'production-sim']) {
       const result = validate(environment);

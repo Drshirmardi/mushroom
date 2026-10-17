@@ -17164,6 +17164,787 @@
           "Educational Guidance"
         ]
       }
+    },
+    "/v1/clinical/assessment-protocols": {
+      "get": {
+        "operationId": "clinicalAssessmentProtocolQueue",
+        "parameters": [
+          {
+            "name": "assessmentKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolQueuePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List immutable questionnaire candidates without patient data",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}": {
+      "get": {
+        "operationId": "clinicalAssessmentProtocolPreview",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "consentPolicyVersionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Inspect exact questions, scoring and purpose-specific consent before educational protocol review",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews": {
+      "get": {
+        "operationId": "clinicalAssessmentProtocolHistory",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      },
+      "post": {
+        "operationId": "clinicalAssessmentProtocolApprove",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProtocolApproveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Append an exact physician protocol review; commercial publication and patient entitlement remain separate",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews/{reviewId}/withdrawal": {
+      "post": {
+        "operationId": "clinicalAssessmentProtocolWithdraw",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "reviewId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProtocolWithdrawalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Append withdrawal of current approval; retain its source and professional evidence",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/admin/assessment-protocols/{assessmentVersionId}": {
+      "get": {
+        "operationId": "adminAssessmentProtocolPreview",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "consentPolicyVersionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content manager required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/admin/assessment-protocols/{assessmentVersionId}/reviews": {
+      "get": {
+        "operationId": "adminAssessmentProtocolHistory",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content manager required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
     }
   },
   "info": {
@@ -17234,6 +18015,9 @@
           "code": {
             "type": "string",
             "enum": [
+              "ASSESSMENT_PROTOCOL_NOT_FOUND",
+              "ASSESSMENT_PROTOCOL_CONFLICT",
+              "ASSESSMENT_PROTOCOL_INVALID",
               "ASSESSMENT_GUIDANCE_NOT_FOUND",
               "ASSESSMENT_GUIDANCE_INVALID",
               "ASSESSMENT_GUIDANCE_CONFLICT",
@@ -28503,6 +29287,397 @@
           "content",
           "services",
           "recommendConsultation"
+        ]
+      },
+      "ProtocolQueueItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "currentReviewNumber": {
+            "type": "number"
+          },
+          "latestRecordedDecision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "WITHDRAWN"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "title",
+          "locale",
+          "contentHash",
+          "status",
+          "currentReviewNumber",
+          "latestRecordedDecision"
+        ]
+      },
+      "ProtocolQueuePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProtocolQueueItemDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "ProtocolQuestionnaireDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "RETIRED"
+            ]
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "title",
+          "locale",
+          "contentHash",
+          "status",
+          "structure"
+        ]
+      },
+      "ProtocolConsentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "policyKey": {
+            "type": "string",
+            "enum": [
+              "ASSESSMENT_PROCESSING"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "versionNumber",
+          "policyKey",
+          "locale",
+          "title",
+          "body",
+          "contentHash",
+          "status"
+        ]
+      },
+      "ProtocolReviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewNumber": {
+            "type": "number"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "WITHDRAWN"
+            ]
+          },
+          "questionnaireContentHash": {
+            "type": "string"
+          },
+          "algorithmId": {
+            "type": "string"
+          },
+          "algorithmVersion": {
+            "type": "number"
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentContentHash": {
+            "type": "string"
+          },
+          "protocolHash": {
+            "type": "string"
+          },
+          "withdrawalOfId": {
+            "type": "string",
+            "nullable": true
+          },
+          "withdrawalReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "reviewNumber",
+          "decision",
+          "questionnaireContentHash",
+          "algorithmId",
+          "algorithmVersion",
+          "consentPolicyVersionId",
+          "consentContentHash",
+          "protocolHash",
+          "withdrawalOfId",
+          "withdrawalReason",
+          "createdAt"
+        ]
+      },
+      "ProtocolPreviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "questionnaire": {
+            "$ref": "#/components/schemas/ProtocolQuestionnaireDto"
+          },
+          "consentPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProtocolConsentDto"
+              }
+            ]
+          },
+          "algorithmId": {
+            "type": "string"
+          },
+          "algorithmVersion": {
+            "type": "number"
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "protocolHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentReviewNumber": {
+            "type": "number"
+          },
+          "latestReview": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+              }
+            ]
+          },
+          "approvalUsable": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "questionnaire",
+          "consentPolicy",
+          "algorithmId",
+          "algorithmVersion",
+          "educationalOnly",
+          "protocolHash",
+          "currentReviewNumber",
+          "latestReview",
+          "approvalUsable",
+          "blockers"
+        ]
+      },
+      "ProtocolReviewPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "ProtocolApproveDto": {
+        "type": "object",
+        "properties": {
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "protocolHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedReviewNumber": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reviewedQuestionnaireAndScoring": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "noDiagnosisOrTherapeuticDiet": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "consentPolicyVersionId",
+          "protocolHash",
+          "expectedReviewNumber",
+          "reviewedQuestionnaireAndScoring",
+          "educationalOnly",
+          "noDiagnosisOrTherapeuticDiet"
+        ]
+      },
+      "ProtocolWithdrawalDto": {
+        "type": "object",
+        "properties": {
+          "protocolHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedReviewNumber": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "withdrawalReason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "protocolHash",
+          "expectedReviewNumber",
+          "withdrawalReason"
         ]
       }
     }

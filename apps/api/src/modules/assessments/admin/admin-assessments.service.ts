@@ -7,6 +7,7 @@ import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS, type AssessmentAuditAction } from '../application/assessment-audit';
 import type { AssessmentListQueryDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
 import { AssessmentStructureError, validateAssessmentStructure } from '../domain/assessment-structure-validation';
+import { canonicalAssessmentJson as canonicalJson } from '../domain/assessment-canonical-json';
 
 interface AuditContext { actorUserId: string; actorSessionId: string; requestId: string; ipAddress: string }
 type Structure = Record<string, unknown>;
@@ -14,12 +15,6 @@ type Structure = Record<string, unknown>;
 const unavailable = () => new BadRequestException({ code: 'ASSESSMENT_CLINIC_UNAVAILABLE', message: 'No active clinic is configured.', details: {} });
 const absent = () => new NotFoundException({ code: 'ASSESSMENT_VERSION_NOT_FOUND', message: 'Assessment version was not found.', details: {} });
 const immutable = () => new ConflictException({ code: 'ASSESSMENT_VERSION_IMMUTABLE', message: 'Published or retired assessment versions cannot be changed.', details: {} });
-
-const canonicalJson = (value: unknown): string => {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  if (value && typeof value === 'object') return `{${Object.keys(value as Record<string, unknown>).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson((value as Record<string, unknown>)[key])}`).join(',')}}`;
-  return JSON.stringify(value);
-};
 
 const cleanText = (value: string) => value.trim().replace(/\s+/g, ' ');
 

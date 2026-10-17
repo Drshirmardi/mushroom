@@ -100,6 +100,7 @@ describe('identity security boundaries', () => {
         'req.body.recipientPatientId',
         'req.body.provenance',
         'req.body.safety',
+        'req.body.withdrawalReason',
         'req.body.refreshToken',
         'req.body.accessToken',
       ]),
