@@ -10,11 +10,13 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `NONE`؛ PJ-C04 accepted/review PASS/claim RELEASED.
-- task فعال: `NONE`؛ next candidate: explicit assigned-care assessment context, separate contract/claim.
+- batch فعال: `NONE`؛ PJ-D01 accepted/review PASS/claim RELEASED.
+- task فعال: `NONE`؛ next candidate: assigned-physician consultation context/start/end facade, separate claim.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-D01 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-D01; baseline front@8870377; Codex /root sole owner/reviewer, no subagents. One retained explicit own source/physician/appointment sharing ledger and final withdrawal/current qualified clinician educational summary, exact-purpose legal release opt-in, migrations57-58.19 new real PostgreSQL cases including actual paid couple nonpayer private care;135 distinct focused API11 files+client5/freshness/build/API/test/consumer types PASS; fresh58/populated56-to58 all124-table preservation/no drift, scoped EXPLAIN/main review/evidence Phase12 log. SQL NULL withdrawal-command defect reproduced before forward58 and fixed without rewriting applied57. No raw response/score/partner/joint disclosure, actual medical/legal/default capability/frontend/provider/persistent DB/push/deploy. Unrelated .gitignore excluded. Next: separately freeze/claim assigned-physician worklist/context and reuse existing start/end/encounter/text consultation lifecycle without blanket appointment management. Clinical review and program/service rules, real legal/clinical/provider release remain separate.
 
 PJ-C04 review seam (2026-10-17): discovery gap found before acceptance. Existing patient catalog exposes active COUPLES tariff but C03 needs jointProtocolId/hash available only to privileged C02 APIs. Owned new paid/** scope now includes read-only patient couple-assessment-offerings/:publicationId via frozen additive couple-assessment-offering-discovery-v1; reuse existing publication/joint readiness and own age/current identity, no private pair definitions or consent/entitlement mutation. Existing frozen contracts remain unchanged.
 

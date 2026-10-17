@@ -12792,6 +12792,631 @@
         ]
       }
     },
+    "/v1/clinical/appointments/{appointmentId}/assessment-context": {
+      "get": {
+        "operationId": "assignedAssessmentCareContext",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedAssessmentContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validated bounded query required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Current live physician session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified physician with explicit current clinical view required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assigned active appointment context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read current patient-authorized own summaries for this assigned physician within the consultation window; no raw responses/score",
+        "tags": [
+          "Assigned assessment care"
+        ]
+      }
+    },
+    "/v1/patients/me/appointments/{appointmentId}/assessment-sharing/preview": {
+      "get": {
+        "operationId": "patientAssessmentCarePreview",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "submissionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentCarePreviewDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict validated input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent patient session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned eligible appointment, source or policy unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Exact consent/source/assignment or command conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Preview exact optional disclosure of one own result to the assigned physician; no consent mutation",
+        "tags": [
+          "Assigned assessment care"
+        ]
+      }
+    },
+    "/v1/patients/me/appointments/{appointmentId}/assessment-sharing": {
+      "get": {
+        "operationId": "patientAssessmentCareHistory",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentCareSharePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict validated input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent patient session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned eligible appointment, source or policy unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Exact consent/source/assignment or command conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List owned retained appointment-specific sharing consent",
+        "tags": [
+          "Assigned assessment care"
+        ]
+      },
+      "post": {
+        "operationId": "patientAssessmentCareConsentAccept",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentCareAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentCareShareDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict validated input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent patient session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned eligible appointment, source or policy unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Exact consent/source/assignment or command conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Explicitly authorize only the exact own educational result/assigned doctor/appointment",
+        "tags": [
+          "Assigned assessment care"
+        ]
+      }
+    },
+    "/v1/patients/me/appointments/{appointmentId}/assessment-sharing/{shareId}/withdrawal": {
+      "post": {
+        "operationId": "patientAssessmentCareConsentWithdraw",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "shareId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentCareShareDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict validated input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent patient session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned eligible appointment, source or policy unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Exact consent/source/assignment or command conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Clinical audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Finally withdraw only this care-sharing permission; retain own result and financial evidence",
+        "tags": [
+          "Assigned assessment care"
+        ]
+      }
+    },
     "/v1/admin/assessment-offerings/versions": {
       "post": {
         "operationId": "adminAssessmentOfferingVersionCreate",
@@ -21416,6 +22041,8 @@
             "type": "string",
             "enum": [
               "COUPLE_JOINT_RESULT_UNAVAILABLE",
+              "ASSESSMENT_CARE_NOT_FOUND",
+              "ASSESSMENT_CARE_CONFLICT",
               "COUPLE_JOINT_RESULT_NOT_READY",
               "COUPLE_ASSESSMENT_NOT_FOUND",
               "COUPLE_ASSESSMENT_INVALID",
@@ -29533,6 +30160,349 @@
           "started",
           "completed",
           "completionRate"
+        ]
+      },
+      "AssessmentCareBandDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string"
+          },
+          "requiresReview": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "riskLevel",
+          "requiresReview"
+        ]
+      },
+      "AssignedAssessmentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "algorithmId": {
+            "type": "string",
+            "enum": [
+              "WEIGHTED_SUM"
+            ]
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "questionnaireContentHash": {
+            "type": "string"
+          },
+          "resultBand": {
+            "$ref": "#/components/schemas/AssessmentCareBandDto"
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "clinicalFact": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "shareId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "submissionId",
+          "assessmentVersionId",
+          "title",
+          "versionNumber",
+          "completedAt",
+          "algorithmId",
+          "algorithmVersion",
+          "questionnaireContentHash",
+          "resultBand",
+          "educationalOnly",
+          "clinicalFact",
+          "shareId"
+        ]
+      },
+      "AssignedAssessmentContextDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedAssessmentSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "appointmentId",
+          "patientId",
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AssessmentCareSummaryDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "algorithmId": {
+            "type": "string",
+            "enum": [
+              "WEIGHTED_SUM"
+            ]
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "questionnaireContentHash": {
+            "type": "string"
+          },
+          "resultBand": {
+            "$ref": "#/components/schemas/AssessmentCareBandDto"
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "clinicalFact": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "submissionId",
+          "assessmentVersionId",
+          "title",
+          "versionNumber",
+          "completedAt",
+          "algorithmId",
+          "algorithmVersion",
+          "questionnaireContentHash",
+          "resultBand",
+          "educationalOnly",
+          "clinicalFact"
+        ]
+      },
+      "AssessmentCarePreviewDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assignedDoctorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contextHash": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/AssessmentCareSummaryDto"
+          },
+          "processingPolicy": {
+            "$ref": "#/components/schemas/ProtocolConsentDto"
+          },
+          "carePolicy": {
+            "$ref": "#/components/schemas/ProtocolConsentDto"
+          }
+        },
+        "required": [
+          "appointmentId",
+          "assignedDoctorId",
+          "contextHash",
+          "source",
+          "processingPolicy",
+          "carePolicy"
+        ]
+      },
+      "AssessmentCareShareDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assignedDoctorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contextHash": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "withdrawnAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "currentlyAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "appointmentId",
+          "assignedDoctorId",
+          "submissionId",
+          "contextHash",
+          "acceptedAt",
+          "withdrawnAt",
+          "currentlyAvailable"
+        ]
+      },
+      "AssessmentCareSharePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentCareShareDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AssessmentCareAcceptDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contextHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "processingConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "carePolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "carePolicyContentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "careSharingAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "submissionId",
+          "contextHash",
+          "processingConsentRecordId",
+          "carePolicyVersionId",
+          "carePolicyContentHash",
+          "careSharingAccepted"
         ]
       },
       "CreateAssessmentOfferingVersionDto": {

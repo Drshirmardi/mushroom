@@ -58,6 +58,15 @@ describe('release-managed consent policy document', () => {
     expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(0); expect(validate('production', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(1);
     writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').stderr).toContain('contentHash does not match');
   });
+  it('requires explicit care-sharing purpose, exact reviewed hash and approved environment', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic appointment-specific care sharing fixture. Not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'ASSESSMENT_CARE_SHARING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic care disclosure', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'care-sharing.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
+    expect(validate('staging', path, 'ASSESSMENT_CARE_SHARING').status).toBe(0); expect(validate('production', path, 'ASSESSMENT_CARE_SHARING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_CARE_SHARING').stderr).toContain('contentHash does not match');
+  });
   it('accepts the exact reviewed document in rehearsal environments', () => {
     for (const environment of ['staging', 'production-sim']) {
       const result = validate(environment);

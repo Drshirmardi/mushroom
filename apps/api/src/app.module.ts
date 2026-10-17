@@ -18,6 +18,7 @@ import { AssessmentPublicationModule } from './modules/assessments/publication/a
 import { AssessmentPurchaseModule } from './modules/assessments/purchases/assessment-purchase.module';
 import { CoupleResultProtocolModule } from './modules/assessments/couples/result-protocol/couple-result-protocol.module';
 import { CoupleAssessmentModule } from './modules/assessments/couples/participation/couple-assessment.module';
+import { AssessmentCareModule } from './modules/assessments/care/assessment-care.module';
 import { AdminDirectoryModule } from './modules/directory/admin-directory.module';
 import { IntakeModule } from './modules/patients/intake/intake.module';
 import { SelfProfileModule } from './modules/patients/self-profile/self-profile.module';
@@ -59,6 +60,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AdminPatientsModule,
     AdminAssessmentsModule,
     PatientAssessmentsModule,
+    AssessmentCareModule,
     AssessmentOfferingsModule,
     CoupleLinkModule,
     AdminDirectoryModule,

@@ -597,6 +597,8 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  assessmentCareAcceptances AssessmentCareShare[] @relation("AssessmentCareAcceptingUser")
+  assessmentCareWithdrawals AssessmentCareShare[] @relation("AssessmentCareWithdrawingUser")
   coupleProtocolAuthors CoupleResultProtocolVersion[] @relation("CoupleProtocolAuthor")
   coupleProtocolApprovals CoupleResultProtocolVersion[] @relation("CoupleProtocolApprover")
   coupleProtocolRevocations CoupleResultProtocolVersion[] @relation("CoupleProtocolRevoker")
@@ -822,6 +824,8 @@ model Credential {
 }
 
 model Session {
+  assessmentCareAcceptances AssessmentCareShare[] @relation("AssessmentCareAcceptingSession")
+  assessmentCareWithdrawals AssessmentCareShare[] @relation("AssessmentCareWithdrawingSession")
   generatedCoupleJointResults CoupleAssessmentJointResult[]
   coupleAssessmentCreations CoupleAssessmentSession[]
   coupleAssessmentAcceptances CoupleAssessmentParticipant[] @relation("CoupleAssessmentAcceptanceSession")
@@ -956,6 +960,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  assessmentCareShares AssessmentCareShare[]
   coupleJointResults CoupleAssessmentJointResult[]
   coupleAssessments CoupleAssessmentSession[]
   coupleAssessmentParticipants CoupleAssessmentParticipant[]
@@ -1048,6 +1053,7 @@ model UserProfile {
 }
 
 model PatientProfile {
+  assessmentCareShares AssessmentCareShare[]
   generatedCoupleJointResults CoupleAssessmentJointResult[]
   createdCoupleAssessments CoupleAssessmentSession[]
   coupleAssessmentParticipations CoupleAssessmentParticipant[]
@@ -2121,6 +2127,7 @@ model PatientMedicalIntakeRevision {
 }
 
 model ConsentPolicyVersion {
+  assessmentCareShares AssessmentCareShare[]
   coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentCommercialPublications AssessmentOfferingPublication[]
   assessmentProtocolReviews AssessmentProtocolReview[]
@@ -2149,6 +2156,7 @@ model ConsentPolicyVersion {
 }
 
 model PatientConsentRecord {
+  assessmentCareShares AssessmentCareShare[]
   coupleAssessmentParticipations CoupleAssessmentParticipant[]
   assessmentProcessingPurchases AssessmentPurchase[] @relation("PurchaseProcessingConsent")
   assessmentTermsPurchases AssessmentPurchase[] @relation("PurchaseTermsConsent")
@@ -2318,6 +2326,7 @@ model AssessmentOfferingVersion {
 }
 
 model PatientAssessmentSubmission {
+  assessmentCareShares AssessmentCareShare[]
   initiatorJointResults CoupleAssessmentJointResult[] @relation("CoupleJointInitiatorSubmission")
   partnerJointResults CoupleAssessmentJointResult[] @relation("CoupleJointPartnerSubmission")
   accessGrantId String? @unique(map: "assessment_submissions_access_grant_key") @map("access_grant_id") @db.Uuid
@@ -2379,6 +2388,7 @@ model BookingEligibilityPolicy {
 }
 
 model DoctorProfile {
+  assessmentCareShares AssessmentCareShare[]
   coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceApprovals AssessmentGuidanceVersion[]
@@ -2549,6 +2559,7 @@ model DoctorAvailabilityException {
 }
 
 model Appointment {
+  assessmentCareShares AssessmentCareShare[]
   billingIntent BillingIntent?
   id                     String                     @id @default(uuid()) @db.Uuid
   clinicId               String                     @map("clinic_id") @db.Uuid
@@ -3189,6 +3200,7 @@ model AssessmentGuidanceVersion {
 }
 
 model AssessmentProtocolReview {
+  assessmentCareShares AssessmentCareShare[]
   coupleResultProtocols CoupleResultProtocolVersion[]
   commercialPublications AssessmentOfferingPublication[]
   id String @id @default(uuid()) @db.Uuid
@@ -3460,4 +3472,46 @@ model CoupleAssessmentJointResult {
   @@unique([generatedByPatientId, idempotencyKey], map: "couple_joint_result_command_key")
   @@index([clinicId, createdAt, id], map: "couple_joint_result_clinic_created_idx")
   @@map("couple_assessment_joint_results")
+}
+
+model AssessmentCareShare {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  appointmentId String @map("appointment_id") @db.Uuid
+  doctorId String @map("doctor_id") @db.Uuid
+  submissionId String @map("submission_id") @db.Uuid
+  protocolReviewId String @map("protocol_review_id") @db.Uuid
+  protocolHash String @map("protocol_hash") @db.Char(64)
+  sourceHash String @map("source_hash") @db.Char(64)
+  processingConsentRecordId String @map("processing_consent_record_id") @db.Uuid
+  carePolicyVersionId String @map("care_policy_version_id") @db.Uuid
+  carePolicyContentHash String @map("care_policy_content_hash") @db.Char(64)
+  contextHash String @map("context_hash") @db.Char(64)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  acceptedByUserId String @map("accepted_by_user_id") @db.Uuid
+  acceptedSessionId String @map("accepted_session_id") @db.Uuid
+  acceptedAt DateTime @default(now()) @map("accepted_at") @db.Timestamptz(3)
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  withdrawnAt DateTime? @map("withdrawn_at") @db.Timestamptz(3)
+  withdrawnByUserId String? @map("withdrawn_by_user_id") @db.Uuid
+  withdrawnSessionId String? @map("withdrawn_session_id") @db.Uuid
+  withdrawalIdempotencyKey String? @map("withdrawal_idempotency_key") @db.VarChar(200)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  appointment Appointment @relation(fields: [appointmentId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  doctor DoctorProfile @relation(fields: [doctorId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  submission PatientAssessmentSubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  protocolReview AssessmentProtocolReview @relation(fields: [protocolReviewId], references: [id], onDelete: Restrict)
+  processingConsent PatientConsentRecord @relation(fields: [processingConsentRecordId], references: [id], onDelete: Restrict)
+  carePolicy ConsentPolicyVersion @relation(fields: [carePolicyVersionId], references: [id], onDelete: Restrict)
+  acceptedBy User @relation("AssessmentCareAcceptingUser", fields: [acceptedByUserId], references: [id], onDelete: Restrict)
+  acceptedSession Session @relation("AssessmentCareAcceptingSession", fields: [acceptedSessionId], references: [id], onDelete: Restrict)
+  withdrawnBy User? @relation("AssessmentCareWithdrawingUser", fields: [withdrawnByUserId], references: [id], onDelete: Restrict)
+  withdrawnSession Session? @relation("AssessmentCareWithdrawingSession", fields: [withdrawnSessionId], references: [id], onDelete: Restrict)
+  @@unique([patientId,idempotencyKey], map: "assessment_care_acceptance_command_key")
+  @@unique([patientId,withdrawalIdempotencyKey], map: "assessment_care_withdrawal_command_key")
+  @@index([appointmentId,acceptedAt,id], map: "assessment_care_appointment_history_idx")
+  @@index([patientId,acceptedAt,id], map: "assessment_care_patient_history_idx")
+  @@map("assessment_care_shares")
 }
