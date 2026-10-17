@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-P01` — DONE/review PASS/released; PJ-P01, Codex /root; typed shared billing target effects, billing-target-effects-v1.52 focused API +client5/types/freshness PASS, evidence Phase12 log; financial behavior preserved, digital activation later.
+
 - [x] `F12-PJ-G02` — DONE/review PASS/released; PJ-G02, Codex /root; exact assessment educational mapping and own guidance delivery, assessment-guidance-v1;187 focused API +client5/fresh47/upgrade/no drift/types PASS, evidence Phase12 log. G01/directory/audit reused; no actual clinical taxonomy/new engine/paid activation.
 
 - [x] `F12-PJ-G01` — DONE/review PASS/released; PJ-G01, Codex /root; immutable educational snapshots and physician-only publication, guidance-content-v1/ADR-0021. 18 new PostgreSQL cases;167 focused API +client5/fresh46/upgrade/no drift/types PASS; evidence Phase12 log. Backend-only, no clinical content invented or seeded; mappings later.

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { type BillingIntent, Prisma } from '../../generated/prisma/client';
-import { BillingTargetRegistry } from './billing-target.registry';
+import { BillingTargetRegistry, billingReservationFields, billingSettlementFields, type PreparedTarget } from './billing-target.registry';
 import { WalletService } from './wallet.service';
 import { FinancialContext, Tx, financialAudit, financialConflict, financialKey, financialMissing, fingerprint, lockFinancial, money, moneyRial, pendingAttempts, reasonText } from './billing.policy';
 
@@ -15,7 +15,7 @@ export class BillingService {
     const actorUserId = context.actorUserId;
     const previous = await this.prisma.billingIntent.findUnique({ where: { actorUserId_idempotencyKey: { actorUserId, idempotencyKey: key } } });
     if (previous) { if (previous.fingerprint !== hash || previous.patientId !== patient.id) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.view(previous); }
-    const prepared = purpose === 'TOPUP' ? { amountRial: money(input.amountToman), snapshot: {} } : await this.targets.get(purpose).prepare(patient, input);
+    const prepared: PreparedTarget = purpose === 'TOPUP' ? { amountRial: money(input.amountToman), snapshot: {} } : await this.targets.get(purpose).prepare(patient, input);
     return this.prisma.$transaction(async tx => {
       await lockFinancial(tx, `billing-create:${actorUserId}:${key}`);
       const existing = await tx.billingIntent.findUnique({ where: { actorUserId_idempotencyKey: { actorUserId, idempotencyKey: key } } });
@@ -25,12 +25,14 @@ export class BillingService {
         const orderIntent = await tx.billingIntent.findUnique({ where: { orderId: prepared.orderId } });
         if (orderIntent) { if (orderIntent.patientId !== patient.id) throw financialMissing(); return this.view(orderIntent); }
       }
-      const holdId = purpose === 'TOPUP' ? undefined : await this.targets.get(purpose).reserve(tx, patient, prepared);
-      const intent = await tx.billingIntent.create({ data: { patientId: patient.id, clinicId: patient.clinicId, purpose, ...prepared, holdId, actorUserId, idempotencyKey: key, fingerprint: hash } });
+      const reservation = purpose === 'TOPUP' ? { kind: 'NONE' } as const : await this.targets.get(purpose).reserve(tx, patient, prepared);
+      const intent = await tx.billingIntent.create({ data: { patientId: patient.id, clinicId: patient.clinicId, purpose,
+        amountRial: prepared.amountRial, snapshot: prepared.snapshot, orderId: prepared.orderId, expiresAt: prepared.expiresAt,
+        ...billingReservationFields(purpose, reservation), actorUserId, idempotencyKey: key, fingerprint: hash } });
       await financialAudit(tx, context, 'BILLING_INTENT_CREATED', intent.id, { purpose, amountRial: intent.amountRial.toString() });
       if (intent.amountRial === 0n && purpose !== 'TOPUP') {
-        const appointmentId = await this.targets.get(purpose).settle(tx, intent, context);
-        return this.view(await tx.billingIntent.update({ where: { id: intent.id }, data: { status: 'PAID', method: 'FREE', paidAt: new Date(), ...(appointmentId ? { appointmentId } : {}) } }));
+        const settlement = await this.targets.get(purpose).settle(tx, intent, context);
+        return this.view(await tx.billingIntent.update({ where: { id: intent.id }, data: { status: 'PAID', method: 'FREE', paidAt: new Date(), ...billingSettlementFields(purpose, settlement) } }));
       }
       return this.view(intent);
     }, { timeout: 15_000 });
@@ -77,8 +79,8 @@ export class BillingService {
       if (!(await this.targets.get(intent.purpose).canSettle(tx, intent))) throw financialConflict('BILLING_HOLD_EXPIRED');
       const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
       const journal = await this.wallet.post(tx, patient, -intent.amountRial, 'PAYMENT', `intent:${id}:debit`, context);
-      const appointmentId = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'WALLET' }, context, journal.id);
-      const updated = await tx.billingIntent.update({ where: { id }, data: { status: 'PAID', method: 'WALLET', paidAt: new Date(), ...(appointmentId ? { appointmentId } : {}) } });
+      const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'WALLET' }, context, journal.id);
+      const updated = await tx.billingIntent.update({ where: { id }, data: { status: 'PAID', method: 'WALLET', paidAt: new Date(), ...billingSettlementFields(intent.purpose, settlement) } });
       await financialAudit(tx, context, 'BILLING_WALLET_PAID', id, { amountRial: intent.amountRial.toString(), journalId: journal.id });
       const response = this.view(updated);
       await tx.walletCommand.create({ data: { actorUserId: userId, idempotencyKey: key, fingerprint: hash, response } });
@@ -130,14 +132,15 @@ export class BillingService {
     let canSettle = intent.status === 'PENDING' && eligibilityValid;
     if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); canSettle = canSettle && await this.targets.get(intent.purpose).canSettle(tx, intent); }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { reference: proof.referenceId, traceNumber: proof.traceNumber, verifiedAt: new Date() } });
-    let appointmentId: string | undefined;
+    let settlementFields: { appointmentId?: string } = {};
     if (intent.purpose === 'TOPUP' || !canSettle) {
       await this.wallet.post(tx, patient, intent.amountRial, canSettle ? 'TOPUP' : 'LATE_PAYMENT_CREDIT', `gateway:${attempt.id}:credit`, context);
     } else {
-      appointmentId = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'GATEWAY' }, context, undefined, attempt.id);
+      const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'GATEWAY' }, context, undefined, attempt.id);
+      settlementFields = billingSettlementFields(intent.purpose, settlement);
     }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { status: 'VERIFIED', resultCode: proof.resultCode, compensated: !canSettle } });
-    const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: 'GATEWAY', paidAt: new Date(), ...(appointmentId ? { appointmentId } : {}) } });
+    const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: 'GATEWAY', paidAt: new Date(), ...settlementFields } });
     await financialAudit(tx, context, 'BILLING_GATEWAY_SETTLED', intent.id, { amountRial: intent.amountRial.toString(), compensated: !canSettle });
     return this.view(updated);
   }

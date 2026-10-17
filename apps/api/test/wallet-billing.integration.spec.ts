@@ -14,6 +14,7 @@ import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
 import { CommerceCheckoutService } from '../src/modules/commerce/checkout/commerce-checkout.service';
+import { OrderBillingTarget } from '../src/modules/commerce/payments/order-billing.target';
 import { PatientAvailabilityService } from '../src/modules/scheduling/patient-availability.service';
 import { PatientAppointmentsService } from '../src/modules/appointments/patient-appointments.service';
 import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
@@ -256,6 +257,31 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
       expect((await wallet.summary(p.profile)).balanceRial).toBe('3210');
       expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
     } finally { release(); fake.createPayment = original; }
+  });
+
+  it('rolls back debit, receipt and inventory if a target returns a cross-domain effect, then safely retries', async () => {
+    const p = await patient(); await credit(p, '2000'); const checkout = await order(p); const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    const before = (await wallet.summary(p.profile)).balanceRial; const target = app.get(OrderBillingTarget); const original = target.settle.bind(target); const key = randomUUID();
+    const spy = vi.spyOn(target, 'settle').mockImplementationOnce(async (...args) => {
+      await original(...args);
+      return { kind: 'APPOINTMENT', appointmentId: randomUUID() } as unknown as Awaited<ReturnType<typeof original>>;
+    });
+    try {
+      await expect(billing.payWallet(p.userId, intent.id, key, context(p.userId))).rejects.toMatchObject({ response: { code: 'BILLING_STATE_CONFLICT' } });
+      expect((await wallet.summary(p.profile)).balanceRial).toBe(before); expect(await db.payment.count({ where: { orderId: checkout.id } })).toBe(0);
+      expect((await db.commerceOrder.findUniqueOrThrow({ where: { id: checkout.id } })).status).toBe('PENDING_PAYMENT'); expect((await db.billingIntent.findUniqueOrThrow({ where: { id: intent.id } })).status).toBe('PENDING');
+    } finally { spy.mockRestore(); }
+    expect(await billing.payWallet(p.userId, intent.id, key, context(p.userId))).toMatchObject({ status: 'PAID', appointmentId: null });
+    expect(await db.walletJournal.count({ where: { reference: `intent:${intent.id}:debit` } })).toBe(1);
+  });
+
+  it('preserves explicit free appointment fulfillment without a fabricated journal', async () => {
+    const p = await patient(true); const input = await appointmentInput(p); const offering = await db.doctorService.findUniqueOrThrow({ where: { id: input.doctorServiceId } });
+    await db.doctorService.update({ where: { id: offering.id }, data: { priceAmount: 0 } });
+    try {
+      const result = await billing.create(p.userId, 'APPOINTMENT', input, randomUUID(), context(p.userId)); expect(result).toMatchObject({ status: 'PAID', method: 'FREE', amountRial: '0' }); expect(result.appointmentId).toBeTruthy();
+      const record = await db.appointment.findUniqueOrThrow({ where: { id: result.appointmentId! } }); expect(record.priceAmount).toBe(0); expect(await db.walletJournal.count({ where: { reference: `intent:${result.id}:debit` } })).toBe(0);
+    } finally { await db.doctorService.update({ where: { id: offering.id }, data: { priceAmount: offering.priceAmount } }); }
   });
 
   it('frozen wallets reject spend while financial notices are delivered without replaying the adjustment', async () => {

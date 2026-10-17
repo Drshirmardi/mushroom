@@ -36,7 +36,7 @@ export class AppointmentBillingTarget implements BillingTarget, OnModuleInit {
     const holds = await tx.appointmentHold.count({ where: { clinicId: patient.clinicId, doctorId: snapshot.doctorId, releasedAt: null, expiresAt: { gt: new Date() }, startsAt: { lt: new Date(snapshot.endsAt) }, endsAt: { gt: new Date(snapshot.startsAt) } } });
     if (active || holds) throw financialConflict('APPOINTMENT_SLOT_CONFLICT');
     const hold = await tx.appointmentHold.create({ data: { clinicId: patient.clinicId, doctorId: snapshot.doctorId, doctorServiceId: snapshot.doctorServiceId, startsAt: new Date(snapshot.startsAt), endsAt: new Date(snapshot.endsAt), expiresAt: prepared.expiresAt! } });
-    return hold.id;
+    return { kind: 'APPOINTMENT_HOLD', holdId: hold.id } as const;
   }
   async lock(tx: Tx, intent: BillingIntent) { const snapshot = intent.snapshot as BookingSnapshot; await lockFinancial(tx, `billing-doctor:${snapshot.doctorId}`); }
   async canSettle(tx: Tx, intent: BillingIntent) {
@@ -54,7 +54,7 @@ export class AppointmentBillingTarget implements BillingTarget, OnModuleInit {
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
     await this.reminders.appointment(tx, { id: appointment.id, clinicId: intent.clinicId, patientId: intent.patientId, recipientId: patient.userId, startsAt: appointment.startsAt });
     await tx.operationalActivity.create({ data: { clinicId: intent.clinicId, patientId: intent.patientId, appointmentId: appointment.id, type: 'APPOINTMENT_CREATED', metadata: { billingIntentId: intent.id } } });
-    return appointment.id;
+    return { kind: 'APPOINTMENT', appointmentId: appointment.id } as const;
   }
   async refund(_tx: Tx, _intent: BillingIntent, _amountRial: bigint, _refundId: string) { /* Appointment financial history is owned by BillingRefund. */ }
 }

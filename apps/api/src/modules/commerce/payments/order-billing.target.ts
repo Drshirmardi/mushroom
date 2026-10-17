@@ -20,7 +20,7 @@ export class OrderBillingTarget implements BillingTarget, OnModuleInit {
     await this.lock(tx, { orderId: prepared.orderId } as BillingIntent);
     const order = await tx.commerceOrder.findFirst({ where: { id: prepared.orderId, patientId: patient.id, status: 'PENDING_PAYMENT', payment: null } });
     if (!order || order.totalAmountToman * 10n !== prepared.amountRial) throw financialConflict();
-    return undefined;
+    return { kind: 'NONE' } as const;
   }
   async lock(tx: Tx, intent: BillingIntent) { await lockFinancial(tx, `billing-order:${intent.orderId}`); await tx.$queryRaw`SELECT id FROM commerce_orders WHERE id = ${intent.orderId}::uuid FOR UPDATE`; }
   async canSettle(tx: Tx, intent: BillingIntent) {
@@ -34,7 +34,7 @@ export class OrderBillingTarget implements BillingTarget, OnModuleInit {
     await tx.payment.create({ data: { orderId: intent.orderId, method: intent.method ?? 'FREE', walletJournalId: journalId, billingAttemptId: attempt?.id, commerceAmountToman: intent.amountRial / 10n, providerAmount: attempt?.amountRial, providerUnit: attempt ? 'RIAL' : null, providerReferenceId: attempt?.reference, providerTraceNumber: attempt?.traceNumber, verifiedAt: new Date() } });
     await this.inventory.consumeOrderReservations(tx, intent.orderId);
     await tx.commerceOrder.update({ where: { id: intent.orderId }, data: { status: 'PAID' } });
-    return undefined;
+    return { kind: 'NONE' } as const;
   }
   async refund(tx: Tx, intent: BillingIntent, amountRial: bigint, refundId: string) {
     if (!intent.orderId || amountRial % 10n) throw financialConflict();
