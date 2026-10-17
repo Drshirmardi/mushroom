@@ -40,6 +40,15 @@ describe('release-managed consent policy document', () => {
     const result = validate('staging', path, 'ASSESSMENT_PROCESSING'); expect(result.status, result.stderr).toBe(0); expect(validate('production', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
     writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').stderr).toContain('contentHash does not match');
   });
+  it('requires explicit purchase-terms purpose and exact environment/hash without publishing policy text', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic assessment purchase terms fixture only. Not legal text.';
+    const document = { schemaVersion: 1, policyKey: 'ASSESSMENT_PURCHASE_TERMS', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic purchase terms', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'purchase-terms.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
+    expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(0); expect(validate('production', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').stderr).toContain('contentHash does not match');
+  });
   it('accepts the exact reviewed document in rehearsal environments', () => {
     for (const environment of ['staging', 'production-sim']) {
       const result = validate(environment);

@@ -14,6 +14,7 @@ import { AssessmentOfferingsModule } from './modules/assessments/offerings/asses
 import { CoupleLinkModule } from './modules/assessments/couples/couple-link.module';
 import { AssessmentGuidanceModule } from './modules/assessments/guidance/assessment-guidance.module';
 import { AssessmentProtocolModule } from './modules/assessments/protocol/assessment-protocol.module';
+import { AssessmentPublicationModule } from './modules/assessments/publication/assessment-publication.module';
 import { AdminDirectoryModule } from './modules/directory/admin-directory.module';
 import { IntakeModule } from './modules/patients/intake/intake.module';
 import { SelfProfileModule } from './modules/patients/self-profile/self-profile.module';
@@ -64,6 +65,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     HealthObservationsModule, NotificationsModule, ContentModule, GuidanceContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
     AssessmentGuidanceModule,
     AssessmentProtocolModule,
+    AssessmentPublicationModule,
   ],
 })
 export class AppModule {}

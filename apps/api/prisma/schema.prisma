@@ -597,6 +597,8 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  commercialPublications AssessmentOfferingPublication[] @relation("CommercialPublisher")
+  commercialRetirements AssessmentOfferingPublication[] @relation("CommercialRetirer")
   assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceAuthorships AssessmentGuidanceVersion[] @relation("AssessmentGuidanceAuthor")
   assessmentGuidanceApprovals AssessmentGuidanceVersion[] @relation("AssessmentGuidanceApprover")
@@ -813,6 +815,8 @@ model Credential {
 }
 
 model Session {
+  commercialPublications AssessmentOfferingPublication[] @relation("CommercialPublishingSession")
+  commercialRetirements AssessmentOfferingPublication[] @relation("CommercialRetiringSession")
   assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceApprovals AssessmentGuidanceVersion[] @relation("AssessmentGuidanceApprovalSession")
   assessmentGuidanceRevocations AssessmentGuidanceVersion[] @relation("AssessmentGuidanceRevocationSession")
@@ -938,6 +942,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  assessmentCommercialPublications AssessmentOfferingPublication[]
   assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceVersions AssessmentGuidanceVersion[]
   guidanceContentVersions GuidanceContentVersion[]
@@ -2091,6 +2096,7 @@ model PatientMedicalIntakeRevision {
 }
 
 model ConsentPolicyVersion {
+  assessmentCommercialPublications AssessmentOfferingPublication[]
   assessmentProtocolReviews AssessmentProtocolReview[]
   coupleSessions CoupleSession[]
   coupleLinkConsents CoupleParticipant[]
@@ -2243,6 +2249,7 @@ model CoupleInvitation {
 }
 
 model AssessmentOfferingVersion {
+  commercialPublications AssessmentOfferingPublication[]
   id                     String            @id @default(uuid()) @db.Uuid
   clinicId               String            @map("clinic_id") @db.Uuid
   offeringKey            String            @map("offering_key") @db.VarChar(80)
@@ -2269,6 +2276,7 @@ model AssessmentOfferingVersion {
   createdBy              User              @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
 
   @@unique([clinicId, offeringKey, versionNumber], map: "assessment_offerings_version_key")
+  @@unique([id, clinicId], map: "assessment_offerings_id_clinic_key")
   @@unique([createdByUserId, idempotencyKey], map: "assessment_offerings_command_key")
   @@index([clinicId, createdAt, id], map: "assessment_offerings_clinic_created_idx")
   @@map("assessment_offering_versions")
@@ -3141,6 +3149,7 @@ model AssessmentGuidanceVersion {
 }
 
 model AssessmentProtocolReview {
+  commercialPublications AssessmentOfferingPublication[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   assessmentVersionId String @map("assessment_version_id") @db.Uuid
@@ -3172,4 +3181,40 @@ model AssessmentProtocolReview {
   @@unique([clinicId, actorUserId, idempotencyKey], map: "assessment_protocol_reviews_command_key")
   @@index([clinicId, createdAt, id], map: "assessment_protocol_reviews_clinic_created_idx")
   @@map("assessment_protocol_reviews")
+}
+
+model AssessmentOfferingPublication {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  offeringVersionId String @map("offering_version_id") @db.Uuid
+  offeringKey String @map("offering_key") @db.VarChar(80)
+  publicationNumber Int @map("publication_number")
+  protocolReviewId String @map("protocol_review_id") @db.Uuid
+  termsPolicyVersionId String @map("terms_policy_version_id") @db.Uuid
+  termsContentHash String @map("terms_content_hash") @db.Char(64)
+  policySnapshot Json @map("policy_snapshot") @db.JsonB
+  publicationHash String @map("publication_hash") @db.Char(64)
+  status String @default("ACTIVE") @db.VarChar(20)
+  publishedByUserId String @map("published_by_user_id") @db.Uuid
+  publishedSessionId String @map("published_session_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  retiredAt DateTime? @map("retired_at") @db.Timestamptz(3)
+  retiredByUserId String? @map("retired_by_user_id") @db.Uuid
+  retiredSessionId String? @map("retired_session_id") @db.Uuid
+  retirementReason String? @map("retirement_reason") @db.VarChar(20)
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  offeringVersion AssessmentOfferingVersion @relation(fields: [offeringVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  protocolReview AssessmentProtocolReview @relation(fields: [protocolReviewId], references: [id], onDelete: Restrict)
+  termsPolicy ConsentPolicyVersion @relation(fields: [termsPolicyVersionId], references: [id], onDelete: Restrict)
+  publisher User @relation("CommercialPublisher", fields: [publishedByUserId], references: [id], onDelete: Restrict)
+  publishingSession Session @relation("CommercialPublishingSession", fields: [publishedSessionId], references: [id], onDelete: Restrict)
+  retirer User? @relation("CommercialRetirer", fields: [retiredByUserId], references: [id], onDelete: Restrict)
+  retiringSession Session? @relation("CommercialRetiringSession", fields: [retiredSessionId], references: [id], onDelete: Restrict)
+  @@unique([id, clinicId], map: "assessment_publications_id_clinic_key")
+  @@unique([clinicId, offeringKey, publicationNumber], map: "assessment_publications_key_number_key")
+  @@unique([clinicId, publishedByUserId, idempotencyKey], map: "assessment_publications_command_key")
+  @@index([clinicId, createdAt, id], map: "assessment_publications_clinic_created_idx")
+  @@map("assessment_offering_publications")
 }

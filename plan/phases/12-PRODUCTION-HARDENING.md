@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-O03` — DONE/review PASS/released; configurable exact draft/protocol/terms commercial publication; assessment-commercial-publication-v1/ADR-0023.18 new PostgreSQL cases;227 focused API+client5/fresh49/upgrade/no drift/types PASS, evidence Phase12 log. No patient checkout/entitlement/provider activation; actual legal/clinical text unseeded.
+
 - [x] `F12-PJ-O02` — DONE/review PASS/released; append-only exact assessment protocol physician review; assessment-protocol-review-v1/ADR-0022.19 new PostgreSQL cases;208 focused API+client5/fresh48/upgrade/no drift/types PASS; evidence Phase12 log. No new algorithm/questionnaire editor, paid activation or real consent text.
 
 - [x] `F12-PJ-P01` — DONE/review PASS/released; PJ-P01, Codex /root; typed shared billing target effects, billing-target-effects-v1.52 focused API +client5/types/freshness PASS, evidence Phase12 log; financial behavior preserved, digital activation later.

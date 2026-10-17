@@ -17945,6 +17945,543 @@
           "Assessment Protocol Review"
         ]
       }
+    },
+    "/v1/admin/assessment-commercial-publications/preview": {
+      "get": {
+        "operationId": "adminAssessmentCommercialPreview",
+        "parameters": [
+          {
+            "name": "offeringVersionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "termsPolicyVersionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationPreviewDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, publication revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Complete supported commercial configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Preview exact configurable tariff, physician protocol and owner-supplied commercial terms; no checkout activation",
+        "tags": [
+          "Assessment Commercial Publication"
+        ]
+      }
+    },
+    "/v1/admin/assessment-commercial-publications": {
+      "get": {
+        "operationId": "adminAssessmentCommercialList",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "COUPLES"
+              ]
+            }
+          },
+          {
+            "name": "offeringKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, publication revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Complete supported commercial configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Commercial Publication"
+        ]
+      },
+      "post": {
+        "operationId": "adminAssessmentCommercialPublish",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishAssessmentOfferingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationRecordDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, publication revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Complete supported commercial configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Publish an immutable configurable tariff; replace previous tariff without changing receipts",
+        "tags": [
+          "Assessment Commercial Publication"
+        ]
+      }
+    },
+    "/v1/admin/assessment-commercial-publications/{id}": {
+      "get": {
+        "operationId": "adminAssessmentCommercialGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, publication revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Complete supported commercial configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Commercial Publication"
+        ]
+      }
+    },
+    "/v1/admin/assessment-commercial-publications/{id}/retire": {
+      "post": {
+        "operationId": "adminAssessmentCommercialRetire",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationRecordDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, publication revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Complete supported commercial configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Withdraw tariff from new purchases while retaining prior purchase evidence",
+        "tags": [
+          "Assessment Commercial Publication"
+        ]
+      }
     }
   },
   "info": {
@@ -18015,6 +18552,9 @@
           "code": {
             "type": "string",
             "enum": [
+              "ASSESSMENT_PUBLICATION_NOT_FOUND",
+              "ASSESSMENT_PUBLICATION_CONFLICT",
+              "ASSESSMENT_PUBLICATION_INVALID",
               "ASSESSMENT_PROTOCOL_NOT_FOUND",
               "ASSESSMENT_PROTOCOL_CONFLICT",
               "ASSESSMENT_PROTOCOL_INVALID",
@@ -29678,6 +30218,467 @@
           "protocolHash",
           "expectedReviewNumber",
           "withdrawalReason"
+        ]
+      },
+      "CommercialTariffDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offeringKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "RETIRED"
+            ]
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "paymentPoint": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "PRE_START",
+              "PRE_RESULT_UNLOCK"
+            ]
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "algorithmId": {
+            "type": "string",
+            "nullable": true
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "policyDraft": {
+            "$ref": "#/components/schemas/OfferingPolicyDraftDto"
+          }
+        },
+        "required": [
+          "id",
+          "offeringKey",
+          "versionNumber",
+          "kind",
+          "title",
+          "locale",
+          "status",
+          "assessmentVersionId",
+          "priceMode",
+          "paymentPoint",
+          "amountRial",
+          "currency",
+          "algorithmId",
+          "algorithmVersion",
+          "policyDraft"
+        ]
+      },
+      "CommercialTermsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "policyKey": {
+            "type": "string",
+            "enum": [
+              "ASSESSMENT_PURCHASE_TERMS"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "versionNumber",
+          "locale",
+          "title",
+          "body",
+          "contentHash",
+          "status",
+          "policyKey"
+        ]
+      },
+      "CommercialPolicyDto": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "minimumAgeYears": {
+            "type": "number",
+            "enum": [
+              18
+            ]
+          },
+          "paymentPoint": {
+            "type": "string",
+            "enum": [
+              "PRE_START"
+            ]
+          },
+          "ordinaryRefunds": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "patientCancellation": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "invitationAutomaticExpiry": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "entitlementAutomaticExpiry": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "minimumAgeYears",
+          "paymentPoint",
+          "ordinaryRefunds",
+          "patientCancellation",
+          "invitationAutomaticExpiry",
+          "entitlementAutomaticExpiry"
+        ]
+      },
+      "PublicationPreviewDto": {
+        "type": "object",
+        "properties": {
+          "offering": {
+            "$ref": "#/components/schemas/CommercialTariffDto"
+          },
+          "termsPolicy": {
+            "$ref": "#/components/schemas/CommercialTermsDto"
+          },
+          "protocolReviewId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "protocolHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CommercialPolicyDto"
+          },
+          "publicationHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedPublicationNumber": {
+            "type": "number"
+          },
+          "configurationReady": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "offering",
+          "termsPolicy",
+          "protocolReviewId",
+          "protocolHash",
+          "policy",
+          "publicationHash",
+          "expectedPublicationNumber",
+          "configurationReady",
+          "blockers"
+        ]
+      },
+      "PublicationRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offeringKey": {
+            "type": "string"
+          },
+          "publicationNumber": {
+            "type": "number"
+          },
+          "offering": {
+            "$ref": "#/components/schemas/CommercialTariffDto"
+          },
+          "protocolReviewId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsContentHash": {
+            "type": "string"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CommercialPolicyDto"
+          },
+          "publicationHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RETIRED"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retiredAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "retirementReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "REPLACED",
+              "WITHDRAWN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "offeringKey",
+          "publicationNumber",
+          "offering",
+          "protocolReviewId",
+          "termsPolicyVersionId",
+          "termsContentHash",
+          "policy",
+          "publicationHash",
+          "status",
+          "createdAt",
+          "retiredAt",
+          "retirementReason"
+        ]
+      },
+      "PublicationPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicationRecordDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "PublishAssessmentOfferingDto": {
+        "type": "object",
+        "properties": {
+          "offeringVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedPublicationNumber": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reviewedTermsAndRetention": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "offeringVersionId",
+          "termsPolicyVersionId",
+          "publicationHash",
+          "expectedPublicationNumber",
+          "reviewedTermsAndRetention"
+        ]
+      },
+      "PublicationDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offeringKey": {
+            "type": "string"
+          },
+          "publicationNumber": {
+            "type": "number"
+          },
+          "offering": {
+            "$ref": "#/components/schemas/CommercialTariffDto"
+          },
+          "protocolReviewId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsContentHash": {
+            "type": "string"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CommercialPolicyDto"
+          },
+          "publicationHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RETIRED"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retiredAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "retirementReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "REPLACED",
+              "WITHDRAWN"
+            ]
+          },
+          "commercialUsable": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "offeringKey",
+          "publicationNumber",
+          "offering",
+          "protocolReviewId",
+          "termsPolicyVersionId",
+          "termsContentHash",
+          "policy",
+          "publicationHash",
+          "status",
+          "createdAt",
+          "retiredAt",
+          "retirementReason",
+          "commercialUsable",
+          "blockers"
         ]
       }
     }
