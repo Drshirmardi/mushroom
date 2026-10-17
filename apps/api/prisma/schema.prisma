@@ -663,6 +663,8 @@ model User {
   programDefinitionAuthorships ProgramDefinitionVersion[] @relation("ProgramDefinitionAuthor")
   programDefinitionApprovals ProgramDefinitionVersion[] @relation("ProgramDefinitionApprover")
   programDefinitionRevocations ProgramDefinitionVersion[] @relation("ProgramDefinitionRevoker")
+  programPublications ProgramOfferingPublication[] @relation("ProgramPublicationAuthor")
+  programPublicationRetirements ProgramOfferingPublication[] @relation("ProgramPublicationRetirer")
 }
 
 model WalletAccount {
@@ -868,6 +870,8 @@ model Session {
   programDefinitionCreations ProgramDefinitionVersion[] @relation("ProgramDefinitionCreateSession")
   programDefinitionApprovals ProgramDefinitionVersion[] @relation("ProgramDefinitionApprovalSession")
   programDefinitionRevocations ProgramDefinitionVersion[] @relation("ProgramDefinitionRevocationSession")
+  programPublications ProgramOfferingPublication[] @relation("ProgramPublicationSession")
+  programPublicationRetirements ProgramOfferingPublication[] @relation("ProgramPublicationRetirementSession")
 }
 
 model Role {
@@ -1042,6 +1046,7 @@ model Clinic {
 
   @@map("clinics")
   programDefinitions ProgramDefinitionVersion[]
+  programPublications ProgramOfferingPublication[]
 }
 
 model UserProfile {
@@ -2160,6 +2165,7 @@ model ConsentPolicyVersion {
 
   @@unique([clinicId, policyKey, locale, versionNumber], map: "consent_policy_versions_version_key")
   @@map("consent_policy_versions")
+  programPublications ProgramOfferingPublication[]
 }
 
 model PatientConsentRecord {
@@ -3569,4 +3575,47 @@ model ProgramDefinitionVersion {
   @@unique([clinicId, createdByUserId, idempotencyKey], map: "program_definitions_command_key")
   @@index([clinicId, status, createdAt, id], map: "program_definitions_clinic_status_created_idx")
   @@map("program_definition_versions")
+  commercialPublications ProgramOfferingPublication[]
+}
+
+
+model ProgramOfferingPublication {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  programDefinitionId String @map("program_definition_id") @db.Uuid
+  definitionContentHash String @map("definition_content_hash") @db.Char(64)
+  programKey String @map("program_key") @db.VarChar(100)
+  locale String @db.VarChar(40)
+  publicationNumber Int @map("publication_number")
+  amountRial BigInt @map("amount_rial")
+  currency String @default("IRR") @db.Char(3)
+  accessMode String @map("access_mode") @db.VarChar(24)
+  accessDurationDays Int? @map("access_duration_days")
+  quoteTtlSeconds Int @map("quote_ttl_seconds")
+  retentionPolicyRef String @map("retention_policy_ref") @db.VarChar(80)
+  termsPolicyVersionId String @map("terms_policy_version_id") @db.Uuid
+  termsContentHash String @map("terms_content_hash") @db.Char(64)
+  policySnapshot Json @map("policy_snapshot")
+  publicationHash String @map("publication_hash") @db.Char(64)
+  status String @default("ACTIVE") @db.VarChar(20)
+  publishedByUserId String @map("published_by_user_id") @db.Uuid
+  publishedSessionId String @map("published_session_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  retiredAt DateTime? @map("retired_at") @db.Timestamptz(3)
+  retiredByUserId String? @map("retired_by_user_id") @db.Uuid
+  retiredSessionId String? @map("retired_session_id") @db.Uuid
+  retirementReason String? @map("retirement_reason") @db.VarChar(24)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  definition ProgramDefinitionVersion @relation(fields: [programDefinitionId], references: [id], onDelete: Restrict)
+  terms ConsentPolicyVersion @relation(fields: [termsPolicyVersionId], references: [id], onDelete: Restrict)
+  author User @relation("ProgramPublicationAuthor", fields: [publishedByUserId], references: [id], onDelete: Restrict)
+  publicationSession Session @relation("ProgramPublicationSession", fields: [publishedSessionId], references: [id], onDelete: Restrict)
+  retirer User? @relation("ProgramPublicationRetirer", fields: [retiredByUserId], references: [id], onDelete: Restrict)
+  retirementSession Session? @relation("ProgramPublicationRetirementSession", fields: [retiredSessionId], references: [id], onDelete: Restrict)
+  @@unique([clinicId, programKey, locale, publicationNumber], map: "program_publications_identity_number_key")
+  @@unique([clinicId, publishedByUserId, idempotencyKey], map: "program_publications_command_key")
+  @@index([clinicId, status, createdAt, id], map: "program_publications_clinic_status_created_idx")
+  @@map("program_offering_publications")
 }

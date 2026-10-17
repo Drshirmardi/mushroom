@@ -58,6 +58,15 @@ describe('release-managed consent policy document', () => {
     expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(0); expect(validate('production', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(1);
     writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').stderr).toContain('contentHash does not match');
   });
+  it('requires explicit program-purchase purpose, exact reviewed hash and environment without installing terms', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic program purchase terms only. Not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'PROGRAM_PURCHASE_TERMS', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic program terms', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'program-terms.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(1);
+    expect(validate('staging', path, 'PROGRAM_PURCHASE_TERMS').status).toBe(0); expect(validate('production', path, 'PROGRAM_PURCHASE_TERMS').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'PROGRAM_PURCHASE_TERMS').stderr).toContain('contentHash does not match');
+  });
   it('requires explicit care-sharing purpose, exact reviewed hash and approved environment', () => {
     const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
     const body = 'Synthetic appointment-specific care sharing fixture. Not approved legal text.';

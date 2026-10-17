@@ -10,11 +10,15 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `none — PJ-PG01 DONE/review PASS/released`؛ Codex /root sole owner/reviewer, no subagents.
-- task فعال: `none` — next eligible configurable program commercial publication/owner terms scope must be frozen and claimed separately.
+- batch فعال: `none — PJ-PG02 DONE/review PASS/released`؛ Codex /root sole owner/reviewer, no subagents.
+- task فعال: `none` — next eligible shared ready-program purchase/access scope must be frozen and claimed separately.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-PG02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-PG02; baseline front@bf5ee45; sole Codex /root owner/reviewer. One immutable ProgramOfferingPublication/migration60, exact clinical/terms references, real custom directory fee, explicit price/access/quote/retention configuration and owner-confirmed no ordinary refunds.18 new PostgreSQL+one CLI purpose case;144 focused API11 files+client5/freshness/build/API/test/consumer types PASS; fresh60/populated59-to60 all127-table preservation/current program and paid readability/no drift. CAS/replacement/final retirement/live identity/source/legal/fee races/audit rollback/clock/SQL/foreign scope/main review PASS; evidence Phase12 log. No patient purchase/entitlement/therapy/actual clinical or legal source/default grant/frontend/provider/persistent DB/push/deploy. Existing .gitignore excluded. Next: separately freeze/claim ready educational program purchase and owned access using existing wallet/server Verify; custom assigned delivery follows separately and must remain unavailable until implemented.
+
+PJ-PG02 CLAIMED (2026-10-17): F12-PJ-PG02; baseline front@bf5ee45; sole Codex /root owner/reviewer, no subagents; unrelated .gitignore preserved/excluded. Dependencies accepted PG01/G01/current directory/owner consent release; owner explicitly no ordinary refund for ready/custom services. Frozen program-commercial-publication-v1/ADR-0031. Own new programs/publication/**, narrow existing ProgramDefinitionModule service export/limiter export if required, one ProgramOfferingPublication/narrow Prisma inverses/forward migration, exact-purpose CLI/test, app/errors, focused real DB/upgrade/CI checks, official API/client and scoped governance/evidence. Single writer schema/generated/disposable DB. No patient purchase/entitlement, payment/provider engine, patient treatment/record access, real clinical/legal/retention data/default grant/frontend/persistent DB/push/deploy. Required exact source/terms/custom price/current identity/canonical retry/consecutive CAS/retirement/immutability/audit/fresh/populated/no drift/generated/types/main review before isolated commit. Subsequent shared purchase/access and assigned custom delivery remain separate serialized tasks.
 
 Owner decision (2026-10-17, explicit reply): ready paid programs and custom physician program services also have no ordinary refund after successful payment. Preserve existing duplicate/late/captured-unfulfillable financial compensation separately; do not infer service-delivery, clinical suitability or actual legal text from this decision.
 
