@@ -4856,6 +4856,1739 @@
         ]
       }
     },
+    "/v1/clinical/assessment-protocols": {
+      "get": {
+        "operationId": "clinicalAssessmentProtocolQueue",
+        "parameters": [
+          {
+            "name": "assessmentKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolQueuePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List immutable questionnaire candidates without patient data",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}": {
+      "get": {
+        "operationId": "clinicalAssessmentProtocolPreview",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "consentPolicyVersionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Inspect exact questions, scoring and purpose-specific consent before educational protocol review",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews": {
+      "get": {
+        "operationId": "clinicalAssessmentProtocolHistory",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      },
+      "post": {
+        "operationId": "clinicalAssessmentProtocolApprove",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProtocolApproveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Append an exact physician protocol review; commercial publication and patient entitlement remain separate",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews/{reviewId}/withdrawal": {
+      "post": {
+        "operationId": "clinicalAssessmentProtocolWithdraw",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "reviewId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProtocolWithdrawalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, review revision or command conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Exact supported source and explicit review required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Append withdrawal of current approval; retain its source and professional evidence",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/admin/assessment-protocols/{assessmentVersionId}": {
+      "get": {
+        "operationId": "adminAssessmentProtocolPreview",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "consentPolicyVersionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content manager required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/admin/assessment-protocols/{assessmentVersionId}/reviews": {
+      "get": {
+        "operationId": "adminAssessmentProtocolHistory",
+        "parameters": [
+          {
+            "name": "assessmentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolReviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content manager required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Protocol source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Assessment Protocol Review"
+        ]
+      }
+    },
+    "/v1/admin/guidance-content/versions": {
+      "post": {
+        "operationId": "adminGuidanceContentCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuidanceContentCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content authority required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash, lifecycle or idempotency conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Capture existing Article text as an immutable unapproved educational version",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/admin/guidance-content": {
+      "get": {
+        "operationId": "adminGuidanceContentList",
+        "parameters": [
+          {
+            "name": "articleId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "APPROVED",
+                "REVOKED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content authority required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash, lifecycle or idempotency conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/admin/guidance-content/{id}": {
+      "get": {
+        "operationId": "adminGuidanceContentGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content authority required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash, lifecycle or idempotency conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/admin/guidance-content/{id}/revoke": {
+      "post": {
+        "operationId": "adminGuidanceContentDraftRevoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scoped content authority required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash, lifecycle or idempotency conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Permanently withdraw a draft; cannot revoke physician-approved content",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/clinical/guidance-content": {
+      "get": {
+        "operationId": "clinicalGuidanceContentList",
+        "parameters": [
+          {
+            "name": "articleId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "APPROVED",
+                "REVOKED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash or lifecycle conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/clinical/guidance-content/{id}": {
+      "get": {
+        "operationId": "clinicalGuidanceContentGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash or lifecycle conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/clinical/guidance-content/{id}/approve": {
+      "post": {
+        "operationId": "clinicalGuidanceContentApprove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuidanceApprovalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash or lifecycle conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Approve exact educational snapshot as a qualified scoped physician",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/clinical/guidance-content/{id}/revoke": {
+      "post": {
+        "operationId": "clinicalGuidanceContentRevoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Qualified scoped physician required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Hash or lifecycle conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inconsistent metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Permanently revoke educational content; no restoration",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/patients/me/guidance-content/{id}": {
+      "get": {
+        "operationId": "patientGuidanceContentGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Approved content unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read an approved educational version; no diagnosis or personalized therapeutic diet",
+        "tags": [
+          "Educational Guidance"
+        ]
+      }
+    },
     "/v1/patients/me/consent-policy": {
       "get": {
         "operationId": "patientGetConsentPolicy",
@@ -11476,7 +13209,8 @@
               "enum": [
                 "TOPUP",
                 "ORDER",
-                "APPOINTMENT"
+                "APPOINTMENT",
+                "ASSESSMENT"
               ]
             }
           },
@@ -12359,958 +14093,6 @@
         ],
         "tags": [
           "Content"
-        ]
-      }
-    },
-    "/v1/admin/guidance-content/versions": {
-      "post": {
-        "operationId": "adminGuidanceContentCreate",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 8,
-              "maxLength": 200
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuidanceContentCreateDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Scoped content authority required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash, lifecycle or idempotency conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Capture existing Article text as an immutable unapproved educational version",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/admin/guidance-content": {
-      "get": {
-        "operationId": "adminGuidanceContentList",
-        "parameters": [
-          {
-            "name": "articleId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "DRAFT",
-                "APPROVED",
-                "REVOKED"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentPageDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Scoped content authority required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash, lifecycle or idempotency conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/admin/guidance-content/{id}": {
-      "get": {
-        "operationId": "adminGuidanceContentGet",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Scoped content authority required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash, lifecycle or idempotency conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/admin/guidance-content/{id}/revoke": {
-      "post": {
-        "operationId": "adminGuidanceContentDraftRevoke",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Scoped content authority required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash, lifecycle or idempotency conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Permanently withdraw a draft; cannot revoke physician-approved content",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/clinical/guidance-content": {
-      "get": {
-        "operationId": "clinicalGuidanceContentList",
-        "parameters": [
-          {
-            "name": "articleId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "DRAFT",
-                "APPROVED",
-                "REVOKED"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentPageDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash or lifecycle conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/clinical/guidance-content/{id}": {
-      "get": {
-        "operationId": "clinicalGuidanceContentGet",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash or lifecycle conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/clinical/guidance-content/{id}/approve": {
-      "post": {
-        "operationId": "clinicalGuidanceContentApprove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuidanceApprovalDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash or lifecycle conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Approve exact educational snapshot as a qualified scoped physician",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/clinical/guidance-content/{id}/revoke": {
-      "post": {
-        "operationId": "clinicalGuidanceContentRevoke",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Hash or lifecycle conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Inconsistent metadata.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Permanently revoke educational content; no restoration",
-        "tags": [
-          "Educational Guidance"
-        ]
-      }
-    },
-    "/v1/patients/me/guidance-content/{id}": {
-      "get": {
-        "operationId": "patientGuidanceContentGet",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuidanceContentResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid identifier.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient access required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Approved content unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Read an approved educational version; no diagnosis or personalized therapeutic diet",
-        "tags": [
-          "Educational Guidance"
         ]
       }
     },
@@ -17165,787 +17947,6 @@
         ]
       }
     },
-    "/v1/clinical/assessment-protocols": {
-      "get": {
-        "operationId": "clinicalAssessmentProtocolQueue",
-        "parameters": [
-          {
-            "name": "assessmentKey",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolQueuePageDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Source, review revision or command conflicts.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Exact supported source and explicit review required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "List immutable questionnaire candidates without patient data",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      }
-    },
-    "/v1/clinical/assessment-protocols/{assessmentVersionId}": {
-      "get": {
-        "operationId": "clinicalAssessmentProtocolPreview",
-        "parameters": [
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "consentPolicyVersionId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolPreviewResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Source, review revision or command conflicts.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Exact supported source and explicit review required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Inspect exact questions, scoring and purpose-specific consent before educational protocol review",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      }
-    },
-    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews": {
-      "get": {
-        "operationId": "clinicalAssessmentProtocolHistory",
-        "parameters": [
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolReviewPageDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Source, review revision or command conflicts.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Exact supported source and explicit review required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      },
-      "post": {
-        "operationId": "clinicalAssessmentProtocolApprove",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 8,
-              "maxLength": 200
-            }
-          },
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ProtocolApproveDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolReviewResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Source, review revision or command conflicts.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Exact supported source and explicit review required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Append an exact physician protocol review; commercial publication and patient entitlement remain separate",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      }
-    },
-    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews/{reviewId}/withdrawal": {
-      "post": {
-        "operationId": "clinicalAssessmentProtocolWithdraw",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 8,
-              "maxLength": 200
-            }
-          },
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "reviewId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ProtocolWithdrawalDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolReviewResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Qualified scoped physician required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Source, review revision or command conflicts.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Exact supported source and explicit review required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Append withdrawal of current approval; retain its source and professional evidence",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      }
-    },
-    "/v1/admin/assessment-protocols/{assessmentVersionId}": {
-      "get": {
-        "operationId": "adminAssessmentProtocolPreview",
-        "parameters": [
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "consentPolicyVersionId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolPreviewResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Scoped content manager required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      }
-    },
-    "/v1/admin/assessment-protocols/{assessmentVersionId}/reviews": {
-      "get": {
-        "operationId": "adminAssessmentProtocolHistory",
-        "parameters": [
-          {
-            "name": "assessmentVersionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProtocolReviewPageDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active authentication required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Scoped content manager required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Protocol source unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Assessment Protocol Review"
-        ]
-      }
-    },
     "/v1/admin/assessment-commercial-publications/preview": {
       "get": {
         "operationId": "adminAssessmentCommercialPreview",
@@ -18482,6 +18483,876 @@
           "Assessment Commercial Publication"
         ]
       }
+    },
+    "/v1/patients/me/assessment-offerings": {
+      "get": {
+        "operationId": "patientPaidAssessmentOfferingsList",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "COUPLES"
+              ]
+            }
+          },
+          {
+            "name": "offeringKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentOfferingPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/assessment-offerings/{publicationId}": {
+      "get": {
+        "operationId": "patientPaidAssessmentOfferingGet",
+        "parameters": [
+          {
+            "name": "publicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentOfferingDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Review exact price and independent processing/purchase terms before payment",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/assessment-consents": {
+      "post": {
+        "operationId": "patientAssessmentConsentAccept",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentConsentAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentConsentRecordDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/assessment-consents/{id}/withdrawal": {
+      "post": {
+        "operationId": "patientAssessmentProcessingConsentWithdraw",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentConsentRecordDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Withdraw exact processing consent without deleting history or refunding purchase",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/billing/assessment-intents": {
+      "post": {
+        "operationId": "patientAssessmentBillingIntentCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentPurchaseIntentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/assessment-purchases": {
+      "get": {
+        "operationId": "patientAssessmentPurchasesList",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "COUPLES"
+              ]
+            }
+          },
+          {
+            "name": "offeringKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentPurchasePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/assessment-purchases/{id}": {
+      "get": {
+        "operationId": "patientAssessmentPurchaseGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentPurchaseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/assessment-access-grants/{id}/submission": {
+      "post": {
+        "operationId": "patientPaidAssessmentStart",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientAssessmentSubmissionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start or resume the same owned engine attempt for one paid grant",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
     }
   },
   "info": {
@@ -18552,6 +19423,12 @@
           "code": {
             "type": "string",
             "enum": [
+              "ASSESSMENT_PURCHASE_NOT_FOUND",
+              "ASSESSMENT_PURCHASE_INVALID",
+              "ASSESSMENT_PURCHASE_CONFLICT",
+              "ASSESSMENT_PAYMENT_REQUIRED",
+              "ASSESSMENT_ACCESS_UNAVAILABLE",
+              "ASSESSMENT_REFUND_NOT_ALLOWED",
               "ASSESSMENT_PUBLICATION_NOT_FOUND",
               "ASSESSMENT_PUBLICATION_CONFLICT",
               "ASSESSMENT_PUBLICATION_INVALID",
@@ -21519,6 +22396,78 @@
           "currentRevision"
         ]
       },
+      "JourneyAssessmentPurchaseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "intentId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "paymentState": {
+            "type": "string"
+          },
+          "accessGrantId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "submissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "startAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "amountRial",
+          "currency",
+          "intentId",
+          "paymentState",
+          "accessGrantId",
+          "submissionId",
+          "startAvailable"
+        ]
+      },
+      "JourneyAssessmentPurchasesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyAssessmentPurchaseDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
       "JourneyOnboardingDto": {
         "type": "object",
         "properties": {
@@ -21609,7 +22558,8 @@
               "CONTINUE_PAYMENT",
               "VIEW_TREATMENT_PLAN",
               "VIEW_ASSESSMENT_RESULT",
-              "BOOK_CONSULTATION"
+              "BOOK_CONSULTATION",
+              "START_PAID_ASSESSMENT"
             ]
           },
           "resourceId": {
@@ -21664,7 +22614,8 @@
             "type": "string",
             "nullable": true,
             "enum": [
-              "VERSION_NOT_PUBLISHED"
+              "VERSION_NOT_PUBLISHED",
+              "PROCESSING_APPROVAL_UNAVAILABLE"
             ]
           }
         },
@@ -22000,6 +22951,9 @@
       "PatientJourneyResponseDto": {
         "type": "object",
         "properties": {
+          "assessmentPurchases": {
+            "$ref": "#/components/schemas/JourneyAssessmentPurchasesDto"
+          },
           "evaluatedAt": {
             "format": "date-time",
             "type": "string"
@@ -22037,6 +22991,7 @@
           }
         },
         "required": [
+          "assessmentPurchases",
           "evaluatedAt",
           "onboarding",
           "bookingEligibility",
@@ -22413,6 +23368,634 @@
           "assessmentSubmissionId",
           "resultBand",
           "assessedAt"
+        ]
+      },
+      "ProtocolQueueItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "currentReviewNumber": {
+            "type": "number"
+          },
+          "latestRecordedDecision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "WITHDRAWN"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "title",
+          "locale",
+          "contentHash",
+          "status",
+          "currentReviewNumber",
+          "latestRecordedDecision"
+        ]
+      },
+      "ProtocolQueuePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProtocolQueueItemDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "ProtocolQuestionnaireDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "RETIRED"
+            ]
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "assessmentKey",
+          "versionNumber",
+          "title",
+          "locale",
+          "contentHash",
+          "status",
+          "structure"
+        ]
+      },
+      "ProtocolConsentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "policyKey": {
+            "type": "string",
+            "enum": [
+              "ASSESSMENT_PROCESSING"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "versionNumber",
+          "policyKey",
+          "locale",
+          "title",
+          "body",
+          "contentHash",
+          "status"
+        ]
+      },
+      "ProtocolReviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewNumber": {
+            "type": "number"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "WITHDRAWN"
+            ]
+          },
+          "questionnaireContentHash": {
+            "type": "string"
+          },
+          "algorithmId": {
+            "type": "string"
+          },
+          "algorithmVersion": {
+            "type": "number"
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentContentHash": {
+            "type": "string"
+          },
+          "protocolHash": {
+            "type": "string"
+          },
+          "withdrawalOfId": {
+            "type": "string",
+            "nullable": true
+          },
+          "withdrawalReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "reviewNumber",
+          "decision",
+          "questionnaireContentHash",
+          "algorithmId",
+          "algorithmVersion",
+          "consentPolicyVersionId",
+          "consentContentHash",
+          "protocolHash",
+          "withdrawalOfId",
+          "withdrawalReason",
+          "createdAt"
+        ]
+      },
+      "ProtocolPreviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "questionnaire": {
+            "$ref": "#/components/schemas/ProtocolQuestionnaireDto"
+          },
+          "consentPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProtocolConsentDto"
+              }
+            ]
+          },
+          "algorithmId": {
+            "type": "string"
+          },
+          "algorithmVersion": {
+            "type": "number"
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "protocolHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentReviewNumber": {
+            "type": "number"
+          },
+          "latestReview": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+              }
+            ]
+          },
+          "approvalUsable": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "questionnaire",
+          "consentPolicy",
+          "algorithmId",
+          "algorithmVersion",
+          "educationalOnly",
+          "protocolHash",
+          "currentReviewNumber",
+          "latestReview",
+          "approvalUsable",
+          "blockers"
+        ]
+      },
+      "ProtocolReviewPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProtocolReviewResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "ProtocolApproveDto": {
+        "type": "object",
+        "properties": {
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "protocolHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedReviewNumber": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reviewedQuestionnaireAndScoring": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "noDiagnosisOrTherapeuticDiet": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "consentPolicyVersionId",
+          "protocolHash",
+          "expectedReviewNumber",
+          "reviewedQuestionnaireAndScoring",
+          "educationalOnly",
+          "noDiagnosisOrTherapeuticDiet"
+        ]
+      },
+      "ProtocolWithdrawalDto": {
+        "type": "object",
+        "properties": {
+          "protocolHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedReviewNumber": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "withdrawalReason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "protocolHash",
+          "expectedReviewNumber",
+          "withdrawalReason"
+        ]
+      },
+      "GuidanceSourceDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "accessedOn": {
+            "type": "string",
+            "example": "2026-10-16"
+          },
+          "sourceVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "url",
+          "accessedOn"
+        ]
+      },
+      "GuidanceSafetyDto": {
+        "type": "object",
+        "properties": {
+          "intendedAudience": {
+            "type": "string"
+          },
+          "limitations": {
+            "type": "string"
+          },
+          "contraindications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "seekProfessionalCare": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "intendedAudience",
+          "limitations",
+          "contraindications",
+          "seekProfessionalCare"
+        ]
+      },
+      "GuidanceContentCreateDto": {
+        "type": "object",
+        "properties": {
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locale": {
+            "type": "string",
+            "example": "fa-IR"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "GENERAL_EDUCATION",
+              "DIETARY_EDUCATION",
+              "TEMPERAMENT_INTERPRETATION",
+              "PERSONALITY_DESCRIPTION"
+            ]
+          },
+          "provenance": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuidanceSourceDto"
+            }
+          },
+          "safety": {
+            "$ref": "#/components/schemas/GuidanceSafetyDto"
+          }
+        },
+        "required": [
+          "articleId",
+          "locale",
+          "kind",
+          "provenance",
+          "safety"
+        ]
+      },
+      "GuidanceContentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "GENERAL_EDUCATION",
+              "DIETARY_EDUCATION",
+              "TEMPERAMENT_INTERPRETATION",
+              "PERSONALITY_DESCRIPTION"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "APPROVED",
+              "REVOKED"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain content; never execute untrusted HTML."
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "provenance": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuidanceSourceDto"
+            }
+          },
+          "safety": {
+            "$ref": "#/components/schemas/GuidanceSafetyDto"
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "articleId",
+          "versionNumber",
+          "locale",
+          "kind",
+          "status",
+          "title",
+          "summary",
+          "body",
+          "contentHash",
+          "provenance",
+          "safety",
+          "educationalOnly",
+          "createdAt",
+          "approvedAt",
+          "revokedAt"
+        ]
+      },
+      "GuidanceContentPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuidanceContentResponseDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "GuidanceApprovalDto": {
+        "type": "object",
+        "properties": {
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "noDiagnosisOrTherapeuticDiet": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "contentHash",
+          "educationalOnly",
+          "noDiagnosisOrTherapeuticDiet"
         ]
       },
       "ConsentPolicyResponseDto": {
@@ -26640,6 +28223,12 @@
       "BillingIntentDto": {
         "type": "object",
         "properties": {
+          "assessmentPurchaseId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the ASSESSMENT target only"
+          },
           "methods": {
             "type": "array",
             "items": {
@@ -26884,6 +28473,12 @@
       "AdminBillingIntentDto": {
         "type": "object",
         "properties": {
+          "assessmentPurchaseId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the ASSESSMENT target only"
+          },
           "methods": {
             "type": "array",
             "items": {
@@ -27397,243 +28992,6 @@
             "$ref": "#/components/schemas/MediaDto"
           }
         }
-      },
-      "GuidanceSourceDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string",
-            "format": "uri"
-          },
-          "accessedOn": {
-            "type": "string",
-            "example": "2026-10-16"
-          },
-          "sourceVersion": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "label",
-          "url",
-          "accessedOn"
-        ]
-      },
-      "GuidanceSafetyDto": {
-        "type": "object",
-        "properties": {
-          "intendedAudience": {
-            "type": "string"
-          },
-          "limitations": {
-            "type": "string"
-          },
-          "contraindications": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "seekProfessionalCare": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "intendedAudience",
-          "limitations",
-          "contraindications",
-          "seekProfessionalCare"
-        ]
-      },
-      "GuidanceContentCreateDto": {
-        "type": "object",
-        "properties": {
-          "articleId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "locale": {
-            "type": "string",
-            "example": "fa-IR"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "GENERAL_EDUCATION",
-              "DIETARY_EDUCATION",
-              "TEMPERAMENT_INTERPRETATION",
-              "PERSONALITY_DESCRIPTION"
-            ]
-          },
-          "provenance": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GuidanceSourceDto"
-            }
-          },
-          "safety": {
-            "$ref": "#/components/schemas/GuidanceSafetyDto"
-          }
-        },
-        "required": [
-          "articleId",
-          "locale",
-          "kind",
-          "provenance",
-          "safety"
-        ]
-      },
-      "GuidanceContentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "articleId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "GENERAL_EDUCATION",
-              "DIETARY_EDUCATION",
-              "TEMPERAMENT_INTERPRETATION",
-              "PERSONALITY_DESCRIPTION"
-            ]
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "DRAFT",
-              "APPROVED",
-              "REVOKED"
-            ]
-          },
-          "title": {
-            "type": "string"
-          },
-          "summary": {
-            "type": "string",
-            "nullable": true
-          },
-          "body": {
-            "type": "string",
-            "description": "Plain content; never execute untrusted HTML."
-          },
-          "contentHash": {
-            "type": "string"
-          },
-          "provenance": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GuidanceSourceDto"
-            }
-          },
-          "safety": {
-            "$ref": "#/components/schemas/GuidanceSafetyDto"
-          },
-          "educationalOnly": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "approvedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "revokedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "articleId",
-          "versionNumber",
-          "locale",
-          "kind",
-          "status",
-          "title",
-          "summary",
-          "body",
-          "contentHash",
-          "provenance",
-          "safety",
-          "educationalOnly",
-          "createdAt",
-          "approvedAt",
-          "revokedAt"
-        ]
-      },
-      "GuidanceContentPageDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GuidanceContentResponseDto"
-            }
-          },
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ]
-      },
-      "GuidanceApprovalDto": {
-        "type": "object",
-        "properties": {
-          "contentHash": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "educationalOnly": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "noDiagnosisOrTherapeuticDiet": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          }
-        },
-        "required": [
-          "contentHash",
-          "educationalOnly",
-          "noDiagnosisOrTherapeuticDiet"
-        ]
       },
       "ProductContentProvenanceDto": {
         "type": "object",
@@ -29829,397 +31187,6 @@
           "recommendConsultation"
         ]
       },
-      "ProtocolQueueItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentKey": {
-            "type": "string"
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "title": {
-            "type": "string"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "contentHash": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "currentReviewNumber": {
-            "type": "number"
-          },
-          "latestRecordedDecision": {
-            "type": "string",
-            "enum": [
-              "APPROVED",
-              "WITHDRAWN"
-            ],
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "assessmentKey",
-          "versionNumber",
-          "title",
-          "locale",
-          "contentHash",
-          "status",
-          "currentReviewNumber",
-          "latestRecordedDecision"
-        ]
-      },
-      "ProtocolQueuePageDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProtocolQueueItemDto"
-            }
-          },
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ]
-      },
-      "ProtocolQuestionnaireDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentKey": {
-            "type": "string"
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "title": {
-            "type": "string"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "contentHash": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PUBLISHED",
-              "RETIRED"
-            ]
-          },
-          "structure": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "required": [
-          "id",
-          "assessmentKey",
-          "versionNumber",
-          "title",
-          "locale",
-          "contentHash",
-          "status",
-          "structure"
-        ]
-      },
-      "ProtocolConsentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "policyKey": {
-            "type": "string",
-            "enum": [
-              "ASSESSMENT_PROCESSING"
-            ]
-          },
-          "locale": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "body": {
-            "type": "string"
-          },
-          "contentHash": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "versionNumber",
-          "policyKey",
-          "locale",
-          "title",
-          "body",
-          "contentHash",
-          "status"
-        ]
-      },
-      "ProtocolReviewResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "assessmentVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "reviewNumber": {
-            "type": "number"
-          },
-          "decision": {
-            "type": "string",
-            "enum": [
-              "APPROVED",
-              "WITHDRAWN"
-            ]
-          },
-          "questionnaireContentHash": {
-            "type": "string"
-          },
-          "algorithmId": {
-            "type": "string"
-          },
-          "algorithmVersion": {
-            "type": "number"
-          },
-          "consentPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "consentContentHash": {
-            "type": "string"
-          },
-          "protocolHash": {
-            "type": "string"
-          },
-          "withdrawalOfId": {
-            "type": "string",
-            "nullable": true
-          },
-          "withdrawalReason": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "assessmentVersionId",
-          "reviewNumber",
-          "decision",
-          "questionnaireContentHash",
-          "algorithmId",
-          "algorithmVersion",
-          "consentPolicyVersionId",
-          "consentContentHash",
-          "protocolHash",
-          "withdrawalOfId",
-          "withdrawalReason",
-          "createdAt"
-        ]
-      },
-      "ProtocolPreviewResponseDto": {
-        "type": "object",
-        "properties": {
-          "questionnaire": {
-            "$ref": "#/components/schemas/ProtocolQuestionnaireDto"
-          },
-          "consentPolicy": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProtocolConsentDto"
-              }
-            ]
-          },
-          "algorithmId": {
-            "type": "string"
-          },
-          "algorithmVersion": {
-            "type": "number"
-          },
-          "educationalOnly": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "protocolHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "currentReviewNumber": {
-            "type": "number"
-          },
-          "latestReview": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProtocolReviewResponseDto"
-              }
-            ]
-          },
-          "approvalUsable": {
-            "type": "boolean"
-          },
-          "blockers": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "questionnaire",
-          "consentPolicy",
-          "algorithmId",
-          "algorithmVersion",
-          "educationalOnly",
-          "protocolHash",
-          "currentReviewNumber",
-          "latestReview",
-          "approvalUsable",
-          "blockers"
-        ]
-      },
-      "ProtocolReviewPageDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProtocolReviewResponseDto"
-            }
-          },
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ]
-      },
-      "ProtocolApproveDto": {
-        "type": "object",
-        "properties": {
-          "consentPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "protocolHash": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "expectedReviewNumber": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 2147483646
-          },
-          "reviewedQuestionnaireAndScoring": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "educationalOnly": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "noDiagnosisOrTherapeuticDiet": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          }
-        },
-        "required": [
-          "consentPolicyVersionId",
-          "protocolHash",
-          "expectedReviewNumber",
-          "reviewedQuestionnaireAndScoring",
-          "educationalOnly",
-          "noDiagnosisOrTherapeuticDiet"
-        ]
-      },
-      "ProtocolWithdrawalDto": {
-        "type": "object",
-        "properties": {
-          "protocolHash": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "expectedReviewNumber": {
-            "type": "number",
-            "minimum": 1,
-            "maximum": 2147483646
-          },
-          "withdrawalReason": {
-            "type": "string",
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "protocolHash",
-          "expectedReviewNumber",
-          "withdrawalReason"
-        ]
-      },
       "CommercialTariffDto": {
         "type": "object",
         "properties": {
@@ -30679,6 +31646,381 @@
           "retirementReason",
           "commercialUsable",
           "blockers"
+        ]
+      },
+      "PatientAssessmentOfferingDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "offeringKey": {
+            "type": "string"
+          },
+          "publicationNumber": {
+            "type": "number"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "publicationHash": {
+            "type": "string"
+          },
+          "availabilityCheckRequired": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "offeringKey",
+          "publicationNumber",
+          "kind",
+          "locale",
+          "amountRial",
+          "currency",
+          "publicationHash",
+          "availabilityCheckRequired"
+        ]
+      },
+      "PatientAssessmentOfferingPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAssessmentOfferingDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AssessmentConsentRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "withdrawnAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "policyVersionId",
+          "contentHash",
+          "acceptedAt",
+          "withdrawnAt"
+        ]
+      },
+      "PatientAssessmentOfferingDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "offeringKey": {
+            "type": "string"
+          },
+          "publicationNumber": {
+            "type": "number"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "publicationHash": {
+            "type": "string"
+          },
+          "availabilityCheckRequired": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CommercialPolicyDto"
+          },
+          "processingPolicy": {
+            "$ref": "#/components/schemas/ProtocolConsentDto"
+          },
+          "termsPolicy": {
+            "$ref": "#/components/schemas/CommercialTermsDto"
+          },
+          "processingConsent": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentConsentRecordDto"
+              }
+            ]
+          },
+          "termsConsent": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentConsentRecordDto"
+              }
+            ]
+          },
+          "purchaseSupported": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "offeringKey",
+          "publicationNumber",
+          "kind",
+          "locale",
+          "amountRial",
+          "currency",
+          "publicationHash",
+          "availabilityCheckRequired",
+          "policy",
+          "processingPolicy",
+          "termsPolicy",
+          "processingConsent",
+          "termsConsent",
+          "purchaseSupported",
+          "blockers"
+        ]
+      },
+      "AssessmentConsentAcceptDto": {
+        "type": "object",
+        "properties": {
+          "policyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "accepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "policyVersionId",
+          "contentHash",
+          "accepted"
+        ]
+      },
+      "AssessmentPurchaseIntentDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "processingConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "publicationId",
+          "publicationHash",
+          "processingConsentRecordId",
+          "termsConsentRecordId"
+        ]
+      },
+      "AssessmentGrantSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "accessAvailable": {
+            "type": "boolean"
+          },
+          "grantedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "submissionId",
+          "accessAvailable",
+          "grantedAt"
+        ]
+      },
+      "PatientAssessmentPurchaseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "intent": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BillingIntentDto"
+              }
+            ]
+          },
+          "grants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentGrantSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "publicationId",
+          "title",
+          "amountRial",
+          "currency",
+          "createdAt",
+          "intent",
+          "grants"
+        ]
+      },
+      "PatientAssessmentPurchasePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientAssessmentPurchaseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
         ]
       }
     }

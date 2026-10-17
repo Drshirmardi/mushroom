@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PatientBookingEligibilityResponseDto } from '../../assessments/patient/patient-booking-eligibility.dto';
 import { CoupleSessionSummaryDto } from '../../assessments/couples/couple-link.dto';
 
-export const JOURNEY_ACTIONS = ['OPEN_APPOINTMENT', 'COMPLETE_PROFILE', 'CONSENT_UNAVAILABLE', 'REVIEW_CONSENT', 'START_MEDICAL_INTAKE', 'CONTINUE_MEDICAL_INTAKE', 'COMPLETE_ONBOARDING', 'REVIEW_BOOKING_REQUIREMENTS', 'RESUME_ASSESSMENT', 'CONTINUE_PAYMENT', 'VIEW_TREATMENT_PLAN', 'VIEW_ASSESSMENT_RESULT', 'BOOK_CONSULTATION'] as const;
+export const JOURNEY_ACTIONS = ['OPEN_APPOINTMENT', 'COMPLETE_PROFILE', 'CONSENT_UNAVAILABLE', 'REVIEW_CONSENT', 'START_MEDICAL_INTAKE', 'CONTINUE_MEDICAL_INTAKE', 'COMPLETE_ONBOARDING', 'REVIEW_BOOKING_REQUIREMENTS', 'RESUME_ASSESSMENT', 'CONTINUE_PAYMENT', 'VIEW_TREATMENT_PLAN', 'VIEW_ASSESSMENT_RESULT', 'BOOK_CONSULTATION', 'START_PAID_ASSESSMENT'] as const;
 export class JourneyActionDto {
   @ApiProperty({ enum: JOURNEY_ACTIONS }) code!: typeof JOURNEY_ACTIONS[number];
   @ApiProperty({ type: String, nullable: true, format: 'uuid' }) resourceId!: string | null;
@@ -26,7 +26,7 @@ export class JourneyAssessmentDto {
   @ApiProperty() revision!: number;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
   @ApiProperty() resumeAvailable!: boolean;
-  @ApiProperty({ type: String, nullable: true, enum: ['VERSION_NOT_PUBLISHED'] }) resumeBlocker!: string | null;
+  @ApiProperty({ type: String, nullable: true, enum: ['VERSION_NOT_PUBLISHED', 'PROCESSING_APPROVAL_UNAVAILABLE'] }) resumeBlocker!: string | null;
 }
 export class JourneyAppointmentDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -76,7 +76,23 @@ export class JourneyCoupleLinksDto {
   @ApiProperty({ type: [CoupleSessionSummaryDto], maxItems: 5 }) items!: CoupleSessionSummaryDto[];
   @ApiProperty() hasMore!: boolean;
 }
+export class JourneyAssessmentPurchaseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty() amountRial!: string;
+  @ApiProperty({ enum: ['IRR'] }) currency!: string;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) intentId!: string | null;
+  @ApiProperty() paymentState!: string;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) accessGrantId!: string | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) submissionId!: string | null;
+  @ApiProperty() startAvailable!: boolean;
+}
+export class JourneyAssessmentPurchasesDto {
+  @ApiProperty({ type: [JourneyAssessmentPurchaseDto], maxItems: 5 }) items!: JourneyAssessmentPurchaseDto[];
+  @ApiProperty() hasMore!: boolean;
+}
 export class PatientJourneyResponseDto {
+  @ApiProperty({ type: JourneyAssessmentPurchasesDto }) assessmentPurchases!: JourneyAssessmentPurchasesDto;
   @ApiProperty({ format: 'date-time' }) evaluatedAt!: Date;
   @ApiProperty({ type: JourneyOnboardingDto }) onboarding!: JourneyOnboardingDto;
   @ApiProperty({ type: PatientBookingEligibilityResponseDto }) bookingEligibility!: PatientBookingEligibilityResponseDto;

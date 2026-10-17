@@ -678,6 +678,7 @@ model WalletAccount {
 }
 
 model WalletJournal {
+  assessmentAccessGrants AssessmentAccessGrant[]
   actor User? @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "wallet_journal_actor_fkey")
   id String @id @default(uuid()) @db.Uuid
   accountId String @map("account_id") @db.Uuid
@@ -726,6 +727,8 @@ model WalletCommand {
 }
 
 model BillingIntent {
+  assessmentPurchaseId String? @unique @map("assessment_purchase_id") @db.Uuid
+  assessmentPurchase AssessmentPurchase? @relation(fields: [assessmentPurchaseId], references: [id], onDelete: Restrict)
   currency String @default("IRR") @db.Char(3)
   id String @id @default(uuid()) @db.Uuid
   patientId String @map("patient_id") @db.Uuid
@@ -760,6 +763,7 @@ model BillingIntent {
 }
 
 model BillingGatewayAttempt {
+  assessmentAccessGrants AssessmentAccessGrant[]
   compensated Boolean @default(false)
   payment Payment?
   id String @id @default(uuid()) @db.Uuid
@@ -942,6 +946,8 @@ model AuditEvent {
 }
 
 model Clinic {
+  assessmentPurchases AssessmentPurchase[]
+  assessmentAccessGrants AssessmentAccessGrant[]
   assessmentCommercialPublications AssessmentOfferingPublication[]
   assessmentProtocolReviews AssessmentProtocolReview[]
   assessmentGuidanceVersions AssessmentGuidanceVersion[]
@@ -1028,6 +1034,8 @@ model UserProfile {
 }
 
 model PatientProfile {
+  assessmentPurchases AssessmentPurchase[]
+  assessmentAccessGrants AssessmentAccessGrant[]
   initiatedCoupleSessions CoupleSession[] @relation("CoupleSessionInitiator")
   coupleParticipations CoupleParticipant[]
   receivedCoupleInvitations CoupleInvitation[] @relation("CoupleInvitationRecipient")
@@ -2123,6 +2131,9 @@ model ConsentPolicyVersion {
 }
 
 model PatientConsentRecord {
+  assessmentProcessingPurchases AssessmentPurchase[] @relation("PurchaseProcessingConsent")
+  assessmentTermsPurchases AssessmentPurchase[] @relation("PurchaseTermsConsent")
+  assessmentAccessGrants AssessmentAccessGrant[]
   id                       String                         @id @default(uuid()) @db.Uuid
   patientId                String                         @map("patient_id") @db.Uuid
   policyVersionId          String                         @map("policy_version_id") @db.Uuid
@@ -2151,6 +2162,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  assessmentAccessGrants AssessmentAccessGrant[]
   protocolReviews AssessmentProtocolReview[]
   guidanceVersions AssessmentGuidanceVersion[]
   offeringVersions          AssessmentOfferingVersion[]
@@ -2283,6 +2295,8 @@ model AssessmentOfferingVersion {
 }
 
 model PatientAssessmentSubmission {
+  accessGrantId String? @unique(map: "assessment_submissions_access_grant_key") @map("access_grant_id") @db.Uuid
+  accessGrant AssessmentAccessGrant? @relation(fields: [accessGrantId], references: [id], onDelete: Restrict)
   id                       String                 @id @default(uuid()) @db.Uuid
   patientId                String                 @map("patient_id") @db.Uuid
   assessmentVersionId      String                 @map("assessment_version_id") @db.Uuid
@@ -3184,6 +3198,7 @@ model AssessmentProtocolReview {
 }
 
 model AssessmentOfferingPublication {
+  purchases AssessmentPurchase[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   offeringVersionId String @map("offering_version_id") @db.Uuid
@@ -3217,4 +3232,54 @@ model AssessmentOfferingPublication {
   @@unique([clinicId, publishedByUserId, idempotencyKey], map: "assessment_publications_command_key")
   @@index([clinicId, createdAt, id], map: "assessment_publications_clinic_created_idx")
   @@map("assessment_offering_publications")
+}
+
+model AssessmentPurchase {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  publicationHash String @map("publication_hash") @db.Char(64)
+  processingConsentRecordId String @map("processing_consent_record_id") @db.Uuid
+  termsConsentRecordId String @map("terms_consent_record_id") @db.Uuid
+  amountRial BigInt @map("amount_rial")
+  currency String @default("IRR") @db.Char(3)
+  snapshot Json @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  publication AssessmentOfferingPublication @relation(fields: [publicationId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  processingConsent PatientConsentRecord @relation("PurchaseProcessingConsent", fields: [processingConsentRecordId], references: [id], onDelete: Restrict)
+  termsConsent PatientConsentRecord @relation("PurchaseTermsConsent", fields: [termsConsentRecordId], references: [id], onDelete: Restrict)
+  intent BillingIntent?
+  grants AssessmentAccessGrant[]
+  @@unique([id, clinicId], map: "assessment_purchases_id_clinic_key")
+  @@index([clinicId, patientId, createdAt, id], map: "assessment_purchases_patient_created_idx")
+  @@map("assessment_purchases")
+}
+
+model AssessmentAccessGrant {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  purchaseId String @map("purchase_id") @db.Uuid
+  assessmentVersionId String @map("assessment_version_id") @db.Uuid
+  processingConsentRecordId String @map("processing_consent_record_id") @db.Uuid
+  slot String @default("INDIVIDUAL") @db.VarChar(20)
+  method String @db.VarChar(16)
+  walletJournalId String? @map("wallet_journal_id") @db.Uuid
+  gatewayAttemptId String? @map("gateway_attempt_id") @db.Uuid
+  grantedAt DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  purchase AssessmentPurchase @relation(fields: [purchaseId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  assessmentVersion AssessmentVersion @relation(fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  processingConsent PatientConsentRecord @relation(fields: [processingConsentRecordId], references: [id], onDelete: Restrict)
+  walletJournal WalletJournal? @relation(fields: [walletJournalId], references: [id], onDelete: Restrict)
+  gatewayAttempt BillingGatewayAttempt? @relation(fields: [gatewayAttemptId], references: [id], onDelete: Restrict)
+  submission PatientAssessmentSubmission?
+  @@unique([purchaseId, patientId], map: "assessment_grants_purchase_patient_key")
+  @@unique([purchaseId, slot], map: "assessment_grants_purchase_slot_key")
+  @@index([clinicId, patientId, assessmentVersionId], map: "assessment_grants_patient_source_idx")
+  @@map("assessment_access_grants")
 }

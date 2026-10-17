@@ -83,7 +83,7 @@ export class SelfProfileService {
         select: { id: true },
       }),
       db.patientConsentRecord.findFirst({
-        where: { patientId: patient.id },
+        where: { patientId: patient.id, policyVersion: { policyKey: PROFILE_POLICY_KEY } },
         select: { id: true },
       }),
     ]);

@@ -95,6 +95,11 @@ export class AssessmentProtocolService {
   }
 
   // Composable prerequisite for later publication/purchases; this alone grants no patient entitlement.
+  async lockApprovalAuthority(tx: Prisma.TransactionClient, review: AssessmentProtocolReview) {
+    const policies = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT id FROM consent_policy_versions WHERE id=${review.consentPolicyVersionId}::uuid AND status='ACTIVE' FOR SHARE`);
+    if (!policies.length) throw conflict();
+    await this.authority.doctor(tx, review.clinicId, review.actorUserId, true);
+  }
   async usableApproval(tx: Prisma.TransactionClient, clinicId: string, assessmentVersionId: string) {
     const source = await tx.assessmentVersion.findFirst({ where: { id: assessmentVersionId, clinicId, status: 'PUBLISHED' } }); if (!source) return null;
     const latest = await this.latest(tx, source.id); if (!latest || latest.decision !== 'APPROVED') return null;

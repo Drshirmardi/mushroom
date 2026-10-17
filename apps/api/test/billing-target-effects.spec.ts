@@ -16,6 +16,11 @@ describe('explicit billing target effects', () => {
       expect(() => billingReservationFields('APPOINTMENT', effect as BillingReservationEffect)).toThrow(); expect(() => billingSettlementFields('APPOINTMENT', effect as BillingSettlementEffect)).toThrow();
     }
   });
+  it('projects a paid assessment purchase only for its own purpose and requires that explicit reservation', () => {
+    const id=randomUUID();expect(billingReservationFields('ASSESSMENT',{kind:'ASSESSMENT_PURCHASE',purchaseId:id})).toEqual({assessmentPurchaseId:id});expect(billingSettlementFields('ASSESSMENT',{kind:'NONE'})).toEqual({});
+    for(const purpose of ['ORDER','TOPUP','APPOINTMENT'])expect(()=>billingReservationFields(purpose,{kind:'ASSESSMENT_PURCHASE',purchaseId:id})).toThrow();
+    for(const effect of [{kind:'NONE'},{kind:'APPOINTMENT_HOLD',holdId:id},{kind:'ASSESSMENT_PURCHASE',purchaseId:'bad'}])expect(()=>billingReservationFields('ASSESSMENT',effect as BillingReservationEffect)).toThrow();
+  });
   it.each(['', 'not-a-uuid', undefined, null])('rejects malformed appointment identifiers: %s', id => {
     expect(() => billingReservationFields('APPOINTMENT', { kind: 'APPOINTMENT_HOLD', holdId: id } as BillingReservationEffect)).toThrow();
     expect(() => billingSettlementFields('APPOINTMENT', { kind: 'APPOINTMENT', appointmentId: id } as BillingSettlementEffect)).toThrow();

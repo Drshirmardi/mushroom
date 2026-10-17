@@ -57,6 +57,7 @@ export class AssessmentPublicationService {
       if (this.configurationBlockers(offering).length) throw invalid();
       if (sources.blockers.length || !sources.review || !sources.hash || sources.hash !== body.publicationHash) throw conflict();
       await this.authority.doctor(tx, clinicId, sources.review.actorUserId, true);
+      await this.lock(tx, `assessment-commercial-start:${offering.assessmentVersionId}`);
       const now = await this.time(tx, latest?.retiredAt ?? latest?.createdAt);
       if (latest?.status === 'ACTIVE') await this.retireRow(tx, latest, 'REPLACED', now, ctx);
       const row = await tx.assessmentOfferingPublication.create({ data: { clinicId, offeringVersionId: offering.id, offeringKey: offering.offeringKey, publicationNumber: (latest?.publicationNumber ?? 0) + 1,
@@ -98,6 +99,13 @@ export class AssessmentPublicationService {
   async currentPublication(tx: Prisma.TransactionClient, clinicId: string, id: string) {
     const row = await tx.assessmentOfferingPublication.findFirst({ where: { id, clinicId, status: 'ACTIVE' }, include: { offeringVersion: true } });
     if (!row || (await this.recordBlockers(tx, row)).length) return null;
+    return row;
+  }
+
+  // Existing unexpired quotes retain an exact tariff after a price replacement, never after withdrawal.
+  async quotedPublication(tx: Prisma.TransactionClient, clinicId: string, id: string) {
+    const row = await tx.assessmentOfferingPublication.findFirst({ where: { id, clinicId, OR: [{ status: 'ACTIVE' }, { status: 'RETIRED', retirementReason: 'REPLACED' }] }, include: { offeringVersion: true } });
+    if (!row || (await this.recordBlockers(tx, row)).some(code => code !== 'PUBLICATION_RETIRED')) return null;
     return row;
   }
 

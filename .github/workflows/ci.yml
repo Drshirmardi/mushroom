@@ -70,7 +70,8 @@ jobs:
           docker exec ${{ job.services.postgres.id }} createdb -U sabz_zendegi patient_journey_test
           pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
           pnpm --filter @sabz-zendegi/api prisma:seed
-          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts test/patient-journey.integration.spec.ts test/assessment-discovery.integration.spec.ts test/assessment-offerings.integration.spec.ts test/assessment-authoring.integration.spec.ts test/couple-link.integration.spec.ts test/guidance-content.integration.spec.ts test/assessment-guidance.integration.spec.ts test/assessment-protocol.integration.spec.ts test/assessment-publication.integration.spec.ts --no-file-parallelism
+          export PAYMENT_CREDENTIAL_ENCRYPTION_KEY="$(node -e 'process.stdout.write(Buffer.alloc(32, 7).toString("base64"))')"
+          pnpm --filter @sabz-zendegi/api exec vitest run test/assessment-reliability.integration.spec.ts test/patient-journey.integration.spec.ts test/assessment-discovery.integration.spec.ts test/assessment-offerings.integration.spec.ts test/assessment-authoring.integration.spec.ts test/couple-link.integration.spec.ts test/guidance-content.integration.spec.ts test/assessment-guidance.integration.spec.ts test/assessment-protocol.integration.spec.ts test/assessment-publication.integration.spec.ts test/assessment-purchase.integration.spec.ts --no-file-parallelism
       - name: Install browser for existing access smoke suite
         run: pnpm exec playwright install --with-deps chromium
       - name: Browser session and access smoke

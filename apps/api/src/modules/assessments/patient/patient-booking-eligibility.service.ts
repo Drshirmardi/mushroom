@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PatientAssessmentState, type Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { SelfProfileService, type SelfOnboardingStatus } from '../../patients/self-profile/self-profile.service';
+import { accessibleAssessmentWhere } from '../access/assessment-access.policy';
 
 @Injectable()
 export class PatientBookingEligibilityService {
@@ -44,7 +45,7 @@ export class PatientBookingEligibilityService {
 
   private validCompletion(patientId: string, assessmentVersionId: string, db: Prisma.TransactionClient) {
     return db.patientAssessmentSubmission.findFirst({
-      where: { patientId, assessmentVersionId, state: PatientAssessmentState.COMPLETE, invalidatedAt: null, completedAt: { not: null } },
+      where: { ...accessibleAssessmentWhere, patientId, assessmentVersionId, state: PatientAssessmentState.COMPLETE, invalidatedAt: null, completedAt: { not: null } },
       orderBy: { completedAt: 'desc' },
       select: { completedAt: true },
     });

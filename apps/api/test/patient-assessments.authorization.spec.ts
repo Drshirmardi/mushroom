@@ -15,7 +15,7 @@ const transactionalService = (findFirst: () => Promise<unknown>) => {
     patientAssessmentSubmission: { findFirst }, auditEvent: { create: async () => ({}) },
     $queryRaw: async () => [{ id: 'owned' }], $executeRaw: async () => 0,
   };
-  return new PatientAssessmentsService({ $transaction: async (run: (client: unknown) => unknown) => run(tx) } as never);
+  return new PatientAssessmentsService({ $transaction: async (run: (client: unknown) => unknown) => run(tx) } as never, { processingSubmission: async () => {} } as never);
 };
 
 describe('Patient assessment draft contract', () => {
