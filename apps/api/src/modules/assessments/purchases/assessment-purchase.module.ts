@@ -8,5 +8,6 @@ import { PatientAssessmentsModule } from '../patient/patient-assessments.module'
 import { AssessmentBillingTarget } from './assessment-billing.target';
 import { AssessmentPurchaseService } from './assessment-purchase.service';
 import { AssessmentPurchaseController } from './assessment-purchase.controller';
-@Module({ imports: [BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule], controllers: [AssessmentPurchaseController], providers: [AssessmentPurchaseService, AssessmentBillingTarget] })
+import { CoupleAssessmentPaidModule } from '../couples/paid/couple-assessment-paid.module';
+@Module({ imports: [BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule], controllers: [AssessmentPurchaseController], providers: [AssessmentPurchaseService, AssessmentBillingTarget] })
 export class AssessmentPurchaseModule {}

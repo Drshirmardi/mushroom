@@ -85,15 +85,28 @@ export class CoupleAssessmentService {
     if (lock) await tx.$queryRaw(Prisma.sql`SELECT id FROM couple_assessment_sessions WHERE id=${id}::uuid FOR UPDATE`);
     const row = await tx.coupleAssessmentSession.findUnique({ where: { id }, include }); return row && !(await this.blockers(tx, row, lock)).length ? row : null;
   }
-  private async blockers(tx: Tx, row: Row, lock = false) {
+  async quotedMutualReady(tx: Tx, id: string, expiresAt: Date | null, lock = false) {
+    const [time] = await tx.$queryRaw<{ expired: boolean }[]>(Prisma.sql`SELECT ${expiresAt}::timestamptz IS NULL OR ${expiresAt}::timestamptz<=CURRENT_TIMESTAMP AS expired`); if (time!.expired) return null;
+    if (lock) await tx.$queryRaw(Prisma.sql`SELECT id FROM couple_assessment_sessions WHERE id=${id}::uuid FOR UPDATE`);
+    const row = await tx.coupleAssessmentSession.findUnique({ where: { id }, include }); return row && !(await this.blockers(tx, row, lock, 'QUOTED')).length ? row : null;
+  }
+  async paidMutualReady(tx: Tx, id: string, lock = false) {
+    if (lock) await tx.$queryRaw(Prisma.sql`SELECT id FROM couple_assessment_sessions WHERE id=${id}::uuid FOR UPDATE`);
+    const row = await tx.coupleAssessmentSession.findUnique({ where: { id }, include }); if (!row) return null;
+    const purchase = await tx.assessmentPurchase.findFirst({ where: { coupleAssessmentSessionId: id, clinicId: row.clinicId, intent: { purpose: 'ASSESSMENT', status: 'PAID' } }, include: { intent: true, grants: true } });
+    if (!purchase || purchase.grants.length !== 2 || row.participants.some(p => !purchase.grants.some(g => g.coupleAssessmentParticipantId === p.id && g.patientId === p.patientId && g.processingConsentRecordId === p.processingConsentRecordId))) return null;
+    return !(await this.blockers(tx, row, lock, 'PAID')).length ? { context: row, purchase } : null;
+  }
+  private async blockers(tx: Tx, row: Row, lock = false, mode: 'CURRENT' | 'QUOTED' | 'PAID' = 'CURRENT') {
     const codes: string[] = []; const snapshot = row.contextSnapshot as unknown as Snapshot;
     if (coupleProtocolHash(snapshot) !== row.contextHash) codes.push('CONTEXT_PROVENANCE_UNSUPPORTED');
     if (lock) await tx.$queryRaw(Prisma.sql`SELECT id FROM couple_sessions WHERE id=${row.coupleSessionId}::uuid FOR SHARE`);
     const link = lock ? await tx.coupleSession.findUniqueOrThrow({ where: { id: row.coupleSessionId }, include: { participants: true } }) : row.link;
     if (link.state !== 'LINKED' || link.participants.length !== 2 || link.participants.some(p => p.revokedAt)) codes.push('LINK_CONSENT_UNAVAILABLE');
     if (!await this.liveAdults(tx, row.participants.map(p => p.patientId), row.clinicId, lock)) codes.push('PARTICIPANT_UNAVAILABLE');
-    if (lock) { await this.lock(tx, `assessment-publication:${row.clinicId}:${row.publication.offeringKey}`); await tx.$queryRaw(Prisma.sql`SELECT id FROM consent_policy_versions WHERE id=${row.publication.termsPolicyVersionId}::uuid FOR SHARE`); }
-    const joint = await this.jointProtocols.usable(tx, row.clinicId, row.assessmentVersionId, row.jointProtocolId, lock); const publication = await this.publications.currentPublication(tx, row.clinicId, row.publicationId);
+    if (lock && mode !== 'PAID') { await this.lock(tx, `assessment-publication:${row.clinicId}:${row.publication.offeringKey}`); await tx.$queryRaw(Prisma.sql`SELECT id FROM consent_policy_versions WHERE id=${row.publication.termsPolicyVersionId}::uuid FOR SHARE`); }
+    const joint = await this.jointProtocols.usable(tx, row.clinicId, row.assessmentVersionId, row.jointProtocolId, lock);
+    const publication = mode === 'PAID' ? row.publication : mode === 'QUOTED' ? await this.publications.quotedPublication(tx, row.clinicId, row.publicationId) : await this.publications.currentPublication(tx, row.clinicId, row.publicationId);
     if (!joint || joint.contentHash !== snapshot.jointProtocolHash || !publication || publication.publicationHash !== snapshot.publicationHash || publication.protocolReviewId !== joint.protocolReviewId) codes.push('EXACT_CONFIGURATION_UNAVAILABLE');
     if (lock) { const ids = row.participants.flatMap(p => p.processingConsentRecordId ? [p.processingConsentRecordId] : []); if (ids.length) await tx.$queryRaw(Prisma.sql`SELECT id FROM patient_consent_records WHERE id IN (${Prisma.join(ids.map(id => Prisma.sql`${id}::uuid`))}) ORDER BY id FOR SHARE`); }
     const participants = lock ? await tx.coupleAssessmentParticipant.findMany({ where: { sessionId: row.id }, include: { processingConsent: true } }) : row.participants;

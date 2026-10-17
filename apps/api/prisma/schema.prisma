@@ -822,6 +822,7 @@ model Credential {
 }
 
 model Session {
+  generatedCoupleJointResults CoupleAssessmentJointResult[]
   coupleAssessmentCreations CoupleAssessmentSession[]
   coupleAssessmentAcceptances CoupleAssessmentParticipant[] @relation("CoupleAssessmentAcceptanceSession")
   coupleAssessmentWithdrawals CoupleAssessmentParticipant[] @relation("CoupleAssessmentWithdrawalSession")
@@ -955,6 +956,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  coupleJointResults CoupleAssessmentJointResult[]
   coupleAssessments CoupleAssessmentSession[]
   coupleAssessmentParticipants CoupleAssessmentParticipant[]
   coupleResultProtocols CoupleResultProtocolVersion[]
@@ -1046,6 +1048,7 @@ model UserProfile {
 }
 
 model PatientProfile {
+  generatedCoupleJointResults CoupleAssessmentJointResult[]
   createdCoupleAssessments CoupleAssessmentSession[]
   coupleAssessmentParticipations CoupleAssessmentParticipant[]
   assessmentPurchases AssessmentPurchase[]
@@ -2315,6 +2318,8 @@ model AssessmentOfferingVersion {
 }
 
 model PatientAssessmentSubmission {
+  initiatorJointResults CoupleAssessmentJointResult[] @relation("CoupleJointInitiatorSubmission")
+  partnerJointResults CoupleAssessmentJointResult[] @relation("CoupleJointPartnerSubmission")
   accessGrantId String? @unique(map: "assessment_submissions_access_grant_key") @map("access_grant_id") @db.Uuid
   accessGrant AssessmentAccessGrant? @relation(fields: [accessGrantId], references: [id], onDelete: Restrict)
   id                       String                 @id @default(uuid()) @db.Uuid
@@ -3258,6 +3263,9 @@ model AssessmentOfferingPublication {
 }
 
 model AssessmentPurchase {
+  coupleAssessmentSessionId String? @map("couple_assessment_session_id") @db.Uuid
+  coupleAssessmentSession CoupleAssessmentSession? @relation(fields: [coupleAssessmentSessionId], references: [id], onDelete: Restrict)
+  jointResult CoupleAssessmentJointResult?
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   patientId String @map("patient_id") @db.Uuid
@@ -3278,10 +3286,13 @@ model AssessmentPurchase {
   grants AssessmentAccessGrant[]
   @@unique([id, clinicId], map: "assessment_purchases_id_clinic_key")
   @@index([clinicId, patientId, createdAt, id], map: "assessment_purchases_patient_created_idx")
+  @@index([coupleAssessmentSessionId, createdAt, id], map: "assessment_purchases_couple_created_idx")
   @@map("assessment_purchases")
 }
 
 model AssessmentAccessGrant {
+  coupleAssessmentParticipantId String? @unique(map: "assessment_grants_couple_participant_key") @map("couple_assessment_participant_id") @db.Uuid
+  coupleAssessmentParticipant CoupleAssessmentParticipant? @relation(fields: [coupleAssessmentParticipantId], references: [id], onDelete: Restrict)
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   patientId String @map("patient_id") @db.Uuid
@@ -3308,6 +3319,7 @@ model AssessmentAccessGrant {
 }
 
 model CoupleResultProtocolVersion {
+  jointResults CoupleAssessmentJointResult[]
   assessmentSessions CoupleAssessmentSession[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -3353,6 +3365,8 @@ model CoupleResultProtocolVersion {
 }
 
 model CoupleAssessmentSession {
+  purchases AssessmentPurchase[]
+  jointResult CoupleAssessmentJointResult?
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   coupleSessionId String @map("couple_session_id") @db.Uuid
@@ -3382,6 +3396,7 @@ model CoupleAssessmentSession {
 }
 
 model CoupleAssessmentParticipant {
+  accessGrant AssessmentAccessGrant?
   id String @id @default(uuid()) @db.Uuid
   sessionId String @map("session_id") @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -3410,4 +3425,39 @@ model CoupleAssessmentParticipant {
   @@unique([patientId, withdrawalIdempotencyKey], map: "couple_assessment_participant_withdrawal_key")
   @@index([patientId, sessionId], map: "couple_assessment_participant_history_idx")
   @@map("couple_assessment_participants")
+}
+
+model CoupleAssessmentJointResult {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  sessionId String @unique(map: "couple_joint_result_session_key") @map("session_id") @db.Uuid
+  purchaseId String @unique(map: "couple_joint_result_purchase_key") @map("purchase_id") @db.Uuid
+  jointProtocolId String @map("joint_protocol_id") @db.Uuid
+  contextHash String @map("context_hash") @db.Char(64)
+  protocolHash String @map("protocol_hash") @db.Char(64)
+  algorithmId String @default("APPROVED_PAIR_LOOKUP") @map("algorithm_id") @db.VarChar(80)
+  algorithmVersion Int @default(1) @map("algorithm_version")
+  initiatorSubmissionId String @map("initiator_submission_id") @db.Uuid
+  partnerSubmissionId String @map("partner_submission_id") @db.Uuid
+  initiatorCompletionHash String @map("initiator_completion_hash") @db.Char(64)
+  partnerCompletionHash String @map("partner_completion_hash") @db.Char(64)
+  resultSnapshot Json @map("result_snapshot") @db.JsonB
+  contentHash String @map("content_hash") @db.Char(64)
+  generatedByPatientId String @map("generated_by_patient_id") @db.Uuid
+  generatedSessionId String @map("generated_session_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  session CoupleAssessmentSession @relation(fields: [sessionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  purchase AssessmentPurchase @relation(fields: [purchaseId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  jointProtocol CoupleResultProtocolVersion @relation(fields: [jointProtocolId], references: [id], onDelete: Restrict)
+  initiatorSubmission PatientAssessmentSubmission @relation("CoupleJointInitiatorSubmission", fields: [initiatorSubmissionId], references: [id], onDelete: Restrict)
+  partnerSubmission PatientAssessmentSubmission @relation("CoupleJointPartnerSubmission", fields: [partnerSubmissionId], references: [id], onDelete: Restrict)
+  generator PatientProfile @relation(fields: [generatedByPatientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  generationSession Session @relation(fields: [generatedSessionId], references: [id], onDelete: Restrict)
+  @@unique([sessionId, clinicId], map: "couple_joint_result_session_clinic_key")
+  @@unique([purchaseId, clinicId], map: "couple_joint_result_purchase_clinic_key")
+  @@unique([generatedByPatientId, idempotencyKey], map: "couple_joint_result_command_key")
+  @@index([clinicId, createdAt, id], map: "couple_joint_result_clinic_created_idx")
+  @@map("couple_assessment_joint_results")
 }

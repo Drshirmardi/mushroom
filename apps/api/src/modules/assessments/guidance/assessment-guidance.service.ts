@@ -9,6 +9,7 @@ import { ClinicalAccessAuditService } from '../../clinical/clinical-access-audit
 import { patientServiceScope } from '../../directory/patient-directory.visibility';
 import { ASSESSMENT_SCORING_IDENTITY } from '../domain/assessment-scoring';
 import { validateAssessmentStructure } from '../domain/assessment-structure-validation';
+import { assessmentResultProvenance } from '../domain/assessment-result-provenance';
 import type { AssessmentGuidanceCreateDto, AssessmentGuidanceQueryDto, PatientAssessmentGuidanceDto } from './assessment-guidance.dto';
 
 type Mode = 'admin' | 'doctor';
@@ -110,28 +111,20 @@ export class AssessmentGuidanceService {
       const response: PatientAssessmentGuidanceDto = { submissionId: id, assessmentVersionId: submission.assessmentVersionId, status: 'NO_APPROVED_MAPPING', mappingId: null, mappingVersion: null, contentHash: null, content: [], services: [], recommendConsultation: false };
       const snapshot = object(submission.snapshot);
       const source = await tx.assessmentVersion.findUniqueOrThrow({ where: { id: submission.assessmentVersionId } });
-      if (snapshot.algorithmId == null || snapshot.algorithmVersion == null || snapshot.questionnaireContentHash == null || snapshot.answerPayloadHash == null) response.status = 'PROVENANCE_UNRECORDED';
-      else if (snapshot.algorithmId !== ASSESSMENT_SCORING_IDENTITY.algorithmId || snapshot.algorithmVersion !== ASSESSMENT_SCORING_IDENTITY.algorithmVersion || snapshot.questionnaireContentHash !== source.contentHash || typeof snapshot.answerPayloadHash !== 'string' || !/^[a-f0-9]{64}$/u.test(snapshot.answerPayloadHash) || snapshot.answerPayloadHash !== submission.completionPayloadHash) response.status = 'PROVENANCE_UNSUPPORTED';
+      const provenance = assessmentResultProvenance(source, snapshot, submission.completionPayloadHash);
+      if (provenance.status !== 'SUPPORTED') response.status = provenance.status;
       else {
-        let actualBand: Record<string, unknown> | null = null;
-        try { actualBand = band(source.structure, String(object(snapshot.resultBand).id)); } catch { response.status = 'PROVENANCE_UNSUPPORTED'; }
-        if (actualBand) {
-          const expected = { id: actualBand.id, title: actualBand.title, riskLevel: actualBand.riskLevel ?? 'NONE', requiresReview: actualBand.requiresReview ?? false };
-          if (canonical(expected) !== canonical(snapshot.resultBand)) response.status = 'PROVENANCE_UNSUPPORTED';
-          else if (expected.requiresReview === true) response.status = 'CLINICAL_REVIEW_REQUIRED';
+        const actualBand = provenance.band;
+        const row = await tx.assessmentGuidanceVersion.findFirst({ where: { assessmentVersionId: source.id, resultBandId: provenance.bandId, approvedAt: { not: null } }, orderBy: { versionNumber: 'desc' } });
+        if (row) {
+          response.mappingId = row.id; response.mappingVersion = row.versionNumber; response.contentHash = row.contentHash;
+          if (row.status === 'REVOKED') response.status = 'MAPPING_REVOKED';
+          else if (row.questionnaireContentHash !== source.contentHash || row.algorithmId !== snapshot.algorithmId || row.algorithmVersion !== snapshot.algorithmVersion || canonical(row.resultBandSnapshot) !== canonical(actualBand)) response.status = 'PROVENANCE_UNSUPPORTED';
           else {
-            const row = await tx.assessmentGuidanceVersion.findFirst({ where: { assessmentVersionId: source.id, resultBandId: String(actualBand.id), approvedAt: { not: null } }, orderBy: { versionNumber: 'desc' } });
-            if (row) {
-              response.mappingId = row.id; response.mappingVersion = row.versionNumber; response.contentHash = row.contentHash;
-              if (row.status === 'REVOKED') response.status = 'MAPPING_REVOKED';
-              else if (row.questionnaireContentHash !== source.contentHash || row.algorithmId !== snapshot.algorithmId || row.algorithmVersion !== snapshot.algorithmVersion || canonical(row.resultBandSnapshot) !== canonical(actualBand)) response.status = 'PROVENANCE_UNSUPPORTED';
-              else {
-                const [reviewer] = await tx.$queryRaw<{ id: string | null }[]>(Prisma.sql`SELECT guidance_doctor_id(${row.approvedByUserId}::uuid,${clinicId}::uuid) AS id`);
-                const deps = reviewer?.id === row.approvedDoctorId ? await this.dependencies(tx, row) : null;
-                if (!deps) response.status = 'DEPENDENCIES_UNAVAILABLE';
-                else { response.status = 'READY'; response.content = deps.contents.map(c => this.content.project(c)); response.services = deps.services; response.recommendConsultation = row.recommendConsultation; }
-              }
-            }
+            const [reviewer] = await tx.$queryRaw<{ id: string | null }[]>(Prisma.sql`SELECT guidance_doctor_id(${row.approvedByUserId}::uuid,${clinicId}::uuid) AS id`);
+            const deps = reviewer?.id === row.approvedDoctorId ? await this.dependencies(tx, row) : null;
+            if (!deps) response.status = 'DEPENDENCIES_UNAVAILABLE';
+            else { response.status = 'READY'; response.content = deps.contents.map(c => this.content.project(c)); response.services = deps.services; response.recommendConsultation = row.recommendConsultation; }
           }
         }
       }

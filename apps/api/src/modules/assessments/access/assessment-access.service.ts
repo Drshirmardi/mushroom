@@ -19,6 +19,8 @@ export class AssessmentAccessService {
     if (!grant) throw new NotFoundException({ code: 'ASSESSMENT_PURCHASE_NOT_FOUND', message: 'Owned assessment access was not found.', details: {} });
     const locked = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT id FROM patient_consent_records WHERE id=${grant.processingConsentRecordId}::uuid AND withdrawn_at IS NULL FOR SHARE`);
     if (!locked.length) throw assessmentAccessUnavailable();
+    await tx.$queryRaw(Prisma.sql`SELECT i.id FROM patient_medical_intakes i JOIN patient_medical_intake_revisions r ON r.intake_id=i.id AND r.revision_number=i.current_revision_number WHERE i.patient_id=${patient.id}::uuid FOR SHARE OF i,r`);
+    const [age] = await tx.$queryRaw<{ adult: boolean }[]>(Prisma.sql`SELECT couple_patient_is_adult(${patient.id}::uuid) AS adult`); if (!age!.adult) throw assessmentAccessUnavailable();
     await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${'assessment-protocol:' + grant.assessmentVersionId},0))`);
     await tx.$queryRaw(Prisma.sql`SELECT id FROM assessment_versions WHERE id=${grant.assessmentVersionId}::uuid FOR SHARE`);
     const review = await this.protocols.usableApproval(tx, patient.clinicId, grant.assessmentVersionId);

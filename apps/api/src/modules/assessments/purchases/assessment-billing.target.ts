@@ -4,23 +4,29 @@ import { Prisma } from '../../../generated/prisma/client';
 import { BillingTargetRegistry, type BillingTarget, type PreparedTarget } from '../../billing/billing-target.registry';
 import { financialAudit, lockFinancial, type FinancialContext, type Tx } from '../../billing/billing.policy';
 import { AssessmentPurchaseService, purchaseConflict } from './assessment-purchase.service';
+import { CoupleAssessmentBillingService } from '../couples/paid/couple-assessment-billing.service';
 
 @Injectable()
 export class AssessmentBillingTarget implements BillingTarget, OnModuleInit {
-  constructor(private readonly registry: BillingTargetRegistry, private readonly purchases: AssessmentPurchaseService) {}
+  constructor(private readonly registry: BillingTargetRegistry, private readonly purchases: AssessmentPurchaseService, private readonly couples: CoupleAssessmentBillingService) {}
   onModuleInit() { this.registry.register('ASSESSMENT', this); }
-  prepare(patient: PatientProfile, input: Record<string, string>) { return this.purchases.prepare(patient, input); }
-  reserve(tx: Tx, patient: PatientProfile, prepared: PreparedTarget) { return this.purchases.reserve(tx, patient, prepared); }
+  prepare(patient: PatientProfile, input: Record<string, string>) { return input.coupleAssessmentSessionId ? this.couples.prepare(patient, input) : this.purchases.prepare(patient, input); }
+  reserve(tx: Tx, patient: PatientProfile, prepared: PreparedTarget) { return (prepared.snapshot as { schemaVersion?: number }).schemaVersion === 2 ? this.couples.reserve(tx, patient, prepared) : this.purchases.reserve(tx, patient, prepared); }
   async lock(tx: Tx, intent: BillingIntent) {
     const purchase = intent.assessmentPurchaseId ? await tx.assessmentPurchase.findFirst({ where: { id: intent.assessmentPurchaseId, patientId: intent.patientId, clinicId: intent.clinicId } }) : null;
     if (!purchase) throw purchaseConflict();
+    if (purchase.coupleAssessmentSessionId) { await this.couples.lock(tx, purchase); return; }
     const sourceId = (purchase.snapshot as { assessmentVersionId: string }).assessmentVersionId;
     await lockFinancial(tx, `assessment-purchase:${intent.patientId}:${sourceId}`);
   }
-  canSettle(tx: Tx, intent: BillingIntent) { return this.purchases.canSettle(tx, intent); }
+  async canSettle(tx: Tx, intent: BillingIntent) {
+    const purchase = intent.assessmentPurchaseId ? await tx.assessmentPurchase.findUnique({ where: { id: intent.assessmentPurchaseId } }) : null;
+    return purchase?.coupleAssessmentSessionId ? this.couples.canSettle(tx, intent, purchase) : this.purchases.canSettle(tx, intent);
+  }
   async settle(tx: Tx, intent: BillingIntent, context: FinancialContext, journalId?: string, gatewayAttemptId?: string) {
     if (!intent.assessmentPurchaseId || !['WALLET', 'GATEWAY'].includes(intent.method ?? '')) throw purchaseConflict();
     const purchase = await tx.assessmentPurchase.findUniqueOrThrow({ where: { id: intent.assessmentPurchaseId } });
+    if (purchase.coupleAssessmentSessionId) return this.couples.settle(tx, intent, purchase, context, journalId, gatewayAttemptId);
     const sourceId = (purchase.snapshot as { assessmentVersionId: string }).assessmentVersionId;
     const [time] = await tx.$queryRaw<{ now: Date }[]>(Prisma.sql`SELECT GREATEST(CURRENT_TIMESTAMP,${purchase.createdAt}::timestamptz) AS now`);
     const grant = await tx.assessmentAccessGrant.create({ data: { clinicId: purchase.clinicId, patientId: purchase.patientId, purchaseId: purchase.id, assessmentVersionId: sourceId, processingConsentRecordId: purchase.processingConsentRecordId,
