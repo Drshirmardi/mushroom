@@ -324,3 +324,5 @@ Authority: explicit owner implementation request after the patient journey revie
 - هر datastore یا زیرساخت اضافی با bottleneck واقعی توجیه شده است.
 
 - [x] `F12-PJ-J02` — DONE/review PASS/released; exact medical purpose/locale/clinic/current matching consent in admin patient projections/read/correction;18 new PostgreSQL cases,87 distinct focused API11 files and types PASS; evidence Phase12 log. No schema/API/default grant changes.
+
+- [x] `F12-PJ-R04` — DONE/review PASS/released; exclude paid private contexts from generic admin patient detail per accepted P02; two new actual paid/engine cases,103 focused API6 files/types PASS; evidence Phase12 log. No schema/API/default grant changes.

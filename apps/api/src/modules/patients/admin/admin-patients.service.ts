@@ -121,7 +121,7 @@ export class AdminPatientsService {
 
   async get(patientId: string, context: AuditContext) {
     return this.prisma.$transaction(async tx => {
-      const patient = await tx.patientProfile.findUnique({ where: { id: patientId }, include: { user: { include: { userProfile: true } }, assessmentSubmissions: { include: { assessmentVersion: true }, orderBy: { startedAt: 'desc' } } } });
+      const patient = await tx.patientProfile.findUnique({ where: { id: patientId }, include: { user: { include: { userProfile: true } }, assessmentSubmissions: { where: { accessGrantId: null }, include: { assessmentVersion: true }, orderBy: { startedAt: 'desc' } } } });
       if (!patient) throw patientNotFound();
       const { policy: activePolicy, consent } = await this.currentMedicalAuthorization(tx, patientId, patient.clinicId);
       const medicalIntake = await tx.patientMedicalIntake.findUnique({ where: { patientId }, include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } } });

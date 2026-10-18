@@ -10,11 +10,15 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: none; PJ-J02 DONE/review PASS/released.
-- task فعال: none. Next eligible: separately freeze/claim R04 paid-assessment private-context exclusion from legacy admin patient detail, as already required by accepted P02 contract.
+- batch فعال: none; PJ-R04 DONE/review PASS/released.
+- task فعال: none. Patient Journey has no further frozen/unblocked implementation batch; actual clinical/legal/retention release inputs and controlled provider acceptance remain external gates. Frontend/independent Phase12 operational tasks stay separate.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-R04 DONE/review PASS/released (2026-10-18): F12-PJ-R04; sole /root owner/reviewer. Actual paid private-context leak reproduced; one SQL relation predicate aligns generic admin patient detail with accepted P02. Two new wallet/engine privacy cases;103 focused API6 files/types/OpenAPI PASS, evidence Phase12 log. Original/accepted/persistent DBs and unrelated user/banner/generated work preserved. No schema/API/default grant changes. Next safe step: actual qualified clinical/owner legal/retention/configuration release and controlled provider acceptance; no further scoped backend batch currently frozen/unblocked. Optional recommendation/result-review expansion needs a separate contract. No whole-backend/frontend/production acceptance claim.
+
+PJ-R04 historical claim (accepted/released 2026-10-18): F12-PJ-R04; baseline front@16b7f70; sole /root writer/reviewer, no subagents. Frozen admin-paid-assessment-projection-v1; enforce existing P02 private-context exclusion, not a new permission policy. Own narrow patients/admin/admin-patients.service.ts assessment relation query, existing assessment-purchase.integration.spec.ts and couple-assessment-paid.integration.spec.ts focused actual-fixture assertions, exact auth-test-support disposable clone name and scoped plan/contract/evidence. New private_admin clone only, original/accepted/persistent DBs and unrelated banner source/generated work preserved. No schema/migration/endpoint/API/default grant/clinical/legal/frontend/provider/push/deploy. Required real wallet/engine individual stages+legacy canary/zero excluded-read audits/withdrawal, independent paid couple participants, own/explicit care/J02/admin/OpenAPI/types regression and main review before isolated commit.
 
 PJ-J02 DONE/review PASS/released (2026-10-18): F12-PJ-J02; sole /root owner/reviewer. Exact native medical purpose/locale/clinic/current hash and transactional read/correction/consistent reporting;18 new PostgreSQL cases,87 distinct focused API11 files/types PASS, evidence Phase12 log. No schema/API/default permission change; unrelated user/banner work and accepted/persistent DBs preserved. Next: separately frozen R04 closes verified paid-context leak in legacy admin patient assessment projection under existing P02 privacy contract.
 
