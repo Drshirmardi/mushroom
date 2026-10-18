@@ -19,8 +19,8 @@ export class CustomProgramCareAcceptDto {
   @ApiProperty({ minimum: 0, maximum: 2147483646 }) @IsInt() @Min(0) @Max(2147483646) expectedVersionNumber!: number;
 }
 export class CustomProgramBoundaryDto {
-  @ApiProperty({ enum: [false] }) checkoutAvailable!: false;
-  @ApiProperty({ enum: [false] }) clinicalDeliveryAvailable!: false;
+  @ApiProperty({ description: 'Own exact current care/terms/price and unused request allow starting checkout.' }) checkoutAvailable!: boolean;
+  @ApiProperty({ description: 'An owned effective issued native plan is currently available; never implies automatic therapy.' }) clinicalDeliveryAvailable!: boolean;
   @ApiProperty({ type: [String] }) blockers!: string[];
 }
 export class CustomProgramPhysicianDto {

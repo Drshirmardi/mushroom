@@ -30,6 +30,7 @@ import { ProgramDefinitionModule } from './modules/programs/definitions/program-
 import { ProgramPublicationModule } from './modules/programs/publication/program-publication.module';
 import { ProgramPurchaseModule } from './modules/programs/purchases/program-purchase.module';
 import { CustomProgramModule } from './modules/programs/custom-requests/custom-program.module';
+import { CustomDeliveryModule } from './modules/programs/custom-delivery/custom-delivery.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
 import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
 import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
@@ -76,6 +77,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     ProgramPublicationModule,
     ProgramPurchaseModule,
     CustomProgramModule,
+    CustomDeliveryModule,
     ClinicalModule,
     HealthObservationsModule, NotificationsModule, ContentModule, GuidanceContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
     AssessmentGuidanceModule,

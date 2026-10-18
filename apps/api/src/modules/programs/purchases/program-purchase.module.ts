@@ -6,5 +6,5 @@ import { ProgramDefinitionModule } from '../definitions/program-definition.modul
 import { ProgramBillingTarget } from './program-billing.target';
 import { ProgramPurchaseController } from './program-purchase.controller';
 import { ProgramPurchaseService } from './program-purchase.service';
-@Module({ imports: [BillingModule, GuidanceContentModule, IdentityModule, ProgramDefinitionModule], controllers: [ProgramPurchaseController], providers: [ProgramPurchaseService, ProgramBillingTarget] })
+@Module({ imports: [BillingModule, GuidanceContentModule, IdentityModule, ProgramDefinitionModule], controllers: [ProgramPurchaseController], providers: [ProgramPurchaseService, ProgramBillingTarget], exports: [ProgramPurchaseService] })
 export class ProgramPurchaseModule {}

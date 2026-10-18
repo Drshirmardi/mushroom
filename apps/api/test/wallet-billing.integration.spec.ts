@@ -37,7 +37,7 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
   };
   beforeAll(async () => {
     const database = new URL(process.env.DATABASE_URL ?? '');
-    if (!['localhost', '127.0.0.1'].includes(database.hostname) || !(database.pathname === '/wallet_test' || database.pathname === '/wallet_program_purchase_test' && database.port === '55419')) throw new Error('Wallet integration tests require an explicit dedicated disposable local wallet database.');
+    if (!['localhost', '127.0.0.1'].includes(database.hostname) || !(database.pathname === '/wallet_test' || ['/wallet_program_purchase_test','/wallet_custom_delivery_test'].includes(database.pathname) && database.port === '55419')) throw new Error('Wallet integration tests require an explicit dedicated disposable local wallet database.');
     Logger.overrideLogger(false);
     app = await createApiApplication(); await app.init(); db = app.get(PrismaService); wallet = app.get(WalletService); billing = app.get(BillingService); gateway = app.get(BillingGatewayService);
     clinicId = (await db.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } })).id;

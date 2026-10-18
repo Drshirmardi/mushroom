@@ -65,6 +65,8 @@ export class ProgramGrantDto {
   @ApiProperty() accessAvailable!: boolean;
 }
 export class PatientProgramPurchaseDto {
+  @ApiProperty({ enum: ['READY_EDUCATION','CUSTOM_PROFESSIONAL_PLAN'] }) kind!: string;
+  @ApiProperty({ type: String, nullable: true }) customRequestId!: string | null;
   @ApiProperty() id!: string;
   @ApiProperty() publicationId!: string;
   @ApiProperty() programDefinitionId!: string;

@@ -5,7 +5,7 @@ import { PrismaService } from '../src/database/prisma/prisma.service';
 
 export function assertPatientJourneyTestDatabase() {
   const target = new URL(process.env.DATABASE_URL ?? '');
-  if (!['localhost', '127.0.0.1'].includes(target.hostname) || target.port !== '55419' || !['/patient_journey_test', '/patient_journey_program_purchase_test', '/patient_journey_custom_request_test', '/patient_journey_custom_request_verified_test'].includes(target.pathname) || process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1') throw new Error('Explicit disposable patient journey database on localhost:55419 required.');
+  if (!['localhost', '127.0.0.1'].includes(target.hostname) || target.port !== '55419' || !['/patient_journey_test', '/patient_journey_program_purchase_test', '/patient_journey_custom_request_test', '/patient_journey_custom_request_verified_test', '/patient_journey_custom_delivery_test'].includes(target.pathname) || process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1') throw new Error('Explicit disposable patient journey database on localhost:55419 required.');
 }
 
 export async function createTestAccessToken(
