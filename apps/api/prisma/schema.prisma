@@ -597,6 +597,9 @@ enum SmsDeliveryAttemptStatus {
 }
 
 model User {
+  customProgramRequests CustomProgramRequest[] @relation("CustomProgramRequestCreator")
+  customProgramCareAcceptances CustomProgramCareAuthorization[] @relation("CustomProgramCareAcceptor")
+  customProgramCareWithdrawals CustomProgramCareAuthorization[] @relation("CustomProgramCareWithdrawer")
   assessmentCareAcceptances AssessmentCareShare[] @relation("AssessmentCareAcceptingUser")
   assessmentCareWithdrawals AssessmentCareShare[] @relation("AssessmentCareWithdrawingUser")
   coupleProtocolAuthors CoupleResultProtocolVersion[] @relation("CoupleProtocolAuthor")
@@ -833,6 +836,9 @@ model Credential {
 }
 
 model Session {
+  customProgramRequests CustomProgramRequest[] @relation("CustomProgramRequestSession")
+  customProgramCareAcceptances CustomProgramCareAuthorization[] @relation("CustomProgramCareAcceptSession")
+  customProgramCareWithdrawals CustomProgramCareAuthorization[] @relation("CustomProgramCareWithdrawSession")
   assessmentCareAcceptances AssessmentCareShare[] @relation("AssessmentCareAcceptingSession")
   assessmentCareWithdrawals AssessmentCareShare[] @relation("AssessmentCareWithdrawingSession")
   generatedCoupleJointResults CoupleAssessmentJointResult[]
@@ -974,6 +980,8 @@ model AuditEvent {
 }
 
 model Clinic {
+  customProgramRequests CustomProgramRequest[]
+  customProgramCareAuthorizations CustomProgramCareAuthorization[]
   assessmentCareShares AssessmentCareShare[]
   coupleJointResults CoupleAssessmentJointResult[]
   coupleAssessments CoupleAssessmentSession[]
@@ -1071,6 +1079,8 @@ model UserProfile {
 }
 
 model PatientProfile {
+  customProgramRequests CustomProgramRequest[]
+  customProgramCareAuthorizations CustomProgramCareAuthorization[]
   assessmentCareShares AssessmentCareShare[]
   generatedCoupleJointResults CoupleAssessmentJointResult[]
   createdCoupleAssessments CoupleAssessmentSession[]
@@ -2177,6 +2187,7 @@ model ConsentPolicyVersion {
 }
 
 model PatientConsentRecord {
+  customProgramCareAuthorizations CustomProgramCareAuthorization[]
   assessmentCareShares AssessmentCareShare[]
   coupleAssessmentParticipations CoupleAssessmentParticipant[]
   assessmentProcessingPurchases AssessmentPurchase[] @relation("PurchaseProcessingConsent")
@@ -2410,6 +2421,7 @@ model BookingEligibilityPolicy {
 }
 
 model DoctorProfile {
+  customProgramRequests CustomProgramRequest[]
   assessmentCareShares AssessmentCareShare[]
   coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentProtocolReviews AssessmentProtocolReview[]
@@ -2502,6 +2514,7 @@ model Service {
 }
 
 model DoctorService {
+  customProgramRequests CustomProgramRequest[]
   id                String                     @id @default(uuid()) @db.Uuid
   clinicId          String                     @map("clinic_id") @db.Uuid
   doctorId          String                     @map("doctor_id") @db.Uuid
@@ -3542,6 +3555,7 @@ model AssessmentCareShare {
 
 
 model ProgramDefinitionVersion {
+  customProgramRequests CustomProgramRequest[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   programKey String @map("program_key") @db.VarChar(100)
@@ -3590,6 +3604,7 @@ model ProgramDefinitionVersion {
 
 
 model ProgramOfferingPublication {
+  customProgramRequests CustomProgramRequest[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   programDefinitionId String @map("program_definition_id") @db.Uuid
@@ -3678,4 +3693,67 @@ model ProgramAccessGrant {
   @@index([clinicId, patientId, grantedAt, id], map: "program_access_grants_patient_granted_idx")
   @@index([patientId, endsAt], map: "program_access_grants_patient_period_idx")
   @@map("program_access_grants")
+}
+
+model CustomProgramRequest {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  publicationHash String @map("publication_hash") @db.Char(64)
+  programDefinitionId String @map("program_definition_id") @db.Uuid
+  definitionContentHash String @map("definition_content_hash") @db.Char(64)
+  doctorServiceId String @map("doctor_service_id") @db.Uuid
+  doctorId String @map("doctor_id") @db.Uuid
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  createdSessionId String @map("created_session_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  publication ProgramOfferingPublication @relation(fields: [publicationId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  definition ProgramDefinitionVersion @relation(fields: [programDefinitionId], references: [id], onDelete: Restrict)
+  doctorService DoctorService @relation(fields: [doctorServiceId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  doctor DoctorProfile @relation(fields: [doctorId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  creator User @relation("CustomProgramRequestCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  creationSession Session @relation("CustomProgramRequestSession", fields: [createdSessionId], references: [id], onDelete: Restrict)
+  careAuthorizations CustomProgramCareAuthorization[]
+  @@unique([id,clinicId], map: "custom_program_requests_id_clinic_key")
+  @@unique([patientId,idempotencyKey], map: "custom_program_requests_command_key")
+  @@index([clinicId,patientId,createdAt,id], map: "custom_program_requests_patient_created_idx")
+  @@map("custom_program_requests")
+}
+
+model CustomProgramCareAuthorization {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  requestId String @map("request_id") @db.Uuid
+  versionNumber Int @map("version_number")
+  careConsentRecordId String @map("care_consent_record_id") @db.Uuid
+  authorizationHash String @map("authorization_hash") @db.Char(64)
+  acceptedByUserId String @map("accepted_by_user_id") @db.Uuid
+  acceptedSessionId String @map("accepted_session_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  acceptedAt DateTime @default(now()) @map("accepted_at") @db.Timestamptz(3)
+  withdrawnAt DateTime? @map("withdrawn_at") @db.Timestamptz(3)
+  withdrawnByUserId String? @map("withdrawn_by_user_id") @db.Uuid
+  withdrawnSessionId String? @map("withdrawn_session_id") @db.Uuid
+  withdrawalReason String? @map("withdrawal_reason") @db.VarChar(24)
+  withdrawalIdempotencyKey String? @map("withdrawal_idempotency_key") @db.VarChar(200)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  request CustomProgramRequest @relation(fields: [requestId,clinicId], references: [id,clinicId], onDelete: Restrict)
+  careConsent PatientConsentRecord @relation(fields: [careConsentRecordId], references: [id], onDelete: Restrict)
+  acceptor User @relation("CustomProgramCareAcceptor", fields: [acceptedByUserId], references: [id], onDelete: Restrict)
+  acceptanceSession Session @relation("CustomProgramCareAcceptSession", fields: [acceptedSessionId], references: [id], onDelete: Restrict)
+  withdrawer User? @relation("CustomProgramCareWithdrawer", fields: [withdrawnByUserId], references: [id], onDelete: Restrict)
+  withdrawalSession Session? @relation("CustomProgramCareWithdrawSession", fields: [withdrawnSessionId], references: [id], onDelete: Restrict)
+  @@unique([requestId,versionNumber], map: "custom_program_care_request_version_key")
+  @@unique([patientId,idempotencyKey], map: "custom_program_care_acceptance_command_key")
+  @@unique([patientId,withdrawalIdempotencyKey], map: "custom_program_care_withdrawal_command_key")
+  @@index([requestId,acceptedAt,id], map: "custom_program_care_request_history_idx")
+  @@map("custom_program_care_authorizations")
 }

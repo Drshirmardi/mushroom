@@ -36,4 +36,7 @@ R01 and J01 are accepted and their claims released. Continuous owner authorizati
 
 ## Required evidence for each future task
 
+- [x] F12-PJ-PG04 — DONE/review PASS/released; exact named custom request/scoped care authority, custom-program-request-care-v1/ADR-0033.21 new PostgreSQL cases;216 distinct focused API12 files+client5/fresh65/populated130-table preservation/no drift/API/types PASS; evidence Phase12 log. No custom charge/chart access/native therapy.
+- [ ] F12-PJ-PG05 — later separately freeze/claim shared custom payment and assigned native TreatmentPlan preparation/qualified immutable issue/tasks/progress. Depends on accepted PG04; exact clinical-boundary/API/SQL scope required before implementation. No separate treatment engine or automatic therapeutic content.
+
 Domain acceptance, typed API/authorization/resource/clinic boundaries, immutable/additive migration compatibility, actual PostgreSQL transaction/concurrency tests, safe audits, official OpenAPI/client freshness, current consumers' type compatibility, combined diff review, phase evidence and isolated task commit. User interfaces are not implemented under this backend track; complete product/browser acceptance remains separate.

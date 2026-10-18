@@ -14,7 +14,7 @@ import { PaymentProviderRegistry } from '../src/modules/commerce/payments/paymen
 import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments/payment-credential-crypto.service';
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
-import { createTestAccessToken } from './auth-test-support';
+import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready program purchase/access (disposable PostgreSQL, synthetic PSP)', () => {
   let app: NestFastifyApplication, db: PrismaService, billing: BillingService, gateway: BillingGatewayService, wallet: WalletService, clinicId: string, doctorRole: string, originalSign: boolean;
@@ -28,7 +28,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     async verifyPayment({ token }) { if (providerMode === 'TIMEOUT') throw new Error('Synthetic timeout'); const p = requests.get(token)!; return { resultCode: providerMode === 'FAILED' ? '101' : '100', providerOrderId: p.orderId, amount: p.amount + (providerMode === 'WRONG_AMOUNT' ? 1n : 0n), referenceId: `program-${p.orderId}`, traceNumber: `trace-${p.orderId}` }; },
   };
   beforeAll(async () => {
-    const u = new URL(process.env.DATABASE_URL ?? ''); if (!['127.0.0.1', 'localhost'].includes(u.hostname) || u.port !== '55419' || !['/patient_journey_program_purchase_test', '/patient_journey_test'].includes(u.pathname)) throw new Error('Explicit disposable program test clone:55419 required.');
+    assertPatientJourneyTestDatabase();
     Logger.overrideLogger(false); app = await createApiApplication(); await app.init(); db = app.get(PrismaService); billing = app.get(BillingService); gateway = app.get(BillingGatewayService); wallet = app.get(WalletService); clinicId = (await db.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } })).id;
     doctorRole = (await db.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } })).id; originalSign = !!await db.clinicalRolePermission.count({ where: { roleId: doctorRole, permission: 'CLINICAL_RECORD_SIGN' } }); await db.clinicalRolePermission.upsert({ where: { roleId_permission: { roleId: doctorRole, permission: 'CLINICAL_RECORD_SIGN' } }, create: { roleId: doctorRole, permission: 'CLINICAL_RECORD_SIGN' }, update: {} });
     app.get(PaymentProviderRegistry).register(provider); const runtime = app.get(SadadRuntimeConfigService); vi.spyOn(runtime, 'settings').mockReturnValue({ returnUrl: 'https://api.example.test/v1/payments/providers/sadad/callback', resultUrl: 'https://app.example.test/profile/wallet/payment-result', redirectProfile: 'PHP_VPG_PURCHASE', timeoutMs: 1000 }); vi.spyOn(runtime, 'live', 'get').mockReturnValue(true);
