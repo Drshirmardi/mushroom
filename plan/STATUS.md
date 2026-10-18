@@ -10,11 +10,15 @@
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: none; PJ-PG05 DONE/review PASS/released.
-- task فعال: none. Next eligible: separately freeze/claim narrow admin medical-consent purpose isolation (J02); actual clinical/legal/provider and Phase12 external gates remain.
+- batch فعال: none; PJ-J02 DONE/review PASS/released.
+- task فعال: none. Next eligible: separately freeze/claim R04 paid-assessment private-context exclusion from legacy admin patient detail, as already required by accepted P02 contract.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-J02 DONE/review PASS/released (2026-10-18): F12-PJ-J02; sole /root owner/reviewer. Exact native medical purpose/locale/clinic/current hash and transactional read/correction/consistent reporting;18 new PostgreSQL cases,87 distinct focused API11 files/types PASS, evidence Phase12 log. No schema/API/default permission change; unrelated user/banner work and accepted/persistent DBs preserved. Next: separately frozen R04 closes verified paid-context leak in legacy admin patient assessment projection under existing P02 privacy contract.
+
+PJ-J02 historical claim (accepted/released 2026-10-18): F12-PJ-J02; baseline front@953cfb4; sole /root writer/reviewer, no subagents. Frozen admin-medical-consent-purpose-v1; technical correction of verified broad active-policy selectors. Own only patients/admin/admin-patients.service.ts, new scoped real PostgreSQL medical-purpose test, existing admin-patients.authorization.spec.ts mock seam if required, auth-test-support exact named clone, narrow CI test inclusion and scoped plan/contract/evidence. Reuse existing purpose/fa-IR/native consent, evaluation/canonical corrections/audit; no schema/migration/API/permission/default grant/frozen contract change, actual medical/legal data/frontend/live provider/persistent DB/push/deploy. New disposable medical_purpose test/regression clones only; preserve original/accepted proof DBs and unrelated Store/banner generated/source work. Required purpose/locale/clinic/current matching consent, reporting/native completion, current-policy/consent lock races, atomic audit, canonical replay/legacy/tests/types/main review before isolated task commit. No next batch before acceptance.
 
 PJ-PG05 DONE/review PASS/released (2026-10-18): F12-PJ-PG05; sole /root owner/reviewer, no subagents. Shared custom payment and assigned reviewed native delivery;23 new PostgreSQL cases,251 distinct focused API16 files+client5/fresh73/populated132-table preservation/no drift/types PASS. Eight forward-only migrations66–73; real deferred-proof/deadlock/current-medical-policy regressions reproduced and fixed, evidence [Phase12 log](logs/phase-12.md#f12-pj-pg05--shared-paid-custom-right-and-assigned-reviewed-native-delivery). Original/accepted proof/persistent DBs and unrelated banner work preserved. Next: narrow separately frozen admin medical-purpose consent isolation. No whole-backend/clinical/legal/provider/frontend acceptance claim.
 
