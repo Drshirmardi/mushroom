@@ -6,15 +6,19 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-17`
+- آخرین به‌رورسانی: `2026-10-18`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `none — PJ-PG02 DONE/review PASS/released`؛ Codex /root sole owner/reviewer, no subagents.
-- task فعال: `none` — next eligible shared ready-program purchase/access scope must be frozen and claimed separately.
+- batch فعال: none — PJ-PG03 DONE/review PASS/released؛ Codex /root sole owner/reviewer, no subagents.
+- task بعدی واجد بررسی: separately freeze/claim assigned custom professional request/payment/native TreatmentPlan delivery; no automatic activation.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+PJ-PG03 DONE/review PASS/released (2026-10-18): F12-PJ-PG03; baseline front@5fe92e1; sole Codex /root owner/reviewer. READY_EDUCATION only: retained exact terms/purchase/one proved grant, PROGRAM shared free/wallet/server Verify, owned curriculum/period/receipt/Home and no ordinary refund.30 new real PostgreSQL cases plus typed effect case;222 distinct focused API16 files+client5/fresh63/populated128-table preservation/no drift/generated/API/test/consumer types PASS. Existing PG01 lock-race fixture clock corrected without changing assertions; actual audit UUID defect reproduced and forward62 fixed, forward63 exact quote/beneficiary guards. Original journey test DB60/persistent DB preserved; reviewer-required new disposable program/wallet clones only. Exact source/terms/identity/privacy/payment/compensation/audit/races/main review and evidence Phase12 log PASS. No actual clinical/legal/retention data/default capability/custom charge/clinical plan/frontend/live PSP/push/deploy. Unrelated .gitignore preserved/excluded. Next: separately freeze/claim assigned custom professional request and native TreatmentPlan preparation/qualified issue/progress with exact consent and shared payment; no second treatment/payment engine.
+
+PJ-PG03 CLAIMED (2026-10-17): F12-PJ-PG03; baseline front@5fe92e1; sole Codex /root owner/reviewer, no subagents; unrelated .gitignore preserved/excluded. Accepted PG01/PG02/P01/shared wallet/provider software dependencies; actual owner no ordinary program refunds. Frozen ready-program-purchase-access-v1/ADR-0032. Own new programs/purchases/**, two retained models/narrow inverse/FK and additive forward billing constraints; narrow billing target reservation discriminant/create purpose-self/refund/view/filter DTO seams; current Home service/DTO bounded metadata/action; app/errors, focused actual DB/upgrade/CI and legacy target tests, official API/client and scoped governance/evidence. Single writer schema/generated/disposable DB. Reuse generic consent, free/wallet/server Verify, no new engine/permission or clinical record. READY_EDUCATION only; custom charge/delivery remains unsupported until separately accepted. No actual content/legal/retention data/default grant/frontend/live provider/persistent DB/push/deploy. Required identity/quote/terms/payment-to-one-grant/source/expiry/price replacement/no-refund/compensation/direct SQL/audit/fresh/populated/generated/types/old-target/Home/main review before independent commit.
 
 PJ-PG02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-PG02; baseline front@bf5ee45; sole Codex /root owner/reviewer. One immutable ProgramOfferingPublication/migration60, exact clinical/terms references, real custom directory fee, explicit price/access/quote/retention configuration and owner-confirmed no ordinary refunds.18 new PostgreSQL+one CLI purpose case;144 focused API11 files+client5/freshness/build/API/test/consumer types PASS; fresh60/populated59-to60 all127-table preservation/current program and paid readability/no drift. CAS/replacement/final retirement/live identity/source/legal/fee races/audit rollback/clock/SQL/foreign scope/main review PASS; evidence Phase12 log. No patient purchase/entitlement/therapy/actual clinical or legal source/default grant/frontend/provider/persistent DB/push/deploy. Existing .gitignore excluded. Next: separately freeze/claim ready educational program purchase and owned access using existing wallet/server Verify; custom assigned delivery follows separately and must remain unavailable until implemented.
 

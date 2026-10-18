@@ -6,13 +6,13 @@ import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { Prisma } from '../src/generated/prisma/client';
-import { createTestAccessToken } from './auth-test-support';
+import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('program commercial publication (isolated PostgreSQL)', () => {
   let app: NestFastifyApplication, db: PrismaService, clinicId: string, roleId: string, originalGrant: boolean;
   let admin: Awaited<ReturnType<typeof actor>>, doctor: Awaited<ReturnType<typeof actor>>, patient: Awaited<ReturnType<typeof actor>>;
   beforeAll(async () => {
-    const target = new URL(process.env.DATABASE_URL ?? ''); if (!['localhost','127.0.0.1'].includes(target.hostname) || target.port !== '55419' || target.pathname !== '/patient_journey_test') throw new Error('Disposable patient_journey_test:55419 required.');
+    assertPatientJourneyTestDatabase();
     Logger.overrideLogger(false); app = await createApiApplication(); await app.init(); db = app.get(PrismaService); clinicId = (await db.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } })).id; roleId = (await db.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } })).id; originalGrant = !!await db.clinicalRolePermission.count({ where: { roleId, permission: 'CLINICAL_RECORD_SIGN' } }); await grant();
   }, 30_000);
   afterAll(async () => { try { if (db && !originalGrant) await db.clinicalRolePermission.deleteMany({ where: { roleId, permission: 'CLINICAL_RECORD_SIGN' } }); } finally { await app?.close(); } });

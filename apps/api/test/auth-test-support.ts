@@ -3,6 +3,11 @@ import { randomUUID } from 'node:crypto';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 
+export function assertPatientJourneyTestDatabase() {
+  const target = new URL(process.env.DATABASE_URL ?? '');
+  if (!['localhost', '127.0.0.1'].includes(target.hostname) || target.port !== '55419' || !['/patient_journey_test', '/patient_journey_program_purchase_test'].includes(target.pathname) || process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1') throw new Error('Explicit disposable patient journey database on localhost:55419 required.');
+}
+
 export async function createTestAccessToken(
   prisma: PrismaService,
   tokens: AccessTokenService,

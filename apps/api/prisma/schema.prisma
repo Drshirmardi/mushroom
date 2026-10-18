@@ -710,6 +710,7 @@ model WalletJournal {
   @@unique([accountId, version])
   @@index([accountId, createdAt, id])
   @@map("wallet_journals")
+  programAccessGrants ProgramAccessGrant[]
 }
 
 model WalletEntry {
@@ -770,6 +771,8 @@ model BillingIntent {
   @@index([patientId, createdAt, id])
   @@index([status, expiresAt])
   @@map("billing_intents")
+  programPurchaseId String? @unique(map: "billing_intents_program_purchase_key") @map("program_purchase_id") @db.Uuid
+  programPurchase ProgramPurchase? @relation(fields: [programPurchaseId], references: [id], onDelete: Restrict)
 }
 
 model BillingGatewayAttempt {
@@ -795,6 +798,7 @@ model BillingGatewayAttempt {
   @@unique([intentId, idempotencyKey])
   @@index([status, updatedAt])
   @@map("billing_gateway_attempts")
+  programAccessGrants ProgramAccessGrant[]
 }
 
 model BillingRefund {
@@ -1047,6 +1051,8 @@ model Clinic {
   @@map("clinics")
   programDefinitions ProgramDefinitionVersion[]
   programPublications ProgramOfferingPublication[]
+  programPurchases ProgramPurchase[]
+  programAccessGrants ProgramAccessGrant[]
 }
 
 model UserProfile {
@@ -1113,6 +1119,8 @@ model PatientProfile {
   @@unique([id, clinicId], map: "patient_profiles_id_clinic_key")
   @@index([clinicId, createdAt], map: "patient_profiles_clinic_created_at_idx")
   @@map("patient_profiles")
+  programPurchases ProgramPurchase[]
+  programAccessGrants ProgramAccessGrant[]
 }
 
 model CommerceCategory {
@@ -2199,6 +2207,7 @@ model PatientConsentRecord {
   completedRevisions       PatientMedicalIntakeRevision[]
 
   @@map("patient_consent_records")
+  programTermsPurchases ProgramPurchase[]
 }
 
 model AssessmentVersion {
@@ -3576,6 +3585,7 @@ model ProgramDefinitionVersion {
   @@index([clinicId, status, createdAt, id], map: "program_definitions_clinic_status_created_idx")
   @@map("program_definition_versions")
   commercialPublications ProgramOfferingPublication[]
+  purchases ProgramPurchase[]
 }
 
 
@@ -3618,4 +3628,54 @@ model ProgramOfferingPublication {
   @@unique([clinicId, publishedByUserId, idempotencyKey], map: "program_publications_command_key")
   @@index([clinicId, status, createdAt, id], map: "program_publications_clinic_status_created_idx")
   @@map("program_offering_publications")
+  purchases ProgramPurchase[]
+  @@unique([id, clinicId], map: "program_publications_id_clinic_key")
+}
+
+
+model ProgramPurchase {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  publicationHash String @map("publication_hash") @db.Char(64)
+  programDefinitionId String @map("program_definition_id") @db.Uuid
+  termsConsentRecordId String @map("terms_consent_record_id") @db.Uuid
+  amountRial BigInt @map("amount_rial")
+  currency String @default("IRR") @db.Char(3)
+  snapshot Json @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  publication ProgramOfferingPublication @relation(fields: [publicationId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  definition ProgramDefinitionVersion @relation(fields: [programDefinitionId], references: [id], onDelete: Restrict)
+  termsConsent PatientConsentRecord @relation(fields: [termsConsentRecordId], references: [id], onDelete: Restrict)
+  intent BillingIntent?
+  grant ProgramAccessGrant?
+  @@unique([id, clinicId], map: "program_purchases_id_clinic_key")
+  @@index([clinicId, patientId, createdAt, id], map: "program_purchases_patient_created_idx")
+  @@index([patientId, programDefinitionId], map: "program_purchases_patient_definition_idx")
+  @@map("program_purchases")
+}
+
+model ProgramAccessGrant {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  purchaseId String @unique(map: "program_access_grants_purchase_key") @map("purchase_id") @db.Uuid
+  method String @db.VarChar(16)
+  walletJournalId String? @map("wallet_journal_id") @db.Uuid
+  gatewayAttemptId String? @map("gateway_attempt_id") @db.Uuid
+  grantedAt DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+  endsAt DateTime? @map("ends_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  purchase ProgramPurchase @relation(fields: [purchaseId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  walletJournal WalletJournal? @relation(fields: [walletJournalId], references: [id], onDelete: Restrict)
+  gatewayAttempt BillingGatewayAttempt? @relation(fields: [gatewayAttemptId], references: [id], onDelete: Restrict)
+
+  @@unique([purchaseId, clinicId], map: "program_access_grants_purchase_clinic_key")
+  @@index([clinicId, patientId, grantedAt, id], map: "program_access_grants_patient_granted_idx")
+  @@index([patientId, endsAt], map: "program_access_grants_patient_period_idx")
+  @@map("program_access_grants")
 }

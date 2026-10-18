@@ -6,7 +6,7 @@ import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { Prisma } from '../src/generated/prisma/client';
-import { createTestAccessToken } from './auth-test-support';
+import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient journey (isolated PostgreSQL)', () => {
   let app: NestFastifyApplication;
@@ -14,8 +14,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
   let clinicId: string;
   type Actor = Awaited<ReturnType<typeof patient>>;
   beforeAll(async () => {
-    const target = new URL(process.env.DATABASE_URL ?? '');
-    if (!['127.0.0.1', 'localhost'].includes(target.hostname) || target.pathname !== '/patient_journey_test') throw new Error('Disposable patient_journey_test required.');
+    assertPatientJourneyTestDatabase();
     Logger.overrideLogger(false);
     app = await createApiApplication(); await app.init(); db = app.get(PrismaService);
     clinicId = (await db.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } })).id;

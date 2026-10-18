@@ -10,10 +10,10 @@ import { FinancialContext, Tx, financialAudit, financialConflict, financialKey, 
 export class BillingService {
   constructor(private readonly prisma: PrismaService, private readonly wallet: WalletService, private readonly targets: BillingTargetRegistry) {}
 
-  async create(userId: string, purpose: 'TOPUP' | 'ORDER' | 'APPOINTMENT' | 'ASSESSMENT', input: Record<string, string>, rawKey: string | undefined, context: FinancialContext) {
+  async create(userId: string, purpose: 'TOPUP' | 'ORDER' | 'APPOINTMENT' | 'ASSESSMENT' | 'PROGRAM', input: Record<string, string>, rawKey: string | undefined, context: FinancialContext) {
     const patient = await this.wallet.patient(userId); const key = financialKey(rawKey); const hash = fingerprint({ patientId: patient.id, purpose, input });
     const actorUserId = context.actorUserId;
-    if (purpose === 'ASSESSMENT' && (actorUserId !== patient.userId || !context.actorSessionId)) throw financialConflict();
+    if (['ASSESSMENT', 'PROGRAM'].includes(purpose) && (actorUserId !== patient.userId || !context.actorSessionId)) throw financialConflict();
     const previous = await this.prisma.billingIntent.findUnique({ where: { actorUserId_idempotencyKey: { actorUserId, idempotencyKey: key } } });
     if (previous) { if (previous.fingerprint !== hash || previous.patientId !== patient.id) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.view(previous); }
     const prepared: PreparedTarget = purpose === 'TOPUP' ? { amountRial: money(input.amountToman), snapshot: {} } : await this.targets.get(purpose).prepare(patient, input);
@@ -156,6 +156,7 @@ export class BillingService {
   async refundInTransaction(tx: Tx, context: FinancialContext, id: string, amountRial: bigint, reason: string, key: string) {
     const intent = await this.lockIntent(tx, id); const hash = fingerprint({ amountRial: amountRial.toString(), reason });
     if (intent.purpose === 'ASSESSMENT') throw financialConflict('ASSESSMENT_REFUND_NOT_ALLOWED');
+    if (intent.purpose === 'PROGRAM') throw financialConflict('PROGRAM_REFUND_NOT_ALLOWED');
     const old = await tx.billingRefund.findUnique({ where: { intentId_idempotencyKey: { intentId: id, idempotencyKey: key } } });
     if (old) { if (old.fingerprint !== hash) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.refundView(old); }
     if (intent.status !== 'PAID' || intent.purpose === 'TOPUP' || amountRial <= 0n) throw financialConflict();
@@ -207,6 +208,6 @@ export class BillingService {
     });
   }
 
-  view(intent: BillingIntent) { return { id: intent.id, purpose: intent.purpose, status: intent.status, method: intent.method, amountRial: intent.amountRial.toString(), currency: 'IRR', orderId: intent.orderId, appointmentId: intent.appointmentId, expiresAt: intent.expiresAt?.toISOString() ?? null, paidAt: intent.paidAt?.toISOString() ?? null, createdAt: intent.createdAt.toISOString(), ...(intent.purpose === 'ASSESSMENT' ? { assessmentPurchaseId: intent.assessmentPurchaseId } : {}) }; }
+  view(intent: BillingIntent) { return { id: intent.id, purpose: intent.purpose, status: intent.status, method: intent.method, amountRial: intent.amountRial.toString(), currency: 'IRR', orderId: intent.orderId, appointmentId: intent.appointmentId, expiresAt: intent.expiresAt?.toISOString() ?? null, paidAt: intent.paidAt?.toISOString() ?? null, createdAt: intent.createdAt.toISOString(), ...(intent.purpose === 'ASSESSMENT' ? { assessmentPurchaseId: intent.assessmentPurchaseId } : {}), ...(intent.purpose === 'PROGRAM' ? { programPurchaseId: intent.programPurchaseId } : {}) }; }
   private refundView(row: { id: string; status: string; amountRial: bigint; completedAt: Date | null }) { return { id: row.id, status: row.status, amountRial: row.amountRial.toString(), completedAt: row.completedAt?.toISOString() ?? null }; }
 }

@@ -15,7 +15,7 @@ import { PaymentProviderRegistry } from '../src/modules/commerce/payments/paymen
 import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments/payment-credential-crypto.service';
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
-import { createTestAccessToken } from './auth-test-support';
+import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('paid individual assessment (isolated PostgreSQL, synthetic PSP)', () => {
   let app: NestFastifyApplication, db: PrismaService, wallet: WalletService, billing: BillingService, gateway: BillingGatewayService, clinicId: string, doctorRole: string;
@@ -30,7 +30,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('paid individ
     async verifyPayment({token}){if(providerState.mode==='TIMEOUT')throw new Error('Synthetic timeout');const p=requests.get(token)!;return {resultCode:providerState.mode==='FAILED'?'101':'100',providerOrderId:p.orderId,amount:p.amount+(providerState.mode==='WRONG_AMOUNT'?1n:0n),referenceId:`assessment-${p.orderId}`,traceNumber:`trace-${p.orderId}`};},
   };
   beforeAll(async()=>{
-    const target=new URL(process.env.DATABASE_URL??'');if(!['127.0.0.1','localhost'].includes(target.hostname)||target.port!=='55419'||target.pathname!=='/patient_journey_test')throw new Error('Disposable patient_journey_test:55419 required.');
+    assertPatientJourneyTestDatabase();
     Logger.overrideLogger(['error']); app=await createApiApplication();await app.init();db=app.get(PrismaService);wallet=app.get(WalletService);billing=app.get(BillingService);gateway=app.get(BillingGatewayService);clinicId=(await db.clinic.findFirstOrThrow({where:{status:'ACTIVE'}})).id;
     doctorRole=(await db.role.findUniqueOrThrow({where:{code:'DOCTOR'}})).id;originalDoctorGrant=!!await db.clinicalRolePermission.findUnique({where:{roleId_permission:{roleId:doctorRole,permission:'CLINICAL_RECORD_SIGN'}}});await db.clinicalRolePermission.upsert({where:{roleId_permission:{roleId:doctorRole,permission:'CLINICAL_RECORD_SIGN'}},create:{roleId:doctorRole,permission:'CLINICAL_RECORD_SIGN'},update:{}});
     admin=await actor('ADMIN');doctor=await actor('DOCTOR');

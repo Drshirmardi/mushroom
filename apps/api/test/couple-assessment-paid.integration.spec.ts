@@ -15,7 +15,7 @@ import { PaymentProviderRegistry } from '../src/modules/commerce/payments/paymen
 import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments/payment-credential-crypto.service';
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
-import { createTestAccessToken } from './auth-test-support';
+import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED!=='1')('paid couple assessment delivery (isolated PostgreSQL, synthetic PSP)',()=>{
   let app:NestFastifyApplication,db:PrismaService,clinicId:string,roleId:string,originalGrant=true,contentId:string;
@@ -25,7 +25,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED!=='1')('paid couple as
   const requests=new Map<string,{amount:bigint;orderId:bigint}>(),providerState:{mode:'SUCCESS'|'FAILED'|'TIMEOUT'|'WRONG_AMOUNT'}={mode:'SUCCESS'};
   const fake:PaymentProviderPort={descriptor:{code:'sadad',displayName:'Synthetic couple PSP',capabilities:{createPayment:'SUPPORTED_WHEN_GO_LIVE_READY',parseCallback:'SUPPORTED_WHEN_GO_LIVE_READY',verifyPayment:'SUPPORTED_WHEN_GO_LIVE_READY',sandbox:'UNSUPPORTED',inquiry:'UNSUPPORTED',webhook:'UNSUPPORTED',refund:'UNSUPPORTED',partialRefund:'UNSUPPORTED'}},async createPayment(input){const token=`synthetic-couple-${input.providerOrderId}`;requests.set(token,{amount:input.providerAmount,orderId:input.providerOrderId});return {providerResultCode:'0',token,redirectUrl:`https://sadad.shaparak.ir/Purchase?Token=${token}`};},parseCallback(input){const body=input as Record<string,string>;return {providerOrderId:BigInt(body.OrderId),token:body.Token,resultCode:body.ResCode};},async verifyPayment({token}){if(providerState.mode==='TIMEOUT')throw new Error('Synthetic timeout');const stored=requests.get(token)!;return {resultCode:providerState.mode==='FAILED'?'101':'100',providerOrderId:stored.orderId,amount:stored.amount+(providerState.mode==='WRONG_AMOUNT'?1n:0n),referenceId:`couple-${stored.orderId}`,traceNumber:`couple-trace-${stored.orderId}`};}};
   beforeAll(async()=>{
-    const target=new URL(process.env.DATABASE_URL??'');if(!['localhost','127.0.0.1'].includes(target.hostname)||target.port!=='55419'||target.pathname!=='/patient_journey_test')throw new Error('Disposable patient_journey_test:55419 required.');
+    assertPatientJourneyTestDatabase();
     Logger.overrideLogger(['error']);app=await createApiApplication();await app.init();db=app.get(PrismaService);clinicId=(await db.clinic.findFirstOrThrow({where:{status:'ACTIVE'}})).id;
     roleId=(await db.role.findUniqueOrThrow({where:{code:'DOCTOR'}})).id;originalGrant=!!await db.clinicalRolePermission.findUnique({where:{roleId_permission:{roleId,permission:'CLINICAL_RECORD_SIGN'}}});await db.clinicalRolePermission.upsert({where:{roleId_permission:{roleId,permission:'CLINICAL_RECORD_SIGN'}},create:{roleId,permission:'CLINICAL_RECORD_SIGN'},update:{}});admin=await actor('ADMIN');doctor=await actor('DOCTOR');contentId=await content();await setupProvider();
   },30_000);

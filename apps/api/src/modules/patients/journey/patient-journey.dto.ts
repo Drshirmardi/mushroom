@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PatientBookingEligibilityResponseDto } from '../../assessments/patient/patient-booking-eligibility.dto';
 import { CoupleSessionSummaryDto } from '../../assessments/couples/couple-link.dto';
 
-export const JOURNEY_ACTIONS = ['OPEN_APPOINTMENT', 'COMPLETE_PROFILE', 'CONSENT_UNAVAILABLE', 'REVIEW_CONSENT', 'START_MEDICAL_INTAKE', 'CONTINUE_MEDICAL_INTAKE', 'COMPLETE_ONBOARDING', 'REVIEW_BOOKING_REQUIREMENTS', 'RESUME_ASSESSMENT', 'CONTINUE_PAYMENT', 'VIEW_TREATMENT_PLAN', 'VIEW_ASSESSMENT_RESULT', 'BOOK_CONSULTATION', 'START_PAID_ASSESSMENT', 'OPEN_COUPLE_ASSESSMENT'] as const;
+export const JOURNEY_ACTIONS = ['OPEN_APPOINTMENT', 'COMPLETE_PROFILE', 'CONSENT_UNAVAILABLE', 'REVIEW_CONSENT', 'START_MEDICAL_INTAKE', 'CONTINUE_MEDICAL_INTAKE', 'COMPLETE_ONBOARDING', 'REVIEW_BOOKING_REQUIREMENTS', 'RESUME_ASSESSMENT', 'CONTINUE_PAYMENT', 'VIEW_TREATMENT_PLAN', 'VIEW_ASSESSMENT_RESULT', 'BOOK_CONSULTATION', 'START_PAID_ASSESSMENT', 'OPEN_COUPLE_ASSESSMENT', 'OPEN_PROGRAM'] as const;
 export class JourneyActionDto {
   @ApiProperty({ enum: JOURNEY_ACTIONS }) code!: typeof JOURNEY_ACTIONS[number];
   @ApiProperty({ type: String, nullable: true, format: 'uuid' }) resourceId!: string | null;
@@ -106,7 +106,24 @@ export class JourneyCoupleAssessmentsDto {
   @ApiProperty({ type: [JourneyCoupleAssessmentDto], maxItems: 5 }) items!: JourneyCoupleAssessmentDto[];
   @ApiProperty() hasMore!: boolean;
 }
+export class JourneyProgramPurchaseDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty() amountRial!: string;
+  @ApiProperty({ enum: ['IRR'] }) currency!: string;
+  @ApiProperty() intentId!: string;
+  @ApiProperty() paymentState!: string;
+  @ApiProperty({ type: String, nullable: true }) accessGrantId!: string | null;
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' }) grantedAt!: Date | null;
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' }) endsAt!: Date | null;
+  @ApiProperty() accessAvailable!: boolean;
+}
+export class JourneyProgramPurchasesDto {
+  @ApiProperty({ type: [JourneyProgramPurchaseDto], maxItems: 5 }) items!: JourneyProgramPurchaseDto[];
+  @ApiProperty() hasMore!: boolean;
+}
 export class PatientJourneyResponseDto {
+  @ApiProperty({ type: JourneyProgramPurchasesDto }) programPurchases!: JourneyProgramPurchasesDto;
   @ApiProperty({ type: JourneyCoupleAssessmentsDto }) coupleAssessments!: JourneyCoupleAssessmentsDto;
   @ApiProperty({ type: JourneyAssessmentPurchasesDto }) assessmentPurchases!: JourneyAssessmentPurchasesDto;
   @ApiProperty({ format: 'date-time' }) evaluatedAt!: Date;

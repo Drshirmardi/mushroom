@@ -28,6 +28,7 @@ import { PatientAppointmentsModule } from './modules/appointments/patient-appoin
 import { AssignedAppointmentModule } from './modules/appointments/assigned/assigned-appointment.module';
 import { ProgramDefinitionModule } from './modules/programs/definitions/program-definition.module';
 import { ProgramPublicationModule } from './modules/programs/publication/program-publication.module';
+import { ProgramPurchaseModule } from './modules/programs/purchases/program-purchase.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
 import { HealthObservationsModule } from './modules/assessments/health/health-observations.module';
 import { NotificationsModule } from './modules/assessments/notifications/notifications.module';
@@ -72,6 +73,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AssignedAppointmentModule,
     ProgramDefinitionModule,
     ProgramPublicationModule,
+    ProgramPurchaseModule,
     ClinicalModule,
     HealthObservationsModule, NotificationsModule, ContentModule, GuidanceContentModule, OutboxModule, AdminCommerceCatalogModule, ChatModule, SmsModule,
     AssessmentGuidanceModule,
