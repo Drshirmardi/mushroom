@@ -3757,3 +3757,44 @@ Final combined103 cases/6 files PASS: individual24, couples-paid31, assessment-c
 Only new explicitly guarded localhost55419 private_admin_test clone used, from accepted fresh73 baseline. Original/accepted proof and persistent databases untouched. No new migration replay required for this one-query correction. Graphify final AST9973 nodes/28082 edges; known absent SQL/HCL parser and pre-existing chat warning unchanged, no installation/full audit/build/browser/live PSP/push/deploy. Existing Store/banner/media/frontend/.gitignore and generated additions preserved/excluded from commit. Changed one service line, two existing real DB test cases, narrow disposable-name helper, new frozen correction contract and scoped phase status/map/evidence. Map routes the original umbrella reminders to accepted P01/P02/C02–C04/D01–D02/PG01–PG05 tasks; it does not claim frontend or clinical/production acceptance.
 
 Next safe Patient Journey step is release input and acceptance: actual qualified physician-approved questions/taxonomy/weights/joint educational rules/content, owner-released purpose-specific legal text/retention references, explicit qualified accounts/service prices/configuration, and controlled real provider acceptance. No further implementation batch in this backend map is currently frozen/unblocked; do not invent clinical choices, publish synthetic fixtures, bypass permissions or turn on Sadad. Optional new recommendation targets or a patient-specific result-review workflow need separately scoped contracts and product/clinical decisions; existing paid offering readiness explicitly rejects unsupported review-required bands. Frontend connection and Phase12 operational/provider/backup/secrets/sign-off gates remain separate; whole backend/product/production not declared complete.
+
+
+## F12-PJ-M01 — Mizaj draft authoring and synthetic dimension preview
+
+Task ID: F12-PJ-M01
+Completed at: 2026-10-18 23:51 Asia/Tehran
+Agent/Thread: Codex /root, sole writer and reviewer; no subagents
+Batch ID: PJ-M01
+Reviewed by: Codex /root — PASS
+Authority: owner explicitly requests working foundations now, final inputs later; retains physician-only publication. ADR-0035 and mizaj-draft-preview-v1, without modifying existing v1 frozen contracts.
+
+Changed files:
+- assessments/domain/assessment-dimension-draft.ts and mizaj-draft-preset.ts
+- existing admin-assessments controller/DTO/service and assessment audit action
+- common/errors/api-error.ts (one stable conflict code)
+- new assessment-dimension-draft domain and PostgreSQL HTTP tests; exact old authoring test clone guard
+- narrow .github/workflows/ci.yml test inclusion
+- official OpenAPI/client task-only additions; unrelated pre-existing banner additions remain unstaged/uncommitted
+- ADR/contract/usage and Phase12 task/status/routing/evidence
+Migrations: none; no schema change or persistent DB operation.
+
+Tests run:
+- API tsc --noEmit and tsc -p tsconfig.test.json --noEmit → PASS
+- vitest run test/assessment-dimension-draft.integration.spec.ts test/assessment-authoring.integration.spec.ts test/assessment-dimension-draft.spec.ts test/assessment-scoring.spec.ts --no-file-parallelism → 65 PASS across 4 files (final run)
+- api-client test → 5 PASS plus official generation freshness
+- api-client build → PASS
+- @sabz/app and @sabz/dashboard tsc --noEmit → PASS (actual package names; initial unmatched filter attempts are not evidence)
+- scoped API OpenAPI compile/export and generated client → PASS; semantic pre/post comparison proves exactly two new routes, four DTOs and one error enum addition, with all baseline banner schema/routes preserved
+- graphify update . → PASS, AST-only; known parser warnings unchanged. Final refresh after compatibility review recorded locally.
+
+Acceptance:
+Original owner-designated source SHA256 810249629f4a7df0a2bc950f2e47a65ddb27cd5fcd1b977e0f2ecc2e6b0020f6, 11 questions/44 options preserved. Questions 1/5/7/8/9 carry explicitly proposed candidate weights; other questions remain nonscoring.16 unreviewed reflective educational profiles cover four single + twelve ordered distinct pairs; no second label invented from zero evidence. Positive independent dimension totals, insufficient evidence, first/second ties, neutral choices, strict bounded definitions, source/profile completeness and unknown/malformed answers PASS. No medical validity claim or automatic advice.
+
+Actual PostgreSQL HTTP proves preset/no row creation, draft create/get/update/duplicate/preview, metadata-only audit and no patient submission/result persistence; ADMIN vs unauthenticated/PATIENT/DOCTOR; foreign/missing source; exact changed hash/current draft/published/retired/v1 denial; strict DTO/proxy rejection; audit failure withholds output. Observed real writer lock followed by changed hash returns 409 without preview audit. Existing v1 authoring/concurrency/audit/scoring/publish/retirement tests PASS.
+
+Review caught the legacy scalar dashboard editor silently defaulting vector weights to zero and rewriting schemaVersion1. Saved dimension drafts now reject schema-family downgrade; scalar create/publish carrying DIMENSION_RANK also rejects. New actual HTTP regression PASS. No frontend file changed and no new draft editor or patient result screen claimed.
+
+Verification isolation: new localhost:55419 patient_journey_mizaj_preview_test cloned from accepted fresh73 baseline only. Existing original/accepted proof databases and persistent DB untouched. Existing Docker management pipe was unresponsive; recovered only the previously used same-task local disposable connection, never changed credentials or restarted services. Temporary local connection handoff removed. No installation, full audit/build/browser/live provider/deploy/push. No actual clinical/legal content, price, approval or patient record seeded into a real environment.
+
+Known limitations: M01 is an admin authoring/preparation capability. DIMENSION_RANK is deliberately not accepted by the existing patient scorer/protocol/guidance/SQL/commercial/paid/couple/care release paths. Source weights and copy remain UNREVIEWED; final qualified clinical/provenance/legal/retention/rights/provider inputs remain external. Authoring APIs can be used per plan/mizaj-draft-preview.md; current dashboard visual editor supports only v1.
+Next batch: none currently frozen/unblocked in this track. Separately scope source algorithm/provenance/SQL/protocol/guidance/individual+couple financial/care integration before patient runtime activation; frontend remains separate. No full patient journey/clinical/production acceptance claim.

@@ -282,6 +282,8 @@ Authority: explicit owner implementation request after the patient journey revie
 
 ## معیار خروج (initial release, unchanged)
 
+- [x] `F12-PJ-M01` — DONE/review PASS/released; draft-only configurable dimension scoring, original 11-question/44-option preset, 16 unreviewed result display profiles and admin synthetic preview.65 focused API/domain +client5/types/generated PASS; evidence Phase12 log. ADR-0035/mizaj-draft-preview-v1. No patient/runtime/payment/protocol contract change or clinical release.
+
 - [x] `F12-PJ-PG04` — DONE/review PASS/released; exact named custom request/scoped care authority, custom-program-request-care-v1/ADR-0033.21 new PostgreSQL cases;216 distinct focused API12 files+client5/fresh65/populated130-table preservation/no drift/official API/types PASS; evidence Phase12 log. No custom charge/chart access/native therapy.
 - [x] `F12-PJ-PG05` — DONE/review PASS/released; custom-program-native-delivery-v1/ADR-0034; shared PROGRAM right and assigned reviewed native TreatmentPlan/tasks/progress with bound generic access protection.23 new PostgreSQL cases;251 distinct focused API16 files+client5/fresh73/populated132-table preservation/no drift/types PASS; evidence Phase12 log. Backend only; actual clinical/legal/provider/frontend release gates remain.
 

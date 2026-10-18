@@ -5,7 +5,10 @@ import { AssessmentVersionStatus, Prisma } from '../../../generated/prisma/clien
 
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS, type AssessmentAuditAction } from '../application/assessment-audit';
-import type { AssessmentListQueryDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
+import type { AssessmentListQueryDto, AssessmentScoringPreviewInputDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
+import { previewDimensionDraft, validateDimensionDraft } from '../domain/assessment-dimension-draft';
+import { AssessmentAnswerError } from '../domain/assessment-scoring';
+import { MIZAJ_DRAFT_PRESET } from '../domain/mizaj-draft-preset';
 import { AssessmentStructureError, validateAssessmentStructure } from '../domain/assessment-structure-validation';
 import { canonicalAssessmentJson as canonicalJson } from '../domain/assessment-canonical-json';
 
@@ -38,6 +41,29 @@ export class AdminAssessmentsService {
 
   async get(id: string) { return this.response(await this.version(id)); }
 
+  draftPreset() { return structuredClone(MIZAJ_DRAFT_PRESET); }
+
+  async scoringPreview(id: string, body: AssessmentScoringPreviewInputDto, context: AuditContext) {
+    return this.prisma.$transaction(async tx => {
+      const clinic = await this.clinic(tx);
+      await tx.$queryRaw(Prisma.sql`SELECT id FROM assessment_versions WHERE id=${id}::uuid AND clinic_id=${clinic.id}::uuid FOR SHARE`);
+      const version = await tx.assessmentVersion.findFirst({ where: { id, clinicId: clinic.id } });
+      if (!version) throw absent();
+      if (version.status !== 'DRAFT' || version.contentHash !== body.expectedContentHash || this.hash(version.structure as Structure) !== version.contentHash) {
+        throw new ConflictException({ code: 'ASSESSMENT_PREVIEW_CONFLICT', message: 'Preview requires the exact current draft.', details: {} });
+      }
+      try {
+        const result = previewDimensionDraft(version.structure, body.answers);
+        await this.audit(ASSESSMENT_AUDIT_ACTIONS.DRAFT_PREVIEWED, id, context, {}, tx);
+        return { assessmentVersionId: id, questionnaireContentHash: version.contentHash, ...result };
+      } catch (error) {
+        if (error instanceof AssessmentStructureError) throw new UnprocessableEntityException({ code: 'ASSESSMENT_STRUCTURE_INVALID', message: error.message, details: {} });
+        if (error instanceof AssessmentAnswerError) throw new UnprocessableEntityException({ code: error.code, message: error.message, details: {} });
+        throw error;
+      }
+    });
+  }
+
   async create(body: CreateAssessmentDto, context: AuditContext) {
     const assessmentKey = cleanText(body.assessmentKey).toUpperCase();
     const title = cleanText(body.title);
@@ -58,6 +84,9 @@ export class AdminAssessmentsService {
       if (current.status !== AssessmentVersionStatus.DRAFT) throw immutable();
       const title = body.title === undefined ? current.title : cleanText(body.title);
       const structure = body.structure === undefined ? current.structure as Structure : body.structure;
+      if ((current.structure as Structure).schemaVersion === 2 && structure.schemaVersion !== 2) {
+        throw new UnprocessableEntityException({ code: 'ASSESSMENT_STRUCTURE_INVALID', message: 'A dimension draft cannot be downgraded by the legacy editor.', details: {} });
+      }
       this.validate(current.assessmentKey, title, structure);
       const updated = await tx.assessmentVersion.update({ where: { id }, data: { title, structure: structure as Prisma.InputJsonValue, contentHash: this.hash(structure) } });
       await this.audit(ASSESSMENT_AUDIT_ACTIONS.UPDATED, id, context, { changedFields: Object.keys(body) }, tx);
@@ -121,7 +150,14 @@ export class AdminAssessmentsService {
   private response(version: { id: string; assessmentKey: string; versionNumber: number; locale: string; title: string; structure: Prisma.JsonValue; contentHash: string; status: AssessmentVersionStatus; publishedAt: Date | null; retiredAt: Date | null; publishedByUserId: string | null; createdAt: Date; updatedAt: Date }) { return { ...version, structure: version.structure as Structure }; }
   private async audit(action: AssessmentAuditAction, subjectId: string, context: AuditContext, metadata: Record<string, unknown>, db: Prisma.TransactionClient = this.prisma) { await db.auditEvent.create({ data: { action, actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'ASSESSMENT_VERSION', subjectId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: metadata as Prisma.InputJsonValue } }); }
   private validate(key: string, title: string, structure: Structure, forPublication = false) {
-    try { if (!key || !title) throw new AssessmentStructureError('Assessment key and title are required.'); validateAssessmentStructure(structure, forPublication); }
+    try {
+      if (!key || !title) throw new AssessmentStructureError('Assessment key and title are required.');
+      if (!forPublication && structure.schemaVersion === 2) validateDimensionDraft(structure);
+      else {
+        if ((structure.scoring as { algorithmId?: unknown } | undefined)?.algorithmId === 'DIMENSION_RANK') throw new AssessmentStructureError('Dimension drafts cannot be relabeled as scalar questionnaires.');
+        validateAssessmentStructure(structure, forPublication);
+      }
+    }
     catch (error) { if (error instanceof AssessmentStructureError) throw new UnprocessableEntityException({ code: 'ASSESSMENT_STRUCTURE_INVALID', message: error.message, details: {} }); throw error; }
   }
 }

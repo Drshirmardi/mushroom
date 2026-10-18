@@ -12225,6 +12225,130 @@
         ]
       }
     },
+    "/v1/admin/assessments/draft-presets/mizaj": {
+      "get": {
+        "operationId": "adminAssessmentsMizajDraftPreset",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentDraftPresetDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the unreviewed Mizaj authoring preset; not a patient questionnaire",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
+    "/v1/admin/assessments/{id}/scoring-preview": {
+      "post": {
+        "operationId": "adminAssessmentsScoringPreview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentScoringPreviewInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentScoringPreviewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assessment version was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The draft changed or is no longer a draft.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Draft structure or synthetic answers are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Calculate a synthetic unreviewed draft preview without saving patient answers or results",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
     "/v1/admin/assessments": {
       "get": {
         "operationId": "adminAssessmentsList",
@@ -27106,6 +27230,7 @@
               "ASSESSMENT_CLINIC_UNAVAILABLE",
               "ASSESSMENT_NOT_FOUND",
               "ASSESSMENT_STRUCTURE_INVALID",
+              "ASSESSMENT_PREVIEW_CONFLICT",
               "ASSESSMENT_SUBMISSION_IMMUTABLE",
               "ASSESSMENT_SUBMISSION_REVISION_CONFLICT",
               "ASSESSMENT_SUBMISSION_NOT_FOUND",
@@ -34952,6 +35077,212 @@
           "newPatients",
           "onboardingComplete",
           "onboardingIncomplete"
+        ]
+      },
+      "AssessmentDraftPresetDto": {
+        "type": "object",
+        "properties": {
+          "assessmentKey": {
+            "type": "string",
+            "default": "MAIN",
+            "maxLength": 100
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "fa-IR",
+              "en-US"
+            ],
+            "default": "fa-IR"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "structure": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "title",
+          "structure"
+        ]
+      },
+      "AssessmentScoringPreviewInputDto": {
+        "type": "object",
+        "properties": {
+          "expectedContentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "syntheticAnswersOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Use synthetic answers only; preview never creates a patient result."
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "expectedContentHash",
+          "syntheticAnswersOnly",
+          "answers"
+        ]
+      },
+      "AssessmentDraftResultProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "primary": {
+            "type": "string"
+          },
+          "secondary": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "strengths": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attentionPoints": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextStep": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "primary",
+          "secondary",
+          "title",
+          "summary",
+          "strengths",
+          "attentionPoints",
+          "nextStep"
+        ]
+      },
+      "AssessmentScoringPreviewDto": {
+        "type": "object",
+        "properties": {
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionnaireContentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "algorithmId": {
+            "type": "string",
+            "enum": [
+              "DIMENSION_RANK"
+            ]
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "educationalOnly": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "reviewState": {
+            "type": "string",
+            "enum": [
+              "UNREVIEWED"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "INSUFFICIENT_DATA",
+              "PRIMARY_TIE",
+              "SECONDARY_TIE",
+              "SINGLE",
+              "PAIR"
+            ]
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "informativeAnswers": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "primary": {
+            "type": "string",
+            "nullable": true
+          },
+          "secondary": {
+            "type": "string",
+            "nullable": true
+          },
+          "tiedDimensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "profile": {
+            "nullable": true,
+            "description": "Unreviewed educational display profile; absent for ties/insufficient evidence.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentDraftResultProfileDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "assessmentVersionId",
+          "questionnaireContentHash",
+          "algorithmId",
+          "algorithmVersion",
+          "educationalOnly",
+          "reviewState",
+          "status",
+          "scores",
+          "informativeAnswers",
+          "primary",
+          "secondary",
+          "tiedDimensions",
+          "profile"
         ]
       },
       "AssessmentVersionResponseDto": {

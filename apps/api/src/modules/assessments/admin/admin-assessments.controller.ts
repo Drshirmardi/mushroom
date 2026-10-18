@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
@@ -6,13 +6,27 @@ import { RequirePermissions } from '../../../common/auth/authorization.decorator
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { AdminAssessmentsService } from './admin-assessments.service';
-import { AssessmentListQueryDto, AssessmentListResponseDto, AssessmentVersionResponseDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
+import { AssessmentDraftPresetDto, AssessmentListQueryDto, AssessmentListResponseDto, AssessmentScoringPreviewDto, AssessmentScoringPreviewInputDto, AssessmentVersionResponseDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
 
 @ApiTags('Admin Assessments')
 @ApiBearerAuth('bearerAuth')
 @Controller('admin/assessments')
 export class AdminAssessmentsController {
   constructor(private readonly assessments: AdminAssessmentsService) {}
+
+  @Get('draft-presets/mizaj') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @Header('Cache-Control', 'no-store')
+  @ApiOperation({ operationId: 'adminAssessmentsMizajDraftPreset', summary: 'Get the unreviewed Mizaj authoring preset; not a patient questionnaire' }) @ApiOkResponse({ type: AssessmentDraftPresetDto })
+  draftPreset() { return this.assessments.draftPreset(); }
+
+  @Post(':id/scoring-preview') @HttpCode(HttpStatus.OK) @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @Header('Cache-Control', 'no-store')
+  @ApiOperation({ operationId: 'adminAssessmentsScoringPreview', summary: 'Calculate a synthetic unreviewed draft preview without saving patient answers or results' })
+  @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: AssessmentScoringPreviewDto })
+  @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.') @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
+  @ApiErrorResponse(HttpStatus.NOT_FOUND, 'Assessment version was not found.') @ApiErrorResponse(HttpStatus.CONFLICT, 'The draft changed or is no longer a draft.')
+  @ApiErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, 'Draft structure or synthetic answers are invalid.')
+  scoringPreview(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: AssessmentScoringPreviewInputDto, @Req() request: AuthenticatedRequest) {
+    return this.assessments.scoringPreview(id, body, this.context(request));
+  }
 
   @Get() @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @ApiOperation({ operationId: 'adminAssessmentsList', summary: 'List assessment versions' }) @ApiOkResponse({ type: AssessmentListResponseDto }) @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.') @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
   list(@Query() query: AssessmentListQueryDto) { return this.assessments.list(query); }

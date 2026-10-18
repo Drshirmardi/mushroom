@@ -15,7 +15,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment a
   const body = () => ({ assessmentKey: `TEST_${randomUUID().replaceAll('-', '').toUpperCase()}`, locale: 'en-US', title: 'Synthetic authoring', structure });
   beforeAll(async () => {
     const target = new URL(process.env.DATABASE_URL ?? '');
-    if (!['127.0.0.1', 'localhost'].includes(target.hostname) || target.pathname !== '/patient_journey_test') throw new Error('Disposable patient_journey_test required.');
+    if (!['127.0.0.1', 'localhost'].includes(target.hostname) || target.port !== '55419' || !['/patient_journey_test', '/patient_journey_mizaj_preview_test'].includes(target.pathname)) throw new Error('Explicit disposable authoring test database on localhost:55419 required.');
     Logger.overrideLogger(false); app = await createApiApplication(); await app.init(); db = app.get(PrismaService);
     admin = await createTestAccessToken(db, app.get(AccessTokenService), ['ADMIN']);
   }, 30_000);
