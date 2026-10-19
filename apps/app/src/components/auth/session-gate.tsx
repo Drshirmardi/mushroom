@@ -14,7 +14,8 @@ import {
   type AuthSessionSnapshot,
 } from "@/auth/session";
 import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
-import { Spinner } from "@/components/shared/skeletons";
+import { RefreshCw, WifiOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const sessionManager = new AuthSessionManager(authApiClient);
 setAccessTokenProvider(async () => {
@@ -35,22 +36,19 @@ const SessionSnapshotContext = createContext<AuthSessionSnapshot | null>(null);
 function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "unavailable"; retry: () => void }) {
   const unavailable = status === "unavailable";
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#e8ede8] px-6">
-      <div className="w-full max-w-sm rounded-3xl border border-border bg-background p-8 text-center shadow-sm">
-        <Spinner className="mx-auto mb-4 h-10 w-10" />
-        <p className="font-bold text-foreground">
-          {status === "anonymous"
-            ? "در حال انتقال به صفحه ورود…"
-            : unavailable
-              ? "ارتباط با سرویس برقرار نشد"
-              : "در حال بررسی حساب کاربری…"}
-        </p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {unavailable ? "نشست شما حذف نشده است. اتصال را بررسی کنید و دوباره تلاش کنید." : "لطفاً چند لحظه صبر کنید."}
-        </p>
-        {unavailable && <button type="button" onClick={retry} className="mt-5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">تلاش دوباره</button>}
-      </div>
-    </div>
+    <main className="patient-app-shell session-screen" data-state={status}>
+      <section className="session-screen__content" role={unavailable ? "alert" : "status"} aria-atomic="true">
+        {unavailable ? <>
+          <div className="session-screen__illustration" aria-hidden="true"><WifiOff size={28} strokeWidth={1.5} /></div>
+          <h1>یه کوچولو به مشکل خوردیم</h1>
+          <p>فعلاً نتونستیم اطلاعات حسابت رو بگیریم. یه بار دیگه امتحان کن؛ اگه نشد، اینترنتت رو هم چک کن.</p>
+          <Button onClick={retry}><RefreshCw size={18} aria-hidden="true" />دوباره امتحان کنیم</Button>
+        </> : <>
+          <div className="session-screen__dots" aria-hidden="true"><span /><span /><span /></div>
+          <span className="sr-only">{status === "anonymous" ? "در حال باز کردن صفحهٔ ورود…" : "در حال آماده‌سازی…"}</span>
+        </>}
+      </section>
+    </main>
   );
 }
 
