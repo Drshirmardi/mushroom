@@ -9,6 +9,10 @@
 
 Owner-requested scoped commit handoff: [commit/file map](../logs/client-integration-commits-2026-10-19.md); types/build/165 tests PASS, full acceptance remains unchecked.
 
+Store audit first fixes01–05: types/170 tests/build and6 desktop/mobile E2E PASS (2026-10-20); [evidence and remaining06–20](../store-design-audit-2026-10-20.md). Full acceptance remains REWORK/unchecked.
+
+Ordered Mezaj store extension (2026-10-20), same F12-FE01 /root: [commerce-mezaj-v1](../commerce-mezaj-v1.md),4×4 ordered pairs, exact published source-band links, audited self-only recommendation endpoint, dashboard matrix/editor and app personal rail. Isolated PostgreSQL28/28/no drift, API+consumer types/client freshness and6 browser cases PASS. Local additive migration applied; no real assignments invented. Broader task remains unchecked; final build/regression evidence in Phase12 log.
+
 - [ ] `F12-FE01` — Owner-authorized patient-client API integration and Home/destination UI (2026-10-19), CLIENT-INTEGRATION, sole Codex /root. Home, notification sheet/category safety, TOPUP clarification, linked service/detail design and owner-requested white store/card refinement and local price-font preview and overflow-aware product-rail arrows and minimal session loading/error presentation with duplicate timed splash removed implemented; latest app types/165 tests/build and scoped live/synthetic mobile/desktop checks PASS. [Destination design evidence](../service-screens-verification.md), [connection limits](../home-client-verification.md), [integration scope](../client-integration.md). Full task REWORK/unchecked: real two-account/provider/clinical/legal acceptance remains separate. No final task commit or API/schema/provider activation/phase change.
 
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
