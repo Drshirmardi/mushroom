@@ -51,14 +51,14 @@ function MenuRow({ icon: Icon, label, hint, tone = "soft", onClick }: {
     className="flex w-full items-center gap-3 p-4 text-right transition-colors hover:bg-muted/60 active:bg-muted"
   >
     <span className={`rounded-xl p-2 ${TONES[tone]}`}><Icon size={17} aria-hidden="true" /></span>
-    <span className="flex-1 text-sm font-semibold text-foreground">{label}</span>
+    <span className="flex-1 text-[13px] leading-6 font-medium text-foreground">{label}</span>
     {hint && <span title={hint} className="min-w-0 max-w-[60%] shrink truncate text-xs text-muted-foreground">{hint}</span>}
     <ChevronLeft size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
   </button>;
 }
 
 function Caption({ children }: { children: string }) {
-  return <p className="px-1 text-xs font-bold text-muted-foreground">{children}</p>;
+  return <p className="px-1 text-xs font-medium text-muted-foreground">{children}</p>;
 }
 
 type ProfileGender = "male" | "female";
@@ -97,8 +97,8 @@ export default function ProfilePage() {
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => { setAvatarFailed(false); }, [gender]);
   const doneSteps = complete ? 5 : Math.floor(percent / 20);
-  return <div className="profile-scope space-y-5 px-4 pb-6">
-    <div className="pt-4 pb-1 text-center"><h1 className="text-[22px] font-extrabold tracking-tight text-foreground">پروفایل</h1></div>
+  return <div className="profile-scope font-iranyekanx [--font-weight-medium:500] space-y-5 px-4 pb-6">
+    <div className="pt-4 pb-1 text-center"><h1 className="text-lg font-medium text-foreground">پروفایل</h1></div>
     {loading ? <div className="rounded-3xl border border-border bg-white p-5 shadow-sm" aria-hidden="true"><div className="flex items-center gap-4"><div className="h-[72px] w-[72px] animate-pulse rounded-2xl bg-muted" /><div className="flex-1 space-y-2"><div className="h-4 w-2/3 animate-pulse rounded bg-muted" /><div className="h-3 w-1/2 animate-pulse rounded bg-muted" /></div></div></div>
       : error ? <div role="alert" className="rounded-3xl bg-red-50 p-5 text-sm text-red-700">{error}</div> : <>
         <section className="rounded-3xl border border-border bg-white p-5 shadow-sm" aria-label="مشخصات حساب">
@@ -106,12 +106,12 @@ export default function ProfilePage() {
             {!avatarFailed ? (
               <img key={AVATAR_SRC[gender]} src={AVATAR_SRC[gender]} alt="" width={72} height={72} draggable={false} onError={() => setAvatarFailed(true)} aria-hidden="true" className="h-[72px] w-[72px] shrink-0 object-contain" />
             ) : (
-              <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-2xl font-bold text-blue-700" aria-hidden="true">{name?.slice(0, 1) || "؟"}</div>
+              <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-2xl font-medium text-blue-700" aria-hidden="true">{name?.slice(0, 1) || "؟"}</div>
             )}
             <div className="min-w-0 flex-1">
               <span className="flex flex-wrap items-center gap-2">
-                <h2 className="truncate text-lg font-bold text-foreground">{name || "نام شما ثبت نشده است"}</h2>
-                <span className="inline-block shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">{profile?.accountStatus === "ACTIVE" ? "فعال" : "غیرفعال"}</span>
+                <h2 className="truncate text-base font-medium text-foreground">{name || "نام شما ثبت نشده است"}</h2>
+                <span className="inline-block shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{profile?.accountStatus === "ACTIVE" ? "فعال" : "غیرفعال"}</span>
               </span>
               <span className="mt-1.5 flex flex-col gap-1">
                 {profile?.phone ? (
@@ -133,10 +133,10 @@ export default function ProfilePage() {
             <span className="flex items-center gap-3">
               <span className="rounded-xl bg-blue-50 p-2 text-blue-700"><FileText size={18} aria-hidden="true" /></span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-foreground">پرونده پزشکی</span>
+                <span className="block text-sm font-medium text-foreground">پرونده پزشکی</span>
                 <span className="mt-0.5 block text-[11px] text-muted-foreground">{complete ? "همه بخش‌ها ثبت شده است" : "با تکمیل بخش‌ها، خدمات دقیق‌تری می‌گیرید"}</span>
               </span>
-              <span className="font-digikala shrink-0 text-2xl font-extrabold tabular-nums text-blue-900">{toP(percent)}<span className="text-xs font-bold text-muted-foreground">٪</span></span>
+              <span className="shrink-0 text-xl font-medium tabular-nums text-blue-900">{toP(percent)}<span className="text-xs font-medium text-muted-foreground">٪</span></span>
             </span>
             <span className="mt-4 flex items-center gap-1.5" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="درصد تکمیل پرونده پزشکی">
               {["bg-blue-300", "bg-blue-400", "bg-blue-500", "bg-blue-600", "bg-blue-800"].map((shade, index) => {
@@ -152,11 +152,11 @@ export default function ProfilePage() {
             </span>
             <span className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs">
               {complete
-                ? <span className="inline-flex items-center gap-1.5 font-bold text-foreground"><Check size={14} className="text-blue-600" aria-hidden="true" />پرونده کامل است</span>
+                ? <span className="inline-flex items-center gap-1.5 font-medium text-foreground"><Check size={14} className="text-blue-600" aria-hidden="true" />پرونده کامل است</span>
                 : hasSteps
-                  ? <span className="text-muted-foreground">فقط <b className="tabular-nums text-blue-700">{toP(remaining)}</b> بخش مانده</span>
+                  ? <span className="text-muted-foreground">فقط <b className="font-medium tabular-nums text-blue-700">{toP(remaining)}</b> بخش مانده</span>
                   : <span className="text-muted-foreground">برای خدمات بهتر، پرونده را کامل کنید</span>}
-              <span className="inline-flex items-center gap-0.5 font-bold text-blue-700">{complete ? "مشاهده پرونده" : "ادامه تکمیل"}<ChevronLeft size={14} aria-hidden="true" /></span>
+              <span className="inline-flex items-center gap-0.5 font-medium text-blue-700">{complete ? "مشاهده پرونده" : "ادامه تکمیل"}<ChevronLeft size={14} aria-hidden="true" /></span>
             </span>
           </button>
         </section>
@@ -187,6 +187,6 @@ export default function ProfilePage() {
           </section>
         </div>
       </>}
-    <button type="button" disabled={loggingOut || loading} onClick={() => { setLoggingOut(true); void logout(); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-bold text-red-600 transition-colors active:bg-red-50 disabled:opacity-60"><LogOut size={16} aria-hidden="true" />{loggingOut ? "در حال خروج…" : "خروج از حساب"}</button>
+    <button type="button" disabled={loggingOut || loading} onClick={() => { setLoggingOut(true); void logout(); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-medium text-red-600 transition-colors active:bg-red-50 disabled:opacity-60"><LogOut size={16} aria-hidden="true" />{loggingOut ? "در حال خروج…" : "خروج از حساب"}</button>
   </div>;
 }
