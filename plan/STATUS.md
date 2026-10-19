@@ -6,15 +6,17 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-18`
+- آخرین به‌رورسانی: `2026-10-19`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: none; PJ-M01 DONE/review PASS/released.
-- task فعال: none. M01 adds working draft-only Mizaj authoring and synthetic preview. Runtime DIMENSION_RANK/payment/protocol integration requires its own frozen follow-up contract; actual qualified clinical/legal/retention inputs and controlled provider acceptance remain release gates. Frontend work stays separate.
+- batch فعال: STORE-BANNER-REVIEW READY_FOR_REVIEW; verification/main review PASS, intentionally unstaged/uncommitted by explicit owner instruction.
+- task فعال: F12-T12-R13 — corrections verified; 23 API/storage/processor +33 dashboard +15 app +5 client tests PASS, targeted dashboard ESLint and API/test/app/dashboard types PASS. No commit requested or created; see Phase12 log. Patient Journey runtime/clinical/provider work remains separate.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
 
 ## Patient Journey continuous backend execution (2026-10-16)
+
+STORE-BANNER-REVIEW READY_FOR_REVIEW (2026-10-19): F12-T12-R13; baseline6ac21e8 unchanged; sole /root owner/reviewer; main review PASS. Fixed pre-commit R2 overwrite/deletion, missing durable orphan cleanup, stale concurrent mutation, arbitrary storage-key attachment/public read, post-I/O unpublication race, internal URL/null handling, stale-token fetch, unbounded Blob URL cache, upload confirmation/reselection, misleading customer preview and React/lint failures.76 focused tests/types/generated/targeted lint PASS; new localhost55419/store_banner_review_test clone only. All existing changes and corrections remain unstaged/uncommitted under explicit owner request. No new schema/migration/install/browser/live R2/provider/deploy/persistent DB change. Evidence Phase12 log; no new task started while this reviewed batch is held for owner review/commit instruction.
 
 PJ-M01 DONE/review PASS/released (2026-10-18): F12-PJ-M01; sole /root owner/reviewer. Original 11-question/44-option owner CSV preset, 16 unreviewed educational profiles, bounded dimension draft storage and admin synthetic scoring preview; ties/insufficient evidence explicit.65 focused API/domain tests plus client5/API+test/app/dashboard types and generated contracts PASS. Actual PostgreSQL clone only; audit/locking/hash/roles/clinic/v1 regression and legacy-editor downgrade prevention verified. No patient/runtime/payment/schema/clinical release. Evidence Phase12 log; usage plan/mizaj-draft-preview.md. No next frozen/unblocked patient batch; separately define runtime/provenance/SQL/approval integration before patient use.
 

@@ -31,6 +31,8 @@ import { useScreenNavigation } from "@/lib/navigation";
 import { cartCount, useCartStore } from "@/stores/cart";
 import { TEST_SHORTCUTS, type StoreShortcut } from "@/stores/shortcuts";
 import { useWishlistStore } from "@/stores/wishlist";
+import { useBannerStore } from "@/stores/banners";
+import { listStoreBanners, storeBannerImageUrl } from "@/lib/content-banners-api";
 
 const price = (value: string) => Number(value);
 const deliveryKey = (userId: string) => `store-delivery-address:${userId}`;
@@ -63,6 +65,19 @@ export default function StorePage() {
   }, [search]);
 
   useEffect(() => { const timer = window.setTimeout(() => { void loadCatalog(); }, search ? 250 : 0); return () => window.clearTimeout(timer); }, [loadCatalog, search]);
+  useEffect(() => {
+    let cancelled = false;
+    useBannerStore.getState().setSlides([]);
+    void listStoreBanners().then((banners) => {
+      if (cancelled) return;
+      useBannerStore.getState().setSlides(
+        banners
+          .filter((banner) => storeBannerImageUrl(banner) !== null)
+          .map((banner) => ({ id: banner.id, image: storeBannerImageUrl(banner)!, alt: banner.title, href: banner.destinationUrl })),
+      );
+    });
+    return () => { cancelled = true; useBannerStore.getState().setSlides([]); };
+  }, []);
   useEffect(() => {
     if (!session) { setAddresses([]); setDelivery(null); return; }
     let cancelled = false;

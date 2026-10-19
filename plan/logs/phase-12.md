@@ -3798,3 +3798,43 @@ Verification isolation: new localhost:55419 patient_journey_mizaj_preview_test c
 
 Known limitations: M01 is an admin authoring/preparation capability. DIMENSION_RANK is deliberately not accepted by the existing patient scorer/protocol/guidance/SQL/commercial/paid/couple/care release paths. Source weights and copy remain UNREVIEWED; final qualified clinical/provenance/legal/retention/rights/provider inputs remain external. Authoring APIs can be used per plan/mizaj-draft-preview.md; current dashboard visual editor supports only v1.
 Next batch: none currently frozen/unblocked in this track. Separately scope source algorithm/provenance/SQL/protocol/guidance/individual+couple financial/care integration before patient runtime activation; frontend remains separate. No full patient journey/clinical/production acceptance claim.
+
+
+## F12-T12-R13 — Uncommitted Store/banner corrective review
+
+Task ID: F12-T12-R13
+Verification completed: 2026-10-19 00:15 Asia/Tehran
+Agent/Thread: Codex /root, sole writer/reviewer; no subagents
+Batch ID: STORE-BANNER-REVIEW
+Status: READY_FOR_REVIEW — main review/verification PASS; owner explicitly requests NO COMMIT. All work is unstaged; baseline HEAD6ac21e8 unchanged. No task-level commit or DONE checkbox.
+Contract: store-banner-review-v1. Scope is the pre-existing uncommitted Store/banner change and its direct dependencies, not a full repository audit.
+
+Verified defects and corrections:
+- A fixed R2 object was overwritten before metadata/audit commit, so failed transactions could alter a published image. Removal deleted bytes before commit. New immutable per-upload keys, version-pinned two-phase publication, same-clinic/banner namespace checks and durable generic-outbox orphan/replaced/removed cleanup fix rollback and concurrency behavior. No new table/migration/provider.
+- New image mutations require If-Match and Idempotency-Key. Exact replay does not rewrite storage; mismatched reuse rejects. Stale replacement/removal and stale editor PATCH reject; no implicit rebase. Metadata detach+audit/cleanup reservation is atomic. Cleanup failures remain retriable and duplicate cleanup is safe. Private/public content rechecks current key/publication after remote I/O.
+- Arbitrary content storage keys could be attached through existing banner JSON and served publicly. Banner attachment is now through validated upload only; foreign/unsupported namespaces cannot be served. Public projection has only id/title/destination/contentPath and excludes unpublished/no-image records. The legacy patient banner list retains its prior no-image behavior. Lists are bounded to100; no-store responses.
+- Relative /store URLs were rejected and null clearing crashed. Valid root-relative and absolute HTTP(S) links work, null clears, unsafe schemes/protocol-relative/backslash/control/credential links reject. Client navigation and banner image paths enforce matching boundaries too.
+- Banner fetches bypassed the existing session-aware transport and could use expired bearer tokens; new typed generated-client requests refresh through the existing provider, have bounded timeouts/abort and preserve explicit version/operation headers. OpenAPI has real list/entity/multipart/header response definitions, no guessed result casts.
+- A global authenticated Blob URL map grew without revocation and product images remained cached by product ID after replacement. Component-scoped abort/revoke lifecycle with bounded concurrency replaces it; product image identity invalidates the preview. Next Image explicitly unoptimized handles authenticated/local Blob URLs without server optimization.
+- Uppy tried to clear selection while still locked in confirming state. It now clears after confirmation; failed refresh retries confirmation without reuploading, and ambiguous transfer retry keeps its original operation/version. New intent requires deliberate reselection. Parent controls prevent simultaneous copy/media changes; unsaved copy survives a remote change, and a newly created selection is not overwritten by the old list.
+- Customer preview included DRAFT products and inactive first SKUs; filter now matches ACTIVE/category-active/active-SKU visibility and picks an active SKU consistently for price, inventory and the summary counter (including an inactive first SKU). Unknown banner/catalog loads display unknown state instead of fabricated zero/empty content. Existing Archive/data-for ignore intent retained. Storage fallback restored to the existing configured5000ms default instead of an ineffective20s value outside the validator bounds.
+- Targeted lint exposed React ref writes during render and state synchronization effects; corrected using external callback effects, guarded prop-change state adjustment, derived selection and asynchronous request callbacks. No rule disable or package installation.
+
+Changed paths: existing uncommitted Content controllers/module/service, app Store/page/slider/banner store, dashboard Store builder/banner/media/API helpers and tests, generated client/OpenAPI; necessary Content DTO/stable errors/banner policy+media service/outbox cleanup handler and wiring; narrow CI regression step; Phase12 contract/status/evidence. No unrelated committed Mizaj code changed.
+
+Verification:
+- API tsc --noEmit; final tsc -p tsconfig.test.json --noEmit → PASS
+- Real isolated PostgreSQL HTTP + private-storage double: content-banner-media.integration.spec.ts9, legacy content-publication.integration.spec.ts1; actual image processor/storage/config unit tests13 → 23 PASS across5 files. Covers durable-before-put, sanitized upload, replay/key mismatch, metadata/null/unsafe URL and stale edit, publish/private/public projections, deletion/replacement/failure retry, audit rollback/orphan cleanup, real concurrent same-revision replacement and unpublication during I/O, arbitrary key/auth/role rejection, malformed media/disabled storage.
+- Dashboard: banner uploader transport5 + editor3 + storefront7 + session-aware banner API3 + existing product uploader15 → 33 PASS across5 files. Real Uppy XHR transport double; no browser claim.
+- App: public banner destination/image-boundary13 + existing banner-store2 → 15 PASS
+- api-client:5 PASS; official generation freshness and build PASS
+- Actual @sabz/app and @sabz/dashboard tsc --noEmit → PASS
+- Targeted dashboard ESLint over eight directly affected source/test files → PASS, zero errors/warnings on final run
+- git diff --check → PASS; git diff --cached empty; HEAD remains6ac21e8
+- graphify update . AST-only refresh → PASS (local log); existing parser warnings unchanged
+
+Only new localhost:55419/store_banner_review_test clone received test writes, from the accepted fresh73 baseline. Original/accepted proof/persistent DBs and real R2 objects untouched. No full build/audit, browser run/installation, migration/install/commit/stage/push/deploy. Live R2 acceptance and browser interaction checks were not performed here. CI includes the new regression using a separately named disposable DB.
+
+Test refinement: one cleanup test initially assumed a single transient deletion error would preserve an object despite two independently valid cleanup intents. The fixture now models a sustained outage for that exact key, verifies both durable retries, then restores storage and verifies only the current object remains. Assertions are preserved for the intended failure condition.
+
+Remaining/next action: no unresolved defect in the reviewed scope after final checks. Held READY_FOR_REVIEW and unchecked only because the owner explicitly defers commit. Keep all corrections and original work unstaged/uncommitted; do not auto-commit or start another task in this held batch. Wider browser/live-provider/production acceptance remains separate.

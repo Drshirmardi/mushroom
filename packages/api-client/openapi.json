@@ -22255,7 +22255,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBannerListDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -22282,7 +22289,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBannerDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -22299,6 +22313,14 @@
       "patch": {
         "operationId": "ContentController_updateBanner",
         "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -22320,6 +22342,126 @@
         },
         "responses": {
           "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBannerDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/banners/{bannerId}/image": {
+      "put": {
+        "operationId": "adminContentBannerImageUpload",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bannerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBannerDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Upload banner media",
+        "tags": [
+          "Content"
+        ]
+      },
+      "delete": {
+        "operationId": "adminContentBannerImageRemove",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bannerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
             "description": ""
           }
         },
@@ -22328,6 +22470,82 @@
             "bearerAuth": []
           }
         ],
+        "summary": "Remove banner media",
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/admin/content/banners/{bannerId}/image/content": {
+      "get": {
+        "operationId": "adminContentBannerImagePreview",
+        "parameters": [
+          {
+            "name": "bannerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Serve banner media for admin preview",
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/content/banners": {
+      "get": {
+        "operationId": "publicContentBanners",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicBannerListDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List published store banners",
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/v1/content/banners/{bannerId}/image": {
+      "get": {
+        "operationId": "publicContentBannerImage",
+        "parameters": [
+          {
+            "name": "bannerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Serve published banner media",
         "tags": [
           "Content"
         ]
@@ -27258,6 +27476,10 @@
               "COMMERCE_REVENUE_RANGE_INVALID",
               "CONTENT_CONFLICT",
               "CONTENT_INVALID",
+              "BANNER_NOT_FOUND",
+              "CONTENT_MEDIA_UNAVAILABLE",
+              "CONTENT_REVISION_CONFLICT",
+              "CONTENT_RATE_LIMITED",
               "ENCOUNTER_INVALID_TRANSITION",
               "HEALTH_OBSERVATION_FORBIDDEN",
               "HEALTH_OBSERVATION_INVALID",
@@ -40948,6 +41170,95 @@
           }
         }
       },
+      "AdminBannerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "destinationUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "clinicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "mediaObjectKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaContentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaSizeBytes": {
+            "type": "number",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "etag": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "destinationUrl",
+          "contentPath",
+          "clinicId",
+          "publicationStatus",
+          "publishedAt",
+          "mediaObjectKey",
+          "mediaContentType",
+          "mediaSizeBytes",
+          "createdAt",
+          "updatedAt",
+          "etag"
+        ]
+      },
+      "AdminBannerListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminBannerDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "CreateBannerDto": {
         "type": "object",
         "properties": {
@@ -40955,7 +41266,8 @@
             "type": "string"
           },
           "destinationUrl": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "publicationStatus": {
             "type": "string",
@@ -40980,7 +41292,8 @@
             "type": "string"
           },
           "destinationUrl": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "publicationStatus": {
             "type": "string",
@@ -40994,6 +41307,46 @@
             "$ref": "#/components/schemas/MediaDto"
           }
         }
+      },
+      "PublicBannerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "destinationUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentPath": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "destinationUrl",
+          "contentPath"
+        ]
+      },
+      "PublicBannerListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicBannerDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
       },
       "ProductContentProvenanceDto": {
         "type": "object",

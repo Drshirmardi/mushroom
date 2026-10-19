@@ -95,6 +95,8 @@ application نمی‌شود.
 
 ## Change control — dashboard operational truthfulness
 
+- [ ] `F12-T12-R13` — READY_FOR_REVIEW (2026-10-19), main review/verification PASS; 76 focused tests, API/test/app/dashboard types, generated contracts and targeted dashboard lint PASS. Store/banner media/session/preview corrections remain unstaged/uncommitted by explicit owner request; store-banner-review-v1, evidence Phase12 log.
+
 مالک محصول در `2026-10-10` اصلاح داشبورد عملیاتی را تأیید کرد. این corrective زیر ماتریس مرورگر/دستگاه
 `F12-T12` اجرا می‌شود و backend، schema، نقش‌ها یا قابلیت‌های deferred را گسترش نمی‌دهد.
 
