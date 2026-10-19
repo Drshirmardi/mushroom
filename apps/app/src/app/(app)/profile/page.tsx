@@ -173,6 +173,8 @@ export default function ProfilePage() {
           <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="پرونده سلامت">
             <MenuRow icon={Activity} label="پروفایل پزشکی خوداظهاری" hint={complete ? "تکمیل‌شده" : "نیازمند تکمیل"} tone="sky" onClick={() => router.push("/profile/medical")} />
             <MenuRow icon={History} label="سوابق درمانی" tone="sky" onClick={() => router.push("/profile/history")} />
+            <MenuRow icon={FileText} label="برنامه‌های آموزشی و اختصاصی من" tone="sky" onClick={() => router.push("/programs")} />
+            <MenuRow icon={Activity} label="ارزیابی‌های فردی و زوجین" tone="sky" onClick={() => router.push("/assessment")} />
             <MenuRow icon={HeartPulse} label="پرونده سلامت" tone="sky" onClick={() => router.push("/profile/health-record")} />
           </section>
         </div>
