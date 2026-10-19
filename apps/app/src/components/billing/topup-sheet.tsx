@@ -63,19 +63,19 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <BottomSheet title="افزایش موجودی" onClose={onClose}>
-      <div className="space-y-4 pb-2">
+      <div className="font-iranyekanx [--font-weight-medium:500] space-y-4 pb-2">
         {error && (
           <div role="alert" className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
             <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
               <TriangleAlert size={18} aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1 pt-0.5">
-              <p className="text-sm font-bold leading-6 text-amber-900">{error}</p>
+              <p className="text-sm font-medium leading-6 text-amber-900">{error}</p>
               {pendingIntentId && (
                 <button
                   type="button"
                   onClick={() => router.push(`/profile/wallet/payment-result?intentId=${encodeURIComponent(pendingIntentId)}`)}
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-amber-900 underline underline-offset-4"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-900 underline underline-offset-4"
                 >
                   مشاهدهٔ نتیجه
                   <ChevronLeft size={13} aria-hidden="true" />
@@ -86,7 +86,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
         )}
 
         <div>
-          <label htmlFor="topup-amount" className="mb-1.5 block text-xs font-bold text-muted-foreground">مبلغ شارژ (تومان)</label>
+          <label htmlFor="topup-amount" className="mb-1.5 block text-xs font-medium text-muted-foreground">مبلغ شارژ (تومان)</label>
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/25">
             <input
               id="topup-amount"
@@ -100,20 +100,20 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
               aria-describedby={fieldError ? "topup-amount-error" : "topup-amount-help"}
               onChange={(event) => setAmount(formatTopupInput(event.target.value))}
               onBlur={() => setTouched(true)}
-              className="w-full min-w-0 flex-1 border-0 bg-transparent py-3 text-center text-3xl font-extrabold tabular-nums tracking-normal text-foreground outline-none placeholder:text-center placeholder:text-xs placeholder:font-normal placeholder:text-muted-foreground"
+              className="w-full min-w-0 flex-1 border-0 bg-transparent py-3 text-center font-iransans-fanum text-2xl font-normal tabular-nums tracking-normal text-foreground outline-none placeholder:text-center placeholder:text-xs placeholder:font-normal placeholder:text-muted-foreground"
             />
-            <span className="shrink-0 text-sm font-bold text-muted-foreground" aria-hidden="true">تومان</span>
+            <span className="shrink-0 text-sm font-medium text-muted-foreground" aria-hidden="true">تومان</span>
           </div>
 
           {fieldError ? (
-            <p id="topup-amount-error" role="alert" className="mt-1.5 text-[11px] font-bold text-red-600">{fieldError}</p>
+            <p id="topup-amount-error" role="alert" className="mt-1.5 text-[11px] font-medium text-red-600">{fieldError}</p>
           ) : (
             <p id="topup-amount-help" className="mt-1.5 text-[11px] text-muted-foreground">
               مبلغ دلخواه شما باید بین {formatToman(MIN_TOPUP_TOMAN)} و {formatToman(MAX_TOPUP_TOMAN)} تومان باشد.
             </p>
           )}
 
-          <p className="mb-2 mt-4 text-xs font-bold text-muted-foreground">مبالغ پیشنهادی</p>
+          <p className="mb-2 mt-4 text-xs font-medium text-muted-foreground">مبالغ پیشنهادی</p>
           <div className="grid grid-cols-2 gap-2" role="group" aria-label="مبالغ پیشنهادی">
             {TOPUP_PRESETS_TOMAN.map((preset) => {
               const selected = validation.ok && validation.toman === preset;
@@ -123,10 +123,10 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => { setAmount(formatTopupInput(preset.toString())); setTouched(true); }}
-                  className={`rounded-lg border px-3 py-3 text-sm font-bold transition-colors active:scale-[0.99] ${selected ? "border-blue-600 bg-blue-700 text-white" : "border-slate-200 bg-white text-muted-foreground"
+                  className={`rounded-lg border px-3 py-3 font-iransans-fanum text-sm font-normal transition-colors active:scale-[0.99] ${selected ? "border-blue-600 bg-blue-700 text-white" : "border-slate-200 bg-white text-muted-foreground"
                     }`}
                 >
-                  {formatToman(preset)} <span className="text-[11px] font-bold opacity-80">تومان</span>
+                  {formatToman(preset)} <span className="text-[11px] font-medium opacity-80">تومان</span>
                 </button>
               );
             })}
@@ -142,7 +142,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
           type="button"
           disabled={busy}
           onClick={() => void submit()}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-700 py-4 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-700 py-4 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:opacity-60"
         >
           {busy ? <><RotateCcw size={17} className="animate-spin" aria-hidden="true" />در حال انتقال به درگاه…</> : <><CreditCard size={17} aria-hidden="true" />پرداخت و شارژ</>}
         </button>

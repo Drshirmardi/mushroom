@@ -75,7 +75,7 @@ export default function WalletPage() {
   const hasMore = items.length < total;
 
   return (
-    <div className="profile-scope">
+    <div className="profile-scope font-iranyekanx [--font-weight-medium:500] [--font-weight-bold:500]">
       <PageHeader
         title="کیف پول"
         onBack={() => router.back()}
@@ -84,7 +84,7 @@ export default function WalletPage() {
             type="button"
             onClick={() => void load()}
             aria-label="تازه‌سازی کیف پول"
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted"
+            className="flex h-11 w-11 items-center justify-center rounded-xl bg-muted"
           >
             <RefreshCw size={18} className="text-foreground" aria-hidden="true" />
           </button>
@@ -96,34 +96,32 @@ export default function WalletPage() {
         {error && !summary && (
           <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {error}
-            <button type="button" onClick={() => void load()} className="mr-3 font-bold text-primary">تلاش دوباره</button>
+            <button type="button" onClick={() => void load()} className="mr-3 font-medium text-primary">تلاش دوباره</button>
           </div>
         )}
 
         {summary && (
           <>
-            <div className="bg-gradient-to-l from-blue-800 to-blue-600 rounded-3xl p-6 text-white relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full -translate-x-16 -translate-y-16" aria-hidden="true" />
-              <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full translate-x-8 translate-y-8" aria-hidden="true" />
-              <p className="text-white/70 text-sm mb-1">موجودی کیف پول</p>
-              <p className="font-digikala text-4xl font-extrabold tabular-nums" data-testid="wallet-balance-value">
-                {balance === null ? "—" : formatToman(rialToToman(balance))} <span className="text-base font-bold">تومان</span>
+            <section aria-label="موجودی کیف پول" className="rounded-2xl border border-border bg-white p-5">
+              <p className="text-muted-foreground text-xs mb-2">موجودی کیف پول</p>
+              <p className="flex flex-wrap items-baseline gap-2 font-iransans-fanum text-[clamp(24px,7vw,32px)] leading-relaxed font-normal tabular-nums text-primary" data-testid="wallet-balance-value">
+                <bdi dir="ltr" className="break-all">{balance === null ? "—" : formatToman(rialToToman(balance))}</bdi><span className="font-iranyekanx text-xs font-normal text-muted-foreground">تومان</span>
               </p>
-              {remainder && <p className="mt-1 text-xs text-white/60">به‌همراه {remainder}</p>}
-              <div className="relative mt-4 flex flex-wrap items-center gap-2">
+              {remainder && <p className="mt-1 text-xs text-muted-foreground">به‌همراه {remainder}</p>}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setTopupOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-2 text-xs font-bold text-white active:scale-95 transition-transform"
+                  className="inline-flex items-center gap-1.5 min-h-11 rounded-xl bg-primary px-4 py-2 text-xs font-medium text-white active:scale-95 transition-transform"
                 >
                   <Plus size={15} aria-hidden="true" />افزایش موجودی
                 </button>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-white/80">
+                <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-normal text-muted-foreground">
                   {formatToman(BigInt(total))} تراکنش
                 </span>
               </div>
-              <p className="relative mt-3 text-[11px] text-white/60">آخرین به‌روزرسانی: {asOfLabel(summary.asOf)}</p>
-            </div>
+              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">آخرین به‌روزرسانی: {asOfLabel(summary.asOf)}</p>
+            </section>
 
             {summary.frozen && (
               <div role="status" className="wallet-notice wallet-notice--frozen">
@@ -133,19 +131,19 @@ export default function WalletPage() {
             )}
 
             <div className="bg-white rounded-2xl border border-border p-4">
-              <p className="text-sm font-bold text-foreground mb-3">تراکنش‌های اخیر</p>
+              <p className="text-sm font-medium text-foreground mb-3">تراکنش‌های اخیر</p>
 
               {error && (
                 <div role="alert" className="mb-3 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                   {error}
-                  <button type="button" onClick={() => void load()} className="mr-3 font-bold text-primary">تلاش دوباره</button>
+                  <button type="button" onClick={() => void load()} className="mr-3 font-medium text-primary">تلاش دوباره</button>
                 </div>
               )}
 
               {items.length === 0 ? (
                 <div className="py-8 text-center">
                   <History size={28} className="mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
-                  <p className="text-sm font-bold text-foreground">تراکنشی وجود ندارد.</p>
+                  <p className="text-sm font-medium text-foreground">تراکنشی وجود ندارد.</p>
                   <p className="mt-1 text-xs text-muted-foreground">تاریخچه تراکنش‌های شما اینجا نمایش داده می‌شود.</p>
                 </div>
               ) : (
@@ -161,14 +159,14 @@ export default function WalletPage() {
                           {credit ? <ArrowDownLeft size={20} /> : <Minus size={20} />}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-foreground">{walletKindLabel(item.kind)}</p>
+                          <p className="text-sm font-medium text-foreground">{walletKindLabel(item.kind)}</p>
                           <p className="mt-0.5 text-xs text-muted-foreground">{asOfLabel(item.createdAt)}</p>
                         </div>
-                        <div className="flex-shrink-0 text-left">
-                          <p dir="ltr" className={`text-sm font-extrabold tabular-nums ${credit ? "text-emerald-600" : "text-foreground"}`}>
+                        <div className="min-w-0 max-w-[48%] break-words text-left">
+                          <p dir="ltr" className={`font-iransans-fanum text-sm font-normal tabular-nums ${credit ? "text-emerald-600" : "text-foreground"}`}>
                             {formatSignedToman(BigInt(item.deltaRial))}
                           </p>
-                          <p className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
+                          <p className="font-iransans-fanum mt-0.5 text-[11px] leading-5 text-muted-foreground tabular-nums">
                             مانده: {formatToman(rialToToman(BigInt(item.balanceAfterRial)))}
                           </p>
                         </div>
@@ -183,7 +181,7 @@ export default function WalletPage() {
                   type="button"
                   disabled={loadingMore}
                   onClick={() => void loadMore()}
-                  className="mt-3 w-full rounded-2xl border border-border bg-white py-3 text-sm font-bold text-foreground disabled:opacity-50"
+                  className="mt-3 w-full rounded-2xl border border-border bg-white py-3 text-sm font-medium text-foreground disabled:opacity-50"
                 >
                   {loadingMore ? "در حال دریافت…" : "نمایش تراکنش‌های بیشتر"}
                 </button>
