@@ -7,6 +7,10 @@
 
 ## Taskها
 
+Owner-requested scoped commit handoff: [commit/file map](../logs/client-integration-commits-2026-10-19.md); types/build/165 tests PASS, full acceptance remains unchecked.
+
+- [ ] `F12-FE01` — Owner-authorized patient-client API integration and Home/destination UI (2026-10-19), CLIENT-INTEGRATION, sole Codex /root. Home, notification sheet/category safety, TOPUP clarification, linked service/detail design and owner-requested white store/card refinement and local price-font preview and overflow-aware product-rail arrows and minimal session loading/error presentation with duplicate timed splash removed implemented; latest app types/165 tests/build and scoped live/synthetic mobile/desktop checks PASS. [Destination design evidence](../service-screens-verification.md), [connection limits](../home-client-verification.md), [integration scope](../client-integration.md). Full task REWORK/unchecked: real two-account/provider/clinical/legal acceptance remains separate. No final task commit or API/schema/provider activation/phase change.
+
 - [x] `F12-T01` — target release، SLO، traffic profile و environment strategy
 - [x] `F12-T02` — deployment provider، container/IaC و staging pipeline — `DONE: provider-neutral Distroless artifacts plus private-GHCR publication, immutable manifest, automatic non-production staging, owner-dispatched production-sim promotion and application-only rollback are implemented and locally verified; live VPS baseline/two-update/rollback evidence remains an explicit F12-T13 sign-off gate`
 - [x] `F12-T03` — load test auth/onboarding/assessment/booking/encounter و featureهای release — `DONE: frozen mixed/chat profiles and disposable invariants accepted; see phase-12 evidence`
@@ -95,7 +99,7 @@ application نمی‌شود.
 
 ## Change control — dashboard operational truthfulness
 
-- [ ] `F12-T12-R13` — READY_FOR_REVIEW (2026-10-19), main review/verification PASS; 76 focused tests, API/test/app/dashboard types, generated contracts and targeted dashboard lint PASS. Store/banner media/session/preview corrections remain unstaged/uncommitted by explicit owner request; store-banner-review-v1, evidence Phase12 log.
+- [x] `F12-T12-R13` — Existing main review/verification PASS, committed as 7b7bd43 on 2026-10-19. Historical evidence: 76 focused tests, API/test/app/dashboard types, generated contracts and targeted dashboard lint PASS; store-banner-review-v1, Phase12 log. Checklist/ownership synchronized with the observed commit during F12-FE01; no new banner verification claimed.
 
 مالک محصول در `2026-10-10` اصلاح داشبورد عملیاتی را تأیید کرد. این corrective زیر ماتریس مرورگر/دستگاه
 `F12-T12` اجرا می‌شود و backend، schema، نقش‌ها یا قابلیت‌های deferred را گسترش نمی‌دهد.

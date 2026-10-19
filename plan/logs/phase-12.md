@@ -3838,3 +3838,196 @@ Only new localhost:55419/store_banner_review_test clone received test writes, fr
 Test refinement: one cleanup test initially assumed a single transient deletion error would preserve an object despite two independently valid cleanup intents. The fixture now models a sustained outage for that exact key, verifies both durable retries, then restores storage and verifies only the current object remains. Assertions are preserved for the intended failure condition.
 
 Remaining/next action: no unresolved defect in the reviewed scope after final checks. Held READY_FOR_REVIEW and unchecked only because the owner explicitly defers commit. Keep all corrections and original work unstaged/uncommitted; do not auto-commit or start another task in this held batch. Wider browser/live-provider/production acceptance remains separate.
+
+## F12-FE01 — Patient client integration implementation handoff (verification deferred)
+
+Task ID: F12-FE01
+Recorded at: 2026-10-19 Asia/Tehran
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION
+Status: IN_PROGRESS — implementation prepared; owner review and requested verification pending
+Reviewed by: Codex /root (source/contract reading only; no runtime acceptance)
+Authority:
+  - Owner explicitly requested connecting all client sections before tests, then owner interface review followed by separately requested testing.
+  - This overrides per-section test gates for implementation sequencing only; no DONE/final task commit/production acceptance follows.
+Baseline and preservation:
+  - HEAD 7b7bd43. Only pre-existing local change was .gitignore; preserved untouched.
+  - Historical banner claim was stale: its reviewed implementation already exists in commit 7b7bd43. STATUS/checklist synchronized against Git history and existing evidence; no new banner tests claimed.
+Changed files:
+  - apps/app/src/app/(app)/page.tsx — live Journey/actions/summaries plus actual article/notification reads, no fabricated patient temperament/treatment progress.
+  - apps/app/src/app/(app)/assessment/** and components/assessments/assessment-wizard.tsx — history/exact questionnaire/revision-aware saves, frozen submit retries, paid individual offers/consent/purchase/grants, result/provenance/approved guidance; independent couple linking/invitation/consent/payment/private own attempts/joint approved education.
+  - apps/app/src/app/(app)/programs/** and guidance/[id]/page.tsx — ready education offerings/purchase/access/content, custom offering/request/care authorization/payment/versioned native delivery.
+  - apps/app/src/app/(app)/appointments/[id]/** — discoverable appointment-bound assessment-sharing preview/accept/withdraw.
+  - apps/app/src/app/(app)/profile/{page.tsx,security/page.tsx,wallet/pay/page.tsx,wallet/payment-result/page.tsx} — program discovery, actual auth-session management, shared digital payments and outcome destinations.
+  - apps/app/src/app/(app)/chat/page.tsx — appointment selection when no appointmentId; existing socket/conversation implementation retained.
+  - apps/app/src/lib/{patient-request,use-patient-resource,use-operation-key,patient-journey-api,digital-services-api,couples-api,assessment-sharing-api,security-api}.ts — generated-contract calls, stale-resource isolation, bounded pagination, explicit command keys and confirmed-success key retirement.
+  - apps/app/src/lib/{api,appointment-api,follow-up-api,assessment-api,navigation,wallet-labels}.ts — existing session transport reuse, timeout/no-store for legacy direct reads, historical assessment and payment/navigation additions.
+  - apps/app/src/components/shared/{patient-resource-state,patient-pagination,policy-acceptance,global-sheet,page-header}.tsx — retry/empty/error separation, explicit policy review, safe text rendering, real navigation/copy in legacy sheet and accessible back control.
+  - plan/client-integration.md, STATUS, Phase12 checklist/log — inventory, owned scope, handoff and deferred acceptance.
+  - graphify-out generated code graph — AST-only refresh; no LLM extraction.
+Migrations:
+  - None. No API/schema/generated client/dependency/provider/deployment or persistent database change.
+Tests run:
+  - NOT RUN by explicit owner request: automated tests, browser/E2E, build, typecheck, lint, API/provider acceptance and database checks.
+Other work:
+  - Existing code and checked-in OpenAPI inspected; known Object-typed numeric list queries use narrow documented consumer casts without changing wire values.
+  - graphify query then graphify update . used for code navigation/AST refresh; graph rebuild is not product verification. Existing SQL/HCL parser dependencies unavailable; no dependency installed.
+Pending acceptance:
+  - Owner review of routes listed in plan/client-integration.md, then explicit test instruction and focused fixes.
+  - Actual published clinical/legal/commerce data and independent Phase12 production gates remain prerequisites for live use.
+  - No task commit created, no F12-FE01 checkbox checked, no final review PASS claimed.
+Next safe action:
+  - Continue this same active task from owner feedback; execute validation only when requested. Preserve unrelated .gitignore and protected user files.
+
+F12-FE01 handoff addendum (same run): both AST-only graph refreshes completed successfully; final graph reports 10,233 nodes/29,343 edges. Source-only Git whitespace check passed after trimming trailing empty lines in task-owned client files. These are repository maintenance checks, not application tests, typechecking or acceptance. No API/generated-client edits, staged changes or task commit were created. Existing bottom-navigation visibility choices were preserved; new routes are discoverable from Home/Profile/appointment detail. Security/session and legacy-sheet corrections are included in the same patient integration scope.
+
+## F12-FE01 — Owner-requested individual/couple assessment verification
+
+Task ID: F12-FE01
+Recorded at: 2026-10-19 Asia/Tehran
+Agent/Thread: Codex /root, single reviewer; no subagents
+Batch ID: CLIENT-INTEGRATION
+Status: REWORK — scoped verification executed, whole-task acceptance not granted
+Authority: Owner explicitly requested functional verification of individual and couple assessments after prior implementation; supersedes the test deferral only for this scope.
+Product source changes: None during this review. Existing uncommitted implementation and unrelated .gitignore preserved. No commit.
+Evidence/report: plan/assessment-verification.md (exact sources, reproduction, live/mocked boundaries and safe next action).
+Checks:
+  - pnpm --filter @sabz/app typecheck -> FAIL: three errors (nullable payment callback, two Object-typed numeric sharing query values).
+  - focused assessment/session/wallet app tests -> 17 PASS.
+  - pnpm --filter @sabz/app test -> 131 PASS / 5 FAIL in 27 files; failures are legacy appointment/follow-up mocks lacking sessionFetch, not evidence by themselves of failed live endpoints.
+  - Real browser reads: assessment/history/offering/purchase APIs200; existing completed result renders score/band/date and no-approved-guidance state. No medical answers or purchase/consent writes in current environment.
+  - Real couple setup: sessions/contexts200 empty; link policy503; no paid individual offering published. Live two-person purchase/output acceptance remains unavailable in that environment.
+  - Isolated HTTP-intercepted browser: individual required/save revision0/1/submit revision2 + key/result PASS; exact retired questionnaire/conflict lock/reload control PASS; couple independent processing/sharing/partner acknowledgement and mutual gating/payment navigation/joint education PASS.
+  - UI defect reproduced for both EXPIRED and CANCELLED couple intents: no fresh purchase action despite supported server contract.
+  - Dedicated disposable PostgreSQL16 container on 127.0.0.1:55419: all73 migrations replayed and seed completed. Current5432 DB untouched. Synthetic secrets/payment adapters only; live SMS/PSP/storage disabled.
+  - Eight backend files (scoring, structure validation, reliability, discovery, individual purchase, couple link, participation, paid delivery): first run140 PASS / 4 timeouts of144, 358.04s. All four timeouts were the default5000ms in participation file.
+  - Independent participation rerun --testTimeout=30000 ->16/16 PASS,48.06s. Each144 distinct backend case passed at least once; original default-deadline failure retained in evidence. pg concurrent-query deprecation warning remains diagnostic, no assertion failures after rerun.
+Cleanup: Verified exact disposable container name, codex.task label and anonymous volume, then removed that container and its volume. Original PostgreSQL container remains running. Temporary browser fixture pages closed and routes isolated to those pages.
+Limits: No real bank transaction or two-account live browser acceptance; DIMENSION_RANK16-profile/11-question draft remains intentionally outside patient runtime; no medical-validity assertion. Build omitted because typecheck already failed.
+Safe next action: Fix reported client compile blockers, closed couple-payment recovery and stale mocks in this existing batch; rerun targeted gates. Do not start a new task or mark DONE/commit before acceptance.
+
+## F12-FE01 — Home redesign and linked-client verification (partial task review)
+
+Task ID: F12-FE01
+Reviewed at: 2026-10-19 Asia/Tehran
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION
+Reviewed by: Codex /root; no subagents
+Status: Home slice PASS; full client task remains REWORK/unchecked, no final task commit.
+Changed files: patient Home/home-journey and focused spec; patient shell/theme/session fallback; onboarding theme/step controls; treatment selection/retry; health-record retry/navigation; order history/tracking/status labels; couple terminal-payment recovery; payment null narrowing; assessment-share query typing; two transport mocks; scoped plan evidence.
+Migrations/API/provider operations: none. Existing user .gitignore and protected slider-data.ts/justforcheck.md preserved.
+Tests run:
+- app typecheck PASS; full app 148/148 tests across28 files PASS.
+- app production build PASS,46 static pages and dynamic routes.
+- browser live Home and14 service/list destinations: HTTP/API200 except couple-policy503 caused by missing active policy; exact boundaries in plan/home-client-verification.md. Existing assessment-result link: all4 read APIs200.
+- browser mobile/desktop320/390/720/1280; no overflow; Home visible controls>=44px; visual screenshots reviewed.
+- all-API-intercepted synthetic Home empty/error/retry/list/guide, couple EXPIRED/CANCELLED recovery/terms/idempotency, selected/missing treatment, clinical timeline retry and order navigation PASS. No real patient write or payment.
+- git diff --check PASS; graphify AST update run (existing missing SQL/HCL parsers and backend extraction warning).
+Result: old Home marketing/dead routes replaced by real service journeys; blue patient tokens applied; prior3 type errors,5 stale mock failures and terminal couple-payment UI defect resolved. Full evidence and per-domain connection inventory: plan/home-client-verification.md.
+Known limitations: missing actual active couple policy, empty published commercial services, draft-only new Mizaj engine, no actual bank payment or two-account real API acceptance in this Home run. Development API temporarily restarted during inspection; failed first attempt repeated successfully after recovery.
+Next safe action: continue CLIENT-INTEGRATION acceptance under existing contracts after owner-managed policy/content publication in an appropriate environment; no new task/batch, no incomplete final task commit.
+
+## F12-FE01 — Clarify top-up versus wallet spending (partial task verification)
+
+Reviewed at: 2026-10-19 Asia/Tehran
+Batch: CLIENT-INTEGRATION; Codex /root sole writer/reviewer; full task remains REWORK/unchecked.
+Trigger: owner reports missing wallet option on a supplied payment URL despite sufficient balance.
+Evidence: normal browser-tool session is a different patient (owned API returns404 for supplied intent); no conclusion about owner's balance drawn from that session. Exact owner-provided intent checked through a narrowly scoped SELECT in BEGIN READ ONLY/ROLLBACK on local configured DB. Confirmed purpose TOPUP/PENDING, linked wallet funded and unfrozen, no order/appointment/assessment/program target. No names/contacts/token/credentials or identifiers persisted in this log. BillingGatewayService.methods intentionally omits WALLET for TOPUP; BillingService.payWallet also rejects TOPUP. Existing ownership/financial rules preserved.
+Changes:
+- Shared PaymentChooser explains adding funds versus paying for a service, offers wallet/home destinations, labels top-up amount/cancel and unavailable bank specifically.
+- Payment page adds explicit تومان beside its heading amount.
+- Gateway-disabled error no longer tells a top-up customer to fund the same wallet with itself.
+- TopupSheet retains the created intent reference before gateway call so a failed attempt still offers inspection.
+- Three PaymentChooser presentation regression tests: top-up with disabled bank, funded order with enabled wallet, insufficient assessment funds with separate recharge action.
+Verification:
+- app focused payment chooser/wallet adapter/money tests18/18 PASS; initial SSR test import aliases needed explicit mocks, corrected and rerun PASS.
+- app typecheck PASS; git diff --check PASS.
+- all-API-intercepted browser: TOPUP explanation/unit/no wallet/disabled gateway PASS; ORDER displays funded wallet and emits one wallet-payment POST with idempotency and no client amount, routes to result PASS. No real financial writes.
+- intercepted TopupSheet create then gateway503 retains result reference and correct explanation PASS. Initial alert selector also matched Next's empty route announcer; narrowed selector and rerun PASS.
+- graphify AST update PASS (10263 nodes/29406 edges), prior unrelated parser warnings remain.
+No real purchase/top-up/cancel/ledger/provider/schema/API changes, no gateway enablement and no incomplete final task commit. Live owner-session bank/payment acceptance remains separate; safe next action is user's actual order/service checkout with its own intent, not repurposing a TOPUP.
+
+## F12-FE01 — Notification FINANCIAL category crash
+
+Reviewed at: 2026-10-19 Asia/Tehran
+Batch: CLIENT-INTEGRATION; Codex /root sole writer/reviewer; full integration remains REWORK/unchecked.
+Cause: backend NotificationCategory enum and WALLET_CHANGED outbox include FINANCIAL, while frontend's manual union/icon map/settings labels contained only REMINDER/TREATMENT/CONTENT/SYSTEM. Direct destructuring crashed on a financial notification. The same settings lookup would fail.
+Changed files:
+- apps/app/src/lib/follow-up-api.ts: include FINANCIAL in the known notification category union.
+- apps/app/src/lib/notification-presentation.ts: shared exhaustive known-category icon/style/label/description and own-property guarded SYSTEM fallback for unknown/missing/prototype-named categories.
+- apps/app/src/app/(app)/notifications/page.tsx: use safe presentation; preserve title/body/read actions, decorative icon hidden from assistive technology.
+- apps/app/src/app/(app)/profile/notifications/page.tsx: same safe financial label/description mapping.
+- apps/app/src/lib/notification-presentation.spec.ts:12 regression cases.
+Verification:
+- focused notification-presentation + follow-up API tests15/15 PASS.
+- app typecheck PASS; git diff --check PASS.
+- Fully intercepted browser fixture renders all5 known categories plus FUTURE_CATEGORY and constructor:7 cards, zero pageerror events. Marking financial read updates unread7→6. Financial preference PATCH retains category FINANCIAL and false setting. PASS; no real patient notifications or preferences mutated.
+- Graphify AST update performed; existing unrelated SQL/HCL/backend parser warnings remain.
+No API/schema/provider/dependency changes; unrelated worktree files preserved. No final commit of incomplete F12-FE01. This notification defect is resolved; existing integration release limitations remain in the prior handoff.
+
+## F12-FE01 — Home notifications bottom sheet
+
+Reviewed at: 2026-10-19 Asia/Tehran
+Batch: CLIENT-INTEGRATION; Codex /root sole writer/reviewer; full task remains REWORK/unchecked.
+Owner request: show notifications in a panel sliding up from the bottom when Home notification controls are clicked.
+Changed files:
+- apps/app/src/app/(app)/page.tsx: bell, all-notifications control and recent notification cards open the sheet without leaving Home; reload preview/unread indicator after successful read.
+- apps/app/src/components/notifications/notification-center.tsx: reuse existing real notification list/read/read-all/empty/error behavior in full page and embedded mode, including financial/unknown-category safety.
+- apps/app/src/components/notifications/notification-sheet.tsx: existing draggable BottomSheet inside native modal dialog; close control, Escape, focus containment and explicit focus restoration; underlying Home stays in place.
+- apps/app/src/app/(app)/notifications/page.tsx: thin wrapper around shared center preserves direct route.
+- apps/app/src/app/globals.css: button styling for Home notification triggers and transparent native backdrop (existing sheet overlay supplies shading).
+Verification:
+- app typecheck PASS; production build PASS (46 static pages plus dynamic routes).
+- notification-presentation/follow-up targeted tests15/15 PASS.
+- fully intercepted browser fixture: all3 Home triggers open on same URL; financial read sends one intercepted read command and clears Home unread dot; standalone notifications route still renders; no runtime errors. Real notification data/preferences unchanged.
+- live browser empty account: sheet visual checked; Escape/close/backdrop and drag handle dismissal PASS. Initial focus-return check exposed a gap; explicit restoration added and live Escape/drag reruns return focus to bell PASS.
+- git diff --check PASS; graphify AST update performed, existing unrelated parser warnings retained.
+No shared BottomSheet behavior changed for other consumers; no API/schema/provider/financial changes. No final commit of incomplete integration task. Home notification sheet is ready for user review.
+
+## F12-FE01 — Home destination design and navigation
+
+Reviewed at: 2026-10-19 Asia/Tehran
+Batch: CLIENT-INTEGRATION; sole Codex /root writer/reviewer; full integration remains REWORK/unchecked.
+Owner request: improve frontend/design/user journeys on pages reached from Home.
+Changed files: shared service-page and PageHeader/resource-state presentation; assessment/couples/program hubs; booking steps1–3; appointments/list/detail; treatment; chat appointment picker; health record/onboarding title; orders/tracking; articles/list/detail; payment; twelve assessment/program/guidance detail frames; assessment-catalog helper/spec; appointment labels; scoped CSS and plan evidence. No unrelated user/protected source, API/schema/provider/dependency or persistent data changes.
+Validation: app types PASS; full165 tests/31files PASS; final app build PASS (46 static plus dynamic routes);12 live primary destinations at320/1280 no overflow/pageerror;4 primary390px screenshots/touch44px PASS; fully intercepted populated/empty/error/retry/catalog-version/history/program/booking/selected-treatment/article-share fixtures PASS; view URL and correct back-section fixtures PASS; ten detail404/retry states PASS. Exact scope/results: plan/service-screens-verification.md. No real clinical/financial command executed.
+Result: Home-connected services share patient blue/Vazirmatn rhythm, clear next actions, sections, meaningful empty states and return navigation. Store/Wallet existing designs preserved. Version grouping preserves exact identities/languages and does not choose a new clinical version; source publication data remains authoritative.
+Known limitations: full real two-account/provider/clinical/legal release remains separate; previously observed missing couple policy and unpublished commercial content are not bypassed. No final incomplete F12-FE01 commit or next batch started. Owner can review UI at current localhost3001.
+
+## F12-FE01 — Remove verbose Home service-process accordion
+
+Reviewed at: 2026-10-19 Asia/Tehran; CLIENT-INTEGRATION; sole Codex /root.
+Owner feedback: Home's «مراحل دریافت خدمات چگونه است؟» panel is distracting.
+Changes: removed the generic accordion and its CSS; services now have a direct «خدمات سلامت» heading. A small unboxed onboarding link appears only when actual Journey onboarding is incomplete, and disappears after completion. All4 service destinations and the authoritative next action remain intact. No new step card, backend rule, patient write or unrelated source change.
+Verification: app typecheck PASS; git diff --check PASS; live390px Home/4links/no old accordion/no horizontal overflow PASS. Fully intercepted Journey fixture incomplete→complete confirms hint appears then disappears and all4 services remain. graphify AST update run. No broad test/build repeat for this reversible presentation refinement. Full F12-FE01 remains REWORK/unchecked; no final task commit.
+
+## F12-FE01 — White product-card refinement
+
+2026-10-19 Asia/Tehran; CLIENT-INTEGRATION, sole Codex /root. Owner explicitly requested frontend-design and supplied retail-card markup. White app/profile/catalog/gallery surfaces, neutral outlined product/recent/offer cards, larger contain images, two-line readable titles, discount badge on offer image and stacked offer prices. Neutral white fallback replaces gray image placeholder. Real catalog price and SKU identity untouched; no synthetic discounts added. Existing TEST_OFFERS rail remains display-only/unconnected, disclosed to owner. Protected slider-data.ts/justforcheck.md and unrelated .gitignore preserved.
+Verification: app typecheck PASS;31 files/165 tests PASS; build PASS. Live320/390/1280: no horizontal overflow, white shell/frame/cards and44px favorite; detail link identity and white gallery/no gradient PASS; Home white shell/frame PASS. Last gallery CSS-only follow-up verified live after build. graphify AST update run; known SQL/HCL/backend parser warnings independent. Evidence/screenshots: service-screens-verification.md. Same F12-FE01 remains REWORK/unchecked; no final task commit or new batch.
+
+## F12-FE01 — Owner-supplied price fonts
+
+2026-10-19; sole Codex /root; same CLIENT-INTEGRATION frontend/assets scope. Added exact owner-supplied IRANSansFaNum and IRANYekanX Regular/Medium binaries, local @font-face/font-display:swap, reusable family tokens/utilities. IRANSans active for shared store prices/old offer prices/service prices/wallet amount; Yekan registered only. Provenance/hashes in public/fonts/README.md, no runtime remote font dependency.
+Verification: WOFF signatures and browser FontFaceSet load/check all3 PASS; live320/390/1280 no price/page/catalog overflow; screenshot visually reviewed. git diff --check PASS; graphify AST update run. No broad tests/build repeat for reversible CSS/assets; no money/API logic or patient write changed. Full F12-FE01 REWORK/unchecked, no final task commit.
+
+## F12-FE01 — Overflow-aware product-rail arrows
+
+2026-10-19, sole Codex /root, same CLIENT-INTEGRATION write-set. Shared StoreCollection uses existing scroll edge state for overlaid previous/next44px native buttons with Persian labels/aria-controls; hide exhausted direction, render none for fitting content. RTL-aware existing move preserved, cancels inertia. Removed unused old control CSS, no dependencies or backend/patient writes.
+Verification: typecheck/diff PASS; live390px assertions start→middle→end→Enter back→start PASS;320/1280 resize/no page overflow/44px buttons PASS; separate temporary DOM single-product no-arrows PASS. Screenshots visually reviewed; graphify update run. No broad test/build repeat. Evidence service-screens-verification.md; F12-FE01 remains REWORK/unchecked, no final task commit.
+
+## F12-FE01 — Friendly session loading/error presentation
+
+2026-10-19; sole Codex /root; same CLIENT-INTEGRATION frontend scope. SessionStatus now shows heart/orbit checking state and colloquial Persian copy, static unavailable with retry and dedicated anonymous redirect copy. White/minimal layout, status/alert semantics, reduced-motion support; no auth-manager behavior/security/API change.
+Verification: typecheck/diff PASS; fully intercepted browser initial wait→503→retry wait→503 PASS,2mock refreshes/no pageerrors/no real API writes;320/390/1280 no overflow and reduced-motion animation none PASS. Screenshots reviewed, graphify update run, targeted session.test.ts7/7 PASS. Evidence service-screens-verification.md. Full F12-FE01 REWORK/unchecked; no final task commit or broad build repeat.
+
+## F12-FE01 — Remove duplicate splash, minimal session dots
+
+2026-10-19; sole Codex /root, same CLIENT-INTEGRATION. Owner rejects previous large session illustration and branded splash. Removed AppShell SplashScreen/timed2.4s delay, deleted unused component and splash UI state. Session pending now3 small brand-blue dots on white, SR label/status and reduced-motion; real error/retry/auth-manager policy preserved.
+Verification: types/7 session tests/build PASS; intercepted auth wait→success→profile data wait→profile→store proves1 refresh/no second fullscreen loader/no old tagline via MutationObserver/no pageerror;503→retry→503 PASS. Screenshot reviewed, diff check PASS, no stale splash references. graphify update run. Evidence service-screens-verification.md; full F12-FE01 REWORK/unchecked, no final task commit.
+
+## F12-FE01 — Owner-requested scoped commit handoff
+
+2026-10-19, sole Codex /root. Owner explicitly requests committing all uncommitted work in related sections, superseding earlier instructions to leave reviewable changes uncommitted.13 implementation/config commits plus one documentation handoff, same F12-FE01 scope. Final combined gate:31 files/165 tests PASS, production build/TypeScript/46 static pages PASS, whitespace and explicit staged-path ownership PASS. Full task remains REWORK/unchecked; checkpoints do not claim external/two-account/provider/clinical/legal acceptance. Existing .gitignore additions preserved verbatim in dedicated chore commit; protected slider-data.ts/justforcheck.md untouched. No remote push or deployment.
+
+Commit hashes, messages, changed-file lists and next safe action: [handoff](client-integration-commits-2026-10-19.md).
