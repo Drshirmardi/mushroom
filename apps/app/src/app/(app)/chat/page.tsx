@@ -1,17 +1,43 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, Send } from "lucide-react";
+import { ArrowLeft, MessageCircle, CalendarDays, ChevronLeft, Send } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { connectChat, loadChat, reconcileChatMessages, sendChat, type ChatMessage } from "@/lib/chat-api";
+
+import { listPatientAppointments } from "@/lib/appointment-api";
+import { usePatientResource } from "@/lib/use-patient-resource";
+import { ServicePage, ServiceSection, ServiceEmpty } from "@/components/shared/service-page";
+import { PatientResourceState } from "@/components/shared/patient-resource-state";
 
 type LoadedChat = Awaited<ReturnType<typeof loadChat>>;
 type ConnectionState = "loading" | "connected" | "reconnecting" | "offline" | "read-only" | "recovery-failed";
 
-export default function ChatPage() {
+function ChatAppointments() {
+  const { authentication } = useAuthSession();
+  const resource = usePatientResource(useCallback(() => listPatientAppointments(authentication.accessToken), [authentication.accessToken]));
+  const items = resource.data?.items.filter(item => ["CONFIRMED", "CHECKED_IN", "QUEUED", "IN_PROGRESS"].includes(item.status));
+  return <ServicePage title="گفتگو با پزشک" description="برای ورود به گفتگو، نوبت مربوط را انتخاب کنید. دسترسی و زمان مجاز گفتگو هنگام ورود بررسی می‌شود." icon={MessageCircle}>
+    <p className="service-note">گفتگو به نوبت مشخص شما متصل است. پیام‌ها و وضعیت اتصال پس از ورود نمایش داده می‌شوند.</p>
+    <ServiceSection title="انتخاب نوبت برای گفتگو"><PatientResourceState {...resource} retry={() => void resource.reload()} />
+      {items?.map(item => <Link key={item.id} href={`/chat?appointmentId=${encodeURIComponent(item.id)}`} className="service-card"><h3>{new Intl.DateTimeFormat("fa-IR", {dateStyle:"medium",timeStyle:"short"}).format(new Date(item.startsAt))}</h3><span className="service-text-action">بررسی و ورود به گفتگو<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
+      {items?.length === 0 && <ServiceEmpty icon={MessageCircle} title="گفتگویی برای ورود ندارید" description="در حال حاضر نوبت جاری یا تأییدشده‌ای برای گفتگو پیدا نشد. نوبت‌های خود را بررسی کنید یا مشاورهٔ جدیدی رزرو کنید." href="/appointments" action="مشاهدهٔ نوبت‌های من" />}
+    </ServiceSection>
+    <Link href="/appointments/book" className="service-callout"><CalendarDays size={24} aria-hidden="true" /><div><h2>نیاز به مشاوره دارید؟</h2><p>پزشک و زمان مناسب را انتخاب کنید</p></div><ArrowLeft size={18} aria-hidden="true" /></Link>
+  </ServicePage>;
+}
+
+function ChatRoute() {
+  const id = useSearchParams().get("appointmentId");
+  return id ? <ChatRoom key={id} appointmentId={id} /> : <ChatAppointments />;
+}
+
+export default function ChatPage() { return <Suspense fallback={<p role="status" className="p-4">در حال دریافت گفتگو…</p>}><ChatRoute /></Suspense>; }
+
+function ChatRoom({ appointmentId }: { appointmentId: string }) {
   const router = useRouter();
-  const appointmentId = useSearchParams().get("appointmentId");
   const { authentication } = useAuthSession();
   const [chat, setChat] = useState<LoadedChat | null>(null);
   const [text, setText] = useState("");

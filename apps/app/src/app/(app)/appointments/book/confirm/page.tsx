@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { RotateCcw } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
-import { PageHeader } from "@/components/shared/page-header";
+import { CalendarDays } from "lucide-react";
+import { ServicePage, ServiceSteps } from "@/components/shared/service-page";
 import { appointmentErrorMessage, reschedulePatientAppointment } from "@/lib/appointment-api";
 import { WalletRequestError, createAppointmentIntent, walletErrorMessage } from "@/lib/wallet-billing-api";
 
@@ -49,13 +50,9 @@ function BookStep3() {
   };
 
   return (
-    <div>
-      <PageHeader title={appointmentId ? "تأیید تغییر زمان" : "تأیید رزرو"} onBack={() => router.back()} />
-      <div className="space-y-4 px-4 pb-4">
-        <div className="flex items-center gap-2 rounded-2xl bg-muted/60 p-3">
-          <div className="flex gap-1">{[1, 2, 3].map((step) => <div key={step} className="h-1.5 w-6 rounded-full bg-primary" />)}</div>
-          <span className="text-xs text-muted-foreground">مرحله ۳ از ۳: تأیید نوبت</span>
-        </div>
+    <ServicePage title={appointmentId ? "بررسی تغییر زمان" : "بررسی نوبت"} description="زمان انتخاب‌شده را بررسی کنید. هزینه و روش‌های پرداخت در مرحلهٔ بعد از سرور دریافت می‌شوند." icon={CalendarDays} backHref={`/appointments/book/schedule?doctorId=${encodeURIComponent(searchParams.get("doctorId") ?? "")}&doctorServiceId=${encodeURIComponent(doctorServiceId)}&appointmentId=${encodeURIComponent(appointmentId)}`} backLabel="انتخاب زمان">
+      <ServiceSteps steps={["پزشک و خدمت", "روز و ساعت", "بررسی و پرداخت"]} current={2} />
+      <div className="space-y-4">
         <div className="rounded-2xl border border-border bg-white p-4">
           <p className="text-sm font-bold text-foreground">خلاصه نوبت</p>
           <div className="mt-3 flex justify-between text-sm">
@@ -81,10 +78,10 @@ function BookStep3() {
           {loading ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><RotateCcw size={18} /></motion.div> : appointmentId ? "ثبت تغییر زمان" : "ادامه و پرداخت"}
         </button>
       </div>
-    </div>
+    </ServicePage>
   );
 }
 
 export default function BookStep3Page() {
-  return <Suspense fallback={null}><BookStep3 /></Suspense>;
+  return <Suspense fallback={<p role="status" className="p-6 text-sm text-muted-foreground">در حال دریافت اطلاعات نوبت…</p>}><BookStep3 /></Suspense>;
 }
