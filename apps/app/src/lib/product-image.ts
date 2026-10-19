@@ -10,7 +10,7 @@ export type ProductImageMeta = components["schemas"]["ProductImageDto"] | null |
  * never shift between real and missing images.
  */
 export const PRODUCT_IMAGE_FALLBACK =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Crect width='320' height='320' rx='24' fill='%23EDF1F4'/%3E%3Ccircle cx='118' cy='116' r='28' fill='%23C3CED8'/%3E%3Cpath d='M40 256l72-88 48 56 32-36 88 100v12a24 24 0 0 1-24 24H64a24 24 0 0 1-24-24z' fill='%23C3CED8'/%3E%3C/svg%3E";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Crect width='320' height='320' fill='white'/%3E%3Cg fill='none' stroke='%23858D93' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='124' y='124' width='72' height='72' rx='8'/%3E%3Ccircle cx='147' cy='146' r='7'/%3E%3Cpath d='m125 179 20-20 18 18 12-12 20 20'/%3E%3C/g%3E%3C/svg%3E";
 
 /**
  * Resolve the frozen-contract contentPath (e.g. `/v1/commerce/products/<id>/images/<imageId>`)

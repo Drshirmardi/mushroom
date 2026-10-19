@@ -24,7 +24,7 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, onFavor
   return <article className="store-product" aria-busy={busy || undefined}>
     <div className="store-product__media">
       <Link href={href} className="store-product__media-link" aria-label={`مشاهدهٔ ${product.title}`}>
-        <ProductImage src={productImageUrl(product)} alt="" width={140} height={140} className="store-product__image" />
+        <ProductImage src={productImageUrl(product)} alt="" width={300} height={300} className="store-product__image" />
       </Link>
       <Button variant="ghost" className="store-product__favorite" disabled={busy}
         aria-label={`${saved ? "حذف از" : "افزودن به"} علاقه‌مندی‌ها: ${product.title}`}

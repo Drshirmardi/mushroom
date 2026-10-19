@@ -7,7 +7,7 @@
 
 :root {
   --font-size: 16px;
-  --background: #f8faf8;
+  --background: #fff;
   --foreground: #1a2e1a;
   --card: #ffffff;
   --card-foreground: #1a2e1a;
@@ -256,8 +256,32 @@
   font-weight: 100 900;
   font-display: swap;
 }
+@font-face {
+  font-family: "IRANSansFaNum";
+  src: url("/fonts/IRANSansWebFaNum.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanX";
+  src: url("/fonts/IRANYekanX-Regular.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanX";
+  src: url("/fonts/IRANYekanX-Medium.woff") format("woff");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
 :root {
   --font-vazirmatn: "Vazirmatn";
+  --font-iransans-fanum: "IRANSansFaNum", "Vazirmatn", sans-serif;
+  --font-iranyekanx: "IRANYekanX", "Vazirmatn", sans-serif;
+  --font-price: var(--font-iransans-fanum);
   --font-digikala: "Digikala", "Vazirmatn", sans-serif;
   --patient-blue-600: #176b9a;
   --patient-blue-700: #12577e;
@@ -269,17 +293,20 @@
   --patient-focus: var(--patient-teal-600);
   --patient-ink: #173c53;
   --patient-muted: #516977;
-  --patient-canvas: #f6fafc;
+  --patient-canvas: #fff;
   --patient-surface: #fff;
   --patient-soft: #e7f1f7;
-  --patient-warm: #f4f0eb;
+  --patient-warm: #fff;
   --patient-control: #7895a5;
   --patient-divider: #d4e2ea;
   --patient-error: #b42318;
   --patient-error-surface: #fff2f0;
   --patient-like: #e11d48;
   --patient-rating: #f59e0b;
-  --patient-gallery: #f5f5f5;
+  --patient-gallery: #fff;
+  --store-border: #e8e8e8;
+  --store-ink: #202020;
+  --store-muted: #666;
   --patient-success: #176747;
   --patient-warning: #8a4b0f;
   --patient-space-1: .25rem;
@@ -292,19 +319,39 @@
   --patient-shadow-card: 0 2px 8px rgb(23 60 83 / 8%);
   --patient-button-bg: var(--patient-action);
 }
-.patient-store-shell {
+.patient-app-shell {
   --background: var(--patient-canvas);
   --foreground: var(--patient-ink);
+  --card-foreground: var(--patient-ink);
+  --popover-foreground: var(--patient-ink);
   --primary: var(--patient-action);
+  --secondary: var(--patient-soft);
+  --secondary-foreground: var(--patient-ink);
+  --muted: var(--patient-soft);
   --muted-foreground: var(--patient-muted);
+  --accent: var(--patient-soft);
+  --accent-foreground: var(--patient-action);
+  --input-background: var(--patient-soft);
   --border: var(--patient-divider);
   --ring: var(--patient-focus);
-  background: var(--patient-soft);
+  background: var(--patient-surface);
 }
 .patient-store-shell .patient-shell-header { min-height: 64px; }
+.session-screen { min-height: 100dvh; display: grid; place-items: center; padding: 32px 24px; }
+.session-screen__content { width: 100%; max-width: 340px; text-align: center; font-family: var(--font-vazirmatn), sans-serif; }
+.session-screen__illustration { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 50%; background: #f5f7f8; color: var(--patient-muted); }
+.session-screen__dots { display: flex; justify-content: center; gap: 6px; direction: ltr; }
+.session-screen__dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--patient-action); animation: session-dot 1.2s ease-in-out infinite; }
+.session-screen__dots span:nth-child(2) { animation-delay: .16s; }
+.session-screen__dots span:nth-child(3) { animation-delay: .32s; }
+.session-screen h1 { color: var(--patient-ink); font-size: 20px; line-height: 34px; font-weight: 700; }
+.session-screen p { margin-top: 12px; color: var(--patient-muted); font-size: 14px; line-height: 28px; text-wrap: pretty; }
+.session-screen .patient-button { margin-top: 24px; }
+@keyframes session-dot { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .session-screen__dots span { animation: none; } }
 .patient-store-shell .patient-shell-header :is(h1, p) { font-size: 18px; }
 .patient-store-shell .patient-shell-header button { width: 44px; height: 44px; }
-.patient-store-shell :is(a, button):focus-visible, .patient-button:focus-visible, .patient-input:focus-visible {
+.patient-app-shell :is(a, button, input, select, textarea):focus-visible, .patient-button:focus-visible, .patient-input:focus-visible {
   outline: 2px solid var(--patient-focus); outline-offset: 2px;
 }
 .patient-button {
@@ -368,10 +415,10 @@
 .store-search .patient-input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .store-search > svg { flex-shrink: 0; }
 .store-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 20px; scroll-margin-top: 16px; }
-.store-product { min-width: 0; overflow: hidden; border: 1px solid var(--patient-divider); border-radius: 8px; background: white; box-shadow: var(--patient-shadow-card); transition: transform 150ms ease; }
-.store-product:active { transform: scale(0.98); }
+.store-product { min-width: 0; overflow: hidden; border: 1px solid var(--store-border); border-radius: 10px; background: #fff; color: var(--store-ink); }
+.store-product:active { border-color: var(--patient-control); }
 .store-product__media { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; padding: 8px; background: #fff; }
-.store-product__image { width: 100%; height: 100%; max-width: 160px; max-height: 160px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.store-product__image { width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 .store-product__favorite { position: absolute; top: 8px; inset-inline-end: 8px; width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--patient-ink); transition: transform 150ms ease, color 150ms ease; }
 .store-product__favorite:active { transform: scale(0.88); }
 @media (prefers-reduced-motion: reduce) {
@@ -381,11 +428,13 @@
 }
 .store-product__favorite[aria-pressed="true"] { color: var(--patient-like); border-color: var(--patient-like); }
 .store-detail__title .store-icon-button[aria-pressed="true"] { color: var(--patient-like); }
-.store-product__body { padding: 4px 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+.store-product__body { padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 16px; }
 .store-product__title { display: block; color: #111; border-radius: 4px; }
-.store-product__title h2 { font-family: var(--font-digikala); font-size: 14px; line-height: 22px; font-weight: 700; min-height: 44px; max-height: 44px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 99%); mask-image: linear-gradient(180deg, #000 72%, transparent 99%); }
+.store-product__title h2 { font-family: var(--font-vazirmatn), sans-serif; font-size: 13px; line-height: 24px; font-weight: 500; min-height: 48px; max-height: 48px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
 .font-digikala { font-family: var(--font-digikala); }
-.store-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; min-width: 0; font-family: var(--font-digikala); font-size: 18px; line-height: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.font-iransans-fanum { font-family: var(--font-iransans-fanum); }
+.font-iranyekanx { font-family: var(--font-iranyekanx); }
+.store-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; min-width: 0; font-family: var(--font-price); font-size: 18px; line-height: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .store-toman { height: 16px; width: auto; flex-shrink: 0; }
 .store-state { padding: 24px; border: 1px solid var(--patient-divider); border-radius: 16px; margin-top: 20px; background: white; }
 .store-state h2 { font-size: 20px; line-height: 32px; font-weight: 600; margin-bottom: 8px; }
@@ -453,21 +502,29 @@
 .store-collection__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .store-collection__header h2 { min-width: 0; font-size: 18px; line-height: 30px; font-weight: 700; overflow-wrap: anywhere; }
 .store-collection__header .patient-button { flex-shrink: 0; padding-inline: 8px; min-height: 44px; }
-.store-collection__controls { display: flex; gap: 8px; margin-bottom: 12px; }
-.store-product-rail { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(140px, 40vw, 180px); gap: 8px; overflow-x: auto; overscroll-behavior-inline: contain; padding: 4px 16px 12px; margin-inline: -16px; border-radius: 8px; cursor: grab; }
+.store-collection__viewport { position: relative; min-width: 0; }
+.store-collection__arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; min-height: 44px; padding: 0; border: 1px solid var(--store-border); border-radius: 50%; background: #fff; color: var(--store-ink); box-shadow: 0 2px 8px rgb(0 0 0 / 12%); }
+.store-collection__arrow--previous { inset-inline-start: 0; }
+.store-collection__arrow--next { inset-inline-end: 0; }
+.store-collection__arrow:disabled { visibility: hidden; }
+.store-collection__arrow:dir(ltr) svg { transform: rotate(180deg); }
+.store-product-rail { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(164px, 48vw, 188px); gap: 4px; overflow-x: auto; overscroll-behavior-inline: contain; padding: 4px 16px 12px; margin-inline: -16px; border-radius: 8px; cursor: grab; }
 .store-product-rail--dragging { cursor: grabbing; }
 .store-product-rail--dragging, .store-product-rail--dragging * { user-select: none; -webkit-user-select: none; }
 .store-product-rail--auto { grid-auto-columns: max-content; }
 .store-product-rail--cards { grid-auto-columns: clamp(240px, 72vw, 300px); }
-.store-product-rail--offers { grid-auto-columns: clamp(130px, 36vw, 160px); }
-.store-offer { min-width: 0; overflow: hidden; border-radius: 8px; background: #fff; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
-.store-offer__media img { display: block; width: 114px; height: 114px; max-width: 100%; object-fit: contain; margin-inline: auto; user-select: none; -webkit-user-drag: none; }
-.store-offer__title { font-size: 12px; line-height: 20px; font-weight: 600; color: var(--patient-ink); min-height: 40px; max-height: 40px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
-.store-offer__price { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
-.store-offer__row { display: flex; align-items: center; gap: 4px; }
+.store-product-rail--offers { grid-auto-columns: clamp(164px, 48vw, 188px); }
+.store-offer { min-width: 0; overflow: hidden; border: 1px solid var(--store-border); border-radius: 10px; background: #fff; padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+.store-offer__media { position: relative; aspect-ratio: 1; }
+.store-offer__media img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.store-offer__media .store-discount { position: absolute; top: 0; inset-inline-start: 0; padding: 3px 7px; }
+.store-offer__currency { font-size: 11px; color: var(--store-ink); }
+.store-offer__title { font-size: 13px; line-height: 24px; font-weight: 500; color: var(--store-ink); min-height: 48px; max-height: 48px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.store-offer__price { display: flex; flex-direction: column; gap: 2px; margin-top: auto; font-family: var(--font-price); font-variant-numeric: tabular-nums; }
+.store-offer__row { display: flex; align-items: baseline; justify-content: flex-end; gap: 4px; }
 .store-discount { padding: 0 4px; border-radius: 6px; background: var(--patient-like); color: #fff; font-size: 11px; font-weight: 700; line-height: 16px; }
-.store-offer__price s { font-size: 12px; color: var(--patient-muted); }
-.store-offer__price b { font-family: var(--font-digikala); font-size: 15px; font-weight: 800; color: #111; }
+.store-offer__price s { font-size: 12px; color: var(--store-muted); }
+.store-offer__price b { font-size: 15px; font-weight: 800; color: #111; }
 .store-crumb-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .store-brand { font-size: 13px; font-weight: 600; color: var(--patient-muted); }
 .store-product-rail:focus-visible { outline: 2px solid var(--patient-focus); outline-offset: 2px; }
@@ -501,30 +558,25 @@
 .store-product__body > .store-price { margin-top: auto; align-self: flex-end; }
 .store-results-heading { margin-top: 24px; }
 .store-product__incart { position: absolute; bottom: 8px; inset-inline-start: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--patient-action); color: white; font-size: 11px; line-height: 18px; font-weight: 700; }
-.store-promo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 20px; border-radius: 20px; color: white; background: linear-gradient(135deg, #1b5e3b 0%, #2e7d52 60%, #3d9e6b 100%); box-shadow: var(--patient-shadow-card); }
+.store-promo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 20px; border: 1px solid var(--store-border); border-radius: 12px; color: var(--store-ink); background: #fff; }
 .store-promo h2 { font-size: 18px; line-height: 30px; font-weight: 800; }
-.store-promo p { margin-top: 4px; font-size: 13px; line-height: 22px; color: rgba(255, 255, 255, 0.85); }
+.store-promo p { margin-top: 4px; font-size: 13px; line-height: 22px; color: var(--store-muted); }
 .store-promo__action { flex-shrink: 0; background: white; color: var(--patient-action); }
-.store-promo__action:hover:not(:disabled) { background: #f0f7f0; color: var(--patient-action-hover); }
-.store-collection__controls { display: none; }
+.store-promo__action:hover:not(:disabled) { background: var(--patient-soft); color: var(--patient-action-hover); }
 .store-menu > button + button { border-top: 1px solid var(--border); }
-.profile-scope { background: #f8fafc; --muted: #f1f5f9; --muted-foreground: #64748b; }
+.profile-scope { background: #fff; --muted: #f1f5f9; --muted-foreground: #64748b; }
 .profile-scope :is(a, button):focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
-.store-offers { margin-top: 20px; border-radius: 20px; background: linear-gradient(225deg, #d22c4e 0%, #ee384e 100%); padding: 16px; }
+.store-offers { margin-top: 20px; background: #fff; padding-block: 16px; }
 .store-offers .store-collection { margin-block: 0; }
 .store-offers .store-product-rail { margin-inline: 0; padding-inline: 0; }
 .store-offers__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; }
-.store-offers__title { display: flex; align-items: center; gap: 8px; color: #fff; }
+.store-offers__title { display: flex; align-items: center; gap: 8px; color: var(--store-ink); }
 .store-offers__title h2 { font-size: 18px; line-height: 30px; font-weight: 800; }
 .store-offers__timer { display: flex; align-items: center; gap: 2px; margin-inline-start: auto; direction: ltr; }
 .store-offers__tick-row { display: flex; align-items: center; gap: 2px; }
 .store-offers__tick { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; background: #fff; color: #1a1a1a; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.store-offers__colon { color: #fff; font-weight: 700; }
-.store-offers__all { color: #fff; }
-.store-offers .store-collection__controls .store-icon-button { background: rgb(255 255 255 / 90%); }
-@media (min-width: 768px) {
-  .store-collection__controls { display: flex; }
-}
+.store-offers__colon { color: var(--store-muted); font-weight: 700; }
+.store-offers__all { color: var(--patient-action); }
 @media (max-width: 359px) {
   .store-catalog { padding-inline: 12px; }
   .store-grid { gap: 8px; }
@@ -535,7 +587,7 @@
   .patient-store-shell .patient-app-frame { max-width: 1120px; }
   .store-catalog { padding: 24px 32px 32px; }
   .store-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-  .store-product-rail { grid-auto-columns: 190px; gap: 16px; }
+  .store-product-rail { grid-auto-columns: 188px; gap: 4px; }
   .store-catalog .store-product-rail { margin-inline: -32px; padding-inline: 32px; }
   .store-collection__header h2 { font-size: 20px; line-height: 32px; }
 }
@@ -708,15 +760,15 @@
   --patient-soft: #edf3ff;
   --foreground: #14213d;
   --muted-foreground: #455473;
-  background: #f8faff;
+  background: #fff;
 }
 .store-product-page > .store-page-header { gap: clamp(8px, 3cqi, 18px); padding-block: clamp(8px, 2cqi, 12px) clamp(10px, 3cqi, 16px); }
 .store-product-page > .store-page-header h1 { min-width: 0; font-size: clamp(15px, 4.4cqi, 22px); line-height: 1.45; overflow-wrap: anywhere; }
 .store-product-page > .store-page-header .store-icon-button { flex-shrink: 0; width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid var(--patient-divider); background: white; color: var(--patient-action); }
 .store-product-page > .store-page-header .store-icon-button:hover { background: #edf3ff; }
 .store-product-page > .store-page-header .store-icon-button svg { width: clamp(18px, 5cqi, 24px); height: clamp(18px, 5cqi, 24px); }
-.store-product-page .store-gallery { background: #f8faff; }
-.store-product-page .store-gallery__strip { border: 1px solid #d7e3ff; border-radius: clamp(16px, 5cqi, 24px); background: radial-gradient(ellipse at center, #ffffff 55%, #f1f5ff); }
+.store-product-page .store-gallery { background: #fff; }
+.store-product-page .store-gallery__strip { border: 1px solid var(--store-border); border-radius: clamp(16px, 5cqi, 24px); background: #fff; }
 .store-product-page .store-gallery__slide img { max-width: 560px; padding: clamp(6px, 2cqi, 16px); }
 .store-product-page .store-detail__sheet { --store-sheet-gutter: clamp(10px, 4cqi, 24px); padding-inline: var(--store-sheet-gutter); border-radius: 24px 24px 0 0; box-shadow: 0 -6px 24px rgb(36 88 216 / 10%); }
 .store-product-page .store-detail__handle-button { width: calc(100% + var(--store-sheet-gutter) + var(--store-sheet-gutter)); margin-inline: calc(-1 * var(--store-sheet-gutter)); min-height: 48px; border-bottom: 1px solid #e1e8ee; border-radius: 22px 22px 0 0; margin-bottom: 12px; color: #334d63; }
@@ -899,20 +951,20 @@
 .store-cart-item .store-icon-button { width: 40px; min-height: 40px; }
 .store-cart-item .store-quantity output { min-width: 28px; }
 .store-divider { height: 8px; background: var(--patient-soft); margin: 20px -16px 0; }
-.store-recent { min-width: 0; overflow: hidden; border: 1px solid var(--patient-divider); border-radius: 8px; background: #fff; display: flex; flex-direction: column; }
+.store-recent { min-width: 0; overflow: hidden; border: 1px solid var(--store-border); border-radius: 10px; background: #fff; display: flex; flex-direction: column; }
 .store-recent__media { display: flex; aspect-ratio: 1 / 1; background: var(--patient-gallery, #f5f5f5); }
-.store-recent__media img { width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+.store-recent__media img { width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 .store-recent__body { padding: 8px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .store-recent__title { display: block; }
 .store-recent__title h3 { font-size: 13px; line-height: 22px; font-weight: 600; color: #111; min-height: 44px; max-height: 44px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
 .store-recent__body > .store-price { margin-top: auto; font-size: 15px; line-height: 26px; }
 .store-page .store-grid { margin-top: 12px; }
-.store-page .store-product__title h2 { font-size: 14px; line-height: 24px; }
+.store-page .store-product__title h2 { font-size: 13px; line-height: 24px; }
 @media (min-width: 600px) {
   .store-detail__media { min-height: 300px; }
   .store-cart-layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: start; }
   .store-summary { padding: 20px; }
-  .store-page .store-product__title h2 { font-size: 16px; line-height: 28px; }
+  .store-page .store-product__title h2 { font-size: 15px; line-height: 24px; }
 }
 
 /* ------------------------------------------------------------------ */
@@ -935,4 +987,170 @@
 
 .wallet-amount-total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px; border-radius: 16px; background: var(--patient-soft); }
 .wallet-amount-total span { font-size: 13px; color: var(--patient-muted); }
-.wallet-amount-total strong { font-family: var(--font-digikala); font-size: 22px; font-weight: 800; color: var(--patient-ink); font-variant-numeric: tabular-nums; }
+.wallet-amount-total strong { font-family: var(--font-price); font-size: 22px; font-weight: 800; color: var(--patient-ink); font-variant-numeric: tabular-nums; }
+
+/* Home uses the same patient foundations as Profile and Store. */
+.home-page { padding: 24px 20px 32px; color: var(--patient-ink); font-family: var(--font-vazirmatn), sans-serif; }
+.home-page > section, .home-store { margin-top: 28px; }
+.home-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.home-header p { color: var(--patient-muted); font-size: 13px; line-height: 24px; }
+.home-header h1 { font-size: 24px; line-height: 40px; font-weight: 800; }
+.home-icon-link { position: relative; display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--patient-divider); border-radius: 50%; background: white; flex-shrink: 0; }
+.home-unread { position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: var(--patient-action); border: 2px solid white; }
+.home-page .home-next { margin-top: 24px; padding: 16px 24px 24px; border-radius: 24px; background: var(--patient-ink); color: white; }
+.home-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.home-section-heading h2 { font-size: 17px; line-height: 30px; font-weight: 800; }
+.home-section-heading p { margin-top: 2px; color: var(--patient-muted); font-size: 13px; line-height: 24px; }
+.home-section-heading > a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: var(--patient-action); font-weight: 700; }
+.home-next .home-section-heading { margin-bottom: 0; color: #d1e5f0; font-size: 13px; }
+.home-refresh { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 50%; cursor: pointer; }
+.home-refresh:disabled { opacity: .5; cursor: wait; }
+.home-next h2 { font-size: 23px; line-height: 40px; font-weight: 800; margin-top: 12px; }
+.home-next-description { margin-top: 8px; color: #d1e5f0; font-size: 14px; line-height: 28px; max-width: 50ch; }
+.home-next-link { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 48px; margin-top: 20px; padding: 10px 16px; background: white; color: var(--patient-ink); border-radius: 12px; font-size: 14px; font-weight: 700; }
+.home-profile-progress { margin-top: 24px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / 22%); }
+.home-profile-progress > div { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; line-height: 24px; color: #d1e5f0; }
+.home-profile-progress progress { display: block; appearance: none; width: 100%; height: 4px; margin-top: 10px; border: 0; border-radius: 8px; background: #476578; overflow: hidden; }
+.home-profile-progress progress::-webkit-progress-bar { background: #476578; }
+.home-profile-progress progress::-webkit-progress-value { background: #a9dbe9; border-radius: 8px; }
+.home-profile-progress progress::-moz-progress-bar { background: #a9dbe9; border-radius: 8px; }
+.home-next-loading { padding-top: 20px; min-height: 180px; font-size: 14px; }
+.home-next-loading span { display: block; width: 75%; height: 28px; border-radius: 8px; background: #476578; margin-bottom: 20px; }
+.home-services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--patient-divider); border-radius: 20px; background: white; overflow: hidden; }
+.home-service { position: relative; display: block; padding: 20px 16px 24px; min-width: 0; }
+.home-service:nth-child(odd) { border-inline-end: 1px solid var(--patient-divider); }
+.home-service:nth-child(-n+2) { border-bottom: 1px solid var(--patient-divider); }
+.home-service > svg:first-child { color: var(--patient-action); margin-bottom: 14px; }
+.home-service h3 { font-size: 15px; line-height: 28px; font-weight: 800; }
+.home-service p { font-size: 12px; line-height: 24px; color: var(--patient-muted); padding-inline-end: 10px; }
+.home-service-arrow { position: absolute; top: 24px; inset-inline-end: 16px; color: var(--patient-muted); }
+.home-panel { background: white; border: 1px solid var(--patient-divider); border-radius: 20px; padding: 16px; }
+.home-panel .home-section-heading { margin-bottom: 4px; }
+.home-caption { color: var(--patient-muted); font-size: 12px; line-height: 25px; }
+.home-activity { display: flex; gap: 12px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid var(--patient-divider); }
+.home-activity:last-child { border: 0; }
+.home-activity-mark { display: grid; place-items: center; width: 28px; height: 28px; background: var(--patient-soft); color: var(--patient-action); border-radius: 50%; flex-shrink: 0; }
+.home-activity > div { flex: 1; min-width: 0; }
+.home-activity > svg { margin-top: 6px; color: var(--patient-muted); flex-shrink: 0; }
+.home-activity h3, .home-content-link h3 { font-size: 14px; line-height: 26px; font-weight: 700; overflow-wrap: anywhere; }
+.home-activity p { color: var(--patient-muted); font-size: 12px; line-height: 24px; margin-top: 2px; }
+.home-activity div > span { display: block; margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--patient-action); }
+.home-more { display: block; min-height: 44px; width: 100%; margin-top: 8px; color: var(--patient-action); font-size: 13px; font-weight: 700; border-radius: 12px; background: var(--patient-soft); cursor: pointer; }
+.home-list-note { margin-top: 12px; }
+.home-empty { display: grid; justify-items: start; gap: 10px; padding: 20px 0 8px; }
+.home-empty > svg { color: var(--patient-action); }
+.home-empty h3 { font-size: 16px; font-weight: 700; }
+.home-empty p { color: var(--patient-muted); font-size: 14px; line-height: 28px; }
+.home-empty a { display: inline-flex; align-items: center; min-height: 44px; color: var(--patient-action); font-weight: 700; font-size: 14px; }
+.home-followups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
+.home-followups a { display: flex; align-items: center; gap: 8px; min-height: 64px; border-bottom: 1px solid var(--patient-divider); font-size: 13px; font-weight: 600; }
+.home-followups a > svg:first-child { color: var(--patient-action); flex-shrink: 0; }
+.home-followups a > svg:last-child { margin-inline-start: auto; flex-shrink: 0; color: var(--patient-muted); }
+.home-store { display: flex; align-items: center; gap: 14px; padding: 24px 16px; border-radius: 20px; background: var(--patient-soft); }
+.home-store-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: white; color: var(--patient-action); flex-shrink: 0; }
+.home-store div { flex: 1; }
+.home-store h2 { font-size: 15px; line-height: 28px; font-weight: 800; }
+.home-store p { color: var(--patient-muted); font-size: 12px; line-height: 24px; }
+.home-content-link { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-block: 14px; border-bottom: 1px solid var(--patient-divider); }
+.home-content-link:last-child { border: 0; }
+.home-content-link h3 { flex: 1; }
+.home-content-link p { width: 100%; color: var(--patient-muted); font-size: 13px; line-height: 26px; }
+.home-page :is(.home-service, .home-followups a, .home-activity, .home-content-link):hover { background: var(--patient-canvas); }
+.home-page :is(.home-next-link, .home-icon-link):hover { background: var(--patient-soft); }
+@media (min-width: 600px) { .home-page { padding-inline: 32px; } .home-service { padding: 24px; } .home-next h2 { font-size: 28px; line-height: 46px; } }
+@media (max-width: 360px) { .home-page { padding-inline: 14px; } .home-page .home-next { padding-inline: 18px; } .home-followups { column-gap: 12px; } .home-service { padding-inline: 12px; } }
+.home-next :is(a, button):focus-visible { outline-color: #a9dbe9; }
+.home-section-heading > button:not(.home-refresh) { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: var(--patient-action); font-weight: 700; cursor: pointer; }
+button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
+
+.notification-sheet::backdrop { background: transparent; }
+
+/* Shared patient service screens: the same blue foundations as Home. */
+.service-page { padding: 20px 20px 32px; color: var(--patient-ink); font-family: var(--font-vazirmatn), sans-serif; font-size: 14px; line-height: 26px; }
+.service-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+.service-navigation > a { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; font-weight: 600; color: var(--patient-muted); }
+.service-navigation > :is(button,a:last-child:not(:first-child)) { min-height: 44px; color: var(--patient-action); font-weight: 700; }
+.service-intro { position: relative; padding-inline-end: 60px; min-height: 60px; margin-bottom: 24px; }
+.service-intro-icon { position: absolute; inset-inline-end: 0; top: 0; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; color: var(--patient-action); background: var(--patient-soft); }
+.service-intro h1 { font-size: 26px; line-height: 42px; font-weight: 800; }
+.service-intro p { color: var(--patient-muted); margin-top: 6px; max-width: 58ch; font-size: 14px; line-height: 28px; }
+.service-section { margin-top: 28px; }
+.service-section > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.service-section h2 { font-size: 17px; line-height: 30px; font-weight: 800; }
+.service-section > header p { color: var(--patient-muted); font-size: 13px; line-height: 26px; margin-top: 4px; }
+.service-section > header > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--patient-action); font-weight: 700; flex-shrink: 0; }
+.service-stack { display: grid; gap: 12px; }
+.service-card { display: block; padding: 18px; border: 1px solid var(--patient-divider); border-radius: 18px; background: white; min-width: 0; text-align: start; }
+.service-card h3 { font-size: 16px; line-height: 28px; font-weight: 700; overflow-wrap: anywhere; }
+.service-card p { font-size: 13px; line-height: 26px; color: var(--patient-muted); margin-top: 6px; }
+.service-card-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; flex-wrap: wrap; }
+.service-badge { display: inline-flex; padding: 2px 10px; border-radius: 8px; font-size: 11px; line-height: 24px; font-weight: 700; background: var(--patient-soft); color: var(--patient-ink); }
+.service-badge--success { background: #e8f4ed; color: var(--patient-success); }
+.service-text-action { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; line-height: 24px; font-weight: 700; color: var(--patient-action); }
+.service-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 18px; border: 1px solid var(--patient-action); border-radius: 12px; background: var(--patient-action); color: white; font-weight: 700; text-align: center; cursor: pointer; }
+.service-primary:disabled { opacity: .45; cursor: not-allowed; }
+.service-primary:hover:not(:disabled) { background: var(--patient-action-hover); }
+.service-empty { padding: 24px 20px; border: 1px dashed var(--patient-divider); border-radius: 18px; background: white; }
+.service-empty > svg { color: var(--patient-action); margin-bottom: 14px; }
+.service-empty h3 { font-weight: 700; font-size: 16px; line-height: 28px; }
+.service-empty p { margin-top: 6px; color: var(--patient-muted); font-size: 13px; line-height: 27px; max-width: 58ch; }
+.service-empty .service-text-action { margin-top: 8px; }
+.service-tabs { display: flex; gap: 4px; padding: 4px; margin: 24px 0; background: var(--patient-soft); border-radius: 14px; }
+.service-tabs button { flex: 1; min-width: 0; min-height: 48px; padding: 8px 4px; font-size: 13px; font-weight: 700; border-radius: 11px; color: var(--patient-muted); cursor: pointer; }
+.service-tabs button[aria-pressed="true"] { color: var(--patient-ink); background: white; box-shadow: 0 1px 4px rgb(23 60 83 / 8%); }
+.service-callout { display: flex; align-items: center; gap: 14px; padding: 18px; margin-top: 20px; background: var(--patient-soft); border-radius: 18px; }
+.service-callout > svg { color: var(--patient-action); flex-shrink: 0; }
+.service-callout > div { flex: 1; min-width: 0; }
+.service-callout h2, .service-callout h3 { font-size: 15px; font-weight: 700; line-height: 28px; }
+.service-callout p { font-size: 12px; line-height: 24px; color: var(--patient-muted); margin-top: 2px; }
+.service-callout > svg:last-child { margin-inline-start: auto; }
+.service-steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); padding: 16px 0; gap: 12px; border-block: 1px solid var(--patient-divider); margin: 20px 0 24px; list-style: none; }
+.service-steps li { display: flex; flex-direction: column; align-items: start; gap: 8px; color: var(--patient-muted); font-size: 12px; line-height: 23px; }
+.service-steps li > span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--patient-soft); color: var(--patient-ink); font-weight: 700; }
+.service-steps li[aria-current] { color: var(--patient-action); font-weight: 700; }
+.service-steps li[aria-current] > span { background: var(--patient-action); color: white; }
+.service-note { padding: 14px 16px; border-inline-start: 3px solid var(--patient-action); background: var(--patient-soft); color: var(--patient-muted); font-size: 13px; line-height: 28px; border-radius: 0 10px 10px 0; }
+.service-price { display: block; margin-top: 12px; font-family: var(--font-price); font-size: 17px; line-height: 30px; font-weight: 800; color: var(--patient-ink); }
+.service-page :is(input,textarea,select) { font-size: 16px; }
+.service-page button:not(.service-tabs button) { cursor: pointer; }
+.service-page button:disabled { cursor: not-allowed; }
+@media (min-width: 600px) { .service-page { padding: 24px 32px 40px; } .service-intro h1 { font-size: 30px; line-height: 48px; } .service-empty { padding: 28px; } }
+@media (max-width: 360px) { .service-page { padding-inline: 16px; } .service-intro h1 { font-size: 24px; } .service-tabs button { font-size: 12px; } }
+.service-disclosure > summary { min-height: 44px; padding-block: 8px; cursor: pointer; font-weight: 700; font-size: 14px; }
+.service-disclosure[open] > summary { margin-bottom: 12px; border-bottom: 1px solid var(--patient-divider); padding-bottom: 16px; }
+.service-card--selected { border-color: var(--patient-action); }
+.service-doctor-avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--patient-soft); color: var(--patient-action); font-size: 22px; font-weight: 800; flex-shrink: 0; }
+.service-offering { display: block; width: 100%; padding: 14px; border: 1px solid var(--patient-divider); border-radius: 12px; text-align: start; background: var(--patient-canvas); }
+.service-offering--selected { border-color: var(--patient-action); background: var(--patient-soft); }
+.service-treatment-progress { padding: 20px; border-radius: 18px; background: var(--patient-soft); }
+.service-treatment-progress > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.service-treatment-progress strong { font-size: 26px; line-height: 40px; font-weight: 800; }
+.service-treatment-progress span { font-size: 13px; }
+.service-treatment-progress p { margin-top: 8px; color: var(--patient-muted); font-size: 12px; }
+.service-treatment-progress progress { appearance: none; width: 100%; height: 6px; border: 0; border-radius: 8px; overflow: hidden; margin-top: 14px; background: var(--patient-divider); }
+.service-treatment-progress progress::-webkit-progress-bar { background: var(--patient-divider); }
+.service-treatment-progress progress::-webkit-progress-value { background: var(--patient-action); }
+.service-treatment-progress progress::-moz-progress-bar { background: var(--patient-action); }
+.service-treatment-item { padding-block: 12px; border-bottom: 1px solid var(--patient-divider); }
+.service-treatment-item:last-child { border: 0; }
+.service-disclosure summary > svg { display: inline; vertical-align: middle; margin-inline: 4px 8px; color: var(--patient-action); }
+.service-categories { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+.service-categories button { flex-shrink: 0; min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--patient-divider); background: white; color: var(--patient-muted); font-size: 13px; font-weight: 600; cursor: pointer; }
+.service-categories button[aria-pressed="true"] { border-color: var(--patient-action); color: white; background: var(--patient-action); }
+.service-catalog-version { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; border-bottom: 1px solid var(--patient-divider); padding: 10px 0; color: var(--patient-action); font-size: 13px; }
+.service-catalog-version:last-child { border: 0; }
+.service-detail { margin-top: 24px; }
+.service-detail > h2 { font-size: 21px; line-height: 36px; font-weight: 800; }
+.service-detail > p { font-size: 14px; line-height: 29px; }
+.service-detail :is(button, a) { min-height: 44px; }
+.service-detail > section { border-radius: 20px; }
+.service-detail label { line-height: 28px; }
+.service-detail input[type="checkbox"] { flex-shrink: 0; accent-color: var(--patient-action); }
+.service-article { margin-top: 24px; }
+.service-article-body { margin-top: 20px; padding-top: 24px; border-top: 1px solid var(--patient-divider); font-size: 16px; line-height: 34px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.home-setup-hint { display: flex; align-items: center; gap: 12px; min-height: 60px; margin-top: 12px; padding-block: 8px; color: var(--patient-action); }
+.home-setup-hint > span { flex: 1; min-width: 0; }
+.home-setup-hint strong { display: block; font-size: 13px; line-height: 24px; font-weight: 700; }
+.home-setup-hint small { display: block; font-size: 12px; line-height: 24px; color: var(--patient-muted); }
+.home-setup-hint > svg { flex-shrink: 0; }

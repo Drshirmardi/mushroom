@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, Timer } from "lucide-react";
 import { Button } from "../ui/button";
 import { StoreCollection } from "./store-collection";
-import { TomanIcon } from "./toman-icon";
 import { formatPrice, toP } from "../../lib/format";
 import { TEST_OFFERS, type TestOffer } from "../../stores/offers";
 
@@ -34,23 +33,23 @@ function useNow(): number | null {
 function OfferCard({ item }: { item: TestOffer }) {
   return <article className="store-offer" aria-label={item.title}>
     <div className="store-offer__media">
-      <img src={item.image} alt="" width={114} height={114} loading="lazy" draggable={false} />
+      <img src={item.image} alt="" width={300} height={300} loading="lazy" draggable={false} />
+      <span className="store-discount">{toP(item.discount)}٪</span>
     </div>
     <p className="store-offer__title">{item.title}</p>
     <div className="store-offer__price">
       <span className="store-offer__row">
-        <span className="store-discount">{toP(item.discount)}٪</span>
-        <s>{formatPrice(item.oldPrice)}</s>
+        <s>{formatPrice(item.oldPrice)} <span>تومان</span></s>
       </span>
       <span className="store-offer__row">
         <b>{formatPrice(item.price)}</b>
-        <TomanIcon />
+        <span className="store-offer__currency">تومان</span>
       </span>
     </div>
   </article>;
 }
 
-/** Red daily-offers panel: live midnight countdown + test offer rail. */
+/** Daily-offers panel: live midnight countdown + test offer rail. */
 export function IncredibleOffers({ onViewAll }: { onViewAll: () => void }) {
   const now = useNow();
   const remaining = Math.max(0, now === null ? 0 : msToMidnight(now));

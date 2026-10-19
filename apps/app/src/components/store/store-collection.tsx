@@ -43,6 +43,7 @@ export function StoreCollection({ title, id, onViewAll, railClassName, header, c
   const move = (forward: boolean) => {
     const element = rail.current;
     if (!element) return;
+    cancelInertia();
     const direction = getComputedStyle(element).direction === "rtl" ? -1 : 1;
     element.scrollBy({ left: direction * (forward ? 1 : -1) * element.clientWidth * .8, behavior: "auto" });
   };
@@ -103,9 +104,21 @@ export function StoreCollection({ title, id, onViewAll, railClassName, header, c
       <h2 id={id}>{title}</h2>
       {onViewAll && <Button variant="ghost" onClick={onViewAll} aria-label={`مشاهده همهٔ ${title}`}>مشاهده همه</Button>}
     </header>}
-    <div ref={rail} id={`${id}-rail`} className={`store-product-rail${dragging ? " store-product-rail--dragging" : ""}${railClassName ? ` ${railClassName}` : ""}`}
+    <div className="store-collection__viewport">
+      <div ref={rail} id={`${id}-rail`} className={`store-product-rail${dragging ? " store-product-rail--dragging" : ""}${railClassName ? ` ${railClassName}` : ""}`}
       onScroll={updateEdges} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag} onPointerLeave={endDrag} onWheel={cancelInertia}
       onDragStart={(event) => event.preventDefault()} onClickCapture={onClickCapture}
       tabIndex={0} role="region" aria-labelledby={id}>{children}</div>
+      {(edges.previous || edges.next) && <>
+        <Button variant="ghost" className="store-collection__arrow store-collection__arrow--previous"
+          aria-label={`محصولات قبلیِ ${title}`} aria-controls={`${id}-rail`} disabled={!edges.previous} onClick={() => move(false)}>
+          <ChevronRight size={22} aria-hidden="true" />
+        </Button>
+        <Button variant="ghost" className="store-collection__arrow store-collection__arrow--next"
+          aria-label={`محصولات بعدیِ ${title}`} aria-controls={`${id}-rail`} disabled={!edges.next} onClick={() => move(true)}>
+          <ChevronLeft size={22} aria-hidden="true" />
+        </Button>
+      </>}
+    </div>
   </section>;
 }
