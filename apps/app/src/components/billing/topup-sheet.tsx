@@ -46,6 +46,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
     setPendingIntentId(null);
     try {
       const intent = await createTopupIntent(authentication.accessToken, validation.toman, intentKey.current.key);
+      setPendingIntentId(intent.id);
       const attempt = await createGatewayAttempt(authentication.accessToken, intent.id, crypto.randomUUID());
       if (attempt.redirectUrl) {
         window.location.assign(attempt.redirectUrl);

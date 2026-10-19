@@ -20,6 +20,9 @@ const retryHref = (intent: BillingIntent): string | null => {
       return intent.orderId ? `/store/payment?orderId=${encodeURIComponent(intent.orderId)}` : null;
     case "APPOINTMENT":
       return `/appointments/book/pay?intentId=${encodeURIComponent(intent.id)}`;
+    case "ASSESSMENT":
+    case "PROGRAM":
+      return `/profile/wallet/pay?intentId=${encodeURIComponent(intent.id)}`;
     default:
       return null;
   }
@@ -62,6 +65,10 @@ function PaymentResult() {
       ? { href: `/store/order-tracking?orderId=${encodeURIComponent(intent.orderId)}`, label: "پیگیری سفارش" }
       : intent.purpose === "APPOINTMENT"
         ? { href: "/appointments", label: "مشاهدهٔ نوبت‌ها" }
+        : intent.purpose === "ASSESSMENT"
+          ? { href: intent.assessmentPurchaseId ? `/assessment/purchases/${encodeURIComponent(intent.assessmentPurchaseId)}` : "/assessment/couples", label: "پیگیری ارزیابی و دسترسی" }
+        : intent.purpose === "PROGRAM"
+          ? { href: intent.programPurchaseId ? `/programs/purchases/${encodeURIComponent(intent.programPurchaseId)}` : "/programs", label: "مشاهدهٔ برنامه و دسترسی" }
         : { href: "/profile/wallet", label: "بازگشت به کیف پول" }
     : { href: "/profile/wallet", label: "بازگشت به کیف پول" };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { CreditCard, Landmark, RotateCcw, Wallet } from "lucide-react";
@@ -37,6 +38,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
   const wallet = intent.methods?.find((method) => method.code === "WALLET") ?? null;
   const gateway = intent.methods?.find((method) => method.code === "GATEWAY") ?? null;
   const amount = BigInt(intent.amountRial);
+  const isTopup = intent.purpose === "TOPUP";
   const balance = wallet?.balanceRial ? BigInt(wallet.balanceRial) : null;
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
@@ -77,8 +79,14 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
 
   return (
     <div className="space-y-3">
+      {isTopup && <aside className="rounded-2xl border border-border bg-muted p-4 text-sm leading-7" aria-label="دربارهٔ افزایش موجودی">
+        <p>این درخواست برای اضافه‌کردن {formatRial(amount)} تومان به کیف پول شماست؛ هزینهٔ خرید، نوبت یا آزمون نیست.</p>
+        <p className="mt-2 text-muted-foreground">افزایش موجودی از درگاه بانکی انجام می‌شود و از موجودی همین کیف پول قابل پرداخت نیست. برای استفاده از موجودی فعلی، وارد پرداخت سفارش یا خدمت موردنظرتان شوید و «پرداخت از کیف پول» را انتخاب کنید.</p>
+        <Link href="/profile/wallet" className="mt-2 inline-flex min-h-11 items-center font-bold text-primary">مشاهدهٔ موجودی و گردش کیف پول</Link>
+        <Link href="/" className="flex min-h-11 items-center font-bold text-primary">بازگشت به خانه و انتخاب خدمت</Link>
+      </aside>}
       <div className="wallet-amount-total">
-        <span>مبلغ قابل پرداخت</span>
+        <span>{isTopup ? "مبلغ افزایش موجودی" : "مبلغ قابل پرداخت"}</span>
         <strong>{formatRial(amount)} تومان</strong>
       </div>
 
@@ -113,7 +121,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
             <span className="wallet-method__body">
               <span className="wallet-method__title">پرداخت بانکی (درگاه)</span>
               <span className="wallet-method__hint">
-                {gateway.available ? "انتقال به درگاه پرداخت امن." : "درگاه بانکی در حال حاضر برای این مورد در دسترس نیست."}
+                {gateway.available ? "انتقال به درگاه پرداخت امن." : isTopup ? "افزایش موجودی فعلاً ممکن نیست؛ درگاه بانکی برای این درخواست در دسترس نیست." : "درگاه بانکی در حال حاضر برای این مورد در دسترس نیست."}
               </span>
             </span>
             {busy === "gateway" && <RotateCcw size={18} className="animate-spin" aria-hidden="true" />}
@@ -143,7 +151,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
         onClick={() => void cancel()}
         className="w-full rounded-2xl border border-border bg-white py-3 text-sm font-bold text-muted-foreground disabled:opacity-50"
       >
-        {busy === "cancel" ? "در حال لغو…" : "لغو این پرداخت"}
+        {busy === "cancel" ? "در حال لغو…" : isTopup ? "لغو درخواست شارژ" : "لغو این پرداخت"}
       </button>
 
       <AnimatePresence>

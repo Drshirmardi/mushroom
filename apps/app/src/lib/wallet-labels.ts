@@ -9,9 +9,12 @@ const PURPOSE_LABELS: Record<string, string> = {
   TOPUP: "شارژ کیف پول",
   ORDER: "پرداخت سفارش",
   APPOINTMENT: "پرداخت نوبت",
+  ASSESSMENT: "پرداخت ارزیابی",
+  PROGRAM: "پرداخت برنامه",
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  UNPAID: "پرداخت‌نشده",
   PENDING: "در انتظار پرداخت",
   PAID: "پرداخت‌شده",
   EXPIRED: "منقضی‌شده",
