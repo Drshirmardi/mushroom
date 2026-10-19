@@ -41,7 +41,7 @@ const cardProps = { product, saved: false, inCart: false, busy: false, onFavorit
 describe("Store ProductCard presentation contract", () => {
   it("preserves product destination, real price value and imagery source", () => {
     const html = renderToStaticMarkup(createElement(ProductCard, cardProps));
-    expect(html.match(/href="\/store\/products\/synthetic-product"/g)).toHaveLength(2);
+    expect(html.match(/href="\/store\/products\/synthetic-product\?sku=synthetic-sku"/g)).toHaveLength(2);
     expect(html).toContain('dir="ltr"'); expect(html).toContain("۱۲۵٬۰۰۰");
     expect(html).not.toContain("افزودن به سبد");
   });
@@ -79,7 +79,7 @@ describe("Store shared presentation controls", () => {
     const html = renderToStaticMarkup(createElement(ProductPrice, { amount: 125000 }));
     expect(html).toContain('<bdi dir="ltr">۱۲۵٬۰۰۰</bdi>');
     expect(html).toContain("تومان");
-    expect(html).toContain("<svg");
+    expect(html.match(/تومان/g)).toHaveLength(1);
   });
   it("disables quantity controls at the existing limits and while pending", () => {
     const props = { label: "آزمایشی", onChange: () => {} };

@@ -10,6 +10,7 @@ export type CommerceShippingOption = components["schemas"]["CommerceShippingOpti
 export type CommerceOrder = components["schemas"]["CommerceOrderDto"];
 export type CommerceReceipt = components["schemas"]["PatientCommerceReceiptDto"];
 export type PaymentAttempt = components["schemas"]["PaymentAttemptDto"];
+export type CommerceRecommendations = components["schemas"]["PatientCommerceRecommendationsDto"];
 
 export class CommerceRequestError extends Error {
   constructor(public readonly status: number, public readonly code: string | null = null) {
@@ -36,6 +37,9 @@ export const listCommerceProducts = (query?: { page?: number; pageSize?: number;
 
 export const getCommerceProduct = (productId: string) =>
   expectData<CommerceProduct>(apiClient.GET("/v1/commerce/products/{productId}", { params: { path: { productId } } }));
+
+export const getCommerceRecommendations = (accessToken: string) =>
+  expectData<CommerceRecommendations>(apiClient.GET("/v1/patients/me/commerce/recommendations", { headers: authorization(accessToken), cache: "no-store" }));
 
 export const getCommerceCart = (accessToken: string) =>
   expectData<CommerceCart>(apiClient.GET("/v1/patients/me/cart", { headers: authorization(accessToken) }));
@@ -86,6 +90,8 @@ export function commerceErrorMessage(error: unknown) {
   if (error.code === "COMMERCE_SKU_NOT_FOUND") return "یکی از کالاهای سبد دیگر در دسترس نیست؛ سبد را بررسی کنید.";
   if (error.code === "SHIPPING_METHOD_UNAVAILABLE") return "روش ارسال انتخاب‌شده در دسترس نیست.";
   if (error.code === "IDEMPOTENCY_KEY_REUSED") return "این درخواست با اطلاعات دیگری قبلاً ثبت شده است؛ صفحه را تازه‌سازی کنید.";
+  if (error.code === "COMMERCE_DISCOUNT_NOT_FOUND" || error.code === "COMMERCE_DISCOUNT_INPUT_INVALID") return "کد تخفیف معتبر نیست؛ کد را بررسی کنید یا بدون کد ادامه دهید.";
+  if (error.code?.startsWith("COMMERCE_DISCOUNT_")) return "این کد تخفیف در حال حاضر برای این سفارش قابل استفاده نیست؛ کد را حذف کنید یا کد دیگری وارد کنید.";
   if (error.status === 401) return "نشست شما منقضی شده است؛ دوباره وارد حساب شوید.";
   if (error.status === 403) return "اجازهٔ انجام این عملیات فروشگاه را ندارید.";
   if (error.status === 404) return "این محصول دیگر در دسترس نیست.";

@@ -20,6 +20,7 @@
     "start:dev": "node scripts/dev.mjs",
     "test": "tsc -p tsconfig.test.json --noEmit && vitest run test/reminders.integration.spec.ts --no-file-parallelism && vitest run --no-file-parallelism --exclude test/reminders.integration.spec.ts --exclude test/chat-capacity.load.spec.ts --exclude test/phase-12-release-capacity.load.spec.ts --exclude test/phase-12-performance-tuning.integration.spec.ts",
     "test:capacity": "tsc -p tsconfig.test.json --noEmit && vitest run test/chat-capacity.load.spec.ts --no-file-parallelism",
+    "test:commerce-mezaj": "node test/commerce-mezaj-verify.mjs",
     "test:phase-12-capacity": "tsc -p tsconfig.test.json --noEmit && vitest run test/phase-12-release-capacity.load.spec.ts --no-file-parallelism",
     "test:phase-12-performance": "tsc -p tsconfig.test.json --noEmit && vitest run test/phase-12-performance-tuning.integration.spec.ts --no-file-parallelism",
     "typecheck": "tsc --noEmit"

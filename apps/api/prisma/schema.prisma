@@ -986,6 +986,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  mezajCollections CommerceMezajCollection[]
   customProgramPlanVersions CustomProgramPlanVersion[]
   customProgramRequests CustomProgramRequest[]
   customProgramCareAuthorizations CustomProgramCareAuthorization[]
@@ -1156,7 +1157,50 @@ model CommerceCategory {
   @@map("commerce_categories")
 }
 
+model CommerceMezajCollection {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  primary String @map("primary_mezaj") @db.VarChar(16)
+  secondary String @map("secondary_mezaj") @db.VarChar(16)
+  revision Int @default(1)
+  enabled Boolean @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  items CommerceMezajCollectionItem[]
+  sources CommerceMezajCollectionSource[]
+  @@unique([clinicId, primary, secondary], map: "commerce_mezaj_collections_pair_key")
+  @@unique([id, clinicId], map: "commerce_mezaj_collections_id_clinic_key")
+  @@map("commerce_mezaj_collections")
+}
+
+model CommerceMezajCollectionItem {
+  collectionId String @map("collection_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  productId String @map("product_id") @db.Uuid
+  position Int
+  collection CommerceMezajCollection @relation(fields: [collectionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  product CommerceProduct @relation(fields: [productId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  @@id([collectionId, productId])
+  @@unique([collectionId, position])
+  @@index([productId, clinicId])
+  @@map("commerce_mezaj_collection_items")
+}
+
+model CommerceMezajCollectionSource {
+  collectionId String @map("collection_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  assessmentVersionId String @map("assessment_version_id") @db.Uuid
+  resultBandId String @map("result_band_id") @db.VarChar(100)
+  sourceContentHash String @map("source_content_hash") @db.VarChar(64)
+  collection CommerceMezajCollection @relation(fields: [collectionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  assessmentVersion AssessmentVersion @relation(fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  @@id([assessmentVersionId, resultBandId])
+  @@index([collectionId, clinicId])
+  @@map("commerce_mezaj_collection_sources")
+}
+
 model CommerceProduct {
+  mezajCollectionItems CommerceMezajCollectionItem[]
   id          String                @id @default(uuid()) @db.Uuid
   clinicId    String                @map("clinic_id") @db.Uuid
   categoryId  String                @map("category_id") @db.Uuid
@@ -1187,6 +1231,7 @@ model CommerceProduct {
   image       CommerceProductImage?
 
   @@unique([clinicId, slug], map: "commerce_products_clinic_slug_key")
+  @@unique([id, clinicId], map: "commerce_products_id_clinic_key")
   @@index([clinicId, status, id], map: "commerce_products_clinic_status_id_idx")
   @@map("commerce_products")
 }
@@ -2231,6 +2276,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  mezajCollectionSources CommerceMezajCollectionSource[]
   coupleAssessmentSessions CoupleAssessmentSession[]
   coupleResultProtocols CoupleResultProtocolVersion[]
   assessmentAccessGrants AssessmentAccessGrant[]

@@ -11,11 +11,11 @@ import { commerceErrorMessage, getCommerceCart, getCommerceWishlist, updateComme
 import { useCartStore } from "@/stores/cart";
 import { useWishlistStore } from "@/stores/wishlist";
 import { Button } from "@/components/ui/button";
-import { EMPTY_WISHLIST_ART } from "@/stores/empty-art";
+import { Heart } from "lucide-react";
 import { ProductCard } from "@/components/store/product-card";
 import { StoreHeader, StoreState } from "@/components/store/store-ui";
 
-const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity })));
+const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, variantTitle: item.sku.title, price: item.sku.currentPriceToman, tax: item.sku.currentTaxToman, qty: item.quantity })));
 const cacheWishlist = (wishlist: CommerceWishlist) => useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
 
 export default function WishlistPage() {
@@ -31,7 +31,7 @@ export default function WishlistPage() {
     {error && <StoreState title="درخواست انجام نشد" description={error} error action="تلاش دوباره" onAction={() => void load()} />}
     <p className="store-inline-status" role="status">{feedback}</p>
     {wishlist?.items.length === 0 && <div className="store-empty">
-      <img src={EMPTY_WISHLIST_ART} alt="" width={120} height={120} loading="lazy" draggable={false} />
+      <Heart size={44} strokeWidth={1.25} className="text-primary" aria-hidden="true" />
       <h2>لیست علاقه‌مندی‌ها خالی است!</h2>
       <p>به فروشگاه سر بزنید و کالاهای موردعلاقه‌تان را ذخیره کنید.</p>
       <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>

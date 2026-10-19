@@ -1,8 +1,10 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ReceiptText } from "lucide-react";
+import { OrderSummary } from "@/components/store/order-summary";
+import { orderStatusLabel } from "@/lib/order-labels";
 import { PageHeader } from "@/components/shared/page-header";
 import { Spinner } from "@/components/shared/skeletons";
 import { PaymentChooser } from "@/components/billing/payment-chooser";
@@ -23,10 +25,16 @@ function PaymentScreen() {
   const [order, setOrder] = useState<CommerceOrder | null>(null);
   const [state, setState] = useState<State>("loading");
   const [error, setError] = useState<string | null>(null);
+  const generation = useRef(0);
+  const paymentRequest = useRef<{ orderId: string; key: string; intentId?: string } | null>(null);
 
   const load = useCallback(async () => {
+    const request = ++generation.current;
+    const current = () => request === generation.current;
     setState("loading");
     setError(null);
+    setOrder(null);
+    setIntent(null);
     try {
       if (!orderId && !initialIntentId) {
         setError("شناسهٔ سفارش معتبر نیست.");
@@ -36,6 +44,7 @@ function PaymentScreen() {
 
       if (orderId) {
         const nextOrder = await getCommerceOrder(authentication.accessToken, orderId);
+        if (!current()) return;
         setOrder(nextOrder);
         if (nextOrder.status !== "PENDING_PAYMENT") {
           setState("notpayable");
@@ -45,10 +54,28 @@ function PaymentScreen() {
 
       let intentId = initialIntentId;
       if (!intentId) {
-        const created = await createOrderIntent(authentication.accessToken, orderId as string, crypto.randomUUID());
-        intentId = created.id;
+        if (paymentRequest.current?.orderId !== orderId) paymentRequest.current = { orderId: orderId as string, key: crypto.randomUUID() };
+        const payment = paymentRequest.current;
+        if (!payment.intentId) {
+          const created = await createOrderIntent(authentication.accessToken, payment.orderId, payment.key);
+          if (!current()) return;
+          payment.intentId = created.id;
+        }
+        intentId = payment.intentId;
       }
       const nextIntent = await getBillingIntent(authentication.accessToken, intentId);
+      if (!current()) return;
+      if (nextIntent.purpose !== "ORDER" || !nextIntent.orderId || (orderId && nextIntent.orderId !== orderId)) {
+        setError("این پرداخت مربوط به این سفارش نیست؛ از بخش سفارش‌های من ادامه دهید.");
+        setState("error");
+        return;
+      }
+      if (!orderId) {
+        const nextOrder = await getCommerceOrder(authentication.accessToken, nextIntent.orderId);
+        if (!current()) return;
+        setOrder(nextOrder);
+        if (nextOrder.status !== "PENDING_PAYMENT" && nextIntent.status !== "PAID") { setState("notpayable"); return; }
+      }
       setIntent(nextIntent);
       if (nextIntent.status === "PAID") {
         const paidOrderId = nextIntent.orderId ?? orderId;
@@ -61,6 +88,7 @@ function PaymentScreen() {
       }
       setState(nextIntent.status === "PENDING" ? "ready" : "notpayable");
     } catch (cause) {
+      if (!current()) return;
       setError(walletErrorMessage(cause));
       setState("error");
     }
@@ -68,6 +96,7 @@ function PaymentScreen() {
 
   useEffect(() => {
     void load();
+    return () => { generation.current++; };
   }, [load]);
 
   const resolvedOrderId = order?.id ?? intent?.orderId ?? orderId;
@@ -92,7 +121,7 @@ function PaymentScreen() {
         {state === "notpayable" && (
           <div className="space-y-3">
             <div role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">
-              {order ? `این سفارش دیگر قابل پرداخت نیست (وضعیت: ${toP(order.orderNumber)} · ${order.status}).` : "این پرداخت دیگر قابل ادامه نیست."}
+              {order ? `این سفارش دیگر قابل پرداخت نیست (وضعیت: ${toP(order.orderNumber)} · ${orderStatusLabel(order.status)}).` : "این پرداخت دیگر قابل ادامه نیست."}
             </div>
             {resolvedOrderId && (
               <button
@@ -111,10 +140,11 @@ function PaymentScreen() {
             {order && (
               <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
                 <p className="text-sm text-muted-foreground">مبلغ سفارش</p>
-                <p className="mt-1 text-2xl font-black text-primary">{formatPrice(Number(order.totalAmountToman))} تومان</p>
+                <p className="mt-1 font-iransans-fanum text-2xl font-normal text-primary">{formatPrice(BigInt(order.totalAmountToman))} تومان</p>
                 <p className="mt-2 text-xs text-muted-foreground">شماره سفارش {toP(order.orderNumber)}</p>
               </div>
             )}
+            {order && <OrderSummary order={order} />}
             <PaymentChooser
               accessToken={authentication.accessToken}
               intent={intent}

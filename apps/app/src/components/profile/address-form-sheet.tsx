@@ -3,6 +3,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { User } from "lucide-react";
 import { BottomSheet } from "../shared/bottom-sheet";
+import { normalizeDigits } from "../../lib/wallet-money";
 import { toP } from "../../lib/format";
 import { loadSelfProfile } from "../../lib/onboarding/patient-onboarding";
 import { commerceErrorMessage, createCommerceAddress, type CommerceAddress } from "../../lib/commerce-catalog-api";
@@ -19,15 +20,15 @@ const FIELDS: { key: DraftKey; label: string; required?: boolean; ltr?: boolean;
   { key: "label", label: "برچسب آدرس", required: true, autoComplete: "off", placeholder: "مثلاً خانه یا محل کار" },
   { key: "recipientName", label: "نام گیرنده", required: true, autoComplete: "name", placeholder: "مثلاً سامان رحیمی" },
   { key: "phone", label: "شماره تماس", required: true, ltr: true, inputMode: "tel", autoComplete: "tel", placeholder: "09123456789" },
-  { key: "province", label: "استان", required: true, placeholder: "مثلاً تهران" },
-  { key: "city", label: "شهر", required: true, placeholder: "مثلاً تهران" },
+  { key: "province", label: "استان", required: true, autoComplete: "address-level1", placeholder: "مثلاً تهران" },
+  { key: "city", label: "شهر", required: true, autoComplete: "address-level2", placeholder: "مثلاً تهران" },
   { key: "line1", label: "نشانی کامل", required: true, autoComplete: "street-address", placeholder: "خیابان، کوچه، پلاک…" },
   { key: "postalCode", label: "کد پستی (اختیاری)", inputMode: "numeric", autoComplete: "postal-code", placeholder: "۱۰ رقمی" },
 ];
 
 /** Iranian mobile: 09xxxxxxxxx or +989xxxxxxxxx. Empty is handled by required. */
 function validatePhone(value: string): string | null {
-  const trimmed = value.trim();
+  const trimmed = normalizeDigits(value).trim();
   if (trimmed === "") return null;
   return /^(0|\+98)9\d{9}$/u.test(trimmed) ? null : "شماره موبایل معتبر نیست؛ با ۰ یا ‎+98 شروع شود";
 }
@@ -46,7 +47,6 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
   const dirty = Object.values(draft).some((value) => value.trim() !== "");
   const complete = [draft.label, draft.recipientName, draft.phone, draft.province, draft.city, draft.line1].every((value) => value.trim().length > 0);
   const requestClose = () => { if (dirty && !confirmingClose) setConfirmingClose(true); else onClose(); };
-  useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") requestClose(); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); });
   const set = (key: DraftKey) => (event: ChangeEvent<HTMLInputElement>) => {
     const next = event.target.value;
     setDraft((current) => ({ ...current, [key]: next }));
@@ -59,9 +59,9 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
     setSaving(true); setError(null);
     try {
       const created = await createCommerceAddress(accessToken, {
-        label: draft.label.trim(), recipientName: draft.recipientName.trim(), phone: draft.phone.trim(),
+        label: draft.label.trim(), recipientName: draft.recipientName.trim(), phone: normalizeDigits(draft.phone).trim(),
         province: draft.province.trim(), city: draft.city.trim(), line1: draft.line1.trim(),
-        ...(draft.postalCode.trim() ? { postalCode: draft.postalCode.trim() } : {}),
+        ...(draft.postalCode.trim() ? { postalCode: normalizeDigits(draft.postalCode).trim() } : {}),
       });
       onCreated(created);
     } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setSaving(false); }
@@ -96,7 +96,7 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
           {field.key === "phone" && phoneError && <p id="profile-address-phone-error" role="alert" className="mt-1.5 text-[11px] font-bold text-red-600">{phoneError}</p>}
         </div>)}
         {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        <button type="submit" disabled={!complete || saving} className="w-full rounded-2xl bg-blue-700 py-4 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره آدرس"}</button>
+        <button type="submit" disabled={saving} className="w-full rounded-2xl bg-blue-700 py-4 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره آدرس"}</button>
       </form>
     )}
   </BottomSheet>;

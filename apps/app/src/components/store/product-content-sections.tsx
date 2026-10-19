@@ -31,7 +31,7 @@ function SectionBody({ id, value }: { id: string; value: string }) {
  * unavailable fields render nothing — never placeholders, ratings, sellers
  * or approval claims. Plain text is rendered as plain text (React-escaped).
  */
-export function ProductContentSections({ product }: { product: CommerceProduct }) {
+export function ProductContentSections({ product, skuCode: selectedSkuCode }: { product: CommerceProduct; skuCode?: string }) {
   const content = product.content ?? null;
   const brand = text(content?.brand) ?? text(product.brand);
   const manufacturer = text(content?.manufacturer);
@@ -41,7 +41,7 @@ export function ProductContentSections({ product }: { product: CommerceProduct }
   const usage = text(content?.usageInstructions);
   const warnings = text(content?.warnings);
   const contraindications = text(content?.contraindications);
-  const skuCode = text(product.skus[0]?.code);
+  const skuCode = text(selectedSkuCode) ?? text(product.skus[0]?.code);
   const specs = [
     brand ? { key: "brand", label: "برند", value: brand, ltr: false, icon: Award } : null,
     manufacturer ? { key: "manufacturer", label: "تولیدکننده", value: manufacturer, ltr: false, icon: Factory } : null,

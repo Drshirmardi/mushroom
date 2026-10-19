@@ -3,9 +3,10 @@ import { persist } from "zustand/middleware";
 
 export type RecentProduct = {
   productId: string;
+  skuId?: string;
   title: string;
   /** Unit price snapshot in toman at view time. */
-  price: number;
+  price: number | string;
   /** Resolved API image URL snapshot (string only; never binary). Absent for legacy entries. */
   imageUrl?: string | null;
   viewedAt: number;

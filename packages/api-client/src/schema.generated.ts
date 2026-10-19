@@ -4524,6 +4524,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/commerce/mezaj/collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all sixteen ordered Mezaj product collections */
+        get: operations["adminCommerceMezajCollectionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/mezaj/assessment-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published Mezaj source versions and their exact bands without patient data */
+        get: operations["adminCommerceMezajVersionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/mezaj/collections/{primary}/{secondary}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace ordered product membership and exact band links using a revision precondition */
+        put: operations["adminCommerceMezajCollectionSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get self-only products for the latest accessible exact ordered Mezaj result; never inferred from title or score */
+        get: operations["patientCommerceRecommendationsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/commerce/products/{productId}/content": {
         parameters: {
             query?: never;
@@ -9413,6 +9481,115 @@ export interface components {
         PublicBannerListDto: {
             items: components["schemas"]["PublicBannerDto"][];
         };
+        CommerceMezajProductRefDto: {
+            id: string;
+            title: string;
+        };
+        CommerceMezajSourceRefDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            resultBandId: string;
+            versionTitle: string;
+            versionNumber: number;
+            bandTitle: string;
+        };
+        CommerceMezajCollectionDto: {
+            /** @enum {string} */
+            primary: "damavi" | "safravi" | "balgami" | "sodavi";
+            /** @enum {string} */
+            secondary: "damavi" | "safravi" | "balgami" | "sodavi";
+            revision: number;
+            enabled: boolean;
+            products: components["schemas"]["CommerceMezajProductRefDto"][];
+            sources: components["schemas"]["CommerceMezajSourceRefDto"][];
+        };
+        CommerceMezajBandDto: {
+            id: string;
+            title: string;
+        };
+        CommerceMezajVersionDto: {
+            id: string;
+            title: string;
+            versionNumber: number;
+            locale: string;
+            status: string;
+            resultBands: components["schemas"]["CommerceMezajBandDto"][];
+        };
+        CommerceMezajVersionPageDto: {
+            items: components["schemas"]["CommerceMezajVersionDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CommerceMezajSourceDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            resultBandId: string;
+        };
+        SaveCommerceMezajDto: {
+            expectedRevision: number;
+            enabled: boolean;
+            productIds: string[];
+            sources: components["schemas"]["CommerceMezajSourceDto"][];
+        };
+        ProductImageDto: {
+            /** Format: uuid */
+            id: string;
+            contentPath: string;
+            /** @enum {string} */
+            mimeType: "image/webp";
+            sizeBytes: number;
+            width: number;
+            height: number;
+            altText: string;
+        };
+        PublicProductContentDto: {
+            brand: string | null;
+            manufacturer: string | null;
+            shortDescription: string | null;
+            description: string | null;
+            ingredients: string | null;
+            usageInstructions: string | null;
+            warnings: string | null;
+            contraindications: string | null;
+            contentRevision: number;
+        };
+        PatientCommerceCategoryDto: {
+            id: string;
+            name: string;
+            slug: string;
+        };
+        PatientCommerceSkuDto: {
+            id: string;
+            code: string;
+            title?: string | null;
+            /** @description Integer TOMAN. */
+            currentPriceToman: string;
+            /** @description Integer TOMAN. */
+            currentTaxToman: string;
+        };
+        PatientCommerceProductDto: {
+            image?: components["schemas"]["ProductImageDto"] | null;
+            id: string;
+            title: string;
+            slug: string;
+            description?: string | null;
+            brand?: string | null;
+            shortDescription?: string | null;
+            /** @description Approved content embedded on detail only; no provenance or approver identity. */
+            content?: components["schemas"]["PublicProductContentDto"] | null;
+            category: components["schemas"]["PatientCommerceCategoryDto"];
+            skus: components["schemas"]["PatientCommerceSkuDto"][];
+        };
+        PatientCommerceRecommendationsDto: {
+            /** @enum {string} */
+            status: "READY" | "NO_RESULT" | "RESULT_UNSUPPORTED" | "REVIEW_REQUIRED" | "NOT_CONFIGURED" | "NO_PRODUCTS";
+            /** @enum {string|null} */
+            primary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            /** @enum {string|null} */
+            secondary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            items: components["schemas"]["PatientCommerceProductDto"][];
+        };
         ProductContentProvenanceDto: {
             /** @enum {string} */
             sourceKind: "MANUFACTURER_DOCUMENT" | "PACKAGING" | "SUPPLIER_DOCUMENT" | "OTHER_DOCUMENT";
@@ -9454,17 +9631,6 @@ export interface components {
         };
         ApproveProductContentDto: {
             expectedContentRevision: number;
-        };
-        ProductImageDto: {
-            /** Format: uuid */
-            id: string;
-            contentPath: string;
-            /** @enum {string} */
-            mimeType: "image/webp";
-            sizeBytes: number;
-            width: number;
-            height: number;
-            altText: string;
         };
         CommerceCategoryResponseDto: {
             id: string;
@@ -9559,44 +9725,6 @@ export interface components {
             skuId: string;
             onHandQuantity: number;
             reservedQuantity: number;
-        };
-        PublicProductContentDto: {
-            brand: string | null;
-            manufacturer: string | null;
-            shortDescription: string | null;
-            description: string | null;
-            ingredients: string | null;
-            usageInstructions: string | null;
-            warnings: string | null;
-            contraindications: string | null;
-            contentRevision: number;
-        };
-        PatientCommerceCategoryDto: {
-            id: string;
-            name: string;
-            slug: string;
-        };
-        PatientCommerceSkuDto: {
-            id: string;
-            code: string;
-            title?: string | null;
-            /** @description Integer TOMAN. */
-            currentPriceToman: string;
-            /** @description Integer TOMAN. */
-            currentTaxToman: string;
-        };
-        PatientCommerceProductDto: {
-            image?: components["schemas"]["ProductImageDto"] | null;
-            id: string;
-            title: string;
-            slug: string;
-            description?: string | null;
-            brand?: string | null;
-            shortDescription?: string | null;
-            /** @description Approved content embedded on detail only; no provenance or approver identity. */
-            content?: components["schemas"]["PublicProductContentDto"] | null;
-            category: components["schemas"]["PatientCommerceCategoryDto"];
-            skus: components["schemas"]["PatientCommerceSkuDto"][];
         };
         PatientCommerceProductPageDto: {
             items: components["schemas"]["PatientCommerceProductDto"][];
@@ -24333,6 +24461,91 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminCommerceMezajCollectionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceMezajCollectionDto"][];
+                };
+            };
+        };
+    };
+    adminCommerceMezajVersionsList: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceMezajVersionPageDto"];
+                };
+            };
+        };
+    };
+    adminCommerceMezajCollectionSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                primary: "damavi" | "safravi" | "balgami" | "sodavi";
+                secondary: "damavi" | "safravi" | "balgami" | "sodavi";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCommerceMezajDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceMezajCollectionDto"];
+                };
+            };
+        };
+    };
+    patientCommerceRecommendationsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceRecommendationsDto"];
+                };
             };
         };
     };

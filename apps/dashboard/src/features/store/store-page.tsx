@@ -6,6 +6,7 @@ import { PackagePlus, Plus, RefreshCw, ShieldAlert } from "lucide-react";
 
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import ProductContentEditor from "./product-content-editor";
+import MezajCollectionsEditor from "./mezaj-collections-editor";
 import { ProductCatalog } from "./product-catalog";
 import { catalogInteger } from "./catalog-view";
 import { apiClient } from "@/lib/api";
@@ -32,10 +33,11 @@ function MutationNotice({ state }: { state: MutationState }) {
 }
 
 function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage }: { data: CommerceCatalogData; accessToken: string; refresh: () => Promise<void>; reloading: boolean; onBusy: (value: boolean) => void; onPage: (page: number) => void }) {
-  const [tab, setTab] = useState<"products" | "categories" | "inventory" | "shipping">("products");
+  const [tab, setTab] = useState<"products" | "categories" | "inventory" | "shipping" | "mezaj">("products");
   const [mutation, setMutation] = useState<MutationState>({ status: "idle" });
+  const [mezajBusy, setMezajBusy] = useState(false);
   const saving = useRef(false);
-  const busy = mutation.status === "saving" || reloading;
+  const busy = mutation.status === "saving" || reloading || mezajBusy;
   const [creating, setCreating] = useState(false);
   const [creatingSku, setCreatingSku] = useState(false);
   const [categoryName, setCategoryName] = useState(""); const [categorySlug, setCategorySlug] = useState("");
@@ -66,8 +68,9 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
     {imageProduct && <ProductImageEditor key={imageProduct.id} product={imageProduct} onClose={() => setImageProduct(null)} onChanged={refresh} />}
     {contentProduct && <ProductContentEditor key={contentProduct.id} product={contentProduct} accessToken={accessToken} onClose={() => setContentProduct(null)} onChanged={refresh} />}
     <div className="flex flex-wrap gap-2 border-b border-border pb-3" role="group" aria-label="بخش‌های مدیریت فروشگاه">
-      {([["products", "محصولات"], ["categories", "دسته‌بندی‌ها"], ["inventory", "انبار و انواع فروش"], ["shipping", "ارسال"]] as const).map(([id, label]) => <button type="button" key={id} disabled={busy} aria-pressed={tab === id} onClick={() => setTab(id)} className={`min-h-11 rounded-xl px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 ${tab === id ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-secondary"}`}>{label}</button>)}
+      {([["products", "محصولات"], ["categories", "دسته‌بندی‌ها"], ["inventory", "انبار و انواع فروش"], ["shipping", "ارسال"], ["mezaj", "پیشنهاد بر اساس مزاج"]] as const).map(([id, label]) => <button type="button" key={id} disabled={busy} aria-pressed={tab === id} onClick={() => setTab(id)} className={`min-h-11 rounded-xl px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 ${tab === id ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-secondary"}`}>{label}</button>)}
     </div>
+    {tab === "mezaj" && <MezajCollectionsEditor accessToken={accessToken} onBusy={value => { setMezajBusy(value); onBusy(value); }} />}
     <MutationNotice state={mutation} />
     {busy && <p role="status" className="text-sm text-muted-foreground">در حال ذخیره و دریافت اطلاعات تازه…</p>}
     {tab === "products" && <div className="space-y-4">

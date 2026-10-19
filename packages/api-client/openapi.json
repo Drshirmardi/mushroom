@@ -22551,6 +22551,166 @@
         ]
       }
     },
+    "/v1/admin/commerce/mezaj/collections": {
+      "get": {
+        "operationId": "adminCommerceMezajCollectionsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommerceMezajCollectionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List all sixteen ordered Mezaj product collections",
+        "tags": [
+          "Commerce Mezaj"
+        ]
+      }
+    },
+    "/v1/admin/commerce/mezaj/assessment-versions": {
+      "get": {
+        "operationId": "adminCommerceMezajVersionsList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceMezajVersionPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List published Mezaj source versions and their exact bands without patient data",
+        "tags": [
+          "Commerce Mezaj"
+        ]
+      }
+    },
+    "/v1/admin/commerce/mezaj/collections/{primary}/{secondary}": {
+      "put": {
+        "operationId": "adminCommerceMezajCollectionSave",
+        "parameters": [
+          {
+            "name": "primary",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "damavi",
+                "safravi",
+                "balgami",
+                "sodavi"
+              ]
+            }
+          },
+          {
+            "name": "secondary",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "damavi",
+                "safravi",
+                "balgami",
+                "sodavi"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCommerceMezajDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceMezajCollectionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Replace ordered product membership and exact band links using a revision precondition",
+        "tags": [
+          "Commerce Mezaj"
+        ]
+      }
+    },
+    "/v1/patients/me/commerce/recommendations": {
+      "get": {
+        "operationId": "patientCommerceRecommendationsGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientCommerceRecommendationsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get self-only products for the latest accessible exact ordered Mezaj result; never inferred from title or score",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
     "/v1/admin/commerce/products/{productId}/content": {
       "get": {
         "operationId": "adminProductContentGet",
@@ -41348,6 +41508,477 @@
           "items"
         ]
       },
+      "CommerceMezajProductRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ]
+      },
+      "CommerceMezajSourceRefDto": {
+        "type": "object",
+        "properties": {
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultBandId": {
+            "type": "string"
+          },
+          "versionTitle": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "bandTitle": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assessmentVersionId",
+          "resultBandId",
+          "versionTitle",
+          "versionNumber",
+          "bandTitle"
+        ]
+      },
+      "CommerceMezajCollectionDto": {
+        "type": "object",
+        "properties": {
+          "primary": {
+            "type": "string",
+            "enum": [
+              "damavi",
+              "safravi",
+              "balgami",
+              "sodavi"
+            ]
+          },
+          "secondary": {
+            "type": "string",
+            "enum": [
+              "damavi",
+              "safravi",
+              "balgami",
+              "sodavi"
+            ]
+          },
+          "revision": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceMezajProductRefDto"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceMezajSourceRefDto"
+            }
+          }
+        },
+        "required": [
+          "primary",
+          "secondary",
+          "revision",
+          "enabled",
+          "products",
+          "sources"
+        ]
+      },
+      "CommerceMezajBandDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ]
+      },
+      "CommerceMezajVersionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "resultBands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceMezajBandDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "versionNumber",
+          "locale",
+          "status",
+          "resultBands"
+        ]
+      },
+      "CommerceMezajVersionPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceMezajVersionDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "CommerceMezajSourceDto": {
+        "type": "object",
+        "properties": {
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultBandId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assessmentVersionId",
+          "resultBandId"
+        ]
+      },
+      "SaveCommerceMezajDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "productIds": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "sources": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommerceMezajSourceDto"
+            }
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "enabled",
+          "productIds",
+          "sources"
+        ]
+      },
+      "ProductImageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contentPath": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string",
+            "enum": [
+              "image/webp"
+            ]
+          },
+          "sizeBytes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5242880
+          },
+          "width": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1600
+          },
+          "height": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1600
+          },
+          "altText": {
+            "type": "string",
+            "maxLength": 240
+          }
+        },
+        "required": [
+          "id",
+          "contentPath",
+          "mimeType",
+          "sizeBytes",
+          "width",
+          "height",
+          "altText"
+        ]
+      },
+      "PublicProductContentDto": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "nullable": true
+          },
+          "manufacturer": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "ingredients": {
+            "type": "string",
+            "nullable": true
+          },
+          "usageInstructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "warnings": {
+            "type": "string",
+            "nullable": true
+          },
+          "contraindications": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentRevision": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "brand",
+          "manufacturer",
+          "shortDescription",
+          "description",
+          "ingredients",
+          "usageInstructions",
+          "warnings",
+          "contraindications",
+          "contentRevision"
+        ]
+      },
+      "PatientCommerceCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "PatientCommerceSkuDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentPriceToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          },
+          "currentTaxToman": {
+            "type": "string",
+            "description": "Integer TOMAN."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "currentPriceToman",
+          "currentTaxToman"
+        ]
+      },
+      "PatientCommerceProductDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductImageDto"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "brand": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "nullable": true,
+            "description": "Approved content embedded on detail only; no provenance or approver identity.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicProductContentDto"
+              }
+            ]
+          },
+          "category": {
+            "$ref": "#/components/schemas/PatientCommerceCategoryDto"
+          },
+          "skus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommerceSkuDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "category",
+          "skus"
+        ]
+      },
+      "PatientCommerceRecommendationsDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "NO_RESULT",
+              "RESULT_UNSUPPORTED",
+              "REVIEW_REQUIRED",
+              "NOT_CONFIGURED",
+              "NO_PRODUCTS"
+            ]
+          },
+          "primary": {
+            "type": "string",
+            "enum": [
+              "damavi",
+              "safravi",
+              "balgami",
+              "sodavi"
+            ],
+            "nullable": true
+          },
+          "secondary": {
+            "type": "string",
+            "enum": [
+              "damavi",
+              "safravi",
+              "balgami",
+              "sodavi"
+            ],
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientCommerceProductDto"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "primary",
+          "secondary",
+          "items"
+        ]
+      },
       "ProductContentProvenanceDto": {
         "type": "object",
         "properties": {
@@ -41539,52 +42170,6 @@
         },
         "required": [
           "expectedContentRevision"
-        ]
-      },
-      "ProductImageDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "contentPath": {
-            "type": "string"
-          },
-          "mimeType": {
-            "type": "string",
-            "enum": [
-              "image/webp"
-            ]
-          },
-          "sizeBytes": {
-            "type": "number",
-            "minimum": 1,
-            "maximum": 5242880
-          },
-          "width": {
-            "type": "number",
-            "minimum": 1,
-            "maximum": 1600
-          },
-          "height": {
-            "type": "number",
-            "minimum": 1,
-            "maximum": 1600
-          },
-          "altText": {
-            "type": "string",
-            "maxLength": 240
-          }
-        },
-        "required": [
-          "id",
-          "contentPath",
-          "mimeType",
-          "sizeBytes",
-          "width",
-          "height",
-          "altText"
         ]
       },
       "CommerceCategoryResponseDto": {
@@ -41940,167 +42525,6 @@
           "skuId",
           "onHandQuantity",
           "reservedQuantity"
-        ]
-      },
-      "PublicProductContentDto": {
-        "type": "object",
-        "properties": {
-          "brand": {
-            "type": "string",
-            "nullable": true
-          },
-          "manufacturer": {
-            "type": "string",
-            "nullable": true
-          },
-          "shortDescription": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "ingredients": {
-            "type": "string",
-            "nullable": true
-          },
-          "usageInstructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "warnings": {
-            "type": "string",
-            "nullable": true
-          },
-          "contraindications": {
-            "type": "string",
-            "nullable": true
-          },
-          "contentRevision": {
-            "type": "number",
-            "minimum": 0
-          }
-        },
-        "required": [
-          "brand",
-          "manufacturer",
-          "shortDescription",
-          "description",
-          "ingredients",
-          "usageInstructions",
-          "warnings",
-          "contraindications",
-          "contentRevision"
-        ]
-      },
-      "PatientCommerceCategoryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "slug"
-        ]
-      },
-      "PatientCommerceSkuDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "currentPriceToman": {
-            "type": "string",
-            "description": "Integer TOMAN."
-          },
-          "currentTaxToman": {
-            "type": "string",
-            "description": "Integer TOMAN."
-          }
-        },
-        "required": [
-          "id",
-          "code",
-          "currentPriceToman",
-          "currentTaxToman"
-        ]
-      },
-      "PatientCommerceProductDto": {
-        "type": "object",
-        "properties": {
-          "image": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProductImageDto"
-              }
-            ]
-          },
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "brand": {
-            "type": "string",
-            "nullable": true
-          },
-          "shortDescription": {
-            "type": "string",
-            "nullable": true
-          },
-          "content": {
-            "nullable": true,
-            "description": "Approved content embedded on detail only; no provenance or approver identity.",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PublicProductContentDto"
-              }
-            ]
-          },
-          "category": {
-            "$ref": "#/components/schemas/PatientCommerceCategoryDto"
-          },
-          "skus": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PatientCommerceSkuDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "slug",
-          "category",
-          "skus"
         ]
       },
       "PatientCommerceProductPageDto": {

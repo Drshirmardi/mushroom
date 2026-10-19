@@ -20,7 +20,7 @@ type Props = {
 export function ProductCard({ product, skuOverride, saved, inCart, busy, onFavorite }: Props) {
   const sku = skuOverride ?? product.skus[0];
   if (!sku) return null;
-  const href = `/store/products/${encodeURIComponent(product.id)}`;
+  const href = `/store/products/${encodeURIComponent(product.id)}?sku=${encodeURIComponent(sku.id)}`;
   return <article className="store-product" aria-busy={busy || undefined}>
     <div className="store-product__media">
       <Link href={href} className="store-product__media-link" aria-label={`مشاهدهٔ ${product.title}`}>
@@ -35,7 +35,9 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, onFavor
     </div>
     <div className="store-product__body">
       <Link href={href} className="store-product__title"><h2>{product.title}</h2></Link>
-      <ProductPrice amount={Number(sku.currentPriceToman)} />
+      {product.category?.name && <Link href={`/store?view=all&category=${encodeURIComponent(product.category.id)}`} className="store-category-link">{product.category.name}</Link>}
+      {skuOverride?.title && <p className="text-xs text-muted-foreground">{skuOverride.title}</p>}
+      <ProductPrice amount={BigInt(sku.currentPriceToman)} />
     </div>
   </article>;
 }

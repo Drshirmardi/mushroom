@@ -11,15 +11,15 @@ import { CartItem, ProductPrice, StoreHeader, StoreState } from "@/components/st
 import { commerceErrorMessage, getCommerceCart, updateCommerceCart, type CommerceCart } from "@/lib/commerce-catalog-api";
 
 import { useScreenNavigation } from "@/lib/navigation";
-import { cartTotal, cartCount, useCartStore } from "@/stores/cart";
+import { cartTotal, cartTax, cartCount, useCartStore } from "@/stores/cart";
 import { toP } from "@/lib/format";
 import { productImageUrl } from "@/lib/product-image";
 import { useRecentStore } from "@/stores/recently-viewed";
 import { RecentCard } from "@/components/store/recent-card";
 import { StoreCollection } from "@/components/store/store-collection";
-import { EMPTY_CART_ART } from "@/stores/empty-art";
+import { ShoppingBag } from "lucide-react";
 
-const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity, imageUrl: productImageUrl(item.product) })));
+const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, variantTitle: item.sku.title, price: item.sku.currentPriceToman, tax: item.sku.currentTaxToman, qty: item.quantity, imageUrl: productImageUrl(item.product) })));
 
 export default function CartPage() {
   const { authentication } = useAuthSession(); const router = useRouter(); const navigateScreen = useScreenNavigation();
@@ -63,20 +63,21 @@ export default function CartPage() {
     }
     setEmptyVisible(true);
   }, [loading, error, items.length]);
-  const total = cartTotal(items);
+  const tax = cartTax(items);
+  const total = cartTotal(items) + tax;
   return <main className="store-page"><StoreHeader title="سبد خرید" onBack={() => router.back()} />
     {loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
     {error && <StoreState title="سبد به‌روزرسانی نشد" description={error} error action="تلاش دوباره" onAction={() => void load()} />}
     {!loading && !error && emptyVisible && <div className="store-empty">
-      <img src={EMPTY_CART_ART} alt="" width={120} height={120} loading="lazy" draggable={false} />
+      <ShoppingBag size={44} strokeWidth={1.25} className="text-primary" aria-hidden="true" />
       <h2>سبد خرید شما خالی است!</h2>
       <p>اگر به فروشگاه سر بزنید، دست‌پر برمی‌گردید.</p>
       <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>
     </div>}
     {!loading && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
     {!loading && !error && items.length > 0 && <div className="store-cart-bar" aria-label="خلاصهٔ سبد">
-      <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
-      <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا</span><ProductPrice amount={total} /></div>
+      <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy || removingIds.length > 0} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
+      <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا{tax > BigInt(0) ? "، با مالیات" : ""}</span><ProductPrice amount={total} /></div>
     </div>}
     {recent.length > 0 && <>
       <div className="store-divider" aria-hidden="true" />
