@@ -1,0 +1,7 @@
+import type { components } from "@sabz-zendegi/api-client";
+import { apiClient } from "./api";
+import { patientAuthorization as auth, patientData as data } from "./patient-request";
+export const listAssessmentShares = (token: string, appointmentId: string, page = 1) => data(apiClient.GET("/v1/patients/me/appointments/{appointmentId}/assessment-sharing", { headers: auth(token), params: { path: { appointmentId }, query: { page: page as never, pageSize: 20 as never } } }));
+export const previewAssessmentShare = (token: string, appointmentId: string, submissionId: string) => data(apiClient.GET("/v1/patients/me/appointments/{appointmentId}/assessment-sharing/preview", { headers: auth(token), params: { path: { appointmentId }, query: { submissionId } } }));
+export const acceptAssessmentShare = (token: string, appointmentId: string, body: components["schemas"]["AssessmentCareAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/appointments/{appointmentId}/assessment-sharing", { headers: auth(token), params: { path: { appointmentId }, header: { "Idempotency-Key": key } }, body }));
+export const withdrawAssessmentShare = (token: string, appointmentId: string, shareId: string, key: string) => data(apiClient.POST("/v1/patients/me/appointments/{appointmentId}/assessment-sharing/{shareId}/withdrawal", { headers: auth(token), params: { path: { appointmentId, shareId }, header: { "Idempotency-Key": key } } }));

@@ -6,6 +6,7 @@ export type PublishedAssessment = components["schemas"]["PatientAssessmentListIt
 export type AssessmentSubmission = components["schemas"]["PatientAssessmentSubmissionResponseDto"];
 export type BookingEligibility = components["schemas"]["PatientBookingEligibilityResponseDto"];
 export type SaveAssessmentAnswers = components["schemas"]["SaveAssessmentAnswersDto"];
+export type AssessmentQuestionnaire = components["schemas"]["PatientAssessmentQuestionnaireResponseDto"];
 
 export class AssessmentRequestError extends Error {
   constructor(public readonly status: number, public readonly code: string | null = null) {
@@ -43,9 +44,14 @@ export const saveAssessmentAnswers = (accessToken: string, id: string, body: Sav
   apiClient.PUT("/v1/assessment-submissions/{id}", { headers: authorization(accessToken), params: { path: { id } }, body }),
 );
 
-export const submitAssessment = (accessToken: string, id: string, idempotencyKey: string) => expectData<AssessmentSubmission>(
-  apiClient.POST("/v1/assessment-submissions/{id}/submit", { headers: authorization(accessToken), params: { path: { id }, header: { "Idempotency-Key": idempotencyKey } } }),
+export const submitAssessment = (accessToken: string, id: string, idempotencyKey: string, expectedRevision?: number) => expectData<AssessmentSubmission>(
+  apiClient.POST("/v1/assessment-submissions/{id}/submit", { headers: authorization(accessToken), params: { path: { id }, header: { "Idempotency-Key": idempotencyKey } }, body: { expectedRevision } }),
 );
+
+export const getAssessmentQuestionnaire = (accessToken: string, id: string) => expectData<AssessmentQuestionnaire>(apiClient.GET("/v1/assessment-submissions/{id}/questionnaire", { headers: authorization(accessToken), params: { path: { id } } }));
+export const listAssessmentHistory = (accessToken: string, page = 1) => expectData<components["schemas"]["PatientAssessmentHistoryResponseDto"]>(apiClient.GET("/v1/patients/me/assessment-submissions", { headers: authorization(accessToken), params: { query: { page, pageSize: 20 } } }));
+export const getAssessmentGuidance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentGuidanceDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/guidance", { headers: authorization(accessToken), params: { path: { id } } }));
+export const getAssessmentProvenance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentProvenanceResponseDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/provenance", { headers: authorization(accessToken), params: { path: { id } } }));
 
 export const getAssessmentResult = (accessToken: string, id: string) => expectData<AssessmentSubmission>(
   apiClient.GET("/v1/assessment-submissions/{id}/result", { headers: authorization(accessToken), params: { path: { id } } }),
@@ -60,5 +66,6 @@ export function assessmentErrorMessage(error: unknown) {
   if (error.status === 401 || error.status === 403) return "اجازهٔ دسترسی به این ارزیابی را ندارید.";
   if (error.code === "ASSESSMENT_ANSWERS_INVALID") return "پاسخ‌های ضروری را کامل و معتبر وارد کنید.";
   if (error.code === "ASSESSMENT_SUBMISSION_IMMUTABLE") return "این ارزیابی قبلاً تکمیل شده و قابل تغییر نیست.";
+  if (error.status === 409) return "پاسخ‌ها یا وضعیت آزمون تغییر کرده است. پیش از ادامه، نسخهٔ ذخیره‌شده را دوباره دریافت کنید؛ پاسخ‌های فعلی خودکار جایگزین نمی‌شوند.";
   return "درخواست ارزیابی انجام نشد؛ دوباره تلاش کنید.";
 }
