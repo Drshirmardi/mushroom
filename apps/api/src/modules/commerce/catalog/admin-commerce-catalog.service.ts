@@ -48,7 +48,7 @@ export class AdminCommerceCatalogService {
       return await this.prisma.$transaction(async (tx) => {
         const current = await lockContentProduct(tx, id, clinic.id);
         if (body.categoryId) await this.categoryExists(tx, clinic.id, body.categoryId);
-        if (body.status && !((current.status === 'DRAFT' && body.status === 'ACTIVE') || (current.status === 'ACTIVE' && body.status === 'ARCHIVED') || body.status === current.status)) throw lifecycle();
+        if (body.status && !((current.status === 'DRAFT' && body.status === 'ACTIVE') || (current.status === 'ACTIVE' && body.status === 'ARCHIVED') || (current.status === 'ARCHIVED' && body.status === 'DRAFT') || body.status === current.status)) throw lifecycle();
         if (body.content) this.requireContentPatch(body.content, body.description);
         await saveContent(tx, current, body.content, context, body.content?.expectedContentRevision, body.description);
         const record = await tx.commerceProduct.update({ where: { id }, data: {
