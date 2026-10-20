@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence } from "motion/react";
-import { Heart, ChevronDown, MapPin, Search, ShoppingBasket, X } from "lucide-react";
+import { Heart, ChevronDown, MapPin, Search, ShoppingCart, X } from "lucide-react";
 import { useOptionalAuthSession } from "@/components/auth/session-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,7 +163,7 @@ function StoreCatalog() {
           <Heart aria-hidden="true" size={22} />{wishlist.length > 0 && <span className="store-badge">{toP(wishlist.length)}</span>}
         </Link>
         <Link href="/store/cart" className="patient-button patient-button--ghost store-icon-button" aria-label={`سبد خرید، ${toP(count)} کالا`}>
-          <ShoppingBasket aria-hidden="true" size={22} />{count > 0 && <span className="store-badge store-badge--danger">{toP(count)}</span>}
+          <ShoppingCart aria-hidden="true" size={23} strokeWidth={1.75} />{count > 0 && <span className="store-badge store-badge--danger">{toP(count)}</span>}
         </Link>
       </div>
     </header>

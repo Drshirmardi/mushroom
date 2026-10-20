@@ -7,6 +7,10 @@
 
 ## Taskها
 
+Integrated Home corrective (2026-10-20) supersedes the earlier Home visual checkpoint following explicit owner rejection: unified ice/glass design, separate complete transparent brain illustration, local IRANYekanX, no independent activity UI and redesigned access hub. Full-page mobile/desktop review, scoped browser gates, types/build and176 tests (temporary external alias) PASS; ready for owner visual review. [Current evidence](../logs/phase-12.md#f12-fe01--integrated-home-corrective-visual-review). F12-FE01 remains unchecked/REWORK for broader acceptance.
+
+Home blue-brain glass checkpoint (2026-10-20): reviewed Home-only presentation, original unmodified image, compact mobile and expanded desktop; types/build and scoped browser checks PASS. Default Vitest has an existing billing alias-resolution failure; all176 pass with temporary external alias configuration. [Evidence](../logs/phase-12.md#f12-fe01--home-blue-brain-glass-checkpoint). F12-FE01 remains REWORK/unchecked for full acceptance.
+
 Owner-requested scoped commit handoff: [commit/file map](../logs/client-integration-commits-2026-10-19.md); types/build/165 tests PASS, full acceptance remains unchecked.
 
 Store audit first fixes01–05: types/170 tests/build and6 desktop/mobile E2E PASS (2026-10-20); [evidence and remaining06–20](../store-design-audit-2026-10-20.md). Full acceptance remains REWORK/unchecked.
@@ -338,3 +342,13 @@ Authority: explicit owner implementation request after the patient journey revie
 - [x] `F12-PJ-J02` — DONE/review PASS/released; exact medical purpose/locale/clinic/current matching consent in admin patient projections/read/correction;18 new PostgreSQL cases,87 distinct focused API11 files and types PASS; evidence Phase12 log. No schema/API/default grant changes.
 
 - [x] `F12-PJ-R04` — DONE/review PASS/released; exclude paid private contexts from generic admin patient detail per accepted P02; two new actual paid/engine cases,103 focused API6 files/types PASS; evidence Phase12 log. No schema/API/default grant changes.
+
+F12-FE01 payment follow-up checkpoint (2026-10-20): Home now distinguishes the exact Journey payment purpose/amount and multiple requests; wallet-pay confirms authoritative cancellation with a Home return. Original owner intent confirmed CANCELLED, Home referenced another intent. Types/17 focused units/2 intercepted desktop-mobile cancellation flows PASS; evidence in logs/phase-12.md. Financial rules/priority unchanged, no real financial writes. Full task remains REWORK/unchecked.
+
+F12-FE01 optional top-up correction (2026-10-20): owner clarification supersedes payment presentation-only checkpoint. Journey no longer promotes voluntary TOPUP to Home next action; actual service payments remain independently selected beyond preview caps. Existing pending data/money preserved. API/test/app types,15 isolated PG cases and2 desktop/mobile cases PASS; live Home result action confirmed. Evidence Phase12 log; full task REWORK/unchecked.
+
+F12-FE01 compact Home personal-access rail (2026-10-20): owner-requested native horizontal RTL scroll at narrow widths, all links fit when wide.320–1440/keyboard/destinations/no whole-page overflow checks PASS; evidence Phase12 log. Task remains REWORK/unchecked.
+
+F12-FE01 Store header polish (2026-10-20): owner-requested cart icon and responsive search hint complete; types and320–1440 browser checks PASS, evidence Phase12 log. Task remains REWORK/unchecked.
+
+F12-FE01 owner-requested commit checkpoint (2026-10-20): completed reviewed payment/Home/Store session work committed in related groups; final178 app tests PASS. Broader production acceptance unchanged, task remains REWORK/unchecked; evidence Phase12 log.

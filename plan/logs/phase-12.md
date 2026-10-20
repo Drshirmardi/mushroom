@@ -4066,3 +4066,225 @@ Verification: isolated PostgreSQL74 migrations/additive upgrade preserves seeded
 Local migration status showed only20261020010000 pending; deploy applied that additive migration successfully after isolated verification. Existing live API docs exposes the new endpoint. Personalization collections remain unconfigured until qualified product/source assignments are entered; no clinical seed invented. Ordinary live public catalog200/4cards/0 pageerrors/mobile no overflow verified. Graphify AST update/diff review performed; existing SQL/HCL/chat parser limitations retained. Full task remains REWORK/unchecked for broader real-account/provider/clinical/legal acceptance, no final task commit or new batch.
 
 Final review follow-up: replaced per-source DB reads with bounded batch lookups and reran isolated28/28/no-drift gate PASS. Scoped dashboard ESLint exposed new render-ref/synchronous-effect setters; moved token ref synchronization to an effect and used request-key/page-bound async responses plus event-driven config reset, retaining draft isolation. Targeted ESLint, dashboard types and2 desktop/mobile editor regressions PASS, including reaching the far edge of the16-cell table. No suppression/bypass or unrelated cleanup. Small frontend refinements after production build were verified by these targeted checks; no broad build repeat required. Existing OpenAPI paths/schemas have zero semantic diff; generated order changes are registration order only.
+
+## F12-FE01 — Home blue-brain glass checkpoint
+
+Task ID: F12-FE01
+Completed checkpoint: 2026-10-20, Asia/Tehran
+Agent/reviewer: Codex /root; no subagents
+Batch: existing CLIENT-INTEGRATION; full task remains REWORK/unchecked.
+
+Owner approved the reviewed Home design with a compact mobile hero, blue-brain
+identity art, unchanged Journey/data/functions/font and browser screenshot delivery.
+Changed files: apps/app/src/app/(app)/page.tsx, apps/app/src/app/globals.css (Home
+selectors only), apps/app/src/components/layout/app-shell.tsx (exact-root class),
+apps/app/public/images/home/blue-brain-original.jpg and provenance README, and
+coordinator STATUS/phase/evidence. Preserved pre-existing couples page/new component
+and CSS files; protected slider-data.ts and justforcheck.md untouched. No API,
+schema, provider, dependency, auth or clinical/financial business-rule changes.
+
+Image: source and shipped JPEG SHA-256 both
+1df66d327c9e3a09b3081dbb2a888b8a20c09902c66bfb7099700fc60b7d2616;
+720x1280,191690 bytes. Original source preserved, copied byte-for-byte; no derivative,
+crop, recompression, background removal, generated detail, blur or opacity reduction.
+Full image uses contain with natural aspect ratio. Blank top/bottom canvas is
+accounted for by negative layout margins without clipping; all image bounds stay
+inside the hero at every checked width. Cream #f6f1ed background matching extends
+beyond the image into the glass/ice surface. Browser inspection found no distinct
+rectangular photo boundary after correcting the matte transition; the original
+fine background texture remains. Glass blur is behind the opaque image, not on it.
+
+Presentation: native RTL two-column status/action and complete brain on mobile,
+348px hero for the ordinary resume state at320/390; longer real copy grows naturally
+(390px viewport: longest consent-unavailable440.6px, error412.6px, loading358px).
+No arbitrary fixed height/truncation. Desktop exact-root frame1120px, hero1040x528px,
+text right/image left. Follow-ups precede services; desktop has adjacent sections.
+All service/access/store/article destinations, show-more5-to7-to5, recent notification
+limit3/article limit2, unread label and notification bottom sheet remain intact.
+Profile summary uses the same real counts/isComplete as compact text, no health score.
+
+Verification:
+- corepack pnpm --filter @sabz/app typecheck: PASS (initial and final).
+- corepack pnpm --filter @sabz/app build: PASS,46 static pages.
+- Default test command:173 tests passed,33 files passed; billing/payment-chooser
+  suite fails before collection resolving @/components/shared/bottom-sheet.
+  HEAD already contains that import; Home changes do not touch its callers/tests.
+- Temporary ignored .playwright-mcp/home-vitest.config.mts adds only the missing
+  @ source alias and retains original test exclusions:34 files,176/176 PASS.
+  No product or committed test configuration was changed to hide this limitation.
+  An earlier temporary spec-only selection passed140 tests; this is superseded by
+  the complete176-test run above.
+- Live Home inspected at390x844 and1440x1000 including lower service/access/store/
+  notification areas; source data loaded without clinical/financial commands.
+- Fully intercepted browser contexts:320/390/600/768/1280/1440 no horizontal overflow,
+  original720:1280 ratio preserved, complete image inside card, filter none/opacity1,
+  text/image columns separate, Vazirmatn unchanged and three navigation links.
+- All17 Journey nextAction codes resolve to their existing exact-resource routes.
+- Loading/busy/named heading/image retained;503 error/retry recovers; empty and
+  populated previews; show-more aria-expanded; content limits and service URLs PASS.
+- Notification sheet open/Escape/return focus PASS; visible keyboard outline2px.
+  At320, visible Home links/buttons all meet44px minimum in each dimension.
+- Profile navigation has no patient-home-shell class, retains720px frame max and
+  its existing IRANYekanX family. Store/root route logic unchanged by inspection.
+- Synthetic browser contexts:0 pageerrors,0 unexpected requests,0 resource mutation
+  commands. Live browser's only console error is the existing favicon.ico404.
+- git diff --check PASS. Main review: combined Home diff/data boundaries/assets/
+  scoped CSS/ownership PASS. graphify update . PASS (AST-only,no LLM),10507 nodes;
+  existing SQL/HCL dependency/chat parser warnings remain unrelated.
+
+Screenshots, rendered and visually reviewed:
+.playwright-mcp/home-brain-mobile-final.png
+.playwright-mcp/home-brain-desktop-final.png
+.playwright-mcp/home-brain-lower-desktop.png
+
+Limitations: default Vitest alias setup remains a separate pre-existing issue;
+no native screen-reader/device certification or real patient/financial mutation.
+No final F12-FE01 task commit because broader real-account/provider/clinical/legal
+acceptance remains incomplete. Continue only the existing CLIENT-INTEGRATION batch
+when authorized; this checkpoint does not start the next roadmap task.
+
+## F12-FE01 — Integrated Home corrective visual review
+
+Checkpoint date:2026-10-20,Asia/Tehran. Existing CLIENT-INTEGRATION,sole Codex /root
+writer/reviewer,no subagents. Owner explicitly rejected the preceding Home visual
+checkpoint; this entry supersedes that visual result, without rewriting history.
+Full roadmap task remains REWORK/unchecked; this slice is ready for owner review.
+
+Scope: existing Home page and Home CSS/exact-root shell presentation; image assets
+and provenance; coordinator evidence/status. No API/schema/authorization/provider/
+clinical/scoring changes. Pre-existing couples diff remains101 added/89 removed
+with its two untracked files preserved; protected slider-data.ts/justforcheck.md
+untouched. The original Home service/access routes and notifications interactions
+remain available. homeActivities and its tests/domain/API data were not deleted;
+only the independent activity section/render state/import was removed as requested.
+
+Visual changes: every Home surface shares ice white/light blue/teal; removed cream
+matte matching entirely. Main card has translucent43% surface, actual backdrop blur/
+saturation, independent blue/cyan luminous layers behind it, reflective inset rim
+and restrained shadow. Image/text/button have no blur/mask/opacity reduction. Mobile
+copy spans the full312px inner width at390; action and complete brain share the lower
+row. Desktop copy525.6px,brain302px. IRANYekanX existing local Regular400/Medium500
+used only for Home (including root dock labels); no global font registration/root
+layout edits. Short action labels preserve full accessible names and exact Journey
+URLs. Personal access is now directly after hero, a shared glass hub with3x2 mobile
+and6x1 desktop icon destinations, rather than a row list/repeated standalone cards.
+Services4 cards, store, notifications and articles receive coordinated surfaces.
+
+Image investigation/preparation: original720x1280 JPEG contains blue subject pixels
+at x=0,y407–555 and x=719,y457–652. Its lateral silhouette is already truncated; old
+contain CSS was not the cause. Original SHA256 still
+1df66d327c9e3a09b3081dbb2a888b8a20c09902c66bfb7099700fc60b7d2616.
+Using built-in imagegen edit with the actual brain as reference, prepared a separate
+transparent decorative illustration including reconstructed lateral contours. This
+is explicitly not recovery of missing medical information or a pixel-preserving
+cutout. blue-brain-complete.png1161x1355/RGBA/2054649bytes, SHA256
+036dcb03df4aecf8a6fbe7f5a4a849f534110011bb35c84cd7ae40b7e94c2627.
+Solid alpha bounds(19,92)–(1143,1315); all corners alpha0. Whole silhouette/stem fit;
+no cream box. Output copied without further crop/recompression/format changes.
+Prompt, built-in tool mode, original and derived provenance documented in
+apps/app/public/images/home/README.md. Original remains intact as reference.
+
+Verification:
+- App typecheck PASS; production build PASS (46 static pages).
+- Existing complete176 tests/34 files PASS with the previously documented external
+  ignored alias-only Vitest configuration. Native test-config alias limitation from
+  the earlier checkpoint remains; no unrelated billing/test-config fix included.
+- Responsive320/390/600/768/1280/1440:0 overflowing elements, image ratio1161:1355
+  preserved, all image bounds inside card, no image/text/action overlap, opacity1,
+  filter none, contain. Consent state hero390px at320,418.75px at390,498.45px desktop.
+- All17 Journey actions tested at320/390/1440 (51 combinations), exact owned URLs
+  retained, no overflow. Found one two-line CTA at390, shortened to 'پیش‌نیاز رزرو';
+  focused recheck confirms46px single-line button at original destination.
+- Independent 'پیگیری‌های شما' absent even with owned pending-payment data; original
+  Journey nextAction controls remain. Six access hrefs/four service destinations
+  unchanged; content limits3 notifications/2 articles preserved with long titles.
+- Both local IRANYekanX400/500 faces loaded; computed Home family confirmed. Profile
+  remains outside Home shell at720px max with its existing font. Scope inspection
+  confirms no Store/other route style changes.
+- Loading/busy/heading/brain retained;503/retry recovery PASS; populated/empty content
+  inspected. Notification sheet open/Escape/return focus PASS. All visible Home
+  targets>=44px;19 sequential keyboard focus positions clear the fixed dock.
+- Contrast: white/action4.88:1,muted/ice5.09:1,ink/ice10.19:1.
+- Fully intercepted fixtures:0 pageerrors,0 unexpected endpoints,0 real mutation
+  commands. Live view has no runtime errors; shared global Vazirmatn preload now
+  warns unused on Home because Home uses Yekan; global preload retained for other
+  routes rather than changing shared layout outside this scope.
+- Main review of source/assets/real-data boundaries/route isolation PASS. Compared
+  whole-page captures with owner references: cool palette, translucent lit surfaces,
+  integrated complete anatomy artwork, subtle typography, no fake charts/scores or
+  imported UI screenshots. Prior cream panel and narrow stacked-copy layout removed.
+- graphify update . PASS,AST-only/no LLM:10510 nodes,30130 edges; existing SQL/HCL/chat
+  parser warnings retained. git diff --check PASS.
+
+Visually reviewed final screenshots (actual local UI/current API state, not a mockup):
+.playwright-mcp/home-integrated-mobile-final.png (390x844)
+.playwright-mcp/home-integrated-desktop-final.png (1440x1000)
+.playwright-mcp/home-integrated-mobile-full-final.png
+.playwright-mcp/home-integrated-desktop-full-final.png
+Full-page captures expand only browser viewport height to1883/1576 respectively,
+so the app's real inner scroll content is visible together; no production styles
+or screenshot pixels changed. Normal-height viewport checks were performed first.
+
+No new batch/final task commit; remaining full F12-FE01 clinical/legal/provider/
+real-account acceptance and native test-alias repair stay separate. Next safe action:
+owner reviews this complete Home design; continue only the current authorized batch.
+
+Home reload removal (2026-10-20),same F12-FE01 /root: owner requests removal of
+hero reload button. Removed control/unused RefreshCw import and orphan Home refresh
+styles; Journey load and error retry remain. Types/diff-check PASS; live browser
+confirms0 reload buttons, retained next-step label/action. Full task remains
+REWORK/unchecked; no new batch/final commit.
+
+Shared glass bottom navigation (2026-10-20),same F12-FE01 /root: owner explicitly
+extends scope to every existing bottom-nav consumer. Promoted Home dock appearance
+to shared navigation, removed Home-only overrides/inline Vazirmatn, unified IRANYekanX
+and500 labels, ice active pill, muted/active colors,24px radius/white border/shadow.
+Background56% (previous Home82%) and actual28px backdrop blur. Max720px centered
+nav makes desktop width identical across Home/store/profile without widening pages.
+Preserved links/current-page marker, cart badge, hidden tabs, product-page exclusion,
+44px+ targets, reduced motion/focus and safe-area bottom padding.
+
+Browser inspection caught CSS prefix-normalization dropping backdrop-filter when
+standard declaration preceded its WebKit alias. Reordered WebKit first/standard
+last; computed blur now blur(28px),not none,in all three routes at390 and1440.
+Same background/font/radius,390 mobile/720 desktop nav width (dock366/696), correct
+active labels/hrefs and0 overflow confirmed. Image/text/icon content is not blurred.
+No page theme/font outside the navigation changed. Typecheck/diff-check PASS;
+graphify update . PASS (no topology changes; existing parser warnings). No broad
+build/unit repeat for CSS/inline-font-only change. Evidence screenshots:
+.playwright-mcp/shared-glass-home-final.png
+.playwright-mcp/shared-glass-store-final.png
+.playwright-mcp/shared-glass-profile-final.png
+Full F12-FE01 remains REWORK/unchecked,no new batch/final task commit.
+
+## F12-FE01 — Home payment follow-up context and cancellation review (2026-10-20)
+
+Owner reported missing wallet payment and an apparently retained cancelled Home action. Same CLIENT-INTEGRATION /root ownership; no new batch, backend or financial-rule change. Read-only owner IAB verified supplied original intent as TOPUP/CANCELLED, while Home action href pointed to a different intent. No actual payment/cancellation was performed by the agent. TOPUP intentionally excludes WALLET (billing-gateway.service.ts methods, billing.service.ts payWallet); cancellation sets CANCELLED atomically; Journey selects only nonexpired PENDING intents, newest first. The repeated generic action hid the resource change, rather than evidence of failed cancellation.
+
+Implemented: Home resolves the exact Journey resourceId against pendingPayments, displays its real purpose/amount, distinguishes top-up CTA/bank explanation and explains multiple pending requests (bounded count honors hasMore). Missing match falls back without selecting another intent. Cancelled wallet-pay page now confirms the authoritative status and provides an explicit Home/next-step link. Domain priority, routes, money, wallet policy and other page behavior retained.
+
+Verification: app typecheck PASS;17 focused Home/PaymentChooser unit cases PASS. All-API-intercepted desktop1440/mobile390 browser flow PASS (2 cases): failed cancellation cannot show success, successful cancellation removes chooser, return Home advances to the other intent/amount, final cancellation removes payment action for Journey's next action; no horizontal overflow. Screenshots reviewed: .playwright-mcp/home-payments-pending-{desktop,mobile}.png, home-payment-cancelled-{desktop,mobile}.png and home-payment-{desktop,mobile}.png. Test fixture-only assertion ambiguity fixed; final scenarios PASS. No real account balance or financial data altered. Unrelated couples edits and protected files preserved. Broader F12-FE01 REWORK/unchecked, no final task commit.
+
+## F12-FE01 — optional top-up excluded from Home next action (2026-10-20)
+
+Owner clarified that an already funded wallet must not be pushed to recharge. This supersedes the prior presentation-only correction: the defect was Journey prioritizing any live billing intent, including voluntary TOPUP, as the required next action. Same CLIENT-INTEGRATION /root scope extended before edits to the existing Journey service/tests/contract. No financial policy, balance, provider, schema or authorization change.
+
+PatientJourneyService now independently selects the newest owned nonexpired PENDING non-TOPUP intent for its existing payment priority slot. Selection occurs in the same repeatable-read/audited transaction and is independent of capped preview lists, so six newer top-ups cannot hide an actual service/order payment. Existing pendingPayments still includes voluntary top-ups; none are auto-cancelled or rewritten. Remaining priorities and response shape unchanged. Contract clarification records explicit owner correction.
+
+Verification PASS: API source and test TypeScript checks; app typecheck;15 actual PostgreSQL Journey integration cases, including funded/zero wallet with pending top-up and preserved balance/status, non-TOPUP payment behind six top-ups, cross-patient isolation and terminal exclusion. Replayed all74 migrations and seed in a newly created guarded patient_journey_topup_regression on the existing task-owned localhost55419 container; used WalletService ledger entries for funded synthetic fixture, never bypassed ledger constraints. New disposable DB removed in finally; main5432/accepted proof DBs untouched. Existing stopped same-task test container started; no other service restarted. Two intercepted desktop/mobile browser cases PASS: funded WALLET remains offered for an order, rejected cancellation cannot show success, confirmed cancellations advance, remaining TOPUP does not retain payment CTA. No actual payment/cancellation/provider calls. Live owner IAB read confirms Home now shows VIEW_ASSESSMENT_RESULT instead of recharge. API dev emitted code contains correction. Reviewed scope/diff and preserved unrelated couples/Home design work and protected files. AST graph updated; known existing parser warnings unchanged. Broader F12-FE01 remains REWORK/unchecked; no new batch/final task commit or full-production/payment acceptance claim.
+
+## F12-FE01 — compact Home personal access scroll (2026-10-20)
+
+Owner requested scroll instead of squeezing all personal-access links into the card at narrow sizes. Home-only CSS now uses one native RTL horizontal grid rail with minimum104px item width, thin visible scrollbar, proximity snapping and padded focus outlines. Items share free space when wide enough; no arbitrary breakpoint forces squeezing or wrapping. No markup/data/destination/shared-navigation change. All unrelated pending edits preserved.
+
+Browser PASS at320/390/600/768/1440: single row, narrow rail overflows inside card only, desktop all six fit, page never overflows horizontally; all six exact destinations retained, Tab reaches final offscreen item and brings it fully into view. Reviewed .playwright-mcp/home-access-mobile.png and home-access-scrolled-mobile.png. Verification script/config ignored under .playwright-mcp; no permanent test added for this reversible CSS change. Diff whitespace PASS. Same CLIENT-INTEGRATION /root; full F12-FE01 REWORK/unchecked, no final task commit/new batch.
+
+## F12-FE01 — Store cart icon and responsive search hint (2026-10-20)
+
+Owner requested clearer Store cart icon and smaller responsive search placeholder. Public Store header now uses Lucide ShoppingCart23px/1.75 stroke; existing cart href, count badge and accessible name preserved. Store-only search container sizing drives placeholder12–15px with normal400 weight; entered text stays16px to retain mobile input readability/avoid focus zoom. Other inputs unchanged.
+
+Checks PASS: app typecheck; browser320/390/768/1440 confirms new icon/exact cart destination, placeholder scales and complete text measures within input at every width, no horizontal page overflow, typing/clear still works. Reviewed .playwright-mcp/store-header-390.png and store-header-1440.png. Native API intercepted in verification; no real writes. Diff whitespace PASS; AST update run. Same F12-FE01 /root; unrelated/protected edits preserved, full task REWORK/unchecked, no final task commit/new batch.
+
+## F12-FE01 — owner-requested session commits (2026-10-20)
+
+Owner explicitly requested committing the completed reviewed session changes. Recorded as scoped checkpoints, without marking the broader F12-FE01 production task DONE. Payment/optional-top-up flow committed separately as5694950; Home design/assets/responsive access and shared frosted navigation as810f4e6. Final Store icon/search polish and cumulative session evidence are recorded in the following scoped commit. Final app unit run:34 files/178 tests PASS using the previously documented external alias configuration; prior API/test/app types,15 isolated PostgreSQL Journey cases, mobile/desktop browser checks and builds remain recorded above. Staged diffs reviewed/whitespace checked. Unrelated existing couples page/component/styles and temporary test-results output excluded; no staging/reset/delete of those paths, no push/deploy. Full F12-FE01 remains REWORK/unchecked for broader acceptance.
