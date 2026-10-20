@@ -7,6 +7,7 @@ import { AnimatePresence } from "motion/react";
 import { CreditCard, Landmark, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TopupSheet } from "@/components/billing/topup-sheet";
+import { BottomSheet } from "@/components/shared/bottom-sheet";
 import {
   cancelBillingIntent,
   createGatewayAttempt,
@@ -33,7 +34,9 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
   const [busy, setBusy] = useState<"wallet" | "gateway" | "cancel" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [topupOpen, setTopupOpen] = useState(false);
-  const walletKey = useRef<string | null>(null);
+  const [walletConfirmation, setWalletConfirmation] = useState<{ id: string; amountRial: string } | null>(null);
+  const walletKey = useRef<{ intentId: string; key: string } | null>(null);
+  const inFlight = useRef(false);
 
   const wallet = intent.methods?.find((method) => method.code === "WALLET") ?? null;
   const gateway = intent.methods?.find((method) => method.code === "GATEWAY") ?? null;
@@ -43,6 +46,8 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
   const run = async (kind: "wallet" | "gateway" | "cancel", action: () => Promise<void>) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(kind);
     setError(null);
     try {
@@ -50,15 +55,23 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
     } catch (cause) {
       setError(walletErrorMessage(cause));
     } finally {
+      inFlight.current = false;
       setBusy(null);
     }
   };
 
-  const payFromWallet = () =>
-    run("wallet", async () => {
-      if (!walletKey.current) walletKey.current = crypto.randomUUID();
-      onPaid(await payWithWallet(accessToken, intent.id, walletKey.current));
+  const confirmationMatches = walletConfirmation?.id === intent.id && walletConfirmation.amountRial === intent.amountRial;
+  const canPayFromWallet = !isTopup && intent.status === "PENDING" && wallet?.available && deficit === null;
+
+  const payFromWallet = () => {
+    if (!confirmationMatches || !canPayFromWallet) return;
+    return run("wallet", async () => {
+      if (walletKey.current?.intentId !== intent.id) walletKey.current = { intentId: intent.id, key: crypto.randomUUID() };
+      const paid = await payWithWallet(accessToken, intent.id, walletKey.current.key);
+      setWalletConfirmation(null);
+      onPaid(paid);
     });
+  };
 
   const payViaGateway = () =>
     run("gateway", async () => {
@@ -95,14 +108,19 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
           <button
             type="button"
             className="wallet-method"
-            disabled={busy !== null || !wallet.available}
-            onClick={() => void payFromWallet()}
+            disabled={busy !== null || !canPayFromWallet}
+            aria-haspopup="dialog"
+            onClick={() => {
+              setError(null);
+              setWalletConfirmation({ id: intent.id, amountRial: intent.amountRial });
+            }}
           >
             <span className="wallet-method__icon" aria-hidden="true"><Wallet size={20} /></span>
             <span className="wallet-method__body">
               <span className="wallet-method__title">پرداخت از کیف پول</span>
               <span className="wallet-method__hint">
                 {balance === null ? "موجودی در دسترس نیست." : <>موجودی: {formatRial(balance)} تومان</>}
+                <br />برداشت پس از تأیید نهایی شما
                 {deficit && <><br />کسری موجودی: {formatRial(deficit)} تومان</>}
               </span>
             </span>
@@ -155,6 +173,26 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
       </button>
 
       <AnimatePresence>
+        {confirmationMatches && (
+          <BottomSheet title="تأیید پرداخت از کیف پول" onClose={() => { if (!inFlight.current) setWalletConfirmation(null); }}>
+            <div className="space-y-4 pb-2">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary" aria-hidden="true"><Wallet size={26} /></div>
+              <p className="text-center text-sm leading-7 text-muted-foreground">با تأیید شما، مبلغ زیر از کیف پولتان برداشت می‌شود.</p>
+              <dl className="space-y-3 rounded-2xl border border-border bg-muted/50 p-4 text-sm">
+                <div className="flex items-center justify-between gap-3"><dt>مبلغ پرداخت</dt><dd className="font-iransans-fanum text-lg text-primary">{formatRial(amount)} تومان</dd></div>
+                {balance !== null && <>
+                  <div className="flex items-center justify-between gap-3 text-muted-foreground"><dt>موجودی فعلی</dt><dd className="font-iransans-fanum">{formatRial(balance)} تومان</dd></div>
+                  <div className="flex items-center justify-between gap-3 border-t border-border pt-3"><dt>موجودی پس از پرداخت</dt><dd className="font-iransans-fanum">{deficit === null ? `${formatRial(balance - amount)} تومان` : "موجودی کافی نیست"}</dd></div>
+                </>}
+              </dl>
+              {error && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">{error}</p>}
+              <Button className="w-full" busy={busy !== null} disabled={!canPayFromWallet} onClick={() => void payFromWallet()}>
+                {busy === "wallet" ? <><RotateCcw size={18} className="animate-spin" aria-hidden="true" />در حال پرداخت…</> : `تأیید و پرداخت ${formatRial(amount)} تومان`}
+              </Button>
+              <Button variant="ghost" className="w-full" disabled={busy !== null} onClick={() => setWalletConfirmation(null)}>فعلاً پرداخت نمی‌کنم</Button>
+            </div>
+          </BottomSheet>
+        )}
         {topupOpen && <TopupSheet onClose={() => setTopupOpen(false)} />}
       </AnimatePresence>
     </div>

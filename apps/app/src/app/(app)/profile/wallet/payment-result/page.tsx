@@ -58,6 +58,11 @@ function PaymentResult() {
   }, [load]);
 
   const view: View = intent ? intentResultView(intent) : error ? "error" : "loading";
+  useEffect(() => {
+    if (view === "paid" && intent?.purpose === "ORDER" && intent.orderId) {
+      router.replace(`/store/order-success?orderId=${encodeURIComponent(intent.orderId)}`);
+    }
+  }, [intent, router, view]);
   const retry = intent ? retryHref(intent) : null;
 
   const primaryTarget = intent
