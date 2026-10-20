@@ -5,6 +5,7 @@ import {
   AssessmentApiError,
   archiveAssessment,
   createAssessment,
+  deleteAssessment,
   duplicateAssessment,
   getAssessmentPolicy,
   listAssessmentSubmissions,
@@ -43,6 +44,17 @@ const version = {
 
 describe("dashboard assessment API", () => {
   beforeEach(() => fetchMock.mockReset());
+
+  it("deletes only the selected version with its exact content hash and reports dependency conflicts", async () => {
+    fetchMock.mockResolvedValueOnce(json({ id: version.id }));
+    await expect(deleteAssessment("token", version.id, version.contentHash)).resolves.toEqual({ id: version.id });
+    const request = fetchMock.mock.calls[0]?.[0] as Request;
+    expect(request.method).toBe("DELETE");
+    expect(request.headers.get("authorization")).toBe("Bearer token");
+    expect(new URL(request.url).searchParams.get("expectedContentHash")).toBe(version.contentHash);
+    fetchMock.mockResolvedValueOnce(json({ code: "ASSESSMENT_DELETE_REFERENCED" }, 409));
+    await expect(deleteAssessment("token", version.id, version.contentHash)).rejects.toMatchObject({ status: 409, code: "ASSESSMENT_DELETE_REFERENCED" });
+  });
 
   it("uses generated request bodies and bearer authentication for lifecycle writes", async () => {
     fetchMock.mockImplementation(() => Promise.resolve(json(version)));

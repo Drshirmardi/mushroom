@@ -38,6 +38,10 @@ export const getAssessment = (accessToken: string, id: string) => dataOrThrow<As
   apiClient.GET("/v1/admin/assessments/{id}", { headers: authorization(accessToken), params: { path: { id } } }),
 );
 
+export const deleteAssessment = (accessToken: string, id: string, expectedContentHash: string) => dataOrThrow<components["schemas"]["DeletedAssessmentDto"]>(
+  apiClient.DELETE("/v1/admin/assessments/{id}", { headers: authorization(accessToken), params: { path: { id }, query: { expectedContentHash } } }),
+);
+
 export const createAssessment = (accessToken: string, body: CreateAssessmentBody) => dataOrThrow<AssessmentVersion>(
   apiClient.POST("/v1/admin/assessments", { headers: authorization(accessToken), body }),
 );
@@ -84,6 +88,9 @@ export function assessmentErrorMessage(error: unknown) {
   if (!(error instanceof AssessmentApiError) || error.status === 0) return "ارتباط با سرور برقرار نشد یا نتیجهٔ درخواست نرسید؛ ورودی‌ها حفظ شده‌اند. پیش از تکرار، وضعیت را بازخوانی کنید.";
   if ([401, 403].includes(error.status)) return "مجوز انجام این عملیات را ندارید یا نشست تمدید نشد.";
   if (error.status === 404) return "نسخه یا مرجع انتخاب‌شده در دسترس نیست.";
+  if (["ASSESSMENT_DELETE_NOT_DRAFT", "ASSESSMENT_DELETE_NOT_ALLOWED"].includes(error.code)) return "فقط پیش‌نویس و آزمون بایگانی‌شده قابل حذف‌اند؛ ابتدا نسخهٔ منتشرشده را بایگانی کنید.";
+  if (error.code === "ASSESSMENT_DELETE_REFERENCED") return "این آزمون به پاسخ‌ها، نتایج یا اطلاعات دیگری متصل است و قابل حذف نیست؛ سوابق و وابستگی‌ها باید حفظ شوند.";
+  if (error.code === "ASSESSMENT_DELETE_CONFLICT") return "آزمون پس از دریافت فهرست تغییر کرده است؛ فهرست را بازخوانی و سپس دربارهٔ حذف تصمیم بگیرید.";
   if (error.code === "ASSESSMENT_PREVIEW_CONFLICT") return "پیش‌نویس تغییر کرده است؛ نسخهٔ تازه را بازخوانی و دوباره پیش‌نمایش بگیرید.";
   if (error.code === "ASSESSMENT_STRUCTURE_INVALID") return "ساختار سؤال‌ها، امتیازها یا بازه‌های نتیجه معتبر نیست. مدل‌های مزاج فعلاً فقط پیش‌نویس‌اند؛ نگاشت پاسخ‌ها و متن سؤال رفع تساوی را نیز بررسی کنید.";
   if (error.status === 409) return "نسخه، وضعیت یا مرجع روی سرور تغییر کرده است؛ بازخوانی کنید. نسخهٔ منتشرشده و نسخهٔ متصل به سیاست رزرو محدودیت تغییر دارند.";
