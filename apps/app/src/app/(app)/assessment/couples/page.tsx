@@ -1,115 +1,127 @@
 "use client";
+
 import Link from "next/link";
-import { Suspense, useCallback, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { components } from "@sabz-zendegi/api-client";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { ArrowLeft, ArrowRight, Check, ClipboardList, Clock3, HeartHandshake, Mail, RefreshCw, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
-import { Users, ArrowLeft, ShieldCheck, Mail, UserPlus, ChevronLeft, ClipboardList } from "lucide-react";
-import { ServicePage, ServiceSection } from "@/components/shared/service-page";
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { PatientPagination } from "@/components/shared/patient-pagination";
-import { PolicyAcceptance } from "@/components/shared/policy-acceptance";
-import { listCoupleSessions, listCoupleAssessments, getCoupleLinkPolicy, createCoupleSession, previewCoupleInvitation, acceptCoupleInvitation } from "@/lib/couples-api";
+import { CoupleInviteFlow, CoupleAcceptFlow, CopyValue } from "@/components/assessments/couple-invitation-flow";
+import { listCoupleSessions, listCoupleAssessments } from "@/lib/couples-api";
 import { loadSelfProfile } from "@/lib/onboarding/patient-onboarding";
 import { usePatientResource } from "@/lib/use-patient-resource";
-import { useOperationKey } from "@/lib/use-operation-key";
-import { patientErrorMessage } from "@/lib/patient-request";
 import { toP } from "@/lib/format";
+import styles from "@/components/assessments/couples.module.css";
+
 const linkStates: Record<string, { title: string; description: string; action: string }> = {
-  AWAITING_PARTNER: { title: "دعوت همراه هنوز تکمیل نشده", description: "اگر هنوز کد دعوت نساخته‌اید، از همین بخش بسازید؛ در غیر این صورت منتظر پذیرش همراه بمانید.", action: "مدیریت دعوت همراه" },
-  LINKED: { title: "حساب شما و همراه متصل است", description: "حالا می‌توانید آزمون زوجی را انتخاب کنید. هر نفر شرایط آزمون را با حساب خودش تأیید می‌کند.", action: "انتخاب آزمون زوجی" },
-  CONSENT_REVOKED: { title: "این همراهی متوقف شده", description: "رضایت اتصال پس گرفته شده است. برای دیدن جزئیات وارد این همراهی شوید.", action: "مشاهده وضعیت همراهی" },
+  AWAITING_PARTNER: { title: "در انتظار همراه", description: "دعوت را تکمیل کن یا اگر کد را فرستاده‌ای، پذیرش همراهت را پیگیری کن.", action: "تکمیل و پیگیری دعوت" },
+  LINKED: { title: "همراهی متصل است", description: "هر دو نفر اتصال را پذیرفته‌اید. حالا می‌توانید آزمون مشترکتان را انتخاب کنید.", action: "انتخاب آزمون زوجی" },
+  CONSENT_REVOKED: { title: "همراهی متوقف شده", description: "رضایت اتصال پس گرفته شده است؛ وضعیت و سوابق را از اینجا بررسی کن.", action: "بررسی همراهی" },
 };
+
 function CouplesHub() {
-  const { authentication } = useAuthSession(); const token = authentication.accessToken; const publicationId = useSearchParams().get("publicationId");
-  const [page, setPage] = useState(1); const [assessmentPage, setAssessmentPage] = useState(1);
-  const [mode, setMode] = useState<"invite" | "accept" | null>(null);
+  const { authentication } = useAuthSession();
+  const token = authentication.accessToken;
+  const publicationId = useSearchParams().get("publicationId");
+  const [page, setPage] = useState(1);
+  const [assessmentPage, setAssessmentPage] = useState(1);
+  const [startOpen, setStartOpen] = useState(false);
+  const [mode, setMode] = useState<"invite" | "accept">("invite");
+  const [historyView, setHistoryView] = useState<"assessments" | "connections" | null>(null);
+  const [busy, setBusy] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
+  const startHeading = useRef<HTMLHeadingElement>(null);
   const sessions = usePatientResource(useCallback(() => listCoupleSessions(token, page), [token, page]));
   const assessments = usePatientResource(useCallback(() => listCoupleAssessments(token, assessmentPage), [token, assessmentPage]));
+  const loading = sessions.loading || assessments.loading;
   const hasHistory = (sessions.data?.total ?? 0) > 0 || (assessments.data?.total ?? 0) > 0;
-  const steps = [
-    { title: "همراهت را دعوت کن", description: "هر نفر با حساب خودش؛ دعوت را بساز یا کدی را که گرفته‌ای بپذیر." },
-    { title: "آزمون را انتخاب کنید", description: "بعد از اتصال، شرایط و هزینه آزمون را می‌بینید و هر دو رضایت می‌دهید." },
-    { title: "جداگانه پاسخ بدهید", description: "هر نفر آزمون خودش را تکمیل می‌کند؛ سپس نتیجه مشترک را پیگیری می‌کنید." },
-  ];
-  return <ServicePage title="آزمون زوجی" description="با همراهت در یک ارزیابی مشترک شرکت کن؛ هر کدام با حساب خودتان و پاسخ‌های جداگانه." icon={Users}>
-    {publicationId && <p className="mb-4 rounded-xl bg-primary/5 p-4 text-sm leading-7 text-primary">آزمونت انتخاب شده است. برای ادامه، یک همراهی موجود را باز کن یا همراهت را دعوت کن.</p>}
+  const linked = sessions.data?.items.find(item => item.state === "LINKED");
+  const pending = sessions.data?.items.find(item => item.state === "AWAITING_PARTNER");
+  const view = historyView ?? (publicationId || !(assessments.data?.total) ? "connections" : "assessments");
+  const toLink = (id: string) => `/assessment/couples/links/${encodeURIComponent(id)}${publicationId ? `?publicationId=${encodeURIComponent(publicationId)}` : ""}`;
 
-    {(sessions.loading || assessments.loading) && <p role="status" className="mb-4 text-sm leading-7 text-muted-foreground">در حال بررسی دعوت‌ها و ارزیابی‌های قبلی‌ات…</p>}
-    <PatientResourceState {...assessments} loading={false} retry={() => void assessments.reload()} />
-    {(assessments.data?.total ?? 0) > 0 && <ServiceSection title="ادامه ارزیابی‌های شما" description="برای ادامه پاسخ‌گویی یا دیدن نتیجه، ارزیابی خودت را باز کن.">
-      {assessments.data?.items.map(item => {
-        const ownAccepted = Boolean(item.ownConsent.acceptedAt && !item.ownConsent.withdrawnAt);
-        const action = item.ownConsent.withdrawnAt ? "بررسی وضعیت ارزیابی" : !ownAccepted ? "بررسی شرایط و اعلام رضایت" : !item.mutualConsentComplete ? "مشاهده وضعیت و رضایت همراه" : "ادامه آزمون و بررسی نتیجه";
-        return <Link key={item.id} href={`/assessment/couples/${item.id}`} className="service-card transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary">
-          <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><ClipboardList size={20} aria-hidden="true" /></span><div className="min-w-0"><h3>{item.title}</h3><p>{!ownAccepted ? "ابتدا وضعیت رضایت خودت را بررسی کن." : !item.mutualConsentComplete ? "رضایت هر دو نفر هنوز کامل نشده است." : "رضایت هر دو نفر ثبت شده؛ وضعیت پرداخت، پاسخ‌ها و نتیجه را اینجا ببین."}</p><span className="service-text-action">{action}<ArrowLeft size={16} aria-hidden="true" /></span></div></div>
-        </Link>;
-      })}
-      {assessments.data && <PatientPagination page={assessmentPage} total={assessments.data.total} onChange={setAssessmentPage} />}
-    </ServiceSection>}
+  useEffect(() => {
+    if (sessions.data?.total === 0 && assessments.data?.total === 0) setStartOpen(true);
+  }, [sessions.data?.total, assessments.data?.total]);
+  const openStart = (next: typeof mode) => {
+    setMode(next); setStartOpen(true);
+    requestAnimationFrame(() => { startHeading.current?.focus(); startHeading.current?.scrollIntoView({ block: "start", behavior: "auto" }); });
+  };
+  const refresh = () => { void sessions.reload(); void assessments.reload(); };
+  const hasLoadError = Boolean(sessions.error || assessments.error);
+  const hasAssessments = (assessments.data?.total ?? 0) > 0;
+  const nextTitle = loading ? "در حال پیدا کردن مسیر شما…" : hasLoadError ? "وضعیت قبلی‌ات کامل دریافت نشد" : publicationId && linked ? "آزمونت انتخاب شده؛ همراه را مشخص کن" : hasAssessments ? "ارزیابی‌تان را از همین‌جا ادامه بده" : linked ? "همراهت متصل است؛ آزمون را انتخاب کنید" : pending ? "یک دعوت منتظر تکمیل است" : "اول همراه شو، بعد آزمون را شروع کن";
+  const nextDescription = loading ? "دعوت‌ها و ارزیابی‌های قبلی‌ات را بررسی می‌کنیم." : hasLoadError ? "از بخش پیگیری، دریافت اطلاعات را دوباره امتحان کن. اگر کد دعوت داری، همچنان می‌توانی آن را بررسی کنی." : publicationId ? "از همراهی‌های موجود انتخاب کن؛ اگر همراه جدیدی داری، دعوتش کن." : hasAssessments ? "شرایط، پرداخت، پاسخ‌گویی و نتیجه هر ارزیابی، در صفحه همان ارزیابی در دسترس است." : linked ? "نیازی به دعوت دوباره نیست. از همراهی موجود، آزمون موردنظرت را انتخاب کن." : pending ? "دعوت را باز کن؛ می‌توانی کد بسازی یا وضعیت پذیرش همراهت را ببینی." : "فقط یکی از شما دعوت را می‌سازد. نفر دوم کد را با حساب خودش می‌پذیرد؛ بعد آزمون را انتخاب می‌کنید.";
+  const focusConnections = Boolean(publicationId || (!hasAssessments && (linked || pending)));
 
-    <PatientResourceState {...sessions} loading={false} retry={() => void sessions.reload()} />
-    {(sessions.data?.total ?? 0) > 0 && <ServiceSection title="همراهی‌های شما" description={publicationId ? "همراه موردنظرت را برای آزمون انتخاب‌شده مشخص کن." : "دعوت را ادامه بده یا از همراهی متصل‌شده، آزمون جدید انتخاب کن."}>
-      {sessions.data?.items.map((item, index) => {
-        const state = linkStates[item.state] ?? { title: "بررسی همراهی", description: "وضعیت دعوت و اتصال را بررسی کن.", action: "مشاهده جزئیات" };
-        return <Link key={item.id} href={`/assessment/couples/links/${item.id}${publicationId ? `?publicationId=${encodeURIComponent(publicationId)}` : ""}`} className="service-card transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>همراهی {toP((page - 1) * (sessions.data?.pageSize ?? 20) + index + 1)}</span><span>{new Date(item.createdAt).toLocaleDateString("fa-IR")}</span></div>
-          <h3>{state.title}</h3><p>{state.description}</p><span className="service-text-action">{state.action}<ArrowLeft size={16} aria-hidden="true" /></span>
-        </Link>;
-      })}
-      {sessions.data && <PatientPagination page={page} total={sessions.data.total} onChange={setPage} />}
-    </ServiceSection>}
+  return <main className={styles.page} dir="rtl">
+    <Link href="/assessment" className={styles.back}><ArrowRight size={16} aria-hidden="true" />همه آزمون‌ها</Link>
+    <header className={styles.heading}><span aria-hidden="true"><HeartHandshake size={28} strokeWidth={1.6} /></span><div><h1>آزمون زوجی</h1><p>یک مسیر مشترک، با حساب‌ها و پاسخ‌های مستقل</p></div></header>
 
-    <section aria-labelledby="couples-start-title" className="mt-6 rounded-2xl border border-border bg-white p-4 sm:p-6">
-      <h2 id="couples-start-title" className="text-base font-semibold">{hasHistory ? "شروع با یک همراه جدید" : "برای شروع، یکی از این دو راه را انتخاب کن"}</h2>
-      <p className="mt-2 text-sm leading-7 text-muted-foreground">هر دو نفر باید حساب کاربری داشته باشید. فقط یکی دعوت را می‌سازد و نفر دوم آن را با حساب خودش می‌پذیرد.</p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2" role="group" aria-label="روش شروع ارزیابی زوجی">
-        {([{ id: "invite", title: "می‌خواهم همراهم را دعوت کنم", description: "هنوز دعوتی ندارید؟ از اینجا شروع کن.", icon: UserPlus }, { id: "accept", title: "کد دعوت دارم", description: "همراهت دعوت ساخته؟ کدش را اینجا وارد کن.", icon: Mail }] as const).map(option => {
-          const Icon = option.icon;
-          return <button key={option.id} type="button" aria-expanded={mode === option.id} aria-controls="couples-start-panel" onClick={() => setMode(option.id)} className={`flex items-start gap-3 rounded-xl border p-4 text-right transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${mode === option.id ? "border-primary bg-primary/5" : "border-border bg-white hover:border-primary/40"}`}>
-            <span className="mt-0.5 text-primary"><Icon size={22} aria-hidden="true" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium text-foreground">{option.title}</span><span className="mt-1 block text-xs leading-6 text-muted-foreground">{option.description}</span></span><ChevronLeft size={16} className="mt-1 shrink-0 text-primary" aria-hidden="true" />
-          </button>;
-        })}
+    <section className={styles.overview} aria-labelledby="couples-next-title" aria-busy={loading}>
+      <span className={styles.eyebrow}><Users size={16} aria-hidden="true" />{hasHistory ? "قدم بعدی شما" : "شروع همراهی"}</span>
+      <h2 id="couples-next-title">{nextTitle}</h2><p>{nextDescription}</p>
+      <div className={styles.overviewActions} hidden={startOpen && !hasHistory && !hasLoadError}>
+        {!loading && (hasHistory || hasLoadError) ? <Link href="#couples-history" className={startOpen ? styles.secondary : styles.primary} onClick={() => setHistoryView(hasLoadError ? sessions.error ? "connections" : "assessments" : focusConnections ? "connections" : "assessments")}>{hasLoadError ? "بررسی وضعیت و تلاش دوباره" : focusConnections ? linked ? "انتخاب همراه و آزمون" : "پیگیری دعوت همراه" : "دیدن ارزیابی‌های من"}<ArrowLeft size={18} aria-hidden="true" /></Link> : <button type="button" className={styles.primary} onClick={() => openStart("invite")} disabled={busy}>دعوت همراهم<UserPlus size={18} aria-hidden="true" /></button>}
+        <button type="button" className={styles.secondary} onClick={() => openStart("accept")} disabled={busy}><Mail size={18} aria-hidden="true" />کد دعوت دارم</button>
+        {!loading && hasHistory && <button type="button" className={styles.quiet} onClick={() => openStart("invite")} disabled={busy}>دعوت همراه جدید</button>}
       </div>
-      <div id="couples-start-panel" role="region" aria-label="مراحل شروع همراهی">
-        {mode === "invite" && <div className="mt-5 border-t border-border pt-5"><h3 className="text-sm font-semibold">اول شرایط همراهی را تأیید کن</h3><p className="mb-4 mt-2 text-sm leading-7 text-muted-foreground">بعد از تأیید، وارد صفحه دعوت می‌شوی و شناسه بیمار و شماره موبایل همراهت را وارد می‌کنی. همراهت شناسه‌اش را از همین صفحه و بخش «شناسه من» پیدا می‌کند.</p><CreateLinkPanel key={authentication.user.id} token={token} userId={authentication.user.id} publicationId={publicationId} /></div>}
-        {mode === "accept" && <div className="mt-5 border-t border-border pt-5"><h3 className="text-sm font-semibold">دعوت همراهت را بررسی کن</h3><InvitationAcceptance key={authentication.user.id} token={token} publicationId={publicationId} /></div>}
-      </div>
-      <details className="mt-4 border-t border-border pt-3" onToggle={event => setIdentityOpen(event.currentTarget.open)}>
-        <summary className="cursor-pointer py-2 text-sm font-medium text-primary">همراهم شناسه مرا می‌خواهد؛ شناسه من کجاست؟</summary>
-        {identityOpen && <InvitationIdentity token={token} />}
-      </details>
+      <ol className={styles.steps} aria-label="مسیر کلی ارزیابی زوجی">
+        <li><Users size={18} aria-hidden="true" /><div>دعوت و اتصال<span>هر نفر با حساب خودش</span></div></li>
+        <li><ClipboardList size={18} aria-hidden="true" /><div>انتخاب و پاسخ‌گویی<span>با رضایت جداگانه هر دو نفر</span></div></li>
+        <li><HeartHandshake size={18} aria-hidden="true" /><div>نتیجه مشترک<span>پس از تکمیل شرایط هر دو نفر</span></div></li>
+      </ol>
     </section>
 
-    <details className="mt-5 rounded-2xl bg-muted/60 p-4">
-      <summary className="cursor-pointer py-1 text-sm font-medium">از دعوت تا نتیجه چه مراحلی داریم؟</summary>
-      <ol className="mt-4 space-y-4">{steps.map((step, index) => <li key={step.title} className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs text-primary">{toP(index + 1)}</span><div><h3 className="text-sm font-medium">{step.title}</h3><p className="mt-1 text-xs leading-6 text-muted-foreground">{step.description}</p></div></li>)}</ol>
-    </details>
-    <aside className="mt-5 flex items-start gap-3 px-1 text-xs leading-7 text-muted-foreground"><ShieldCheck size={20} className="mt-1 shrink-0 text-primary" aria-hidden="true" /><p><strong className="font-medium text-foreground">پاسخ‌های فردی‌تان خصوصی می‌ماند.</strong> اتصال حساب‌ها اجازه دیدن پاسخ‌ها و نتیجه فردی را نمی‌دهد؛ هر آزمون به رضایت جداگانه هر دو نفر نیاز دارد.</p></aside>
-  </ServicePage>;
+    {startOpen && <section className={styles.workspace} aria-labelledby="couples-start-title">
+      <div className={styles.sectionHeading}><div><h2 id="couples-start-title" ref={startHeading} tabIndex={-1}>{mode === "invite" ? "دعوت همراهم" : "پذیرش دعوت همراه"}</h2><p>هر دو نفر باید حساب کاربری مستقل داشته باشید.</p></div></div>
+      <div className={styles.switch} role="group" aria-label="انتخاب روش همراهی">
+        <button type="button" aria-pressed={mode === "invite"} aria-controls="couples-invite-panel" disabled={busy} onClick={() => setMode("invite")}><UserPlus size={18} aria-hidden="true" />دعوت می‌سازم</button>
+        <button type="button" aria-pressed={mode === "accept"} aria-controls="couples-accept-panel" disabled={busy} onClick={() => setMode("accept")}><Mail size={18} aria-hidden="true" />کد دعوت دارم</button>
+      </div>
+      <div id="couples-invite-panel" hidden={mode !== "invite"}><CoupleInviteFlow key={authentication.user.id} token={token} userId={authentication.user.id} publicationId={publicationId} onBusyChange={setBusy} onInvited={() => { void sessions.reload(); }} /></div>
+      <div id="couples-accept-panel" hidden={mode !== "accept"}><CoupleAcceptFlow key={authentication.user.id} token={token} publicationId={publicationId} onBusyChange={setBusy} /></div>
+    </section>}
+
+    {(hasHistory || loading || sessions.error || assessments.error) && <section id="couples-history" className={styles.history} aria-labelledby="couples-history-title" tabIndex={-1}>
+      <div className={styles.sectionHeading}><div><h2 id="couples-history-title">پیگیری شما</h2><p>برای ادامه، دعوت یا ارزیابی موردنظرت را باز کن.</p></div><button type="button" className={styles.quiet} disabled={loading || busy} onClick={refresh}><RefreshCw size={16} aria-hidden="true" />به‌روزرسانی</button></div>
+      <div className={styles.switch} role="group" aria-label="نوع سوابق زوجی">
+        <button type="button" aria-pressed={view === "connections"} aria-controls="couples-history-panel" onClick={() => setHistoryView("connections")}>همراهی‌ها {sessions.data ? `(${toP(sessions.data.total)})` : ""}</button>
+        <button type="button" aria-pressed={view === "assessments"} aria-controls="couples-history-panel" onClick={() => setHistoryView("assessments")}>ارزیابی‌ها {assessments.data ? `(${toP(assessments.data.total)})` : ""}</button>
+      </div>
+      <div id="couples-history-panel">
+        {view === "connections" ? <><PatientResourceState {...sessions} retry={() => void sessions.reload()} />
+          <div className={styles.list}>{sessions.data?.items.map((item, index) => {
+            const state = linkStates[item.state] ?? { title: "بررسی همراهی", description: "وضعیت دعوت و اتصال را بررسی کن.", action: "مشاهده جزئیات" };
+            const Icon = item.state === "LINKED" ? Check : item.state === "AWAITING_PARTNER" ? Clock3 : Users;
+            return <Link key={item.id} href={toLink(item.id)} className={styles.item}><Icon size={22} aria-hidden="true" /><div className={styles.itemBody}><div className={styles.itemMeta}><span>همراهی {toP((page - 1) * (sessions.data?.pageSize ?? 20) + index + 1)}</span><span>{new Date(item.createdAt).toLocaleDateString("fa-IR", { timeZone: "Asia/Tehran" })}</span></div><h3>{state.title}</h3><p>{state.description}</p><span className={styles.itemAction}>{state.action}<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>;
+          })}</div>
+          {sessions.data?.total === 0 && <div className={styles.empty}><h3>هنوز همراهی ثبت نشده</h3><p>دعوت بساز یا کدی را که از همراهت گرفته‌ای وارد کن. برای شروع، یک دعوت کافی است.</p><button type="button" className={styles.quiet} onClick={() => openStart("invite")} disabled={busy}>شروع همراهی<ArrowLeft size={16} aria-hidden="true" /></button></div>}
+          {sessions.data && <PatientPagination page={page} total={sessions.data.total} onChange={setPage} />}
+        </> : <><PatientResourceState {...assessments} retry={() => void assessments.reload()} />
+          <div className={styles.list}>{assessments.data?.items.map(item => {
+            const withdrawn = Boolean(item.ownConsent.withdrawnAt);
+            const ownAccepted = Boolean(item.ownConsent.acceptedAt && !withdrawn);
+            const title = withdrawn ? "رضایت پس گرفته شده" : !ownAccepted ? "نیاز به رضایت شما" : !item.mutualConsentComplete ? "در انتظار رضایت همراه" : "رضایت‌ها تکمیل شده";
+            const description = withdrawn ? "وضعیت ارزیابی و دسترسی‌ها را بررسی کن." : !ownAccepted ? "قبل از پاسخ‌گویی، شرایط این ارزیابی را بخوان و تصمیم بگیر." : !item.mutualConsentComplete ? "رضایت تو ثبت شده؛ برای ادامه، همراهت هم باید شرایط را بپذیرد." : "وضعیت پرداخت، آزمون خودت و نتیجه مشترک را از اینجا ببین.";
+            return <Link key={item.id} href={`/assessment/couples/${encodeURIComponent(item.id)}`} className={styles.item}><ClipboardList size={22} aria-hidden="true" /><div className={styles.itemBody}><div className={styles.itemMeta}><span className={styles.badge}>{title}</span></div><h3>{item.title}</h3><p>{description}</p><span className={styles.itemAction}>{!ownAccepted && !withdrawn ? "بررسی شرایط ارزیابی" : "باز کردن ارزیابی"}<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>;
+          })}</div>
+          {assessments.data?.total === 0 && <div className={styles.empty}><h3>هنوز آزمون مشترکی انتخاب نشده</h3><p>پس از پذیرفته‌شدن دعوت، از بخش همراهی‌ها آزمونتان را انتخاب کنید.</p><button type="button" className={styles.quiet} onClick={() => setHistoryView("connections")}>دیدن همراهی‌ها<ArrowLeft size={16} aria-hidden="true" /></button></div>}
+          {assessments.data && <PatientPagination page={assessmentPage} total={assessments.data.total} onChange={setAssessmentPage} />}
+        </>}
+      </div>
+    </section>}
+
+    <details className={styles.help} onToggle={event => setIdentityOpen(event.currentTarget.open)}><summary>شناسه من برای دعوت کجاست؟</summary><p>اگر همراهت می‌خواهد دعوتت کند، شناسه بیمار خودت و شماره موبایلی که با آن ثبت‌نام کرده‌ای را فقط برای او بفرست.</p>{identityOpen && <InvitationIdentity token={token} />}</details>
+    <aside className={styles.privacy}><ShieldCheck size={20} aria-hidden="true" /><p>پاسخ‌ها و نتیجه فردی‌ات خصوصی می‌مانند. اتصال حساب‌ها اجازه دیدن آن‌ها را به همراه نمی‌دهد؛ نتیجه مشترک به رضایت جداگانه هر دو نفر نیاز دارد.</p></aside>
+  </main>;
 }
-function CreateLinkPanel({ token, userId, publicationId }: { token: string; userId: string; publicationId: string | null }) {
-  const policy = usePatientResource(useCallback(() => getCoupleLinkPolicy(token), [token]));
-  return <><PatientResourceState {...policy} retry={() => void policy.reload()} />{policy.data && <CreateLink key={policy.data.contentHash} policy={policy.data} token={token} userId={userId} publicationId={publicationId} />}</>;
-}
+
 function InvitationIdentity({ token }: { token: string }) {
   const profile = usePatientResource(useCallback(() => loadSelfProfile(token), [token]));
-  return <div className="mt-3 space-y-3"><PatientResourceState {...profile} retry={() => void profile.reload()} />{profile.data && <><p className="text-xs leading-6 text-muted-foreground">این شناسه را همراه با شماره موبایلی که با آن ثبت‌نام کرده‌ای، فقط برای همراه موردنظرت بفرست.</p><label className="block text-xs text-muted-foreground">شناسه بیمار من<input readOnly aria-label="شناسه بیمار من برای دریافت دعوت" dir="ltr" value={profile.data.patientId} className="mt-2 w-full select-all rounded-xl border border-border bg-muted/40 p-3 text-xs text-foreground" /></label></>}</div>;
+  return <div className={styles.flow}><PatientResourceState {...profile} retry={() => void profile.reload()} />{profile.data && <CopyValue value={profile.data.patientId} label="شناسه بیمار من" id="couples-own-id" />}</div>;
 }
-function CreateLink({ policy, token, userId, publicationId }: { policy: components["schemas"]["CoupleLinkPolicyDto"]; token: string; userId: string; publicationId: string | null }) {
-  const router = useRouter(); const [accepted, setAccepted] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [epoch] = useState(() => crypto.randomUUID()); const key = useOperationKey(`${userId}:couple-link`);
-  const create = async () => {
-    if (!accepted || busy) return; setBusy(true); setError(null);
-    try { const body = { consentPolicyVersionId: policy.id, consentAccepted: true as const }; const session = await createCoupleSession(token, body, await key({ ...body, epoch })); router.push(`/assessment/couples/links/${session.id}${publicationId ? `?publicationId=${encodeURIComponent(publicationId)}` : ""}`); }
-    catch (reason) { setError(patientErrorMessage(reason)); } finally { setBusy(false); }
-  };
-  return <div className="space-y-3"><PolicyAcceptance policy={policy} accepted={accepted} onChange={setAccepted} disabled={busy} />{error && <p role="alert" className="text-sm text-red-700">{error}</p>}<button disabled={busy || !accepted} onClick={() => void create()} className="w-full rounded-xl bg-primary p-4 font-bold text-white disabled:opacity-40">{busy ? "در حال آماده‌سازی دعوت…" : "تأیید شرایط و رفتن به دعوت همراه"}</button></div>;
+export default function CouplesPage() {
+  return <Suspense fallback={<p role="status" className="p-5 text-sm text-muted-foreground">در حال آماده‌سازی صفحه زوجی…</p>}><CouplesHub /></Suspense>;
 }
-function InvitationAcceptance({ token, publicationId }: { token: string; publicationId: string | null }) {
-  const router = useRouter(); const [secret, setSecret] = useState(""); const [preview, setPreview] = useState<components["schemas"]["CoupleInvitationPreviewDto"] | null>(null); const [accepted, setAccepted] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null);
-  const review = async () => { if (busy) return; setBusy(true); setError(null); setPreview(null); setAccepted(false); try { setPreview(await previewCoupleInvitation(token, secret.trim())); } catch (reason) { setError(patientErrorMessage(reason)); } finally { setBusy(false); } };
-  const accept = async () => { if (!preview || !accepted || busy) return; setBusy(true); setError(null); try { const session = await acceptCoupleInvitation(token, { invitationToken: secret.trim(), consentPolicyVersionId: preview.policy.id, consentAccepted: true }); setSecret(""); setPreview(null); router.push(`/assessment/couples/links/${session.id}${publicationId ? `?publicationId=${encodeURIComponent(publicationId)}` : ""}`); } catch (reason) { setError(patientErrorMessage(reason)); } finally { setBusy(false); } };
-  return <section className="mt-4 space-y-3"><p className="text-sm text-muted-foreground">کد دعوتی را که همراهت فرستاده، کامل اینجا بچسبان. کد دعوت با شناسه بیمار فرق دارد.</p><label className="block text-sm">کد دعوت<input value={secret} disabled={busy} onChange={event => { setSecret(event.target.value); setPreview(null); setAccepted(false); setError(null); }} autoComplete="off" spellCheck={false} dir="ltr" aria-describedby="couple-invitation-help" className="mt-2 w-full rounded-xl border border-border p-3" /></label><p id="couple-invitation-help" className="text-xs leading-6 text-muted-foreground">{secret.trim() && secret.trim().length !== 43 ? "کد کامل نیست؛ مطمئن شو تمام کد دعوت را کپی کرده‌ای." : "ابتدا کد را بررسی کن؛ بعد از دیدن شرایط، پذیرش دعوت را تأیید می‌کنی."}</p><button disabled={busy || secret.trim().length !== 43} onClick={() => void review()} className="service-primary w-full disabled:opacity-40">{busy ? "در حال بررسی…" : "بررسی کد دعوت"}</button>{error && <p role="alert" className="text-sm text-red-700">{error}</p>}{preview && <><PolicyAcceptance policy={preview.policy} accepted={accepted} onChange={setAccepted} disabled={busy} /><button disabled={busy || !accepted} onClick={() => void accept()} className="w-full rounded-xl bg-primary p-4 text-white disabled:opacity-40">{busy ? "در حال ثبت…" : "تأیید شرایط و پذیرش دعوت"}</button></>}</section>;
-}
-export default function CouplesPage() { return <Suspense fallback={<p role="status" className="p-4">در حال دریافت اطلاعات زوجین…</p>}><CouplesHub /></Suspense>; }
