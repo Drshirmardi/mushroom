@@ -9,6 +9,7 @@ import { apiBaseUrl } from "../../lib/api";
 import { productImageApi } from "../../lib/commerce-product-image-api";
 import type { CommerceProduct } from "../../lib/commerce-catalog-api";
 import { ProductImageController } from "./product-image-controller";
+import type { ProductEditorState } from "./catalog-view";
 
 const primary = "inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50";
 const secondary = "inline-flex items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50";
@@ -27,14 +28,15 @@ function SelectionZone({ disabled }: { disabled: boolean }) {
   </fieldset>;
 }
 
-function EditorBody({ controller, product, onClose }: { controller: ProductImageController; product: CommerceProduct; onClose: () => void }) {
+function EditorBody({ controller, product, onClose, embedded, onEditorStateChange }: { controller: ProductImageController; product: CommerceProduct; onClose: () => void; embedded: boolean; onEditorStateChange?: (state: ProductEditorState) => void }) {
   const state = useSyncExternalStore(controller.subscribe, controller.snapshot, controller.snapshot);
   const busy = state.phase === "uploading" || state.phase === "confirming";
   const locked = busy || state.phase === "loading" || state.phase === "unresolved";
+  useEffect(() => { onEditorStateChange?.({ busy, dirty: state.fileName !== null, blocked: state.phase === "unresolved" }); }, [busy, state.fileName, state.phase, onEditorStateChange]);
   return <>
     <header className="flex items-start justify-between gap-3 border-b border-border p-4 sm:p-5">
       <div className="min-w-0"><h2 id="product-image-editor-title" className="font-bold">تصویر محصول</h2><p className="mt-1 break-words text-sm text-muted-foreground">{product.title}</p></div>
-      <button type="button" disabled={busy} onClick={onClose} className={secondary} aria-label="بستن ویرایشگر تصویر"><X size={18} /></button>
+      {!embedded && <button type="button" disabled={busy} onClick={onClose} className={secondary} aria-label="بستن ویرایشگر تصویر"><X size={18} /></button>}
     </header>
     <div className="space-y-5 p-4 sm:p-5">
       <section aria-label="تصویر ذخیره‌شده" className="rounded-xl border border-border p-3">
@@ -68,7 +70,7 @@ function EditorBody({ controller, product, onClose }: { controller: ProductImage
   </>;
 }
 
-export default function ProductImageEditor({ product, onClose, onChanged }: { product: CommerceProduct; onClose: () => void; onChanged: () => Promise<void> }) {
+export default function ProductImageEditor({ product, onClose, onChanged, embedded = false, onEditorStateChange }: { product: CommerceProduct; onClose: () => void; onChanged: () => Promise<void>; embedded?: boolean; onEditorStateChange?: (state: ProductEditorState) => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const active = useRef<ProductImageController | null>(null);
   const changed = useRef(onChanged);
@@ -85,7 +87,9 @@ export default function ProductImageEditor({ product, onClose, onChanged }: { pr
     queueMicrotask(() => { if (mounted) { setController(editor); void editor.load(); } });
     return () => { mounted = false; editor.dispose(); active.current = null; };
   }, [product.id]);
-  useEffect(() => { const element = dialog.current; element?.showModal(); return () => element?.close(); }, []);
+  useEffect(() => { const element = dialog.current; if (!embedded) element?.showModal(); return () => element?.close(); }, [embedded]);
+  const body = controller ? <EditorBody controller={controller} product={product} onClose={onClose} embedded={embedded} onEditorStateChange={onEditorStateChange} /> : <div className="p-5"><h2 id="product-image-editor-title">تصویر محصول</h2><p role="status">در حال آماده‌سازی…</p></div>;
+  if (embedded) return <section aria-label="تصویر محصول">{body}</section>;
   return <dialog ref={dialog} dir="rtl" aria-labelledby="product-image-editor-title" onKeyDown={event => {
     if (event.key !== "Tab") return;
     const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex]') ?? []).filter(element => element.tabIndex >= 0 && element.getClientRects().length > 0);
@@ -96,6 +100,6 @@ export default function ProductImageEditor({ product, onClose, onChanged }: { pr
   }} onCancel={event => {
     if (["uploading", "confirming"].includes(active.current?.snapshot().phase ?? "")) event.preventDefault(); else onClose();
   }} className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-xl overflow-y-auto rounded-2xl border border-border bg-card p-0 text-foreground shadow-xl backdrop:bg-black/40">
-    {controller ? <EditorBody controller={controller} product={product} onClose={onClose} /> : <div className="p-5"><h2 id="product-image-editor-title">تصویر محصول</h2><p role="status">در حال آماده‌سازی…</p></div>}
+    {body}
   </dialog>;
 }

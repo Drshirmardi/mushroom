@@ -1,5 +1,7 @@
 import type { CommerceProduct, CommerceSku } from "../../lib/commerce-catalog-api";
 
+export type ProductEditorState = { busy: boolean; dirty: boolean; blocked?: boolean };
+
 export function catalogInteger(value: string): number | null {
   if (!/^\d+$/.test(value.trim())) return null;
   const parsed = Number(value);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { ProductEditorState } from "./catalog-view";
 import { Check, RefreshCw, X } from "lucide-react";
 
 import {
@@ -96,11 +97,15 @@ export default function ProductContentEditor({
   accessToken,
   onClose,
   onChanged,
+  embedded = false,
+  onEditorStateChange,
 }: {
   product: { id: string; title: string };
   accessToken: string;
   onClose: () => void;
   onChanged: () => Promise<void>;
+  embedded?: boolean;
+  onEditorStateChange?: (state: ProductEditorState) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -147,11 +152,13 @@ export default function ProductContentEditor({
   }, [product.id]);
   useEffect(() => {
     const element = dialog.current;
-    element?.showModal();
+    if (!embedded) element?.showModal();
     return () => element?.close();
-  }, []);
+  }, [embedded]);
+  useEffect(() => { onEditorStateChange?.({ busy, dirty }); }, [busy, dirty, onEditorStateChange]);
 
   const requestClose = () => {
+    if (busy) return;
     if (dirty && !busy && !confirmDiscard) {
       setConfirmDiscard(true);
       return;
@@ -262,36 +269,7 @@ export default function ProductContentEditor({
     setNotice(null);
   };
 
-  return (
-    <dialog
-      ref={dialog}
-      dir="rtl"
-      aria-labelledby="product-content-editor-title"
-      onKeyDown={(event) => {
-        if (event.key !== "Tab") return;
-        const controls = Array.from(
-          dialog.current?.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]") ?? [],
-        ).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
-        const first = controls[0];
-        const last = controls.at(-1);
-        if (!first || !last) {
-          event.preventDefault();
-          return;
-        }
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }}
-      onCancel={(event) => {
-        event.preventDefault();
-        requestClose();
-      }}
-      className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card p-0 text-foreground shadow-xl backdrop:bg-black/40"
-    >
+  const body = <>
       <header className="flex items-start justify-between gap-3 border-b border-border p-4 sm:p-5">
         <div className="min-w-0">
           <h2 id="product-content-editor-title" className="font-bold">
@@ -299,9 +277,9 @@ export default function ProductContentEditor({
           </h2>
           <p className="mt-1 break-words text-sm text-muted-foreground">{product.title}</p>
         </div>
-        <button type="button" disabled={busy} onClick={requestClose} className={secondary} aria-label="بستن ویرایشگر محتوا">
+        {!embedded && <button type="button" disabled={busy} onClick={requestClose} className={secondary} aria-label="بستن ویرایشگر محتوا">
           <X size={18} />
-        </button>
+        </button>}
       </header>
       <div className="space-y-5 p-4 sm:p-5">
         {loadState === "loading" && (
@@ -474,6 +452,39 @@ export default function ProductContentEditor({
           </>
         )}
       </div>
+  </>;
+  if (embedded) return <section aria-label="محتوا و جزئیات محصول">{body}</section>;
+  return (
+    <dialog
+      ref={dialog}
+      dir="rtl"
+      aria-labelledby="product-content-editor-title"
+      onKeyDown={(event) => {
+        if (event.key !== "Tab") return;
+        const controls = Array.from(
+          dialog.current?.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]") ?? [],
+        ).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (!first || !last) {
+          event.preventDefault();
+          return;
+        }
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }}
+      onCancel={(event) => {
+        event.preventDefault();
+        requestClose();
+      }}
+      className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card p-0 text-foreground shadow-xl backdrop:bg-black/40"
+    >
+      {body}
     </dialog>
   );
 }

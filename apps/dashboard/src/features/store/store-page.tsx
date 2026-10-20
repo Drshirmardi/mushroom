@@ -5,14 +5,13 @@ import dynamic from "next/dynamic";
 import { PackagePlus, Plus, RefreshCw, ShieldAlert } from "lucide-react";
 
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
-import ProductContentEditor from "./product-content-editor";
 import MezajCollectionsEditor from "./mezaj-collections-editor";
 import { ProductCatalog } from "./product-catalog";
 import { catalogInteger } from "./catalog-view";
 import { apiClient } from "@/lib/api";
 import { CommerceCatalogApiError, createCommerceCategory, createCommerceProduct, createCommerceSku, getCommerceCourierShippingRate, loadCommerceCatalog, updateCommerceCategory, updateCommerceCourierShippingRate, type CommerceCatalogData, type CommerceCatalogState, type CommerceCourierShippingRate, type CommerceProduct } from "@/lib/commerce-catalog-api";
 
-const ProductImageEditor = dynamic(() => import("./product-image-editor"), { ssr: false, loading: () => <p role="status">در حال آماده‌سازی ویرایشگر تصویر…</p> });
+const ProductWorkspace = dynamic(() => import("./product-workspace"), { ssr: false, loading: () => <p role="status">در حال آماده‌سازی مدیریت محصول…</p> });
 type ViewState = CommerceCatalogState | { status: "loading" };
 type MutationState = { status: "idle" } | { status: "saving" } | { status: "success"; message: string } | { status: "validation"; message: string } | { status: "forbidden" } | { status: "unavailable" } | { status: "error" };
 
@@ -37,7 +36,9 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
   const [mutation, setMutation] = useState<MutationState>({ status: "idle" });
   const [mezajBusy, setMezajBusy] = useState(false);
   const saving = useRef(false);
-  const busy = mutation.status === "saving" || reloading || mezajBusy;
+  const [workspaceBusy, setWorkspaceBusy] = useState(false);
+  const busy = mutation.status === "saving" || reloading || mezajBusy || workspaceBusy;
+  useEffect(() => { onBusy(busy); return () => onBusy(false); }, [busy, onBusy]);
   const [creating, setCreating] = useState(false);
   const [creatingSku, setCreatingSku] = useState(false);
   const [categoryName, setCategoryName] = useState(""); const [categorySlug, setCategorySlug] = useState("");
@@ -45,13 +46,12 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
   const [categoryId, setCategoryId] = useState(data.categories.find((category) => category.isActive)?.id ?? "");
   const [description, setDescription] = useState("");
   const [skuProductId, setSkuProductId] = useState(data.products.find((product) => product.status !== "ARCHIVED")?.id ?? "");
-  const [skuTarget, setSkuTarget] = useState<CommerceProduct | null>(null);
   const [skuCode, setSkuCode] = useState(""); const [skuPrice, setSkuPrice] = useState("0"); const [skuStock, setSkuStock] = useState("0");
-  const [imageProduct, setImageProduct] = useState<CommerceProduct | null>(null);
-  const [contentProduct, setContentProduct] = useState<CommerceProduct | null>(null);
+  const [managedProduct, setManagedProduct] = useState<CommerceProduct | null>(null);
+  const [workspaceTab, setWorkspaceTab] = useState<"base" | "inventory">("base");
   const submit = async (work: () => Promise<unknown>, success: string) => {
     if (saving.current) return;
-    saving.current = true; onBusy(true); setMutation({ status: "saving" });
+    saving.current = true; setMutation({ status: "saving" });
     try {
       await work();
       try { await refresh(); setMutation({ status: "success", message: success }); }
@@ -59,28 +59,26 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
     } catch (error) {
       const status = error instanceof CommerceCatalogApiError ? error.status : 0;
       setMutation(status === 401 || status === 403 ? { status: "forbidden" } : status === 400 || status === 409 || status === 422 ? { status: "validation", message: "اطلاعات یا وضعیت محصول معتبر نیست؛ تغییر ثبت نشد." } : status === 0 || status === 503 || status === 504 ? { status: "unavailable" } : { status: "error" });
-    } finally { saving.current = false; onBusy(false); }
+    } finally { saving.current = false; }
   };
-  const addSku = (product: CommerceProduct) => { setSkuProductId(product.id); setSkuTarget(product); setCreatingSku(true); setTab("inventory"); };
-  const skuProducts = skuTarget && !data.products.some((product) => product.id === skuTarget.id) ? [skuTarget, ...data.products] : data.products;
+  const skuProducts = data.products;
   const skuPriceValue = catalogInteger(skuPrice); const skuStockValue = catalogInteger(skuStock);
   return <div className="space-y-5">
-    {imageProduct && <ProductImageEditor key={imageProduct.id} product={imageProduct} onClose={() => setImageProduct(null)} onChanged={refresh} />}
-    {contentProduct && <ProductContentEditor key={contentProduct.id} product={contentProduct} accessToken={accessToken} onClose={() => setContentProduct(null)} onChanged={refresh} />}
+    {managedProduct && <ProductWorkspace key={managedProduct.id} product={data.products.find(product => product.id === managedProduct.id) ?? managedProduct} categories={data.categories} accessToken={accessToken} initialTab={workspaceTab} externalBusy={mutation.status === "saving" || reloading || mezajBusy} onClose={() => { setManagedProduct(null); setWorkspaceBusy(false); }} onChanged={refresh} onBusy={setWorkspaceBusy} />}
     <div className="flex flex-wrap gap-2 border-b border-border pb-3" role="group" aria-label="بخش‌های مدیریت فروشگاه">
       {([["products", "محصولات"], ["categories", "دسته‌بندی‌ها"], ["inventory", "انبار و انواع فروش"], ["shipping", "ارسال"], ["mezaj", "پیشنهاد بر اساس مزاج"]] as const).map(([id, label]) => <button type="button" key={id} disabled={busy} aria-pressed={tab === id} onClick={() => setTab(id)} className={`min-h-11 rounded-xl px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 ${tab === id ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-secondary"}`}>{label}</button>)}
     </div>
-    {tab === "mezaj" && <MezajCollectionsEditor accessToken={accessToken} onBusy={value => { setMezajBusy(value); onBusy(value); }} />}
+    {tab === "mezaj" && <MezajCollectionsEditor accessToken={accessToken} onBusy={setMezajBusy} />}
     <MutationNotice state={mutation} />
     {busy && <p role="status" className="text-sm text-muted-foreground">در حال ذخیره و دریافت اطلاعات تازه…</p>}
     {tab === "products" && <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">محصولات فروشگاه</h2><p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">پیش‌نویس محصول را بسازید، نوع فروش و قیمت را ثبت کنید، سپس تصویر و محتوای آن را تکمیل کنید.</p></div><button type="button" disabled={busy || data.categories.every((category) => !category.isActive)} aria-expanded={creating} aria-controls="new-product-form" onClick={() => setCreating((current) => !current)} className={button}><PackagePlus size={18} aria-hidden="true" />{creating ? "بستن فرم ساخت" : "محصول جدید"}</button></div>
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">محصولات فروشگاه</h2><p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">محصول را انتخاب کنید؛ اطلاعات، تصویر، محتوا و قیمت را در یک پنجره مدیریت کنید.</p></div><button type="button" disabled={busy || data.categories.every((category) => !category.isActive)} aria-expanded={creating} aria-controls="new-product-form" onClick={() => setCreating((current) => !current)} className={button}><PackagePlus size={18} aria-hidden="true" />{creating ? "بستن فرم ساخت" : "محصول جدید"}</button></div>
       {data.categories.every((category) => !category.isActive) && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">برای ساخت محصول، ابتدا در بخش دسته‌بندی‌ها یک دستهٔ فعال ثبت کنید.</p>}
       {creating && <form id="new-product-form" className="space-y-4 rounded-2xl border border-border bg-card p-4 sm:p-5" onSubmit={(event) => {
         event.preventDefault();
         if (title.trim() && slug.trim() && categoryId) void submit(async () => {
           const product = await createCommerceProduct(accessToken, { title: title.trim(), slug: slug.trim(), categoryId, ...(description.trim() ? { description: description.trim() } : {}) });
-          setTitle(""); setSlug(""); setDescription(""); setCreating(false); addSku(product);
+          setTitle(""); setSlug(""); setDescription(""); setCreating(false); setWorkspaceTab("inventory"); setManagedProduct(product);
         }, "پیش‌نویس ساخته شد؛ اکنون کد فروش، قیمت و موجودی اولیه را ثبت کنید.");
       }}>
         <h3 className="font-bold">مرحلهٔ اول: اطلاعات پایهٔ محصول</h3>
@@ -92,7 +90,7 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
         </fieldset>
         <button className={button} disabled={busy || !title.trim() || !slug.trim() || !categoryId}><Plus size={16} aria-hidden="true" />ساخت پیش‌نویس و ادامه</button>
       </form>}
-      <ProductCatalog data={data} accessToken={accessToken} busy={busy} submit={submit} editImage={setImageProduct} editContent={setContentProduct} addSku={addSku} />
+      <ProductCatalog data={data} busy={busy} onEdit={product => { setWorkspaceTab("base"); setManagedProduct(product); }} />
     </div>}
     {tab === "categories" && <div className="space-y-4">
       <h2 className="text-xl font-bold">دسته‌بندی محصولات</h2>
