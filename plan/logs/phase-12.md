@@ -4288,3 +4288,133 @@ Checks PASS: app typecheck; browser320/390/768/1440 confirms new icon/exact cart
 ## F12-FE01 — owner-requested session commits (2026-10-20)
 
 Owner explicitly requested committing the completed reviewed session changes. Recorded as scoped checkpoints, without marking the broader F12-FE01 production task DONE. Payment/optional-top-up flow committed separately as5694950; Home design/assets/responsive access and shared frosted navigation as810f4e6. Final Store icon/search polish and cumulative session evidence are recorded in the following scoped commit. Final app unit run:34 files/178 tests PASS using the previously documented external alias configuration; prior API/test/app types,15 isolated PostgreSQL Journey cases, mobile/desktop browser checks and builds remain recorded above. Staged diffs reviewed/whitespace checked. Unrelated existing couples page/component/styles and temporary test-results output excluded; no staging/reset/delete of those paths, no push/deploy. Full F12-FE01 remains REWORK/unchecked for broader acceptance.
+
+
+## Dashboard archive stage 1 — implemented unverified
+
+Task ID: F12-FE01 (owner-authorized dashboard extension)
+Date: 2026-10-20 Asia/Tehran
+Batch: CLIENT-INTEGRATION; sole coordinator/writer/source reviewer: Codex /root
+Status: IMPLEMENTED_UNVERIFIED — stop for owner visual review; full task remains REWORK/unchecked.
+
+Changed files:
+- apps/dashboard/src/app/{layout.tsx,globals.css}
+- apps/dashboard/src/components/layout/{app-shell,sidebar,header,notif-panel,command-palette,theme-toggle}.tsx
+- apps/dashboard/src/components/shared/kpi-card.tsx
+- apps/dashboard/src/features/dashboard/{dashboard-page,revenue-panel}.tsx
+- apps/dashboard/public/fonts/vazirmatn/{Vazirmatn-Variable.woff2,OFL.txt,README.md}
+- Coordinator plan STATUS/checklist/this handoff.
+
+Implementation: adapt archive white/zinc/crimson tokens, local variable font and glass/grid/aurora shell; retain every NAV destination and ADMIN session/authorization; desktop collapsible navigation, native modal mobile drawer and Ctrl/Cmd+K page search; light/dark/system theme and reduced-motion CSS; existing real notification panel retained with Escape/focus handling. Keep the dashboard operational across the clinic, assessments, treatment and commerce. Home preserves all previously displayed daily metrics, today's bounded appointment preview and recent appointment activity, and adds visual presentation of existing patient/treatment aggregates. No mock archive data/scripts or invented trends imported.
+
+Data/source review: unchanged loadDashboardHomeReporting retains six existing parallel real requests and its authorization/error behavior. The independent range chart starts concurrently and uses existing getCommerceRevenue + generated CommerceRevenueDto for 7/30/90 calendar days with daily buckets. Backend source confirms series contains only event-bearing dates; plot uses actual date spacing, has an empty state, distinguishes reporting freshness and exposes exact amounts in a table. Financial displays remain BigInt; Number is used only for bounded plot coordinates. Existing Recharts dependency inspected; archive-like SVG/CSS implemented without a new package. Shared KpiCard caller in Billing reviewed at source level. Archive, backend, schema, generated client, lockfile, auth/session and future feature screens not modified. Unrelated patient/couple/protected paths not touched.
+
+Executed: source/diff/contract inspection only; existing dashboard development listener identified at localhost:3002 and API listener at :3003. No test/typecheck/lint/build, browser automation, graph rebuild/update, migration, data write, commit or final acceptance.
+
+Deferred verification (explicit owner instruction; no PASS claimed):
+- Owner visual comparison with archive, then necessary refinements.
+- Dashboard typecheck/lint/targeted tests/build after implementation and owner review.
+- Targeted chart cases: exact large/negative/zero amounts, empty/single/sparse dates, range/request ordering and API failure/forbidden/partial/stale.
+- Desktop/mobile/RTL at narrow and wide widths; font loading, scroll/overflow, collapsed navigation, preserved destinations, native dialog focus/Escape, command search, notifications, theme persistence/system changes and reduced motion.
+- Source-dependent regression checks for shared tokens and KpiCard consumers; real reporting/permission behavior.
+
+Limits: no runtime or visual verification yet; global tokens also restyle existing feature pages, whose detailed redesign and regression verification remain pending. The appointment preview remains the existing first ten rows; mean wait remains unavailable when not provided. No traffic/device/heatmap/report-builder or fake growth inserted. No provider/banking acceptance inferred from operational revenue. Working preview uses the existing authenticated ADMIN flow; no authentication bypass or synthetic production data.
+
+Next action: owner reviews http://localhost:3002/dashboard. Stop here. After owner feedback, continue products, customers, orders (server-side search/pagination), messages, settings in that order; investigate backend gaps only for the feature then being implemented. Do not close F12-FE01 or create its final task commit before final acceptance and deferred verification.
+
+
+## Store product workflow — implemented unverified
+
+Task: F12-FE01; batch CLIENT-INTEGRATION; sole writer/source reviewer Codex /root.
+Date: 2026-10-20 Asia/Tehran. Status: IMPLEMENTED_UNVERIFIED, owner review pending; overall task REWORK/unchecked.
+
+Owner scope: improve ADMIN /store usability, show whole actual product images with essential information, provide grid/list views and one centered product workspace; expose base-field editing and archived-product recovery. The user-mentioned System Design template was read together with its manifest: it produces a reference DOCX architecture document, so no document was created for this UI request. Previously read frontend/UI/token/React guidance reused; relevant NestJS guidance read for the narrow lifecycle addition. No global analysis, Graphify rebuild, SpecKit chain or agents.
+
+Changed this stage:
+- apps/dashboard/src/features/store/{product-catalog,product-thumbnail,product-workspace,product-sku-editor,store-page,product-image-editor,product-content-editor}.tsx
+- apps/dashboard/src/features/store/catalog-view.ts (shared editor-state type only)
+- apps/dashboard/src/features/store/product-catalog.spec.tsx (adapt existing source expectations; not run)
+- apps/api/src/modules/commerce/catalog/admin-commerce-catalog.service.ts (ARCHIVED -> DRAFT only)
+- apps/api/test/admin-commerce-catalog.integration.spec.ts (restore/denial/direct-republish/persistence assertions; not run)
+- coordinator STATUS, phase checklist and this log. Prior shell/Home changes retained.
+
+Source review and behavior:
+- Grid is the default, with an explicit list toggle. Real protected admin image preview is fetched lazily for visible products with current session transport; blob URLs are revoked and requests aborted on unmount/replacement. object-contain preserves the full image; explicit absent/unavailable states replace invented imagery. Cards/rows show actual category, lifecycle/content status, active-SKU minimum price and physical/free/reserved inventory. Image/name/manage controls open the same product workspace.
+- One native dialog owns focus/Escape and contains base fields, image, editorial content and SKU/inventory. Heavy editors load on first visit and remain mounted when switching sections so unsaved input/file selection is preserved. Parent observes actual child busy/dirty/unresolved state; in-flight operations cannot be abandoned and unsaved dismissal requires an explicit choice. Existing image controller, ETags/idempotency/session handling and content revision/source/explicit approval semantics are reused; no nested modal is opened in embedded mode.
+- Base fields use the existing typed product PATCH for title/slug/category; descriptions and all supported editorial details remain in the content section to avoid competing description drafts. SKU editor exposes code/title/active status/price/tax, separate stock-ledger adjustment and new SKU creation inside the same workspace. Newly created products continue directly to their own inventory section rather than a different store tab. Existing category/shipping/Mezaj/global inventory capabilities remain.
+- Verified from current service source: base-field editing already existed; archived recovery did not. The transaction/clinic lock/audit/ADMIN authorization remain unchanged. The sole new lifecycle edge is ARCHIVED -> DRAFT, not ARCHIVED -> ACTIVE; explicit subsequent activation and independent content approval remain. Existing DTO/OpenAPI enum and PATCH request/response shapes are unchanged; no schema/migration/generated-client/package change needed.
+
+Executed: focused source/diff/contract/caller inspection only. No tests, typecheck, lint, build, automated browser verification, Graphify update, real product/media/financial write or commit. Test-source updates are unexecuted and are not evidence of a passing gate.
+
+Deferred: owner visual/interaction review; targeted API PostgreSQL lifecycle + authorization/audit/preservation suite; dashboard types/lint/catalog/editor/controller regressions/build; desktop/mobile/RTL card/list and protected-image loading; complete modal base save, content revision/conflict/approval, upload/replacement/removal/unknown-outcome, SKU edit/create/stock reservation and cross-section draft/close/focus regression. Prior dashboard deferred gates remain pending too.
+
+Limits: product search and category/status filters still apply to the currently fetched server page and are labelled accordingly; existing server pagination remains available. The backend's real image contract supports one primary image, not an invented gallery. Saving stays explicit per section, and stock remains a separate authoritative ledger action; no claim of an atomic save across APIs. No runtime success or owner acceptance claimed.
+
+Next action: owner reviews http://localhost:3002/store; refine from that feedback. Do not mark DONE or create the final task commit before owner acceptance and deferred verification. No automatic continuation into CRM/orders/messages/settings in this run.
+
+## Assessment administration — implemented unverified
+
+Date: 2026-10-20 Asia/Tehran. Task F12-FE01, batch CLIENT-INTEGRATION, sole writer/source reviewer Codex /root. Explicit owner extension into /assessments; shell/store work preserved. Status IMPLEMENTED_UNVERIFIED; overall task REWORK/unchecked. No new batch or final commit.
+
+Changed:
+- apps/dashboard/src/features/assessments/assessments-page.tsx; new assessment-authoring.ts, assessment-builder.tsx, assessment-connections.tsx, assessment-authoring.spec.ts.
+- apps/dashboard/src/lib/assessment-api.ts: generated-contract wrappers and stable error handling.
+- apps/api/src/modules/assessments/admin/admin-assessments.controller.ts: only missing list ApiQuery documentation.
+- packages/api-client/openapi.json and src/schema.generated.ts: only assessmentKey/status/page/pageSize list metadata. Source generation executed successfully; runtime OpenAPI export/freshness gate deferred because API build remains deferred.
+- artifacts/assessment-system-design/assessment-system-design.{docx,pdf}; coordinator status/checklist/log.
+
+Source/contract findings and implementation:
+- Previous builder handled SINGLE_CHOICE only in the first section. Existing scalar engine supports five types: SINGLE_CHOICE, MULTIPLE_CHOICE, BOOLEAN, NUMBER, TEXT. Builder now edits every section, question, option, order, required flag, bounded text/numbers, scalar weights/ranges, result bands/risk/review flags. Source fields are retained by spreads. Validation catches duplicate IDs, overlap and gaps across possible scores; unknown schemas are refused rather than downgraded.
+- Existing exact version CRUD/duplicate/publish/archive are reused. Published/retired versions are immutable; duplicate creates a draft. Server key/status filtering and pagination replace capped first-page assumptions. Booking policy uses actual published selection, nullable validity and latest-version flag. Actual paged submissions/detail use existing ADMIN privacy contract, with patient links; paid/private contexts are not exposed by bypassing exclusions.
+- Schema v2 is intentionally an educational UNREVIEWED draft in backend, not a releasable patient assessment. Real Mizaj preset is loaded from server. UI preserves scoring identity/source/dimensions/profiles, edits question weights and profile text, and calls the real synthetic-only preview with saved contentHash. No scalar-to-dimensional conversion, medical algorithm or patient result is invented. Dimension count/identity stays fixed by the preset; adding a new clinical model is outside this change.
+- Offering creation/list/details/retirement/clone-form exposes actual policy, price/payment-point and algorithm reference fields. Commercial preview shows exact legal text/readiness; publication requires explicit review, matching preview hash and expected revision, retained idempotency key. Publication list/detail/retirement are connected independently from questionnaire publication.
+- Protocol preview and physician history are ADMIN read-only. Guidance drafts connect actual approved educational content and active services to real result bands. Couples drafts configure all unordered result pairs including repeats, approved content and consultation choice; real protocol/disclosure references and physician approval remain required. Content lookup for each couple pair loads only when expanded, avoiding hundreds of simultaneous requests.
+- Advanced tabs remain mounted after first visit, preserving unsaved form inputs. Main navigation observes busy state and conservatively warns after advanced form edits; this warning may remain after a successful advanced save until leaving/reopening. Duplicate/reload/leave actions protect dirty input. Pagination buttons are explicitly non-submit inside forms. Network/conflict failures retain inputs and never report success.
+
+Limits:
+- Qualified consent/legal/review references currently use exact existing UUID inputs; these APIs do not provide an ADMIN legal/consent authoring or universal picker route. No consent text or legal approval was fabricated. Physician approval/revocation remains the authorized physician workflow. Guidance content authoring itself remains its existing domain; this page selects approved snapshots.
+- Scalar preview is visual only because the current ADMIN scoring-preview endpoint supports dimension draft only; no parallel frontend clinical scoring engine added.
+- No claim that all operations pass at runtime. End-to-end availability still depends on real approved references, clinic permissions and backend readiness gates. No real patient, consent, policy, commercial or financial write executed.
+
+Verification executed: focused source/controller/service/DTO/caller inspection; targeted generated-client source generation only. Authoring test source added (five types/all sections, score coverage, duplicate IDs, unknown schema) but NOT run. Tests, typecheck, lint, build, automated browser, Graphify update and final commit were NOT run.
+
+Deferred gates: owner visual/interaction review at http://localhost:3002/assessments; dashboard typecheck/lint/build and assessment wrapper/authoring regression tests; runtime OpenAPI export comparison; isolated API contract/auth/privacy tests; real draft create/read/update/duplicate, scalar publication/archive and booking policy conflicts; all five answer types, multi-section ordering and number/result boundary completion; dimension exact-hash preview/conflict/release denial; offering idempotency/unknown outcome and commercial readiness/hash/revision; physician-only denial, guidance/couples approved-reference and complete-pair constraints; pagination/error/retry/dirty-navigation/RTL/mobile/keyboard review. Run only after owner review authorizes resuming deferred gates.
+
+Requested artifact-template-system-design skill used with retained reference DOCX (SHA256 13504f6c221a42c1726460a9e865e563355539ff97d702d6c9b2267b4b261d76). Source geometry/styles/tables retained; six-page Persian factual design records boundaries and deferred gates. Source reference unchanged. LibreOffice renderer unavailable; native Word read-only PDF export used, all six final pages visually inspected. Text-only footer/footnote and actual contract hyperlink adapted. Document rendering is separate from deferred application/browser verification.
+
+Next: owner reviews assessments UI and authoring flow; incorporate feedback, then perform deferred verification before final acceptance. Keep existing batch/task active; do not mark DONE or commit as completed.
+
+## Mizaj 11+1 authoring — implemented unverified
+
+2026-10-20 Asia/Tehran. Same F12-FE01 / CLIENT-INTEGRATION, sole writer/source reviewer Codex /root. Latest owner rule supersedes11+4: all11 main answers, then only one question for the exact tied candidate set, maximum12. Overall task REWORK/unchecked; no new batch/final commit. Contract: ../assessment-mizaj-11plus1.md.
+
+Implemented:
+- New dashboard mizaj-authoring.ts, mizaj-builder.tsx, mizaj-preview.tsx: dedicated main/follow-ups/results/rules views; map each actual answer to one dimension or informational; six pair cases plus exact multiway cases; one-question authoring per case; actual profile editing and server-only simulation. Existing shared shell/tokens/fonts/ADMIN permissions and other assessment types retained. New explicit action copies actual source preset into a separate schema3 draft; no stored source/version overwritten.
+- assessments-page.tsx, assessment-authoring.ts and lib/assessment-api.ts: creation/validation/schema routing, dirty/in-flight protections and stable errors. Publish remains disabled for unreviewed dimension models; new preview is exact saved hash and synthetic-only.
+- API domain/assessment-tiebreak-draft.ts: bounded strict schema3, four dimensions,11 required/four-option main questions, single membership or informational answer; reuse unchanged dimension evaluator. Exact unordered primary/secondary tie selection, unknown/off-path/extra answers rejected, unchanged main counts, unresolved/multiway states preserved; no forced result/second follow-up.
+- Existing admin service/DTO: narrow draft validation/preview dispatch; prevent schema-version relabeling. Shared OpenAPI/client response source adds optional selected-question/used fields and explicit statuses; no new endpoint/auth/migration/dependency.
+- New focused API domain and dashboard helper test sources; NOT executed. Previous shell/store/assessment changes preserved.
+
+Source review: caller/validation/DTO/generated contract and old-version behavior inspected. Important limits reviewed: all11 answers required even if informational; exact tie only, no fabricated near-tie threshold; a missing bank case remains explicit; three-way tie never chooses an arbitrary pair; follow-up can resolve primary while secondary remains tied, with no additional question. No clinical question was invented. Blank follow-up questions/options must be authored before save. Missing cases allowed for draft construction, not advertised as release readiness. Original minInformativeAnswers5 and mappings remain unreviewed proposals, editable in draft; no diagnostic accuracy/percentage claimed.
+
+Generation: normal client generation initially hit a Windows UNKNOWN file-write error. Generation then succeeded to a task-specific temporary output using the package generator; exact generated bytes copied to schema.generated.ts. The root-level generator lookup attempt found no root binary. No app checks were run or claimed. Runtime OpenAPI export comparison/client build remain deferred.
+
+Deferred: owner UI/source contract review; focused domain/helper/admin auth/hash/version-preservation and PostgreSQL CRUD/preview suites; dashboard types/lint/build and generated-client/runtime-export freshness; browser11-step back/change/reset/synthetic acknowledgement/exact follow-up/no-follow-up/null-answer/three-way/error/retry/dirty navigation/RTL/mobile/accessibility flows. Tests/typecheck/lint/build/automated browser/Graphify update intentionally NOT executed. No patient,policy,consent,publication,clinical or financial write executed. Owner acceptance pending; keep task active.
+
+Next: review http://localhost:3002/assessments → «آزمون مزاج ۱۱ + ۱». Author/review real tie-break content and mappings; refine dashboard feedback, then resume deferred gates. Patient runtime/publication remains a later explicitly scoped step; do not enable release merely because authoring simulation exists.
+
+## Owner-requested checkpoint commits — dashboard, store and assessments
+
+2026-10-20. Owner explicitly requested all remaining changes committed in separate related groups. This supersedes earlier no-commit checkpoints for storage only; it does not waive acceptance or authorize DONE. Same F12-FE01 / CLIENT-INTEGRATION /root ownership, no new batch. Staged exact owned paths per group; no pre-existing staged content or active Git hooks found.
+
+| Commit | Message | Files/scope |
+|---|---|---|
+| db6a8fd | feat(F12-FE01): checkpoint archive dashboard shell and real-data Home |14 files: dashboard shell/components/styles/Home and local Vazirmatn assets/license |
+|13fcc80 | fix(F12-FE01): checkpoint archived product restoration to draft |2 files: catalog service and lifecycle integration test source |
+|109b7c0 | feat(F12-FE01): checkpoint unified product workspace and image catalog |9 store feature/helper/test-source files |
+| f416b72 | feat(F12-FE01): checkpoint assessment 11+1 draft engine and API contracts |7 API domain/admin/test-source/OpenAPI/generated-client files |
+| ebf93c4 | feat(F12-FE01): checkpoint assessment authoring and targeted tie-break preview |10 dashboard assessment/helper/wrapper/test-source files |
+| e9d0282 | docs(F12-FE01): save assessment system design artifacts |3 files: DOCX,PDF,provenance README |
+| this documentation commit | docs(F12-FE01): record unverified dashboard checkpoints and handoff |STATUS,Phase12 checklist/log and11+1 contract |
+
+All checkpoint commits succeeded. Review this run was limited to Git status,scoped diffs/staged file lists and commit results. No tests,typecheck,lint,build,automated browser,Graphify update or real application write executed. Test-source files are unexecuted. No push. Prior source reviews,explicit clinical/patient-release limits and all deferred gates remain in the respective handoffs above. No protected files changed. Keep task/batch REWORK and phases unchecked; next action is owner UI/interaction review, then agreed deferred verification and resolution before final acceptance. No next batch started.
