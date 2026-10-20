@@ -1,10 +1,28 @@
 import type { PatientJourney } from "./patient-journey-api";
 import { billingPurposeLabel, billingStatusLabel } from "./wallet-labels";
 import { formatRial } from "./wallet-money";
+import { toP } from "./format";
 
 export type HomeActivity = { key: string; title: string; detail: string; href: string; action: string };
 const id = encodeURIComponent;
 const date = (value: string) => new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+
+/** Explain the exact intent chosen by Journey, without choosing a different next action. */
+export function homePaymentSummary(journey: PatientJourney) {
+  if (journey.nextAction.code !== "CONTINUE_PAYMENT") return null;
+  const payment = journey.pendingPayments.items.find(item => item.id === journey.nextAction.resourceId);
+  if (!payment) return null;
+  const isTopup = payment.purpose === "TOPUP";
+  const count = journey.pendingPayments.items.length;
+  const otherRequests = count > 1 || journey.pendingPayments.hasMore
+    ? ` ${journey.pendingPayments.hasMore ? "بیش از " : ""}${toP(count)} درخواست در انتظار دارید؛ لغو هرکدام فقط همان درخواست را می‌بندد.`
+    : "";
+  return {
+    title: billingPurposeLabel(payment.purpose),
+    label: isTopup ? "پیگیری شارژ" : "پیگیری پرداخت",
+    description: `${formatRial(BigInt(payment.amountRial))} تومان در انتظار ${isTopup ? "شارژ کیف پول؛ افزایش موجودی از درگاه بانکی انجام می‌شود" : "پرداخت؛ روش‌های در دسترس را در مرحلهٔ بعد ببینید"}.${otherRequests}`,
+  };
+}
 
 /** Bounded journey previews; section links still expose each complete resource list. */
 export function homeActivities(journey: PatientJourney): HomeActivity[] {

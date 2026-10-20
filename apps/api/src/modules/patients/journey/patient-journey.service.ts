@@ -34,7 +34,7 @@ export class PatientJourneyService {
       const bookingEligibility = await this.eligibility.get(userId, tx, status, evaluatedAt);
       const nativePlanFilter = await this.customPrograms.patientFilter(tx, patient.id, patient.clinicId, context);
       const assessmentScope = { ...accessibleAssessmentWhere, patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, invalidatedAt: null };
-      const [attempts, appointments, intents, orders, plans, resumable, latestResult, nearAppointment, coupleLinks, purchases, unusedGrants, couples, programs, availableProgram, custom] = await Promise.all([
+      const [attempts, appointments, intents, orders, plans, resumable, latestResult, nearAppointment, coupleLinks, purchases, unusedGrants, couples, programs, availableProgram, custom, payment] = await Promise.all([
         tx.patientAssessmentSubmission.findMany({
           where: { ...assessmentScope, state: { in: ['IN_PROGRESS', 'COMPLETE'] } },
           orderBy: [{ state: 'asc' }, { updatedAt: 'desc' }, { id: 'desc' }], take: 6,
@@ -73,6 +73,9 @@ export class PatientJourneyService {
         tx.$queryRaw<{ id: string; title: string; amountRial: string; intentId: string; paymentState: string; accessGrantId: string | null; grantedAt: Date | null; endsAt: Date | null; accessAvailable: boolean }[]>(Prisma.sql`SELECT p.id,p.snapshot->>'title' AS title,p.amount_rial::text AS "amountRial",i.id AS "intentId",i.status AS "paymentState",g.id AS "accessGrantId",g.granted_at AS "grantedAt",g.ends_at AS "endsAt",COALESCE(program_grant_readable(g.id,${patient.id}::uuid),false) AS "accessAvailable" FROM program_purchases p JOIN billing_intents i ON i.program_purchase_id=p.id LEFT JOIN program_access_grants g ON g.purchase_id=p.id WHERE p.custom_request_id IS NULL AND p.patient_id=${patient.id}::uuid AND p.clinic_id=${patient.clinicId}::uuid ORDER BY p.created_at DESC,p.id DESC LIMIT 6`),
         tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT g.id FROM program_access_grants g WHERE g.patient_id=${patient.id}::uuid AND g.clinic_id=${patient.clinicId}::uuid AND program_grant_readable(g.id,${patient.id}::uuid) ORDER BY g.granted_at DESC,g.id DESC LIMIT 1`),
         this.customHome(tx, patient, context),
+        // Voluntary top-ups are not a required next step; select outside the capped preview.
+        tx.billingIntent.findFirst({ where: { ...scope, purpose: { not: 'TOPUP' }, status: 'PENDING', OR: [{ expiresAt: null }, { expiresAt: { gt: evaluatedAt } }] },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true } }),
       ]);
       const processable = await processableAssessmentGrants(tx, [...attempts.flatMap(row => row.accessGrantId ? [row.accessGrantId] : []), ...purchases.flatMap(row => row.grants.map(g => g.id))]);
       const assessments = page(attempts.map(({ assessmentVersion, accessGrantId, ...attempt }) => ({ ...attempt,
@@ -94,7 +97,7 @@ export class PatientJourneyService {
         customPrograms: page(custom.rows),
         assessmentPurchases: page(purchases.map(row => { const grant = row.grants[0]; return { id: row.id, title: (row.snapshot as { title: string }).title, amountRial: row.amountRial.toString(), currency: 'IRR', intentId: row.intent?.id ?? null, paymentState: row.intent?.status ?? 'UNAVAILABLE', accessGrantId: grant?.id ?? null, submissionId: grant?.submission?.id ?? null, startAvailable: !!grant && !grant.submission && processable.has(grant.id) }; })),
       };
-      const nextAction = this.nextAction(summary, resumable[0]?.id, latestResult?.id, nearAppointment?.id, unusedGrants[0]?.id, couples.readyId, resumable[0]?.paid, availableProgram[0]?.id, custom.readyId);
+      const nextAction = this.nextAction(summary, resumable[0]?.id, latestResult?.id, nearAppointment?.id, unusedGrants[0]?.id, couples.readyId, resumable[0]?.paid, availableProgram[0]?.id, custom.readyId, payment?.id);
       await this.audit.record({ ...scope, action: 'READ', resourceType: 'PATIENT_JOURNEY',
         metadata: { view: 'HOME', assessmentCount: assessments.items.length, appointmentCount: summary.appointments.items.length } }, context, tx);
       return { ...summary, nextAction };
@@ -108,7 +111,7 @@ export class PatientJourneyService {
       tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT r.id ${base} AND i.status='PAID' AND g.id IS NOT NULL AND (v.status IS DISTINCT FROM 'ISSUED' OR native.state IS DISTINCT FROM 'COMPLETED') ORDER BY p.created_at DESC,p.id DESC LIMIT 1`),
     ]); return { rows, readyId: ready[0]?.id };
   }
-  private nextAction(summary: Omit<PatientJourneyResponseDto, 'nextAction'>, resumableId?: string, latestResultId?: string, nearAppointmentId?: string, unusedGrantId?: string, readyCoupleId?: string, paidResume = false, programGrantId?: string, customRequestId?: string): JourneyActionDto {
+  private nextAction(summary: Omit<PatientJourneyResponseDto, 'nextAction'>, resumableId?: string, latestResultId?: string, nearAppointmentId?: string, unusedGrantId?: string, readyCoupleId?: string, paidResume = false, programGrantId?: string, customRequestId?: string, paymentId?: string): JourneyActionDto {
     const action = (code: JourneyActionDto['code'], resourceId: string | null = null) => ({ code, resourceId });
     if (nearAppointmentId) return action('OPEN_APPOINTMENT', nearAppointmentId);
     if (!summary.onboarding.isComplete) return action(summary.onboarding.nextAction as JourneyActionDto['code']);
@@ -119,7 +122,7 @@ export class PatientJourneyService {
     if (programGrantId) return action('OPEN_PROGRAM', programGrantId);
     if (!summary.bookingEligibility.eligible) return action('REVIEW_BOOKING_REQUIREMENTS');
     if (resumableId) return action('RESUME_ASSESSMENT', resumableId);
-    if (summary.pendingPayments.items[0]) return action('CONTINUE_PAYMENT', summary.pendingPayments.items[0].id);
+    if (paymentId) return action('CONTINUE_PAYMENT', paymentId);
     if (summary.treatmentPlans.items[0]) return action('VIEW_TREATMENT_PLAN', summary.treatmentPlans.items[0].id);
     if (latestResultId) return action('VIEW_ASSESSMENT_RESULT', latestResultId);
     return action('BOOK_CONSULTATION');

@@ -6,6 +6,7 @@ import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { Prisma } from '../src/generated/prisma/client';
+import { WalletService } from '../src/modules/billing/wallet.service';
 import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient journey (isolated PostgreSQL)', () => {
@@ -97,7 +98,37 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     const draft = await db.treatmentPlan.create({ data: { clinicId, patientId: p.patientId, state: 'DRAFT', title: 'Never publish' } });
     const response = await get(p); expect(response.json().pendingPayments.items).toEqual([{ id: live.id, purpose: 'TOPUP', amountRial: '123450', currency: 'IRR', expiresAt: null }]);
     expect(response.body).not.toContain(expired.id); expect(response.body).not.toContain(draft.id); expect(response.body).not.toContain('snapshot');
-    expect(response.json().nextAction).toEqual({ code: 'CONTINUE_PAYMENT', resourceId: live.id });
+    expect(response.json().nextAction).toEqual({ code: 'BOOK_CONSULTATION', resourceId: null });
+  });
+  it('does not make voluntary top-ups the next action for funded or empty wallets', async () => {
+    for (const balanceRial of [0n, 10_000_000n]) {
+      const p = await patient(true);
+      const wallet = app.get(WalletService);
+      if (balanceRial) await db.$transaction(tx => wallet.post(tx, { id: p.patientId, clinicId, userId: p.userId }, balanceRial, 'ADMIN_CREDIT', `synthetic:${randomUUID()}`, { actorUserId: p.userId, actorSessionId: p.sessionId, requestId: randomUUID(), ipAddress: null }));
+      else await db.$transaction(tx => wallet.lockAccount(tx, { id: p.patientId, clinicId }));
+      const topup = await intent(p);
+      const response = await get(p);
+      expect(response.statusCode).toBe(200);
+      expect(response.json().pendingPayments.items[0].id).toBe(topup.id);
+      expect(response.json().nextAction).toEqual({ code: 'BOOK_CONSULTATION', resourceId: null });
+      expect((await db.billingIntent.findUniqueOrThrow({ where: { id: topup.id } })).status).toBe('PENDING');
+      expect((await db.walletAccount.findUniqueOrThrow({ where: { patientId: p.patientId } })).balanceRial).toBe(balanceRial);
+    }
+  });
+  it('still selects a service payment behind six newer top-ups and excludes it after cancellation', async () => {
+    const p = await patient(true);
+    const other = await patient(true);
+    const order = await db.commerceOrder.create({ data: { clinicId, patientId: p.patientId, idempotencyKey: randomUUID(), shippingMethod: 'PICKUP', subtotalAmountToman: 123n, totalAmountToman: 123n, shippingDetailSnapshot: {} } });
+    const payment = await db.billingIntent.create({ data: { clinicId, patientId: p.patientId, actorUserId: p.userId, purpose: 'ORDER', orderId: order.id, amountRial: 1230n, fingerprint: 'a'.repeat(64), idempotencyKey: randomUUID(), snapshot: {}, createdAt: new Date(Date.now() - 60_000) } });
+    for (let n = 0; n < 6; n++) await intent(p);
+    const response = await get(p);
+    expect(response.statusCode).toBe(200);
+    expect(response.json().pendingPayments.items).toHaveLength(5);
+    expect(response.json().pendingPayments.items.every((item: { purpose: string }) => item.purpose === 'TOPUP')).toBe(true);
+    expect(response.json().nextAction).toEqual({ code: 'CONTINUE_PAYMENT', resourceId: payment.id });
+    expect((await get(other)).body).not.toContain(payment.id);
+    await db.billingIntent.update({ where: { id: payment.id }, data: { status: 'CANCELLED' } });
+    expect((await get(p)).json().nextAction).toEqual({ code: 'BOOK_CONSULTATION', resourceId: null });
   });
   it('prioritizes a near appointment even when onboarding later becomes incomplete, without creating chat', async () => {
     const p = await patient();

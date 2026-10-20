@@ -1,12 +1,35 @@
 import { describe, expect, it } from "vitest";
 import type { PatientJourney } from "./patient-journey-api";
 import { journeyActionLink } from "./patient-journey-api";
-import { homeActivities, journeyActionDescription } from "./home-journey";
+import { homeActivities, homePaymentSummary, journeyActionDescription } from "./home-journey";
 import { PatientRequestError, patientErrorMessage } from "./patient-request";
 
 const empty = () => Object.fromEntries(["pendingPayments", "appointments", "assessments", "assessmentPurchases", "coupleAssessments", "coupleLinks", "treatmentPlans", "programPurchases", "customPrograms", "pendingOrders"].map(key => [key, { items: [], hasMore: false }])) as unknown as PatientJourney;
 
 describe("Home journeys", () => {
+  it("describes the selected top-up and explains that cancellation closes only one request", () => {
+    const journey = empty();
+    journey.nextAction = { code: "CONTINUE_PAYMENT", resourceId: "topup" };
+    journey.pendingPayments = { items: [
+      { id: "other", purpose: "ORDER", amountRial: "990000", currency: "IRR", expiresAt: null },
+      { id: "topup", purpose: "TOPUP", amountRial: "2500000", currency: "IRR", expiresAt: null },
+    ], hasMore: false };
+    expect(homePaymentSummary(journey)).toEqual({ title: "شارژ کیف پول", label: "پیگیری شارژ", description: "۲۵۰٬۰۰۰ تومان در انتظار شارژ کیف پول؛ افزایش موجودی از درگاه بانکی انجام می‌شود. ۲ درخواست در انتظار دارید؛ لغو هرکدام فقط همان درخواست را می‌بندد." });
+    journey.pendingPayments.hasMore = true;
+    expect(homePaymentSummary(journey)?.description).toContain("بیش از ۲ درخواست");
+    journey.nextAction.resourceId = "other";
+    expect(homePaymentSummary(journey)?.title).toBe("پرداخت سفارش");
+    expect(homePaymentSummary(journey)?.description).not.toContain("در انتظار شارژ");
+  });
+
+  it("does not substitute another intent or invent payment details", () => {
+    const journey = empty();
+    journey.nextAction = { code: "CONTINUE_PAYMENT", resourceId: "cancelled" };
+    expect(homePaymentSummary(journey)).toBeNull();
+    journey.nextAction = { code: "BOOK_CONSULTATION", resourceId: null };
+    expect(homePaymentSummary(journey)).toBeNull();
+  });
+
   it("shows an honest empty state when there are no owned resources", () => {
     expect(homeActivities(empty())).toEqual([]);
   });
