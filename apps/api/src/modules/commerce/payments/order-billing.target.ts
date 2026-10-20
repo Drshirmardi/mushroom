@@ -4,6 +4,7 @@ import { PrismaService } from '../../../database/prisma/prisma.service';
 import { BillingTargetRegistry, type BillingTarget, type PreparedTarget } from '../../billing/billing-target.registry';
 import { financialConflict, financialMissing, lockFinancial, type FinancialContext, type Tx } from '../../billing/billing.policy';
 import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
+import { settleOrderCart } from '../checkout/settle-order-cart';
 
 @Injectable()
 export class OrderBillingTarget implements BillingTarget, OnModuleInit {
@@ -34,6 +35,7 @@ export class OrderBillingTarget implements BillingTarget, OnModuleInit {
     await tx.payment.create({ data: { orderId: intent.orderId, method: intent.method ?? 'FREE', walletJournalId: journalId, billingAttemptId: attempt?.id, commerceAmountToman: intent.amountRial / 10n, providerAmount: attempt?.amountRial, providerUnit: attempt ? 'RIAL' : null, providerReferenceId: attempt?.reference, providerTraceNumber: attempt?.traceNumber, verifiedAt: new Date() } });
     await this.inventory.consumeOrderReservations(tx, intent.orderId);
     await tx.commerceOrder.update({ where: { id: intent.orderId }, data: { status: 'PAID' } });
+    await settleOrderCart(tx, intent.orderId);
     return { kind: 'NONE' } as const;
   }
   async refund(tx: Tx, intent: BillingIntent, amountRial: bigint, refundId: string) {

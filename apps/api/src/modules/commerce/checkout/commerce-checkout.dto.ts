@@ -34,6 +34,17 @@ export class CheckoutCommerceOrderDto {
   @ApiPropertyOptional({ minLength: 3, maxLength: 40, description: 'Optional commerce discount code; the server canonicalizes and prices it.' }) @IsOptional() @IsString() @MaxLength(80) discountCode?: string;
 }
 
+export class PreviewCommerceDiscountDto {
+  @ApiProperty({ minLength: 3, maxLength: 40 }) @IsString() @MaxLength(80) discountCode!: string;
+}
+
+export class CommerceDiscountPreviewDto {
+  @ApiProperty() code!: string;
+  @ApiProperty({ type: String }) subtotalAmountToman!: string;
+  @ApiProperty({ type: String }) taxAmountToman!: string;
+  @ApiProperty({ type: String }) discountAmountToman!: string;
+}
+
 export class UpdateCourierShippingRateDto {
   @ApiProperty({ minimum: 0, maximum: Number.MAX_SAFE_INTEGER, description: 'Integer TOMAN.' }) @Type(() => Number) @IsInt() @Min(0) @Max(Number.MAX_SAFE_INTEGER) amountToman!: number;
   @ApiProperty() @IsBoolean() isActive!: boolean;
