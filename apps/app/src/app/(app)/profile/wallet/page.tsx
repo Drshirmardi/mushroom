@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
-import { ArrowDownLeft, History, Minus, Plus, RefreshCw, ShieldAlert } from "lucide-react";
+import { ArrowDownLeft, Eye, EyeOff, History, Minus, Plus, RefreshCw, ShieldAlert, Wallet } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState } from "@/components/shared/skeletons";
@@ -31,6 +31,7 @@ export default function WalletPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [topupOpen, setTopupOpen] = useState(false);
+  const [balanceVisible, setBalanceVisible] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -102,25 +103,36 @@ export default function WalletPage() {
 
         {summary && (
           <>
-            <section aria-label="موجودی کیف پول" className="rounded-2xl border border-border bg-white p-5">
-              <p className="text-muted-foreground text-xs mb-2">موجودی کیف پول</p>
-              <p className="flex flex-wrap items-baseline gap-2 font-iransans-fanum text-[clamp(24px,7vw,32px)] leading-relaxed font-normal tabular-nums text-primary" data-testid="wallet-balance-value">
-                <bdi dir="ltr" className="break-all">{balance === null ? "—" : formatToman(rialToToman(balance))}</bdi><span className="font-iranyekanx text-xs font-normal text-muted-foreground">تومان</span>
-              </p>
-              {remainder && <p className="mt-1 text-xs text-muted-foreground">به‌همراه {remainder}</p>}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+            <section aria-label="موجودی کیف پول" className="relative isolate overflow-hidden rounded-[28px] border border-white/15 bg-[linear-gradient(125deg,#103b63_10%,#125c78_70%,#187b85)] p-5 text-white shadow-[0_16px_36px_-20px_rgba(16,59,99,0.65)] sm:p-6">
+              <div aria-hidden="true" className="pointer-events-none absolute -left-16 -top-28 -z-10 h-72 w-72 rounded-full border-[32px] border-white/[0.04]" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                    <Wallet size={26} strokeWidth={1.6} aria-hidden="true" />
+                  </span>
+                  <div><p className="text-sm font-medium">کیف پول شما</p><p className="mt-1 text-[11px] text-white/75"> قابل استفاده</p></div>
+                </div>
+                <button type="button" aria-label={balanceVisible ? "پنهان کردن موجودی" : "نمایش موجودی"} aria-pressed={!balanceVisible} onClick={() => setBalanceVisible(value => !value)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                  {balanceVisible ? <Eye size={20} strokeWidth={1.7} aria-hidden="true" /> : <EyeOff size={20} strokeWidth={1.7} aria-hidden="true" />}
+                </button>
+              </div>
+              <div className="pb-6 pt-7">
+                <p className="mb-2 text-xs text-white/80">موجودی کیف پول</p>
+                <p className="flex min-h-14 flex-wrap items-baseline gap-x-2 gap-y-0 text-[clamp(26px,8vw,40px)] leading-snug font-semibold tabular-nums" style={{ fontFamily: "var(--font-iransans-fanum), sans-serif" }} data-testid="wallet-balance-value">
+                  {balanceVisible ? <><bdi dir="ltr" className="min-w-0 break-all">{balance === null ? "—" : formatToman(rialToToman(balance))}</bdi><span className="font-iranyekanx text-xs font-normal text-white/80">تومان</span></> : <span aria-label="موجودی پنهان است" className="tracking-[0.18em]" dir="ltr">***</span>}
+                </p>
+                {balanceVisible && remainder && <p className="mt-1 text-[11px] text-white/75">به‌همراه {remainder}</p>}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-4">
                 <button
                   type="button"
                   onClick={() => setTopupOpen(true)}
-                  className="inline-flex items-center gap-1.5 min-h-11 rounded-xl bg-primary px-4 py-2 text-xs font-medium text-white active:scale-95 transition-transform"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-medium text-[#103b63] transition-colors hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
-                  <Plus size={15} aria-hidden="true" />افزایش موجودی
+                  <Plus size={18} strokeWidth={1.8} aria-hidden="true" />افزایش موجودی
                 </button>
-                <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-normal text-muted-foreground">
-                  {formatToman(BigInt(total))} تراکنش
-                </span>
+                <div className="min-w-0 text-[10px] leading-5 text-white/75"><p>{formatToman(BigInt(total))} تراکنش</p><p>به‌روزرسانی: {asOfLabel(summary.asOf)}</p></div>
               </div>
-              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">آخرین به‌روزرسانی: {asOfLabel(summary.asOf)}</p>
             </section>
 
             {summary.frozen && (

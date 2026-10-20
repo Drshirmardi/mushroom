@@ -412,6 +412,8 @@
 .store-address-form__actions .patient-button { flex: 1; }
 .store-form-error { font-size: 13px; line-height: 22px; color: var(--patient-error); }
 .store-search .patient-input:focus-visible { outline: none; }
+/* The amount field uses its enclosing control's focus-within border and ring. */
+.patient-app-shell .wallet-topup-amount:focus-visible { outline: none; }
 .store-search .patient-input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .store-search > svg { flex-shrink: 0; }
 .store-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 20px; scroll-margin-top: 16px; }

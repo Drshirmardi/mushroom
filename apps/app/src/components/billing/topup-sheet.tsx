@@ -100,7 +100,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
               aria-describedby={fieldError ? "topup-amount-error" : "topup-amount-help"}
               onChange={(event) => setAmount(formatTopupInput(event.target.value))}
               onBlur={() => setTouched(true)}
-              className="w-full min-w-0 flex-1 border-0 bg-transparent py-3 text-center font-iransans-fanum text-2xl font-normal tabular-nums tracking-normal text-foreground outline-none placeholder:text-center placeholder:text-xs placeholder:font-normal placeholder:text-muted-foreground"
+              className="wallet-topup-amount w-full min-w-0 flex-1 border-0 bg-transparent py-3 text-center font-iransans-fanum text-2xl font-normal tabular-nums tracking-normal text-foreground outline-none placeholder:text-center placeholder:text-xs placeholder:font-normal placeholder:text-muted-foreground"
             />
             <span className="shrink-0 text-sm font-medium text-muted-foreground" aria-hidden="true">تومان</span>
           </div>
