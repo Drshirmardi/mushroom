@@ -7846,7 +7846,7 @@ export interface components {
             assessmentVersionId: string;
             questionnaireContentHash: string;
             /** @enum {string} */
-            algorithmId: "DIMENSION_RANK";
+            algorithmId: "DIMENSION_RANK" | "DIMENSION_TIEBREAK";
             /** @enum {number} */
             algorithmVersion: 1;
             /** @enum {boolean} */
@@ -7854,7 +7854,7 @@ export interface components {
             /** @enum {string} */
             reviewState: "UNREVIEWED";
             /** @enum {string} */
-            status: "INSUFFICIENT_DATA" | "PRIMARY_TIE" | "SECONDARY_TIE" | "SINGLE" | "PAIR";
+            status: "INSUFFICIENT_DATA" | "PRIMARY_TIE" | "SECONDARY_TIE" | "SINGLE" | "PAIR" | "FOLLOW_UP_REQUIRED" | "FOLLOW_UP_UNAVAILABLE";
             scores: {
                 [key: string]: number;
             };
@@ -7864,6 +7864,10 @@ export interface components {
             tiedDimensions: string[];
             /** @description Unreviewed educational display profile; absent for ties/insufficient evidence. */
             profile: components["schemas"]["AssessmentDraftResultProfileDto"] | null;
+            /** @description Only the exact server-selected tie-break question; never a second follow-up. */
+            followUp?: components["schemas"]["AssessmentTieBreakQuestionDto"] | null;
+            /** @description Whether the single allowed follow-up has already been answered. */
+            followUpUsed?: boolean;
         };
         AssessmentVersionResponseDto: {
             /** Format: uuid */
@@ -10218,6 +10222,17 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        AssessmentTieBreakOptionDto: {
+            id: string;
+            title: string;
+            dimensionId: string | null;
+        };
+        AssessmentTieBreakQuestionDto: {
+            id: string;
+            title: string;
+            tiedDimensions: string[];
+            options: components["schemas"]["AssessmentTieBreakOptionDto"][];
         };
     };
     responses: never;
@@ -18147,7 +18162,12 @@ export interface operations {
     };
     adminAssessmentsList: {
         parameters: {
-            query?: never;
+            query?: {
+                assessmentKey?: string;
+                status?: "DRAFT" | "PUBLISHED" | "RETIRED";
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;

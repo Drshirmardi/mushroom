@@ -12352,7 +12352,52 @@
     "/v1/admin/assessments": {
       "get": {
         "operationId": "adminAssessmentsList",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "assessmentKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "PUBLISHED",
+                "RETIRED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -35583,7 +35628,8 @@
           "algorithmId": {
             "type": "string",
             "enum": [
-              "DIMENSION_RANK"
+              "DIMENSION_RANK",
+              "DIMENSION_TIEBREAK"
             ]
           },
           "algorithmVersion": {
@@ -35611,7 +35657,9 @@
               "PRIMARY_TIE",
               "SECONDARY_TIE",
               "SINGLE",
-              "PAIR"
+              "PAIR",
+              "FOLLOW_UP_REQUIRED",
+              "FOLLOW_UP_UNAVAILABLE"
             ]
           },
           "scores": {
@@ -35649,6 +35697,19 @@
                 "$ref": "#/components/schemas/AssessmentDraftResultProfileDto"
               }
             ]
+          },
+          "followUp": {
+            "nullable": true,
+            "description": "Only the exact server-selected tie-break question; never a second follow-up.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentTieBreakQuestionDto"
+              }
+            ]
+          },
+          "followUpUsed": {
+            "type": "boolean",
+            "description": "Whether the single allowed follow-up has already been answered."
           }
         },
         "required": [
@@ -44323,6 +44384,61 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "AssessmentTieBreakOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 1500
+          },
+          "dimensionId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "dimensionId"
+        ]
+      },
+      "AssessmentTieBreakQuestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "tiedDimensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentTieBreakOptionDto"
+            },
+            "minItems": 2,
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "tiedDimensions",
+          "options"
         ]
       }
     }

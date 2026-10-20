@@ -7,6 +7,7 @@ import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS, type AssessmentAuditAction } from '../application/assessment-audit';
 import type { AssessmentListQueryDto, AssessmentScoringPreviewInputDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
 import { previewDimensionDraft, validateDimensionDraft } from '../domain/assessment-dimension-draft';
+import { previewTieBreakDraft, validateTieBreakDraft } from '../domain/assessment-tiebreak-draft';
 import { AssessmentAnswerError } from '../domain/assessment-scoring';
 import { MIZAJ_DRAFT_PRESET } from '../domain/mizaj-draft-preset';
 import { AssessmentStructureError, validateAssessmentStructure } from '../domain/assessment-structure-validation';
@@ -53,7 +54,9 @@ export class AdminAssessmentsService {
         throw new ConflictException({ code: 'ASSESSMENT_PREVIEW_CONFLICT', message: 'Preview requires the exact current draft.', details: {} });
       }
       try {
-        const result = previewDimensionDraft(version.structure, body.answers);
+        const result = (version.structure as Structure).schemaVersion === 3
+          ? previewTieBreakDraft(version.structure, body.answers)
+          : previewDimensionDraft(version.structure, body.answers);
         await this.audit(ASSESSMENT_AUDIT_ACTIONS.DRAFT_PREVIEWED, id, context, {}, tx);
         return { assessmentVersionId: id, questionnaireContentHash: version.contentHash, ...result };
       } catch (error) {
@@ -84,8 +87,8 @@ export class AdminAssessmentsService {
       if (current.status !== AssessmentVersionStatus.DRAFT) throw immutable();
       const title = body.title === undefined ? current.title : cleanText(body.title);
       const structure = body.structure === undefined ? current.structure as Structure : body.structure;
-      if ((current.structure as Structure).schemaVersion === 2 && structure.schemaVersion !== 2) {
-        throw new UnprocessableEntityException({ code: 'ASSESSMENT_STRUCTURE_INVALID', message: 'A dimension draft cannot be downgraded by the legacy editor.', details: {} });
+      if ([2, 3].includes(Number((current.structure as Structure).schemaVersion)) && structure.schemaVersion !== (current.structure as Structure).schemaVersion) {
+        throw new UnprocessableEntityException({ code: 'ASSESSMENT_STRUCTURE_INVALID', message: 'Keep the draft schema version; create a separate draft for another model.', details: {} });
       }
       this.validate(current.assessmentKey, title, structure);
       const updated = await tx.assessmentVersion.update({ where: { id }, data: { title, structure: structure as Prisma.InputJsonValue, contentHash: this.hash(structure) } });
@@ -152,9 +155,10 @@ export class AdminAssessmentsService {
   private validate(key: string, title: string, structure: Structure, forPublication = false) {
     try {
       if (!key || !title) throw new AssessmentStructureError('Assessment key and title are required.');
-      if (!forPublication && structure.schemaVersion === 2) validateDimensionDraft(structure);
+      if (!forPublication && structure.schemaVersion === 3) validateTieBreakDraft(structure);
+      else if (!forPublication && structure.schemaVersion === 2) validateDimensionDraft(structure);
       else {
-        if ((structure.scoring as { algorithmId?: unknown } | undefined)?.algorithmId === 'DIMENSION_RANK') throw new AssessmentStructureError('Dimension drafts cannot be relabeled as scalar questionnaires.');
+        if (['DIMENSION_RANK', 'DIMENSION_TIEBREAK'].includes(String((structure.scoring as { algorithmId?: unknown } | undefined)?.algorithmId))) throw new AssessmentStructureError('Dimension drafts cannot be relabeled as scalar questionnaires.');
         validateAssessmentStructure(structure, forPublication);
       }
     }

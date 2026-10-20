@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../common/auth/authorization.decorator';
@@ -29,6 +29,10 @@ export class AdminAssessmentsController {
   }
 
   @Get() @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @ApiOperation({ operationId: 'adminAssessmentsList', summary: 'List assessment versions' }) @ApiOkResponse({ type: AssessmentListResponseDto }) @ApiErrorResponse(HttpStatus.UNAUTHORIZED, 'Authentication is required.') @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.')
+  @ApiQuery({ name: 'assessmentKey', required: false, schema: { type: 'string', maxLength: 100 } })
+  @ApiQuery({ name: 'status', required: false, enum: ['DRAFT', 'PUBLISHED', 'RETIRED'] })
+  @ApiQuery({ name: 'page', required: false, schema: { type: 'number', minimum: 1, maximum: 100, example: 1 } })
+  @ApiQuery({ name: 'pageSize', required: false, schema: { type: 'number', minimum: 1, maximum: 50, example: 20 } })
   list(@Query() query: AssessmentListQueryDto) { return this.assessments.list(query); }
 
   @Post() @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @ApiOperation({ operationId: 'adminAssessmentsCreate', summary: 'Create an assessment draft' }) @ApiCreatedResponse({ type: AssessmentVersionResponseDto }) @ApiErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, 'Assessment structure is invalid.')
