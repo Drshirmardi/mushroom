@@ -139,6 +139,24 @@ export class AdminAssessmentsService {
     });
   }
 
+  async remove(id: string, expectedContentHash: string, context: AuditContext) {
+    try {
+      return await this.prisma.$transaction(async tx => {
+        const current = await this.version(id, tx, true);
+        if (current.status !== AssessmentVersionStatus.DRAFT && current.status !== AssessmentVersionStatus.RETIRED) throw new ConflictException({ code: 'ASSESSMENT_DELETE_NOT_ALLOWED', message: 'Only unreferenced drafts or archived versions can be deleted.', details: {} });
+        if (current.contentHash !== expectedContentHash) throw new ConflictException({ code: 'ASSESSMENT_DELETE_CONFLICT', message: 'The assessment changed. Reload before deleting.', details: {} });
+        await this.lock(tx, current.clinicId, current.assessmentKey, current.locale);
+        // Every version reference uses ON DELETE RESTRICT; the database also blocks published-version deletion.
+        await tx.assessmentVersion.delete({ where: { id } });
+        await this.audit(ASSESSMENT_AUDIT_ACTIONS.DELETED, id, context, { versionNumber: current.versionNumber, assessmentKey: current.assessmentKey, locale: current.locale, contentHash: current.contentHash, status: current.status }, tx);
+        return { id };
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === 'P2003') throw new ConflictException({ code: 'ASSESSMENT_DELETE_REFERENCED', message: 'This assessment has references and cannot be deleted.', details: {} });
+      throw error;
+    }
+  }
+
   private async clinic(db: Prisma.TransactionClient = this.prisma) { const clinic = await db.clinic.findFirst({ where: { status: 'ACTIVE' }, select: { id: true } }); if (!clinic) throw unavailable(); return clinic; }
   private async version(id: string, db: Prisma.TransactionClient = this.prisma, lock = false) {
     const clinic = await this.clinic(db);

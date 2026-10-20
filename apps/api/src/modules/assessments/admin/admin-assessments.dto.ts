@@ -32,6 +32,15 @@ export class UpdateAssessmentDto {
   structure?: Record<string, unknown>;
 }
 
+export class DeleteAssessmentQueryDto {
+  @IsString() @Matches(/^[a-f0-9]{64}$/u)
+  expectedContentHash!: string;
+}
+
+export class DeletedAssessmentDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+}
+
 export class AssessmentListQueryDto {
   @IsOptional() @IsString() @MaxLength(100)
   assessmentKey?: string;

@@ -12566,6 +12566,80 @@
         "tags": [
           "Admin Assessments"
         ]
+      },
+      "delete": {
+        "operationId": "adminAssessmentsDelete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "expectedContentHash",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedAssessmentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Required permission is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Assessment was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version is published, changed, or has references that must be preserved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete an unreferenced draft or archived assessment with its exact current content hash",
+        "tags": [
+          "Admin Assessments"
+        ]
       }
     },
     "/v1/admin/assessments/{id}/duplicate": {
@@ -27654,6 +27728,9 @@
               "ASSESSMENT_NOT_FOUND",
               "ASSESSMENT_STRUCTURE_INVALID",
               "ASSESSMENT_PREVIEW_CONFLICT",
+              "ASSESSMENT_DELETE_NOT_ALLOWED",
+              "ASSESSMENT_DELETE_CONFLICT",
+              "ASSESSMENT_DELETE_REFERENCED",
               "ASSESSMENT_SUBMISSION_IMMUTABLE",
               "ASSESSMENT_SUBMISSION_REVISION_CONFLICT",
               "ASSESSMENT_SUBMISSION_NOT_FOUND",
@@ -44439,6 +44516,18 @@
           "title",
           "tiedDimensions",
           "options"
+        ]
+      },
+      "DeletedAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id"
         ]
       }
     }

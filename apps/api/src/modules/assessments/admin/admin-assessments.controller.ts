@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
@@ -6,7 +6,7 @@ import { RequirePermissions } from '../../../common/auth/authorization.decorator
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { AdminAssessmentsService } from './admin-assessments.service';
-import { AssessmentDraftPresetDto, AssessmentListQueryDto, AssessmentListResponseDto, AssessmentScoringPreviewDto, AssessmentScoringPreviewInputDto, AssessmentVersionResponseDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
+import { AssessmentDraftPresetDto, AssessmentListQueryDto, AssessmentListResponseDto, AssessmentScoringPreviewDto, AssessmentScoringPreviewInputDto, AssessmentVersionResponseDto, CreateAssessmentDto, DeleteAssessmentQueryDto, DeletedAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
 
 @ApiTags('Admin Assessments')
 @ApiBearerAuth('bearerAuth')
@@ -43,6 +43,14 @@ export class AdminAssessmentsController {
 
   @Patch(':id') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @ApiOperation({ operationId: 'adminAssessmentsUpdate', summary: 'Update an assessment draft' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: AssessmentVersionResponseDto })
   update(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateAssessmentDto, @Req() request: AuthenticatedRequest) { return this.assessments.update(id, body, this.context(request)); }
+
+  @Delete(':id') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @Header('Cache-Control', 'no-store')
+  @ApiOperation({ operationId: 'adminAssessmentsDelete', summary: 'Delete an unreferenced draft or archived assessment with its exact current content hash' })
+  @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: DeletedAssessmentDto })
+  @ApiQuery({ name: 'expectedContentHash', required: true, schema: { type: 'string', pattern: '^[a-f0-9]{64}$' } })
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.') @ApiErrorResponse(HttpStatus.NOT_FOUND, 'Assessment was not found.')
+  @ApiErrorResponse(HttpStatus.CONFLICT, 'Version is published, changed, or has references that must be preserved.')
+  remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Query() query: DeleteAssessmentQueryDto, @Req() request: AuthenticatedRequest) { return this.assessments.remove(id, query.expectedContentHash, this.context(request)); }
 
   @Post(':id/duplicate') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @ApiOperation({ operationId: 'adminAssessmentsDuplicate', summary: 'Duplicate an assessment version as a new draft' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiCreatedResponse({ type: AssessmentVersionResponseDto })
   duplicate(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) { return this.assessments.duplicate(id, this.context(request)); }

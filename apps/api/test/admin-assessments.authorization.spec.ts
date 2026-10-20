@@ -24,6 +24,7 @@ describe('Admin assessment authorization and lifecycle contract', () => {
     AdminAssessmentsController.prototype.get,
     AdminAssessmentsController.prototype.create,
     AdminAssessmentsController.prototype.update,
+    AdminAssessmentsController.prototype.remove,
     AdminAssessmentsController.prototype.duplicate,
     AdminAssessmentsController.prototype.publish,
     AdminAssessmentsController.prototype.archive,
