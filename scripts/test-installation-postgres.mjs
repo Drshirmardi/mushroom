@@ -17,9 +17,10 @@ try {
   run('docker', ['run', '-d', '--name', name, '-p', '127.0.0.1::5432',
     '-e', 'POSTGRES_PASSWORD=installer-disposable-fixture',
     '-e', 'POSTGRES_DB=mushroom_installation_test', 'postgres:16-alpine']);
+  // The image starts a temporary socket-only server during initdb; wait for final TCP startup.
   let ready = false;
   for (let attempt = 0; attempt < 30; attempt += 1) {
-    const check = spawnSync('docker', ['exec', name, 'pg_isready', '-U', 'postgres'], { encoding: 'utf8' });
+    const check = spawnSync('docker', ['exec', name, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres'], { encoding: 'utf8' });
     if (check.status === 0) { ready = true; break; }
     await new Promise((done) => setTimeout(done, 500));
   }

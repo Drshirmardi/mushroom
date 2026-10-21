@@ -15,9 +15,10 @@ try {
   run('docker', ['network', 'create', network]);
   run('docker', ['run', '-d', '--name', server, '--network', network, '--network-alias', 'installer-db',
     '-e', 'POSTGRES_PASSWORD=restore-disposable-fixture', '-e', 'POSTGRES_DB=mushroom_source_installation_test', 'postgres:16-alpine']);
+  // The image starts a temporary socket-only server during initdb; wait for final TCP startup.
   let ready = false;
   for (let attempt = 0; attempt < 30; attempt += 1) {
-    if (spawnSync('docker', ['exec', server, 'pg_isready', '-U', 'postgres']).status === 0) { ready = true; break; }
+    if (spawnSync('docker', ['exec', server, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres']).status === 0) { ready = true; break; }
     await new Promise((done) => setTimeout(done, 500));
   }
   if (!ready) throw new Error('Disposable restore server did not become ready.');
