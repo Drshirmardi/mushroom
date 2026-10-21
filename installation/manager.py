@@ -367,7 +367,7 @@ def allocate_networks(config):
     identifiers = run(['docker', 'network', 'ls', '--quiet'], capture=True).split()
     existing = json.loads(run(['docker', 'network', 'inspect', *identifiers], capture=True)) if identifiers else []
     used = [(entry['Name'], ipaddress.ip_network(item['Subnet'])) for entry in existing
-            for item in entry.get('IPAM', {}).get('Config', []) if item.get('Subnet') and ':' not in item['Subnet']]
+            for item in ((entry.get('IPAM') or {}).get('Config') or []) if item.get('Subnet') and ':' not in item['Subnet']]
     routes = json.loads(run(['ip', '-json', '-4', 'route', 'show'], capture=True))
     used += [('host-route', ipaddress.ip_network(route['dst'], strict=False)) for route in routes
              if route.get('dst') and route['dst'] != 'default' and not route.get('dev', '').startswith(('docker', 'br-'))]
@@ -907,9 +907,13 @@ def failure_message(error):
     return f'Operation failed ({type(error).__name__}{number}, {location}). Rerun install to resume saved steps; report this error code/location if it repeats.'
 
 
-if __name__ == '__main__':
+def cli():
     try:
         main()
-    except (InstallationError, OSError, ValueError, EOFError, KeyboardInterrupt) as error:
+    except (Exception, KeyboardInterrupt) as error:
         print(failure_message(error), file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    cli()

@@ -1,5 +1,5 @@
 import base64
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 import hashlib
 import io
 import json
@@ -370,6 +370,45 @@ class InstallationTests(unittest.TestCase):
             self.assertEqual(self.config['environments']['dev']['subnet'], '172.30.41.0/24')
             manager.allocate_networks(self.config)
             self.assertEqual(self.config['environments']['dev']['subnet'], '172.30.41.0/24')
+
+    def test_network_allocator_handles_docker_default_networks_with_null_ipam(self):
+        networks = [{'Name': 'host', 'IPAM': {'Config': None}},
+                    {'Name': 'none', 'IPAM': {'Config': []}},
+                    {'Name': 'missing-config', 'IPAM': {}},
+                    {'Name': 'null-ipam', 'IPAM': None}, {'Name': 'missing-ipam'},
+                    {'Name': 'bridge', 'IPAM': {'Config': [{'Subnet': '172.17.0.0/16'}]}},
+                    {'Name': 'foreign', 'IPAM': {'Config': [{'Subnet': '172.30.33.0/24'},
+                                                         {'Subnet': 'fd00::/64'}]}}]
+        def command(args, **kwargs):
+            if args[:3] == ['docker', 'network', 'ls']:
+                return 'fixture-network\n'
+            if args[:3] == ['docker', 'network', 'inspect']:
+                return json.dumps(networks)
+            self.assertEqual(args, ['ip', '-json', '-4', 'route', 'show'])
+            return '[]'
+        with patch.object(manager, 'run', side_effect=command) as commands, patch.object(manager, 'STATE', self.root):
+            manager.allocate_networks(self.config)
+            first = {name: spec['subnet'] for name, spec in self.config['environments'].items()}
+            manager.allocate_networks(self.config)
+        self.assertEqual(first['dev'], '172.30.40.0/24')
+        self.assertEqual(len(set(first.values())), 3)
+        self.assertEqual(first, {name: spec['subnet'] for name, spec in self.config['environments'].items()})
+        self.assertEqual(json.loads((self.root / 'installation.json').read_text())['environments']['dev']['subnet'], first['dev'])
+        self.assertFalse(any(call.args[0][0:3] in [['docker', 'network', 'rm'], ['docker', 'network', 'create']] for call in commands.call_args_list))
+
+    def test_cli_redacts_unexpected_errors_but_preserves_argparse_exit(self):
+        with patch.object(manager, 'main', side_effect=TypeError('private-value')), redirect_stderr(io.StringIO()) as output:
+            with self.assertRaises(SystemExit) as raised:
+                manager.cli()
+        self.assertEqual(raised.exception.code, 1)
+        self.assertIn('TypeError', output.getvalue())
+        self.assertNotIn('private-value', output.getvalue())
+        self.assertNotIn('Traceback', output.getvalue())
+        with patch.object(manager, 'main', side_effect=SystemExit(2)), redirect_stderr(io.StringIO()) as output:
+            with self.assertRaises(SystemExit) as raised:
+                manager.cli()
+        self.assertEqual(raised.exception.code, 2)
+        self.assertEqual(output.getvalue(), '')
 
     def test_port_allocator_avoids_existing_services_without_stopping_them(self):
         with patch.object(manager, 'run', return_value='LISTEN 0 128 127.0.0.1:3303 0.0.0.0:*\n'), \

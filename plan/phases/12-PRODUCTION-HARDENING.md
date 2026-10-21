@@ -7,6 +7,8 @@
 
 ## Taskها
 
+- [x] `F12-T02-I04` — Docker default network null IPAM recovery (2026-10-22), INSTALLATION-04, sole Codex /root. Depends on I01/I02/I03 DONE. Normalize null/missing Config/IPAM; retain existing network collision/retry behavior; redact unexpected CLI errors.38 cases:36 PASS/2 existing tool skips; actual Docker baseline/fix allocation/retry verified without network mutation. Evidence: phase-12 log F12-T02-I04; review PASS. Owner VPS resume remains external.
+
 - [x] `F12-T02-I03` — Nominal VPS memory preflight correction (2026-10-22), INSTALLATION-03, sole Codex /root. Depends on I01/I02 DONE. Bounded10% MemTotal allowance for nominal4/2GiB hosts;3.8GiB dev accepted,2GiB dev refused,10GiB free-disk check retained.36 cases:34 PASS/2 existing tool skips on Ubuntu24.04 WSL, review PASS; fresh archive/checksum. Evidence: phase-12 log F12-T02-I03. Actual VPS deployment/performance remains external.
 
 - [x] `F12-T02-I02` — Owner-reported installer terminal encoding recovery (2026-10-21), INSTALLATION-02, sole Codex /root. Depends on F12-T02-I01 DONE. Invalid terminal bytes retry visible/hidden prompts without accepting replacement characters; UTF-8 launchers and redacted actionable failures, updated standalone archive.34 tests PASS on disposable Ubuntu24.04, review PASS. Evidence: phase-12 log F12-T02-I02. Actual owner VPS retry remains external.

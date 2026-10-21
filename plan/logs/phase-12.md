@@ -4732,3 +4732,30 @@ Verification:
 - Graphify AST update run after code change; existing optional-extractor limitations remain unrelated.
 
 Result: software review gate PASS, DONE/claim released. User must replace the two archive/checksum files in /root, verify/extract and resume the normal launcher; do not delete /etc/mushroom or existing secrets. No remote server access, push/merge, swap creation, resource tuning or production sign-off. Passing this guard does not prove all environments/builds fit concurrently or establish sustained-load capacity. Next eligible action: owner resumes installation on the chosen VPS; no next batch started.
+
+## F12-T02-I04 — Docker default network IPAM
+
+Task ID: F12-T02-I04
+Completed at: 2026-10-22
+Agent/Thread: Codex /root
+Batch ID: INSTALLATION-04
+Depends on: F12-T02-I01/I02/I03 DONE
+Reviewed by: Codex /root; source/combined diff and acceptance review PASS
+
+Problem: owner VPS completes package setup then allocate_networks attempts to iterate IPAM.Config=null on Docker default networks. Actual local Docker confirms host/none Config=null; previous tests only covered networks with explicit subnet lists. This is an installer bug; apt/needrestart/systemctl informational messages preceding it are not its cause.
+
+Changed files:
+- installation/manager.py: treat null/missing IPAM/Config as no assigned subnet, retain IPv4 overlap/host-route/isolation/saved-choice rules. CLI wrapper catches unexpected Exception as well as KeyboardInterrupt and uses existing redacted class/source location diagnostics; argparse SystemExit still propagates normally.
+- installation/test_installation.py: standard host/none/bridge plus missing/null IPAM/config, foreign IPv4 collision, IPv6 and retry fixtures; retained three distinct persisted subnets and no network writes. CLI unexpected-TypeError no raw message/traceback test and preserved argparse exit test.
+- installation/README.md: manager-only recovery for the already-uploaded bundle; retain state/packages/secrets.
+- coordinator STATUS/checklist/this log: claim, review and handoff.
+Migrations/runtime resource/secret contracts: unchanged.
+
+Verification:
+- Ubuntu24.04 WSL: python3 -B -m unittest discover -s installation -p test_installation.py -q →38 cases,36 PASS,2 existing skips (age/caddy unavailable in WSL; unchanged integrations verified during I02).
+- Actual local Docker network inspect bridge/host/none: bridge has explicit subnet; host/none Config=null. Baseline4e81baa fails with TypeError on actual local Docker network-list/inspect data. Fixed allocator with identical read-only network commands and a temporary state directory →PASS; three distinct subnets, identical second-run state. No Docker network/container creation/removal/restart. Host routes are fixtures for this Windows-hosted inspection test; their collision coverage remains in the unit suite.
+- python3 -B installation/build.py and SHA256 check →PASS. Fresh ignored archive:26,268 bytes; SHA256 bb2eab7106f445a7d4e2fcdd1bf0562158b33aae2142528856b000afa9923674. Standard archive allowlist regression included in suite.
+- bash -n installation/install.sh and git diff --check →PASS.
+- graphify update . →exit0; pre-existing optional SQL/HCL extraction dependencies/chat parser limitation unchanged. Outputs ignored.
+
+Result: DONE, main review PASS, claim released. User can transfer only the updated installation/manager.py to /root/mushroom-installer/installation/manager.py then rerun the same install.sh. The saved packages step prevents unnecessary package reinstallation and persist_bundle updates the installed manager copy. No actual owner server access/change, reboot, real credentials/provider operation or push/merge. End-to-end VPS installation still awaiting owner retry. Next eligible action: owner resumes installation; no next batch started.
