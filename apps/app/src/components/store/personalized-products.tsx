@@ -24,5 +24,5 @@ export function PersonalizedProducts({ accessToken, renderProduct }: { accessTok
     <StoreCollection title="محصولات مرتبط با شما" id="store-personal-products">{data.items.map(renderProduct)}</StoreCollection>
   </section>;
   const missing = data.status === "NO_RESULT";
-  return <aside className="store-personal-hint" aria-label="پیشنهادهای مخصوص شما"><Leaf size={19} aria-hidden="true" /><p>{missing ? "برای دیدن محصولات مرتبط با مزاجت، ارزیابی‌ات را کامل کن." : data.status === "REVIEW_REQUIRED" ? "برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد." : "هنوز پیشنهاد محصولی برای نتیجهٔ شما آماده نشده است؛ می‌توانید همهٔ محصولات را ببینید."}</p>{missing && <Link href="/assessment">شروع ارزیابی</Link>}</aside>;
+  return <aside className="store-personal-hint" aria-label="پیشنهادهای مخصوص شما"><Leaf size={19} aria-hidden="true" /><p>{missing ? "برای دیدن محصولات مرتبط با مزاجت، ارزیابی‌ات را کامل کن." : data.status === "REVIEW_REQUIRED" ? "برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد." : "هنوز پیشنهاد محصولی برای مزاج شما آماده نشده است؛ می‌توانید همهٔ محصولات را ببینید."}</p>{missing && <Link href="/assessment">شروع ارزیابی</Link>}</aside>;
 }

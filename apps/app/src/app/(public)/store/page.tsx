@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/store/product-card";
 import { AddressSheet } from "@/components/store/address-sheet";
 import { StoreHeroSlider } from "@/components/store/store-hero-slider";
 import { StoreShortcuts } from "@/components/store/store-shortcuts";
+import styles from "@/components/store/store-home.module.css";
 import { LoadingState } from "@/components/shared/skeletons";
 import { AnimatedGroup } from "@/components/motion/animated-group";
 import { StoreCollection } from "@/components/store/store-collection";
@@ -149,15 +150,15 @@ function StoreCatalog() {
   const renderProduct = (product: NonNullable<typeof products>["items"][number]) => {
     const sku = product.skus[0];
     if (!sku) return null;
-    return <ProductCard key={product.id} product={product} saved={wishlist.includes(sku.id)} inCart={cart.some(item => item.skuId === sku.id)}
+    return <ProductCard key={product.id} product={product} showFavorite={false} saved={wishlist.includes(sku.id)} inCart={cart.some(item => item.skuId === sku.id)}
       busy={busySku === sku.id} onFavorite={id => void toggleWishlist(id)} />;
   };
   const toggleWishlist = async (skuId: string) => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusySku(skuId); setFavoriteError(null); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, skuId, !wishlist.includes(skuId))); } catch (cause) { setFavoriteError(commerceErrorMessage(cause)); } finally { setBusySku(null); } };
 
-  return <main className="store-catalog" aria-labelledby="store-heading">
+  return <main className={`store-catalog ${styles.catalog}`} aria-labelledby="store-heading" dir="rtl">
     <a href="#store-products" className="store-skip-link">رفتن به محصولات</a>
     <header className="store-heading">
-      <div><h1 id="store-heading">فروشگاه</h1><p>محصولات سلامت</p></div>
+      <div><p>سبز زندگی</p><h1 id="store-heading">فروشگاه</h1></div>
       <div className="store-actions">
         <Link href="/store/wishlist" className="patient-button patient-button--ghost store-icon-button" aria-label="علاقه‌مندی‌ها">
           <Heart aria-hidden="true" size={22} />{wishlist.length > 0 && <span className="store-badge">{toP(wishlist.length)}</span>}
@@ -167,6 +168,7 @@ function StoreCatalog() {
         </Link>
       </div>
     </header>
+    <div className="store-search-panel">
     <label className="sr-only" htmlFor="store-search">جستجو در فروشگاه سبز زندگی</label>
     <div className="store-search" role="search" aria-label="جست‌وجوی محصولات فروشگاه">
       <span className="store-search__icon"><Search aria-hidden="true" size={20} /></span>
@@ -186,11 +188,12 @@ function StoreCatalog() {
       <span className="store-delivery__text">{delivery ? `تحویل به ${delivery.province}، ${delivery.city}، ${delivery.line1}` : "افزودن آدرس تحویل"}</span>
       <ChevronDown aria-hidden="true" size={16} />
     </button>
+    </div>
     {(accountError || deliveryError) && <div className="wallet-notice wallet-notice--info" role="status"><div><p>{deliveryError ? "آدرس‌های شما دریافت نشدند." : "سبد و علاقه‌مندی‌ها دریافت نشدند."} {deliveryError ?? accountError}</p><Button variant="ghost" onClick={() => setAccountRetry(value => value + 1)}>دریافت دوبارهٔ اطلاعات حساب</Button></div></div>}
     {favoriteError && <div role="alert" className="store-state store-state--error"><p>ذخیرهٔ علاقه‌مندی انجام نشد. {favoriteError}</p></div>}
-    {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} />}
     {!isFiltering && <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />}
     {!isFiltering && <StoreShortcuts />}
+    {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} />}
     {categoryId && <div className="store-catalog-tools"><span>نمایش یک دستهٔ محصول</span><Button variant="ghost" onClick={() => updateCatalog({ category: null, page: null })}>همهٔ دسته‌ها<X size={15} aria-hidden="true" /></Button></div>}
     {!products && !error && <LoadingState label="در حال دریافت محصولات…" variant="grid" />}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}

@@ -433,6 +433,8 @@
 .store-product__favorite[aria-pressed="true"] { color: var(--patient-like); border-color: var(--patient-like); }
 .store-detail__title .store-icon-button[aria-pressed="true"] { color: var(--patient-like); }
 .store-product__body { padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 16px; }
+.store-product__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.store-product__details { display: inline-flex; align-items: center; justify-content: center; width: 40px; min-height: 40px; border-radius: 12px; color: var(--patient-action); background: var(--patient-soft); }
 .store-product__title { display: block; color: #111; border-radius: 4px; }
 .store-product__title h2 { font-family: var(--font-iranyekanx); font-size: 13px; line-height: 24px; font-weight: 500; min-height: 48px; max-height: 48px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
 .font-digikala { font-family: var(--font-digikala); }
@@ -543,7 +545,7 @@
 .store-shortcut img { width: clamp(48px, 13.5vw, 60px); height: auto; aspect-ratio: 1 / 1; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 .store-shortcut span { width: 100%; font-size: 11px; line-height: 18px; text-align: center; color: var(--patient-ink); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .store-hero__slide { display: block; width: 100%; padding: 0; border: 0; border-radius: 20px; overflow: hidden; background: var(--patient-soft); box-shadow: var(--patient-shadow-card); cursor: pointer; }
-.store-hero__image { display: block; width: 100%; height: 180px; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+.store-hero__image { display: block; width: 100%; height: 180px; object-fit: cover; object-position: center; user-select: none; -webkit-user-drag: none; }
 .store-hero__dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
 .store-hero__dot { width: 6px; height: 6px; border-radius: 999px; background: var(--patient-divider); transition: width 200ms, background-color 200ms; }
 .store-hero__dot--active { width: 20px; background: var(--patient-action); }
@@ -1004,6 +1006,8 @@
 
 /* Home-only visual system; other patient routes retain their own foundations. */
 .patient-home-shell { background: #e9f4fc; }
+.patient-storefront-shell { background: #e9f4fc; }
+.patient-storefront-shell .patient-app-frame { background: #e9f4fc; box-shadow: none; }
 .patient-home-shell .patient-app-frame { background: transparent; box-shadow: none; }
 .home-page {
   --home-ink: #173d59;
