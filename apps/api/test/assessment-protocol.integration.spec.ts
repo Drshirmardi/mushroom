@@ -7,6 +7,8 @@ import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { Prisma } from '../src/generated/prisma/client';
 import { AssessmentProtocolService } from '../src/modules/assessments/protocol/assessment-protocol.service';
+import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
+import { TIEBREAK_ALGORITHM, type TieBreakDraft } from '../src/modules/assessments/domain/assessment-tiebreak-draft';
 import { createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assessment protocol review (isolated PostgreSQL)', () => {
@@ -27,7 +29,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
     if (role === 'DOCTOR' && profile) { const key = randomUUID(); const s = await db.specialty.create({ data: { clinicId, name: key, canonicalName: key, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } }); const d = await db.doctorProfile.create({ data: { clinicId, userId: auth.userId, displayName: 'Synthetic protocol reviewer' } }); await db.doctorSpecialty.create({ data: { clinicId, doctorId: d.id, specialtyId: s.id } }); await db.doctorProfile.update({ where: { id: d.id }, data: { isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } }); }
     return auth;
   }
-  const req = (method:'GET'|'POST', path:string, who = doctor, payload?:object, key:string|null = randomUUID()) => app.inject({ method, url:`/v1/${path}`, headers:{ authorization:`Bearer ${who.token}`, origin:'http://localhost:3000', ...(key ? {'idempotency-key':key}:{}), ...(payload ? {'content-type':'application/json'}:{}) }, ...(payload ? {payload:JSON.stringify(payload)}:{}) });
+  const req = (method:'GET'|'POST'|'PUT'|'PATCH', path:string, who = doctor, payload?:object, key:string|null = randomUUID()) => app.inject({ method, url:`/v1/${path}`, headers:{ authorization:`Bearer ${who.token}`, origin:'http://localhost:3000', ...(key ? {'idempotency-key':key}:{}), ...(payload ? {'content-type':'application/json'}:{}) }, ...(payload ? {payload:JSON.stringify(payload)}:{}) });
   const structure = { schemaVersion:1, sections:[{id:'one',questions:[{id:'q',type:'BOOLEAN',required:true,trueScore:1,falseScore:0}]}], resultBands:[{id:'one',title:'Synthetic',minInclusive:0,maxExclusive:2,riskLevel:'NONE',requiresReview:false}] };
   async function source(publish = true) { const created = await req('POST','admin/assessments',admin,{ assessmentKey:`TEST_${randomUUID()}`,locale:'fa-IR',title:'Synthetic protocol questionnaire',structure }); expect(created.statusCode).toBe(201); if (!publish) return created.json() as {id:string;assessmentKey:string;contentHash:string}; const r = await req('POST',`admin/assessments/${created.json().id}/publish`,admin); expect(r.statusCode).toBe(201); return r.json() as {id:string;assessmentKey:string;contentHash:string}; }
   async function retire(locale='fa-IR') { await db.consentPolicyVersion.updateMany({ where:{clinicId,policyKey:'ASSESSMENT_PROCESSING',locale,status:'ACTIVE'},data:{status:'RETIRED',retiredAt:new Date()} }); }
@@ -42,6 +44,48 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
   const approve = (f:Awaited<ReturnType<typeof prepared>>, who=doctor, key:string|null=randomUUID(), patch={}) => req('POST',`clinical/assessment-protocols/${f.v.id}/reviews`,who,{...f.body,...patch},key);
   const withdrawal = (id:string, review:{id:string;protocolHash:string;reviewNumber:number}, who=doctor, key=randomUUID()) => req('POST',`clinical/assessment-protocols/${id}/reviews/${review.id}/withdrawal`,who,{protocolHash:review.protocolHash,expectedReviewNumber:review.reviewNumber,withdrawalReason:'Synthetic safety withdrawal'},key);
   const usable = (id:string) => db.$transaction(tx=>app.get(AssessmentProtocolService).usableApproval(tx,clinicId,id));
+
+  it('lets ADMIN publish complete11+1 without physician review or processing policy and preserves patient progression', async () => {
+    const base = structuredClone(MIZAJ_DRAFT_PRESET.structure);
+    for (const section of base.sections) for (const question of section.questions) question.options.forEach((option, index) => { option.scores = { [base.scoring.dimensions[index]!.id]: 1 }; });
+    const definition: TieBreakDraft = { ...base, schemaVersion: 3, scoring: { ...base.scoring, ...TIEBREAK_ALGORITHM, minInformativeAnswers: 1 }, followUps: [] };
+    for (let first = 0; first < 4; first++) for (let second = first + 1; second < 4; second++) {
+      const tiedDimensions = [first, second].map(index => base.scoring.dimensions[index]!.id);
+      definition.followUps.push({ id: `clarify${first}${second}`, title: 'Synthetic test distinction', tiedDimensions, options: tiedDimensions.map((dimensionId, index) => ({ id: `choice${index}`, title: `Synthetic choice ${index}`, dimensionId })) });
+    }
+    await retire();
+    const created = await req('POST', 'admin/assessments', admin, { assessmentKey: `TEST_${randomUUID()}`, locale: 'fa-IR', title: 'Synthetic adaptive fixture', structure: { ...definition, followUps: [] } });
+    expect(created.statusCode).toBe(201); const v = created.json();
+    expect((await req('POST', `admin/assessments/${v.id}/publish`, admin)).json().code).toBe('ASSESSMENT_STRUCTURE_INVALID');
+    expect((await req('PATCH', `admin/assessments/${v.id}`, admin, { structure: definition })).statusCode).toBe(200);
+    expect((await req('POST', `admin/assessments/${v.id}/publish`, doctor)).statusCode).toBe(403);
+    const published = await req('POST', `admin/assessments/${v.id}/publish`, admin);
+    expect(published.statusCode).toBe(201); expect(published.json().publishedByUserId).toBe(admin.userId);
+    expect(await db.assessmentProtocolReview.count({ where: { assessmentVersionId: v.id } })).toBe(0);
+    const patient = await actor('PATIENT'); await db.patientProfile.create({ data: { userId: patient.userId, clinicId } });
+    const started = await req('POST', `assessments/${v.id}/submissions`, patient); expect(started.statusCode).toBe(201); const attempt = started.json();
+    const choices = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3];
+    const answers = Object.fromEntries(definition.sections.flatMap(s => s.questions).map((q, index) => [q.id, q.options[choices[index]!]!.id]));
+    const premature = await req('PUT', `assessment-submissions/${attempt.id}`, patient, { answers: { clarify01: 'choice0' }, expectedRevision: attempt.revision }); expect(premature.statusCode).toBe(422);
+    const saved = await req('PUT', `assessment-submissions/${attempt.id}`, patient, { answers, expectedRevision: attempt.revision }); expect(saved.statusCode).toBe(200);
+    const questionnaire = (await req('GET', `assessment-submissions/${attempt.id}/questionnaire`, patient)).json();
+    expect(questionnaire.structure).not.toHaveProperty('scoring'); expect(questionnaire.structure).not.toHaveProperty('resultProfiles');
+    const projected = questionnaire.structure.sections.flatMap((s: { questions: { id: string }[] }) => s.questions);
+    expect(projected).toHaveLength(12); expect(projected[11].id).toBe('clarify01');
+    expect((await req('POST', `assessment-submissions/${attempt.id}/submit`, patient, { expectedRevision: saved.json().revision })).json().code).toBe('ASSESSMENT_FOLLOW_UP_REQUIRED');
+    const finalSave = await req('PUT', `assessment-submissions/${attempt.id}`, patient, { answers: { ...answers, clarify01: 'choice0' }, expectedRevision: saved.json().revision }); expect(finalSave.statusCode).toBe(200);
+    const key = randomUUID(), body = { expectedRevision: finalSave.json().revision };
+    const completed = await req('POST', `assessment-submissions/${attempt.id}/submit`, patient, body, key); expect(completed.statusCode).toBe(201);
+    expect(completed.json()).toMatchObject({ state: 'COMPLETE', score: null, resultSnapshot: { algorithmId: 'DIMENSION_TIEBREAK', primary: definition.scoring.dimensions[0]!.id, secondary: definition.scoring.dimensions[1]!.id, followUpUsed: true, reviewState: 'ADMIN_PUBLISHED' } });
+    expect((await req('POST', `assessment-submissions/${attempt.id}/submit`, patient, body, key)).json()).toEqual(completed.json());
+    const pending = await req('POST', `assessments/${v.id}/submissions`, patient); expect(pending.statusCode).toBe(201);
+    expect((await req('POST', `admin/assessments/${v.id}/archive`, admin)).statusCode).toBe(201);
+    expect((await req('GET', `assessment-submissions/${pending.json().id}/questionnaire`, patient)).json().resumeAvailable).toBe(true);
+    expect((await req('PUT', `assessment-submissions/${pending.json().id}`, patient, { answers, expectedRevision: pending.json().revision })).statusCode).toBe(200);
+    expect(completed.json().resultSnapshot).not.toHaveProperty('protocolReviewId');
+    expect(completed.json().resultSnapshot).not.toHaveProperty('publishedByUserId');
+    expect((await req('GET', `assessment-submissions/${attempt.id}/result`, patient)).statusCode).toBe(200);
+  });
 
   it('exposes exact source with explicit missing consent/review blockers and no fabricated policy',async()=>{
     const v=await source(); const r=await preview(v.id); expect(r.statusCode).toBe(200); expect(r.json()).toMatchObject({consentPolicy:null,protocolHash:null,currentReviewNumber:0,approvalUsable:false,educationalOnly:true}); expect(r.json().blockers).toContain('ASSESSMENT_PROCESSING_CONSENT_MISSING'); expect(await usable(v.id)).toBeNull();

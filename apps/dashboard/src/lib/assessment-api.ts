@@ -92,7 +92,7 @@ export function assessmentErrorMessage(error: unknown) {
   if (error.code === "ASSESSMENT_DELETE_REFERENCED") return "این آزمون به پاسخ‌ها، نتایج یا اطلاعات دیگری متصل است و قابل حذف نیست؛ سوابق و وابستگی‌ها باید حفظ شوند.";
   if (error.code === "ASSESSMENT_DELETE_CONFLICT") return "آزمون پس از دریافت فهرست تغییر کرده است؛ فهرست را بازخوانی و سپس دربارهٔ حذف تصمیم بگیرید.";
   if (error.code === "ASSESSMENT_PREVIEW_CONFLICT") return "پیش‌نویس تغییر کرده است؛ نسخهٔ تازه را بازخوانی و دوباره پیش‌نمایش بگیرید.";
-  if (error.code === "ASSESSMENT_STRUCTURE_INVALID") return "ساختار سؤال‌ها، امتیازها یا بازه‌های نتیجه معتبر نیست. مدل‌های مزاج فعلاً فقط پیش‌نویس‌اند؛ نگاشت پاسخ‌ها و متن سؤال رفع تساوی را نیز بررسی کنید.";
+  if (error.code === "ASSESSMENT_STRUCTURE_INVALID") return "ساختار سؤال‌ها، نگاشت پاسخ‌ها یا نتیجه‌ها کامل نیست. برای انتشار ۱۱+۱، هر شش حالت رفع تساوی دو گرایش باید سؤال و پاسخ کامل داشته باشند.";
   if (error.status === 409) return "نسخه، وضعیت یا مرجع روی سرور تغییر کرده است؛ بازخوانی کنید. نسخهٔ منتشرشده و نسخهٔ متصل به سیاست رزرو محدودیت تغییر دارند.";
   if ([400, 422].includes(error.status)) return "اطلاعات یا مراجع کامل و معتبر نیستند؛ فیلدها و موانع اعلام‌شده را بررسی کنید.";
   return "درخواست انجام نشد؛ اطلاعات حفظ شده‌اند. دوباره تلاش کنید.";
@@ -124,4 +124,4 @@ export const createCoupleProtocol = (token: string, body: components["schemas"][
 export const getCoupleProtocol = (token: string, id: string) => dataOrThrow<CoupleProtocol>(apiClient.GET("/v1/admin/couple-result-protocols/{id}", { headers: authorization(token), params: { path: { id } } }));
 export const revokeCoupleProtocol = (token: string, id: string) => dataOrThrow<CoupleProtocol>(apiClient.POST("/v1/admin/couple-result-protocols/{id}/revoke", { headers: authorization(token), params: { path: { id } } }));
 export const listGuidanceContent = (token: string, page = 1) => dataOrThrow<components["schemas"]["GuidanceContentPageDto"]>(apiClient.GET("/v1/admin/guidance-content", { headers: authorization(token), params: { query: { page, pageSize: 50 } } }));
-export const listAssessmentServices = (token: string) => dataOrThrow<components["schemas"]["ServiceResponseDto"][]>(apiClient.GET("/v1/admin/services", { headers: authorization(token) }));
+export const listAssessmentServices = (token: string, page = 1) => dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(apiClient.GET("/v1/admin/services", { headers: authorization(token), params: { query: { page, pageSize: 20, isActive: true, publicationStatus: "PUBLISHED" } } }));

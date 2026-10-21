@@ -45,11 +45,11 @@ export class AdminAssessmentsController {
   update(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: UpdateAssessmentDto, @Req() request: AuthenticatedRequest) { return this.assessments.update(id, body, this.context(request)); }
 
   @Delete(':id') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @Header('Cache-Control', 'no-store')
-  @ApiOperation({ operationId: 'adminAssessmentsDelete', summary: 'Delete an unreferenced draft or archived assessment with its exact current content hash' })
+  @ApiOperation({ operationId: 'adminAssessmentsDelete', summary: 'Remove an assessment from use while retaining its source and patient results' })
   @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: DeletedAssessmentDto })
   @ApiQuery({ name: 'expectedContentHash', required: true, schema: { type: 'string', pattern: '^[a-f0-9]{64}$' } })
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Required permission is missing.') @ApiErrorResponse(HttpStatus.NOT_FOUND, 'Assessment was not found.')
-  @ApiErrorResponse(HttpStatus.CONFLICT, 'Version is published, changed, or has references that must be preserved.')
+  @ApiErrorResponse(HttpStatus.CONFLICT, 'The assessment content changed; reload before deleting.')
   remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Query() query: DeleteAssessmentQueryDto, @Req() request: AuthenticatedRequest) { return this.assessments.remove(id, query.expectedContentHash, this.context(request)); }
 
   @Post(':id/duplicate') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @ApiOperation({ operationId: 'adminAssessmentsDuplicate', summary: 'Duplicate an assessment version as a new draft' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiCreatedResponse({ type: AssessmentVersionResponseDto })

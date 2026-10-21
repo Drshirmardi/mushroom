@@ -7,7 +7,7 @@ import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS, type AssessmentAuditAction } from '../application/assessment-audit';
 import type { AssessmentListQueryDto, AssessmentScoringPreviewInputDto, CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessments.dto';
 import { previewDimensionDraft, validateDimensionDraft } from '../domain/assessment-dimension-draft';
-import { previewTieBreakDraft, validateTieBreakDraft } from '../domain/assessment-tiebreak-draft';
+import { previewTieBreakDraft, validateTieBreakDraft, validateTieBreakPublication } from '../domain/assessment-tiebreak-draft';
 import { AssessmentAnswerError } from '../domain/assessment-scoring';
 import { MIZAJ_DRAFT_PRESET } from '../domain/mizaj-draft-preset';
 import { AssessmentStructureError, validateAssessmentStructure } from '../domain/assessment-structure-validation';
@@ -30,6 +30,7 @@ export class AdminAssessmentsService {
     const clinic = await this.clinic();
     const where: Prisma.AssessmentVersionWhereInput = {
       clinicId: clinic.id,
+      NOT: { status: AssessmentVersionStatus.DELETED },
       ...(query.assessmentKey ? { assessmentKey: cleanText(query.assessmentKey).toUpperCase() } : {}),
       ...(query.status ? { status: query.status } : {}),
     };
@@ -110,9 +111,10 @@ export class AdminAssessmentsService {
 
   async publish(id: string, context: AuditContext) {
     return this.prisma.$transaction(async tx => {
+      await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${'assessment-protocol:' + id.toLowerCase()},0))`);
       const current = await this.version(id, tx, true);
       if (current.status === AssessmentVersionStatus.PUBLISHED) return this.response(current);
-      if (current.status === AssessmentVersionStatus.RETIRED) throw immutable();
+      if (current.status === AssessmentVersionStatus.RETIRED || current.status === AssessmentVersionStatus.DELETED) throw immutable();
       this.validate(current.assessmentKey, current.title, current.structure as Structure, true);
       await this.lock(tx, current.clinicId, current.assessmentKey, current.locale);
       const existing = await tx.assessmentVersion.findFirst({ where: { clinicId: current.clinicId, assessmentKey: current.assessmentKey, locale: current.locale, status: 'PUBLISHED', id: { not: id } }, select: { id: true } });
@@ -125,7 +127,7 @@ export class AdminAssessmentsService {
         if ((error as { code?: string }).code === 'P2002') throw new ConflictException({ code: 'ASSESSMENT_VERSION_ALREADY_PUBLISHED', message: 'Another published version already exists for this assessment.', details: {} });
         throw error;
       }
-    }, { maxWait: 30_000 });
+    }, { maxWait: 30_000, timeout: 15_000 });
   }
 
   async archive(id: string, context: AuditContext) {
@@ -140,31 +142,26 @@ export class AdminAssessmentsService {
   }
 
   async remove(id: string, expectedContentHash: string, context: AuditContext) {
-    try {
-      return await this.prisma.$transaction(async tx => {
-        const current = await this.version(id, tx, true);
-        if (current.status !== AssessmentVersionStatus.DRAFT && current.status !== AssessmentVersionStatus.RETIRED) throw new ConflictException({ code: 'ASSESSMENT_DELETE_NOT_ALLOWED', message: 'Only unreferenced drafts or archived versions can be deleted.', details: {} });
-        if (current.contentHash !== expectedContentHash) throw new ConflictException({ code: 'ASSESSMENT_DELETE_CONFLICT', message: 'The assessment changed. Reload before deleting.', details: {} });
-        await this.lock(tx, current.clinicId, current.assessmentKey, current.locale);
-        // Every version reference uses ON DELETE RESTRICT; the database also blocks published-version deletion.
-        await tx.assessmentVersion.delete({ where: { id } });
-        await this.audit(ASSESSMENT_AUDIT_ACTIONS.DELETED, id, context, { versionNumber: current.versionNumber, assessmentKey: current.assessmentKey, locale: current.locale, contentHash: current.contentHash, status: current.status }, tx);
-        return { id };
-      });
-    } catch (error) {
-      if ((error as { code?: string }).code === 'P2003') throw new ConflictException({ code: 'ASSESSMENT_DELETE_REFERENCED', message: 'This assessment has references and cannot be deleted.', details: {} });
-      throw error;
-    }
+    return this.prisma.$transaction(async tx => {
+      const current = await this.version(id, tx, true, true);
+      if (current.contentHash !== expectedContentHash) throw new ConflictException({ code: 'ASSESSMENT_DELETE_CONFLICT', message: 'The assessment changed. Reload before deleting.', details: {} });
+      if (current.status === AssessmentVersionStatus.DELETED) return { id };
+      await this.lock(tx, current.clinicId, current.assessmentKey, current.locale);
+      const policies = await tx.bookingEligibilityPolicy.updateMany({ where: { clinicId: current.clinicId, requiredAssessmentVersionId: id }, data: { assessmentRequirement: 'NOT_REQUIRED', requiredAssessmentVersionId: null } });
+      await tx.assessmentVersion.update({ where: { id }, data: { status: AssessmentVersionStatus.DELETED } });
+      await this.audit(ASSESSMENT_AUDIT_ACTIONS.DELETED, id, context, { versionNumber: current.versionNumber, assessmentKey: current.assessmentKey, locale: current.locale, contentHash: current.contentHash, previousStatus: current.status, retainedResults: true, detachedBookingPolicies: policies.count }, tx);
+      return { id };
+    });
   }
 
   private async clinic(db: Prisma.TransactionClient = this.prisma) { const clinic = await db.clinic.findFirst({ where: { status: 'ACTIVE' }, select: { id: true } }); if (!clinic) throw unavailable(); return clinic; }
-  private async version(id: string, db: Prisma.TransactionClient = this.prisma, lock = false) {
+  private async version(id: string, db: Prisma.TransactionClient = this.prisma, lock = false, includeDeleted = false) {
     const clinic = await this.clinic(db);
     if (lock) {
       const rows = await db.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT id FROM assessment_versions WHERE id = ${id}::uuid AND clinic_id = ${clinic.id}::uuid FOR UPDATE`);
       if (!rows.length) throw absent();
     }
-    const version = await db.assessmentVersion.findFirst({ where: { id, clinicId: clinic.id } }); if (!version) throw absent(); return version;
+    const version = await db.assessmentVersion.findFirst({ where: { id, clinicId: clinic.id, ...(includeDeleted ? {} : { NOT: { status: AssessmentVersionStatus.DELETED } }) } }); if (!version) throw absent(); return version;
   }
   private async lock(tx: Prisma.TransactionClient, clinicId: string, key: string, locale: string) { await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`assessment-version:${clinicId}:${key}:${locale}`}, 0))`); }
   private hash(value: Structure) { return createHash('sha256').update(canonicalJson(value)).digest('hex'); }
@@ -173,7 +170,7 @@ export class AdminAssessmentsService {
   private validate(key: string, title: string, structure: Structure, forPublication = false) {
     try {
       if (!key || !title) throw new AssessmentStructureError('Assessment key and title are required.');
-      if (!forPublication && structure.schemaVersion === 3) validateTieBreakDraft(structure);
+      if (structure.schemaVersion === 3) { if (forPublication) validateTieBreakPublication(structure); else validateTieBreakDraft(structure); }
       else if (!forPublication && structure.schemaVersion === 2) validateDimensionDraft(structure);
       else {
         if (['DIMENSION_RANK', 'DIMENSION_TIEBREAK'].includes(String((structure.scoring as { algorithmId?: unknown } | undefined)?.algorithmId))) throw new AssessmentStructureError('Dimension drafts cannot be relabeled as scalar questionnaires.');

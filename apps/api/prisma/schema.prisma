@@ -167,6 +167,7 @@ enum AssessmentVersionStatus {
   DRAFT
   PUBLISHED
   RETIRED
+  DELETED
 
   @@map("assessment_version_status")
 }

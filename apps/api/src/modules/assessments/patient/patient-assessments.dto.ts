@@ -38,7 +38,7 @@ export class PatientAssessmentQuestionnaireResponseDto {
   @ApiProperty() versionNumber!: number;
   @ApiProperty() locale!: string;
   @ApiProperty() title!: string;
-  @ApiProperty({ enum: ['PUBLISHED', 'RETIRED'] }) status!: string;
+  @ApiProperty({ enum: ['PUBLISHED', 'RETIRED', 'DELETED'] }) status!: string;
   @ApiProperty() contentHash!: string;
   @ApiProperty() resumeAvailable!: boolean;
   @ApiProperty({ type: 'object', additionalProperties: true }) structure!: Record<string, unknown>;

@@ -12621,7 +12621,7 @@
             }
           },
           "409": {
-            "description": "Version is published, changed, or has references that must be preserved.",
+            "description": "The assessment content changed; reload before deleting.",
             "content": {
               "application/json": {
                 "schema": {
@@ -12636,7 +12636,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Delete an unreferenced draft or archived assessment with its exact current content hash",
+        "summary": "Remove an assessment from use while retaining its source and patient results",
         "tags": [
           "Admin Assessments"
         ]
@@ -27728,6 +27728,8 @@
               "ASSESSMENT_NOT_FOUND",
               "ASSESSMENT_STRUCTURE_INVALID",
               "ASSESSMENT_PREVIEW_CONFLICT",
+              "ASSESSMENT_FOLLOW_UP_REQUIRED",
+              "ASSESSMENT_RELEASE_NOT_READY",
               "ASSESSMENT_DELETE_NOT_ALLOWED",
               "ASSESSMENT_DELETE_CONFLICT",
               "ASSESSMENT_DELETE_REFERENCED",
@@ -31593,7 +31595,8 @@
             "type": "string",
             "enum": [
               "PUBLISHED",
-              "RETIRED"
+              "RETIRED",
+              "DELETED"
             ]
           },
           "contentHash": {
@@ -31935,6 +31938,7 @@
           "status": {
             "type": "string",
             "enum": [
+              "DRAFT",
               "PUBLISHED",
               "RETIRED"
             ]
@@ -35841,7 +35845,8 @@
             "enum": [
               "DRAFT",
               "PUBLISHED",
-              "RETIRED"
+              "RETIRED",
+              "DELETED"
             ]
           },
           "publishedAt": {

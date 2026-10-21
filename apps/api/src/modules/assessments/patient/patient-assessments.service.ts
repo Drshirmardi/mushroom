@@ -7,6 +7,8 @@ import { PrismaService } from '../../../database/prisma/prisma.service';
 import { ASSESSMENT_AUDIT_ACTIONS } from '../application/assessment-audit';
 import { AssessmentAnswerError, ASSESSMENT_SCORING_IDENTITY, scoreAssessment } from '../domain/assessment-scoring';
 import type { PatientAssessmentHistoryQueryDto } from './patient-assessments.dto';
+import { isTieBreakStructure } from '../domain/assessment-engine-definition';
+import { previewTieBreakDraft, projectTieBreakQuestionnaire, validateTieBreakAnswers, type TieBreakDraft } from '../domain/assessment-tiebreak-draft';
 import { accessibleAssessmentWhere, processableAssessmentGrants } from '../access/assessment-access.policy';
 import { AssessmentAccessService } from '../access/assessment-access.service';
 
@@ -44,14 +46,15 @@ export class PatientAssessmentsService {
       const patient = await this.patient(userId, tx);
       const submission = await tx.patientAssessmentSubmission.findFirst({
         where: { ...accessibleAssessmentWhere, id, patientId: patient.id, state: { in: ['IN_PROGRESS', 'COMPLETE'] }, invalidatedAt: null,
-          assessmentVersion: { clinicId: patient.clinicId, status: { in: ['PUBLISHED', 'RETIRED'] } } },
-        select: { id: true, accessGrantId: true, state: true, assessmentVersion: { select: { id: true, assessmentKey: true, versionNumber: true, locale: true, title: true, status: true, contentHash: true, structure: true } } },
+          assessmentVersion: { clinicId: patient.clinicId, status: { in: ['PUBLISHED', 'RETIRED', 'DELETED'] } } },
+        select: { id: true, accessGrantId: true, assessmentVersionId: true, answers: true, state: true, assessmentVersion: { select: { id: true, assessmentKey: true, versionNumber: true, locale: true, title: true, status: true, contentHash: true, structure: true } } },
       });
       if (!submission) throw submissionNotFound();
       await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.QUESTIONNAIRE_READ, id, context);
       const { id: assessmentVersionId, ...version } = submission.assessmentVersion;
-      const canProcess = !submission.accessGrantId || (await processableAssessmentGrants(tx, [submission.accessGrantId])).has(submission.accessGrantId);
-      return { submissionId: id, assessmentVersionId, ...version, resumeAvailable: submission.state === 'IN_PROGRESS' && canProcess };
+      const canProcess = version.status !== 'DELETED' && (!submission.accessGrantId || (await processableAssessmentGrants(tx, [submission.accessGrantId])).has(submission.accessGrantId));
+      if (canProcess && isTieBreakStructure(version.structure) && submission.state === 'IN_PROGRESS') await this.access.processingQuestionnaire(tx, assessmentVersionId, patient, context, true);
+      return { submissionId: id, assessmentVersionId, ...version, structure: isTieBreakStructure(version.structure) ? projectTieBreakQuestionnaire(version.structure, submission.answers) : version.structure, resumeAvailable: submission.state === 'IN_PROGRESS' && canProcess };
     });
   }
 
@@ -80,13 +83,14 @@ export class PatientAssessmentsService {
       where: { clinicId: patient.clinicId, status: AssessmentVersionStatus.PUBLISHED, offeringVersions: { none: { commercialPublications: { some: {} } } } },
       orderBy: [{ assessmentKey: 'asc' }, { versionNumber: 'desc' }],
     });
-    return { items: items.map(item => ({ id: item.id, assessmentKey: item.assessmentKey, versionNumber: item.versionNumber, locale: item.locale, title: item.title, structure: item.structure as Record<string, unknown> })) };
+    return { items: items.map(item => ({ id: item.id, assessmentKey: item.assessmentKey, versionNumber: item.versionNumber, locale: item.locale, title: item.title, structure: isTieBreakStructure(item.structure) ? projectTieBreakQuestionnaire(item.structure, {}) : item.structure as Record<string, unknown> })) };
   }
 
   async start(versionId: string, userId: string, context: AuditContext) {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(userId, tx);
       await this.lock(tx, `assessment:start:${patient.id}:${versionId}`);
+      await this.access.processingQuestionnaire(tx, versionId, patient, context);
       // Publication takes protocol before the commercial boundary; paid legacy resume must agree.
       await this.lock(tx, `assessment-protocol:${versionId.toLowerCase()}`);
       await this.lock(tx, `assessment-commercial-start:${versionId.toLowerCase()}`);
@@ -155,7 +159,7 @@ export class PatientAssessmentsService {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(userId, tx);
       const submission = await this.ownedForUpdate(tx, id, patient);
-      if (submission.state !== PatientAssessmentState.IN_PROGRESS) throw immutable();
+      if (submission.state !== PatientAssessmentState.IN_PROGRESS || submission.assessmentVersion.status === 'DELETED') throw immutable();
       await this.access.processingSubmission(tx, submission, patient, context);
       // A retry of an already-persisted snapshot is safe even if its old revision was supplied.
       if (isDeepStrictEqual(submission.answers, answers)) {
@@ -163,6 +167,10 @@ export class PatientAssessmentsService {
         return this.response(submission);
       }
       this.assertRevision(submission, expectedRevision);
+      if (isTieBreakStructure(submission.assessmentVersion.structure)) {
+        try { validateTieBreakAnswers(submission.assessmentVersion.structure, answers); }
+        catch (reason) { if (reason instanceof AssessmentAnswerError) throw new UnprocessableEntityException({ code: reason.code, message: reason.message, details: {} }); throw reason; }
+      }
       const saved = await tx.patientAssessmentSubmission.update({
         where: { id }, data: { answers: answers as Prisma.InputJsonValue, revision: { increment: 1 } },
       });
@@ -190,11 +198,20 @@ export class PatientAssessmentsService {
         await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.SUBMISSION_RESULT_READ, id, context);
         return this.response(submission);
       }
-      if (submission.state !== PatientAssessmentState.IN_PROGRESS) throw immutable();
+      if (submission.state !== PatientAssessmentState.IN_PROGRESS || submission.assessmentVersion.status === 'DELETED') throw immutable();
       await this.access.processingSubmission(tx, submission, patient, context);
       this.assertRevision(submission, expectedRevision);
-      let evaluation: ReturnType<typeof scoreAssessment>;
-      try { evaluation = scoreAssessment(submission.assessmentVersion.structure, submission.answers); }
+      const dimensional = isTieBreakStructure(submission.assessmentVersion.structure);
+      let evaluation: { score: number | null; resultBand: ReturnType<typeof scoreAssessment>['resultBand']; answers: Record<string, unknown> };
+      let dimensionResult: ReturnType<typeof previewTieBreakDraft> | null = null;
+      try {
+        if (dimensional) {
+          dimensionResult = previewTieBreakDraft(submission.assessmentVersion.structure, submission.answers);
+          if (dimensionResult.status === 'FOLLOW_UP_REQUIRED') throw new AssessmentAnswerError('ASSESSMENT_FOLLOW_UP_REQUIRED', 'Answer the selected follow-up before completion.');
+          const profile = dimensionResult.profile;
+          evaluation = { score: null, answers: submission.answers as Record<string, unknown>, resultBand: profile ? { id: profile.id, title: profile.title, riskLevel: 'NONE', requiresReview: false } : null };
+        } else evaluation = scoreAssessment(submission.assessmentVersion.structure, submission.answers);
+      }
       catch (error) {
         if (error instanceof AssessmentAnswerError) throw new UnprocessableEntityException({ code: error.code, message: error.message, details: {} });
         throw error;
@@ -204,11 +221,14 @@ export class PatientAssessmentsService {
         data: {
           state: PatientAssessmentState.COMPLETE, completedAt: new Date(), revision: { increment: 1 },
           completionIdempotencyKey: idempotencyKey, completionPayloadHash: payloadHash, score: evaluation.score,
-          resultSnapshot: { snapshotVersion: 1, answers: evaluation.answers, score: evaluation.score, resultBand: evaluation.resultBand,
-            ...ASSESSMENT_SCORING_IDENTITY, questionnaireContentHash: submission.assessmentVersion.contentHash, answerPayloadHash: payloadHash },
+          resultSnapshot: (dimensionResult ? { ...dimensionResult, snapshotVersion: 2, reviewState: 'ADMIN_PUBLISHED',
+            dimensionTitles: (submission.assessmentVersion.structure as unknown as TieBreakDraft).scoring.dimensions,
+            answers: evaluation.answers, score: null, resultBand: evaluation.resultBand, questionnaireContentHash: submission.assessmentVersion.contentHash, answerPayloadHash: payloadHash }
+            : { snapshotVersion: 1, answers: evaluation.answers, score: evaluation.score, resultBand: evaluation.resultBand,
+            ...ASSESSMENT_SCORING_IDENTITY, questionnaireContentHash: submission.assessmentVersion.contentHash, answerPayloadHash: payloadHash }) as unknown as Prisma.InputJsonValue,
         },
       });
-      if (submission.assessmentVersion.assessmentKey === 'MEZAJ') {
+      if (submission.assessmentVersion.assessmentKey === 'MEZAJ' && (!dimensional || evaluation.resultBand !== null)) {
         await tx.mezajResult.create({ data: {
           patientId: patient.id, assessmentVersionId: completed.assessmentVersionId, assessmentSubmissionId: completed.id,
           resultBandSnapshot: evaluation.resultBand === null ? Prisma.JsonNull : evaluation.resultBand as Prisma.InputJsonValue,

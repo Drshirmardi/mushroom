@@ -64,6 +64,8 @@ export const getBookingEligibility = (accessToken: string) => expectData<Booking
 export function assessmentErrorMessage(error: unknown) {
   if (!(error instanceof AssessmentRequestError) || error.status === 0) return "سرویس ارزیابی در دسترس نیست؛ دوباره تلاش کنید.";
   if (error.status === 401 || error.status === 403) return "اجازهٔ دسترسی به این ارزیابی را ندارید.";
+  if (error.code === "ASSESSMENT_ACCESS_UNAVAILABLE") return "تأیید معتبر یا دسترسی این نسخه در حال حاضر در دسترس نیست؛ برای پیگیری با کلینیک تماس بگیرید.";
+  if (error.code === "ASSESSMENT_FOLLOW_UP_REQUIRED") return "یک سؤال تکمیلی لازم است؛ آخرین وضعیت آزمون را دریافت کنید.";
   if (error.code === "ASSESSMENT_ANSWERS_INVALID") return "پاسخ‌های ضروری را کامل و معتبر وارد کنید.";
   if (error.code === "ASSESSMENT_SUBMISSION_IMMUTABLE") return "این ارزیابی قبلاً تکمیل شده و قابل تغییر نیست.";
   if (error.status === 409) return "پاسخ‌ها یا وضعیت آزمون تغییر کرده است. پیش از ادامه، نسخهٔ ذخیره‌شده را دوباره دریافت کنید؛ پاسخ‌های فعلی خودکار جایگزین نمی‌شوند.";

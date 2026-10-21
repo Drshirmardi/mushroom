@@ -54,3 +54,14 @@ export function validateMizajAuthoring(structure: Row): string[] {
   }
   return [...new Set(issues)];
 }
+
+
+export function validateMizajPublication(structure: Row): string[] {
+  const issues = validateMizajAuthoring(structure);
+  const dimensions = rows(row(structure.scoring).dimensions);
+  const defined = new Set(rows(structure.followUps).map(question => candidateKey(Array.isArray(question.tiedDimensions) ? question.tiedDimensions as string[] : [])));
+  for (let first = 0; first < dimensions.length; first++) for (let second = first + 1; second < dimensions.length; second++) {
+    if (!defined.has(candidateKey([text(dimensions[first]!.id), text(dimensions[second]!.id)]))) issues.push(`سؤال رفع تساوی «${text(dimensions[first]!.title)} و ${text(dimensions[second]!.title)}» را تکمیل کنید.`);
+  }
+  return issues;
+}

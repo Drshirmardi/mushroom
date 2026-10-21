@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { Prisma } from '../../../generated/prisma/client';
 import { AssessmentProtocolService } from '../protocol/assessment-protocol.service';
 import type { GuidanceActorContext } from '../../content/guidance/guidance-authority.service';
+import { isTieBreakStructure } from '../domain/assessment-engine-definition';
 
 export const assessmentAccessUnavailable = () => new ConflictException({ code: 'ASSESSMENT_ACCESS_UNAVAILABLE', message: 'The exact paid assessment access or processing approval is unavailable.', details: {} });
 @Injectable()
@@ -28,7 +29,16 @@ export class AssessmentAccessService {
     await this.protocols.lockApprovalAuthority(tx, review);
     return grant;
   }
-  async processingSubmission(tx: Prisma.TransactionClient, submission: { accessGrantId: string | null }, patient: { id: string; clinicId: string }, ctx: GuidanceActorContext) {
-    if (submission.accessGrantId) await this.processingGrant(tx, submission.accessGrantId, patient, ctx);
+  async processingQuestionnaire(tx: Prisma.TransactionClient, versionId: string, patient: { id: string; clinicId: string }, ctx: GuidanceActorContext, allowRetired = false) {
+    const source = await tx.assessmentVersion.findFirst({ where: { id: versionId, clinicId: patient.clinicId }, select: { structure: true, status: true, publishedAt: true, publishedByUserId: true } });
+    if (!source || !isTieBreakStructure(source.structure)) return;
+    if ((source.status !== 'PUBLISHED' && !(allowRetired && source.status === 'RETIRED')) || !source.publishedAt || !source.publishedByUserId) throw assessmentAccessUnavailable();
+    await this.self(tx, patient, ctx);
+  }
+
+  async processingSubmission(tx: Prisma.TransactionClient, submission: { accessGrantId: string | null; assessmentVersionId?: string }, patient: { id: string; clinicId: string }, ctx: GuidanceActorContext) {
+    if (submission.accessGrantId) { await this.processingGrant(tx, submission.accessGrantId, patient, ctx); return null; }
+    if (submission.assessmentVersionId) return this.processingQuestionnaire(tx, submission.assessmentVersionId, patient, ctx, true);
+    return null;
   }
 }

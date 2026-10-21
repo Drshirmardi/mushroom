@@ -53,7 +53,7 @@ export class ProtocolQuestionnaireDto {
   @ApiProperty() title!: string;
   @ApiProperty() locale!: string;
   @ApiProperty() contentHash!: string;
-  @ApiProperty({ enum: ['PUBLISHED', 'RETIRED'] }) status!: string;
+  @ApiProperty({ enum: ['DRAFT', 'PUBLISHED', 'RETIRED'] }) status!: string;
   @ApiProperty({ type: 'object', additionalProperties: true }) structure!: Record<string, unknown>;
 }
 export class ProtocolConsentDto {

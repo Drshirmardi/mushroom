@@ -63,7 +63,7 @@ export class AssessmentVersionResponseDto {
   @ApiProperty() title!: string;
   @ApiProperty({ type: 'object', additionalProperties: true }) structure!: Record<string, unknown>;
   @ApiProperty({ pattern: '^[0-9a-f]{64}$' }) contentHash!: string;
-  @ApiProperty({ enum: ['DRAFT', 'PUBLISHED', 'RETIRED'] }) status!: string;
+  @ApiProperty({ enum: ['DRAFT', 'PUBLISHED', 'RETIRED', 'DELETED'] }) status!: string;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' }) publishedAt!: Date | null;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' }) retiredAt!: Date | null;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid' }) publishedByUserId!: string | null;

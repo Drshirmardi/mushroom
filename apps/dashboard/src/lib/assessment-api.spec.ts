@@ -10,6 +10,7 @@ import {
   getAssessmentPolicy,
   listAssessmentSubmissions,
   listAssessments,
+  listAssessmentServices,
   publishAssessment,
   updateAssessment,
   updateAssessmentPolicy,
@@ -44,6 +45,16 @@ const version = {
 
 describe("dashboard assessment API", () => {
   beforeEach(() => fetchMock.mockReset());
+
+  it("keeps the service page envelope and requests published active services on the selected page", async () => {
+    const page = { items: [{ id: version.id, name: "مشاوره", isActive: true, publicationStatus: "PUBLISHED" }], page: 2, pageSize: 20, total: 21 };
+    fetchMock.mockResolvedValueOnce(json(page));
+    await expect(listAssessmentServices("token", 2)).resolves.toEqual(page);
+    const request = fetchMock.mock.calls[0]?.[0] as Request;
+    expect(request.headers.get("authorization")).toBe("Bearer token");
+    const params = new URL(request.url).searchParams;
+    expect(Object.fromEntries(params)).toEqual({ page: "2", pageSize: "20", isActive: "true", publicationStatus: "PUBLISHED" });
+  });
 
   it("deletes only the selected version with its exact content hash and reports dependency conflicts", async () => {
     fetchMock.mockResolvedValueOnce(json({ id: version.id }));

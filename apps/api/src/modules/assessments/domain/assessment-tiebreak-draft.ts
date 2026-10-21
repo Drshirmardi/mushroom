@@ -110,3 +110,48 @@ export function previewTieBreakDraft(input: unknown, rawAnswers: unknown): TieBr
   result.profile = draft.resultProfiles.find(profile => profile.primary === result.primary && profile.secondary === result.secondary) ?? null;
   return result;
 }
+
+export function validateTieBreakPublication(input: unknown): TieBreakDraft {
+  const draft = validateTieBreakDraft(input);
+  const ids = draft.scoring.dimensions.map(dimension => dimension.id);
+  for (let first = 0; first < ids.length; first++) for (let second = first + 1; second < ids.length; second++) {
+    if (!draft.followUps.some(question => sameCandidates(question.tiedDimensions, [ids[first]!, ids[second]!]))) {
+      throw new AssessmentStructureError('Define all six two-way tie questions before publication.');
+    }
+  }
+  return draft;
+}
+
+/** Validate partial owned progress without requiring future answers or allowing off-path questions. */
+export function validateTieBreakAnswers(input: unknown, rawAnswers: unknown): Record<string, string> {
+  const draft = validateTieBreakDraft(input);
+  if (!rawAnswers || typeof rawAnswers !== 'object' || Array.isArray(rawAnswers)) return fail();
+  const answers = rawAnswers as Record<string, string>;
+  const questions = draft.sections.flatMap(section => section.questions);
+  const mainIds = new Set(questions.map(question => question.id));
+  for (const question of questions) if (Object.prototype.hasOwnProperty.call(answers, question.id) && !question.options.some(option => option.id === answers[question.id])) fail();
+  const extras = Object.keys(answers).filter(key => !mainIds.has(key));
+  const complete = questions.every(question => Object.prototype.hasOwnProperty.call(answers, question.id));
+  if (extras.length && !complete) fail();
+  if (complete) previewTieBreakDraft(draft, answers);
+  return answers;
+}
+
+/** Public projection never exposes memberships, result profiles or the unused tie-break bank. */
+export function projectTieBreakQuestionnaire(input: unknown, rawAnswers: unknown) {
+  const draft = validateTieBreakDraft(input);
+  const answers = validateTieBreakAnswers(draft, rawAnswers);
+  const questions = draft.sections.flatMap(section => section.questions);
+  const mainIds = new Set(questions.map(question => question.id));
+  const mainAnswers = Object.fromEntries(Object.entries(answers).filter(([id]) => mainIds.has(id)));
+  const selected = Object.keys(mainAnswers).length === 11 ? previewTieBreakDraft(draft, mainAnswers).followUp : null;
+  const sections = draft.sections.map(section => ({ id: section.id, title: section.title, questions: section.questions.map(question => ({
+    id: question.id, text: question.title, type: question.type, required: true, phase: 'MAIN',
+    options: question.options.map(option => ({ id: option.id, label: option.title })),
+  })) }));
+  if (selected) sections[sections.length - 1]!.questions.push({
+    id: selected.id, text: selected.title, type: 'SINGLE_CHOICE', required: true, phase: 'FOLLOW_UP',
+    options: selected.options.map(option => ({ id: option.id, label: option.title })),
+  });
+  return { schemaVersion: 3, mainQuestionCount: 11, sections };
+}

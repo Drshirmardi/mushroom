@@ -37,8 +37,9 @@ export function HoldDeleteButton({ title, disabled, onDelete }: { title: string;
   useEffect(() => {
     const hidden = () => { if (document.hidden) cancel(); };
     window.addEventListener('blur', cancel);
+    window.addEventListener('resize', cancel);
     document.addEventListener('visibilitychange', hidden);
-    return () => { timer.cancel(); window.removeEventListener('blur', cancel); document.removeEventListener('visibilitychange', hidden); };
+    return () => { timer.cancel(); window.removeEventListener('blur', cancel); window.removeEventListener('resize', cancel); document.removeEventListener('visibilitychange', hidden); };
   }, [timer, cancel]);
 
   const start = (method: 'pointer' | 'keyboard') => {
@@ -48,11 +49,13 @@ export function HoldDeleteButton({ title, disabled, onDelete }: { title: string;
   };
 
   return <>
-    <button type="button" disabled={disabled} className="dashboard-button relative isolate overflow-hidden select-none touch-manipulation text-destructive" aria-label={`برای حذف ${title} دکمه را نگه دارید`} aria-describedby={description} title="برای حذف، کلیک را ۱٫۵ ثانیه نگه دارید" onClick={event => event.preventDefault()} onBlur={cancel}
-      onPointerDown={event => { if (event.button !== 0 || !event.isPrimary) return; event.currentTarget.focus(); start('pointer'); }}
+    <button type="button" disabled={disabled} className="dashboard-button relative isolate overflow-hidden whitespace-nowrap select-none touch-none text-destructive" aria-label={`برای حذف ${title} دکمه را نگه دارید`} aria-describedby={description} title="برای حذف، کلیک را ۱٫۵ ثانیه نگه دارید" onClick={event => event.preventDefault()} onBlur={cancel}
+      onPointerDown={event => { if (event.button !== 0 || event.isPrimary === false || disabled) return; event.preventDefault(); event.currentTarget.focus({ preventScroll: true }); event.currentTarget.setPointerCapture(event.pointerId); start('pointer'); }}
+      onPointerMove={event => { if (input.current !== 'pointer') return; const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) cancel(); }}
       onPointerUp={() => { if (input.current === 'pointer') cancel(); }}
-      onPointerLeave={() => { if (input.current === 'pointer') cancel(); }}
+      onPointerLeave={event => { if (input.current === 'pointer' && !event.currentTarget.hasPointerCapture(event.pointerId)) cancel(); }}
       onPointerCancel={() => { if (input.current === 'pointer') cancel(); }}
+      onLostPointerCapture={() => { if (input.current === 'pointer') cancel(); }}
       onContextMenu={event => event.preventDefault()}
       onKeyDown={event => {
         if (event.key === 'Escape') { event.preventDefault(); cancel(); }
@@ -60,7 +63,7 @@ export function HoldDeleteButton({ title, disabled, onDelete }: { title: string;
       }}
       onKeyUp={event => { if ((event.key === 'Enter' || event.key === ' ') && input.current === 'keyboard') { event.preventDefault(); cancel(); } }}>
       <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 origin-right bg-destructive/20" style={{ transform: `scaleX(${holding ? 1 : 0})`, transition: holding ? `transform ${HOLD_DURATION_MS}ms linear` : 'none' }} />
-      <Trash2 size={16} aria-hidden="true" /><span>{holding ? 'نگه دارید…' : 'برای حذف نگه دارید'}</span>
+      <Trash2 size={16} aria-hidden="true" /><span>برای حذف نگه دارید</span>
     </button>
     <span id={description} className="sr-only">کلیک، لمس یا کلید فاصله یا Enter را یک و نیم ثانیه نگه دارید. رهاکردن یا خروج از دکمه، حذف را لغو می‌کند.</span>
   </>;
