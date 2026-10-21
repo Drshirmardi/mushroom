@@ -79,12 +79,17 @@ export function DashboardPage() {
   const { authentication } = useDashboardSession();
   const [state, setState] = useState<HomeViewState>({ status: "loading" });
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const requestKey = JSON.stringify([authentication.accessToken, refreshVersion]);
+  const [previousRequest, setPreviousRequest] = useState(requestKey);
+  if (previousRequest !== requestKey) {
+    setPreviousRequest(requestKey);
+    setState({ status: "loading" });
+  }
   const revenueReport = useRevenueReport(authentication.accessToken, refreshVersion);
   const refresh = () => setRefreshVersion(value => value + 1);
 
   useEffect(() => {
     let active = true;
-    setState({ status: "loading" });
     void loadDashboardHomeReporting(apiClient, authentication.accessToken).then(next => { if (active) setState(next); });
     return () => { active = false; };
   }, [authentication.accessToken, refreshVersion]);

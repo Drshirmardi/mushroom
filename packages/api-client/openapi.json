@@ -4140,9 +4140,9 @@
         ]
       }
     },
-    "/v1/patients/me": {
+    "/v1/patients/me/entry": {
       "get": {
-        "operationId": "patientGetSelfProfile",
+        "operationId": "patientEntryStatus",
         "parameters": [],
         "responses": {
           "200": {
@@ -4150,27 +4150,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SelfProfileResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient access is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
                 }
               }
             }
@@ -4181,20 +4161,22 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get self profile",
+        "summary": "",
         "tags": [
-          "Patient self profile"
+          "Patient Entry"
         ]
-      },
-      "patch": {
-        "operationId": "patientUpdateSelfProfile",
+      }
+    },
+    "/v1/patients/me/entry/profile": {
+      "post": {
+        "operationId": "patientEntryProfileSave",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSelfProfileDto"
+                "$ref": "#/components/schemas/EntryProfileDto"
               }
             }
           }
@@ -4205,37 +4187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SelfProfileResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient access is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Profile fields are invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
                 }
               }
             }
@@ -4246,15 +4198,15 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Update self profile",
+        "summary": "",
         "tags": [
-          "Patient self profile"
+          "Patient Entry"
         ]
       }
     },
-    "/v1/patients/me/onboarding-status": {
-      "get": {
-        "operationId": "patientGetOnboardingStatus",
+    "/v1/patients/me/entry/start": {
+      "post": {
+        "operationId": "patientEntryStart",
         "parameters": [],
         "responses": {
           "200": {
@@ -4262,27 +4214,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OnboardingStatusResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient access is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
                 }
               }
             }
@@ -4293,15 +4225,15 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get onboarding status",
+        "summary": "",
         "tags": [
-          "Patient self profile"
+          "Patient Entry"
         ]
       }
     },
-    "/v1/patients/me/journey": {
-      "get": {
-        "operationId": "patientJourneyGet",
+    "/v1/patients/me/entry/complete": {
+      "post": {
+        "operationId": "patientEntryComplete",
         "parameters": [],
         "responses": {
           "200": {
@@ -4309,47 +4241,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PatientJourneyResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Patient profile was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Sensitive audit is unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
                 }
               }
             }
@@ -4360,9 +4252,71 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get derived patient Home state and next action",
+        "summary": "",
         "tags": [
-          "Patient Journey"
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/admin/assessment-entry-policy": {
+      "get": {
+        "operationId": "adminEntryPolicyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryPolicyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Assessments"
+        ]
+      },
+      "put": {
+        "operationId": "adminEntryPolicyUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryPolicyUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryPolicyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Assessments"
         ]
       }
     },
@@ -4856,6 +4810,165 @@
         ]
       }
     },
+    "/v1/patients/me": {
+      "get": {
+        "operationId": "patientGetSelfProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get self profile",
+        "tags": [
+          "Patient self profile"
+        ]
+      },
+      "patch": {
+        "operationId": "patientUpdateSelfProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSelfProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Profile fields are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update self profile",
+        "tags": [
+          "Patient self profile"
+        ]
+      }
+    },
+    "/v1/patients/me/onboarding-status": {
+      "get": {
+        "operationId": "patientGetOnboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingStatusResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get onboarding status",
+        "tags": [
+          "Patient self profile"
+        ]
+      }
+    },
     "/v1/clinical/assessment-protocols": {
       "get": {
         "operationId": "clinicalAssessmentProtocolQueue",
@@ -4873,12 +4986,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -4886,12 +4997,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           }
         ],
@@ -5102,12 +5211,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -5115,12 +5222,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           }
         ],
@@ -5552,12 +5657,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -5565,12 +5668,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           }
         ],
@@ -5763,12 +5864,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -5776,12 +5875,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -6093,12 +6190,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -6106,12 +6201,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -6586,6 +6679,73 @@
         "summary": "Read an approved educational version; no diagnosis or personalized therapeutic diet",
         "tags": [
           "Educational Guidance"
+        ]
+      }
+    },
+    "/v1/patients/me/journey": {
+      "get": {
+        "operationId": "patientJourneyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientJourneyResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sensitive audit is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get derived patient Home state and next action",
+        "tags": [
+          "Patient Journey"
         ]
       }
     },
@@ -10506,12 +10666,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -10519,12 +10677,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -10836,12 +10992,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -10849,12 +11003,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -12358,8 +12510,30 @@
             "required": false,
             "in": "query",
             "schema": {
-              "maxLength": 100,
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "example": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "example": 20
             }
           },
           {
@@ -12373,28 +12547,6 @@
                 "RETIRED"
               ],
               "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 50,
-              "example": 20,
-              "type": "number"
             }
           }
         ],
@@ -13975,11 +14127,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -13990,11 +14138,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -14215,11 +14359,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -14230,11 +14370,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -14446,11 +14582,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -14461,11 +14593,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -14686,11 +14814,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -14701,11 +14825,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -24467,6 +24587,43 @@
         ]
       }
     },
+    "/v1/patients/me/commerce/discount-preview": {
+      "post": {
+        "operationId": "patientCommerceDiscountPreview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewCommerceDiscountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceDiscountPreviewDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Validate and price a cart discount without creating an order or reservation",
+        "tags": [
+          "Patient Commerce"
+        ]
+      }
+    },
     "/v1/patients/me/commerce/addresses": {
       "get": {
         "operationId": "patientCommerceAddressesList",
@@ -25855,12 +26012,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -25868,12 +26023,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -26185,12 +26338,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -26198,12 +26349,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "integer"
             }
           },
           {
@@ -27548,186 +27697,6 @@
         "summary": "Start or resume the same owned engine attempt for one paid grant",
         "tags": [
           "Paid Patient Assessments"
-        ]
-      }
-    },
-    "/v1/patients/me/entry": {
-      "get": {
-        "operationId": "patientEntryStatus",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientEntryStatusDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Patient Entry"
-        ]
-      }
-    },
-    "/v1/patients/me/entry/profile": {
-      "post": {
-        "operationId": "patientEntryProfileSave",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EntryProfileDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientEntryStatusDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Patient Entry"
-        ]
-      }
-    },
-    "/v1/patients/me/entry/start": {
-      "post": {
-        "operationId": "patientEntryStart",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientEntryStatusDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Patient Entry"
-        ]
-      }
-    },
-    "/v1/patients/me/entry/complete": {
-      "post": {
-        "operationId": "patientEntryComplete",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientEntryStatusDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Patient Entry"
-        ]
-      }
-    },
-    "/v1/admin/assessment-entry-policy": {
-      "get": {
-        "operationId": "adminEntryPolicyGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EntryPolicyDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Admin Assessments"
-        ]
-      },
-      "put": {
-        "operationId": "adminEntryPolicyUpdate",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EntryPolicyUpdateDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EntryPolicyDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "",
-        "tags": [
-          "Admin Assessments"
         ]
       }
     }
@@ -30641,1023 +30610,135 @@
           "createdAt"
         ]
       },
-      "SelfProfileResponseDto": {
+      "PatientEntryStatusDto": {
         "type": "object",
         "properties": {
-          "patientId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+989123456789"
-          },
-          "accountStatus": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "DISABLED"
-            ]
-          },
-          "firstName": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastName": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true,
-            "format": "email"
-          },
-          "cityName": {
-            "type": "string",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "FEMALE",
-              "MALE"
-            ],
-            "nullable": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "patientId",
-          "phone",
-          "accountStatus"
-        ]
-      },
-      "UpdateSelfProfileDto": {
-        "type": "object",
-        "properties": {
-          "firstName": {
-            "type": "string",
-            "maxLength": 80,
-            "nullable": true
-          },
-          "lastName": {
-            "type": "string",
-            "maxLength": 100,
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "maxLength": 254,
-            "nullable": true
-          },
-          "cityName": {
-            "type": "string",
-            "maxLength": 100,
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "FEMALE",
-              "MALE"
-            ],
-            "nullable": true
-          }
-        }
-      },
-      "OnboardingStatusResponseDto": {
-        "type": "object",
-        "properties": {
-          "onboardingState": {
-            "type": "string",
-            "enum": [
-              "NOT_STARTED",
-              "IN_PROGRESS",
-              "COMPLETE"
-            ]
-          },
-          "submissionState": {
-            "type": "string",
-            "enum": [
-              "DRAFT",
-              "COMPLETE"
-            ],
-            "nullable": true
-          },
-          "isComplete": {
+          "required": {
             "type": "boolean"
           },
-          "requiredCount": {
-            "type": "number"
-          },
-          "answeredRequiredCount": {
-            "type": "number"
-          },
-          "missingFields": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "blockerCodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "nextAction": {
-            "type": "string"
-          },
-          "assignedSchemaVersion": {
-            "type": "number",
-            "nullable": true
-          },
-          "evaluatedSchemaVersion": {
-            "type": "number"
-          },
-          "currentRevision": {
-            "type": "number"
-          },
-          "completedRevision": {
-            "type": "number",
-            "nullable": true
-          },
-          "currentPolicyVersionId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "activeConsentRecordId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "updatedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "onboardingState",
-          "isComplete",
-          "requiredCount",
-          "answeredRequiredCount",
-          "missingFields",
-          "blockerCodes",
-          "nextAction",
-          "evaluatedSchemaVersion",
-          "currentRevision"
-        ]
-      },
-      "JourneyCustomProgramDto": {
-        "type": "object",
-        "properties": {
-          "requestId": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "intentId": {
-            "type": "string"
-          },
-          "paymentState": {
-            "type": "string"
-          },
-          "entitled": {
-            "type": "boolean"
-          },
-          "currentVersionId": {
-            "type": "string",
-            "nullable": true
-          },
-          "treatmentPlanId": {
-            "type": "string",
-            "nullable": true
-          },
-          "bodyAvailable": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "requestId",
-          "title",
-          "intentId",
-          "paymentState",
-          "entitled",
-          "currentVersionId",
-          "treatmentPlanId",
-          "bodyAvailable"
-        ]
-      },
-      "JourneyCustomProgramsDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyCustomProgramDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyProgramPurchaseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "currency": {
+          "phase": {
             "type": "string",
             "enum": [
-              "IRR"
-            ]
-          },
-          "intentId": {
-            "type": "string"
-          },
-          "paymentState": {
-            "type": "string"
-          },
-          "accessGrantId": {
-            "type": "string",
-            "nullable": true
-          },
-          "grantedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          },
-          "endsAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          },
-          "accessAvailable": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "amountRial",
-          "currency",
-          "intentId",
-          "paymentState",
-          "accessGrantId",
-          "grantedAt",
-          "endsAt",
-          "accessAvailable"
-        ]
-      },
-      "JourneyProgramPurchasesDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyProgramPurchaseDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyCoupleAssessmentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "title": {
-            "type": "string"
-          },
-          "paymentState": {
-            "type": "string"
-          },
-          "ownAccessGrantId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "ownSubmissionId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "ownAssessmentState": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "NOT_STARTED",
-              "IN_PROGRESS",
+              "PROFILE",
+              "ASSESSMENT",
+              "RESULT",
               "COMPLETE",
-              "INVALIDATED"
+              "UNAVAILABLE"
             ]
           },
-          "ownStartAvailable": {
-            "type": "boolean"
-          },
-          "jointResultState": {
-            "type": "string",
-            "enum": [
-              "AWAITING_PAYMENT",
-              "SHARING_UNAVAILABLE",
-              "AWAITING_COMPLETION",
-              "READY_TO_GENERATE",
-              "AVAILABLE"
-            ]
-          },
-          "jointResultId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "paymentState",
-          "ownAccessGrantId",
-          "ownSubmissionId",
-          "ownAssessmentState",
-          "ownStartAvailable",
-          "jointResultState",
-          "jointResultId"
-        ]
-      },
-      "JourneyCoupleAssessmentsDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyCoupleAssessmentDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyAssessmentPurchaseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "title": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "intentId": {
+          "assessmentVersionId": {
             "type": "string",
             "nullable": true,
             "format": "uuid"
           },
-          "paymentState": {
-            "type": "string"
-          },
-          "accessGrantId": {
+          "assessmentTitle": {
             "type": "string",
-            "nullable": true,
-            "format": "uuid"
+            "nullable": true
           },
           "submissionId": {
             "type": "string",
             "nullable": true,
             "format": "uuid"
           },
-          "startAvailable": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "amountRial",
-          "currency",
-          "intentId",
-          "paymentState",
-          "accessGrantId",
-          "submissionId",
-          "startAvailable"
-        ]
-      },
-      "JourneyAssessmentPurchasesDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyAssessmentPurchaseDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyOnboardingDto": {
-        "type": "object",
-        "properties": {
-          "state": {
-            "type": "string",
-            "enum": [
-              "NOT_STARTED",
-              "IN_PROGRESS",
-              "COMPLETE"
-            ]
-          },
-          "isComplete": {
-            "type": "boolean"
-          },
-          "requiredCount": {
-            "type": "number"
-          },
-          "answeredRequiredCount": {
-            "type": "number"
-          },
-          "missingFields": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "blockerCodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "nextAction": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "state",
-          "isComplete",
-          "requiredCount",
-          "answeredRequiredCount",
-          "missingFields",
-          "blockerCodes",
-          "nextAction"
-        ]
-      },
-      "PatientBookingEligibilityResponseDto": {
-        "type": "object",
-        "properties": {
-          "eligible": {
-            "type": "boolean"
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "ELIGIBLE",
-              "PROFILE_INCOMPLETE",
-              "MAIN_ASSESSMENT_REQUIRED",
-              "ASSESSMENT_EXPIRED",
-              "LATEST_VERSION_REQUIRED"
-            ]
-          },
-          "nextAction": {
+          "firstName": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "required": [
-          "eligible",
-          "reason"
-        ]
-      },
-      "JourneyActionDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "enum": [
-              "OPEN_APPOINTMENT",
-              "COMPLETE_PROFILE",
-              "CONSENT_UNAVAILABLE",
-              "REVIEW_CONSENT",
-              "START_MEDICAL_INTAKE",
-              "CONTINUE_MEDICAL_INTAKE",
-              "COMPLETE_ONBOARDING",
-              "REVIEW_BOOKING_REQUIREMENTS",
-              "RESUME_ASSESSMENT",
-              "CONTINUE_PAYMENT",
-              "VIEW_TREATMENT_PLAN",
-              "VIEW_ASSESSMENT_RESULT",
-              "BOOK_CONSULTATION",
-              "START_PAID_ASSESSMENT",
-              "OPEN_COUPLE_ASSESSMENT",
-              "OPEN_PROGRAM",
-              "OPEN_CUSTOM_PROGRAM_REQUEST"
-            ]
           },
-          "resourceId": {
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "birthDate": {
             "type": "string",
             "nullable": true,
-            "format": "uuid"
+            "format": "date"
           }
         },
         "required": [
-          "code",
-          "resourceId"
+          "required",
+          "phase",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "submissionId",
+          "firstName",
+          "lastName",
+          "birthDate"
         ]
       },
-      "JourneyAssessmentDto": {
+      "EntryProfileDto": {
         "type": "object",
         "properties": {
-          "id": {
+          "firstName": {
             "type": "string",
-            "format": "uuid"
+            "maxLength": 80
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "birthDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "birthDate"
+        ]
+      },
+      "EntryPolicyDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
           },
           "assessmentVersionId": {
             "type": "string",
+            "nullable": true,
             "format": "uuid"
           },
-          "assessmentKey": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "state": {
+          "assessmentTitle": {
             "type": "string",
-            "enum": [
-              "IN_PROGRESS",
-              "COMPLETE"
-            ]
+            "nullable": true
           },
           "revision": {
             "type": "number"
           },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "resumeAvailable": {
-            "type": "boolean"
-          },
-          "resumeBlocker": {
+          "enforcedFrom": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              "VERSION_NOT_PUBLISHED",
-              "PROCESSING_APPROVAL_UNAVAILABLE"
-            ]
+            "format": "date-time"
           }
         },
         "required": [
-          "id",
+          "enabled",
           "assessmentVersionId",
-          "assessmentKey",
-          "title",
-          "versionNumber",
-          "state",
+          "assessmentTitle",
           "revision",
-          "updatedAt",
-          "resumeAvailable",
-          "resumeBlocker"
+          "enforcedFrom"
         ]
       },
-      "JourneyAssessmentsDto": {
+      "EntryPolicyUpdateDto": {
         "type": "object",
         "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyAssessmentDto"
-            }
-          },
-          "hasMore": {
+          "enabled": {
             "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyAppointmentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
+          },
+          "assessmentVersionId": {
             "type": "string",
+            "nullable": true,
             "format": "uuid"
           },
-          "startsAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "endsAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "visitMode": {
-            "type": "string",
-            "enum": [
-              "ONLINE",
-              "IN_PERSON"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "startsAt",
-          "endsAt",
-          "status",
-          "visitMode"
-        ]
-      },
-      "JourneyAppointmentsDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyAppointmentDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyPaymentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "purpose": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string",
-            "description": "Integer rial amount, serialized without precision loss"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "purpose",
-          "amountRial",
-          "currency",
-          "expiresAt"
-        ]
-      },
-      "JourneyPaymentsDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyPaymentDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyOrderDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "totalAmountToman": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "TOMAN"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "totalAmountToman",
-          "currency"
-        ]
-      },
-      "JourneyOrdersDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyOrderDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "JourneyPlanDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "COMPLETED"
-            ]
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "state",
-          "updatedAt"
-        ]
-      },
-      "JourneyPlansDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyPlanDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "CoupleParticipantSummaryDto": {
-        "type": "object",
-        "properties": {
-          "slot": {
-            "type": "string",
-            "enum": [
-              "INITIATOR",
-              "PARTNER"
-            ]
-          },
-          "isSelf": {
-            "type": "boolean"
-          },
-          "consentState": {
-            "type": "string",
-            "enum": [
-              "ACCEPTED",
-              "REVOKED"
-            ]
-          }
-        },
-        "required": [
-          "slot",
-          "isSelf",
-          "consentState"
-        ]
-      },
-      "CoupleSessionSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "AWAITING_PARTNER",
-              "LINKED",
-              "CONSENT_REVOKED"
-            ]
-          },
-          "minimumAgeYears": {
+          "expectedRevision": {
             "type": "number",
-            "enum": [
-              18
-            ]
-          },
-          "consentPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "participants": {
-            "maxItems": 2,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CoupleParticipantSummaryDto"
-            }
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "assessmentReady": {
-            "type": "boolean",
-            "enum": [
-              false
-            ],
-            "description": "Account linking grants no medical-processing, payment entitlement or joint-result access"
+            "minimum": 0
           }
         },
         "required": [
-          "id",
-          "state",
-          "minimumAgeYears",
-          "consentPolicyVersionId",
-          "participants",
-          "createdAt",
-          "updatedAt",
-          "assessmentReady"
-        ]
-      },
-      "JourneyCoupleLinksDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CoupleSessionSummaryDto"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "items",
-          "hasMore"
-        ]
-      },
-      "PatientJourneyResponseDto": {
-        "type": "object",
-        "properties": {
-          "customPrograms": {
-            "$ref": "#/components/schemas/JourneyCustomProgramsDto"
-          },
-          "programPurchases": {
-            "$ref": "#/components/schemas/JourneyProgramPurchasesDto"
-          },
-          "coupleAssessments": {
-            "$ref": "#/components/schemas/JourneyCoupleAssessmentsDto"
-          },
-          "assessmentPurchases": {
-            "$ref": "#/components/schemas/JourneyAssessmentPurchasesDto"
-          },
-          "evaluatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "onboarding": {
-            "$ref": "#/components/schemas/JourneyOnboardingDto"
-          },
-          "bookingEligibility": {
-            "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
-          },
-          "nextAction": {
-            "$ref": "#/components/schemas/JourneyActionDto"
-          },
-          "assessments": {
-            "$ref": "#/components/schemas/JourneyAssessmentsDto"
-          },
-          "appointments": {
-            "$ref": "#/components/schemas/JourneyAppointmentsDto"
-          },
-          "pendingPayments": {
-            "$ref": "#/components/schemas/JourneyPaymentsDto"
-          },
-          "pendingOrders": {
-            "$ref": "#/components/schemas/JourneyOrdersDto"
-          },
-          "treatmentPlans": {
-            "$ref": "#/components/schemas/JourneyPlansDto"
-          },
-          "coupleLinks": {
-            "$ref": "#/components/schemas/JourneyCoupleLinksDto"
-          },
-          "storeAvailable": {
-            "type": "boolean",
-            "description": "Shopping is independent of medical onboarding"
-          },
-          "home": {
-            "$ref": "#/components/schemas/JourneyHomeDto"
-          }
-        },
-        "required": [
-          "customPrograms",
-          "programPurchases",
-          "coupleAssessments",
-          "assessmentPurchases",
-          "evaluatedAt",
-          "onboarding",
-          "bookingEligibility",
-          "nextAction",
-          "assessments",
-          "appointments",
-          "pendingPayments",
-          "pendingOrders",
-          "treatmentPlans",
-          "coupleLinks",
-          "storeAvailable",
-          "home"
+          "enabled",
+          "assessmentVersionId",
+          "expectedRevision"
         ]
       },
       "PatientAssessmentHistoryItemDto": {
@@ -32024,6 +31105,206 @@
           "assessmentSubmissionId",
           "resultBand",
           "assessedAt"
+        ]
+      },
+      "PatientBookingEligibilityResponseDto": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "ELIGIBLE",
+              "PROFILE_INCOMPLETE",
+              "MAIN_ASSESSMENT_REQUIRED",
+              "ASSESSMENT_EXPIRED",
+              "LATEST_VERSION_REQUIRED"
+            ]
+          },
+          "nextAction": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "eligible",
+          "reason"
+        ]
+      },
+      "SelfProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+989123456789"
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "format": "email"
+          },
+          "cityName": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE"
+            ],
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "patientId",
+          "phone",
+          "accountStatus"
+        ]
+      },
+      "UpdateSelfProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "nullable": true
+          },
+          "cityName": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE"
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "OnboardingStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "onboardingState": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "submissionState": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "COMPLETE"
+            ],
+            "nullable": true
+          },
+          "isComplete": {
+            "type": "boolean"
+          },
+          "requiredCount": {
+            "type": "number"
+          },
+          "answeredRequiredCount": {
+            "type": "number"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blockerCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextAction": {
+            "type": "string"
+          },
+          "assignedSchemaVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "evaluatedSchemaVersion": {
+            "type": "number"
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "completedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "currentPolicyVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "activeConsentRecordId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "onboardingState",
+          "isComplete",
+          "requiredCount",
+          "answeredRequiredCount",
+          "missingFields",
+          "blockerCodes",
+          "nextAction",
+          "evaluatedSchemaVersion",
+          "currentRevision"
         ]
       },
       "ProtocolQueueItemDto": {
@@ -32653,6 +31934,966 @@
           "contentHash",
           "educationalOnly",
           "noDiagnosisOrTherapeuticDiet"
+        ]
+      },
+      "JourneySetupStepDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "PROFILE",
+              "HEALTH",
+              "CONFIRM"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "CURRENT",
+              "UPCOMING"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "state"
+        ]
+      },
+      "JourneyLatestAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "completedAt"
+        ]
+      },
+      "JourneyHomeActionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "OPEN_APPOINTMENT",
+              "COMPLETE_PROFILE",
+              "CONSENT_UNAVAILABLE",
+              "REVIEW_CONSENT",
+              "START_MEDICAL_INTAKE",
+              "CONTINUE_MEDICAL_INTAKE",
+              "COMPLETE_ONBOARDING",
+              "REVIEW_BOOKING_REQUIREMENTS",
+              "RESUME_ASSESSMENT",
+              "CONTINUE_PAYMENT",
+              "VIEW_TREATMENT_PLAN",
+              "VIEW_ASSESSMENT_RESULT",
+              "BOOK_CONSULTATION",
+              "START_PAID_ASSESSMENT",
+              "OPEN_COUPLE_ASSESSMENT",
+              "OPEN_PROGRAM",
+              "OPEN_CUSTOM_PROGRAM_REQUEST",
+              "OPEN_COUPLE_LINK",
+              "TRACK_ORDER"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true,
+            "description": "Exact pending payment amount in integer rial"
+          },
+          "paymentPurpose": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "resourceId",
+          "title",
+          "amountRial",
+          "paymentPurpose"
+        ]
+      },
+      "JourneyHomeDto": {
+        "type": "object",
+        "properties": {
+          "setupSteps": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneySetupStepDto"
+            }
+          },
+          "latestAssessment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyLatestAssessmentDto"
+              }
+            ]
+          },
+          "activeTreatmentPlanId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "actions": {
+            "maxItems": 12,
+            "description": "Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyHomeActionDto"
+            }
+          }
+        },
+        "required": [
+          "setupSteps",
+          "latestAssessment",
+          "activeTreatmentPlanId",
+          "actions"
+        ]
+      },
+      "JourneyCustomProgramDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "paymentState": {
+            "type": "string"
+          },
+          "entitled": {
+            "type": "boolean"
+          },
+          "currentVersionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "treatmentPlanId": {
+            "type": "string",
+            "nullable": true
+          },
+          "bodyAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "requestId",
+          "title",
+          "intentId",
+          "paymentState",
+          "entitled",
+          "currentVersionId",
+          "treatmentPlanId",
+          "bodyAvailable"
+        ]
+      },
+      "JourneyCustomProgramsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyCustomProgramDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyProgramPurchaseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "paymentState": {
+            "type": "string"
+          },
+          "accessGrantId": {
+            "type": "string",
+            "nullable": true
+          },
+          "grantedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "accessAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "amountRial",
+          "currency",
+          "intentId",
+          "paymentState",
+          "accessGrantId",
+          "grantedAt",
+          "endsAt",
+          "accessAvailable"
+        ]
+      },
+      "JourneyProgramPurchasesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyProgramPurchaseDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyCoupleAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "paymentState": {
+            "type": "string"
+          },
+          "ownAccessGrantId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "ownSubmissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "ownAssessmentState": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETE",
+              "INVALIDATED"
+            ]
+          },
+          "ownStartAvailable": {
+            "type": "boolean"
+          },
+          "jointResultState": {
+            "type": "string",
+            "enum": [
+              "AWAITING_PAYMENT",
+              "SHARING_UNAVAILABLE",
+              "AWAITING_COMPLETION",
+              "READY_TO_GENERATE",
+              "AVAILABLE"
+            ]
+          },
+          "jointResultId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "paymentState",
+          "ownAccessGrantId",
+          "ownSubmissionId",
+          "ownAssessmentState",
+          "ownStartAvailable",
+          "jointResultState",
+          "jointResultId"
+        ]
+      },
+      "JourneyCoupleAssessmentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyCoupleAssessmentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyAssessmentPurchaseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "intentId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "paymentState": {
+            "type": "string"
+          },
+          "accessGrantId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "submissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "startAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "amountRial",
+          "currency",
+          "intentId",
+          "paymentState",
+          "accessGrantId",
+          "submissionId",
+          "startAvailable"
+        ]
+      },
+      "JourneyAssessmentPurchasesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyAssessmentPurchaseDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyOnboardingDto": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "isComplete": {
+            "type": "boolean"
+          },
+          "requiredCount": {
+            "type": "number"
+          },
+          "answeredRequiredCount": {
+            "type": "number"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blockerCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextAction": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "isComplete",
+          "requiredCount",
+          "answeredRequiredCount",
+          "missingFields",
+          "blockerCodes",
+          "nextAction"
+        ]
+      },
+      "JourneyActionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "OPEN_APPOINTMENT",
+              "COMPLETE_PROFILE",
+              "CONSENT_UNAVAILABLE",
+              "REVIEW_CONSENT",
+              "START_MEDICAL_INTAKE",
+              "CONTINUE_MEDICAL_INTAKE",
+              "COMPLETE_ONBOARDING",
+              "REVIEW_BOOKING_REQUIREMENTS",
+              "RESUME_ASSESSMENT",
+              "CONTINUE_PAYMENT",
+              "VIEW_TREATMENT_PLAN",
+              "VIEW_ASSESSMENT_RESULT",
+              "BOOK_CONSULTATION",
+              "START_PAID_ASSESSMENT",
+              "OPEN_COUPLE_ASSESSMENT",
+              "OPEN_PROGRAM",
+              "OPEN_CUSTOM_PROGRAM_REQUEST"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "code",
+          "resourceId"
+        ]
+      },
+      "JourneyAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentKey": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "COMPLETE"
+            ]
+          },
+          "revision": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "resumeAvailable": {
+            "type": "boolean"
+          },
+          "resumeBlocker": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "VERSION_NOT_PUBLISHED",
+              "PROCESSING_APPROVAL_UNAVAILABLE"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "assessmentVersionId",
+          "assessmentKey",
+          "title",
+          "versionNumber",
+          "state",
+          "revision",
+          "updatedAt",
+          "resumeAvailable",
+          "resumeBlocker"
+        ]
+      },
+      "JourneyAssessmentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyAssessmentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "startsAt",
+          "endsAt",
+          "status",
+          "visitMode"
+        ]
+      },
+      "JourneyAppointmentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyAppointmentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyPaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string",
+            "description": "Integer rial amount, serialized without precision loss"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "amountRial",
+          "currency",
+          "expiresAt"
+        ]
+      },
+      "JourneyPaymentsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyPaymentDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "totalAmountToman": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "TOMAN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "totalAmountToman",
+          "currency"
+        ]
+      },
+      "JourneyOrdersDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyOrderDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "JourneyPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED"
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "updatedAt"
+        ]
+      },
+      "JourneyPlansDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyPlanDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "CoupleParticipantSummaryDto": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "string",
+            "enum": [
+              "INITIATOR",
+              "PARTNER"
+            ]
+          },
+          "isSelf": {
+            "type": "boolean"
+          },
+          "consentState": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED",
+              "REVOKED"
+            ]
+          }
+        },
+        "required": [
+          "slot",
+          "isSelf",
+          "consentState"
+        ]
+      },
+      "CoupleSessionSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "AWAITING_PARTNER",
+              "LINKED",
+              "CONSENT_REVOKED"
+            ]
+          },
+          "minimumAgeYears": {
+            "type": "number",
+            "enum": [
+              18
+            ]
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "participants": {
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleParticipantSummaryDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "assessmentReady": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Account linking grants no medical-processing, payment entitlement or joint-result access"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "minimumAgeYears",
+          "consentPolicyVersionId",
+          "participants",
+          "createdAt",
+          "updatedAt",
+          "assessmentReady"
+        ]
+      },
+      "JourneyCoupleLinksDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleSessionSummaryDto"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "hasMore"
+        ]
+      },
+      "PatientJourneyResponseDto": {
+        "type": "object",
+        "properties": {
+          "home": {
+            "$ref": "#/components/schemas/JourneyHomeDto"
+          },
+          "customPrograms": {
+            "$ref": "#/components/schemas/JourneyCustomProgramsDto"
+          },
+          "programPurchases": {
+            "$ref": "#/components/schemas/JourneyProgramPurchasesDto"
+          },
+          "coupleAssessments": {
+            "$ref": "#/components/schemas/JourneyCoupleAssessmentsDto"
+          },
+          "assessmentPurchases": {
+            "$ref": "#/components/schemas/JourneyAssessmentPurchasesDto"
+          },
+          "evaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "onboarding": {
+            "$ref": "#/components/schemas/JourneyOnboardingDto"
+          },
+          "bookingEligibility": {
+            "$ref": "#/components/schemas/PatientBookingEligibilityResponseDto"
+          },
+          "nextAction": {
+            "$ref": "#/components/schemas/JourneyActionDto"
+          },
+          "assessments": {
+            "$ref": "#/components/schemas/JourneyAssessmentsDto"
+          },
+          "appointments": {
+            "$ref": "#/components/schemas/JourneyAppointmentsDto"
+          },
+          "pendingPayments": {
+            "$ref": "#/components/schemas/JourneyPaymentsDto"
+          },
+          "pendingOrders": {
+            "$ref": "#/components/schemas/JourneyOrdersDto"
+          },
+          "treatmentPlans": {
+            "$ref": "#/components/schemas/JourneyPlansDto"
+          },
+          "coupleLinks": {
+            "$ref": "#/components/schemas/JourneyCoupleLinksDto"
+          },
+          "storeAvailable": {
+            "type": "boolean",
+            "description": "Shopping is independent of medical onboarding"
+          }
+        },
+        "required": [
+          "home",
+          "customPrograms",
+          "programPurchases",
+          "coupleAssessments",
+          "assessmentPurchases",
+          "evaluatedAt",
+          "onboarding",
+          "bookingEligibility",
+          "nextAction",
+          "assessments",
+          "appointments",
+          "pendingPayments",
+          "pendingOrders",
+          "treatmentPlans",
+          "coupleLinks",
+          "storeAvailable"
         ]
       },
       "CoupleAssessmentBillingIntentDto": {
@@ -35883,6 +36124,61 @@
           "nextStep"
         ]
       },
+      "AssessmentTieBreakOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 1500
+          },
+          "dimensionId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "dimensionId"
+        ]
+      },
+      "AssessmentTieBreakQuestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "tiedDimensions": {
+            "minItems": 2,
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "options": {
+            "minItems": 2,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentTieBreakOptionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "tiedDimensions",
+          "options"
+        ]
+      },
       "AssessmentScoringPreviewDto": {
         "type": "object",
         "properties": {
@@ -35970,6 +36266,7 @@
           "followUp": {
             "nullable": true,
             "description": "Only the exact server-selected tie-break question; never a second follow-up.",
+            "type": "object",
             "allOf": [
               {
                 "$ref": "#/components/schemas/AssessmentTieBreakQuestionDto"
@@ -36142,6 +36439,18 @@
             "additionalProperties": true
           }
         }
+      },
+      "DeletedAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id"
+        ]
       },
       "BookingAssessmentPolicyResponseDto": {
         "type": "object",
@@ -43033,6 +43342,42 @@
           "isActive"
         ]
       },
+      "PreviewCommerceDiscountDto": {
+        "type": "object",
+        "properties": {
+          "discountCode": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "discountCode"
+        ]
+      },
+      "CommerceDiscountPreviewDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "subtotalAmountToman": {
+            "type": "string"
+          },
+          "taxAmountToman": {
+            "type": "string"
+          },
+          "discountAmountToman": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "subtotalAmountToman",
+          "taxAmountToman",
+          "discountAmountToman"
+        ]
+      },
       "CommerceAddressDto": {
         "type": "object",
         "properties": {
@@ -44654,345 +44999,6 @@
           "total",
           "page",
           "pageSize"
-        ]
-      },
-      "AssessmentTieBreakOptionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 1500
-          },
-          "dimensionId": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "dimensionId"
-        ]
-      },
-      "AssessmentTieBreakQuestionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 1000
-          },
-          "tiedDimensions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 2,
-            "maxItems": 4
-          },
-          "options": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssessmentTieBreakOptionDto"
-            },
-            "minItems": 2,
-            "maxItems": 5
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "tiedDimensions",
-          "options"
-        ]
-      },
-      "DeletedAssessmentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "JourneySetupStepDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "enum": [
-              "PROFILE",
-              "HEALTH",
-              "CONFIRM"
-            ]
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "COMPLETE",
-              "CURRENT",
-              "UPCOMING"
-            ]
-          }
-        },
-        "required": [
-          "code",
-          "state"
-        ]
-      },
-      "JourneyLatestAssessmentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "title": {
-            "type": "string"
-          },
-          "completedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "completedAt"
-        ]
-      },
-      "JourneyHomeActionDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "enum": [
-              "OPEN_APPOINTMENT",
-              "COMPLETE_PROFILE",
-              "CONSENT_UNAVAILABLE",
-              "REVIEW_CONSENT",
-              "START_MEDICAL_INTAKE",
-              "CONTINUE_MEDICAL_INTAKE",
-              "COMPLETE_ONBOARDING",
-              "REVIEW_BOOKING_REQUIREMENTS",
-              "RESUME_ASSESSMENT",
-              "CONTINUE_PAYMENT",
-              "VIEW_TREATMENT_PLAN",
-              "VIEW_ASSESSMENT_RESULT",
-              "BOOK_CONSULTATION",
-              "START_PAID_ASSESSMENT",
-              "OPEN_COUPLE_ASSESSMENT",
-              "OPEN_PROGRAM",
-              "OPEN_CUSTOM_PROGRAM_REQUEST",
-              "OPEN_COUPLE_LINK",
-              "TRACK_ORDER"
-            ]
-          },
-          "resourceId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "amountRial": {
-            "type": "string",
-            "nullable": true,
-            "description": "Exact pending payment amount in integer rial"
-          },
-          "paymentPurpose": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "code",
-          "resourceId",
-          "title",
-          "amountRial",
-          "paymentPurpose"
-        ]
-      },
-      "JourneyHomeDto": {
-        "type": "object",
-        "properties": {
-          "setupSteps": {
-            "minItems": 3,
-            "maxItems": 3,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneySetupStepDto"
-            }
-          },
-          "latestAssessment": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/JourneyLatestAssessmentDto"
-              }
-            ]
-          },
-          "activeTreatmentPlanId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "actions": {
-            "maxItems": 12,
-            "description": "Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/JourneyHomeActionDto"
-            }
-          }
-        },
-        "required": [
-          "setupSteps",
-          "latestAssessment",
-          "activeTreatmentPlanId",
-          "actions"
-        ]
-      },
-      "EntryProfileDto": {
-        "type": "object",
-        "properties": {
-          "firstName": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "lastName": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "birthDate": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        "required": [
-          "firstName",
-          "lastName",
-          "birthDate"
-        ]
-      },
-      "EntryPolicyUpdateDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "assessmentVersionId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "expectedRevision": {
-            "type": "number",
-            "minimum": 0
-          }
-        },
-        "required": [
-          "enabled",
-          "assessmentVersionId",
-          "expectedRevision"
-        ]
-      },
-      "EntryPolicyDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "assessmentVersionId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "assessmentTitle": {
-            "type": "string",
-            "nullable": true
-          },
-          "revision": {
-            "type": "number"
-          },
-          "enforcedFrom": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "enabled",
-          "assessmentVersionId",
-          "assessmentTitle",
-          "revision",
-          "enforcedFrom"
-        ]
-      },
-      "PatientEntryStatusDto": {
-        "type": "object",
-        "properties": {
-          "required": {
-            "type": "boolean"
-          },
-          "phase": {
-            "type": "string",
-            "enum": [
-              "PROFILE",
-              "ASSESSMENT",
-              "RESULT",
-              "COMPLETE",
-              "UNAVAILABLE"
-            ]
-          },
-          "assessmentVersionId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "assessmentTitle": {
-            "type": "string",
-            "nullable": true
-          },
-          "submissionId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "firstName": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastName": {
-            "type": "string",
-            "nullable": true
-          },
-          "birthDate": {
-            "type": "string",
-            "nullable": true,
-            "format": "date"
-          }
-        },
-        "required": [
-          "required",
-          "phase",
-          "assessmentVersionId",
-          "assessmentTitle",
-          "submissionId",
-          "firstName",
-          "lastName",
-          "birthDate"
         ]
       }
     }

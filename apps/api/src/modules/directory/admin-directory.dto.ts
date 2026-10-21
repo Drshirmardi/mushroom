@@ -12,9 +12,9 @@ export class DirectoryListQueryDto {
   isActive?: boolean;
   @ApiPropertyOptional({ enum: publicationStatuses }) @IsOptional() @IsIn(publicationStatuses)
   publicationStatus?: (typeof publicationStatuses)[number];
-  @ApiPropertyOptional({ minimum: 1, maximum: 10_000, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10_000)
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 10_000, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10_000)
   page = 1;
-  @ApiPropertyOptional({ minimum: 1, maximum: 50, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50)
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 50, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50)
   pageSize = 20;
 }
 

@@ -4759,3 +4759,27 @@ Verification:
 - graphify update . →exit0; pre-existing optional SQL/HCL extraction dependencies/chat parser limitation unchanged. Outputs ignored.
 
 Result: DONE, main review PASS, claim released. User can transfer only the updated installation/manager.py to /root/mushroom-installer/installation/manager.py then rerun the same install.sh. The saved packages step prevents unnecessary package reinstallation and persist_bundle updates the installed manager copy. No actual owner server access/change, reboot, real credentials/provider operation or push/merge. End-to-end VPS installation still awaiting owner retry. Next eligible action: owner resumes installation; no next batch started.
+
+## F12-T02-CI01 — PR27 validation repair
+
+Task/batch: F12-T02-CI01 / PR27-CI; sole coordinator/writer Codex /root; 2026-10-22.
+Owner request: diagnose/fix failed front → dev PR27 checks. Baseline9a1ba8b clean. Local main-agent source/combined-diff review PASS; READY_FOR_CI, claim retained until hosted checks pass. F12-FE01 product/clinical acceptance remains REWORK.
+
+Observed hosted failures: CI lint stopped later gates; installer API build lacked DATABASE_URL for Prisma generation; workflow actionlint rejected masked assignment exit codes; dashboard artifact typecheck exposed missing statuses, ES2017 BigInt and stale numeric query schema. Security and app/web/API artifact jobs passed.
+
+Changes:
+- CI split assignment/export, installer build-only DB placeholder, OTP_PEPPER passthrough; explicit disposable historical product/media/Mezaj integration steps retain coverage and destructive-test isolation.
+- Dashboard React lifecycle/ref lint corrections, missing follow-up labels, ES2020 target; numeric Swagger query annotations and regenerated OpenAPI/client with pagination contract regression. Generated existing endpoint/shape drift aligned with actual API source.
+- Vitest source aliases, current schema3/card-link expectations, hold callback regression. No check/rule disabled or immutable migration rewritten.
+- Clean full-suite run revealed obsolete historical product fixtures/latest-ORM seeding, hardcoded migration count, unisolated media fixtures, stale retained-cart expectation, live-config import timing and overbroad staff exclusion. Correct fixtures/opt-in CI execution and assertions; preserve row/constraint/permission coverage.
+- Six PatientEntry/PatientEntryPolicy Prisma onUpdate annotations now explicitly NoAction, matching immutable SQL. Fresh full-history drift regression added. No DB behavior/migration/data change.
+
+Verification (local):
+- pnpm lint and pnpm typecheck PASS; dashboard production build PASS (32 pages); API test TypeScript compile PASS.
+- Dashboard39 files/168 tests, App36 files/185 tests, client2 files/12 tests PASS.
+- Clean tracked-file sandbox, no .env, unique PostgreSQL16: initial full run517 API tests passed and nine files exposed failures above; it was NOT a green full run. After corrections, all failed areas rerun: five runtime files56 tests PASS; Mezaj/catalog28 PASS; historical product migration4 cases PASS; Phase12 full-history/drift2 PASS. Final schema diff: No difference detected.
+- Actual Chromium StrictMode hold-to-delete: early release, latest callback, disabled cancellation and keyboard hold PASS; no page errors.
+- actionlint all workflows PASS; release-contract script PASS; real installation PostgreSQL bootstrap/all79 migrations and Ubuntu encrypted restore rehearsals PASS.
+- git diff --check PASS; protected slider-data.ts/justforcheck.md and migration SQL unchanged. Final Graphify AST update required/completed before checkpoint; known optional SQL/HCL extractor warnings unrelated.
+
+Isolation: own ephemeral PostgreSQL containers and copied workspaces only, cleaned after runs; no real server/provider/GitHub secret or user data mutation. Logs retained in local Temp (hc1fxz initial, sUojQH corrected runtime, 4Aw0YW final drift). No subagents, merge or deployment. Next action: push corrective checkpoint and require full hosted checks before final acceptance.

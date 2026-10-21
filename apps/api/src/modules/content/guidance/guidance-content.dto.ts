@@ -28,8 +28,8 @@ export class GuidanceApprovalDto {
   @ApiProperty({ enum: [true] }) @Equals(true) noDiagnosisOrTherapeuticDiet!: true;
 }
 export class GuidanceContentQueryDto {
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
-  @ApiPropertyOptional({ default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 10000, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 50, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') articleId?: string;
   @ApiPropertyOptional({ enum: ['DRAFT', 'APPROVED', 'REVOKED'] }) @IsOptional() @IsIn(['DRAFT', 'APPROVED', 'REVOKED']) status?: string;
 }

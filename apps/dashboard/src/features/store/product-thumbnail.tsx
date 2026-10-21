@@ -12,9 +12,14 @@ export function ProductThumbnail({ product, sizes = "(max-width: 640px) 100vw, 3
   const [preview, setPreview] = useState<{ imageId: string; url: string } | null>(null);
   const [failed, setFailed] = useState(false);
   const imageId = product.image?.id;
+  const [previousImage, setPreviousImage] = useState({ productId: product.id, imageId });
+  if (previousImage.productId !== product.id || previousImage.imageId !== imageId) {
+    setPreviousImage({ productId: product.id, imageId });
+    setPreview(null);
+    setFailed(false);
+  }
 
   useEffect(() => {
-    setPreview(null); setFailed(false);
     if (!imageId || !container.current) return;
     let active = true;
     let url: string | null = null;

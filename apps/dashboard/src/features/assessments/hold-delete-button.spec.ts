@@ -4,6 +4,13 @@ import { createHoldTimer, HOLD_DURATION_MS } from './hold-delete-button';
 afterEach(() => vi.useRealTimers());
 
 describe('deliberate hold deletion', () => {
+  it('uses the callback for the current press and discards it when cancelled', () => {
+    vi.useFakeTimers(); const initial = vi.fn(); const current = vi.fn(); const timer = createHoldTimer(initial);
+    timer.start(current); timer.cancel(); vi.runAllTimers();
+    expect(current).not.toHaveBeenCalled();
+    timer.start(current); vi.advanceTimersByTime(HOLD_DURATION_MS);
+    expect(current).toHaveBeenCalledOnce(); expect(initial).not.toHaveBeenCalled();
+  });
   it('never completes a short press and starts a new full interval after cancellation', () => {
     vi.useFakeTimers(); const complete = vi.fn(); const timer = createHoldTimer(complete);
     timer.start(); vi.advanceTimersByTime(HOLD_DURATION_MS - 1); timer.cancel();

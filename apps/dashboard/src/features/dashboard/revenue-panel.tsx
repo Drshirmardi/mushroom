@@ -25,9 +25,14 @@ export function useRevenueReport(accessToken: string, refreshVersion: number) {
   const [days, setDays] = useState(30);
   const [retry, setRetry] = useState(0);
   const [state, setState] = useState<RevenueState>({ status: "loading" });
+  const requestKey = JSON.stringify([accessToken, days, refreshVersion, retry]);
+  const [previousRequest, setPreviousRequest] = useState(requestKey);
+  if (previousRequest !== requestKey) {
+    setPreviousRequest(requestKey);
+    setState({ status: "loading" });
+  }
   useEffect(() => {
     let active = true;
-    setState({ status: "loading" });
     const parts = new Intl.DateTimeFormat("en-CA-u-ca-gregory-nu-latn", { timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
     const part = (type: string) => parts.find(item => item.type === type)?.value;
     const to = `${part("year")}-${part("month")}-${part("day")}`;

@@ -1220,33 +1220,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me": {
+    "/v1/patients/me/entry": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get self profile */
-        get: operations["patientGetSelfProfile"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update self profile */
-        patch: operations["patientUpdateSelfProfile"];
-        trace?: never;
-    };
-    "/v1/patients/me/onboarding-status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get onboarding status */
-        get: operations["patientGetOnboardingStatus"];
+        get: operations["patientEntryStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1255,16 +1236,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/journey": {
+    "/v1/patients/me/entry/profile": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get derived patient Home state and next action */
-        get: operations["patientJourneyGet"];
+        get?: never;
         put?: never;
+        post: operations["patientEntryProfileSave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-entry-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminEntryPolicyGet"];
+        put: operations["adminEntryPolicyUpdate"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1435,6 +1463,41 @@ export interface paths {
         };
         /** Get booking eligibility without using assessment score */
         get: operations["patientBookingEligibilityGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get self profile */
+        get: operations["patientGetSelfProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update self profile */
+        patch: operations["patientUpdateSelfProfile"];
+        trace?: never;
+    };
+    "/v1/patients/me/onboarding-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get onboarding status */
+        get: operations["patientGetOnboardingStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1684,6 +1747,23 @@ export interface paths {
         };
         /** Read an approved educational version; no diagnosis or personalized therapeutic diet */
         get: operations["patientGuidanceContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/journey": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get derived patient Home state and next action */
+        get: operations["patientJourneyGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4885,6 +4965,23 @@ export interface paths {
         patch: operations["adminCommerceCourierShippingRateUpdate"];
         trace?: never;
     };
+    "/v1/patients/me/commerce/discount-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate and price a cart discount without creating an order or reservation */
+        post: operations["patientCommerceDiscountPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/commerce/addresses": {
         parameters: {
             query?: never;
@@ -5646,86 +5743,6 @@ export interface paths {
         put?: never;
         /** Start or resume the same owned engine attempt for one paid grant */
         post: operations["patientPaidAssessmentStart"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/entry": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["patientEntryStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/entry/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientEntryProfileSave"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/entry/start": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientEntryStart"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/entry/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientEntryComplete"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/assessment-entry-policy": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminEntryPolicyGet"];
-        put: operations["adminEntryPolicyUpdate"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6504,274 +6521,40 @@ export interface components {
             resolvedAt?: Record<string, never> | null;
             providerCode?: Record<string, never> | null;
         };
-        SelfProfileResponseDto: {
-            /** Format: uuid */
-            patientId: string;
-            /** @example +989123456789 */
-            phone: string;
+        PatientEntryStatusDto: {
+            required: boolean;
             /** @enum {string} */
-            accountStatus: "ACTIVE" | "DISABLED";
-            firstName?: string | null;
-            lastName?: string | null;
-            /** Format: email */
-            email?: string | null;
-            cityName?: string | null;
-            /** @enum {string|null} */
-            gender?: "FEMALE" | "MALE" | null;
-            /** Format: date-time */
-            updatedAt?: string | null;
-        };
-        UpdateSelfProfileDto: {
-            firstName?: string | null;
-            lastName?: string | null;
-            /** Format: email */
-            email?: string | null;
-            cityName?: string | null;
-            /** @enum {string|null} */
-            gender?: "FEMALE" | "MALE" | null;
-        };
-        OnboardingStatusResponseDto: {
-            /** @enum {string} */
-            onboardingState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
-            /** @enum {string|null} */
-            submissionState?: "DRAFT" | "COMPLETE" | null;
-            isComplete: boolean;
-            requiredCount: number;
-            answeredRequiredCount: number;
-            missingFields: string[];
-            blockerCodes: string[];
-            nextAction: string;
-            assignedSchemaVersion?: number | null;
-            evaluatedSchemaVersion: number;
-            currentRevision: number;
-            completedRevision?: number | null;
+            phase: "PROFILE" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
             /** Format: uuid */
-            currentPolicyVersionId?: string | null;
-            /** Format: uuid */
-            activeConsentRecordId?: string | null;
-            /** Format: date-time */
-            updatedAt?: string | null;
-        };
-        JourneyCustomProgramDto: {
-            requestId: string;
-            title: string;
-            intentId: string;
-            paymentState: string;
-            entitled: boolean;
-            currentVersionId: string | null;
-            treatmentPlanId: string | null;
-            bodyAvailable: boolean;
-        };
-        JourneyCustomProgramsDto: {
-            items: components["schemas"]["JourneyCustomProgramDto"][];
-            hasMore: boolean;
-        };
-        JourneyProgramPurchaseDto: {
-            id: string;
-            title: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            intentId: string;
-            paymentState: string;
-            accessGrantId: string | null;
-            /** Format: date-time */
-            grantedAt: string | null;
-            /** Format: date-time */
-            endsAt: string | null;
-            accessAvailable: boolean;
-        };
-        JourneyProgramPurchasesDto: {
-            items: components["schemas"]["JourneyProgramPurchaseDto"][];
-            hasMore: boolean;
-        };
-        JourneyCoupleAssessmentDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            paymentState: string;
-            /** Format: uuid */
-            ownAccessGrantId: string | null;
-            /** Format: uuid */
-            ownSubmissionId: string | null;
-            /** @enum {string|null} */
-            ownAssessmentState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE" | "INVALIDATED" | null;
-            ownStartAvailable: boolean;
-            /** @enum {string} */
-            jointResultState: "AWAITING_PAYMENT" | "SHARING_UNAVAILABLE" | "AWAITING_COMPLETION" | "READY_TO_GENERATE" | "AVAILABLE";
-            /** Format: uuid */
-            jointResultId: string | null;
-        };
-        JourneyCoupleAssessmentsDto: {
-            items: components["schemas"]["JourneyCoupleAssessmentDto"][];
-            hasMore: boolean;
-        };
-        JourneyAssessmentPurchaseDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** Format: uuid */
-            intentId: string | null;
-            paymentState: string;
-            /** Format: uuid */
-            accessGrantId: string | null;
+            assessmentVersionId: string | null;
+            assessmentTitle: string | null;
             /** Format: uuid */
             submissionId: string | null;
-            startAvailable: boolean;
+            firstName: string | null;
+            lastName: string | null;
+            /** Format: date */
+            birthDate: string | null;
         };
-        JourneyAssessmentPurchasesDto: {
-            items: components["schemas"]["JourneyAssessmentPurchaseDto"][];
-            hasMore: boolean;
+        EntryProfileDto: {
+            firstName: string;
+            lastName: string;
+            /** Format: date */
+            birthDate: string;
         };
-        JourneyOnboardingDto: {
-            /** @enum {string} */
-            state: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
-            isComplete: boolean;
-            requiredCount: number;
-            answeredRequiredCount: number;
-            missingFields: string[];
-            blockerCodes: string[];
-            nextAction: string;
-        };
-        PatientBookingEligibilityResponseDto: {
-            eligible: boolean;
-            /** @enum {string} */
-            reason: "ELIGIBLE" | "PROFILE_INCOMPLETE" | "MAIN_ASSESSMENT_REQUIRED" | "ASSESSMENT_EXPIRED" | "LATEST_VERSION_REQUIRED";
-            nextAction?: string | null;
-        };
-        JourneyActionDto: {
-            /** @enum {string} */
-            code: "OPEN_APPOINTMENT" | "COMPLETE_PROFILE" | "CONSENT_UNAVAILABLE" | "REVIEW_CONSENT" | "START_MEDICAL_INTAKE" | "CONTINUE_MEDICAL_INTAKE" | "COMPLETE_ONBOARDING" | "REVIEW_BOOKING_REQUIREMENTS" | "RESUME_ASSESSMENT" | "CONTINUE_PAYMENT" | "VIEW_TREATMENT_PLAN" | "VIEW_ASSESSMENT_RESULT" | "BOOK_CONSULTATION" | "START_PAID_ASSESSMENT" | "OPEN_COUPLE_ASSESSMENT" | "OPEN_PROGRAM" | "OPEN_CUSTOM_PROGRAM_REQUEST";
+        EntryPolicyDto: {
+            enabled: boolean;
             /** Format: uuid */
-            resourceId: string | null;
-        };
-        JourneyAssessmentDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            assessmentVersionId: string;
-            assessmentKey: string;
-            title: string;
-            versionNumber: number;
-            /** @enum {string} */
-            state: "IN_PROGRESS" | "COMPLETE";
+            assessmentVersionId: string | null;
+            assessmentTitle: string | null;
             revision: number;
             /** Format: date-time */
-            updatedAt: string;
-            resumeAvailable: boolean;
-            /** @enum {string|null} */
-            resumeBlocker: "VERSION_NOT_PUBLISHED" | "PROCESSING_APPROVAL_UNAVAILABLE" | null;
+            enforcedFrom: string | null;
         };
-        JourneyAssessmentsDto: {
-            items: components["schemas"]["JourneyAssessmentDto"][];
-            hasMore: boolean;
-        };
-        JourneyAppointmentDto: {
+        EntryPolicyUpdateDto: {
+            enabled: boolean;
             /** Format: uuid */
-            id: string;
-            /** Format: date-time */
-            startsAt: string;
-            /** Format: date-time */
-            endsAt: string;
-            status: string;
-            /** @enum {string} */
-            visitMode: "ONLINE" | "IN_PERSON";
-        };
-        JourneyAppointmentsDto: {
-            items: components["schemas"]["JourneyAppointmentDto"][];
-            hasMore: boolean;
-        };
-        JourneyPaymentDto: {
-            /** Format: uuid */
-            id: string;
-            purpose: string;
-            /** @description Integer rial amount, serialized without precision loss */
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** Format: date-time */
-            expiresAt: string | null;
-        };
-        JourneyPaymentsDto: {
-            items: components["schemas"]["JourneyPaymentDto"][];
-            hasMore: boolean;
-        };
-        JourneyOrderDto: {
-            /** Format: uuid */
-            id: string;
-            totalAmountToman: string;
-            /** @enum {string} */
-            currency: "TOMAN";
-        };
-        JourneyOrdersDto: {
-            items: components["schemas"]["JourneyOrderDto"][];
-            hasMore: boolean;
-        };
-        JourneyPlanDto: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            state: "ACTIVE" | "COMPLETED";
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        JourneyPlansDto: {
-            items: components["schemas"]["JourneyPlanDto"][];
-            hasMore: boolean;
-        };
-        CoupleParticipantSummaryDto: {
-            /** @enum {string} */
-            slot: "INITIATOR" | "PARTNER";
-            isSelf: boolean;
-            /** @enum {string} */
-            consentState: "ACCEPTED" | "REVOKED";
-        };
-        CoupleSessionSummaryDto: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            state: "AWAITING_PARTNER" | "LINKED" | "CONSENT_REVOKED";
-            /** @enum {number} */
-            minimumAgeYears: 18;
-            /** Format: uuid */
-            consentPolicyVersionId: string;
-            participants: components["schemas"]["CoupleParticipantSummaryDto"][];
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            /**
-             * @description Account linking grants no medical-processing, payment entitlement or joint-result access
-             * @enum {boolean}
-             */
-            assessmentReady: false;
-        };
-        JourneyCoupleLinksDto: {
-            items: components["schemas"]["CoupleSessionSummaryDto"][];
-            hasMore: boolean;
-        };
-        PatientJourneyResponseDto: {
-            customPrograms: components["schemas"]["JourneyCustomProgramsDto"];
-            programPurchases: components["schemas"]["JourneyProgramPurchasesDto"];
-            coupleAssessments: components["schemas"]["JourneyCoupleAssessmentsDto"];
-            assessmentPurchases: components["schemas"]["JourneyAssessmentPurchasesDto"];
-            /** Format: date-time */
-            evaluatedAt: string;
-            onboarding: components["schemas"]["JourneyOnboardingDto"];
-            bookingEligibility: components["schemas"]["PatientBookingEligibilityResponseDto"];
-            nextAction: components["schemas"]["JourneyActionDto"];
-            assessments: components["schemas"]["JourneyAssessmentsDto"];
-            appointments: components["schemas"]["JourneyAppointmentsDto"];
-            pendingPayments: components["schemas"]["JourneyPaymentsDto"];
-            pendingOrders: components["schemas"]["JourneyOrdersDto"];
-            treatmentPlans: components["schemas"]["JourneyPlansDto"];
-            coupleLinks: components["schemas"]["JourneyCoupleLinksDto"];
-            /** @description Shopping is independent of medical onboarding */
-            storeAvailable: boolean;
-            home: components["schemas"]["JourneyHomeDto"];
+            assessmentVersionId: string | null;
+            expectedRevision: number;
         };
         PatientAssessmentHistoryItemDto: {
             /** Format: uuid */
@@ -6889,6 +6672,60 @@ export interface components {
             };
             /** Format: date-time */
             assessedAt: string;
+        };
+        PatientBookingEligibilityResponseDto: {
+            eligible: boolean;
+            /** @enum {string} */
+            reason: "ELIGIBLE" | "PROFILE_INCOMPLETE" | "MAIN_ASSESSMENT_REQUIRED" | "ASSESSMENT_EXPIRED" | "LATEST_VERSION_REQUIRED";
+            nextAction?: string | null;
+        };
+        SelfProfileResponseDto: {
+            /** Format: uuid */
+            patientId: string;
+            /** @example +989123456789 */
+            phone: string;
+            /** @enum {string} */
+            accountStatus: "ACTIVE" | "DISABLED";
+            firstName?: string | null;
+            lastName?: string | null;
+            /** Format: email */
+            email?: string | null;
+            cityName?: string | null;
+            /** @enum {string|null} */
+            gender?: "FEMALE" | "MALE" | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
+        UpdateSelfProfileDto: {
+            firstName?: string | null;
+            lastName?: string | null;
+            /** Format: email */
+            email?: string | null;
+            cityName?: string | null;
+            /** @enum {string|null} */
+            gender?: "FEMALE" | "MALE" | null;
+        };
+        OnboardingStatusResponseDto: {
+            /** @enum {string} */
+            onboardingState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
+            /** @enum {string|null} */
+            submissionState?: "DRAFT" | "COMPLETE" | null;
+            isComplete: boolean;
+            requiredCount: number;
+            answeredRequiredCount: number;
+            missingFields: string[];
+            blockerCodes: string[];
+            nextAction: string;
+            assignedSchemaVersion?: number | null;
+            evaluatedSchemaVersion: number;
+            currentRevision: number;
+            completedRevision?: number | null;
+            /** Format: uuid */
+            currentPolicyVersionId?: string | null;
+            /** Format: uuid */
+            activeConsentRecordId?: string | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
         };
         ProtocolQueueItemDto: {
             /** Format: uuid */
@@ -7054,6 +6891,252 @@ export interface components {
             educationalOnly: true;
             /** @enum {boolean} */
             noDiagnosisOrTherapeuticDiet: true;
+        };
+        JourneySetupStepDto: {
+            /** @enum {string} */
+            code: "PROFILE" | "HEALTH" | "CONFIRM";
+            /** @enum {string} */
+            state: "COMPLETE" | "CURRENT" | "UPCOMING";
+        };
+        JourneyLatestAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** Format: date-time */
+            completedAt: string;
+        };
+        JourneyHomeActionDto: {
+            /** @enum {string} */
+            code: "OPEN_APPOINTMENT" | "COMPLETE_PROFILE" | "CONSENT_UNAVAILABLE" | "REVIEW_CONSENT" | "START_MEDICAL_INTAKE" | "CONTINUE_MEDICAL_INTAKE" | "COMPLETE_ONBOARDING" | "REVIEW_BOOKING_REQUIREMENTS" | "RESUME_ASSESSMENT" | "CONTINUE_PAYMENT" | "VIEW_TREATMENT_PLAN" | "VIEW_ASSESSMENT_RESULT" | "BOOK_CONSULTATION" | "START_PAID_ASSESSMENT" | "OPEN_COUPLE_ASSESSMENT" | "OPEN_PROGRAM" | "OPEN_CUSTOM_PROGRAM_REQUEST" | "OPEN_COUPLE_LINK" | "TRACK_ORDER";
+            /** Format: uuid */
+            resourceId: string | null;
+            title: string | null;
+            /** @description Exact pending payment amount in integer rial */
+            amountRial: string | null;
+            paymentPurpose: string | null;
+        };
+        JourneyHomeDto: {
+            setupSteps: components["schemas"]["JourneySetupStepDto"][];
+            latestAssessment: components["schemas"]["JourneyLatestAssessmentDto"] | null;
+            /** Format: uuid */
+            activeTreatmentPlanId: string | null;
+            /** @description Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action. */
+            actions: components["schemas"]["JourneyHomeActionDto"][];
+        };
+        JourneyCustomProgramDto: {
+            requestId: string;
+            title: string;
+            intentId: string;
+            paymentState: string;
+            entitled: boolean;
+            currentVersionId: string | null;
+            treatmentPlanId: string | null;
+            bodyAvailable: boolean;
+        };
+        JourneyCustomProgramsDto: {
+            items: components["schemas"]["JourneyCustomProgramDto"][];
+            hasMore: boolean;
+        };
+        JourneyProgramPurchaseDto: {
+            id: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            intentId: string;
+            paymentState: string;
+            accessGrantId: string | null;
+            /** Format: date-time */
+            grantedAt: string | null;
+            /** Format: date-time */
+            endsAt: string | null;
+            accessAvailable: boolean;
+        };
+        JourneyProgramPurchasesDto: {
+            items: components["schemas"]["JourneyProgramPurchaseDto"][];
+            hasMore: boolean;
+        };
+        JourneyCoupleAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            paymentState: string;
+            /** Format: uuid */
+            ownAccessGrantId: string | null;
+            /** Format: uuid */
+            ownSubmissionId: string | null;
+            /** @enum {string|null} */
+            ownAssessmentState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE" | "INVALIDATED" | null;
+            ownStartAvailable: boolean;
+            /** @enum {string} */
+            jointResultState: "AWAITING_PAYMENT" | "SHARING_UNAVAILABLE" | "AWAITING_COMPLETION" | "READY_TO_GENERATE" | "AVAILABLE";
+            /** Format: uuid */
+            jointResultId: string | null;
+        };
+        JourneyCoupleAssessmentsDto: {
+            items: components["schemas"]["JourneyCoupleAssessmentDto"][];
+            hasMore: boolean;
+        };
+        JourneyAssessmentPurchaseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: uuid */
+            intentId: string | null;
+            paymentState: string;
+            /** Format: uuid */
+            accessGrantId: string | null;
+            /** Format: uuid */
+            submissionId: string | null;
+            startAvailable: boolean;
+        };
+        JourneyAssessmentPurchasesDto: {
+            items: components["schemas"]["JourneyAssessmentPurchaseDto"][];
+            hasMore: boolean;
+        };
+        JourneyOnboardingDto: {
+            /** @enum {string} */
+            state: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
+            isComplete: boolean;
+            requiredCount: number;
+            answeredRequiredCount: number;
+            missingFields: string[];
+            blockerCodes: string[];
+            nextAction: string;
+        };
+        JourneyActionDto: {
+            /** @enum {string} */
+            code: "OPEN_APPOINTMENT" | "COMPLETE_PROFILE" | "CONSENT_UNAVAILABLE" | "REVIEW_CONSENT" | "START_MEDICAL_INTAKE" | "CONTINUE_MEDICAL_INTAKE" | "COMPLETE_ONBOARDING" | "REVIEW_BOOKING_REQUIREMENTS" | "RESUME_ASSESSMENT" | "CONTINUE_PAYMENT" | "VIEW_TREATMENT_PLAN" | "VIEW_ASSESSMENT_RESULT" | "BOOK_CONSULTATION" | "START_PAID_ASSESSMENT" | "OPEN_COUPLE_ASSESSMENT" | "OPEN_PROGRAM" | "OPEN_CUSTOM_PROGRAM_REQUEST";
+            /** Format: uuid */
+            resourceId: string | null;
+        };
+        JourneyAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentKey: string;
+            title: string;
+            versionNumber: number;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE";
+            revision: number;
+            /** Format: date-time */
+            updatedAt: string;
+            resumeAvailable: boolean;
+            /** @enum {string|null} */
+            resumeBlocker: "VERSION_NOT_PUBLISHED" | "PROCESSING_APPROVAL_UNAVAILABLE" | null;
+        };
+        JourneyAssessmentsDto: {
+            items: components["schemas"]["JourneyAssessmentDto"][];
+            hasMore: boolean;
+        };
+        JourneyAppointmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            status: string;
+            /** @enum {string} */
+            visitMode: "ONLINE" | "IN_PERSON";
+        };
+        JourneyAppointmentsDto: {
+            items: components["schemas"]["JourneyAppointmentDto"][];
+            hasMore: boolean;
+        };
+        JourneyPaymentDto: {
+            /** Format: uuid */
+            id: string;
+            purpose: string;
+            /** @description Integer rial amount, serialized without precision loss */
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: date-time */
+            expiresAt: string | null;
+        };
+        JourneyPaymentsDto: {
+            items: components["schemas"]["JourneyPaymentDto"][];
+            hasMore: boolean;
+        };
+        JourneyOrderDto: {
+            /** Format: uuid */
+            id: string;
+            totalAmountToman: string;
+            /** @enum {string} */
+            currency: "TOMAN";
+        };
+        JourneyOrdersDto: {
+            items: components["schemas"]["JourneyOrderDto"][];
+            hasMore: boolean;
+        };
+        JourneyPlanDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            state: "ACTIVE" | "COMPLETED";
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        JourneyPlansDto: {
+            items: components["schemas"]["JourneyPlanDto"][];
+            hasMore: boolean;
+        };
+        CoupleParticipantSummaryDto: {
+            /** @enum {string} */
+            slot: "INITIATOR" | "PARTNER";
+            isSelf: boolean;
+            /** @enum {string} */
+            consentState: "ACCEPTED" | "REVOKED";
+        };
+        CoupleSessionSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            state: "AWAITING_PARTNER" | "LINKED" | "CONSENT_REVOKED";
+            /** @enum {number} */
+            minimumAgeYears: 18;
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            participants: components["schemas"]["CoupleParticipantSummaryDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /**
+             * @description Account linking grants no medical-processing, payment entitlement or joint-result access
+             * @enum {boolean}
+             */
+            assessmentReady: false;
+        };
+        JourneyCoupleLinksDto: {
+            items: components["schemas"]["CoupleSessionSummaryDto"][];
+            hasMore: boolean;
+        };
+        PatientJourneyResponseDto: {
+            home: components["schemas"]["JourneyHomeDto"];
+            customPrograms: components["schemas"]["JourneyCustomProgramsDto"];
+            programPurchases: components["schemas"]["JourneyProgramPurchasesDto"];
+            coupleAssessments: components["schemas"]["JourneyCoupleAssessmentsDto"];
+            assessmentPurchases: components["schemas"]["JourneyAssessmentPurchasesDto"];
+            /** Format: date-time */
+            evaluatedAt: string;
+            onboarding: components["schemas"]["JourneyOnboardingDto"];
+            bookingEligibility: components["schemas"]["PatientBookingEligibilityResponseDto"];
+            nextAction: components["schemas"]["JourneyActionDto"];
+            assessments: components["schemas"]["JourneyAssessmentsDto"];
+            appointments: components["schemas"]["JourneyAppointmentsDto"];
+            pendingPayments: components["schemas"]["JourneyPaymentsDto"];
+            pendingOrders: components["schemas"]["JourneyOrdersDto"];
+            treatmentPlans: components["schemas"]["JourneyPlansDto"];
+            coupleLinks: components["schemas"]["JourneyCoupleLinksDto"];
+            /** @description Shopping is independent of medical onboarding */
+            storeAvailable: boolean;
         };
         CoupleAssessmentBillingIntentDto: {
             contextHash: string;
@@ -7923,6 +8006,17 @@ export interface components {
             attentionPoints: string[];
             nextStep: string;
         };
+        AssessmentTieBreakOptionDto: {
+            id: string;
+            title: string;
+            dimensionId: string | null;
+        };
+        AssessmentTieBreakQuestionDto: {
+            id: string;
+            title: string;
+            tiedDimensions: string[];
+            options: components["schemas"]["AssessmentTieBreakOptionDto"][];
+        };
         AssessmentScoringPreviewDto: {
             /** Format: uuid */
             assessmentVersionId: string;
@@ -8000,6 +8094,10 @@ export interface components {
             structure?: {
                 [key: string]: unknown;
             };
+        };
+        DeletedAssessmentDto: {
+            /** Format: uuid */
+            id: string;
         };
         BookingAssessmentPolicyResponseDto: {
             /** @enum {string} */
@@ -9858,6 +9956,15 @@ export interface components {
             amountToman: number;
             isActive: boolean;
         };
+        PreviewCommerceDiscountDto: {
+            discountCode: string;
+        };
+        CommerceDiscountPreviewDto: {
+            code: string;
+            subtotalAmountToman: string;
+            taxAmountToman: string;
+            discountAmountToman: string;
+        };
         CommerceAddressDto: {
             id: string;
             label: string;
@@ -10304,87 +10411,6 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
-        };
-        AssessmentTieBreakOptionDto: {
-            id: string;
-            title: string;
-            dimensionId: string | null;
-        };
-        AssessmentTieBreakQuestionDto: {
-            id: string;
-            title: string;
-            tiedDimensions: string[];
-            options: components["schemas"]["AssessmentTieBreakOptionDto"][];
-        };
-        DeletedAssessmentDto: {
-            /** Format: uuid */
-            id: string;
-        };
-        JourneySetupStepDto: {
-            /** @enum {string} */
-            code: "PROFILE" | "HEALTH" | "CONFIRM";
-            /** @enum {string} */
-            state: "COMPLETE" | "CURRENT" | "UPCOMING";
-        };
-        JourneyLatestAssessmentDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            /** Format: date-time */
-            completedAt: string;
-        };
-        JourneyHomeActionDto: {
-            /** @enum {string} */
-            code: "OPEN_APPOINTMENT" | "COMPLETE_PROFILE" | "CONSENT_UNAVAILABLE" | "REVIEW_CONSENT" | "START_MEDICAL_INTAKE" | "CONTINUE_MEDICAL_INTAKE" | "COMPLETE_ONBOARDING" | "REVIEW_BOOKING_REQUIREMENTS" | "RESUME_ASSESSMENT" | "CONTINUE_PAYMENT" | "VIEW_TREATMENT_PLAN" | "VIEW_ASSESSMENT_RESULT" | "BOOK_CONSULTATION" | "START_PAID_ASSESSMENT" | "OPEN_COUPLE_ASSESSMENT" | "OPEN_PROGRAM" | "OPEN_CUSTOM_PROGRAM_REQUEST" | "OPEN_COUPLE_LINK" | "TRACK_ORDER";
-            /** Format: uuid */
-            resourceId: string | null;
-            title: string | null;
-            /** @description Exact pending payment amount in integer rial */
-            amountRial: string | null;
-            paymentPurpose: string | null;
-        };
-        JourneyHomeDto: {
-            setupSteps: components["schemas"]["JourneySetupStepDto"][];
-            latestAssessment: components["schemas"]["JourneyLatestAssessmentDto"] | null;
-            /** Format: uuid */
-            activeTreatmentPlanId: string | null;
-            /** @description Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action. */
-            actions: components["schemas"]["JourneyHomeActionDto"][];
-        };
-        EntryProfileDto: {
-            firstName: string;
-            lastName: string;
-            /** Format: date */
-            birthDate: string;
-        };
-        EntryPolicyUpdateDto: {
-            enabled: boolean;
-            /** Format: uuid */
-            assessmentVersionId: string | null;
-            expectedRevision: number;
-        };
-        EntryPolicyDto: {
-            enabled: boolean;
-            /** Format: uuid */
-            assessmentVersionId: string | null;
-            assessmentTitle: string | null;
-            revision: number;
-            /** Format: date-time */
-            enforcedFrom: string | null;
-        };
-        PatientEntryStatusDto: {
-            required: boolean;
-            /** @enum {string} */
-            phase: "PROFILE" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
-            /** Format: uuid */
-            assessmentVersionId: string | null;
-            assessmentTitle: string | null;
-            /** Format: uuid */
-            submissionId: string | null;
-            firstName: string | null;
-            lastName: string | null;
-            /** Format: date */
-            birthDate: string | null;
         };
     };
     responses: never;
@@ -12730,7 +12756,7 @@ export interface operations {
             };
         };
     };
-    patientGetSelfProfile: {
+    patientEntryStatus: {
         parameters: {
             query?: never;
             header?: never;
@@ -12744,30 +12770,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SelfProfileResponseDto"];
-                };
-            };
-            /** @description Authentication is required. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Patient access is required. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
                 };
             };
         };
     };
-    patientUpdateSelfProfile: {
+    patientEntryProfileSave: {
         parameters: {
             query?: never;
             header?: never;
@@ -12776,7 +12784,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateSelfProfileDto"];
+                "application/json": components["schemas"]["EntryProfileDto"];
             };
         };
         responses: {
@@ -12785,39 +12793,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SelfProfileResponseDto"];
-                };
-            };
-            /** @description Authentication is required. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Patient access is required. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Profile fields are invalid. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
                 };
             };
         };
     };
-    patientGetOnboardingStatus: {
+    patientEntryStart: {
         parameters: {
             query?: never;
             header?: never;
@@ -12831,30 +12812,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OnboardingStatusResponseDto"];
-                };
-            };
-            /** @description Authentication is required. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Patient access is required. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
                 };
             };
         };
     };
-    patientJourneyGet: {
+    patientEntryComplete: {
         parameters: {
             query?: never;
             header?: never;
@@ -12868,43 +12831,49 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PatientJourneyResponseDto"];
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
                 };
             };
-            /** @description Authentication is required. */
-            401: {
+        };
+    };
+    adminEntryPolicyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                    "application/json": components["schemas"]["EntryPolicyDto"];
                 };
             };
-            /** @description Patient self access is required. */
-            403: {
+        };
+    };
+    adminEntryPolicyUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryPolicyUpdateDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Patient profile was not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-            /** @description Sensitive audit is unavailable. */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                    "application/json": components["schemas"]["EntryPolicyDto"];
                 };
             };
         };
@@ -13199,12 +13168,136 @@ export interface operations {
             };
         };
     };
+    patientGetSelfProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SelfProfileResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientUpdateSelfProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSelfProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SelfProfileResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Profile fields are invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientGetOnboardingStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStatusResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     clinicalAssessmentProtocolQueue: {
         parameters: {
             query?: {
                 assessmentKey?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
             };
             header?: never;
             path?: never;
@@ -13356,8 +13449,8 @@ export interface operations {
     clinicalAssessmentProtocolHistory: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
             };
             header?: never;
             path: {
@@ -13656,8 +13749,8 @@ export interface operations {
     adminAssessmentProtocolHistory: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
             };
             header?: never;
             path: {
@@ -13796,8 +13889,8 @@ export interface operations {
         parameters: {
             query?: {
                 articleId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: never;
@@ -14024,8 +14117,8 @@ export interface operations {
         parameters: {
             query?: {
                 articleId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: never;
@@ -14375,6 +14468,61 @@ export interface operations {
             };
             /** @description Approved content unavailable. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientJourneyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientJourneyResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Sensitive audit is unavailable. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16978,8 +17126,8 @@ export interface operations {
         parameters: {
             query?: {
                 assessmentVersionId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: never;
@@ -17206,8 +17354,8 @@ export interface operations {
         parameters: {
             query?: {
                 assessmentVersionId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: never;
@@ -18316,9 +18464,9 @@ export interface operations {
         parameters: {
             query?: {
                 assessmentKey?: string;
-                status?: "DRAFT" | "PUBLISHED" | "RETIRED";
                 page?: number;
                 pageSize?: number;
+                status?: "DRAFT" | "PUBLISHED" | "RETIRED";
             };
             header?: never;
             path?: never;
@@ -19302,8 +19450,8 @@ export interface operations {
         parameters: {
             query?: {
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
                 specialtyId?: string;
@@ -19416,8 +19564,8 @@ export interface operations {
         parameters: {
             query?: {
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
@@ -19529,8 +19677,8 @@ export interface operations {
         parameters: {
             query?: {
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
@@ -19643,8 +19791,8 @@ export interface operations {
             query?: {
                 doctorId?: string;
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
                 serviceId?: string;
@@ -25871,6 +26019,29 @@ export interface operations {
             };
         };
     };
+    patientCommerceDiscountPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewCommerceDiscountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceDiscountPreviewDto"];
+                };
+            };
+        };
+    };
     patientCommerceAddressesList: {
         parameters: {
             query?: never;
@@ -26675,8 +26846,8 @@ export interface operations {
         parameters: {
             query?: {
                 assessmentVersionId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: never;
@@ -26903,8 +27074,8 @@ export interface operations {
         parameters: {
             query?: {
                 assessmentVersionId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: never;
@@ -27875,128 +28046,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    patientEntryStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientEntryStatusDto"];
-                };
-            };
-        };
-    };
-    patientEntryProfileSave: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EntryProfileDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientEntryStatusDto"];
-                };
-            };
-        };
-    };
-    patientEntryStart: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientEntryStatusDto"];
-                };
-            };
-        };
-    };
-    patientEntryComplete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientEntryStatusDto"];
-                };
-            };
-        };
-    };
-    adminEntryPolicyGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EntryPolicyDto"];
-                };
-            };
-        };
-    };
-    adminEntryPolicyUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EntryPolicyUpdateDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EntryPolicyDto"];
                 };
             };
         };

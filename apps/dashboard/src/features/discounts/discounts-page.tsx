@@ -11,11 +11,16 @@ const toman = (value: string) => `${BigInt(value).toLocaleString("fa-IR")} تو�
 
 function DiscountCard({ discount, accessToken, refresh }: { discount: CommerceDiscount; accessToken: string; refresh: () => Promise<void> }) {
   const [saving, setSaving] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const toggle = async () => { if (saving) return; setSaving(true); setError(null); try { await updateCommerceDiscount(accessToken, discount.id, { isActive: !discount.isActive }); await refresh(); } catch (cause) { setError(commerceDiscountErrorMessage(cause)); } finally { setSaving(false); } };
   const value = discount.kind === "FIXED_AMOUNT" ? toman(discount.amountToman ?? "0") : `${((discount.percentageBasisPoints ?? 0) / 100).toLocaleString("fa-IR", { maximumFractionDigits: 2 })}٪`;
-  const expired = Boolean(discount.endsAt && new Date(discount.endsAt).getTime() <= Date.now());
-  const upcoming = Boolean(discount.startsAt && new Date(discount.startsAt).getTime() > Date.now());
+  const expired = Boolean(discount.endsAt && new Date(discount.endsAt).getTime() <= now);
+  const upcoming = Boolean(discount.startsAt && new Date(discount.startsAt).getTime() > now);
   const available = discount.isActive && !expired && !upcoming;
   const statusLabel = !discount.isActive ? "غیرفعال" : expired ? "منقضی‌شده" : upcoming ? "شروع نشده" : "فعال";
   const usage = discount.reservedCount + discount.consumedCount; const globalCapacity = discount.remainingGlobalCapacity ?? null; const patientCapacity = discount.perPatientUsageLimit ?? null;

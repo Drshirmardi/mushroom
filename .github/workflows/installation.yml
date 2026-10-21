@@ -53,6 +53,8 @@ jobs:
           bash scripts/test-vps-deploy.sh
       - run: pnpm install --frozen-lockfile
       - name: Build the actual API used by the first-administrator helper
+        env:
+          DATABASE_URL: postgresql://installer_build:installer_build@127.0.0.1:5432/installer_build?schema=public
         run: pnpm --filter @sabz-zendegi/api build
       - name: Runtime environment regression
         run: pnpm --filter @sabz-zendegi/api exec vitest run test/environment-validation.spec.ts --no-file-parallelism

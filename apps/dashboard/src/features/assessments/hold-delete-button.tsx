@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 
 export const HOLD_DURATION_MS = 1500;
@@ -9,10 +9,10 @@ export function createHoldTimer(onComplete: () => void) {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pressed = false;
   return {
-    start() {
+    start(complete = onComplete) {
       if (pressed) return false;
       pressed = true;
-      timer = setTimeout(() => { timer = null; onComplete(); }, HOLD_DURATION_MS);
+      timer = setTimeout(() => { timer = null; complete(); }, HOLD_DURATION_MS);
       return true;
     },
     cancel() {
@@ -27,13 +27,15 @@ export function HoldDeleteButton({ title, disabled, onDelete }: { title: string;
   const description = useId();
   const input = useRef<'pointer' | 'keyboard' | null>(null);
   const latest = useRef({ disabled, onDelete });
-  latest.current = { disabled, onDelete };
-  const timer = useMemo(() => createHoldTimer(() => {
-    setHolding(false);
-    if (!latest.current.disabled && !document.hidden && input.current !== null) latest.current.onDelete();
-  }), []);
+  useLayoutEffect(() => { latest.current = { disabled, onDelete }; }, [disabled, onDelete]);
+  const [timer] = useState(() => createHoldTimer(() => {}));
   const cancel = useCallback(() => { timer.cancel(); input.current = null; setHolding(false); }, [timer]);
-  useEffect(() => { if (disabled) cancel(); }, [disabled, cancel]);
+  const [previousDisabled, setPreviousDisabled] = useState(disabled);
+  if (disabled !== previousDisabled) {
+    setPreviousDisabled(disabled);
+    if (disabled) setHolding(false);
+  }
+  useEffect(() => { if (disabled) { timer.cancel(); input.current = null; } }, [disabled, timer]);
   useEffect(() => {
     const hidden = () => { if (document.hidden) cancel(); };
     window.addEventListener('blur', cancel);
@@ -45,7 +47,10 @@ export function HoldDeleteButton({ title, disabled, onDelete }: { title: string;
   const start = (method: 'pointer' | 'keyboard') => {
     if (latest.current.disabled || input.current !== null) return;
     input.current = method;
-    if (timer.start()) setHolding(true);
+    if (timer.start(() => {
+      setHolding(false);
+      if (!latest.current.disabled && !document.hidden && input.current !== null) latest.current.onDelete();
+    })) setHolding(true);
   };
 
   return <>

@@ -9,7 +9,7 @@ import { createTestAccessToken } from './auth-test-support';
 import { MEZAJ_CODES } from '../src/modules/commerce/mezaj/commerce-mezaj.dto';
 import { ASSESSMENT_SCORING_IDENTITY } from '../src/modules/assessments/domain/assessment-scoring';
 
-describe('ordered Mezaj commerce (isolated PostgreSQL API)', () => {
+describe.skipIf(process.env.STORE_MEZAJ_TEST_ISOLATED !== '1')('ordered Mezaj commerce (isolated PostgreSQL API)', () => {
   let app: NestFastifyApplication; let db: PrismaService; let clinicId: string; let versionId: string;
   let admin: Awaited<ReturnType<typeof createTestAccessToken>>; let staff: typeof admin;
   const products: string[] = []; const pairs = MEZAJ_CODES.flatMap(primary => MEZAJ_CODES.map(secondary => ({ primary, secondary })));

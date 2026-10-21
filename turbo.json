@@ -8,6 +8,7 @@
     "JWT_ACCESS_ISSUER",
     "JWT_ACCESS_AUDIENCE",
     "REFRESH_TOKEN_PEPPER",
+    "OTP_PEPPER",
     "DEV_COMPILER_HEAP_MB"
   ],
   "tasks": {

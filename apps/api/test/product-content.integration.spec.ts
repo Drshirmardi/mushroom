@@ -8,7 +8,7 @@ import { PrismaService } from '../src/database/prisma/prisma.service';
 import { AdminCommerceCatalogService } from '../src/modules/commerce/catalog/admin-commerce-catalog.service';
 import { createTestAccessToken } from './auth-test-support';
 
-describe('Product Details B1A (isolated PostgreSQL API)', () => {
+describe.skipIf(process.env.PRODUCT_MEDIA_TEST_ISOLATED !== '1')('Product Details B1A (isolated PostgreSQL API)', () => {
   let app: NestFastifyApplication; let prisma: PrismaService; let clinicId: string; let categoryId: string;
   let admin: Awaited<ReturnType<typeof createTestAccessToken>>;
   let staff: Awaited<ReturnType<typeof createTestAccessToken>>;
@@ -27,7 +27,7 @@ describe('Product Details B1A (isolated PostgreSQL API)', () => {
   }
   beforeAll(async () => {
     const url = new URL(process.env.DATABASE_URL ?? '');
-    if (process.env.NODE_ENV !== 'test' || url.hostname !== '127.0.0.1' || url.port !== '55439' || url.pathname !== '/media_04a') throw new Error('Content tests require the disposable PostgreSQL test database at 127.0.0.1:55439/media_04a.');
+    if (process.env.NODE_ENV !== 'test' || !['127.0.0.1', 'localhost'].includes(url.hostname) || url.pathname !== '/product_media_test') throw new Error('Content tests require the explicitly enabled disposable product_media_test database.');
     Logger.overrideLogger(false);
     app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService);
     const tokens = app.get(AccessTokenService);

@@ -3881,8 +3881,8 @@ model PatientEntryPolicy {
   enforcedFrom DateTime? @map("enforced_from") @db.Timestamptz(3)
   revision Int @default(1)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  assessmentVersion AssessmentVersion? @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  assessmentVersion AssessmentVersion? @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   @@map("patient_entry_policies")
 }
 
@@ -3895,9 +3895,9 @@ model PatientEntry {
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Restrict)
-  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
-  assessmentVersion AssessmentVersion? @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
-  submission PatientAssessmentSubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  assessmentVersion AssessmentVersion? @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  submission PatientAssessmentSubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   @@map("patient_entries")
 }

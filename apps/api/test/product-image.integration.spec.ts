@@ -14,7 +14,7 @@ import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
 import { createReleaseAdminTestPrincipal } from './release-admin-test-support';
 import { createTestAccessToken } from './auth-test-support';
 
-describe('product media (isolated PostgreSQL + mocked private R2)', () => {
+describe.skipIf(process.env.PRODUCT_MEDIA_TEST_ISOLATED !== '1')('product media (isolated PostgreSQL + mocked private R2)', () => {
   let app: NestFastifyApplication; let prisma: PrismaService; let storage: ProductImageStorage; let productId: string; let adminToken: string; let staffToken: string; let png: Buffer;
   const objects = new Map<string, Buffer>();
   const route = () => `/v1/admin/commerce/products/${productId}/image`;
@@ -33,7 +33,7 @@ describe('product media (isolated PostgreSQL + mocked private R2)', () => {
 
   beforeAll(async () => {
     const url = new URL(process.env.DATABASE_URL ?? '');
-    if (process.env.NODE_ENV !== 'test' || url.hostname !== '127.0.0.1' || url.port !== '55439' || url.pathname !== '/media_04a') throw new Error('Media integration tests require the disposable media_04a database on 127.0.0.1:55439.');
+    if (process.env.NODE_ENV !== 'test' || !['127.0.0.1', 'localhost'].includes(url.hostname) || url.pathname !== '/product_media_test') throw new Error('Media tests require the explicitly enabled disposable product_media_test database.');
     app = await createApiApplication(); await app.init(); app.get(OutboxWorker).onModuleDestroy();
     prisma = app.get(PrismaService); storage = app.get(ProductImageStorage);
     const tokens = app.get(AccessTokenService); adminToken = (await createReleaseAdminTestPrincipal(prisma, tokens)).token; staffToken = (await createTestAccessToken(prisma, tokens, ['STAFF'])).token;

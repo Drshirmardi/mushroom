@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { components } from "@sabz-zendegi/api-client";
 import { assessmentErrorMessage, createAssessmentGuidance, createAssessmentOffering, createCoupleProtocol, getAssessmentGuidance, getAssessmentOffering, getAssessmentProtocol, getAssessmentProtocolHistory, getAssessmentPublication, getCoupleProtocol, listAssessmentGuidance, listAssessmentOfferings, listAssessmentPublications, listAssessmentServices, listCoupleProtocols, listGuidanceContent, previewAssessmentPublication, publishAssessmentOffering, retireAssessmentOffering, retireAssessmentPublication, revokeAssessmentGuidance, revokeCoupleProtocol, type AssessmentVersion, type OfferingBody, type PublicationPreview } from "@/lib/assessment-api";
-import { row, rows, text } from "./assessment-authoring";
+import { rows, text } from "./assessment-authoring";
 import { TextField } from "./assessment-builder";
 import { PageControls } from "./assessments-page";
 
@@ -17,7 +17,11 @@ function ReferenceField({ title, value, onChange, required = false }: { title: s
 
 function useResource<T>(loader: () => Promise<T>) {
   const [data, setData] = useState<T | null>(null); const [error, setError] = useState(""); const [revision, setRevision] = useState(0);
-  useEffect(() => { let active = true; setData(null); setError(""); void loader().then(value => { if (active) setData(value); }, reason => { if (active) setError(assessmentErrorMessage(reason)); }); return () => { active = false; }; }, [loader, revision]);
+  const [previousRequest, setPreviousRequest] = useState({ loader, revision });
+  if (previousRequest.loader !== loader || previousRequest.revision !== revision) {
+    setPreviousRequest({ loader, revision }); setData(null); setError("");
+  }
+  useEffect(() => { let active = true; void loader().then(value => { if (active) setData(value); }, reason => { if (active) setError(assessmentErrorMessage(reason)); }); return () => { active = false; }; }, [loader, revision]);
   return { data, error, refresh: () => setRevision(value => value + 1) };
 }
 function useCommand() {

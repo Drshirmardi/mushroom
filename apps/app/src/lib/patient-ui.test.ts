@@ -41,7 +41,8 @@ const cardProps = { product, saved: false, inCart: false, busy: false, onFavorit
 describe("Store ProductCard presentation contract", () => {
   it("preserves product destination, real price value and imagery source", () => {
     const html = renderToStaticMarkup(createElement(ProductCard, cardProps));
-    expect(html.match(/href="\/store\/products\/synthetic-product\?sku=synthetic-sku"/g)).toHaveLength(2);
+    expect(html.match(/href="\/store\/products\/synthetic-product\?sku=synthetic-sku"/g)).toHaveLength(3);
+    expect(html).toContain('class="store-product__details"');
     expect(html).toContain('dir="ltr"'); expect(html).toContain("۱۲۵٬۰۰۰");
     expect(html).not.toContain("افزودن به سبد");
   });

@@ -3,8 +3,8 @@ import { Type } from 'class-transformer';
 import { Equals, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Max, Min } from 'class-validator';
 
 export class ProtocolPageQueryDto {
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
-  @ApiPropertyOptional({ default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 10000, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 50, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
 }
 export class ProtocolQueueQueryDto extends ProtocolPageQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @Length(1, 100) @Matches(/\S/u) assessmentKey?: string;

@@ -34,7 +34,7 @@ describe("assessment authoring boundaries", () => {
     expect(validateAuthoring(copy).some(message => message.includes("شناسهٔ تکراری"))).toBe(true);
     expect(validateAuthoring(structure)).toEqual([]);
   });
-  it("refuses unknown schema versions rather than turning them into legacy questionnaires", () => {
-    expect(validateAuthoring({ ...structure, schemaVersion: 3 })).toEqual(["نسخهٔ ساختار پشتیبانی نمی‌شود؛ ساختار اصلی حفظ شده است."]);
+  it.each([0, 4, 99])("refuses unknown schema version %s rather than turning it into a legacy questionnaire", schemaVersion => {
+    expect(validateAuthoring({ ...structure, schemaVersion })).toEqual(["نسخهٔ ساختار پشتیبانی نمی‌شود؛ ساختار اصلی حفظ شده است."]);
   });
 });
