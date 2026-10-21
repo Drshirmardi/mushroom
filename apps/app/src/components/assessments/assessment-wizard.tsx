@@ -28,11 +28,11 @@ function questions(structure: JsonObject): Question[] {
 
 const answered = (question: Question, answer: unknown) => answer !== undefined && answer !== null && (question.type !== "TEXT" || typeof answer === "string" && answer.trim() !== "") && (question.type !== "MULTIPLE_CHOICE" || Array.isArray(answer) && answer.length > 0);
 
-function AssessmentWizard() {
+export function AssessmentWizard({ entry }: { entry?: { submissionId: string; onComplete: () => void } } = {}) {
   const router = useRouter();
   const { type: assessmentVersionId } = useParams<{ type?: string }>();
   const search = useSearchParams();
-  const submissionId = search.get("submissionId");
+  const submissionId = entry?.submissionId ?? search.get("submissionId");
   const grantId = search.get("grantId");
   const { authentication } = useAuthSession();
   const accessToken = useRef(authentication.accessToken);
@@ -48,6 +48,8 @@ function AssessmentWizard() {
   const [submitCommand, setSubmitCommand] = useState<{ revision: number; key: string } | null>(null);
   const items = useMemo(() => assessment ? questions(assessment.structure) : [], [assessment]);
   const current = items[step];
+  const entryQuestion = useRef<HTMLParagraphElement>(null);
+  useEffect(() => { if (entry) entryQuestion.current?.focus(); }, [current?.id, !!entry]);
   const adaptive = assessment?.structure.schemaVersion === 3;
 
   useEffect(() => {
@@ -57,14 +59,14 @@ function AssessmentWizard() {
       try {
         const attempt = submissionId ? await getAssessmentSubmission(accessToken.current, submissionId) : grantId ? await startPaidAssessment(accessToken.current, grantId) : assessmentVersionId ? await startAssessment(accessToken.current, assessmentVersionId) : null;
         if (!attempt) throw new Error("ASSESSMENT_NOT_FOUND");
-        if (attempt.state === "COMPLETE") { if (!cancelled) router.replace(`/assessment/result?submissionId=${attempt.id}`); return; }
+        if (attempt.state === "COMPLETE") { if (!cancelled) { if (entry) entry.onComplete(); else router.replace(`/assessment/result?submissionId=${attempt.id}`); } return; }
         const questionnaire = await getAssessmentQuestionnaire(accessToken.current, attempt.id);
         if (!questionnaire.resumeAvailable) throw new Error("ASSESSMENT_UNAVAILABLE");
-        if (!cancelled) { setAssessment(questionnaire); setSubmission(attempt); setAnswers(attempt.answers); }
+        if (!cancelled) { setAssessment(questionnaire); setSubmission(attempt); setAnswers(attempt.answers); if (entry) { const pending = questions(questionnaire.structure).findIndex(question => !answered(question, attempt.answers[question.id])); setStep(pending < 0 ? Math.max(0, questions(questionnaire.structure).length - 1) : pending); } }
       } catch (reason) { if (!cancelled) setError(assessmentErrorMessage(reason)); }
     })();
     return () => { cancelled = true; };
-  }, [assessmentVersionId, submissionId, grantId, authentication.user.id, reload, router]);
+  }, [assessmentVersionId, submissionId, grantId, authentication.user.id, reload, router, entry?.onComplete]);
 
   const persist = async () => {
     if (!submission || conflict) return null;
@@ -92,7 +94,7 @@ function AssessmentWizard() {
       const command = submitCommand ?? { revision: saved.revision, key: crypto.randomUUID() };
       setSubmitCommand(command);
       const completed = await submitAssessment(accessToken.current, saved.id, command.key, command.revision);
-      router.push(`/assessment/result?submissionId=${completed.id}`);
+      if (entry) entry.onComplete(); else router.push(`/assessment/result?submissionId=${completed.id}`);
     } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); if (reason instanceof AssessmentRequestError && (reason.status === 400 || reason.status === 422)) setSubmitCommand(null); setError(assessmentErrorMessage(reason)); }
     finally { setBusy(false); }
   };
@@ -103,10 +105,10 @@ function AssessmentWizard() {
     try { await persist(); router.push("/assessment"); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(assessmentErrorMessage(reason)); } finally { setBusy(false); }
   };
 
-  if (!assessment && !error) return <div><PageHeader title="ارزیابی" onBack={() => router.back()} /><p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;
-  if (!assessment || !submission || items.length === 0) return <div><PageHeader title="ارزیابی" onBack={() => router.back()} /><p role="alert" className="m-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error ?? "ساختار این ارزیابی قابل نمایش نیست."}</p></div>;
+  if (!assessment && !error) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;
+  if (!assessment || !submission || items.length === 0) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="alert" className="m-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error ?? "ساختار این ارزیابی قابل نمایش نیست."}</p>{entry && <button type="button" className="entry-primary" onClick={() => entry.onComplete()}>تلاش دوباره</button>}</div>;
 
-  return <div><PageHeader title={assessment.title} onBack={() => { if (busy || submitCommand) return; if (step > 0) { setStep(value => value - 1); return; } if (JSON.stringify(answers) === JSON.stringify(submission.answers) || window.confirm("پاسخ ذخیره‌نشده دارید. بدون ذخیره از این صفحه خارج شوید؟")) router.back(); }} /><div className="px-4 space-y-5 pb-4"><div><div className="mb-2 flex justify-between text-xs text-muted-foreground"><span>{adaptive && step === 11 ? "سؤال تکمیلی برای روشن‌شدن نتیجه" : <>سوال {toP(step + 1)} از {toP(adaptive ? 11 : items.length)}</>}</span><span>تلاش {toP(submission.attemptNumber)}</span></div><div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / items.length) * 100}%` }} /></div></div><div className="rounded-3xl border border-border bg-white p-5"><p className="mb-4 text-sm font-bold text-foreground">{current.text}</p><fieldset aria-label={current.text} disabled={busy || conflict || submitCommand !== null}><AnswerInput question={current} value={answers[current.id]} onChange={(value) => { setAnswers((all) => ({ ...(adaptive && current.phase !== "FOLLOW_UP" ? Object.fromEntries(Object.entries(all).filter(([id]) => items.some(question => question.phase !== "FOLLOW_UP" && question.id === id))) : all), [current.id]: value })); setError(null); }} /></fieldset></div>{error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}<button type="button" disabled={busy} onClick={() => { if (window.confirm("پاسخ‌های ذخیره‌نشده کنار گذاشته و آخرین وضعیت از سرور دریافت شود؟")) setReload(value => value + 1); }} className="text-sm font-bold text-primary">دریافت آخرین وضعیت ذخیره‌شده</button><button disabled={busy || conflict} onClick={() => void continueFlow()} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white disabled:opacity-50">{submitCommand ? "پیگیری ثبت نهایی" : adaptive && step === 10 ? "بررسی پاسخ‌ها و ادامه" : step === items.length - 1 ? "ثبت نهایی و مشاهده نتیجه" : "ذخیره و ادامه"}</button><button disabled={busy || conflict || submitCommand !== null} onClick={() => void saveAndExit()} className="w-full rounded-2xl border border-border bg-white py-3 text-sm font-bold text-muted-foreground disabled:opacity-50">ذخیره و خروج</button></div></div>;
+  return <div>{!entry && <PageHeader title={assessment.title} onBack={() => { if (busy || submitCommand) return; if (step > 0) { setStep(value => value - 1); return; } if (JSON.stringify(answers) === JSON.stringify(submission.answers) || window.confirm("پاسخ ذخیره‌نشده دارید. بدون ذخیره از این صفحه خارج شوید؟")) router.back(); }} />}<div className="px-4 space-y-5 pb-4"><div><div className="mb-2 flex justify-between text-xs text-muted-foreground"><span>{adaptive && step === 11 ? "سؤال تکمیلی برای روشن‌شدن نتیجه" : <>سوال {toP(step + 1)} از {toP(adaptive ? 11 : items.length)}</>}</span>{!entry && <span>تلاش {toP(submission.attemptNumber)}</span>}</div><div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / items.length) * 100}%` }} /></div></div><div className="rounded-3xl border border-border bg-white p-5"><p ref={entryQuestion} tabIndex={entry ? -1 : undefined} className="mb-4 text-sm font-bold text-foreground">{current.text}</p><fieldset aria-label={current.text} disabled={busy || conflict || submitCommand !== null}><AnswerInput question={current} value={answers[current.id]} onChange={(value) => { setAnswers((all) => ({ ...(adaptive && current.phase !== "FOLLOW_UP" ? Object.fromEntries(Object.entries(all).filter(([id]) => items.some(question => question.phase !== "FOLLOW_UP" && question.id === id))) : all), [current.id]: value })); setError(null); }} /></fieldset></div>{error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}{(!entry || error || conflict) && <button type="button" disabled={busy} onClick={() => { if (window.confirm("پاسخ‌های ذخیره‌نشده کنار گذاشته و آخرین وضعیت از سرور دریافت شود؟")) setReload(value => value + 1); }} className="text-sm font-bold text-primary">دریافت آخرین وضعیت ذخیره‌شده</button>}<button disabled={busy || conflict} onClick={() => void continueFlow()} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white disabled:opacity-50">{submitCommand ? "پیگیری ثبت نهایی" : adaptive && step === 10 ? "بررسی پاسخ‌ها و ادامه" : step === items.length - 1 ? "ثبت نهایی و مشاهده نتیجه" : "ذخیره و ادامه"}</button>{!entry && <button disabled={busy || conflict || submitCommand !== null} onClick={() => void saveAndExit()} className="w-full rounded-2xl border border-border bg-white py-3 text-sm font-bold text-muted-foreground disabled:opacity-50">ذخیره و خروج</button>}{entry && step > 0 && <button type="button" disabled={busy || conflict || submitCommand !== null} onClick={() => setStep(value => value - 1)} className="entry-secondary">سؤال قبل</button>}</div></div>;
 }
 
 function AnswerInput({ question, value, onChange }: { question: Question; value: unknown; onChange: (value: unknown) => void }) {

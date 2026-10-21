@@ -114,3 +114,7 @@ export function useAuthSession(): AuthSessionContextValue {
 export function useOptionalAuthSession(): AuthSessionContextValue | null {
   return useContext(AuthSessionContext);
 }
+
+export function useAuthSessionSnapshot() {
+  return useContext(SessionSnapshotContext);
+}

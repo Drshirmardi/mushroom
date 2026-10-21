@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/auth/session-gate";
+import { PatientEntryGate } from "@/components/auth/patient-entry-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider><PatientEntryGate>{children}</PatientEntryGate></SessionProvider>
       </body>
     </html>
   );

@@ -27550,6 +27550,186 @@
           "Paid Patient Assessments"
         ]
       }
+    },
+    "/v1/patients/me/entry": {
+      "get": {
+        "operationId": "patientEntryStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/patients/me/entry/profile": {
+      "post": {
+        "operationId": "patientEntryProfileSave",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/patients/me/entry/start": {
+      "post": {
+        "operationId": "patientEntryStart",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/patients/me/entry/complete": {
+      "post": {
+        "operationId": "patientEntryComplete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/admin/assessment-entry-policy": {
+      "get": {
+        "operationId": "adminEntryPolicyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryPolicyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Assessments"
+        ]
+      },
+      "put": {
+        "operationId": "adminEntryPolicyUpdate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryPolicyUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryPolicyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
     }
   },
   "info": {
@@ -27620,6 +27800,10 @@
           "code": {
             "type": "string",
             "enum": [
+              "PATIENT_ENTRY_REQUIRED",
+              "ENTRY_UNAVAILABLE",
+              "ENTRY_CONFLICT",
+              "ENTRY_PROFILE_INVALID",
               "CUSTOM_PROGRAM_DELIVERY_NOT_FOUND",
               "CUSTOM_PROGRAM_DELIVERY_CONFLICT",
               "CUSTOM_PROGRAM_CLINICAL_FORBIDDEN",
@@ -27728,8 +27912,8 @@
               "ASSESSMENT_NOT_FOUND",
               "ASSESSMENT_STRUCTURE_INVALID",
               "ASSESSMENT_PREVIEW_CONFLICT",
-              "ASSESSMENT_FOLLOW_UP_REQUIRED",
               "ASSESSMENT_RELEASE_NOT_READY",
+              "ASSESSMENT_FOLLOW_UP_REQUIRED",
               "ASSESSMENT_DELETE_NOT_ALLOWED",
               "ASSESSMENT_DELETE_CONFLICT",
               "ASSESSMENT_DELETE_REFERENCED",
@@ -31452,6 +31636,9 @@
           "storeAvailable": {
             "type": "boolean",
             "description": "Shopping is independent of medical onboarding"
+          },
+          "home": {
+            "$ref": "#/components/schemas/JourneyHomeDto"
           }
         },
         "required": [
@@ -31469,7 +31656,8 @@
           "pendingOrders",
           "treatmentPlans",
           "coupleLinks",
-          "storeAvailable"
+          "storeAvailable",
+          "home"
         ]
       },
       "PatientAssessmentHistoryItemDto": {
@@ -44533,6 +44721,278 @@
         },
         "required": [
           "id"
+        ]
+      },
+      "JourneySetupStepDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "PROFILE",
+              "HEALTH",
+              "CONFIRM"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "CURRENT",
+              "UPCOMING"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "state"
+        ]
+      },
+      "JourneyLatestAssessmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "completedAt"
+        ]
+      },
+      "JourneyHomeActionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "OPEN_APPOINTMENT",
+              "COMPLETE_PROFILE",
+              "CONSENT_UNAVAILABLE",
+              "REVIEW_CONSENT",
+              "START_MEDICAL_INTAKE",
+              "CONTINUE_MEDICAL_INTAKE",
+              "COMPLETE_ONBOARDING",
+              "REVIEW_BOOKING_REQUIREMENTS",
+              "RESUME_ASSESSMENT",
+              "CONTINUE_PAYMENT",
+              "VIEW_TREATMENT_PLAN",
+              "VIEW_ASSESSMENT_RESULT",
+              "BOOK_CONSULTATION",
+              "START_PAID_ASSESSMENT",
+              "OPEN_COUPLE_ASSESSMENT",
+              "OPEN_PROGRAM",
+              "OPEN_CUSTOM_PROGRAM_REQUEST",
+              "OPEN_COUPLE_LINK",
+              "TRACK_ORDER"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true,
+            "description": "Exact pending payment amount in integer rial"
+          },
+          "paymentPurpose": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "resourceId",
+          "title",
+          "amountRial",
+          "paymentPurpose"
+        ]
+      },
+      "JourneyHomeDto": {
+        "type": "object",
+        "properties": {
+          "setupSteps": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneySetupStepDto"
+            }
+          },
+          "latestAssessment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyLatestAssessmentDto"
+              }
+            ]
+          },
+          "activeTreatmentPlanId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "actions": {
+            "maxItems": 12,
+            "description": "Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyHomeActionDto"
+            }
+          }
+        },
+        "required": [
+          "setupSteps",
+          "latestAssessment",
+          "activeTreatmentPlanId",
+          "actions"
+        ]
+      },
+      "EntryProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "birthDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "birthDate"
+        ]
+      },
+      "EntryPolicyUpdateDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "enabled",
+          "assessmentVersionId",
+          "expectedRevision"
+        ]
+      },
+      "EntryPolicyDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "assessmentTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "revision": {
+            "type": "number"
+          },
+          "enforcedFrom": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "enabled",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "revision",
+          "enforcedFrom"
+        ]
+      },
+      "PatientEntryStatusDto": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": "boolean"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "PROFILE",
+              "ASSESSMENT",
+              "RESULT",
+              "COMPLETE",
+              "UNAVAILABLE"
+            ]
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "assessmentTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "submissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date"
+          }
+        },
+        "required": [
+          "required",
+          "phase",
+          "assessmentVersionId",
+          "assessmentTitle",
+          "submissionId",
+          "firstName",
+          "lastName",
+          "birthDate"
         ]
       }
     }

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { resolve } from 'node:path';
 
 import { AuthModule } from './common/auth/auth.module';
+import { PatientEntryModule } from './modules/patients/entry/patient-entry.module';
 import { HealthController } from './common/health/health.controller';
 import { environmentValidationSchema } from './config/environment.validation';
 import { DatabaseModule } from './database/database.module';
@@ -60,6 +61,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AuthModule,
     DatabaseModule,
     IdentityModule,
+    PatientEntryModule,
     SelfProfileModule,
     PatientJourneyModule,
     IntakeModule,

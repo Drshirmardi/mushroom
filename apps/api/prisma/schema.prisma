@@ -987,6 +987,8 @@ model AuditEvent {
 }
 
 model Clinic {
+  entryPolicy PatientEntryPolicy?
+  patientEntries PatientEntry[]
   mezajCollections CommerceMezajCollection[]
   customProgramPlanVersions CustomProgramPlanVersion[]
   customProgramRequests CustomProgramRequest[]
@@ -1088,6 +1090,7 @@ model UserProfile {
 }
 
 model PatientProfile {
+  entry PatientEntry?
   customProgramPlanVersions CustomProgramPlanVersion[]
   customProgramRequests CustomProgramRequest[]
   customProgramCareAuthorizations CustomProgramCareAuthorization[]
@@ -2277,6 +2280,8 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  entryPolicies PatientEntryPolicy[]
+  patientEntries PatientEntry[]
   mezajCollectionSources CommerceMezajCollectionSource[]
   coupleAssessmentSessions CoupleAssessmentSession[]
   coupleResultProtocols CoupleResultProtocolVersion[]
@@ -2415,6 +2420,7 @@ model AssessmentOfferingVersion {
 }
 
 model PatientAssessmentSubmission {
+  patientEntry PatientEntry?
   assessmentCareShares AssessmentCareShare[]
   initiatorJointResults CoupleAssessmentJointResult[] @relation("CoupleJointInitiatorSubmission")
   partnerJointResults CoupleAssessmentJointResult[] @relation("CoupleJointPartnerSubmission")
@@ -3866,4 +3872,32 @@ model CustomProgramPlanVersion {
   @@unique([requestId, idempotencyKey], map: "custom_program_plan_command_key")
   @@unique([treatmentPlanId, clinicId], map: "custom_program_plan_native_clinic_key")
   @@map("custom_program_plan_versions")
+}
+
+model PatientEntryPolicy {
+  clinicId String @id @map("clinic_id") @db.Uuid
+  enabled Boolean @default(false)
+  assessmentVersionId String? @map("assessment_version_id") @db.Uuid
+  enforcedFrom DateTime? @map("enforced_from") @db.Timestamptz(3)
+  revision Int @default(1)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  assessmentVersion AssessmentVersion? @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
+  @@map("patient_entry_policies")
+}
+
+model PatientEntry {
+  patientId String @id @map("patient_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  birthDate DateTime @map("birth_date") @db.Date
+  assessmentVersionId String? @map("assessment_version_id") @db.Uuid
+  submissionId String? @unique @map("submission_id") @db.Uuid
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  assessmentVersion AssessmentVersion? @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
+  submission PatientAssessmentSubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  @@map("patient_entries")
 }

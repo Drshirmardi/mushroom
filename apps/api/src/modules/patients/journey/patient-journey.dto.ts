@@ -136,7 +136,31 @@ export class JourneyCustomProgramsDto {
   @ApiProperty({ type: [JourneyCustomProgramDto], maxItems: 5 }) items!: JourneyCustomProgramDto[];
   @ApiProperty() hasMore!: boolean;
 }
+export class JourneySetupStepDto {
+  @ApiProperty({ enum: ['PROFILE', 'HEALTH', 'CONFIRM'] }) code!: 'PROFILE' | 'HEALTH' | 'CONFIRM';
+  @ApiProperty({ enum: ['COMPLETE', 'CURRENT', 'UPCOMING'] }) state!: 'COMPLETE' | 'CURRENT' | 'UPCOMING';
+}
+export class JourneyLatestAssessmentDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty({ format: 'date-time' }) completedAt!: Date;
+}
+export const HOME_ACTIONS = [...JOURNEY_ACTIONS, 'OPEN_COUPLE_LINK', 'TRACK_ORDER'] as const;
+export class JourneyHomeActionDto {
+  @ApiProperty({ enum: HOME_ACTIONS }) code!: typeof HOME_ACTIONS[number];
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) resourceId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) title!: string | null;
+  @ApiProperty({ type: String, nullable: true, description: 'Exact pending payment amount in integer rial' }) amountRial!: string | null;
+  @ApiProperty({ type: String, nullable: true }) paymentPurpose!: string | null;
+}
+export class JourneyHomeDto {
+  @ApiProperty({ type: [JourneySetupStepDto], minItems: 3, maxItems: 3 }) setupSteps!: JourneySetupStepDto[];
+  @ApiProperty({ type: JourneyLatestAssessmentDto, nullable: true }) latestAssessment!: JourneyLatestAssessmentDto | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) activeTreatmentPlanId!: string | null;
+  @ApiProperty({ type: [JourneyHomeActionDto], maxItems: 12, description: 'Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action.' }) actions!: JourneyHomeActionDto[];
+}
 export class PatientJourneyResponseDto {
+  @ApiProperty({ type: JourneyHomeDto }) home!: JourneyHomeDto;
   @ApiProperty({ type: JourneyCustomProgramsDto }) customPrograms!: JourneyCustomProgramsDto;
   @ApiProperty({ type: JourneyProgramPurchasesDto }) programPurchases!: JourneyProgramPurchasesDto;
   @ApiProperty({ type: JourneyCoupleAssessmentsDto }) coupleAssessments!: JourneyCoupleAssessmentsDto;
