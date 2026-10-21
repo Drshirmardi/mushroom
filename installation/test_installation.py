@@ -1,0 +1,363 @@
+import base64
+from contextlib import redirect_stdout
+import hashlib
+import io
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+import unittest
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import build
+import manager
+
+
+class InstallationTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix='mushroom-installer-test-')
+        self.root = Path(self.temporary.name)
+        self.config = {'repository': 'owner/private-repo', 'sshHost': '203.0.113.2', 'sshPort': '2222',
+                       'publicIp': '203.0.113.2', 'email': 'ops@example.test', 'steps': {},
+                       'environments': {name: {
+                           'user': 'mushroom-prod' if name == 'production' else 'mushroom-deploy',
+                           'home': str(self.root / name),
+                           'domains': {service: f'{name}-{service}.example.test' for service in ['api', 'web', 'app', 'dashboard']},
+                       } for name in ['dev', 'staging', 'production']}}
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def write(self, environment, **kwargs):
+        return manager.write_environment(self.config, environment, base=self.root / environment, **kwargs)
+
+    def test_first_run_generates_all_independent_secrets_and_no_public_credentials(self):
+        root = self.write('dev', first_run={'phone': '+989100000001', 'password': 'not-an-example-password'})
+        values = manager.load_env(root / 'runtime.env')
+        self.assertEqual(values['DEV_WORKSPACE_PATH'], str(root / 'workspace'))
+        self.assertEqual(values['APP_ORIGINS'].split(','), [values[f'PUBLIC_{app}_URL'] for app in ['WEB', 'APP', 'DASHBOARD']])
+        self.assertEqual(values['TRUSTED_PROXIES'], '127.0.0.1/32,172.30.33.1/32')
+        auth = [(root / 'secrets' / name).read_text() for name in ['jwt_access_secret', 'refresh_token_pepper', 'otp_pepper']]
+        self.assertEqual(len(set(auth)), 3)
+        self.assertTrue(all(len(base64.urlsafe_b64decode(value + '=' * (-len(value) % 4))) >= 32 for value in auth))
+        for name in ['sms_credential_encryption_key', 'payment_credential_encryption_key']:
+            self.assertEqual(len(base64.b64decode((root / 'secrets' / name).read_text(), validate=True)), 32)
+        self.assertEqual((root / 'secrets/payment_credential_decryption_keys').read_text(), '')
+        self.assertNotIn('not-an-example-password', (root / 'runtime.env').read_text())
+        if os.name != 'nt':
+            self.assertEqual((root / 'secrets/otp_pepper').stat().st_mode & 0o777, 0o600)
+
+    def test_retry_preserves_secrets_custom_runtime_and_first_admin_password(self):
+        root = self.write('dev', first_run={'password': 'first-password'})
+        before = {path.name: path.read_bytes() for path in (root / 'secrets').iterdir()}
+        (root / 'runtime.env').write_text((root / 'runtime.env').read_text().replace('LOG_LEVEL=info', 'LOG_LEVEL=warn'))
+        self.write('dev', first_run={'password': 'replacement-password'})
+        self.assertEqual(before, {path.name: path.read_bytes() for path in (root / 'secrets').iterdir()})
+        self.assertEqual(manager.load_env(root / 'runtime.env')['LOG_LEVEL'], 'warn')
+        self.assertEqual(json.loads((root / 'bootstrap/first-run.json').read_text())['password'], 'first-password')
+
+    def test_completed_bootstrap_is_not_recreated(self):
+        root = self.write('dev')
+        (root / 'bootstrap/complete').touch()
+        self.write('dev', first_run={'password': 'new-password'})
+        self.assertFalse((root / 'bootstrap/first-run.json').exists())
+
+    def test_missing_established_encryption_secret_is_not_regenerated(self):
+        root = self.write('dev')
+        missing = root / 'secrets/payment_credential_encryption_key'
+        missing.unlink()
+        with self.assertRaisesRegex(manager.InstallationError, 'automatic regeneration is refused'):
+            self.write('dev')
+        self.assertFalse(missing.exists())
+
+    def test_cross_environment_values_and_credentials_do_not_overlap(self):
+        dev = self.write('dev')
+        staging = self.write('staging')
+        first, second = manager.load_env(dev / 'runtime.env'), manager.load_env(staging / 'runtime.env')
+        for name in ['COMPOSE_PROJECT_NAME', 'MUSHROOM_ENV_ROOT', 'POSTGRES_DB', 'POSTGRES_USER', 'API_PORT', 'PUBLIC_WEB_URL']:
+            self.assertNotEqual(first[name], second[name])
+        for name in manager.SECRET_NAMES:
+            if name.endswith('_decryption_keys'):
+                continue
+            self.assertNotEqual((dev / 'secrets' / name).read_bytes(), (staging / 'secrets' / name).read_bytes())
+
+    def test_production_requires_external_tls_database_and_creates_no_local_postgres(self):
+        with self.assertRaises(manager.InstallationError):
+            self.write('production', db_url='postgresql://user:password@postgres:5432/main')
+        root = self.write('production', db_url='postgresql://user:encoded%40password@db.example.test/main?sslmode=require')
+        self.assertFalse((root / 'secrets/postgres_password').exists())
+        self.assertNotIn('POSTGRES_USER', manager.load_env(root / 'runtime.env'))
+        self.assertNotIn('POSTGRES_DB', manager.load_env(root / 'runtime.env'))
+        self.assertNotIn('db.example.test', (root / 'runtime.env').read_text())
+        compose = (manager.BUNDLE / 'compose.production.example.yaml').read_text()
+        self.assertNotIn('  postgres:', compose)
+
+    def test_policy_hash_and_environment_are_checked_before_copy(self):
+        body = 'Reviewed fixture, not legal content.'
+        document = {'schemaVersion': 1, 'policyKey': 'MEDICAL_INTAKE_PROCESSING', 'versionNumber': 1,
+                    'locale': 'fa-IR', 'title': 'Fixture', 'body': body,
+                    'contentHash': hashlib.sha256(body.encode()).hexdigest(), 'allowedEnvironments': ['production']}
+        path = self.root / 'policy.json'
+        path.write_text(json.dumps(document))
+        self.assertEqual(manager.validate_policy(path, 'production'), document)
+        with self.assertRaises(manager.InstallationError):
+            manager.validate_policy(path, 'staging')
+        document['body'] += 'tampered'
+        path.write_text(json.dumps(document))
+        with self.assertRaises(manager.InstallationError):
+            manager.validate_policy(path, 'production')
+
+    def test_hostnames_and_urls_reject_shell_and_caddy_injection(self):
+        for value in ['https://example.test', 'example.test {', 'a.example.test\nfoo', '-bad.example.test', 'example.test;id', 'a..test']:
+            with self.subTest(value=value), self.assertRaises(manager.InstallationError):
+                manager.hostname(value)
+        for value in ['postgresql://u:p@db/x\nPGPASSWORD=bad', 'postgresql://u:$bad@db/x', 'http://u:p@db/x', 'postgresql://u:p%0APGHOST=bad@db/x']:
+            with self.subTest(value=value), self.assertRaises(manager.InstallationError):
+                manager.database_url(value)
+
+    def test_atomic_write_preserves_old_contents_on_replace_failure(self):
+        path = self.root / 'state'
+        path.write_text('old')
+        with patch.object(manager.os, 'replace', side_effect=OSError('fixture')):
+            with self.assertRaises(OSError):
+                manager.atomic_write(path, 'new')
+        self.assertEqual(path.read_text(), 'old')
+        self.assertEqual(list(self.root.glob('.mushroom-*')), [])
+
+    @unittest.skipIf(os.name == 'nt', 'POSIX symlink/permission behavior')
+    def test_atomic_write_rejects_symlink(self):
+        original = self.root / 'original'
+        original.write_text('unchanged')
+        link = self.root / 'link'
+        link.symlink_to(original)
+        with self.assertRaises(manager.InstallationError):
+            manager.atomic_write(link, 'replacement')
+        self.assertEqual(original.read_text(), 'unchanged')
+
+    def test_subprocess_failures_do_not_expose_credentials(self):
+        with patch.object(manager.subprocess, 'run', return_value=subprocess.CompletedProcess([], 3, 'SECRET', 'SECRET')):
+            with self.assertRaises(manager.InstallationError) as error:
+                manager.run(['docker', 'SECRET'], sensitive=True)
+            self.assertNotIn('SECRET', str(error.exception))
+
+    def test_actual_api_and_frontend_environment_contracts_are_covered(self):
+        with redirect_stdout(io.StringIO()):
+            manager.audit_environment(manager.BUNDLE)
+
+    def test_archive_contains_only_allowlisted_files_and_no_secrets_or_test_outputs(self):
+        archive = build.build(self.root / 'installer.tar.gz')
+        with tarfile.open(archive) as value:
+            names = value.getnames()
+            self.assertEqual(set(names), {'mushroom-installer/' + name for name in build.FILES})
+            self.assertFalse(any(name.endswith('/.env') or '/secrets/' in name or '/dist/' in name for name in names))
+            relocated = self.root / 'relocated'
+            value.extractall(relocated, filter='data')
+            process = subprocess.run([sys.executable, '-B', str(relocated / 'mushroom-installer/installation/manager.py'), '--help'], capture_output=True)
+            self.assertEqual(process.returncode, 0)
+        digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+        self.assertTrue(archive.with_suffix('.gz.sha256').read_text().startswith(digest))
+
+    def test_unknown_environment_state_cannot_control_compose_outside_release_root(self):
+        spec = self.config['environments']['production']
+        root = Path(spec['home']) / 'mushroom/production/state'
+        root.mkdir(parents=True)
+        (root / 'current').write_text('/tmp/foreign-release')
+        with self.assertRaises(manager.InstallationError):
+            manager.compose_command(self.config, 'production')
+
+    def test_restore_rejects_real_database_without_running_commands(self):
+        target = self.root / 'target.env'
+        target.write_text('postgresql://u:p@db.example.test/production?sslmode=require')
+        with patch.object(manager, 'run') as run:
+            with self.assertRaises(manager.InstallationError):
+                manager.restore(self.config, 'production', 'fixture.dump.age', target)
+            run.assert_not_called()
+
+    def test_dns_waits_instead_of_claiming_success_for_proxy_or_unrelated_ipv6(self):
+        with patch.object(manager.socket, 'getaddrinfo', return_value=[(2, 1, 6, '', ('203.0.113.99', 443))]):
+            with self.assertRaisesRegex(manager.InstallationError, 'DNS pending'):
+                manager.check_dns(self.config)
+
+    def test_firewall_preserves_sshd_and_socket_management_ports_before_enable(self):
+        calls = []
+        def command(args, **kwargs):
+            calls.append(args)
+            if args[0] == 'ss':
+                return 'LISTEN 0 128 0.0.0.0:2222 0.0.0.0:* users:(("sshd",pid=10,fd=3))\n'
+            if args[0] == 'sshd':
+                return 'port 22\nport 2222\n'
+            if args[0] == 'systemctl':
+                return '[::]:2222 (Stream)'
+            return ''
+        with patch.object(manager, 'run', side_effect=command):
+            manager.firewall(self.config)
+        enable = calls.index(['ufw', '--force', 'enable'])
+        for port in ['22', '2222', '80', '443']:
+            self.assertLess(calls.index(['ufw', 'allow', f'{port}/tcp']), enable)
+
+    def test_firewall_rejects_wrong_service_port_without_mutation(self):
+        self.config['sshPort'] = '443'
+        with patch.object(manager, 'run', side_effect=['LISTEN 0 128 0.0.0.0:443 0.0.0.0:* users:(("caddy"))', 'port 22\n', '']) as run:
+            with self.assertRaisesRegex(manager.InstallationError, 'firewall unchanged'):
+                manager.firewall(self.config)
+        self.assertFalse(any(call.args[0][0] == 'ufw' for call in run.call_args_list))
+
+    def test_missing_compose_is_installed_without_replacing_existing_docker_engine(self):
+        calls = []
+        def command(args, **kwargs):
+            calls.append(args)
+            if args[0] == 'apt-cache':
+                return '  Candidate: 2.24.6\n'
+            if args[:2] == ['apt-get', '-s']:
+                return 'Inst docker-compose-plugin (fixture)\n'
+            return ''
+        with patch.object(manager, 'run', side_effect=command), patch.object(manager.shutil, 'which', return_value='/usr/bin/docker'), \
+             patch.object(manager.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1)):
+            manager.install_packages()
+        self.assertIn(['apt-get', 'install', '-y', '--no-install-recommends', 'docker-compose-plugin'], calls)
+        self.assertFalse(any('docker-ce' in args for args in calls))
+
+    def test_compose_installation_refuses_to_remove_existing_engine(self):
+        calls = []
+        def command(args, **kwargs):
+            calls.append(args)
+            if args[0] == 'apt-cache':
+                return '  Candidate: 2.24.6\n'
+            if args[:2] == ['apt-get', '-s']:
+                return 'Remv docker.io\nInst docker-compose-plugin\n'
+            return ''
+        with patch.object(manager, 'run', side_effect=command), patch.object(manager.shutil, 'which', return_value='/usr/bin/docker'), \
+             patch.object(manager.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1)):
+            with self.assertRaisesRegex(manager.InstallationError, 'preserved'):
+                manager.install_packages()
+        self.assertNotIn(['apt-get', 'install', '-y', '--no-install-recommends', 'docker-compose-plugin'], calls)
+
+    def test_network_allocator_avoids_existing_routes_and_keeps_prior_choices(self):
+        def command(args, **kwargs):
+            if args[:3] == ['docker', 'network', 'ls']:
+                return 'fixture-network\n'
+            if args[:3] == ['docker', 'network', 'inspect']:
+                return json.dumps([{'Name': 'another-project', 'IPAM': {'Config': [{'Subnet': '172.30.33.0/24'}]}}])
+            return json.dumps([{'dst': '172.30.40.0/24', 'dev': 'eth1'}])
+        with patch.object(manager, 'run', side_effect=command), patch.object(manager, 'STATE', self.root):
+            manager.allocate_networks(self.config)
+            self.assertEqual(self.config['environments']['dev']['subnet'], '172.30.41.0/24')
+            manager.allocate_networks(self.config)
+            self.assertEqual(self.config['environments']['dev']['subnet'], '172.30.41.0/24')
+
+    def test_port_allocator_avoids_existing_services_without_stopping_them(self):
+        with patch.object(manager, 'run', return_value='LISTEN 0 128 127.0.0.1:3303 0.0.0.0:*\n'), \
+             patch.object(manager, 'STATE', self.root):
+            manager.allocate_ports(self.config)
+        self.assertEqual(self.config['environments']['dev']['basePort'], 3400)
+        root = self.write('dev')
+        self.assertEqual(manager.load_env(root / 'runtime.env')['API_PORT'], '127.0.0.1:3403')
+
+    def test_failed_backup_never_records_success_or_leaves_plaintext(self):
+        import contextlib
+        state = self.root / 'state'
+        (state / 'backup-keys').mkdir(parents=True)
+        (state / 'backup-keys/production.key').write_text('fixture private key')
+        # Redirect only the fixed backup destination into this disposable fixture.
+        original_path = manager.Path
+        def path(value):
+            return self.root / 'backups' if str(value) == '/var/backups/mushroom' else original_path(value)
+        (self.root / 'backups/production').mkdir(parents=True)
+        with patch.object(manager, 'STATE', state), patch.object(manager, 'Path', side_effect=path), \
+             patch.object(manager, 'run', return_value='age1fixture'), \
+             patch.object(manager, 'pg_client', return_value=contextlib.nullcontext((['fixture-pg'], []))), \
+             patch.object(manager, 'binary_pipeline', side_effect=manager.InstallationError('fixture failure')):
+            with self.assertRaises(manager.InstallationError):
+                manager.backup(self.config, 'production')
+        self.assertFalse((self.root / 'backups/production/last-success').exists())
+        self.assertEqual(list((self.root / 'backups/production').iterdir()), [])
+
+    def test_binary_pipeline_rejects_a_failed_producer_even_if_consumer_succeeds(self):
+        with self.assertRaises(manager.InstallationError):
+            manager.binary_pipeline([sys.executable, '-c', 'import sys;sys.stdout.write("partial");sys.exit(2)'],
+                                    [sys.executable, '-c', 'import sys;sys.stdin.buffer.read()'])
+
+    def test_proxy_preserves_existing_files_if_validation_fails(self):
+        directory = self.root / 'caddy'
+        directory.mkdir()
+        main = directory / 'Caddyfile'
+        default = ':80 {\n root * /usr/share/caddy\n file_server\n}\n'
+        main.write_text(default)
+        sites = directory / 'mushroom.caddy'
+        sites.write_text('previous config')
+        with patch.object(manager, 'run', side_effect=manager.InstallationError('fixture validation failure')):
+            with self.assertRaises(manager.InstallationError):
+                manager.configure_proxy(self.config, directory)
+        self.assertEqual(main.read_text(), default)
+        self.assertEqual(sites.read_text(), 'previous config')
+
+    def test_proxy_will_not_replace_foreign_sites(self):
+        directory = self.root / 'caddy'
+        directory.mkdir()
+        main = directory / 'Caddyfile'
+        main.write_text('foreign.example.test { reverse_proxy localhost:8080 }')
+        with patch.object(manager, 'run') as run:
+            with self.assertRaisesRegex(manager.InstallationError, 'preserved'):
+                manager.configure_proxy(self.config, directory)
+            run.assert_not_called()
+        self.assertFalse((directory / 'mushroom.caddy').exists())
+
+    @unittest.skipUnless(shutil.which('caddy'), 'Caddy validation is exercised in Ubuntu CI')
+    def test_real_caddy_validates_generated_tls_and_websocket_proxy_configuration(self):
+        directory = self.root / 'caddy'
+        directory.mkdir()
+        (directory / 'Caddyfile').write_text(':80 {\n root * /usr/share/caddy\n file_server\n}\n')
+        original = manager.run
+        def command(args, **kwargs):
+            if args[0] == 'caddy':
+                return original(args, **kwargs, env={**os.environ, 'XDG_DATA_HOME': str(self.root / 'data'),
+                                                      'XDG_CONFIG_HOME': str(self.root / 'config')})
+            self.assertEqual(args[0], 'systemctl')
+            return ''
+        with patch.object(manager, 'run', side_effect=command):
+            manager.configure_proxy(self.config, directory)
+        source = (directory / 'mushroom.caddy').read_text()
+        self.assertIn('reverse_proxy 127.0.0.1:3303', source)
+        self.assertIn('tls ops@example.test', source)
+
+    @unittest.skipUnless(shutil.which('age') and shutil.which('age-keygen'), 'age tools are tested in the Ubuntu installer CI job')
+    def test_encrypted_backup_roundtrip_with_real_age_and_tamper_detection(self):
+        import contextlib
+        state = self.root / 'state'
+        (state / 'backup-keys').mkdir(parents=True)
+        key = state / 'backup-keys/production.key'
+        subprocess.run(['age-keygen', '-o', str(key)], check=True, capture_output=True)
+        original_path = manager.Path
+        def path(value):
+            return self.root / 'backups' if str(value) == '/var/backups/mushroom' else original_path(value)
+        directory = self.root / 'backups/production'
+        directory.mkdir(parents=True)
+        previous = directory / '20000101T000000Z-00000000.dump.age'
+        previous.write_bytes(b'old synthetic encrypted fixture')
+        os.utime(previous, (0, 0))
+        foreign = directory / 'operator-owned.dump.age'
+        foreign.write_bytes(b'preserve operator fixture')
+        fixture = 'Private fixture dump bytes; never store as plaintext.'
+        with patch.object(manager, 'STATE', state), patch.object(manager, 'Path', side_effect=path), \
+             patch.object(manager, 'pg_client', return_value=contextlib.nullcontext(([sys.executable, '-c', f'print({fixture!r})', '--'], []))), \
+             redirect_stdout(io.StringIO()):
+            manager.backup(self.config, 'production')
+        self.assertFalse(previous.exists())
+        self.assertTrue(foreign.exists())
+        archive = next(path for path in directory.glob('*.dump.age') if path != foreign)
+        self.assertNotIn(fixture.encode(), archive.read_bytes())
+        result = subprocess.run(['age', '-d', '-i', str(key), str(archive)], check=True, capture_output=True)
+        self.assertEqual(result.stdout, fixture.encode() + b'\n')
+        self.assertTrue((directory / 'last-success').exists())
+        archive.write_bytes(archive.read_bytes()[:-10])
+        corrupted = subprocess.run(['age', '-d', '-i', str(key), str(archive)], capture_output=True)
+        self.assertNotEqual(corrupted.returncode, 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -132,7 +132,7 @@ export const environmentValidationSchema = Joi.object({
     })
     .default('http://localhost:3000,http://localhost:3001,http://localhost:3002')
     .messages({ 'any.invalid': 'must be a comma-separated list of HTTP(S) origins' }),
-  PUBLIC_API_URL: Joi.string().custom((value, helpers) => isHttpOrigin(value) && new URL(value).protocol === 'https:' ? new URL(value).toString() : helpers.error('any.invalid')).when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.required(), otherwise: Joi.optional() }).messages({ 'any.invalid': 'must be a public HTTPS origin with no path, query or fragment' }),
+  PUBLIC_API_URL: Joi.string().custom((value, helpers) => isHttpOrigin(value) && new URL(value).protocol === 'https:' ? new URL(value).toString() : helpers.error('any.invalid')).when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.required(), otherwise: Joi.optional().allow('') }).messages({ 'any.invalid': 'must be a public HTTPS origin with no path, query or fragment' }),
   TRUSTED_PROXIES: Joi.when('NODE_ENV', {
     is: 'production',
     then: trustedProxySchema.required(),

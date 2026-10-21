@@ -55,9 +55,6 @@ case "$command_name" in
     if [[ ${DEV_RUN_MIGRATIONS:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
     fi
-    if [[ ${DEV_RUN_SEED:-false} == true ]]; then
-      pnpm --filter @sabz-zendegi/api prisma:seed
-    fi
     if [[ ${DEV_COMPILE_API:-false} == true ]]; then
       [[ ${DEV_API_SOURCE_HASH:-} =~ ^[0-9a-f]{64}$ ]] || {
         printf 'DEV_API_SOURCE_HASH must be a SHA-256 fingerprint when compiling the API\n' >&2
@@ -69,8 +66,25 @@ case "$command_name" in
           --noCheck --declaration false --declarationMap false
       printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
     fi
+    if [[ -f /run/mushroom-installation/first-run.json ]]; then
+      MUSHROOM_ENVIRONMENT=development node apps/api/prisma/bootstrap-installation.mjs
+      : >/run/mushroom-installation/complete
+      rm -- /run/mushroom-installation/first-run.json
+    fi
+    if [[ ${DEV_RUN_SEED:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api prisma:seed
+    fi
     ;;
   api)
+    if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == r2 ]]; then
+      [[ -r $R2_ACCESS_KEY_ID_FILE && -r $R2_SECRET_ACCESS_KEY_FILE ]] || {
+        printf 'Development R2 credentials are not readable\n' >&2
+        exit 1
+      }
+      R2_ACCESS_KEY_ID=$(<"$R2_ACCESS_KEY_ID_FILE")
+      R2_SECRET_ACCESS_KEY=$(<"$R2_SECRET_ACCESS_KEY_FILE")
+      export R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY
+    fi
     for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER OTP_PEPPER \
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY PAYMENT_CREDENTIAL_DECRYPTION_KEYS \
       SMS_CREDENTIAL_ENCRYPTION_KEY SMS_CREDENTIAL_DECRYPTION_KEYS; do

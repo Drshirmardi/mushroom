@@ -43,6 +43,8 @@ const compose = read('deploy/vps/compose.yaml');
 const releaseScript = read('scripts/release-images.mjs');
 const consentPolicy = JSON.parse(read('deploy/vps/reference-data/rehearsal-consent-policy.json'));
 const devWorkflow = read('.github/workflows/dev-sync.yml');
+const productionWorkflow = read('.github/workflows/production.yml');
+const productionRollback = read('.github/workflows/production-rollback.yml');
 const devDeployScript = read('deploy/vps/deploy-dev.sh');
 const devCompose = read('deploy/vps/compose.dev.yaml');
 const devSyncScript = read('scripts/deploy-dev-vps.mjs');
@@ -50,6 +52,18 @@ const devServiceScript = read('deploy/vps/dev-service.sh');
 const nextDevOriginConfig = read('config/next-dev-origins.ts');
 const nextConfigs = ['web', 'app', 'dashboard'].map((application) =>
   read(`apps/${application}/next.config.ts`));
+
+for (const gate of [
+  "vars.PRODUCTION_CD_ENABLED == 'true'", "vars.PRODUCTION_AUTO_DEPLOY == 'true'",
+  "github.event.workflow_run.conclusion == 'success'", "github.event.workflow_run.head_branch == 'main'",
+  'github.event.workflow_run.head_repository.full_name == github.repository',
+  "if: github.event_name == 'workflow_dispatch'", 'RELEASE_APPROVER',
+  '.name == "deploy-staging" and .conclusion == "success"',
+  'deploy production', 'secrets.PRODUCTION_VPS_SSH_PRIVATE_KEY', 'group: deploy-production-vps',
+]) assert(productionWorkflow.includes(gate), `real production authorization/promotion guard missing: ${gate}`);
+assert(!productionWorkflow.includes('secrets.VPS_SSH_PRIVATE_KEY'), 'real production must not fall back to rehearsal SSH identity');
+assert(productionRollback.includes('group: deploy-production-vps'), 'production deployment and rollback must serialize together');
+assert(productionRollback.includes('Only RELEASE_APPROVER'), 'production rollback must retain its owner gate');
 
 for (const required of [
   "github.event.workflow_run.conclusion == 'success'",

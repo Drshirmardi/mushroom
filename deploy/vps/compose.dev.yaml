@@ -60,7 +60,10 @@ services:
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
-    volumes: *node-volumes
+    volumes:
+      - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
+      - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
+      - "${MUSHROOM_ENV_ROOT:?set the dev root}/bootstrap:/run/mushroom-installation"
     secrets: [database_url]
     command: ["bash", "deploy/vps/dev-service.sh", "bootstrap"]
     profiles: [tools]
@@ -68,12 +71,24 @@ services:
   api:
     <<: *node-service
     command: ["bash", "deploy/vps/dev-service.sh", "api"]
+    volumes:
+      - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
+      - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
+      - "${MUSHROOM_ENV_ROOT:?set the dev root}/secrets:/run/optional-secrets:ro"
     environment:
       <<: *node-environment
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
       JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
       JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
       COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"
+      BILLING_BOOKING_HOLD_MINUTES: "${BILLING_BOOKING_HOLD_MINUTES:-10}"
+      PRODUCT_MEDIA_STORAGE_MODE: "${PRODUCT_MEDIA_STORAGE_MODE:-disabled}"
+      R2_ENDPOINT: "${R2_ENDPOINT:-}"
+      R2_BUCKET: "${R2_BUCKET:-}"
+      R2_REGION: "${R2_REGION:-auto}"
+      R2_ACCESS_KEY_ID_FILE: /run/optional-secrets/r2_access_key_id
+      R2_SECRET_ACCESS_KEY_FILE: /run/optional-secrets/r2_secret_access_key
+      R2_REQUEST_TIMEOUT_MS: "${R2_REQUEST_TIMEOUT_MS:-5000}"
       APP_ORIGINS: "${APP_ORIGINS:?set dev browser origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"

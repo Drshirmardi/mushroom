@@ -47,13 +47,18 @@ DEV_POSTGRES_MEMORY=512m
 DEV_API_CPUS=1.00
 DEV_API_MEMORY=1g
 DEV_WEB_CPUS=0.75
-DEV_WEB_MEMORY=768m
 DEV_APP_CPUS=0.75
-DEV_APP_MEMORY=768m
 DEV_DASHBOARD_CPUS=0.75
-DEV_DASHBOARD_MEMORY=768m
 
 # Secret values are intentionally not placed in runtime.env. Create these files under:
 # /home/deploy/mushroom/dev/secrets/{postgres_password,database_url,jwt_access_secret,
 # refresh_token_pepper,otp_pepper,sms_credential_encryption_key,sms_credential_decryption_keys,
 # payment_credential_encryption_key,payment_credential_decryption_keys}
+
+# Application runtime options (credentials stay in secrets/).
+BILLING_BOOKING_HOLD_MINUTES=10
+PRODUCT_MEDIA_STORAGE_MODE=disabled
+R2_ENDPOINT=
+R2_BUCKET=
+R2_REGION=auto
+R2_REQUEST_TIMEOUT_MS=5000

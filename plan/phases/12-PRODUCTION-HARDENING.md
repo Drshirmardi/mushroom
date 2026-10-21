@@ -7,6 +7,8 @@
 
 ## Taskها
 
+- [x] `F12-T02-I01` — Owner-authorized standalone server installer/manager and real-production CD (2026-10-21). INSTALLATION-01, sole Codex /root; depends on accepted F12-T02 artifact/manifest and migration contracts. Ubuntu 24.04 bootstrap, isolated environment/secrets, DNS/TLS, private-repo GitHub handoff, external production PostgreSQL, environment coverage and focused failure/retry checks. DONE, local software review PASS; evidence in phase-12 log F12-T02-I01. No live deployment or whole-product production acceptance.
+
 Owner checkpoint (2026-10-21): pending initial-entry/Home/dashboard implementation and its shared API/schema contracts committed together on explicit request. Historical uncommitted notes below are superseded by this checkpoint. F12-FE01 remains REWORK/unchecked; recorded focused verification does not imply full production acceptance or live entry-policy activation.
 
 Required initial patient entry (2026-10-21), same F12-FE01 /root/ADR0038: basic-only Persian registration, configured free published quiz, result acknowledgement then Home, gated private APIs/root navigation and dashboard entry-policy selection. Separate from medical consent/intake; started source and completion pinned, existing accounts grandfathered.79 fresh migrations/6 isolated API scenarios/17 units and App/API types PASS; whole dashboard types retain existing unrelated failures. Mobile/desktop synthetic visual flow reviewed; no real policy activation/patient mutation, uncommitted for review. Full task REWORK/unchecked. Evidence Phase12 log.

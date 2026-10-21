@@ -4,6 +4,10 @@ import { environmentValidationSchema } from '../src/config/environment.validatio
 const base = { DATABASE_URL: 'postgresql://user:password@localhost:5432/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43), OTP_PEPPER: 'c'.repeat(43) };
 
 describe('production-hardening environment validation', () => {
+  it('accepts an empty optional example API origin only while Sadad is disabled', () => {
+    expect(environmentValidationSchema.validate({ ...base, PUBLIC_API_URL: '', SADAD_TRANSPORT_MODE: 'disabled' }).error).toBeUndefined();
+    expect(environmentValidationSchema.validate({ ...base, PUBLIC_API_URL: '', SADAD_TRANSPORT_MODE: 'live' }).error).toBeDefined();
+  });
   it('accepts disabled Sadad settings and an explicitly complete live runtime', () => {
     const value = environmentValidationSchema.validate({ ...base, SADAD_TRANSPORT_MODE: 'disabled', SADAD_REQUEST_TIMEOUT_MS: '5000', SADAD_RETURN_URL: 'https://staging.example.test/v1/payments/providers/sadad/callback', SADAD_REDIRECT_PROFILE: 'PDF_PURCHASE', PAYMENT_CREDENTIAL_ENCRYPTION_KEY: Buffer.alloc(32, 8).toString('base64'), PAYMENT_CREDENTIAL_DECRYPTION_KEYS: `v1:${Buffer.alloc(32, 7).toString('base64')}` });
     expect(value.error).toBeUndefined();

@@ -4615,3 +4615,61 @@ Narrow source/contract review confirmed offering creation source must be PUBLISH
 Migration20261021120000 adds enum state, lifecycle constraint and terminal immutable source guard; deletion can change only status/updatedAt and cannot resurrect or physically remove a tombstone. Required-policy SQL guard serialization updated additively. Confirmed exact current lifecycle constraint and two source triggers from read-only local metadata before applying. Sole pending migration applied successfully on configured loopback5432 (77migrations). No assessment/result row was deleted or changed by this continuation. Previous owner-authorized full test-data cleanup is separate and not repeated.
 
 Prisma client and OpenAPI enum/operation/client source generated without application build. Isolated delete regression source rewritten for retained rows/audit/idempotence/auth/hash/clinic, no resurrection, actual completed submission immutable equality, patient result/history/questionnaire readability and new-start denial. Test sources not executed. Source/contract review covered self result/Mezaj selectors, completed replay, questionnaire projection, admin lifecycle and required booking reference. All tests/typecheck/lint/build/browser/Graphify remain deferred; no PASS/commit/DONE. F12-FE01 REWORK/unchecked; owner review and authorized deferred verification next. All unrelated concurrent Home/Store edits preserved.
+
+
+## F12-T02-I01 — Standalone server installation and private-repository CD
+
+Task ID: F12-T02-I01
+Completed at: 2026-10-21 Asia/Tehran
+Agent/Thread: Codex /root
+Batch ID: INSTALLATION-01
+Reviewed by: Codex /root (single writer; no subagents)
+Baseline: e7c6d07; clean worktree before this task. Existing F12-FE01 stays REWORK/unchecked.
+Authority: explicit owner request to implement the reviewed server-side installer, preserve the private repository, manually hand GitHub connection material to the owner, and verify environment coverage. ADR-0039.
+
+Changed files:
+- installation/{install.sh,manager.py,build.py,README.md,.gitignore,test_installation.py,test_postgres_restore.py}
+- .gitattributes (portable LF shell/Python sources)
+- .github/workflows/{installation.yml,production.yml,production-rollback.yml}
+- apps/api/prisma/bootstrap-installation.mjs
+- apps/api/src/config/environment.validation.ts; apps/api/test/environment-validation.spec.ts
+- compose.production.example.yaml
+- deploy/README.md; deploy/vps/{compose.yaml,compose.dev.yaml,deploy-release.sh,deploy-dev.sh,dev-service.sh,env.example,dev-env.example,production-env.example}
+- docs/{ENVIRONMENT.md,PRODUCTION.md}
+- scripts/{deploy-vps.mjs,test-release-pipeline.mjs,test-vps-deploy.sh,test-installation-bootstrap.mjs,test-installation-postgres.mjs,test-installation-restore.mjs}
+- plan/decisions/ADR-0039-standalone-server-installation.md; STATUS; Phase 12 checklist and this evidence.
+
+Migrations: no migration/schema changes. All 79 existing migrations replayed successfully in a new disposable PostgreSQL 16 installer fixture only.
+
+Implementation and main review:
+- Allowlisted, independently transferable tar.gz plus SHA-256; no private application source, real .env, credential, token, tests or generated outputs in the package. Relocation/help execution tested.
+- Ubuntu Server 24.04 amd64 is the supported host, matching current single-architecture GitHub images. Root performs host preparation; non-root deployment users receive separate dev/staging versus production SSH identities. No permanent GitHub/GHCR token is installed. Existing engines, foreign proxies/sites, management SSH ports and unrelated files are preserved; incompatible topology stops with a specific pending action.
+- Interactive domain/IP/SSH/repository/release-policy/SMS/Sadad/backup/first-administrator configuration; isolated public runtime.env, exact proxy gateway, free port/subnet allocation, independent file-backed secrets and atomic state. Missing established secrets are not regenerated. Compose installation previews package removals before preserving the existing engine.
+- DNS-only A/IPv4 profile reports required external records and waits for correct DNS; Caddy proposed config is validated before live writes. HTTPS and external PostgreSQL version/connectivity can be checked by doctor; verify checks deployed public endpoints. Existing custom Caddy sites require an explicit import.
+- Production Compose now covers required OTP/SMS/payment keys, log/session/billing options and public API URL; production PostgreSQL remains external. Product-media production policy remains disabled. Dev optional R2 credentials are file-backed and runtime/key changes restart the API via existing sync logic.
+- First administrator uses the application's existing password policy and Argon2id parameters, a transactional advisory lock, migrated ADMIN reference data and one audit event. The default migration clinic may be named only before any users exist. Existing-user access grants and password resets are refused; concurrent/repeated initialization is idempotent. First-run plaintext is removed after success. No demo/medical/legal content is seeded in production.
+- Existing immutable release pipeline retained. Production uses PRODUCTION_VPS_* credentials and the exact successful staging manifest. Default is named-owner manual promotion; PRODUCTION_AUTO_DEPLOY explicitly permits same-repository main/success/staging-gated automatic updates. Production deploy/rollback share concurrency, use pinned SSH and temporary registry credentials. Consent validates before migrations; failed migration never switches applications; repeated deployment preserves the previous rollback target.
+- Daily age-encrypted logical backups, operator-selected retention and separate restore-test-only recovery are implemented. No plaintext dump file; failed pipelines never record success. Original backup keys are preserved. Provider PITR/off-site transfer, actual legal/provider acceptance and full production sign-off remain separate.
+
+Tests run and results:
+- Ubuntu 24.04 Docker: installer suite at that checkpoint, 25/25 PASS, including actual Caddy validation, actual age encryption/decryption/tamper detection, permissions, package relocation, retries, state preservation, DNS waits, network allocation, UFW management-port ordering, subprocess redaction and failed pipeline behavior.
+- Final POSIX suite: python3 -B -m unittest discover -s installation -p "test_*.py" -q -> 29 cases, PASS, 3 expected optional skips (real age/Caddy covered above; isolated real-DB restore run separately). Includes subsequently added port-allocation and existing-engine/Compose compatibility guards.
+- node scripts/test-installation-postgres.mjs -> PASS: 79 fresh migrations; real first-admin creation, concurrent replay, password preservation, pre-existing-user/different-admin denial and one audit event. Fixture container/volumes cleaned; existing local databases untouched.
+- node scripts/test-installation-restore.mjs -> PASS in separate Ubuntu/PostgreSQL Docker network: real pg_dump -> age -> pg_restore, two rows including Persian text, source unchanged, occupied target rejected, damaged archive rejected with zero restored tables. Dedicated server, volumes and network cleaned.
+- node scripts/test-release-pipeline.mjs -> PASS: existing dev regressions, immutable manifest, new production credential/authorization gates and real Compose rendering for existing profiles.
+- bash scripts/test-vps-deploy.sh -> PASS: staging failure/automatic application rollback, production-sim rollback, real-production no-local-Postgres initialization, repeated release preserving previous state, migration failure retaining current state, explicit production application rollback.
+- Production Compose rendering with generated synthetic settings -> PASS: exactly four services, eight file-backed API secrets, loopback bindings and explicit gateway network; no local PostgreSQL service.
+- API environment-validation.spec.ts -> 4/4 PASS. Blank optional PUBLIC_API_URL is accepted only while Sadad is disabled; live validation remains required.
+- Read-only validation of actual apps/api/.env against the actual source Joi schema -> VALID, no errors, no values logged or changed. Some optional/defaulted API keys and PUBLIC_* keys in local frontend .env files are absent; server generation does not depend on them.
+- Environment audit -> PASS, all 34 API schema keys covered by examples/Compose plus three frontend public templates.
+- Actionlint for installation/production/production-rollback workflows -> PASS. Whole-repository Actionlint also reports two pre-existing SC2155 warnings in unrelated ci.yml lines 58/69; no unrelated CI script was changed.
+- Shell/Node syntax and git diff --check -> PASS. Graphify AST update -> PASS on prior completed runs; known missing SQL/HCL/PDF extraction extras and existing chat extractor warning are non-blocking and unrelated to changed code.
+
+Known limitations:
+- No actual VPS, DNS, SSH/GitHub settings, provider credential, real medical/legal data, payment or live deployment was changed. Real clean-host systemd/Docker installation, ACME issuance, GitHub runner connectivity and two end-to-end releases still require the owner-selected server and remain F12-T13 operational acceptance.
+- Current profile is Ubuntu 24.04 amd64, direct IPv4 DNS and external production PostgreSQL 16+. CDN/DNS-provider APIs, ARM/multi-architecture publication, custom CA/provider topology, managed WAL/PITR and off-site backup/alert integrations are not silently simulated.
+- Existing F12-FE01/client acceptance, provider backup/rotation gates, production R2 restriction and production sign-off remain open. No whole-product production-readiness claim.
+- Bundle is generated locally under ignored installation/dist; committed source reproduces it. GitHub workflows must first exist on main; this task creates a local commit only, no push/merge.
+
+Result: software implementation/main review PASS; F12-T02-I01 DONE. Live deployment acceptance remains a separate explicitly authorized operational action.
+Next eligible action: owner transfers the matching installer archive/checksum to an Ubuntu 24.04 amd64 server after merging the workflow changes, runs preparation/doctor, adds the generated GitHub Secrets/Variables and triggers the first dev/staging release. No next roadmap batch started.

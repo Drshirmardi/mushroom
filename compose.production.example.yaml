@@ -1,77 +1,115 @@
-name: sabz-zendegi-production-example
+# External PostgreSQL only. Use immutable application digests.
+name: ${COMPOSE_PROJECT_NAME:?set an isolated Compose project name}
 
 services:
   api:
-    image: "${API_IMAGE:?set an immutable API image digest}"
+    image: "${API_IMAGE:?set an immutable API digest}"
     environment:
-      NODE_ENV: "production"
+      NODE_ENV: production
       PORT: "3003"
       HOSTNAME: "0.0.0.0"
-      DATABASE_URL_FILE: "/run/secrets/database_url"
-      JWT_ACCESS_SECRET_FILE: "/run/secrets/jwt_access_secret"
-      REFRESH_TOKEN_PEPPER_FILE: "/run/secrets/refresh_token_pepper"
-      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_FILE: "/run/secrets/payment_credential_encryption_key"
-      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:?non-secret active credential-key version}"
-      PAYMENT_CREDENTIAL_DECRYPTION_KEYS_FILE: "/run/secrets/payment_credential_decryption_keys"
-      APP_ORIGINS: "${APP_ORIGINS:?public origins only}"
-      TRUSTED_PROXIES: "${TRUSTED_PROXIES:?explicit reverse-proxy IP/CIDR}"
-    secrets: [database_url, jwt_access_secret, refresh_token_pepper, payment_credential_encryption_key, payment_credential_decryption_keys]
-    ports: ["${API_PORT:-3003}:3003"]
+      DATABASE_URL_FILE: /run/secrets/database_url
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
+      JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
+      COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"
+      BILLING_BOOKING_HOLD_MINUTES: "${BILLING_BOOKING_HOLD_MINUTES:-10}"
+      PRODUCT_MEDIA_STORAGE_MODE: "${PRODUCT_MEDIA_STORAGE_MODE:-disabled}"
+      R2_ENDPOINT: "${R2_ENDPOINT:-}"
+      R2_BUCKET: "${R2_BUCKET:-}"
+      R2_REGION: "${R2_REGION:-auto}"
+      R2_ACCESS_KEY_ID: ""
+      R2_SECRET_ACCESS_KEY: ""
+      R2_REQUEST_TIMEOUT_MS: "${R2_REQUEST_TIMEOUT_MS:-5000}"
+      JWT_ACCESS_SECRET_FILE: /run/secrets/jwt_access_secret
+      REFRESH_TOKEN_PEPPER_FILE: /run/secrets/refresh_token_pepper
+      OTP_PEPPER_FILE: /run/secrets/otp_pepper
+      SMS_CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/sms_credential_encryption_key
+      SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION:?set the SMS key version}"
+      SMS_CREDENTIAL_DECRYPTION_KEYS_FILE: /run/secrets/sms_credential_decryption_keys
+      SMS_TRANSPORT_MODE: "${SMS_TRANSPORT_MODE:-disabled}"
+      SMS_REQUEST_TIMEOUT_MS: "${SMS_REQUEST_TIMEOUT_MS:-5000}"
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/payment_credential_encryption_key
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:?set the key version}"
+      PAYMENT_CREDENTIAL_DECRYPTION_KEYS_FILE: /run/secrets/payment_credential_decryption_keys
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      APP_ORIGINS: "${APP_ORIGINS:?set public origins}"
+      TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
+      SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
+      SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
+      SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
+      SADAD_RESULT_URL: "${SADAD_RESULT_URL:-}"
+      SADAD_REDIRECT_PROFILE: "${SADAD_REDIRECT_PROFILE:-}"
+    secrets: [database_url, jwt_access_secret, refresh_token_pepper, otp_pepper, sms_credential_encryption_key, sms_credential_decryption_keys, payment_credential_encryption_key, payment_credential_decryption_keys]
+    ports: ["${API_PORT:?set an isolated API binding}:3003"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3003/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 12
 
   web:
-    image: "${WEB_IMAGE:?set an immutable web image digest}"
+    image: "${WEB_IMAGE:?set an immutable web digest}"
     environment:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
-      PUBLIC_API_URL: "${PUBLIC_API_URL:?HTTPS public API URL}"
-      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?HTTPS app URL}"
-      PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?HTTPS dashboard URL}"
-    ports: ["${WEB_PORT:-3000}:3000"]
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"
+      PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dashboard URL}"
+    ports: ["${WEB_PORT:?set an isolated web binding}:3000"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 12
+
   app:
-    image: "${APP_IMAGE:?set an immutable app image digest}"
+    image: "${APP_IMAGE:?set an immutable app digest}"
     environment:
       PORT: "3001"
       HOSTNAME: "0.0.0.0"
-      PUBLIC_API_URL: "${PUBLIC_API_URL:?HTTPS public API URL}"
-      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?HTTPS web URL}"
-    ports: ["${APP_PORT:-3001}:3001"]
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public web URL}"
+    ports: ["${APP_PORT:?set an isolated app binding}:3001"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 12
+
   dashboard:
-    image: "${DASHBOARD_IMAGE:?set an immutable dashboard image digest}"
+    image: "${DASHBOARD_IMAGE:?set an immutable dashboard digest}"
     environment:
       PORT: "3002"
       HOSTNAME: "0.0.0.0"
-      PUBLIC_API_URL: "${PUBLIC_API_URL:?HTTPS public API URL}"
-      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?HTTPS web URL}"
-      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?HTTPS app URL}"
-    ports: ["${DASHBOARD_PORT:-3002}:3002"]
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
+      PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"
+    ports: ["${DASHBOARD_PORT:?set an isolated dashboard binding}:3002"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 12
 
 secrets:
-  database_url: { file: ./secrets/database_url }
-  jwt_access_secret: { file: ./secrets/jwt_access_secret }
-  refresh_token_pepper: { file: ./secrets/refresh_token_pepper }
-  payment_credential_encryption_key: { file: ./secrets/payment_credential_encryption_key }
-  payment_credential_decryption_keys: { file: ./secrets/payment_credential_decryption_keys }
+  database_url:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/database_url"
+  jwt_access_secret:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/jwt_access_secret"
+  refresh_token_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/refresh_token_pepper"
+  otp_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/otp_pepper"
+  sms_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/sms_credential_encryption_key"
+  sms_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/sms_credential_decryption_keys"
+  payment_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/payment_credential_encryption_key"
+  payment_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/payment_credential_decryption_keys"
