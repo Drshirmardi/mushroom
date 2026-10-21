@@ -133,10 +133,22 @@ def validate_policy(path, environment):
     return value
 
 
+def terminal_input(prompt, secret=False):
+    while True:
+        try:
+            answer = (getpass.getpass if secret else input)(prompt)
+            # Python's surrogateescape can preserve invalid terminal bytes instead of raising.
+            answer.encode('utf-8', errors='strict')
+            return answer
+        except UnicodeError:
+            print('Input could not be read as UTF-8. Set your terminal character encoding to UTF-8 '
+                  'and type this answer again; no value was accepted.')
+
+
 def ask(label, default='', validator=None, secret=False):
     while True:
         suffix = f' [{default}]' if default and not secret else ''
-        answer = (getpass.getpass if secret else input)(f'{label}{suffix}: ').strip() or default
+        answer = terminal_input(f'{label}{suffix}: ', secret).strip() or default
         try:
             return validator(answer) if validator else answer
         except (InstallationError, ValueError) as error:
@@ -151,9 +163,9 @@ def choice(value, options):
 def admin_details():
     phone = ask('First administrator phone (+989...)', validator=lambda v: v if re.fullmatch(r'\+989[0-9]{9}', v) else choice(v, []))
     while True:
-        password = unicodedata.normalize('NFC', getpass.getpass('First administrator password (15..128 characters): '))
+        password = unicodedata.normalize('NFC', terminal_input('First administrator password (15..128 characters): ', secret=True))
         if 15 <= len(password) <= 128 and password.strip() and not any(unicodedata.category(c) == 'Cc' for c in password):
-            if password == getpass.getpass('Repeat password: '):
+            if password == unicodedata.normalize('NFC', terminal_input('Repeat password: ', secret=True)):
                 break
         print('Passwords must match and meet the password policy.')
     clinic = ask('Clinic name', 'کلینیک سبز زندگی', lambda v: v if 0 < len(v) <= 160 else choice(v, []))
@@ -700,7 +712,7 @@ def persist_bundle():
         for name in ('installation/install.sh', 'installation/manager.py', 'installation/README.md',
                      'deploy/vps/dev-env.example', 'deploy/vps/env.example', 'deploy/vps/production-env.example'):
             atomic_write(destination / name, (BUNDLE / name).read_text(encoding='utf-8'), 0o755 if name.endswith('.sh') else 0o644)
-    atomic_write('/usr/local/sbin/mushroom', '#!/usr/bin/env bash\nset -Eeuo pipefail\nexec python3 /opt/mushroom-installer/installation/manager.py "$@"\n', 0o755)
+    atomic_write('/usr/local/sbin/mushroom', '#!/usr/bin/env bash\nset -Eeuo pipefail\nexec python3 -X utf8 /opt/mushroom-installer/installation/manager.py "$@"\n', 0o755)
 
 
 def configure_backups(config, environment):
@@ -875,11 +887,25 @@ def main():
             run(command)
 
 
+def failure_message(error):
+    if isinstance(error, InstallationError):
+        return str(error)
+    if isinstance(error, KeyboardInterrupt):
+        return 'Installation interrupted. Rerun install to resume saved steps.'
+    if isinstance(error, EOFError):
+        return 'Terminal input ended. Reconnect your SSH terminal and rerun install interactively.'
+    trace = error.__traceback__
+    while trace and trace.tb_next:
+        trace = trace.tb_next
+    location = f'{Path(trace.tb_frame.f_code.co_filename).name}:{trace.tb_lineno}' if trace else 'unknown location'
+    number = f', errno={error.errno}' if isinstance(error, OSError) and error.errno is not None else ''
+    # Exception messages and locals may contain passwords, URLs or raw undecodable secret bytes.
+    return f'Operation failed ({type(error).__name__}{number}, {location}). Rerun install to resume saved steps; report this error code/location if it repeats.'
+
+
 if __name__ == '__main__':
     try:
         main()
-    except (InstallationError, OSError, ValueError, KeyboardInterrupt):
-        # Never print database/SDK exceptions: they can contain credentials or SQL parameter values.
-        error = sys.exc_info()[1]
-        print(str(error) if isinstance(error, InstallationError) else 'Operation interrupted or failed; existing configuration retained. Check input/file access and rerun.', file=sys.stderr)
+    except (InstallationError, OSError, ValueError, EOFError, KeyboardInterrupt) as error:
+        print(failure_message(error), file=sys.stderr)
         sys.exit(1)

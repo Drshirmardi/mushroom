@@ -4673,3 +4673,35 @@ Known limitations:
 
 Result: software implementation/main review PASS; F12-T02-I01 DONE. Live deployment acceptance remains a separate explicitly authorized operational action.
 Next eligible action: owner transfers the matching installer archive/checksum to an Ubuntu 24.04 amd64 server after merging the workflow changes, runs preparation/doctor, adds the generated GitHub Secrets/Variables and triggers the first dev/staging release. No next roadmap batch started.
+
+## F12-T02-I02 — Terminal encoding recovery
+
+Task ID: F12-T02-I02
+Completed at: 2026-10-21
+Agent/Thread: Codex /root
+Batch ID: INSTALLATION-02
+Depends on: F12-T02-I01 DONE
+Reviewed by: Codex /root; scoped source/diff and acceptance review PASS
+
+Problem: owner VPS traceback identified UnicodeDecodeError in new_configuration → ask → input. Reading input happened outside the validation retry and the CLI hid its exception type/location. The prior earlier failure immediately after the backup answer did not include a traceback; its exact original location is not established by this later trace.
+
+Changed files:
+- installation/manager.py: ordinary/hidden input share strict UTF-8 representability validation and retry Unicode errors without displaying raw bytes. Both password entries retain whitespace and use matching NFC comparison. EOF/interrupt terminate cleanly; other handled errors report only class, source basename/line and OS errno, never exception values/locals.
+- installation/install.sh and persisted manager launcher: Python UTF-8 mode independent of locale.
+- installation/test_installation.py: invalid-byte exceptions/surrogateescape recovery, real Linux pseudo-terminal visible and hidden entry (including no password echo), exact Persian value/hash, password preservation, full dev/live/Sadad/no-backup questionnaire recovery, EOF/interrupt and redacted failure diagnostics.
+- installation/README.md: terminal encoding and replacement archive instructions, preserve existing server state/secrets.
+- plan/STATUS.md, phase checklist and this evidence: claim/review/handoff.
+Migrations: none. App/config/secrets/provider contracts: unchanged.
+
+Verification:
+- Baseline e315392 new_configuration with deterministic invalid UTF-8 input: reproduces uncaught UnicodeDecodeError before fix.
+- WSL Ubuntu24.04.4: python3 -B -m unittest discover -s installation -p test_installation.py -q →34 cases,32 PASS/2 tool-availability skips (age/caddy).
+- Disposable Docker ubuntu:24.04 with actual python3/age/caddy, read-only repository mount: same suite →34/34 PASS, no skips. Container automatically removed; no original services changed.
+- Actual pseudo-terminal child processes run as their own session/controlling tty; both input and getpass receive invalid bytes, retry, and preserve valid Persian text. This is terminal transport evidence, not a real Termius/VPS acceptance claim.
+- bash -n installation/install.sh →PASS.
+- python3 -X utf8 -B installation/manager.py audit-env →PASS, all34 API keys plus3 frontend templates covered.
+- python3 -B installation/build.py and sha256sum --check →PASS; regenerated ignored installation/dist/mushroom-installer.tar.gz (25,668 bytes), SHA256 d6b0d32e0c7b52296c1bc31aa859219bf34c6395e69a7b5ebaf3b51242f9716d. Allowlist/no-secrets archive regression PASS.
+- graphify update . →exit0; pre-existing missing SQL/HCL extras and chat extractor partial-parse warning unchanged/nonblocking. Outputs remain ignored.
+- git diff --check →PASS (line-ending normalization notice only).
+
+Result: DONE; review gate PASS, claim released. No live server edit, push, merge or real credential operation. User must transfer both fresh archive and checksum, verify/extract, and rerun the ordinary launcher. An incorrectly encoded terminal must still be switched to UTF-8; the installer does not guess encodings or mutate corrupted credentials. Installation success on the owner VPS remains unverified. F12-FE01 and broader production gates unchanged. Next eligible action: owner retries this bundle on the selected VPS; no next batch started.

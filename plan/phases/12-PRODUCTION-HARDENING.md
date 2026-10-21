@@ -7,6 +7,8 @@
 
 ## Taskها
 
+- [x] `F12-T02-I02` — Owner-reported installer terminal encoding recovery (2026-10-21), INSTALLATION-02, sole Codex /root. Depends on F12-T02-I01 DONE. Invalid terminal bytes retry visible/hidden prompts without accepting replacement characters; UTF-8 launchers and redacted actionable failures, updated standalone archive.34 tests PASS on disposable Ubuntu24.04, review PASS. Evidence: phase-12 log F12-T02-I02. Actual owner VPS retry remains external.
+
 - [x] `F12-T02-I01` — Owner-authorized standalone server installer/manager and real-production CD (2026-10-21). INSTALLATION-01, sole Codex /root; depends on accepted F12-T02 artifact/manifest and migration contracts. Ubuntu 24.04 bootstrap, isolated environment/secrets, DNS/TLS, private-repo GitHub handoff, external production PostgreSQL, environment coverage and focused failure/retry checks. DONE, local software review PASS; evidence in phase-12 log F12-T02-I01. No live deployment or whole-product production acceptance.
 
 Owner checkpoint (2026-10-21): pending initial-entry/Home/dashboard implementation and its shared API/schema contracts committed together on explicit request. Historical uncommitted notes below are superseded by this checkpoint. F12-FE01 remains REWORK/unchecked; recorded focused verification does not imply full production acceptance or live entry-policy activation.

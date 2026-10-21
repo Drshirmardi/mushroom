@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -35,6 +36,95 @@ class InstallationTests(unittest.TestCase):
 
     def write(self, environment, **kwargs):
         return manager.write_environment(self.config, environment, base=self.root / environment, **kwargs)
+
+    def test_bad_terminal_bytes_retry_without_accepting_or_printing_them(self):
+        bad_bytes = UnicodeDecodeError('utf-8', b'private\xffvalue', 7, 8, 'invalid start byte')
+        for secret, target in [(False, 'builtins.input'), (True, 'manager.getpass.getpass')]:
+            with self.subTest(secret=secret), patch(target, side_effect=[bad_bytes, '\udcff', 'live']) as reader, redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(manager.ask('Runtime', 'disabled', lambda v: manager.choice(v, ['disabled', 'live']), secret), 'live')
+                self.assertEqual(reader.call_count, 3)
+                self.assertEqual(output.getvalue().count('no value was accepted'), 2)
+                self.assertNotIn('private', output.getvalue())
+
+    def test_password_input_recovery_preserves_spaces_and_normalizes_confirmation(self):
+        password = '  رمز مدیر ' + 'e\u0301' + ' طولانی  '
+        with patch('manager.ask', side_effect=['+989100000001', 'کلینیک']), patch('manager.getpass.getpass', side_effect=[
+            UnicodeDecodeError('utf-8', b'\xff', 0, 1, 'invalid start byte'), password, password.replace('e\u0301', '\u00e9'),
+        ]), redirect_stdout(io.StringIO()) as output:
+            details = manager.admin_details()
+        self.assertEqual(details['password'], password.replace('e\u0301', '\u00e9'))
+        self.assertNotIn(password, output.getvalue())
+
+    @unittest.skipUnless(os.name == 'posix', 'Requires Linux pseudo-terminal')
+    def test_actual_terminal_recovers_invalid_bytes_for_visible_and_hidden_answers(self):
+        import select
+        for secret in (False, True):
+            with self.subTest(secret=secret):
+                master, slave = os.openpty()
+                answer = 'پاسخ فارسی طولانی با فاصله'
+                command = [sys.executable, '-X', 'utf8', '-c',
+                           'import sys, hashlib, fcntl, termios; fcntl.ioctl(0, termios.TIOCSCTTY, 0); '
+                           f'sys.path.insert(0, {str(Path(manager.__file__).parent)!r}); '
+                           f'import manager; value = manager.terminal_input("value: ", secret={secret}); '
+                           'print("HASH=" + hashlib.sha256(value.encode()).hexdigest())']
+                child = subprocess.Popen(command, stdin=slave, stdout=slave, stderr=slave, start_new_session=True)
+                os.close(slave)
+                output = b''
+                def receive(marker):
+                    nonlocal output
+                    deadline = time.monotonic() + 10
+                    while marker not in output:
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0 or not select.select([master], [], [], remaining)[0]:
+                            self.fail('Terminal did not produce expected prompt')
+                        output += os.read(master, 65536)
+                try:
+                    receive(b'value: ')
+                    os.write(master, b'\xff\n')
+                    receive(b'no value was accepted.')
+                    # Wait for the retry prompt before sending a secret so echo is already disabled.
+                    receive(b'no value was accepted.\r\nvalue: ')
+                    os.write(master, answer.encode('utf-8') + b'\n')
+                    receive(b'HASH=' + hashlib.sha256(answer.encode()).hexdigest().encode())
+                    self.assertEqual(child.wait(timeout=10), 0)
+                    if secret:
+                        self.assertNotIn(answer.encode(), output)
+                finally:
+                    if child.poll() is None:
+                        child.kill()
+                    child.wait()
+                    os.close(master)
+
+    def test_failure_messages_identify_location_without_exception_values(self):
+        for error in [ValueError('private-token'), PermissionError(13, 'private-token', '/private/password'),
+                      UnicodeDecodeError('utf-8', b'private\xfftoken', 7, 8, 'invalid start byte')]:
+            try:
+                raise error
+            except Exception as raised:
+                message = manager.failure_message(raised)
+            self.assertIn(type(error).__name__, message)
+            self.assertIn('test_installation.py:', message)
+            self.assertNotIn('private', message)
+        self.assertIn('errno=13', manager.failure_message(PermissionError(13, 'private-token')))
+        self.assertIn('interactively', manager.failure_message(EOFError()))
+        self.assertIn('interrupted', manager.failure_message(KeyboardInterrupt()))
+
+    def test_terminal_eof_and_interrupt_do_not_loop(self):
+        for error in (EOFError(), KeyboardInterrupt()):
+            with patch('builtins.input', side_effect=error) as reader:
+                with self.assertRaises(type(error)):
+                    manager.ask('Runtime')
+                self.assertEqual(reader.call_count, 1)
+
+    def test_dev_configuration_recovers_encoding_error_and_accepts_no_backup(self):
+        answers = ['dev', UnicodeDecodeError('utf-8', b'\xff', 0, 1, 'invalid start byte'),
+                   'example.test', '203.0.113.2', '', '', '', 'owner', 'ops@example.test',
+                   '', '', '', '', 'live', 'live', 'PHP_VPG_PURCHASE', 'no']
+        with patch('builtins.input', side_effect=answers), redirect_stdout(io.StringIO()):
+            config = manager.new_configuration()
+        self.assertEqual(list(config['environments']), ['dev'])
+        self.assertFalse(config['environments']['dev']['backupEnabled'])
+        self.assertEqual(config['environments']['dev']['runtime']['SADAD_REDIRECT_PROFILE'], 'PHP_VPG_PURCHASE')
 
     def test_first_run_generates_all_independent_secrets_and_no_public_credentials(self):
         root = self.write('dev', first_run={'phone': '+989100000001', 'password': 'not-an-example-password'})

@@ -17,4 +17,4 @@ if ! command -v python3 >/dev/null; then
   apt-get update
   apt-get install -y --no-install-recommends python3
 fi
-exec python3 "$(dirname -- "${BASH_SOURCE[0]}")/manager.py" "${@:-install}"
+exec python3 -X utf8 "$(dirname -- "${BASH_SOURCE[0]}")/manager.py" "${@:-install}"
