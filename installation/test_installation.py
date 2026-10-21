@@ -126,6 +126,37 @@ class InstallationTests(unittest.TestCase):
         self.assertFalse(config['environments']['dev']['backupEnabled'])
         self.assertEqual(config['environments']['dev']['runtime']['SADAD_REDIRECT_PROFILE'], 'PHP_VPG_PURCHASE')
 
+    def test_memory_preflight_accepts_nominal_vps_ram_and_retains_lower_boundary(self):
+        class PackageStepReached(Exception):
+            pass
+        for environments, nominal in [(['dev'], 4), (['staging', 'production'], 2)]:
+            cutoff = nominal * 1024 * 1024 * 9 // 10
+            for visible, accepted in [(int(nominal * .95 * 1024**2), True),
+                                      (nominal * 1_000_000_000 // 1024, True),
+                                      (cutoff, True), (cutoff - 1, False),
+                                      (int(nominal * .5 * 1024**2), False)]:
+                with self.subTest(environments=environments, visible=visible):
+                    config = {'steps': {}, 'environments': dict.fromkeys(environments, {})}
+                    with patch('manager.run', return_value=''), patch.object(Path, 'read_text', return_value=f'MemTotal: {visible} kB\n'), \
+                            patch('manager.shutil.disk_usage') as disk, \
+                            patch('manager.install_packages', side_effect=PackageStepReached) as packages, redirect_stdout(io.StringIO()):
+                        disk.return_value.free = 20 * 1024**3
+                        with self.assertRaises(PackageStepReached if accepted else manager.InstallationError) as raised:
+                            manager.install(config)
+                        self.assertEqual(packages.called, accepted)
+                        if not accepted:
+                            self.assertIn(f'{nominal} GiB-class', str(raised.exception))
+                            self.assertIn('detected:', str(raised.exception))
+                        self.assertEqual(config['steps'], {})
+
+    def test_memory_allowance_does_not_bypass_free_disk_guard(self):
+        with patch('manager.run', return_value=''), patch.object(Path, 'read_text', return_value='MemTotal: 3984588 kB\n'), \
+                patch('manager.shutil.disk_usage') as disk, patch('manager.install_packages') as packages:
+            disk.return_value.free = 9 * 1024**3
+            with self.assertRaisesRegex(manager.InstallationError, '10 GiB free disk'):
+                manager.install({'steps': {}, 'environments': {'dev': {}}})
+            packages.assert_not_called()
+
     def test_first_run_generates_all_independent_secrets_and_no_public_credentials(self):
         root = self.write('dev', first_run={'phone': '+989100000001', 'password': 'not-an-example-password'})
         values = manager.load_env(root / 'runtime.env')

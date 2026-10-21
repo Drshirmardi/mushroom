@@ -522,7 +522,11 @@ def install(config):
                 require('"caddy"' in line, 'Ports 80/443 are used by another service. Existing service preserved; review the proxy before installing.')
         needed_gib = 4 if 'dev' in config['environments'] else 2
         memory_kib = int(re.search(r'MemTotal:\s+(\d+)', Path('/proc/meminfo').read_text()).group(1))
-        require(memory_kib >= needed_gib * 1024 * 1024, f'At least {needed_gib} GiB RAM is required for this profile.')
+        # Nominal VPS RAM can exceed MemTotal due to unit conversion and reserved memory.
+        minimum_kib = needed_gib * 1024 * 1024 * 9 // 10
+        require(memory_kib >= minimum_kib,
+                f'This profile requires a {needed_gib} GiB-class server '
+                f'(minimum visible RAM: {minimum_kib / 1024**2:.2f} GiB; detected: {memory_kib / 1024**2:.2f} GiB).')
         require(shutil.disk_usage('/').free >= 10 * 1024**3, 'At least 10 GiB free disk is required.')
         print('Installing host prerequisites...')
         install_packages()

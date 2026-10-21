@@ -4705,3 +4705,30 @@ Verification:
 - git diff --check →PASS (line-ending normalization notice only).
 
 Result: DONE; review gate PASS, claim released. No live server edit, push, merge or real credential operation. User must transfer both fresh archive and checksum, verify/extract, and rerun the ordinary launcher. An incorrectly encoded terminal must still be switched to UTF-8; the installer does not guess encodings or mutate corrupted credentials. Installation success on the owner VPS remains unverified. F12-FE01 and broader production gates unchanged. Next eligible action: owner retries this bundle on the selected VPS; no next batch started.
+
+## F12-T02-I03 — Nominal VPS memory preflight
+
+Task ID: F12-T02-I03
+Completed at: 2026-10-22
+Agent/Thread: Codex /root
+Batch ID: INSTALLATION-03
+Depends on: F12-T02-I01/I02 DONE
+Reviewed by: Codex /root; scoped source/diff/acceptance review PASS
+
+Owner evidence: nproc=2, free reports3.8GiB total/3.2GiB available/no swap. Existing guard incorrectly requires Linux MemTotal >= exactly4GiB in a dev profile. No CPU-count guard caused this rejection.
+
+Changed files:
+- installation/manager.py: treat4GiB(dev)/2GiB(without dev) as nominal classes, allowing10% for visible-memory differences. Report nominal requirement, minimum visible RAM and detected total on failure; keep disk/pre-existing-service checks and saved-state behavior intact. Swap is not counted and no resources are provisioned by this fix.
+- installation/test_installation.py: preflight tests reach a sentinel package step without installing anything; accepted95%-visible/decimal-GB hosts/exact90% boundary and rejected one-KiB-below/half-size hosts for both profiles (10 subcases). Separate3.8GiB memory/9GiB-free disk test proves disk guard still blocks before package changes.
+- installation/README.md: actual memory-class threshold, MemTotal/swap distinction and capacity limitation.
+- coordinator STATUS/checklist/this log: claim, evidence and handoff.
+Migrations: none. Runtime resource settings, actual server/secrets and application source: unchanged.
+
+Verification:
+- Baseline3b8a4e8 with MemTotal=3984588KiB and dev profile → reproduced incorrect4GiB rejection.
+- Ubuntu24.04.4 WSL: python3 -B -m unittest discover -s installation -p test_installation.py -q →36 cases,34 PASS,2 skips for unavailable age/caddy; those unchanged tool integrations passed on actual disposable Ubuntu during I02. No redundant database/provider tests run for this preflight-only change.
+- Build and SHA256 verification →PASS; ignored archive installation/dist/mushroom-installer.tar.gz:26,062 bytes; SHA256 e734d20bf04ac2c9d0469adf854b14a7fc94df0663cac862b1912965165ce3e2. Allowlist/no-secrets package regression included in suite.
+- git diff --check →PASS (line-ending normalization notice only).
+- Graphify AST update run after code change; existing optional-extractor limitations remain unrelated.
+
+Result: software review gate PASS, DONE/claim released. User must replace the two archive/checksum files in /root, verify/extract and resume the normal launcher; do not delete /etc/mushroom or existing secrets. No remote server access, push/merge, swap creation, resource tuning or production sign-off. Passing this guard does not prove all environments/builds fit concurrently or establish sustained-load capacity. Next eligible action: owner resumes installation on the chosen VPS; no next batch started.

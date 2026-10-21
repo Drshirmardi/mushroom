@@ -7,6 +7,8 @@
 
 ## Taskها
 
+- [x] `F12-T02-I03` — Nominal VPS memory preflight correction (2026-10-22), INSTALLATION-03, sole Codex /root. Depends on I01/I02 DONE. Bounded10% MemTotal allowance for nominal4/2GiB hosts;3.8GiB dev accepted,2GiB dev refused,10GiB free-disk check retained.36 cases:34 PASS/2 existing tool skips on Ubuntu24.04 WSL, review PASS; fresh archive/checksum. Evidence: phase-12 log F12-T02-I03. Actual VPS deployment/performance remains external.
+
 - [x] `F12-T02-I02` — Owner-reported installer terminal encoding recovery (2026-10-21), INSTALLATION-02, sole Codex /root. Depends on F12-T02-I01 DONE. Invalid terminal bytes retry visible/hidden prompts without accepting replacement characters; UTF-8 launchers and redacted actionable failures, updated standalone archive.34 tests PASS on disposable Ubuntu24.04, review PASS. Evidence: phase-12 log F12-T02-I02. Actual owner VPS retry remains external.
 
 - [x] `F12-T02-I01` — Owner-authorized standalone server installer/manager and real-production CD (2026-10-21). INSTALLATION-01, sole Codex /root; depends on accepted F12-T02 artifact/manifest and migration contracts. Ubuntu 24.04 bootstrap, isolated environment/secrets, DNS/TLS, private-repo GitHub handoff, external production PostgreSQL, environment coverage and focused failure/retry checks. DONE, local software review PASS; evidence in phase-12 log F12-T02-I01. No live deployment or whole-product production acceptance.
