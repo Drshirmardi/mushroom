@@ -593,8 +593,9 @@
   .store-product__body { padding: 10px; gap: 8px; }
   .store-catalog .store-product-rail { margin-inline: -12px; padding-inline: 12px; }
 }
+.patient-app-shell { --patient-frame-max: 720px; }
+.patient-app-shell .patient-app-frame { max-width: var(--patient-frame-max); }
 @media (min-width: 768px) {
-  .patient-store-shell .patient-app-frame { max-width: 1120px; }
   .store-catalog { padding: 24px 32px 32px; }
   .store-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
   .store-product-rail { grid-auto-columns: 188px; gap: 4px; }
@@ -1169,7 +1170,7 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
   .home-content-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1024px) {
-  .patient-home-shell .patient-app-frame { max-width: 1120px; }
+  .patient-home-shell, .patient-store-shell { --patient-frame-max: 1120px; }
   .home-page { padding: 28px 40px 40px; }
   .home-page .home-next { padding: 16px 34px 20px; }
   .home-next-stage { min-height: 340px; gap: 0 40px; }
@@ -1309,13 +1310,7 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
 .store-hero__controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
 .store-hero__controls button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border-radius: 12px; color: var(--patient-muted); }
 .store-hero__controls button[aria-current="true"] { color: var(--patient-action); background: var(--patient-soft); }
-@media (min-width: 768px) { .patient-store-shell :is(.store-cart-bar, .store-purchase-bar) { max-width: 1120px; } }
-@media (min-width: 900px) {
-  .store-detail--panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 28px; align-items: start; padding-bottom: 24px; }
-  .store-detail--panel > .store-gallery, .store-detail--panel > .store-gallery:has(.store-gallery__strip--single) { position: sticky; top: 0; height: min(65dvh, 520px); }
-  .store-detail--panel > .store-detail__sheet { min-height: 0; margin-top: 0; border: 0; box-shadow: none; }
-  .store-detail__handle-button { display: none; }
-}
+.patient-store-shell :is(.store-cart-bar, .store-purchase-bar) { max-width: var(--patient-frame-max); }
 
 .store-checkout { padding-bottom: 32px; }
 .store-checkout__layout { display: grid; gap: 20px; }

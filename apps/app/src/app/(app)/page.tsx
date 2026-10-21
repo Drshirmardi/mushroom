@@ -87,10 +87,7 @@ export default function HomePage() {
 
     <Link href="/store" className="home-store"><span className="home-store-icon"><ShoppingBag size={26} aria-hidden="true" /></span><div><h2>فروشگاه سبز زندگی</h2><p>بررسی محصولات، موجودی و قیمت</p></div><ArrowLeft size={19} aria-hidden="true" /></Link>
 
-    <div className="home-content-grid">
-      <section className="home-panel" aria-labelledby="home-notifications-title"><div className="home-section-heading"><h2 id="home-notifications-title">اعلان‌های اخیر</h2><button type="button" onClick={() => setNotificationsOpen(true)} aria-haspopup="dialog">همهٔ اعلان‌ها</button></div><PatientResourceState {...notifications} retry={() => void notifications.reload()} />{notifications.data?.items.slice(0, 3).map(item => <button type="button" key={item.id} onClick={() => setNotificationsOpen(true)} className="home-content-link"><h3>{item.title}</h3><p>{item.body}</p></button>)}{notifications.data?.items.length === 0 && <p className="home-caption">پیام تازه‌ای ندارید. اعلان‌های نوبت و خدمات را اینجا می‌بینید.</p>}</section>
       <section className="home-panel" aria-labelledby="home-articles-title"><div className="home-section-heading"><h2 id="home-articles-title">برای آگاهی بیشتر</h2><Link href="/articles">همهٔ مقاله‌ها</Link></div><PatientResourceState {...articles} retry={() => void articles.reload()} />{articles.data?.items.slice(0, 2).map(item => <Link key={item.id} href={`/articles/${encodeURIComponent(item.slug)}`} className="home-content-link"><BookOpen size={20} aria-hidden="true" /><h3>{item.title}</h3><ArrowLeft size={17} aria-hidden="true" /></Link>)}{articles.data?.items.length === 0 && <p className="home-caption">پس از انتشار محتوای آموزشی، مقاله‌ها در این بخش نمایش داده می‌شوند.</p>}</section>
-    </div>
     <AnimatePresence>{notificationsOpen && <NotificationSheet onClose={() => setNotificationsOpen(false)} onUpdated={() => void notifications.reload()} />}</AnimatePresence>
   </div>;
 }

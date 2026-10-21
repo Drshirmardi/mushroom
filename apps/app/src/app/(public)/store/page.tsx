@@ -135,9 +135,18 @@ function StoreCatalog() {
     if (!session) { useCartStore.getState().replace([]); useWishlistStore.getState().replace([]); setAccountError(null); return; }
     let cancelled = false;
     setAccountError(null);
-    void Promise.all([getCommerceCart(session.authentication.accessToken), getCommerceWishlist(session.authentication.accessToken)])
-      .then(([serverCart, serverWishlist]) => { if (!cancelled) { cacheCart(serverCart); cacheWishlist(serverWishlist); } })
-      .catch(cause => { if (!cancelled) setAccountError(commerceErrorMessage(cause)); });
+    void Promise.allSettled([
+      getCommerceCart(session.authentication.accessToken),
+      getCommerceWishlist(session.authentication.accessToken),
+    ]).then(([cartResult, wishlistResult]) => {
+      if (cancelled) return;
+      if (cartResult.status === "fulfilled") cacheCart(cartResult.value);
+      if (wishlistResult.status === "fulfilled") cacheWishlist(wishlistResult.value);
+      const failure = cartResult.status === "rejected" ? cartResult.reason
+        : wishlistResult.status === "rejected" ? wishlistResult.reason
+        : null;
+      setAccountError(failure ? commerceErrorMessage(failure) : null);
+    });
     return () => { cancelled = true; };
   }, [session, accountRetry]);
 
