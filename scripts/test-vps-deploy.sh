@@ -22,6 +22,10 @@ if [[ ${1:-} == compose && " $* " == *" --wait "* && -f $FAKE_FAIL_NEXT_WAIT ]];
   rm -f -- "$FAKE_FAIL_NEXT_WAIT"
   exit 1
 fi
+if [[ ${1:-} == compose && " $* " == *" migrate deploy "* && -f $FAKE_FAIL_NEXT_MIGRATION ]]; then
+  rm -f -- "$FAKE_FAIL_NEXT_MIGRATION"
+  exit 1
+fi
 exit 0
 EOF
 
@@ -99,6 +103,7 @@ export MUSHROOM_ROOT="$test_home/mushroom"
 export PATH="$fake_bin:$PATH"
 export FAKE_DOCKER_LOG="$scratch/docker.log"
 export FAKE_FAIL_NEXT_WAIT="$scratch/fail-next-wait"
+export FAKE_FAIL_NEXT_MIGRATION="$scratch/fail-next-migration"
 
 run_deploy() {
   local action=$1 environment=$2 manifest=$3 run_id=$4
@@ -142,6 +147,32 @@ run_deploy rollback production-sim - 6
 [[ ! -e $MUSHROOM_ROOT/production-sim/state/rollback-target ]] || exit 1
 [[ ! -e $MUSHROOM_ROOT/production-sim/state/pending-failed ]] || exit 1
 [[ ! -e $HOME/.docker/config.json ]] || exit 1
+
+# Real-production mode uses external PostgreSQL and can initialize a fresh clinic/admin before policy publication.
+environment_file production 34
+mkdir -p "$MUSHROOM_ROOT/production/bootstrap"
+printf '{"fixture":true}' >"$MUSHROOM_ROOT/production/bootstrap/first-run.json"
+production_log_start=$(wc -l <"$FAKE_DOCKER_LOG")
+run_deploy deploy production "$scratch/release-1.json" 7
+first_production=$(<"$MUSHROOM_ROOT/production/state/current")
+[[ -f $MUSHROOM_ROOT/production/bootstrap/complete ]] || exit 1
+[[ ! -e $MUSHROOM_ROOT/production/bootstrap/first-run.json ]] || exit 1
+if tail -n +"$((production_log_start + 1))" "$FAKE_DOCKER_LOG" | grep -q 'up -d postgres'; then
+  printf 'real production started a local PostgreSQL service\n' >&2
+  exit 1
+fi
+run_deploy deploy production "$scratch/release-2.json" 8
+second_production=$(<"$MUSHROOM_ROOT/production/state/current")
+run_deploy deploy production "$scratch/release-2.json" 9
+[[ $(<"$MUSHROOM_ROOT/production/state/previous") == "$first_production" ]] || exit 1
+touch "$FAKE_FAIL_NEXT_MIGRATION"
+if run_deploy deploy production "$scratch/release-3.json" 10; then
+  printf 'failed migration unexpectedly switched production\n' >&2
+  exit 1
+fi
+[[ $(<"$MUSHROOM_ROOT/production/state/current") == "$second_production" ]] || exit 1
+run_deploy rollback production - 11
+[[ $(<"$MUSHROOM_ROOT/production/state/current") == "$first_production" ]] || exit 1
 
 first_migration=$(grep -n 'migrate deploy' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
 first_policy_publish=$(grep -n 'manage-consent-policy.mjs publish' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)

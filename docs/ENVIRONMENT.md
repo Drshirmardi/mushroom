@@ -1,5 +1,9 @@
 # راهنمای کامل متغیرهای محیطی و secretها
 
+برای نصب جدید روی Ubuntu 24.04، [نصاب مستقل](../installation/README.md) فایل‌ها را روی خود سرور تولید می‌کند.
+`python -B installation/manager.py audit-env --current` پوشش schema واقعی API، Composeها و کلیدهای فایل‌های محلی را
+بدون نمایش مقدار محرمانه یا تغییر `.env` بررسی می‌کند. `.env` محلی منبع تنظیمات سرور نیست.
+
 این سند مرجع تنظیم environment پروژه Mushroom است. فایل‌های نمونه فقط placeholder و مقدار عمومی دارند؛ مقدار واقعی
 رمز، token، pepper، کلید رمزنگاری یا آدرس محرمانه نباید وارد Git، log، issue یا پیام شود.
 
@@ -11,6 +15,7 @@
 | اجرای frontendها روی سیستم توسعه | `.env.example` هر app | `.env.local` همان app | خیر |
 | shared dev روی VPS | `deploy/vps/dev-env.example` | `~/mushroom/dev/runtime.env` | خیر |
 | staging یا production-sim روی VPS | `deploy/vps/env.example` | `~/mushroom/<environment>/runtime.env` | خیر |
+| production واقعی با PostgreSQL خارجی | `deploy/vps/production-env.example` | `/home/mushroom-prod/mushroom/production/runtime.env` | خیر |
 | secretهای VPS | این سند | فایل‌های `secrets/` | خیر |
 | GitHub Actions | این سند | Repository Secrets/Variables | خیر |
 
@@ -30,7 +35,7 @@ chmod 600 "$HOME/mushroom/dev/runtime.env"
 
 | متغیر | نوع/مقدار مجاز | نمونه | کاربرد |
 |---|---|---|---|
-| `MUSHROOM_ENVIRONMENT` | یکی از `development`، `staging`، `production-sim` | `development` | نام منطقی محیط؛ dev deploy دقیقاً `development` می‌خواهد. |
+| `MUSHROOM_ENVIRONMENT` | یکی از `development`، `staging`، `production-sim`، `production` | `development` | نام منطقی محیط؛ dev deploy دقیقاً `development` می‌خواهد. |
 | `COMPOSE_PROJECT_NAME` | نام یکتای Compose | `mushroom-dev` | از تداخل container، network و volume محیط‌ها جلوگیری می‌کند. |
 | `MUSHROOM_ENV_ROOT` | مسیر absolute | `/home/deploy/mushroom/dev` | ریشه runtime، state و secrets محیط. |
 | `DEV_WORKSPACE_PATH` | مسیر absolute، فقط dev | `/home/deploy/mushroom/dev/workspace` | سورس syncشده که داخل container mount می‌شود. |
@@ -117,6 +122,10 @@ staging و production-sim نباید مشترک باشند.
 
 ## secretهای فایل‌محور VPS
 
+production واقعی هشت secret مربوط به API را دارد و `postgres_password` محلی ندارد؛ `database_url` به سرویس خارجی
+با TLS اشاره می‌کند. keyring تاریخی می‌تواند خالی باشد و لازم نیست یک کلید بازنشستهٔ ساختگی ساخته شود. حالت
+disabled پیامک/پرداخت هم مانع تولید و نگهداری امن کلیدهای مستقل موردنیاز برای تنظیم بعدی نیست.
+
 این ۹ فایل باید زیر `$MUSHROOM_ENV_ROOT/secrets/` باشند و با `chmod 600` محافظت شوند:
 
 | فایل | قالب دقیق | کاربرد |
@@ -165,6 +174,12 @@ Frontendها فقط URLهای عمومی مورد نیاز خود را می‌خ
 این URLها secret نیستند و در VPS هنگام startup داخل `/runtime-config.js` نوشته می‌شوند.
 
 ## GitHub Actions
+
+برای production واقعی چهار Secret مستقل با نام‌های `PRODUCTION_VPS_HOST`، `PRODUCTION_VPS_USER`،
+`PRODUCTION_VPS_SSH_PRIVATE_KEY` و `PRODUCTION_VPS_KNOWN_HOSTS` استفاده می‌شوند. متغیرهای
+`PRODUCTION_VPS_PORT`، `PRODUCTION_CD_ENABLED` و `RELEASE_APPROVER` مقصد و اجازهٔ انتشار production را تعیین می‌کنند.
+`PRODUCTION_AUTO_DEPLOY=false` پیش‌فرض است؛ با انتخاب صریح مالک می‌تواند انتشار خودکار پس از staging موفق را فعال کند.
+نصاب نام و محل مقدارهای لازم را در `/etc/mushroom/github/GITHUB-SETUP.txt` می‌نویسد؛ مقادیر داخلی API روی سرور می‌مانند.
 
 Repository Secrets:
 

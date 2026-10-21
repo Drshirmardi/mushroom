@@ -9,8 +9,9 @@ import { getAdminPatient, getAdminPatientAssessmentSubmissions, getAssessmentRes
 import { ClinicalWorkspaceApiError, createClinicalNote, getClinicalWorkspace, publishClinicalNote, reconcileClinicalRecord, saveClinicalNote, saveClinicalRecord, signClinicalNote, signClinicalRecord, type ClinicalRecordKind, type ClinicalWorkspace } from "@/lib/clinical-workspace-api";
 import { listAdminAppointments, type AdminAppointment, type AppointmentApiError } from "@/lib/appointment-api";
 import { getTreatmentProgress, listPrescriptions, listTreatmentPlans, PrescriptionTreatmentApiError, type Prescription, type TreatmentPlanSummary, type TreatmentProgress } from "@/lib/prescription-treatment-api";
+import { PatientWallet } from "./patient-wallet";
 
-const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات پزشکی" }, { id: "history", label: "تاریخچه بالینی" }, { id: "treatment", label: "نسخه و درمان" }, { id: "appointments", label: "نوبت‌ها" }, { id: "assessments", label: "ارزیابی‌ها" }, { id: "traditional", label: "طب سنتی" }, { id: "timeline", label: "خط زمانی" }] as const;
+const TABS = [{ id: "overview", label: "اطلاعات کلی" }, { id: "medical", label: "اطلاعات پزشکی" }, { id: "history", label: "تاریخچه بالینی" }, { id: "treatment", label: "نسخه و درمان" }, { id: "appointments", label: "نوبت‌ها" }, { id: "assessments", label: "ارزیابی‌ها" }, { id: "traditional", label: "طب سنتی" }, { id: "wallet", label: "کیف پول" }, { id: "timeline", label: "خط زمانی" }] as const;
 const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-", AB_POSITIVE: "AB+", AB_NEGATIVE: "AB-", O_POSITIVE: "O+", O_NEGATIVE: "O-", UNKNOWN: "نامشخص" };
 const SEXES: Record<string, string> = { FEMALE: "زن", MALE: "مرد", INTERSEX: "اینترسکس", UNKNOWN: "نامشخص", PREFER_NOT_TO_SAY: "ترجیح می‌دهم نگویم" };
 
@@ -116,6 +117,7 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
       {tab === "appointments" && <PatientAppointments appointments={appointments} error={appointmentError} />}
       {tab === "assessments" && <PatientAssessments assessments={assessments} error={assessmentError} />}
       {tab === "traditional" && <TraditionalMedicine />}
+      {tab === "wallet" && <PatientWallet patientId={patientId} accessToken={authentication.accessToken} />}
       {tab === "timeline" && <ClinicalTimeline clinical={clinical} error={clinicalError} />}
     </div>
   </div>;

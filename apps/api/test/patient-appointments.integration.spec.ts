@@ -35,7 +35,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     await prisma.userProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.user.deleteMany({ where: { id: { in: users } } });
+    if (isolatedDoctorServiceIds.size) await prisma.appointmentHold.deleteMany({ where: { doctorServiceId: { in: [...isolatedDoctorServiceIds] } } });
     if (isolatedDoctorServiceIds.size) await prisma.doctorService.deleteMany({ where: { id: { in: [...isolatedDoctorServiceIds] } } });
+    if (isolatedDoctorIds.size) await prisma.availabilityRule.deleteMany({ where: { doctorId: { in: [...isolatedDoctorIds] } } });
     if (isolatedDoctorIds.size) await prisma.doctorSpecialty.deleteMany({ where: { doctorId: { in: [...isolatedDoctorIds] } } });
     if (isolatedDoctorIds.size) await prisma.doctorProfile.deleteMany({ where: { id: { in: [...isolatedDoctorIds] } } });
     if (isolatedSpecialtyIds.size) await prisma.specialty.deleteMany({ where: { id: { in: [...isolatedSpecialtyIds] } } });
@@ -72,9 +74,18 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     isolatedDoctorIds.add(doctor.id);
     await prisma.doctorSpecialty.create({ data: { clinicId, doctorId: doctor.id, specialtyId: specialty.id } });
     await prisma.doctorProfile.update({ where: { id: doctor.id }, data: { publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
-    const offering = await prisma.doctorService.create({ data: { clinicId, doctorId: doctor.id, serviceId: base.serviceId, visitMode: base.visitMode, durationMinutes: base.durationMinutes, priceAmount: base.priceAmount, currency: base.currency, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
+    const offering = await prisma.doctorService.create({ data: { clinicId, doctorId: doctor.id, serviceId: base.serviceId, visitMode: base.visitMode, durationMinutes: base.durationMinutes, priceAmount: 0, currency: base.currency, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
     isolatedDoctorServiceIds.add(offering.id);
     return offering;
+  };
+
+  // Legacy lifecycle/concurrency coverage uses an isolated free offering; paid booking is covered by wallet-billing.integration.
+  const freeOffering = async (clinicId: string) => {
+    const original = await prisma.doctorService.findFirstOrThrow({ where: { clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const offering = await isolatedOffering(clinicId);
+    const rules = await prisma.availabilityRule.findMany({ where: { doctorId: original.doctorId, isActive: true } });
+    for (const rule of rules) await prisma.availabilityRule.create({ data: { clinicId, doctorId: offering.doctorId, visitMode: rule.visitMode, isoWeekday: rule.isoWeekday, startLocalTime: rule.startLocalTime, endLocalTime: rule.endLocalTime, isActive: true } });
+    return { ...offering, doctor: await prisma.doctorProfile.findUniqueOrThrow({ where: { id: offering.doctorId } }) };
   };
 
   const nextWeekday = (weekday: number) => {
@@ -93,7 +104,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
 
   it('authoritatively rechecks eligibility and creates one pending appointment with an immutable price snapshot', async () => {
     const { token, profile } = await patient();
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' }, include: { doctor: true } });
+    const offering = await freeOffering(profile.clinicId);
     const day = nextWeekday((await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } })).isoWeekday);
     const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });
     expect(available.statusCode).toBe(200);
@@ -124,7 +135,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
 
   it('rejects creation at the use-case boundary when onboarding is no longer eligible', async () => {
     const { token, profile } = await patient(false);
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const offering = await freeOffering(profile.clinicId);
     const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
     const day = nextWeekday(rule.isoWeekday);
     const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });
@@ -136,7 +147,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
 
   it('returns the original appointment for the same key and rejects a different normalized request', async () => {
     const { token, profile } = await patient();
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const offering = await freeOffering(profile.clinicId);
     const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
     const day = nextWeekday(rule.isoWeekday);
     const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });
@@ -160,7 +171,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
 
   it('commits exactly one appointment for 100 concurrent requests for one slot', async () => {
     const { token, profile } = await patient();
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const offering = await freeOffering(profile.clinicId);
     const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
     const day = nextWeekday(rule.isoWeekday);
     const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });
@@ -179,7 +190,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const adminSessionId = randomUUID();
     await prisma.session.create({ data: { id: adminSessionId, userId: adminId, refreshTokenHash: randomUUID().replaceAll('-', '').repeat(2), expiresAt: new Date(Date.now() + 3_600_000) } });
     const adminToken = await app.get(AccessTokenService).issue({ userId: adminId, sessionId: adminSessionId, roles: ['ADMIN'] });
-    const offering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: profile.clinicId, isActive: true, publicationStatus: 'PUBLISHED' } });
+    const offering = await freeOffering(profile.clinicId);
     const rule = await prisma.availabilityRule.findFirstOrThrow({ where: { clinicId: profile.clinicId, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true } });
     const day = nextWeekday(rule.isoWeekday);
     const available = await app.inject({ method: 'GET', url: `/v1/directory/doctor-services/${offering.id}/availability?fromDate=${day}&toDate=${day}&pageSize=100`, headers: headers(token) });

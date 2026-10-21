@@ -1,4 +1,4 @@
-import { ArgumentsHost, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { ArgumentsHost, ConflictException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
@@ -23,6 +23,13 @@ const runFilter = (exception: unknown) => {
 };
 
 describe('HTTP exception filter stable error codes', () => {
+  it.each(['ASSESSMENT_DELETE_NOT_ALLOWED', 'ASSESSMENT_DELETE_CONFLICT', 'ASSESSMENT_DELETE_REFERENCED'])(
+    'preserves deletion reason %s through the global filter', code => {
+      const { reply, send } = runFilter(new ConflictException({ code, message: 'Deletion blocked.', details: {} }));
+      expect(reply.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+      expect(send).toHaveBeenCalledWith({ code, message: 'Deletion blocked.', requestId: 'test-request', details: {} });
+    },
+  );
   it('preserves a registered domain code and its response details', () => {
     const { reply, send } = runFilter(new UnauthorizedException({
       code: 'OTP_INVALID',

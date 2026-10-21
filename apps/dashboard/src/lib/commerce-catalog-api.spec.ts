@@ -29,6 +29,12 @@ describe("commerce catalog dashboard API", () => {
     await expect(loadCommerceCatalog(createApiClient({ baseUrl: "https://api.example.test", fetch: unavailable }), "token")).resolves.toEqual({ status: "unavailable" });
   });
 
+  it("requests later server pages instead of hiding products beyond the first hundred", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValueOnce(json([category])).mockResolvedValueOnce(json({ items: [product], page: 2, pageSize: 100, total: 130 }));
+    await expect(loadCommerceCatalog(createApiClient({ baseUrl: "https://api.example.test", fetch }), "token", 2)).resolves.toMatchObject({ status: "ready", data: { pagination: { page: 2, pageSize: 100, total: 130 } } });
+    expect((fetch.mock.calls[1][0] as Request).url).toContain("page=2&pageSize=100");
+  });
+
   it("uses generated bodies for catalog, SKU price, lifecycle, and inventory mutations", async () => {
     fetchMock.mockImplementation(() => Promise.resolve(json(product)));
     await createCommerceCategory("token", { name: "مکمل", slug: "supplements" });

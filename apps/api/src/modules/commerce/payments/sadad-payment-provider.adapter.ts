@@ -222,7 +222,8 @@ export class SadadPaymentProviderAdapter implements PaymentProviderPort {
   }
 
   async createPayment(input: ProviderCreateInput): Promise<ProviderCreateResult> {
-    const secret = credential(input.credential); const amount = toSadadRial(input.commerceAmountToman); const providerOrderId = positiveInt64(input.providerOrderId);
+    const secret = credential(input.credential); const amount = input.amountRial === undefined ? toSadadRial(input.commerceAmountToman ?? 0n) : positiveInt64(input.amountRial); const providerOrderId = positiveInt64(input.providerOrderId);
+    if (input.amountRial !== undefined && input.commerceAmountToman !== undefined && toSadadRial(input.commerceAmountToman) !== amount) throw invalid();
     if (input.providerUnit !== 'RIAL' || input.providerAmount !== amount) throw invalid();
     const result = responseRecord(await this.transport.postJson({ endpoint: SADAD_ENDPOINTS.paymentRequest, timeoutMs: this.timeoutMs, body: { MerchantId: secret.merchantId, TerminalId: secret.terminalId, Amount: amount, OrderId: providerOrderId, LocalDateTime: formatSadadLocalDateTime(this.now()), ReturnUrl: returnUrl(input.returnUrl), SignData: this.signData(secret.terminalId, providerOrderId, amount, secret.terminalKey) } }));
     const providerResultCode = resultCodeField(result, 'ResCode');

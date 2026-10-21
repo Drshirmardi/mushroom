@@ -11,12 +11,12 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, onBack, right }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 pt-3 pb-2 bg-background sticky top-0 z-10 border-b border-border/50">
-      <button onClick={onBack} className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center active:scale-95 transition-transform">
-        <ChevronLeft size={20} className="text-foreground" style={{ transform: "rotate(180deg)" }} />
+    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-background sticky top-0 z-10 border-b border-border/50">
+      <button type="button" aria-label="بازگشت" onClick={onBack} className="h-11 w-11 shrink-0 bg-white border border-border rounded-xl flex items-center justify-center active:scale-95 transition-transform">
+        <ChevronLeft aria-hidden="true" size={20} className="text-foreground" style={{ transform: "rotate(180deg)" }} />
       </button>
-      <h1 className="text-base font-bold text-foreground">{title}</h1>
-      <div className="w-9 flex justify-end">{right}</div>
+      <h1 className="text-base font-bold text-center text-foreground">{title}</h1>
+      <div className="flex min-w-11 justify-end">{right}</div>
     </div>
   );
 }

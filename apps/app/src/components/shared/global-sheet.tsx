@@ -1,47 +1,29 @@
 "use client";
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
-import { AlertTriangle, Bell, Check, MessageCircle, Send, Share2 } from "lucide-react";
 import { BottomSheet } from "@/components/shared/bottom-sheet";
-import { useMedsStore } from "@/stores/meds";
 import { useUiStore } from "@/stores/ui";
 
-/**
- * App-wide bottom sheet driven by the UI store, so any screen (legacy or
- * migrated) can open it via `setSheet({ type, data })`.
- */
 export function GlobalSheet() {
-  const sheet = useUiStore((s) => s.sheet);
-  const setSheet = useUiStore((s) => s.setSheet);
-  const markMed = useMedsStore((s) => s.markMed);
-
-  return (
-    <AnimatePresence>
-      {sheet && (
-        <BottomSheet onClose={() => setSheet(null)}>
-          {sheet.type === "medAction" && (
-            <div className="space-y-2">
-              <button onClick={() => { markMed(sheet.data?.id); setSheet(null); }} className="w-full flex items-center gap-3 p-4 bg-accent rounded-2xl"><Check size={18} className="text-primary" /><span className="font-semibold text-sm text-foreground">علامت‌گذاری مصرف</span></button>
-              <button className="w-full flex items-center gap-3 p-4 bg-muted rounded-2xl"><Bell size={18} className="text-foreground/70" /><span className="font-semibold text-sm text-foreground">تنظیم یادآوری</span></button>
-              <button className="w-full flex items-center gap-3 p-4 bg-muted rounded-2xl"><AlertTriangle size={18} className="text-amber-500" /><span className="font-semibold text-sm text-foreground">گزارش مشکل</span></button>
-            </div>
-          )}
-          {sheet.type === "appointmentCancel" && (
-            <div className="space-y-3">
-              <p className="text-sm text-foreground text-center mb-2">آیا مطمئن هستید که می‌خواهید نوبت را لغو کنید؟</p>
-              <button className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-bold text-sm border border-red-100" onClick={() => setSheet(null)}>بله، لغو کن</button>
-              <button onClick={() => setSheet(null)} className="w-full py-4 bg-muted text-foreground rounded-2xl font-bold text-sm">انصراف</button>
-            </div>
-          )}
-          {sheet.type === "shareProduct" && (
-            <div className="grid grid-cols-3 gap-3">
-              {[{ icon: MessageCircle, label: "واتساپ", color: "bg-green-50 text-green-700" }, { icon: Send, label: "تلگرام", color: "bg-blue-50 text-blue-700" }, { icon: Share2, label: "کپی لینک", color: "bg-muted text-foreground" }].map(s => (
-                <button key={s.label} onClick={() => setSheet(null)} className={`flex flex-col items-center gap-2 p-4 ${s.color} rounded-2xl`}><s.icon size={22} /><span className="text-xs font-semibold">{s.label}</span></button>
-              ))}
-            </div>
-          )}
-        </BottomSheet>
-      )}
-    </AnimatePresence>
-  );
+  const sheet = useUiStore(state => state.sheet);
+  const setSheet = useUiStore(state => state.setSheet);
+  const router = useRouter();
+  const [notice, setNotice] = useState<{ sheet: typeof sheet; text: string } | null>(null);
+  const open = (href: string) => { setSheet(null); router.push(href); };
+  const productId = typeof sheet?.data?.productId === "string" ? sheet.data.productId : typeof sheet?.data?.id === "string" ? sheet.data.id : null;
+  const appointmentId = typeof sheet?.data?.appointmentId === "string" ? sheet.data.appointmentId : typeof sheet?.data?.id === "string" ? sheet.data.id : null;
+  const copyProduct = async () => {
+    if (!productId) return;
+    try {
+      await navigator.clipboard.writeText(new URL(`/store/products/${encodeURIComponent(productId)}`, window.location.origin).toString());
+      setNotice({ sheet, text: "نشانی محصول کپی شد." });
+    } catch { setNotice({ sheet, text: "کپی نشانی ممکن نشد؛ نشانی صفحهٔ محصول را مستقیماً کپی کنید." }); }
+  };
+  return <AnimatePresence>{sheet && <BottomSheet onClose={() => setSheet(null)}>
+    {sheet.type === "medAction" && <div className="space-y-3"><p className="text-sm leading-7">ثبت مصرف دارو و فعالیت‌های درمانی از برنامهٔ منتشرشدهٔ شما انجام می‌شود.</p><button type="button" onClick={() => open("/treatment")} className="w-full rounded-xl bg-primary p-4 font-bold text-white">مشاهدهٔ برنامه و ثبت مصرف</button></div>}
+    {sheet.type === "appointmentCancel" && <div className="space-y-3"><p className="text-sm leading-7">پیش از لغو، جزئیات و وضعیت جاری نوبت را بررسی کنید.</p><button type="button" onClick={() => open(appointmentId ? `/appointments/${encodeURIComponent(appointmentId)}` : "/appointments")} className="w-full rounded-xl bg-primary p-4 font-bold text-white">بررسی و لغو نوبت</button></div>}
+    {sheet.type === "shareProduct" && <div className="space-y-3">{productId ? <button type="button" onClick={() => void copyProduct()} className="w-full rounded-xl bg-primary p-4 font-bold text-white">کپی نشانی محصول</button> : <button type="button" onClick={() => open("/store")} className="w-full rounded-xl border border-border p-4 text-sm">انتخاب محصول از فروشگاه</button>}{notice?.sheet === sheet && <p role="status" className="text-sm">{notice.text}</p>}</div>}
+    <button type="button" onClick={() => setSheet(null)} className="mt-3 w-full rounded-xl border border-border p-3 text-sm">بستن</button>
+  </BottomSheet>}</AnimatePresence>;
 }

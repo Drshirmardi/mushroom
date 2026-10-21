@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..');
+const staffRuntimeSurface = /(?:staff|clinic)[/_-]?(?:invit|membership)|(?:^|[/_-])staff(?:[/_-]|$)/i;
 
 const sourceTree = (directory: string): string =>
   readdirSync(directory, { withFileTypes: true })
@@ -39,10 +40,15 @@ describe('Phase 11 conditional exclusions', () => {
     expect(apiSource).not.toMatch(excludedCapability);
     expect(dashboardSource).not.toMatch(excludedCapability);
     expect(schema).not.toMatch(/\b(StaffInvitation|StaffMembership|ClinicMembership)\b/);
-    expect(migrationNames.join('\n')).not.toMatch(/(staff|invite|invitation|membership)/i);
+    expect(migrationNames.join('\n')).not.toMatch(staffRuntimeSurface);
     expect(Object.keys(openApi.paths)).not.toContainEqual(
-      expect.stringMatching(/(staff|invite|invitation|membership)/i),
+      expect.stringMatching(staffRuntimeSurface),
     );
+  });
+
+  it('distinguishes approved patient couple invitations from excluded staff management', () => {
+    for (const path of ['/v1/admin/staff', '/v1/admin/staff-invitations', '/v1/admin/clinic-memberships']) expect(path).toMatch(staffRuntimeSurface);
+    expect('/v1/couple-sessions/{id}/invitations').not.toMatch(staffRuntimeSurface);
   });
 
   it('keeps role building and capability menus out of the dashboard release surface', () => {

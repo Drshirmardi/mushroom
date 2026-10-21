@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/auth/session-gate";
+import { PatientEntryGate } from "@/components/auth/patient-entry-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -19,10 +21,11 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <head>
+        <link rel="preload" href="/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider><PatientEntryGate>{children}</PatientEntryGate></SessionProvider>
       </body>
     </html>
   );

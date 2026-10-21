@@ -6,10 +6,10 @@ const [action, environment, manifestArgument] = process.argv.slice(2);
 
 if (
   !['deploy', 'rollback'].includes(action)
-  || !['staging', 'production-sim'].includes(environment)
+  || !['staging', 'production-sim', 'production'].includes(environment)
   || (action === 'deploy' && !manifestArgument)
 ) {
-  console.error('Usage: node scripts/deploy-vps.mjs <deploy|rollback> <staging|production-sim> [manifest.json]');
+  console.error('Usage: node scripts/deploy-vps.mjs <deploy|rollback> <staging|production-sim|production> [manifest.json]');
   process.exit(2);
 }
 
@@ -43,11 +43,11 @@ if (!/^\d{1,5}$/u.test(port) || Number(port) < 1 || Number(port) > 65535) {
 }
 
 const root = resolve(import.meta.dirname, '..');
-const composePath = resolve(root, 'deploy/vps/compose.yaml');
+const composePath = resolve(root, environment === 'production' ? 'compose.production.example.yaml' : 'deploy/vps/compose.yaml');
 const deployScriptPath = resolve(root, 'deploy/vps/deploy-release.sh');
 const rehearsalConsentPolicyPath = resolve(root, 'deploy/vps/reference-data/rehearsal-consent-policy.json');
 const manifestPath = action === 'deploy' ? resolve(manifestArgument) : null;
-for (const file of [composePath, deployScriptPath, rehearsalConsentPolicyPath, manifestPath].filter(Boolean)) {
+for (const file of [composePath, deployScriptPath, environment !== 'production' && rehearsalConsentPolicyPath, manifestPath].filter(Boolean)) {
   if (!existsSync(file)) throw new Error(`Required deployment input is missing: ${file}`);
 }
 
@@ -84,12 +84,22 @@ const scpOptions = [
   '-o', `UserKnownHostsFile=${process.env.VPS_KNOWN_HOSTS_PATH}`,
 ];
 const inputs = [composePath, deployScriptPath];
-if (manifestPath) inputs.push(manifestPath, rehearsalConsentPolicyPath);
+if (manifestPath) inputs.push(manifestPath);
+if (manifestPath && environment !== 'production') inputs.push(rehearsalConsentPolicyPath);
 run('scp', [...scpOptions, ...inputs, `${target}:${remoteDirectory}/`]);
+
+// Production policy was supplied and reviewed on the server, never copied from rehearsal or CI.
+// Normalize the compose filename because the production source has a different basename.
+if (environment === 'production') {
+  run('ssh', [...sshOptions, target, `cp -- '${remoteDirectory}/compose.production.example.yaml' '${remoteDirectory}/compose.yaml'`]);
+  if (action === 'deploy') {
+    run('ssh', [...sshOptions, target, `cp -- "$HOME/mushroom/production/consent-policy.json" '${remoteDirectory}/consent-policy.json'`]);
+  }
+}
 
 const remoteManifest = manifestPath ? `${remoteDirectory}/${manifestPath.split(/[\\/]/u).at(-1)}` : '-';
 const remoteConsentPolicy = manifestPath
-  ? `${remoteDirectory}/${rehearsalConsentPolicyPath.split(/[\\/]/u).at(-1)}`
+  ? `${remoteDirectory}/${environment === 'production' ? 'consent-policy.json' : rehearsalConsentPolicyPath.split(/[\\/]/u).at(-1)}`
   : '-';
 const remoteCommand = [
   'bash',

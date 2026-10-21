@@ -1,6 +1,17 @@
+import { ProductImageStorageModule } from '../media/product-image-storage.module';
+import { ProductImageService } from '../media/product-image.service';
+import { ProductImageProcessor } from '../media/product-image-processor';
+import { AdminProductImageController, PublicProductImageController } from '../media/product-image.controller';
+import { OutboxModule } from '../../outbox/outbox.module';
 import { Module } from '@nestjs/common';
+import { CommerceMezajService } from '../mezaj/commerce-mezaj.service';
+import { AdminCommerceMezajController, PatientCommerceMezajController } from '../mezaj/commerce-mezaj.controller';
+import { BillingModule } from '../../billing/billing.module';
+import { PaymentProvidersModule } from '../payments/payment-providers.module';
+import { OrderBillingTarget } from '../payments/order-billing.target';
 import { AdminCommerceCatalogController } from './admin-commerce-catalog.controller';
 import { AdminCommerceCatalogService } from './admin-commerce-catalog.service';
+import { AdminProductContentController } from './admin-product-content.controller';
 import { PatientCommerceCatalogController } from './patient-commerce-catalog.controller';
 import { PatientCommerceCatalogService } from './patient-commerce-catalog.service';
 import { PatientCommerceCartController } from '../cart/patient-commerce-cart.controller';
@@ -14,18 +25,12 @@ import { InventoryReservationExpiryWorker } from '../inventory/inventory-reserva
 import { AdminCommerceDiscountController } from '../discounts/admin-commerce-discount.controller';
 import { CommerceDiscountService } from '../discounts/commerce-discount.service';
 import { AdminPaymentProviderController } from '../payments/admin-payment-provider.controller';
-import { PaymentCredentialCryptoService } from '../payments/payment-credential-crypto.service';
-import { PaymentProviderConfigService } from '../payments/payment-provider-config.service';
-import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
-import { SadadPaymentProviderAdapter } from '../payments/sadad-payment-provider.adapter';
 import { PatientPaymentAttemptController, SadadCallbackController } from '../payments/patient-payment-attempt.controller';
 import { PaymentAttemptService } from '../payments/payment-attempt.service';
 import { PaymentVerificationService } from '../payments/payment-verification.service';
 import { PaymentCredentialRetentionService } from '../payments/payment-credential-retention.service';
 import { PaymentCredentialRetentionWorker } from '../payments/payment-credential-retention.worker';
-import { PaymentProviderOrderIdService } from '../payments/payment-provider-order-id.service';
 import { PaymentAttemptOrchestrationService } from '../payments/payment-attempt-orchestration.service';
-import { SadadRuntimeConfigService } from '../payments/sadad-runtime-config.service';
 import { AdminCommerceOrderOperationsController } from '../orders/admin-commerce-order-operations.controller';
 import { CommerceOrderOperationsService } from '../orders/commerce-order-operations.service';
 import { AdminCommerceRevenueController } from '../reporting/admin-commerce-revenue.controller';
@@ -34,5 +39,5 @@ import { ClinicalModule } from '../../clinical/clinical.module';
 import { IdentityModule } from '../../identity/identity.module';
 import { AdminCommerceCustomerCrmController } from '../reporting/admin-commerce-customer-crm.controller';
 import { CommerceCustomerCrmService } from '../reporting/commerce-customer-crm.service';
-@Module({ imports: [ClinicalModule, IdentityModule], controllers: [AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController, AdminCommerceDiscountController, AdminPaymentProviderController, PatientPaymentAttemptController, SadadCallbackController, AdminCommerceOrderOperationsController, AdminCommerceRevenueController, AdminCommerceCustomerCrmController], providers: [AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceDiscountService, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService, PaymentProviderRegistry, SadadRuntimeConfigService, SadadPaymentProviderAdapter, PaymentCredentialCryptoService, PaymentCredentialRetentionService, PaymentCredentialRetentionWorker, PaymentProviderOrderIdService, PaymentProviderConfigService, PaymentAttemptService, PaymentVerificationService, PaymentAttemptOrchestrationService, CommerceOrderOperationsService, CommerceRevenueService, CommerceCustomerCrmService], exports: [CommerceInventoryService, CommerceDiscountService] })
+@Module({ imports: [BillingModule, PaymentProvidersModule, ClinicalModule, IdentityModule, ProductImageStorageModule, OutboxModule], controllers: [AdminCommerceMezajController, PatientCommerceMezajController, AdminProductContentController, AdminProductImageController, PublicProductImageController, AdminCommerceCatalogController, PatientCommerceCatalogController, PatientCommerceCartController, AdminCommerceShippingController, PatientCommerceCheckoutController, PatientCommerceOrdersController, AdminCommerceDiscountController, AdminPaymentProviderController, PatientPaymentAttemptController, SadadCallbackController, AdminCommerceOrderOperationsController, AdminCommerceRevenueController, AdminCommerceCustomerCrmController], providers: [CommerceMezajService, OrderBillingTarget, ProductImageService, ProductImageProcessor, AdminCommerceCatalogService, PatientCommerceCatalogService, PatientCommerceCartService, CommerceClock, CommerceDiscountService, CommerceInventoryService, InventoryReservationExpiryWorker, CommerceCheckoutService, PaymentCredentialRetentionService, PaymentCredentialRetentionWorker, PaymentAttemptService, PaymentVerificationService, PaymentAttemptOrchestrationService, CommerceOrderOperationsService, CommerceRevenueService, CommerceCustomerCrmService], exports: [CommerceInventoryService, CommerceDiscountService] })
 export class AdminCommerceCatalogModule {}

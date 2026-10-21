@@ -105,6 +105,13 @@ const sadadResultUrlSchema = Joi.string()
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /store/order-success with no query or fragment' });
 
 export const environmentValidationSchema = Joi.object({
+  PRODUCT_MEDIA_STORAGE_MODE: Joi.string().valid('disabled', 'r2').default('disabled').when('NODE_ENV', { is: 'production', then: Joi.valid(Joi.override, 'disabled') }),
+  R2_ENDPOINT: Joi.string().uri({ scheme: ['https'] }).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_BUCKET: Joi.string().pattern(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_REGION: Joi.string().valid('auto').default('auto'),
+  R2_ACCESS_KEY_ID: Joi.string().trim().min(1).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_SECRET_ACCESS_KEY: Joi.string().trim().min(1).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
+  R2_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1000).max(10000).default(5000),
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),
@@ -125,13 +132,14 @@ export const environmentValidationSchema = Joi.object({
     })
     .default('http://localhost:3000,http://localhost:3001,http://localhost:3002')
     .messages({ 'any.invalid': 'must be a comma-separated list of HTTP(S) origins' }),
-  PUBLIC_API_URL: Joi.string().custom((value, helpers) => isHttpOrigin(value) && new URL(value).protocol === 'https:' ? new URL(value).toString() : helpers.error('any.invalid')).when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.required(), otherwise: Joi.optional() }).messages({ 'any.invalid': 'must be a public HTTPS origin with no path, query or fragment' }),
+  PUBLIC_API_URL: Joi.string().custom((value, helpers) => isHttpOrigin(value) && new URL(value).protocol === 'https:' ? new URL(value).toString() : helpers.error('any.invalid')).when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.required(), otherwise: Joi.optional().allow('') }).messages({ 'any.invalid': 'must be a public HTTPS origin with no path, query or fragment' }),
   TRUSTED_PROXIES: Joi.when('NODE_ENV', {
     is: 'production',
     then: trustedProxySchema.required(),
     otherwise: trustedProxySchema.allow('').default(''),
   }),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('info'),
+  BILLING_BOOKING_HOLD_MINUTES: Joi.number().integer().min(1).max(30).default(10),
   COMMERCE_RESERVATION_TTL_MINUTES: Joi.number().integer().min(1).max(1_440).default(20),
   JWT_ACCESS_SECRET: Joi.string()
     .min(43)

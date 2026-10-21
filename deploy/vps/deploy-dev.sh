@@ -76,7 +76,7 @@ for port_key in API_PORT WEB_PORT APP_PORT DASHBOARD_PORT; do
   seen_bindings[$binding]=1
 done
 
-for other_environment in staging production-sim; do
+for other_environment in staging production-sim production; do
   other_env="$base_root/$other_environment/runtime.env"
   [[ -f $other_env ]] || continue
   for key in COMPOSE_PROJECT_NAME MUSHROOM_ENV_ROOT POSTGRES_DB POSTGRES_USER API_PORT WEB_PORT APP_PORT DASHBOARD_PORT \
@@ -111,16 +111,23 @@ for secret in postgres_password database_url jwt_access_secret refresh_token_pep
   otp_pepper sms_credential_encryption_key sms_credential_decryption_keys \
   payment_credential_encryption_key payment_credential_decryption_keys; do
   secret_path="$environment_root/secrets/$secret"
-  [[ -s $secret_path ]] || die "required dev secret is missing: $secret"
+  [[ -f $secret_path ]] || die "required dev secret is missing: $secret"
+  case "$secret" in
+    *_decryption_keys) ;;
+    *) [[ -s $secret_path ]] || die "required dev secret is empty: $secret" ;;
+  esac
   permissions=$(stat -c '%a' "$secret_path")
   (( (8#$permissions & 0037) == 0 )) || die "$secret must not be readable by others or writable by its group"
 done
 
 compose() {
+  local network_args=()
+  [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
   docker compose \
     --project-name mushroom-dev \
     --env-file "$runtime_env" \
     --file "$compose_file" \
+    "${network_args[@]}" \
     "$@"
 }
 
@@ -211,11 +218,18 @@ public_config_hash=$(
   done | sha256sum | cut -d' ' -f1
 )
 api_runtime_hash=$(
+  {
   for key_and_default in \
     'LOG_LEVEL debug' \
     'JWT_ACCESS_ISSUER sabz-zendegi-api' \
     'JWT_ACCESS_AUDIENCE sabz-zendegi-frontends' \
     'COMMERCE_RESERVATION_TTL_MINUTES 20' \
+    'BILLING_BOOKING_HOLD_MINUTES 10' \
+    'PRODUCT_MEDIA_STORAGE_MODE disabled' \
+    'R2_ENDPOINT -' \
+    'R2_BUCKET -' \
+    'R2_REGION auto' \
+    'R2_REQUEST_TIMEOUT_MS 5000' \
     'APP_ORIGINS http://localhost:3000,http://localhost:3001,http://localhost:3002' \
     'TRUSTED_PROXIES 127.0.0.1/32' \
     'PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION v1' \
@@ -230,7 +244,14 @@ api_runtime_hash=$(
     'SADAD_REDIRECT_PROFILE -'; do
     read -r key fallback <<<"$key_and_default"
     printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "$fallback")"
-  done | sha256sum | cut -d' ' -f1
+  done
+  for name in r2_access_key_id r2_secret_access_key; do
+    if [[ -f $environment_root/secrets/$name ]]; then
+      printf '%s=' "$name"
+      sha256sum "$environment_root/secrets/$name" | cut -d' ' -f1
+    fi
+  done
+  } | sha256sum | cut -d' ' -f1
 )
 previous_dependency_hash=''
 previous_runtime_hash=''

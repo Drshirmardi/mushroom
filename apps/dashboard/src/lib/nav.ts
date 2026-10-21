@@ -2,7 +2,7 @@ import {
   LayoutGrid, CalendarDays, Clock, Users, FileText,
   ClipboardList, Activity, ShoppingBag, ShoppingCart,
   Tag, TrendingUp, MessageSquare, Bell, Archive, Settings,
-  Layout, ShieldCheck,
+  Layout, ShieldCheck, Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -28,6 +28,7 @@ export const NAV: NavItem[] = [
   { href: "/orders", label: "سفارش‌ها", icon: ShoppingCart, group: "فروشگاه" },
   { href: "/discounts", label: "کدهای تخفیف", icon: Tag, group: "فروشگاه" },
   { href: "/revenue", label: "درآمد و گزارشات", icon: TrendingUp, group: "مالی" },
+  { href: "/billing", label: "کیف پول و صورتحساب", icon: Wallet, group: "مالی" },
   { href: "/messages", label: "پیام‌ها", icon: MessageSquare, group: "سیستم" },
   { href: "/notifications", label: "اعلان‌ها", icon: Bell, group: "سیستم" },
   { href: "/content", label: "مدیریت محتوا", icon: Archive, group: "سیستم" },

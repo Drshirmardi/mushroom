@@ -8,6 +8,8 @@ import type { CreateTreatmentTaskDto, RecordMedicationAdherenceDto, RescheduleTr
 import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
 import { ReminderService } from '../outbox/reminder.service';
+import { CustomProgramBoundaryService } from './custom-program-boundary.service';
+import { lockFinancial } from '../billing/billing.policy';
 
 type ClinicalActor = ClinicalAuditContext & { roles: RoleCode[] };
 type Tx = Prisma.TransactionClient;
@@ -29,12 +31,13 @@ export class TreatmentActivityService {
     private readonly permissions: ClinicalPermissionService,
     private readonly audit: ClinicalAccessAuditService,
     private readonly reminders: ReminderService,
+    private readonly customPrograms: CustomProgramBoundaryService,
   ) {}
 
   async listAdmin(patientId: string, planId: string, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:view');
     return this.transaction(async (tx) => {
-      await this.plan(tx, planId, patient.id, patient.clinicId);
+      await this.plan(tx, planId, patient.id, patient.clinicId, actor);
       const items = await tx.treatmentTask.findMany({ where: { treatmentPlanId: planId }, orderBy: [{ scheduledFor: 'asc' }, { id: 'asc' }] });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'TREATMENT_TASK', resourceId: planId, metadata: { view: 'ADMIN_LIST' } }, actor, tx);
       return { items: items.map((item) => this.taskResponse(item)), nextCursor: null };
@@ -46,9 +49,10 @@ export class TreatmentActivityService {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
     const scheduledFor = this.future(input.scheduledFor);
     return this.transaction(async (tx) => {
-      const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      const plan = await this.plan(tx, planId, patient.id, patient.clinicId, actor);
       if (plan.state !== TreatmentPlanState.ACTIVE) throw inactivePlan();
-      const task = await tx.treatmentTask.create({ data: { treatmentPlanId: plan.id, kind: input.kind, scheduledFor } });
+      const stamp = plan.customBound ? await this.customPrograms.time(tx) : null;
+      const task = await tx.treatmentTask.create({ data: { treatmentPlanId: plan.id, kind: input.kind, scheduledFor, ...(stamp ? { createdAt: stamp, updatedAt: stamp } : {}) } });
       const recipient = await tx.patientProfile.findUnique({ where: { id: patient.id }, select: { userId: true } }); if (recipient) await this.reminders.treatment(tx, { id: task.id, clinicId: patient.clinicId, patientId: patient.id, recipientId: recipient.userId, scheduledFor: task.scheduledFor });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'TREATMENT_TASK', resourceId: task.id, metadata: { treatmentPlanId: plan.id, kind: task.kind } }, actor, tx);
       return this.taskResponse(task);
@@ -59,11 +63,11 @@ export class TreatmentActivityService {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
     const scheduledFor = this.future(input.scheduledFor);
     return this.transaction(async (tx) => {
-      const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      const plan = await this.plan(tx, planId, patient.id, patient.clinicId, actor);
       if (plan.state !== TreatmentPlanState.ACTIVE) throw inactivePlan();
       const task = await this.task(tx, taskId, plan.id);
       if (task.state !== TreatmentTaskState.SCHEDULED) throw taskStateInvalid();
-      const updated = await tx.treatmentTask.update({ where: { id: task.id }, data: { scheduledFor } });
+      const updated = await tx.treatmentTask.update({ where: { id: task.id }, data: { scheduledFor, ...(plan.customBound ? { updatedAt: await this.customPrograms.time(tx) } : {}) } });
       const recipient = await tx.patientProfile.findUnique({ where: { id: patient.id }, select: { userId: true } }); if (recipient) { if (task.scheduledFor.getTime() !== updated.scheduledFor.getTime()) await this.reminders.cancelTreatmentTask(tx, updated.id, 'Treatment task rescheduled'); await this.reminders.treatment(tx, { id: updated.id, clinicId: patient.clinicId, patientId: patient.id, recipientId: recipient.userId, scheduledFor: updated.scheduledFor }); }
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'TREATMENT_TASK', resourceId: task.id, metadata: { treatmentPlanId: plan.id, action: 'RESCHEDULE' } }, actor, tx);
       return this.taskResponse(updated);
@@ -73,10 +77,10 @@ export class TreatmentActivityService {
   async cancelTask(patientId: string, planId: string, taskId: string, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
     return this.transaction(async (tx) => {
-      const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      const plan = await this.plan(tx, planId, patient.id, patient.clinicId, actor);
       const task = await this.task(tx, taskId, plan.id);
       if (task.state !== TreatmentTaskState.SCHEDULED) throw taskStateInvalid();
-      const updated = await tx.treatmentTask.update({ where: { id: task.id }, data: { state: TreatmentTaskState.CANCELLED } });
+      const updated = await tx.treatmentTask.update({ where: { id: task.id }, data: { state: TreatmentTaskState.CANCELLED, ...(plan.customBound ? { updatedAt: await this.customPrograms.time(tx) } : {}) } });
       await this.reminders.cancelTreatmentTask(tx, updated.id, 'Treatment task cancelled');
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'TREATMENT_TASK', resourceId: task.id, metadata: { treatmentPlanId: plan.id, action: 'CANCEL' } }, actor, tx);
       return this.taskResponse(updated);
@@ -86,7 +90,7 @@ export class TreatmentActivityService {
   async listPatient(userId: string, context: ClinicalAuditContext) {
     return this.transaction(async (tx) => {
       const patient = await this.patient(tx, userId);
-      const items = await tx.treatmentTask.findMany({ where: { treatmentPlan: { patientId: patient.id, clinicId: patient.clinicId, state: { in: [TreatmentPlanState.ACTIVE, TreatmentPlanState.COMPLETED] } }, state: { not: TreatmentTaskState.CANCELLED } }, orderBy: [{ scheduledFor: 'asc' }, { id: 'asc' }] });
+      const items = await tx.treatmentTask.findMany({ where: { treatmentPlan: { patientId: patient.id, clinicId: patient.clinicId, state: { in: [TreatmentPlanState.ACTIVE, TreatmentPlanState.COMPLETED] }, AND: await this.customPrograms.patientFilter(tx, patient.id, patient.clinicId, context) }, state: { not: TreatmentTaskState.CANCELLED } }, orderBy: [{ scheduledFor: 'asc' }, { id: 'asc' }] });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'PATIENT_TREATMENT_TASK', metadata: { view: 'LIST' } }, context, tx);
       return { items: items.map((item) => this.taskResponse(item)), nextCursor: null };
     });
@@ -97,10 +101,11 @@ export class TreatmentActivityService {
       const patient = await this.patient(tx, userId);
       const task = await tx.treatmentTask.findFirst({ where: { id: taskId, treatmentPlan: { patientId: patient.id, clinicId: patient.clinicId, state: { in: [TreatmentPlanState.ACTIVE, TreatmentPlanState.COMPLETED] } } } });
       if (!task) throw forbidden();
-      if (task.state === TreatmentTaskState.COMPLETED) return this.taskResponse(task);
+      const bound = await this.customPrograms.patient(tx, task.treatmentPlanId, context);
+      if (task.state === TreatmentTaskState.COMPLETED) { if (bound) await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'PATIENT_TREATMENT_TASK', resourceId: task.id, metadata: { action: 'COMPLETE_REPLAY' } }, context, tx); return this.taskResponse(task); }
       if (task.state !== TreatmentTaskState.SCHEDULED) throw taskStateInvalid();
-      const completedAt = new Date();
-      const result = await tx.treatmentTask.updateMany({ where: { id: task.id, state: TreatmentTaskState.SCHEDULED }, data: { state: TreatmentTaskState.COMPLETED, completedAt } });
+      const completedAt = bound ? await this.customPrograms.time(tx) : new Date();
+      const result = await tx.treatmentTask.updateMany({ where: { id: task.id, state: TreatmentTaskState.SCHEDULED }, data: { state: TreatmentTaskState.COMPLETED, completedAt, ...(bound ? { updatedAt: completedAt } : {}) } });
       const current = await tx.treatmentTask.findUniqueOrThrow({ where: { id: task.id } });
       if (result.count === 0) {
         if (current.state === TreatmentTaskState.COMPLETED) return this.taskResponse(current);
@@ -119,15 +124,18 @@ export class TreatmentActivityService {
       const patient = await this.patient(tx, userId);
       const medication = await tx.treatmentMedication.findFirst({ where: { id: medicationId, treatmentPlan: { patientId: patient.id, clinicId: patient.clinicId, state: TreatmentPlanState.ACTIVE } } });
       if (!medication) throw forbidden();
+      const bound = await this.customPrograms.patient(tx, medication.treatmentPlanId, context);
+      if (bound) await lockFinancial(tx, `custom-program-adherence:${key}`);
       const taskId = input.treatmentTaskId ?? null;
       if (taskId) {
         const task = await tx.treatmentTask.findFirst({ where: { id: taskId, treatmentPlanId: medication.treatmentPlanId, kind: 'MEDICATION', state: { not: TreatmentTaskState.CANCELLED } }, select: { id: true } });
         if (!task) throw adherenceTaskInvalid();
       }
       const existing = await tx.medicationAdherenceLog.findUnique({ where: { idempotencyKey: key } });
-      if (existing) return this.idempotentAdherence(existing, medication.id, taskId);
+      if (existing) { if (bound) await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'MEDICATION_ADHERENCE', resourceId: existing.id, metadata: { action: 'REPLAY' } }, context, tx); return this.idempotentAdherence(existing, medication.id, taskId); }
       try {
-        const adherence = await tx.medicationAdherenceLog.create({ data: { treatmentMedicationId: medication.id, treatmentTaskId: taskId, idempotencyKey: key } });
+        const now = bound ? await this.customPrograms.time(tx) : null;
+        const adherence = await tx.medicationAdherenceLog.create({ data: { treatmentMedicationId: medication.id, treatmentTaskId: taskId, idempotencyKey: key, ...(now ? { recordedAt: now, createdAt: now } : {}) } });
         await tx.treatmentProgressEvent.create({ data: { treatmentPlanId: medication.treatmentPlanId, treatmentTaskId: taskId, eventType: 'MEDICATION_ADHERENCE_RECORDED', occurredAt: adherence.recordedAt, metadata: { source: 'MEDICATION_ADHERENCE' } } });
         await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'MEDICATION_ADHERENCE', resourceId: adherence.id, metadata: { treatmentPlanId: medication.treatmentPlanId, treatmentTaskId: taskId } }, context, tx);
         return this.adherenceResponse(adherence);
@@ -152,10 +160,11 @@ export class TreatmentActivityService {
     return patient;
   }
 
-  private async plan(tx: Tx, planId: string, patientId: string, clinicId: string) {
+  private async plan(tx: Tx, planId: string, patientId: string, clinicId: string, actor: ClinicalActor) {
     const plan = await tx.treatmentPlan.findFirst({ where: { id: planId, patientId, clinicId } });
     if (!plan) throw forbidden();
-    return plan;
+    if (await this.customPrograms.clinician(tx, plan.id, actor)) return { ...await tx.treatmentPlan.findUniqueOrThrow({ where: { id: plan.id } }), customBound: true };
+    return { ...plan, customBound: false };
   }
 
   private async task(tx: Tx, taskId: string, treatmentPlanId: string) {

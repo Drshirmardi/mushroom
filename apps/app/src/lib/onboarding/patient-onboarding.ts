@@ -69,15 +69,16 @@ export async function loadPatientOnboarding(accessToken: string, client: Client 
 
 export function updateSelfProfile(
   accessToken: string,
-  body: components["schemas"]["UpdateSelfProfileDto"],
+  body: Omit<components["schemas"]["UpdateSelfProfileDto"], "gender"> & { gender?: "FEMALE" | "MALE" | "" | null },
   client: Client = apiClient,
 ) {
   const optionalText = (value: string | null | undefined) =>
     typeof value === "string" && value.trim() === "" ? null : value;
-  const normalizedBody = {
+  const normalizedBody: components["schemas"]["UpdateSelfProfileDto"] = {
     ...body,
     email: optionalText(body.email),
     cityName: optionalText(body.cityName),
+    gender: body.gender === "" ? null : body.gender,
   };
   return expectData(client.PATCH("/v1/patients/me", {
     headers: authorizationHeaders(accessToken),

@@ -20,12 +20,15 @@
     "start:dev": "node scripts/dev.mjs",
     "test": "tsc -p tsconfig.test.json --noEmit && vitest run test/reminders.integration.spec.ts --no-file-parallelism && vitest run --no-file-parallelism --exclude test/reminders.integration.spec.ts --exclude test/chat-capacity.load.spec.ts --exclude test/phase-12-release-capacity.load.spec.ts --exclude test/phase-12-performance-tuning.integration.spec.ts",
     "test:capacity": "tsc -p tsconfig.test.json --noEmit && vitest run test/chat-capacity.load.spec.ts --no-file-parallelism",
+    "test:commerce-mezaj": "node test/commerce-mezaj-verify.mjs",
     "test:phase-12-capacity": "tsc -p tsconfig.test.json --noEmit && vitest run test/phase-12-release-capacity.load.spec.ts --no-file-parallelism",
     "test:phase-12-performance": "tsc -p tsconfig.test.json --noEmit && vitest run test/phase-12-performance-tuning.integration.spec.ts --no-file-parallelism",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1151.0",
     "@fastify/cookie": "11.1.2",
+    "@fastify/multipart": "^10.1.3",
     "@fastify/static": "^10.1.5",
     "@nestjs/common": "11.2.7",
     "@nestjs/config": "^4.0.4",
@@ -48,6 +51,7 @@
     "prisma": "7.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "sharp": "^0.35.5",
     "socket.io": "4.8.1"
   },
   "devDependencies": {

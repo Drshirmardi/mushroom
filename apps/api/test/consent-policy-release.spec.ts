@@ -1,14 +1,15 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { resolve } from 'node:path';
+import { basename, resolve, sep } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const script = resolve(process.cwd(), 'prisma/manage-consent-policy.mjs');
 const rehearsalDocument = resolve(process.cwd(), '../../deploy/vps/reference-data/rehearsal-consent-policy.json');
 const scratchDirectories: string[] = [];
 
-function validate(environment: string, document = rehearsalDocument) {
+function validate(environment: string, document = rehearsalDocument, policyKey = 'MEDICAL_INTAKE_PROCESSING') {
   return spawnSync(process.execPath, [script, 'validate'], {
     cwd: process.cwd(),
     encoding: 'utf8',
@@ -16,15 +17,74 @@ function validate(environment: string, document = rehearsalDocument) {
       ...process.env,
       MUSHROOM_ENVIRONMENT: environment,
       CONSENT_POLICY_DOCUMENT_FILE: document,
+      CONSENT_POLICY_KEY: policyKey,
     },
   });
 }
 
 afterEach(() => {
-  for (const directory of scratchDirectories.splice(0)) rmSync(directory, { recursive: true, force: true });
+  for (const directory of scratchDirectories.splice(0)) {
+    const absolute = resolve(directory);
+    if (!absolute.startsWith(resolve(tmpdir()) + sep) || !basename(absolute).startsWith('mushroom-consent-policy-')) throw new Error('Unexpected consent test scratch directory.');
+    rmSync(absolute, { recursive: true, force: true });
+  }
 });
 
 describe('release-managed consent policy document', () => {
+  it('requires an explicit joint-result disclosure purpose and exact environment/hash', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic joint-result disclosure fixture only. Not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'COUPLES_RESULT_SHARING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic disclosure', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'joint-disclosure.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'COUPLES_ACCOUNT_LINKING').status).toBe(1);
+    expect(validate('staging', path, 'COUPLES_RESULT_SHARING').status).toBe(0); expect(validate('production', path, 'COUPLES_RESULT_SHARING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'COUPLES_RESULT_SHARING').stderr).toContain('contentHash does not match');
+  });
+  it('requires explicit assessment-processing purpose and exact owner document/environment', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic test-only assessment processing document, not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'ASSESSMENT_PROCESSING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic processing', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'assessment.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'COUPLES_ACCOUNT_LINKING').status).toBe(1);
+    const result = validate('staging', path, 'ASSESSMENT_PROCESSING'); expect(result.status, result.stderr).toBe(0); expect(validate('production', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').stderr).toContain('contentHash does not match');
+  });
+  it('requires explicit purchase-terms purpose and exact environment/hash without publishing policy text', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic assessment purchase terms fixture only. Not legal text.';
+    const document = { schemaVersion: 1, policyKey: 'ASSESSMENT_PURCHASE_TERMS', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic purchase terms', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'purchase-terms.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
+    expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(0); expect(validate('production', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').stderr).toContain('contentHash does not match');
+  });
+  it('requires explicit program-purchase purpose, exact reviewed hash and environment without installing terms', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic program purchase terms only. Not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'PROGRAM_PURCHASE_TERMS', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic program terms', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'program-terms.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'ASSESSMENT_PURCHASE_TERMS').status).toBe(1);
+    expect(validate('staging', path, 'PROGRAM_PURCHASE_TERMS').status).toBe(0); expect(validate('production', path, 'PROGRAM_PURCHASE_TERMS').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'PROGRAM_PURCHASE_TERMS').stderr).toContain('contentHash does not match');
+  });
+    it('requires exact custom-care purpose, reviewed body hash and explicitly approved environment', () => {
+      const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+      const body = 'Synthetic request-specific custom professional care fixture. Not approved legal text.';
+      const document = { schemaVersion: 1, policyKey: 'CUSTOM_PROGRAM_CARE', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic custom care terms', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+      const path = resolve(directory, 'custom-care.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+      expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'PROGRAM_PURCHASE_TERMS').status).toBe(1);
+      expect(validate('staging', path, 'CUSTOM_PROGRAM_CARE').status).toBe(0); expect(validate('production', path, 'CUSTOM_PROGRAM_CARE').status).toBe(1);
+      writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'CUSTOM_PROGRAM_CARE').stderr).toContain('contentHash does not match');
+    });
+    it('requires explicit care-sharing purpose, exact reviewed hash and approved environment', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic appointment-specific care sharing fixture. Not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'ASSESSMENT_CARE_SHARING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic care disclosure', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'care-sharing.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1); expect(validate('staging', path, 'ASSESSMENT_PROCESSING').status).toBe(1);
+    expect(validate('staging', path, 'ASSESSMENT_CARE_SHARING').status).toBe(0); expect(validate('production', path, 'ASSESSMENT_CARE_SHARING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' changed' }), 'utf8'); expect(validate('staging', path, 'ASSESSMENT_CARE_SHARING').stderr).toContain('contentHash does not match');
+  });
   it('accepts the exact reviewed document in rehearsal environments', () => {
     for (const environment of ['staging', 'production-sim']) {
       const result = validate(environment);
@@ -50,5 +110,16 @@ describe('release-managed consent policy document', () => {
     const result = validate('staging', path);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('contentHash does not match');
+  });
+  it('requires an explicit matching purpose for a test-only couple-link document and preserves hash/environment gates', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'mushroom-consent-policy-')); scratchDirectories.push(directory);
+    const body = 'Synthetic test-only account-link policy, not approved legal text.';
+    const document = { schemaVersion: 1, policyKey: 'COUPLES_ACCOUNT_LINKING', versionNumber: 1, locale: 'fa-IR', title: 'Synthetic link', body, contentHash: createHash('sha256').update(body).digest('hex'), allowedEnvironments: ['staging'] };
+    const path = resolve(directory, 'couple-link.json'); writeFileSync(path, JSON.stringify(document), 'utf8');
+    expect(validate('staging', path).status).toBe(1);
+    const optedIn = validate('staging', path, 'COUPLES_ACCOUNT_LINKING'); expect(optedIn.status, optedIn.stderr).toBe(0);
+    expect(validate('production', path, 'COUPLES_ACCOUNT_LINKING').status).toBe(1);
+    writeFileSync(path, JSON.stringify({ ...document, body: body + ' unapproved change' }), 'utf8');
+    expect(validate('staging', path, 'COUPLES_ACCOUNT_LINKING').stderr).toContain('contentHash does not match');
   });
 });

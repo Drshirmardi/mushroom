@@ -7,7 +7,7 @@ type ApiClient = ReturnType<typeof createApiClient>;
 export type CommerceCategory = components["schemas"]["CommerceCategoryResponseDto"];
 export type CommerceProduct = components["schemas"]["CommerceProductResponseDto"];
 export type CommerceSku = components["schemas"]["CommerceSkuResponseDto"];
-export type CommerceCatalogData = { categories: CommerceCategory[]; products: CommerceProduct[] };
+export type CommerceCatalogData = { categories: CommerceCategory[]; products: CommerceProduct[]; pagination?: { page: number; pageSize: number; total: number } };
 export type CommerceCourierShippingRate = components["schemas"]["CommerceCourierShippingRateDto"];
 export type CommerceCatalogState =
   | { status: "ready"; data: CommerceCatalogData }
@@ -34,14 +34,14 @@ async function dataOrThrow<T>(request: Promise<{ data?: T; response: Response }>
   }
 }
 
-export async function loadCommerceCatalog(client: ApiClient, accessToken: string): Promise<CommerceCatalogState> {
+export async function loadCommerceCatalog(client: ApiClient, accessToken: string, page = 1): Promise<CommerceCatalogState> {
   try {
     const headers = authorization(accessToken);
     const [categories, products] = await Promise.all([
       dataOrThrow<CommerceCategory[]>(client.GET("/v1/admin/commerce/categories", { headers })),
-      dataOrThrow<components["schemas"]["CommercePageResponseDto"]>(client.GET("/v1/admin/commerce/products", { headers, params: { query: { page: 1, pageSize: 100 } } })),
+      dataOrThrow<components["schemas"]["CommercePageResponseDto"]>(client.GET("/v1/admin/commerce/products", { headers, params: { query: { page, pageSize: 100 } } })),
     ]);
-    return { status: "ready", data: { categories, products: products.items } };
+    return { status: "ready", data: { categories, products: products.items, pagination: { page: products.page, pageSize: products.pageSize, total: products.total } } };
   } catch (error) {
     const status = error instanceof CommerceCatalogApiError ? error.status : 0;
     if (status === 401 || status === 403) return { status: "unauthorized" };

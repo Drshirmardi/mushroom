@@ -95,6 +95,29 @@ export class CommerceCheckoutService {
     });
   }
 
+  async previewDiscount(userId: string, discountCode: string) {
+    const patient = await this.patient(userId);
+    const code = this.discounts.canonicalCode(discountCode);
+    return this.prisma.$transaction(async tx => {
+      const cart = await tx.commerceCart.findUnique({ where: { patientId: patient.id }, include: this.cartInclude });
+      if (!cart?.items.length) throw cartEmpty();
+      if (cart.items.some(item => !item.sku.isActive || item.sku.product.status !== 'ACTIVE' || !item.sku.product.category.isActive)) throw skuUnavailable();
+      const subtotal = cart.items.reduce((sum, item) => sum + item.sku.currentPriceToman * BigInt(item.quantity), 0n);
+      const tax = cart.items.reduce((sum, item) => sum + item.sku.currentTaxToman * BigInt(item.quantity), 0n);
+      const cartEntries = cart.items.map(item => ({ id: item.id, quantity: item.quantity, updatedAt: item.updatedAt.toISOString() }));
+      const reserved = await tx.commerceOrder.findFirst({ where: {
+        patientId: patient.id, status: 'PENDING_PAYMENT', payment: null, subtotalAmountToman: subtotal, taxAmountToman: tax,
+        snapshot: { is: { AND: [{ payload: { path: ['cartEntries'], equals: cartEntries } }, { payload: { path: ['discount', 'code'], equals: code } }] } },
+        OR: [{ billingIntent: null }, { billingIntent: { is: { status: 'PENDING', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } } }],
+        discountReservation: { is: { status: 'ACTIVE', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } },
+        reservations: { some: {}, every: { status: 'ACTIVE', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } },
+      }, orderBy: { createdAt: 'desc' } });
+      if (reserved) return { code, subtotalAmountToman: subtotal.toString(), taxAmountToman: tax.toString(), discountAmountToman: reserved.discountAmountToman.toString() };
+      const discount = await this.discounts.prepareCheckout(tx, { clinicId: patient.clinicId, patientId: patient.id, discountCode: code, subtotalAmountToman: subtotal });
+      return { code, subtotalAmountToman: subtotal.toString(), taxAmountToman: tax.toString(), discountAmountToman: (discount?.amountToman ?? 0n).toString() };
+    });
+  }
+
   async checkout(userId: string, idempotencyKey: string | undefined, body: CheckoutCommerceOrderDto, context: AuditContext) {
     const key = this.idempotencyKey(idempotencyKey);
     const discountCode = body.discountCode === undefined ? undefined : this.discounts.canonicalCode(body.discountCode);
@@ -104,6 +127,7 @@ export class CommerceCheckoutService {
     if (existing) return this.existingOrder(existing, checkout);
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`commerce-checkout:${patient.id}`}, 0))::text AS locked`);
         const concurrent = await tx.commerceOrder.findFirst({ where: { patientId: patient.id, idempotencyKey: key }, include: this.orderInclude });
         if (concurrent) return this.existingOrder(concurrent, checkout);
         if (checkout.shippingMethod === 'PICKUP' && checkout.addressId) throw inputInvalid(['addressId']);
@@ -120,15 +144,23 @@ export class CommerceCheckoutService {
         });
         const subtotal = lines.reduce((sum, line) => sum + line.unitPriceToman * BigInt(line.quantity), 0n);
         const tax = lines.reduce((sum, line) => sum + line.unitTaxToman * BigInt(line.quantity), 0n);
+        const cartEntries = cart.items.map(item => ({ id: item.id, quantity: item.quantity, updatedAt: item.updatedAt.toISOString() }));
+        const checkoutCartKey = createHash('sha256').update(JSON.stringify({ cartEntries, lines, checkout, shipping }, (_, value: unknown) => typeof value === 'bigint' ? value.toString() : value)).digest('hex');
+        const reusable = await tx.commerceOrder.findFirst({ where: {
+          patientId: patient.id, status: 'PENDING_PAYMENT', payment: null,
+          snapshot: { is: { payload: { path: ['checkoutCartKey'], equals: checkoutCartKey } } },
+          OR: [{ billingIntent: null }, { billingIntent: { is: { status: 'PENDING', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } } }],
+          reservations: { some: {}, every: { status: 'ACTIVE', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } },
+        }, include: this.orderInclude, orderBy: { createdAt: 'desc' } });
+        if (reusable) return this.order(reusable);
         const preparedDiscount = await this.discounts.prepareCheckout(tx, { clinicId: patient.clinicId, patientId: patient.id, discountCode, subtotalAmountToman: subtotal });
         const discountAmountToman = preparedDiscount?.amountToman ?? 0n;
         const discountedLines = this.applyDiscount(lines, subtotal, discountAmountToman);
         const total = subtotal + tax - discountAmountToman + shipping.amountToman;
-        const payload = { version: 1, lines: discountedLines.map((line) => ({ skuId: line.skuId, skuCode: line.skuCodeSnapshot, productTitle: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), unitTaxToman: line.unitTaxToman.toString(), discountAmountToman: line.discountAmountToman.toString(), lineTotalToman: line.lineTotalToman.toString() })), discount: { code: preparedDiscount?.code ?? null, amountToman: discountAmountToman.toString() }, shipping: { method: checkout.shippingMethod, amountToman: shipping.amountToman.toString(), address: shipping.address }, totals: { subtotalAmountToman: subtotal.toString(), taxAmountToman: tax.toString(), discountAmountToman: discountAmountToman.toString(), shippingAmountToman: shipping.amountToman.toString(), totalAmountToman: total.toString() } };
+        const payload = { version: 1, checkoutCartKey, cartEntries, lines: discountedLines.map((line) => ({ skuId: line.skuId, skuCode: line.skuCodeSnapshot, productTitle: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), unitTaxToman: line.unitTaxToman.toString(), discountAmountToman: line.discountAmountToman.toString(), lineTotalToman: line.lineTotalToman.toString() })), discount: { code: preparedDiscount?.code ?? null, amountToman: discountAmountToman.toString() }, shipping: { method: checkout.shippingMethod, amountToman: shipping.amountToman.toString(), address: shipping.address }, totals: { subtotalAmountToman: subtotal.toString(), taxAmountToman: tax.toString(), discountAmountToman: discountAmountToman.toString(), shippingAmountToman: shipping.amountToman.toString(), totalAmountToman: total.toString() } };
         const order = await tx.commerceOrder.create({ data: { clinicId: patient.clinicId, patientId: patient.id, idempotencyKey: key, shippingMethod: checkout.shippingMethod, shippingAddressSnapshot: shipping.address === null ? Prisma.DbNull : shipping.address as Prisma.InputJsonValue, shippingDetailSnapshot: { sourceAddressId: shipping.address?.id ?? null, shippingRateId: shipping.rateId, method: checkout.shippingMethod, discountCode: preparedDiscount?.code ?? null }, subtotalAmountToman: subtotal, taxAmountToman: tax, discountAmountToman, shippingAmountToman: shipping.amountToman, totalAmountToman: total, lines: { create: discountedLines }, snapshot: { create: { subtotalAmountToman: subtotal, taxAmountToman: tax, discountAmountToman, shippingAmountToman: shipping.amountToman, totalAmountToman: total, payload: payload as Prisma.InputJsonValue, integrityHash: createHash('sha256').update(JSON.stringify(payload)).digest('hex') } }, }, include: this.orderInclude });
         const reservations = await this.inventory.reserveCheckout(tx, { clinicId: patient.clinicId, orderId: order.id, lines: discountedLines.map((line) => ({ skuId: line.skuId!, quantity: line.quantity })) });
         await this.discounts.reserveCheckout(tx, { prepared: preparedDiscount, patientId: patient.id, orderId: order.id, expiresAt: reservations[0]?.expiresAt ?? null });
-        await tx.commerceCartItem.deleteMany({ where: { cartId: cart.id } });
         await this.audit(tx, 'COMMERCE_ORDER_CHECKED_OUT', 'COMMERCE_ORDER', order.id, context, { shippingMethod: checkout.shippingMethod, discountCode: preparedDiscount?.code ?? null, totalAmountToman: order.totalAmountToman.toString(), lineCount: order.lines.length });
         return this.order(order);
       });
@@ -160,7 +192,7 @@ export class CommerceCheckoutService {
     // A Payment aggregate is created only in the verified-payment transaction. Its
     // status can later reflect a refund, which must not erase the historic receipt.
     if (!order.payment) throw new NotFoundException({ code: 'COMMERCE_RECEIPT_NOT_AVAILABLE', message: 'A verified payment receipt is not available for this order.', details: {} });
-    return { orderId: order.id, orderNumber: order.orderNumber.toString(), totalAmountToman: order.totalAmountToman.toString(), status: order.payment.status, verifiedAt: order.payment.verifiedAt.toISOString(), providerReferenceId: order.payment.providerReferenceId, providerTraceNumber: order.payment.providerTraceNumber, order: this.order(order) };
+    return { orderId: order.id, orderNumber: order.orderNumber.toString(), totalAmountToman: order.totalAmountToman.toString(), status: order.payment.status, method: order.payment.method, verifiedAt: order.payment.verifiedAt.toISOString(), providerReferenceId: order.payment.providerReferenceId, providerTraceNumber: order.payment.providerTraceNumber, order: this.order(order) };
   }
 
   private readonly cartInclude = { items: { include: { sku: { include: { product: { include: { category: true } } } } }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] } } satisfies Prisma.CommerceCartInclude;
@@ -174,7 +206,7 @@ export class CommerceCheckoutService {
   private idempotencyKey(value: string | undefined) { const key = value?.trim(); if (!key || key.length > 240 || !/^[\x21-\x7e]+$/u.test(key)) throw keyRequired(); return key; }
   private existingOrder(order: { shippingMethod: string; shippingDetailSnapshot: Prisma.JsonValue; lines: Array<unknown> }, body: CheckoutCommerceOrderDto) { const detail = order.shippingDetailSnapshot && typeof order.shippingDetailSnapshot === 'object' && !Array.isArray(order.shippingDetailSnapshot) ? order.shippingDetailSnapshot as Record<string, unknown> : {}; if (order.shippingMethod !== body.shippingMethod || (detail.sourceAddressId ?? null) !== (body.addressId ?? null) || (detail.discountCode ?? null) !== (body.discountCode ?? null)) throw keyReused(); return this.order(order as never); }
   private applyDiscount<T extends { quantity: number; unitPriceToman: bigint; unitTaxToman: bigint }>(lines: T[], subtotal: bigint, discountAmountToman: bigint) { let allocated = 0n; return lines.map((line, index) => { const base = line.unitPriceToman * BigInt(line.quantity); const discount = index === lines.length - 1 ? discountAmountToman - allocated : base * discountAmountToman / subtotal; allocated += discount; return { ...line, discountAmountToman: discount, lineTotalToman: base + line.unitTaxToman * BigInt(line.quantity) - discount }; }); }
-  private order(order: { id: string; orderNumber: bigint; status: string; shippingMethod: 'PICKUP' | 'COURIER'; shippingAddressSnapshot: Prisma.JsonValue | null; subtotalAmountToman: bigint; taxAmountToman: bigint; discountAmountToman: bigint; shippingAmountToman: bigint; totalAmountToman: bigint; carrierName: string | null; trackingCode: string | null; trackingUrl: string | null; createdAt: Date; payment?: { status: string; refunds: Array<{ status: string }> } | null; lines: Array<{ skuCodeSnapshot: string; productTitleSnapshot: string; quantity: number; unitPriceToman: bigint; unitTaxToman: bigint; discountAmountToman: bigint; lineTotalToman: bigint }> }) { return { id: order.id, orderNumber: order.orderNumber.toString(), status: order.status, shippingMethod: order.shippingMethod, shippingAddress: order.shippingAddressSnapshot as AddressSnapshot | null, subtotalAmountToman: order.subtotalAmountToman.toString(), taxAmountToman: order.taxAmountToman.toString(), discountAmountToman: order.discountAmountToman.toString(), shippingAmountToman: order.shippingAmountToman.toString(), totalAmountToman: order.totalAmountToman.toString(), lines: order.lines.map((line) => ({ skuCode: line.skuCodeSnapshot, productTitle: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), unitTaxToman: line.unitTaxToman.toString(), discountAmountToman: line.discountAmountToman.toString(), lineTotalToman: line.lineTotalToman.toString() })), carrierName: order.carrierName, trackingCode: order.trackingCode, trackingUrl: order.trackingUrl, paymentStatus: order.payment?.status ?? null, refundStatuses: order.payment?.refunds.map((refund) => refund.status) ?? [], createdAt: order.createdAt.toISOString() }; }
+  private order(order: { id: string; orderNumber: bigint; status: string; shippingMethod: 'PICKUP' | 'COURIER'; shippingAddressSnapshot: Prisma.JsonValue | null; subtotalAmountToman: bigint; taxAmountToman: bigint; discountAmountToman: bigint; shippingAmountToman: bigint; totalAmountToman: bigint; carrierName: string | null; trackingCode: string | null; trackingUrl: string | null; createdAt: Date; payment?: { status: string; method?: string; refunds: Array<{ status: string }> } | null; lines: Array<{ skuCodeSnapshot: string; productTitleSnapshot: string; quantity: number; unitPriceToman: bigint; unitTaxToman: bigint; discountAmountToman: bigint; lineTotalToman: bigint }> }) { return { id: order.id, orderNumber: order.orderNumber.toString(), status: order.status, shippingMethod: order.shippingMethod, shippingAddress: order.shippingAddressSnapshot as AddressSnapshot | null, subtotalAmountToman: order.subtotalAmountToman.toString(), taxAmountToman: order.taxAmountToman.toString(), discountAmountToman: order.discountAmountToman.toString(), shippingAmountToman: order.shippingAmountToman.toString(), totalAmountToman: order.totalAmountToman.toString(), lines: order.lines.map((line) => ({ skuCode: line.skuCodeSnapshot, productTitle: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), unitTaxToman: line.unitTaxToman.toString(), discountAmountToman: line.discountAmountToman.toString(), lineTotalToman: line.lineTotalToman.toString() })), carrierName: order.carrierName, trackingCode: order.trackingCode, trackingUrl: order.trackingUrl, paymentStatus: order.payment?.status ?? null, paymentMethod: order.payment?.method ?? null, refundStatuses: order.payment?.refunds.map((refund) => refund.status) ?? [], createdAt: order.createdAt.toISOString() }; }
   private unique(error: unknown) { return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'; }
   private async audit(tx: Prisma.TransactionClient, action: string, subjectType: string, subjectId: string, context: AuditContext, metadata: Record<string, unknown>) { const actor = await tx.user.findUnique({ where: { id: context.actorUserId }, select: { id: true } }); const session = actor ? await tx.session.findFirst({ where: { id: context.actorSessionId, userId: actor.id }, select: { id: true } }) : null; await tx.auditEvent.create({ data: { action, actorUserId: actor?.id ?? null, actorSessionId: session?.id ?? null, subjectType, subjectId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: metadata as Prisma.InputJsonValue } }); }
 }

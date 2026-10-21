@@ -31,7 +31,7 @@ function service(overrides: { config?: unknown; callbackAttempts?: unknown[] } =
   const orchestration = { createAttempt: vi.fn().mockResolvedValue(attempt), processCallback: vi.fn().mockResolvedValue(attempt), verifyAttempt: vi.fn().mockResolvedValue({}), retryTimedOutVerify: vi.fn().mockResolvedValue({}) };
   const crypto = { decrypt: vi.fn().mockReturnValue({ merchantId: 'm', terminalId: 't', terminalKey: 'k' }) };
   const registry = { resolve: vi.fn().mockReturnValue(provider) };
-  return { instance: new PaymentAttemptService(prisma as never, registry as never, orchestration as never, crypto as never, runtime(liveValues)), orchestration, crypto };
+  return { instance: new PaymentAttemptService(prisma as never, registry as never, orchestration as never, crypto as never, runtime(liveValues), { owns: vi.fn().mockResolvedValue(null) } as never), orchestration, crypto };
 }
 
 describe('Sadad live runtime wiring', () => {

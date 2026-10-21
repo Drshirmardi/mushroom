@@ -1,0 +1,63 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+
+export class OfferingPolicyDraftDto {
+  @ApiPropertyOptional({ type: 'integer', minimum: 0, maximum: 120 }) @IsOptional() @IsInt() @Min(0) @Max(120) minimumAgeYears?: number;
+  @ApiPropertyOptional({ type: 'integer', minimum: 60, maximum: 86400 }) @IsOptional() @IsInt() @Min(60) @Max(86400) quoteTtlSeconds?: number;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 3650 }) @IsOptional() @IsInt() @Min(1) @Max(3650) entitlementValidityDays?: number;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 720 }) @IsOptional() @IsInt() @Min(1) @Max(720) invitationTtlHours?: number;
+  @ApiPropertyOptional({ maxLength: 80 }) @IsOptional() @IsString() @Length(1, 80) @Matches(/\S/u) refundPolicyRef?: string;
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') consentPolicyVersionId?: string;
+  @ApiPropertyOptional({ maxLength: 80 }) @IsOptional() @IsString() @Length(1, 80) @Matches(/\S/u) retentionPolicyRef?: string;
+  @ApiPropertyOptional({ maxLength: 80 }) @IsOptional() @IsString() @Length(1, 80) @Matches(/\S/u) resultVisibilityPolicyRef?: string;
+}
+export class CreateAssessmentOfferingVersionDto {
+  @ApiProperty({ maxLength: 80, pattern: '^[A-Z][A-Z0-9_]{0,79}$' }) @IsString() @Matches(/^[A-Z][A-Z0-9_]{0,79}$/u) offeringKey!: string;
+  @ApiProperty({ enum: ['INDIVIDUAL', 'COUPLES'] }) @IsIn(['INDIVIDUAL', 'COUPLES']) kind!: 'INDIVIDUAL' | 'COUPLES';
+  @ApiProperty({ maxLength: 255 }) @IsString() @Length(1, 255) @Matches(/\S/u) title!: string;
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') assessmentVersionId!: string;
+  @ApiProperty({ enum: ['FREE', 'PAID'] }) @IsIn(['FREE', 'PAID']) priceMode!: 'FREE' | 'PAID';
+  @ApiProperty({ enum: ['IRR'] }) @IsIn(['IRR']) currency!: 'IRR';
+  @ApiPropertyOptional({ enum: ['PRE_START', 'PRE_RESULT_UNLOCK'], nullable: true }) @IsOptional() @IsIn(['PRE_START', 'PRE_RESULT_UNLOCK']) paymentPoint?: 'PRE_START' | 'PRE_RESULT_UNLOCK' | null;
+  @ApiPropertyOptional({ type: String, nullable: true, pattern: '^(0|[1-9][0-9]{0,18})$' }) @IsOptional() @IsString() @Matches(/^(0|[1-9][0-9]{0,18})$/u) amountRial?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, maxLength: 80 }) @IsOptional() @IsString() @Matches(/^[A-Za-z][A-Za-z0-9_.:-]{0,79}$/u) algorithmId?: string | null;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 2147483647, nullable: true }) @IsOptional() @IsInt() @Min(1) @Max(2147483647) algorithmVersion?: number | null;
+  @ApiPropertyOptional({ type: OfferingPolicyDraftDto }) @IsOptional() @IsObject() @ValidateNested() @Type(() => OfferingPolicyDraftDto) policyDraft?: OfferingPolicyDraftDto;
+}
+export class AssessmentOfferingListQueryDto {
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 10000, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 50, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
+  @ApiPropertyOptional({ maxLength: 80 }) @IsOptional() @IsString() @MaxLength(80) @Matches(/^[A-Z][A-Z0-9_]{0,79}$/u) offeringKey?: string;
+  @ApiPropertyOptional({ enum: ['INDIVIDUAL', 'COUPLES'] }) @IsOptional() @IsIn(['INDIVIDUAL', 'COUPLES']) kind?: 'INDIVIDUAL' | 'COUPLES';
+}
+export class AssessmentOfferingReadinessDto {
+  @ApiProperty({ enum: [false] }) ready!: false;
+  @ApiProperty({ type: [String] }) blockers!: string[];
+}
+export class AssessmentOfferingVersionResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() offeringKey!: string;
+  @ApiProperty() versionNumber!: number;
+  @ApiProperty({ enum: ['INDIVIDUAL', 'COUPLES'] }) kind!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty() locale!: string;
+  @ApiProperty({ enum: ['DRAFT', 'RETIRED'] }) status!: string;
+  @ApiProperty({ format: 'uuid' }) assessmentVersionId!: string;
+  @ApiProperty({ enum: ['FREE', 'PAID'] }) priceMode!: string;
+  @ApiProperty({ type: String, nullable: true, enum: ['PRE_START', 'PRE_RESULT_UNLOCK'] }) paymentPoint!: string | null;
+  @ApiProperty({ type: String, nullable: true }) amountRial!: string | null;
+  @ApiProperty({ enum: ['IRR'] }) currency!: string;
+  @ApiProperty({ type: String, nullable: true }) algorithmId!: string | null;
+  @ApiProperty({ type: Number, nullable: true }) algorithmVersion!: number | null;
+  @ApiProperty({ type: OfferingPolicyDraftDto }) policyDraft!: OfferingPolicyDraftDto;
+  @ApiProperty({ format: 'date-time' }) createdAt!: Date;
+  @ApiProperty({ type: String, format: 'date-time', nullable: true }) retiredAt!: Date | null;
+  @ApiProperty({ type: AssessmentOfferingReadinessDto }) releaseReadiness!: AssessmentOfferingReadinessDto;
+}
+export class AssessmentOfferingPageResponseDto {
+  @ApiProperty({ type: [AssessmentOfferingVersionResponseDto] }) items!: AssessmentOfferingVersionResponseDto[];
+  @ApiProperty() total!: number;
+  @ApiProperty() page!: number;
+  @ApiProperty() pageSize!: number;
+}

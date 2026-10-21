@@ -19,12 +19,13 @@ import {
 } from "@/lib/api";
 
 const sessionManager = new DashboardSessionManager(authApiClient);
-setAccessTokenProvider(async () => {
+export async function getDashboardAccessToken(): Promise<string | null> {
   const snapshot = await sessionManager.bootstrap();
   return snapshot.status === "authenticated"
     ? snapshot.authentication.accessToken
     : null;
-});
+}
+setAccessTokenProvider(getDashboardAccessToken);
 
 interface DashboardSessionContextValue {
   authentication: Authentication;

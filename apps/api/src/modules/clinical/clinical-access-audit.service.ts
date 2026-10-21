@@ -25,6 +25,21 @@ export type ClinicalAuditEvent = {
 export class ClinicalAccessAuditService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async recordMany(events: ClinicalAuditEvent[], context: ClinicalAuditContext, tx: Prisma.TransactionClient = this.prisma) {
+    if (!events.length) return;
+    try {
+      await tx.patientAccessAudit.createMany({ data: events.map(event => ({
+        clinicId: event.clinicId, patientId: event.patientId, actorUserId: context.actorUserId,
+        actorSessionId: context.actorSessionId, action: event.action, resourceType: event.resourceType,
+        resourceId: event.resourceId, resourceRevisionId: event.resourceRevisionId,
+        requestId: context.requestId.slice(0, 128), correlationId: context.correlationId?.slice(0, 128),
+        ipAddress: context.ipAddress, metadata: (event.metadata ?? {}) as Prisma.InputJsonObject,
+      })) });
+    } catch {
+      throw new ServiceUnavailableException({ code: 'CLINICAL_AUDIT_UNAVAILABLE', message: 'The clinical access audit is unavailable.', details: {} });
+    }
+  }
+
   async record(event: ClinicalAuditEvent, context: ClinicalAuditContext, tx: Prisma.TransactionClient = this.prisma) {
     try {
       await tx.patientAccessAudit.create({

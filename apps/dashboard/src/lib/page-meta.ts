@@ -21,6 +21,7 @@ export const PAGE_META = {
   orders: { title: "سفارش‌ها", subtitle: "پیگیری و مدیریت سفارشات" },
   discounts: { title: "کدهای تخفیف", subtitle: "مدیریت کوپن‌ها و تخفیف‌ها" },
   revenue: { title: "درآمد و گزارشات", subtitle: "تحلیل مالی کلینیک" },
+  billing: { title: "کیف پول و صورتحساب", subtitle: "کیف پول بیماران، پرداخت‌ها و تطبیق مالی" },
   messages: { title: "پیام‌ها", subtitle: "گفتگوی امن با بیماران" },
   notifications: { title: "اعلان‌ها", subtitle: "مرکز مدیریت اعلان‌های سیستم" },
   automation: { title: "اتوماسیون", subtitle: "جریان‌های کاری خودکار" },

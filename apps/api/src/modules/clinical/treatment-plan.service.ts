@@ -8,6 +8,7 @@ import type { CreateTreatmentPlanDto, ExercisePlanDto, NutritionPlanDto, Treatme
 import type { TreatmentReportingQueryDto } from './treatment-plan-response.dto';
 import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
+import { CustomProgramBoundaryService } from './custom-program-boundary.service';
 
 type ClinicalActor = ClinicalAuditContext & { roles: RoleCode[] };
 type Tx = Prisma.TransactionClient;
@@ -31,12 +32,13 @@ export class TreatmentPlanService {
     private readonly access: ClinicalResourceAccessService,
     private readonly permissions: ClinicalPermissionService,
     private readonly audit: ClinicalAccessAuditService,
+    private readonly customPrograms: CustomProgramBoundaryService,
   ) {}
 
   async list(patientId: string, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:view');
     return this.transaction(async (tx) => {
-      const items = await tx.treatmentPlan.findMany({ where: { patientId: patient.id, clinicId: patient.clinicId }, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], include: planInclude });
+      const items = await tx.treatmentPlan.findMany({ where: { patientId: patient.id, clinicId: patient.clinicId, AND: await this.customPrograms.clinicianFilter(tx, patient.id, patient.clinicId, actor) }, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], include: planInclude });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'TREATMENT_PLAN', resourceId: patient.id, metadata: { view: 'LIST' } }, actor, tx);
       return { items: items.map((plan) => this.response(plan)), nextCursor: null };
     });
@@ -47,6 +49,7 @@ export class TreatmentPlanService {
     const patient = await this.authorize(patientId, actor, 'clinical:record:view');
     return this.transaction(async (tx) => {
       const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      await this.customPrograms.clinician(tx, plan.id, actor);
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'TREATMENT_PLAN', resourceId: plan.id, metadata: { view: 'DETAIL' } }, actor, tx);
       return this.response(plan);
     });
@@ -54,32 +57,41 @@ export class TreatmentPlanService {
 
   async create(patientId: string, input: CreateTreatmentPlanDto, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
+    return this.transaction(tx => this.createDraftInTransaction(tx, patient, input, actor));
+  }
+
+  async createDraftInTransaction(tx: Tx, patient: { id: string; clinicId: string }, input: CreateTreatmentPlanDto, actor: ClinicalActor, at?: Date) {
     this.uniquePositions(input.sessionPlans ?? []);
-    return this.transaction(async (tx) => {
+    const stamp = at ? { createdAt: at, updatedAt: at } : {};
       const plan = await tx.treatmentPlan.create({
         data: {
           clinicId: patient.clinicId,
           patientId: patient.id,
           title: this.optional(input.title),
-          medications: input.medications?.length ? { create: input.medications.map((item) => this.medication(item)) } : undefined,
-          sessionPlans: input.sessionPlans?.length ? { create: input.sessionPlans.map((item) => this.session(item)) } : undefined,
-          exercisePlans: input.exercisePlans?.length ? { create: input.exercisePlans.map((item) => this.exercise(item)) } : undefined,
-          nutritionPlans: input.nutritionPlans?.length ? { create: input.nutritionPlans.map((item) => this.nutrition(item)) } : undefined,
+          ...stamp,
+          medications: input.medications?.length ? { create: input.medications.map((item) => ({ ...this.medication(item), ...stamp })) } : undefined,
+          sessionPlans: input.sessionPlans?.length ? { create: input.sessionPlans.map((item) => ({ ...this.session(item), ...stamp })) } : undefined,
+          exercisePlans: input.exercisePlans?.length ? { create: input.exercisePlans.map((item) => ({ ...this.exercise(item), ...stamp })) } : undefined,
+          nutritionPlans: input.nutritionPlans?.length ? { create: input.nutritionPlans.map((item) => ({ ...this.nutrition(item), ...stamp })) } : undefined,
         },
         include: planInclude,
       });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'TREATMENT_PLAN', resourceId: plan.id, metadata: { sessionPlanCount: plan.sessionPlans.length, medicationCount: plan.medications.length, exercisePlanCount: plan.exercisePlans.length, nutritionPlanCount: plan.nutritionPlans.length } }, actor, tx);
       return this.response(plan);
-    });
   }
+
+  /** Caller must establish exact custom request authority and audit within this same transaction. */
+  async readExactInTransaction(tx: Tx, planId: string, patientId: string, clinicId: string) { return this.response(await this.plan(tx, planId, patientId, clinicId)); }
 
   async update(patientId: string, planId: string, input: UpdateTreatmentPlanDto, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
     return this.transaction(async (tx) => {
-      const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      let plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      const bound = await this.customPrograms.clinician(tx, plan.id, actor, input.title !== undefined || input.state !== 'COMPLETED');
+      if (bound) plan = await this.plan(tx, planId, patient.id, patient.clinicId);
       this.editable(plan.state);
       const state = input.state ? this.transition(plan.state, input.state) : undefined;
-      const updated = await tx.treatmentPlan.update({ where: { id: plan.id }, data: { ...(input.title === undefined ? {} : { title: this.text(input.title) }), ...(state ? { state } : {}) }, include: planInclude });
+      const updated = await tx.treatmentPlan.update({ where: { id: plan.id }, data: { ...(input.title === undefined ? {} : { title: this.text(input.title) }), ...(state ? { state } : {}), ...(bound ? { updatedAt: await this.customPrograms.time(tx) } : {}) }, include: planInclude });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'TREATMENT_PLAN', resourceId: plan.id, metadata: { changedState: state ?? null, changedTitle: input.title !== undefined } }, actor, tx);
       return this.response(updated);
     });
@@ -151,7 +163,8 @@ export class TreatmentPlanService {
     return this.transaction(async (tx) => {
       const patient = await tx.patientProfile.findUnique({ where: { userId }, select: { id: true, clinicId: true } });
       if (!patient) throw forbidden();
-      const where = { patientId: patient.id, clinicId: patient.clinicId, state: { in: [TreatmentPlanState.ACTIVE, TreatmentPlanState.COMPLETED] }, ...(planId ? { id: planId } : {}) };
+      if (planId) await this.customPrograms.patient(tx, planId, context);
+      const where = { patientId: patient.id, clinicId: patient.clinicId, state: { in: [TreatmentPlanState.ACTIVE, TreatmentPlanState.COMPLETED] }, ...(planId ? { id: planId } : {}), AND: await this.customPrograms.patientFilter(tx, patient.id, patient.clinicId, context) };
       const plans = await tx.treatmentPlan.findMany({ where, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], include: planInclude });
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'PATIENT_TREATMENT_PLAN', resourceId: planId, metadata: { view: planId ? 'DETAIL' : 'LIST' } }, context, tx);
       const items = plans.map((plan) => this.response(plan));
@@ -163,6 +176,7 @@ export class TreatmentPlanService {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
     return this.transaction(async (tx) => {
       const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      await this.customPrograms.clinician(tx, plan.id, actor, true);
       this.editable(plan.state);
       const item = await create(tx, plan);
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType, resourceId: this.id(item), metadata: { treatmentPlanId: plan.id } }, actor, tx);
@@ -174,6 +188,7 @@ export class TreatmentPlanService {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
     return this.transaction(async (tx) => {
       const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      await this.customPrograms.clinician(tx, plan.id, actor, true);
       this.editable(plan.state);
       const item = await update(tx, plan);
       await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType, resourceId: this.id(item), metadata: { treatmentPlanId: plan.id } }, actor, tx);
