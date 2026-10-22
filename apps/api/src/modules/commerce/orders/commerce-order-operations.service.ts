@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException, UnprocessableEntityEx
 import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
+import type { OrderSearchQueryDto } from './commerce-order-operations.dto';
 import { PaymentVerificationService } from '../payments/payment-verification.service';
 
 type Tx = Prisma.TransactionClient;
@@ -19,6 +20,43 @@ export class CommerceOrderOperationsService {
   constructor(private readonly prisma: PrismaService, private readonly inventory: CommerceInventoryService, private readonly verification: PaymentVerificationService) {}
 
   async list() { const clinic = await this.clinic(); const rows = await this.prisma.commerceOrder.findMany({ where: { clinicId: clinic.id }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], include: this.include }); return rows.map((row) => this.order(row)); }
+  async search(query: OrderSearchQueryDto) {
+    const clinic = await this.clinic();
+    const term = query.query?.normalize('NFKC').trim().replace(/[۰-۹]/g, digit => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))).replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit))) ?? '';
+    const numeric = /^[0-9]{1,19}$/.test(term) && BigInt(term) <= 9223372036854775807n;
+    const where: Prisma.CommerceOrderWhereInput = { clinicId: clinic.id, ...(query.status ? { status: query.status } : {}), ...(query.shippingMethod ? { shippingMethod: query.shippingMethod } : {}), ...(term ? { OR: [
+      ...(numeric ? [{ orderNumber: BigInt(term) }] : []),
+      { patient: { user: { phone: { contains: term } } } },
+      { shippingAddressSnapshot: { path: ['recipientName'], string_contains: term } },
+      { lines: { some: { productTitleSnapshot: { contains: term, mode: 'insensitive' as const } } } },
+    ] } : {}) };
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.commerceOrder.count({ where }),
+      this.prisma.commerceOrder.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize, include: this.include }),
+    ]);
+    return { items: rows.map(row => this.order(row)), total, page: query.page, pageSize: query.pageSize };
+  }
+  async detail(id: string) {
+    const clinic = await this.clinic();
+    const row = await this.prisma.commerceOrder.findFirst({ where: { id, clinicId: clinic.id }, include: {
+      ...this.include, lines: { orderBy: { position: 'asc' } },
+      operations: { orderBy: { createdAt: 'desc' }, take: 50, select: { id: true, action: true, createdAt: true, payload: true } },
+      billingIntent: { select: { id: true, status: true, method: true, amountRial: true,
+        refunds: { orderBy: { createdAt: 'desc' }, select: { id: true, amountRial: true, status: true, completedAt: true } },
+        attempts: { orderBy: { createdAt: 'desc' }, select: { id: true, status: true, amountRial: true, createdAt: true } },
+      } },
+    } });
+    if (!row) throw missing();
+    return { ...this.order(row), refundRoute: row.payment ? (row.payment.billingAttemptId || row.payment.walletJournalId ? 'SHARED' : 'LEGACY') : null, patientId: row.patientId, shippingAddress: row.shippingAddressSnapshot,
+      subtotalAmountToman: row.subtotalAmountToman.toString(), taxAmountToman: row.taxAmountToman.toString(), discountAmountToman: row.discountAmountToman.toString(), shippingAmountToman: row.shippingAmountToman.toString(),
+      lines: row.lines.map(line => ({ id: line.id, skuCode: line.skuCodeSnapshot, title: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), lineTotalToman: line.lineTotalToman.toString() })),
+      operations: row.operations.map(op => ({ id: op.id, action: op.action, createdAt: op.createdAt.toISOString(), reason: typeof (op.payload as { reason?: unknown })?.reason === 'string' ? (op.payload as { reason: string }).reason : null })),
+      billing: row.billingIntent ? { id: row.billingIntent.id, status: row.billingIntent.status, method: row.billingIntent.method, amountRial: row.billingIntent.amountRial.toString(),
+        refunds: row.billingIntent.refunds.map(refund => ({ id: refund.id, status: refund.status, amountRial: refund.amountRial.toString(), completedAt: refund.completedAt?.toISOString() ?? null })),
+        attempts: row.billingIntent.attempts.map(attempt => ({ id: attempt.id, status: attempt.status, amountRial: attempt.amountRial.toString(), createdAt: attempt.createdAt.toISOString() })),
+      } : null,
+    };
+  }
   async reconciliationQueue() { const clinic = await this.clinic(); const rows = await this.prisma.paymentAttempt.findMany({ where: { clinicId: clinic.id, status: 'REQUIRES_RECONCILIATION' }, orderBy: [{ updatedAt: 'asc' }, { id: 'asc' }], include: { order: true, providerConfigRevision: { include: { config: true } } } }); return rows.map((row) => ({ id: row.id, orderId: row.orderId, providerOrderId: row.providerOrderId.toString(), commerceAmountToman: row.commerceAmountToman.toString(), providerAmount: row.providerAmount?.toString() ?? null, providerUnit: row.providerUnit, providerCode: row.providerConfigRevision.config.providerCode, configRevisionId: row.providerConfigRevisionId, status: row.status })); }
 
   async transition(orderId: string, target: string, key: string | undefined, context: Context) { return this.command(orderId, `FULFILLMENT_${target}`, key, { target }, context, async (tx, order) => { const allowed = (order.status === 'PAID' && target === 'FULFILLMENT_PENDING') || (order.shippingMethod === 'PICKUP' && order.status === 'FULFILLMENT_PENDING' && target === 'READY_FOR_PICKUP') || (order.shippingMethod === 'PICKUP' && order.status === 'READY_FOR_PICKUP' && target === 'DELIVERED') || (order.shippingMethod === 'COURIER' && order.status === 'FULFILLMENT_PENDING' && target === 'SHIPPED') || (order.shippingMethod === 'COURIER' && order.status === 'SHIPPED' && target === 'DELIVERED'); if (!allowed) throw transition(); await tx.commerceOrder.update({ where: { id: order.id }, data: { status: target as never } }); await this.audit(tx, `COMMERCE_ORDER_${target}`, order.id, context, {}); }); }

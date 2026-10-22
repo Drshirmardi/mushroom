@@ -1,15 +1,19 @@
-import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Patch, Post, Req, UnprocessableEntityException } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Patch, Post, Query, Req, UnprocessableEntityException } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { CommerceOrderOperationsService } from './commerce-order-operations.service';
-import { OrderRequestDto, OrderTrackingDto, OrderTransitionDto, ReconciliationDto, RefundCompleteDto, RefundRequestDto } from './commerce-order-operations.dto';
+import { OrderRequestDto, OrderSearchPageDto, OrderSearchQueryDto, OrderTrackingDto, OrderTransitionDto, ReconciliationDto, RefundCompleteDto, RefundRequestDto } from './commerce-order-operations.dto';
 const context = (request: AuthenticatedRequest) => ({ actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip });
 @ApiTags('Admin Commerce Orders') @ApiBearerAuth('bearerAuth') @RequireRoles('ADMIN') @RequirePermissions(PERMISSIONS.COMMERCE_MANAGE) @Controller('admin/commerce/orders')
 export class AdminCommerceOrderOperationsController {
   constructor(private readonly orders: CommerceOrderOperationsService) {}
   @Get() @ApiOperation({ operationId: 'adminCommerceOrdersList', summary: 'List clinic commerce orders' }) list() { return this.orders.list(); }
+  @Get('search') @ApiOperation({ operationId: 'adminCommerceOrdersSearch', summary: 'Search clinic orders with server pagination' }) @ApiOkResponse({ type: OrderSearchPageDto })
+  search(@Query() query: OrderSearchQueryDto) { return this.orders.search(query); }
+  @Get(':orderId') @ApiOperation({ operationId: 'adminCommerceOrderGet', summary: 'Read clinic order items, delivery snapshot and payment operations' }) @ApiOkResponse({ schema: { type: 'object', additionalProperties: true } })
+  detail(@Param('orderId', new ParseUUIDPipe({ version: '4' })) id: string) { return this.orders.detail(id); }
   @Get('reconciliation') @ApiOperation({ operationId: 'adminCommerceReconciliationList', summary: 'List payment attempts requiring manual reconciliation' }) reconciliation() { return this.orders.reconciliationQueue(); }
   @Patch(':orderId/fulfillment') fulfillment(@Req() request: AuthenticatedRequest, @Param('orderId', new ParseUUIDPipe({ version: '4' })) orderId: string, @Headers('idempotency-key') key: string | undefined, @Body() body: OrderTransitionDto) { return this.orders.transition(orderId, body.status, key, context(request)); }
   @Patch(':orderId/tracking') tracking(@Req() request: AuthenticatedRequest, @Param('orderId', new ParseUUIDPipe({ version: '4' })) orderId: string, @Headers('idempotency-key') key: string | undefined, @Body() body: OrderTrackingDto) { return this.orders.tracking(orderId, body, key, context(request)); }

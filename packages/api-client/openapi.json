@@ -27699,6 +27699,142 @@
           "Paid Patient Assessments"
         ]
       }
+    },
+    "/v1/admin/commerce/orders/search": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ],
+        "operationId": "adminCommerceOrdersSearch",
+        "summary": "Search clinic orders with server pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 1,
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING_PAYMENT",
+                "PAYMENT_PROCESSING",
+                "PAID",
+                "FULFILLMENT_PENDING",
+                "READY_FOR_PICKUP",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLATION_REQUESTED",
+                "RETURN_REQUESTED",
+                "CANCELLATION_REJECTED",
+                "RETURN_REJECTED",
+                "FULFILLING",
+                "FULFILLED",
+                "CANCELLED",
+                "PAYMENT_FAILED",
+                "REQUIRES_RECONCILIATION",
+                "REFUND_PENDING",
+                "REFUNDED"
+              ]
+            }
+          },
+          {
+            "name": "shippingMethod",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PICKUP",
+                "COURIER"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderSearchPageDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin Commerce Orders"
+        ],
+        "operationId": "adminCommerceOrderGet",
+        "summary": "Read clinic order items, delivery snapshot and payment operations",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {
@@ -44982,6 +45118,33 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PatientAssessmentPurchaseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "OrderSearchPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
             }
           },
           "total": {
