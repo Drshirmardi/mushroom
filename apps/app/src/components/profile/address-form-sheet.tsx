@@ -33,7 +33,7 @@ function validatePhone(value: string): string | null {
   return /^(0|\+98)9\d{9}$/u.test(trimmed) ? null : "شماره موبایل معتبر نیست؛ با ۰ یا ‎+98 شروع شود";
 }
 
-const inputClass = "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-base outline-none transition-colors focus:border-blue-600 focus:ring-2 focus:ring-blue-600/25";
+const inputClass = "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/25";
 const inputErrorClass = "w-full rounded-lg border border-red-500 bg-white px-4 py-3 text-base outline-none transition-colors focus:border-red-500 focus:ring-2 focus:ring-red-500/25";
 
 /** Profile address creation sheet: profile styling, existing create endpoint. */
@@ -75,11 +75,11 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
             ? "آدرس کامل شده و آماده ذخیره است."
             : "برای ذخیره، همه فیلدهای ضروری را کامل کن؛ در غیر این صورت نوشته‌هایت از بین می‌رود."}
         </p>
-        {complete && <button type="button" disabled={saving} onClick={() => void save()} className="mt-4 w-full rounded-2xl bg-blue-700 py-3.5 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{saving ? "در حال ذخیره…" : "سیوش کن"}</button>}
+        {complete && <button type="button" disabled={saving} onClick={() => void save()} className="mt-4 w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "سیوش کن"}</button>}
         <div className="mt-2 space-y-2">
           {complete
             ? <button type="button" onClick={onClose} className="w-full rounded-2xl bg-muted py-3.5 text-sm font-bold text-foreground transition-colors active:bg-border">خارج شو بدون ذخیره</button>
-            : <button type="button" onClick={() => setConfirmingClose(false)} className="w-full rounded-2xl bg-blue-700 py-3.5 text-sm font-bold text-white transition-colors hover:bg-blue-800">برمی‌گردم کاملش کنم</button>}
+            : <button type="button" onClick={() => setConfirmingClose(false)} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">برمی‌گردم کاملش کنم</button>}
           {!complete && <button type="button" onClick={onClose} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground transition-colors active:bg-muted">خارج شو بدون ذخیره</button>}
         </div>
       </div>
@@ -89,14 +89,14 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
           <label htmlFor={`profile-address-${field.key}`} className="mb-1 block text-xs font-bold text-muted-foreground">{field.label}{field.required ? " *" : ""}</label>
           <input id={`profile-address-${field.key}`} name={field.key} required={field.required} aria-required={field.required} aria-invalid={field.key === "phone" && phoneError ? true : undefined} aria-describedby={field.key === "phone" && phoneError ? "profile-address-phone-error" : undefined} dir={field.ltr ? "ltr" : undefined} inputMode={field.inputMode} autoComplete={field.autoComplete} placeholder={field.placeholder} value={draft[field.key]} maxLength={field.key === "line1" ? 300 : field.key === "postalCode" ? 10 : field.key === "phone" ? 13 : 80} onChange={set(field.key)} onFocus={field.key === "phone" ? () => setPhoneFocused(true) : undefined} onBlur={field.key === "phone" ? () => setPhoneFocused(false) : undefined} className={`text-right ${field.key === "phone" && phoneError ? inputErrorClass : inputClass}`} />
           {field.key === "phone" && phoneFocused && !draft.phone && accountPhone && (
-            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setDraft((current) => ({ ...current, phone: accountPhone }))} className="mt-1.5 inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-700 transition-colors hover:bg-blue-100">
+            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setDraft((current) => ({ ...current, phone: accountPhone }))} className="mt-1.5 inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] font-bold text-primary transition-colors hover:bg-primary/10">
               <User size={13} aria-hidden="true" />شماره خودم: <span dir="ltr">{toP(accountPhone)}</span>
             </button>
           )}
           {field.key === "phone" && phoneError && <p id="profile-address-phone-error" role="alert" className="mt-1.5 text-[11px] font-bold text-red-600">{phoneError}</p>}
         </div>)}
         {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        <button type="submit" disabled={saving} className="w-full rounded-2xl bg-blue-700 py-4 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره آدرس"}</button>
+        <button type="submit" disabled={saving} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره آدرس"}</button>
       </form>
     )}
   </BottomSheet>;

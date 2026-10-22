@@ -54,7 +54,7 @@ export default function EditProfilePage() {
   <AnimatePresence>{confirmLeave && <BottomSheet title="تغییرات ذخیره نشده" onClose={() => setConfirmLeave(false)}>
     <p className="text-sm leading-6 text-muted-foreground">تغییراتی دارید که هنوز ذخیره نشده است. می‌خواهید چه کار کنید؟</p>
     <div className="mt-4 space-y-2">
-      <button type="button" disabled={saving} onClick={() => void save(false).then((ok) => { if (ok) router.back(); })} className="w-full rounded-2xl bg-blue-700 py-3.5 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره و خروج"}</button>
+      <button type="button" disabled={saving} onClick={() => void save(false).then((ok) => { if (ok) router.back(); })} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره و خروج"}</button>
       <button type="button" onClick={() => router.back()} className="w-full rounded-2xl bg-muted py-3.5 text-sm font-bold text-foreground transition-colors active:bg-border">خروج بدون ذخیره</button>
       <button type="button" onClick={() => setConfirmLeave(false)} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground transition-colors active:bg-muted">انصراف</button>
     </div>

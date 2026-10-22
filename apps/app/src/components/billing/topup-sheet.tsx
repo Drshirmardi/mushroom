@@ -87,7 +87,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
 
         <div>
           <label htmlFor="topup-amount" className="mb-1.5 block text-xs font-medium text-muted-foreground">مبلغ شارژ (تومان)</label>
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/25">
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
             <input
               id="topup-amount"
               name="topup-amount"
@@ -123,7 +123,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => { setAmount(formatTopupInput(preset.toString())); setTouched(true); }}
-                  className={`rounded-lg border px-3 py-3 font-iransans-fanum text-sm font-normal transition-colors active:scale-[0.99] ${selected ? "border-blue-600 bg-blue-700 text-white" : "border-slate-200 bg-white text-muted-foreground"
+                  className={`rounded-lg border px-3 py-3 font-iransans-fanum text-sm font-normal transition-colors active:scale-[0.99] ${selected ? "border-primary bg-primary text-primary-foreground" : "border-slate-200 bg-white text-muted-foreground"
                     }`}
                 >
                   {formatToman(preset)} <span className="text-[11px] font-medium opacity-80">تومان</span>
@@ -133,7 +133,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="flex items-start gap-2 rounded-xl bg-blue-50 p-3 text-xs leading-6 text-gray-700">
+        <div className="flex items-start gap-2 rounded-xl bg-primary/5 p-3 text-xs leading-6 text-muted-foreground">
           <Info size={15} className="mt-0.5 flex-shrink-0 text-gray-500" aria-hidden="true" />
           <span>پرداخت از طریق درگاه امن بانکی انجام می‌شود و به‌محض تأیید، مبلغ بلافاصله به کیف پول شما اضافه می‌شود.</span>
         </div>
@@ -142,7 +142,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
           type="button"
           disabled={busy}
           onClick={() => void submit()}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-700 py-4 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
         >
           {busy ? <><RotateCcw size={17} className="animate-spin" aria-hidden="true" />در حال انتقال به درگاه…</> : <><CreditCard size={17} aria-hidden="true" />پرداخت و شارژ</>}
         </button>

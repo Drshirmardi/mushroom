@@ -20,7 +20,7 @@ export function GlobalSheet() {
       setNotice({ sheet, text: "نشانی محصول کپی شد." });
     } catch { setNotice({ sheet, text: "کپی نشانی ممکن نشد؛ نشانی صفحهٔ محصول را مستقیماً کپی کنید." }); }
   };
-  return <AnimatePresence>{sheet && <BottomSheet onClose={() => setSheet(null)}>
+  return <AnimatePresence>{sheet && <BottomSheet title="گزینه‌ها" onClose={() => setSheet(null)}>
     {sheet.type === "medAction" && <div className="space-y-3"><p className="text-sm leading-7">ثبت مصرف دارو و فعالیت‌های درمانی از برنامهٔ منتشرشدهٔ شما انجام می‌شود.</p><button type="button" onClick={() => open("/treatment")} className="w-full rounded-xl bg-primary p-4 font-bold text-white">مشاهدهٔ برنامه و ثبت مصرف</button></div>}
     {sheet.type === "appointmentCancel" && <div className="space-y-3"><p className="text-sm leading-7">پیش از لغو، جزئیات و وضعیت جاری نوبت را بررسی کنید.</p><button type="button" onClick={() => open(appointmentId ? `/appointments/${encodeURIComponent(appointmentId)}` : "/appointments")} className="w-full rounded-xl bg-primary p-4 font-bold text-white">بررسی و لغو نوبت</button></div>}
     {sheet.type === "shareProduct" && <div className="space-y-3">{productId ? <button type="button" onClick={() => void copyProduct()} className="w-full rounded-xl bg-primary p-4 font-bold text-white">کپی نشانی محصول</button> : <button type="button" onClick={() => open("/store")} className="w-full rounded-xl border border-border p-4 text-sm">انتخاب محصول از فروشگاه</button>}{notice?.sheet === sheet && <p role="status" className="text-sm">{notice.text}</p>}</div>}

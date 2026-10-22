@@ -390,9 +390,6 @@
 .store-delivery { display: flex; align-items: center; gap: 4px; width: 100%; margin-top: 2px; padding: 6px 2px; border: 0; background: transparent; color: var(--patient-ink); font-size: 13px; line-height: 24px; cursor: pointer; text-align: start; }
 .store-delivery__text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .store-delivery svg { flex-shrink: 0; }
-.store-sheet-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
-.store-sheet-header h2 { font-size: 18px; line-height: 30px; font-weight: 500; color: var(--patient-ink); }
-.store-sheet-close { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; color: var(--patient-muted); }
 .store-address-sheet { display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
 .store-address-guest { display: flex; flex-direction: column; gap: 12px; padding-block: 12px; }
 .store-address-guest p { font-size: 14px; line-height: 24px; color: var(--patient-muted); }
@@ -567,6 +564,10 @@
 .store-pagination nav button { min-height: 44px; }
 .patient-bottom-sheet { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: transparent; color: var(--patient-ink); }
 .patient-bottom-sheet::backdrop { background: transparent; }
+.patient-bottom-sheet { --patient-action: var(--patient-blue-600); --primary: var(--patient-action); }
+.patient-bottom-sheet__title { font-family: var(--font-vazirmatn), sans-serif; font-size: 18px; line-height: 28px; font-weight: 700; color: var(--patient-ink); text-align: center; }
+.patient-bottom-sheet__close { color: var(--patient-blue-600); }
+.patient-bottom-sheet__close:hover { color: var(--patient-blue-700); }
 .patient-bottom-sheet .patient-bottom-sheet__handle { -webkit-tap-highlight-color: transparent; }
 /* Owner requests a neutral grip without a focus ring; modal focus stays intact. */
 .patient-bottom-sheet .patient-bottom-sheet__handle:focus { outline: none; }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { X } from "lucide-react";
 import type React from "react";
 
 type BottomSheetProps = {
@@ -63,7 +64,17 @@ export function BottomSheet({ title, ariaLabel, onClose, children }: BottomSheet
         >
           <span className="block h-1 w-10 rounded-full bg-muted mx-auto" />
         </button>
-        {title && <h2 className="text-base font-bold text-foreground mb-4 text-center">{title}</h2>}
+        <div className="relative mb-4 flex min-h-11 items-center justify-center">
+          {title && <h2 className="patient-bottom-sheet__title min-w-0 px-12">{title}</h2>}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="بستن"
+            className="patient-bottom-sheet__close absolute end-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
         {children}
       </motion.div>
     </motion.div>

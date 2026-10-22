@@ -82,7 +82,7 @@ export default function ProfileAddressesPage() {
     <p className="mt-1 text-xs text-muted-foreground">{confirming.province}، {confirming.city}، {confirming.line1}</p>
     {confirmError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{confirmError}</p>}
     <div className="mt-4 space-y-2">
-      <button type="button" disabled={confirmingBusy} onClick={() => void confirmDefault()} className="w-full rounded-2xl bg-blue-700 py-3.5 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{confirmingBusy ? "در حال ذخیره…" : "تأیید و انتخاب"}</button>
+      <button type="button" disabled={confirmingBusy} onClick={() => void confirmDefault()} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{confirmingBusy ? "در حال ذخیره…" : "تأیید و انتخاب"}</button>
       <button type="button" onClick={() => setConfirming(null)} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground transition-colors active:bg-muted">انصراف</button>
     </div>
   </BottomSheet>}</AnimatePresence></div>;
