@@ -73,14 +73,14 @@ jobs:
         run: |
           set -euo pipefail
         
-          ssh-keygen -y -P '' -f "$VPS_SSH_KEY_PATH" | ssh-keygen -lf -
-        
           ssh -vvv -T \
             -p "$VPS_PORT" \
             -i "$VPS_SSH_KEY_PATH" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
             -o ConnectTimeout=20 \
+            -o KexAlgorithms=curve25519-sha256 \
+            -o IPQoS=none \
             -o StrictHostKeyChecking=yes \
             -o "UserKnownHostsFile=$VPS_KNOWN_HOSTS_PATH" \
             "$VPS_USER@$VPS_HOST" \
