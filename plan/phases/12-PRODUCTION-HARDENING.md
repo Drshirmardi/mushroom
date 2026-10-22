@@ -403,4 +403,6 @@ F12-FE01 restore full assessment settings (2026-10-21): owner rejects hiding off
 F12-FE01 delete assessment with retained results (2026-10-21): owner-authorized terminal DELETED lifecycle (ADR0037); hide authoring/new-use source, retain complete patient submissions/Mezaj/snapshots/source/FKs and historical reads. Published deletion enabled, required booking source clears atomically with audit. Local additive20261021120000 applied; source generations complete; focused regression sources updated, all execution checks deferred. IMPLEMENTED_UNVERIFIED/REWORK/unchecked, no actual assessment deletion or final commit. Handoff logs/phase-12.md#assessment-delete-with-retained-results--implemented-unverified.
 
 
-- [ ] F12-T02-CI01 PR27 validation repair — local review PASS/READY_FOR_CI; hosted checks pending, sole /root claim retained. See phase log. F12-FE01 remains REWORK.
+- [x] F12-T02-CI01 PR27 validation repair — hosted CI/security, installer and all release artifacts PASS on1827010; owner merged PR27. Claim released; F12-FE01 remains REWORK.
+
+- [x] F12-T02-CI02 — Restore real dev deployment with owner-observed working SSH options; syntax/composition/actionlint/contracts PASS. Sole /root, review PASS; live deployment result external. See phase log.

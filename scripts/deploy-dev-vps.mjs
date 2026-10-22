@@ -41,6 +41,9 @@ const sshOptions = [
   '-i', process.env.VPS_SSH_KEY_PATH,
   '-o', 'BatchMode=yes',
   '-o', 'IdentitiesOnly=yes',
+  '-o', 'ConnectTimeout=20',
+  '-o', 'KexAlgorithms=curve25519-sha256',
+  '-o', 'IPQoS=none',
   '-o', 'StrictHostKeyChecking=yes',
   '-o', `UserKnownHostsFile=${process.env.VPS_KNOWN_HOSTS_PATH}`,
 ];

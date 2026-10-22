@@ -70,18 +70,4 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY_PATH: ${{ runner.temp }}/ssh/id
           VPS_KNOWN_HOSTS_PATH: ${{ runner.temp }}/ssh/known_hosts
-        run: |
-          set -euo pipefail
-        
-          ssh -vvv -T \
-            -p "$VPS_PORT" \
-            -i "$VPS_SSH_KEY_PATH" \
-            -o BatchMode=yes \
-            -o IdentitiesOnly=yes \
-            -o ConnectTimeout=20 \
-            -o KexAlgorithms=curve25519-sha256 \
-            -o IPQoS=none \
-            -o StrictHostKeyChecking=yes \
-            -o "UserKnownHostsFile=$VPS_KNOWN_HOSTS_PATH" \
-            "$VPS_USER@$VPS_HOST" \
-            'printf "GITHUB_SSH_OK\n"'
+        run: node scripts/deploy-dev-vps.mjs "$GITHUB_SHA"
