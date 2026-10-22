@@ -408,3 +408,5 @@ F12-FE01 delete assessment with retained results (2026-10-21): owner-authorized 
 - [x] F12-T02-CI02 — Restore real dev deployment with owner-observed working SSH options; syntax/composition/actionlint/contracts PASS. Sole /root, review PASS; live deployment result external. See phase log.
 
 - [x] F12-T02-CI03 — Observable/bounded source transfer diagnostics: named phases, progress and90s idle timeout, SSH keepalives; intercepted success/failure and release checks PASS. Actual deployment incident remains REWORK; see phase log.
+
+- [x] F12-T02-CI04 — Compiler-only dev bootstrap heap640→1536MiB; clean real API emit, deployment contracts and retry/recovery rehearsal PASS. Live startup/capacity acceptance pending; see phase log.

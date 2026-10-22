@@ -1,5 +1,7 @@
 # وضعیت زنده اجرای پروژه
 
+DEV-COMPILE-HEAP / F12-T02-CI04 DONE (2026-10-22), software review PASS/claim RELEASED. Compiler-only bootstrap heap640→1536MiB; actual clean full API emit at1536MiB PASS (10.9s), release contracts and dev retry/recovery rehearsal PASS. [Evidence](logs/phase-12.md#f12-t02-ci04--development-api-compiler-heap). Owner MSS test enabled transfer/all migrations; actual VPS startup/capacity still awaiting retry. No next batch started; broader acceptance unchanged.
+
 DEV-SYNC-DIAGNOSTICS / F12-T02-CI03 DONE (2026-10-22), software review PASS/claim RELEASED. Named phase/completion/failure logs, rsync list/progress/stat output and90s I/O idle timeout, SSH keepalives implemented and intercepted success/failure checks PASS. [Evidence](logs/phase-12.md#f12-t02-ci03--make-stalled-source-upload-observable-and-bounded). Actual VPS transfer/deployment incident remains REWORK; root cause unproven. Next action: inspect new dev-sync execution; no next roadmap batch started.
 
 DEV-SSH / F12-T02-CI02 DONE (2026-10-22), review PASS/claim RELEASED. Owner-approved dev commit/push restores real deployment and applies observed successful SSH compatibility options to SSH/rsync. Syntax, intercepted command composition, actionlint and release contracts PASS. [Evidence](logs/phase-12.md#f12-t02-ci02--restore-dev-deployment-with-working-ssh-options). Actual deployment result remains external; next action: inspect automatically triggered shared-dev workflow. No next batch started; broader F12-FE01 remains REWORK.

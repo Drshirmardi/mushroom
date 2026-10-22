@@ -239,7 +239,7 @@ for (const memoryVariable of ['DEV_WEB_MEMORY', 'DEV_APP_MEMORY', 'DEV_DASHBOARD
   assert(!devCompose.includes(memoryVariable), `shared dev frontend memory ceiling is forbidden: ${memoryVariable}`);
 }
 for (const required of [
-  'NODE_OPTIONS=--max-old-space-size=640',
+  'NODE_OPTIONS=--max-old-space-size=1536',
   'pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json',
   '--noCheck --declaration false --declarationMap false',
   'exec node --enable-source-maps apps/api/dist/main.js',

@@ -61,7 +61,7 @@ case "$command_name" in
         exit 1
       }
       rm -rf -- apps/api/dist
-      NODE_OPTIONS=--max-old-space-size=640 \
+      NODE_OPTIONS=--max-old-space-size=1536 \
         pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
           --noCheck --declaration false --declarationMap false
       printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
