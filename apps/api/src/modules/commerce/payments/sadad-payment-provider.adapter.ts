@@ -3,6 +3,7 @@ import { Injectable, Optional, ServiceUnavailableException, UnprocessableEntityE
 import type { PaymentProviderPort, ProviderCallback, ProviderCreateInput, ProviderCreateResult, ProviderVerifyResult } from './payment-provider.port';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { SadadRuntimeConfigService } from './sadad-runtime-config.service';
+import { GatewayTransportError, PaymentGatewayDiagnosticsService } from './payment-gateway-diagnostics.service';
 
 const blocked = () => new ServiceUnavailableException({ code: 'SADAD_GO_LIVE_BLOCKED', message: 'Sadad live transport is disabled for this deployment.', details: {} });
 const invalid = () => new UnprocessableEntityException({ code: 'PAYMENT_PROVIDER_CONFIGURATION_INVALID', message: 'Sadad protocol input or response is invalid.', details: {} });
@@ -117,8 +118,12 @@ export class FetchSadadTransport implements SadadTransport {
     const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
     try {
       const response = await fetch(input.endpoint, { method: 'POST', headers: { 'content-type': 'application/json; charset=utf-8', accept: 'application/json' }, body: serializeSadadJson(input.body), signal: controller.signal });
-      if (!response.ok) throw invalid();
-      return parseSadadResponseJson(await response.text());
+      if (!response.ok) throw new GatewayTransportError('HTTP', response.status);
+      const body = await response.text();
+      try { return parseSadadResponseJson(body); } catch { throw new GatewayTransportError('INVALID_RESPONSE', response.status); }
+    } catch (error) {
+      if (error instanceof GatewayTransportError) throw error;
+      throw new GatewayTransportError(controller.signal.aborted ? 'TIMEOUT' : 'NETWORK');
     } finally { clearTimeout(timeout); }
   }
 }
@@ -213,7 +218,7 @@ export class SadadPaymentProviderAdapter implements PaymentProviderPort {
   protected transport: SadadTransport = new BlockedSadadTransport();
   protected now: () => Date = () => new Date();
   protected timeoutMs = DEFAULT_TIMEOUT_MS;
-  constructor(registry: PaymentProviderRegistry, @Optional() runtime?: SadadRuntimeConfigService) {
+  constructor(registry: PaymentProviderRegistry, @Optional() runtime?: SadadRuntimeConfigService, @Optional() private readonly diagnostics?: PaymentGatewayDiagnosticsService) {
     registry.register(this);
     if (runtime?.live) {
       this.transport = new FetchSadadTransport();
@@ -222,6 +227,15 @@ export class SadadPaymentProviderAdapter implements PaymentProviderPort {
   }
 
   async createPayment(input: ProviderCreateInput): Promise<ProviderCreateResult> {
+    const started = Date.now();
+    try {
+      const result = await this.requestPayment(input);
+      await this.diagnostics?.record(input.providerOrderId, 'REQUEST', started, result.providerResultCode);
+      return result;
+    } catch (error) { await this.diagnostics?.record(input.providerOrderId, 'REQUEST', started, undefined, error); throw error; }
+  }
+
+  private async requestPayment(input: ProviderCreateInput): Promise<ProviderCreateResult> {
     const secret = credential(input.credential); const amount = input.amountRial === undefined ? toSadadRial(input.commerceAmountToman ?? 0n) : positiveInt64(input.amountRial); const providerOrderId = positiveInt64(input.providerOrderId);
     if (input.amountRial !== undefined && input.commerceAmountToman !== undefined && toSadadRial(input.commerceAmountToman) !== amount) throw invalid();
     if (input.providerUnit !== 'RIAL' || input.providerAmount !== amount) throw invalid();
@@ -235,7 +249,16 @@ export class SadadPaymentProviderAdapter implements PaymentProviderPort {
 
   parseCallback(input: unknown): ProviderCallback { return parseSadadFormCallback(responseRecord(input)); }
 
-  async verifyPayment(input: { token: string; credential: Record<string, string> }): Promise<ProviderVerifyResult> {
+  async verifyPayment(input: { token: string; credential: Record<string, string>; providerOrderId?: bigint }): Promise<ProviderVerifyResult> {
+    const started = Date.now();
+    try {
+      const result = await this.requestVerification(input);
+      if (input.providerOrderId !== undefined) await this.diagnostics?.record(input.providerOrderId, 'VERIFY', started, result.resultCode);
+      return result;
+    } catch (error) { if (input.providerOrderId !== undefined) await this.diagnostics?.record(input.providerOrderId, 'VERIFY', started, undefined, error); throw error; }
+  }
+
+  private async requestVerification(input: { token: string; credential: Record<string, string> }): Promise<ProviderVerifyResult> {
     if (!input.token || input.token.length > CALLBACK_MAX_FIELD_LENGTH) throw invalid();
     const secret = credential(input.credential);
     const result = responseRecord(await this.transport.postJson({ endpoint: SADAD_ENDPOINTS.verify, timeoutMs: this.timeoutMs, body: { Token: input.token, SignData: this.signVerifyToken(input.token, secret.terminalKey) } }));

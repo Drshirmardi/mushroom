@@ -5783,6 +5783,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search secret-free gateway attempts within administrator clinic membership */
+        get: operations["adminPaymentGatewayRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read safe adapter events for a clinic-owned payment attempt */
+        get: operations["adminPaymentGatewayRequestDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -10453,6 +10487,49 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        PaymentGatewayRequestDto: {
+            id: string;
+            patientId: string;
+            userId: string;
+            phone: string;
+            name: string;
+            purpose: string;
+            providerOrderId: string;
+            amountRial: string;
+            status: string;
+            createdAt: string;
+            updatedAt: string;
+            /** @enum {string} */
+            source: "BILLING" | "COMMERCE";
+            intentId: string | null;
+            orderId: string | null;
+            resultCode: string | null;
+            verifiedAt: string | null;
+            revisionNumber: number;
+            reference: string | null;
+            traceNumber: string | null;
+        };
+        PaymentGatewayTraceDto: {
+            id: string;
+            at: string;
+            stage: string;
+            outcome: string;
+            resultCode: string | null;
+            errorKind: string | null;
+            httpStatus: number | null;
+            durationMs: number;
+        };
+        PaymentGatewayRequestsPageDto: {
+            items: components["schemas"]["PaymentGatewayRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PaymentGatewayRequestDetailDto: {
+            request: components["schemas"]["PaymentGatewayRequestDto"];
+            events: components["schemas"]["PaymentGatewayTraceDto"][];
+            eventsTruncated: boolean;
         };
     };
     responses: never;
@@ -28136,6 +28213,57 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    adminPaymentGatewayRequests: {
+        parameters: {
+            query?: {
+                query?: string;
+                status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
+                from?: string;
+                until?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestsPageDto"];
+                };
+            };
+        };
+    };
+    adminPaymentGatewayRequestDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+                source: string;
+                attemptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestDetailDto"];
                 };
             };
         };

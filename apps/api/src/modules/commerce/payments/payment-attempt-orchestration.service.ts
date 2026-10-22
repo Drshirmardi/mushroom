@@ -86,10 +86,10 @@ export class PaymentAttemptOrchestrationService {
   async verifyAttempt(input: { attemptId: string; provider: PaymentProviderPort; providerUnit: string; credential: Record<string, string>; now: Date }) {
     if (input.providerUnit === 'UNCONFIRMED') throw invalid();
     this.registry.require(input.provider, 'verifyPayment');
-    const attempt = await this.prisma.paymentAttempt.findUnique({ where: { id: input.attemptId }, select: { providerToken: true } });
+    const attempt = await this.prisma.paymentAttempt.findUnique({ where: { id: input.attemptId }, select: { providerToken: true, providerOrderId: true } });
     if (!attempt?.providerToken) throw invalid();
     let result: ProviderVerifyResult;
-    try { result = await input.provider.verifyPayment({ token: attempt.providerToken, credential: input.credential }); }
+    try { result = await input.provider.verifyPayment({ token: attempt.providerToken, credential: input.credential, providerOrderId: attempt.providerOrderId }); }
     catch { return this.prisma.$transaction((tx) => this.verification.recordNonSuccess(tx, { attemptId: input.attemptId, resultCode: 'TIMEOUT', verifiedAt: input.now })); }
     return this.prisma.$transaction(async (tx) => {
       if (result.resultCode === '0' || result.resultCode === '100') {

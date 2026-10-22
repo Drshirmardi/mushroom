@@ -87,7 +87,7 @@ export class BillingGatewayService {
     const changed = await this.prisma.billingGatewayAttempt.updateMany({ where: { id: attemptId, status: { in: ['REDIRECT_READY', 'REQUIRES_RECONCILIATION', 'VERIFYING'] } }, data: { status: 'VERIFYING' } });
     if (!changed.count) return;
     let proof;
-    try { proof = await this.registry.resolve(attempt.revision.config.providerCode).verifyPayment({ token: attempt.providerToken, credential: this.credential(attempt.revision.credentialVersion) }); }
+    try { proof = await this.registry.resolve(attempt.revision.config.providerCode).verifyPayment({ token: attempt.providerToken, credential: this.credential(attempt.revision.credentialVersion), providerOrderId: attempt.providerOrderId }); }
     catch { await this.ambiguous(attemptId, 'VERIFY_TIMEOUT'); return; }
     if ((proof.resultCode === '0' || proof.resultCode === '100') && proof.amount !== undefined && proof.providerOrderId !== undefined) {
       try {
@@ -134,7 +134,7 @@ export class BillingGatewayService {
     const attempt = await this.prisma.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attemptId }, include: { revision: { include: { config: true, credentialVersion: true } } } });
     if (!attempt.revision.credentialVersion) throw financialConflict();
     let proof;
-    try { proof = await this.registry.resolve(attempt.revision.config.providerCode).verifyPayment({ token, credential: this.credential(attempt.revision.credentialVersion) }); }
+    try { proof = await this.registry.resolve(attempt.revision.config.providerCode).verifyPayment({ token, credential: this.credential(attempt.revision.credentialVersion), providerOrderId: attempt.providerOrderId }); }
     catch { await this.ambiguous(attemptId, 'VERIFY_TIMEOUT'); return; }
     if (!['0', '100'].includes(proof.resultCode) || proof.providerOrderId !== attempt.providerOrderId || proof.amount !== attempt.amountRial) throw financialConflict('PAYMENT_VERIFICATION_MISMATCH');
     const intent = await this.prisma.billingIntent.findUniqueOrThrow({ where: { id: attempt.intentId } });

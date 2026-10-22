@@ -27835,6 +27835,154 @@
           }
         }
       }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
+      "get": {
+        "operationId": "adminPaymentGatewayRequests",
+        "summary": "Search secret-free gateway attempts within administrator clinic membership",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CREATED",
+                "REDIRECT_READY",
+                "CALLBACK_RECEIVED",
+                "VERIFYING",
+                "VERIFIED",
+                "FAILED",
+                "EXPIRED",
+                "REQUIRES_RECONCILIATION"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "until",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentGatewayRequestsPageDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
+      "get": {
+        "operationId": "adminPaymentGatewayRequestDetail",
+        "summary": "Read safe adapter events for a clinic-owned payment attempt",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attemptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentGatewayRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -45162,6 +45310,189 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "PaymentGatewayRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "patientId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "providerOrderId": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "BILLING",
+              "COMMERCE"
+            ]
+          },
+          "intentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "userId",
+          "phone",
+          "name",
+          "purpose",
+          "providerOrderId",
+          "amountRial",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "source",
+          "intentId",
+          "orderId",
+          "resultCode",
+          "verifiedAt",
+          "revisionNumber",
+          "reference",
+          "traceNumber"
+        ]
+      },
+      "PaymentGatewayTraceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "resultCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorKind": {
+            "type": "string",
+            "nullable": true
+          },
+          "httpStatus": {
+            "type": "number",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "stage",
+          "outcome",
+          "resultCode",
+          "errorKind",
+          "httpStatus",
+          "durationMs"
+        ]
+      },
+      "PaymentGatewayRequestsPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentGatewayRequestDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "PaymentGatewayRequestDetailDto": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/PaymentGatewayRequestDto"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentGatewayTraceDto"
+            }
+          },
+          "eventsTruncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request",
+          "events",
+          "eventsTruncated"
         ]
       }
     }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional, ServiceUnavailableException } from '@nestjs/common';
 import { BillingGatewayService } from '../../billing/billing-gateway.service';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { PaymentAttemptOrchestrationService } from './payment-attempt-orchestration.service';
@@ -6,6 +6,7 @@ import { PaymentCredentialCryptoService } from './payment-credential-crypto.serv
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { buildSadadRedirect, toSadadRial } from './sadad-payment-provider.adapter';
 import { SadadRuntimeConfigService } from './sadad-runtime-config.service';
+import { PaymentGatewayDiagnosticsService } from './payment-gateway-diagnostics.service';
 
 const blocked = () => new ServiceUnavailableException({ code: 'SADAD_GO_LIVE_BLOCKED', message: 'No live, enabled payment provider is available.', details: {} });
 const missing = () => new NotFoundException({ code: 'PAYMENT_ATTEMPT_NOT_FOUND', message: 'Payment attempt was not found.', details: {} });
@@ -19,6 +20,7 @@ export class PaymentAttemptService {
     private readonly crypto: PaymentCredentialCryptoService,
     private readonly sadadRuntime: SadadRuntimeConfigService,
     private readonly billingGateway: BillingGatewayService,
+    @Optional() private readonly diagnostics?: PaymentGatewayDiagnosticsService,
   ) {}
 
   async createForOrder(userId: string, orderId: string, idempotencyKey: string | undefined) {
@@ -47,6 +49,7 @@ export class PaymentAttemptService {
     const runtime = this.sadadRuntime.settings();
     const provider = this.registry.resolve('sadad');
     const callback = provider.parseCallback(body);
+    await this.diagnostics?.record(callback.providerOrderId, 'CALLBACK', Date.now(), callback.resultCode);
     if (await this.billingGateway.owns(callback.providerOrderId)) return this.billingGateway.callback(body);
     await this.orchestration.processCallback(callback);
     let attempt = await this.prisma.paymentAttempt.findUnique({ where: { providerOrderId: callback.providerOrderId }, include: { providerConfigRevision: { include: { config: true, credentialVersion: true } } } });

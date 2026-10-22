@@ -18,5 +18,5 @@ export interface PaymentProviderPort {
   readonly descriptor: PaymentProviderDescriptor;
   createPayment(input: ProviderCreateInput): Promise<ProviderCreateResult>;
   parseCallback(input: unknown): ProviderCallback;
-  verifyPayment(input: { token: string; credential: Record<string, string> }): Promise<ProviderVerifyResult>;
+  verifyPayment(input: { token: string; credential: Record<string, string>; providerOrderId?: bigint }): Promise<ProviderVerifyResult>;
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Copy, CreditCard, Power, RefreshCw, Settings2, ShieldAlert } from "lucide-react";
+import { PaymentProviderRequests } from "./payment-provider-requests";
 
 import {
   PaymentProviderApiError,
@@ -64,6 +65,7 @@ function CopyValue({ label, value, copied, onCopy }: { label: string; value: str
 }
 
 export function PaymentProviderSettings({ accessToken }: { accessToken: string }) {
+  const [view, setView] = useState<'settings' | 'requests'>('settings');
   const [items, setItems] = useState<PaymentProviderConfig[] | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
@@ -168,6 +170,8 @@ export function PaymentProviderSettings({ accessToken }: { accessToken: string }
       {selected.activationAvailable && !selected.goLiveReady && <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-6 text-emerald-900">سرور برای اتصال واقعی آماده است. با فعال‌کردن آداپتور، یک revision عملیاتی RIAL ساخته می‌شود و پرداخت‌های جدید از سداد استفاده می‌کنند.</p>}
     </div>
 
+    <nav aria-label="بخش‌های مدیریت درگاه" className="flex flex-wrap gap-2 border-b border-border pb-3">{([{ id: 'settings', label: 'تنظیمات و اتصال' }, { id: 'requests', label: 'درخواست‌ها و رخدادها' }] as const).map(tab => <button key={tab.id} type="button" aria-pressed={view === tab.id} className={view === tab.id ? primaryButton : secondaryButton} onClick={() => setView(tab.id)}>{tab.label}</button>)}</nav>
+    {view === 'requests' ? <PaymentProviderRequests key={selected.code} token={accessToken} provider={selected.code} /> : <>
     <section className="space-y-3"><div><h4 className="font-bold">آدرس‌ها و اتصال</h4><p className="mt-1 text-sm leading-6 text-muted-foreground">آدرس بازگشت از دامنه عمومی API همین محیط ساخته می‌شود؛ همین مقدار باید برای پذیرندگی آن محیط ثبت شود.</p></div>
       <CopyValue label="Back Link / Return URL / Callback" value={callbackUrl} copied={copied === "callback"} onCopy={() => void copyValue("callback", callbackUrl)} />
       <details className="rounded-xl border border-border p-3"><summary className="cursor-pointer text-sm font-bold">جزئیات فنی اتصال سداد</summary><div className="mt-3 space-y-3"><CopyValue label="Payment Request endpoint" value={metadata.paymentRequestEndpoint} copied={copied === "request"} onCopy={() => void copyValue("request", metadata.paymentRequestEndpoint)} /><CopyValue label="Verify endpoint" value={metadata.verifyEndpoint} copied={copied === "verify"} onCopy={() => void copyValue("verify", metadata.verifyEndpoint)} /><p className="rounded-xl bg-secondary/50 p-3 text-xs leading-6 text-muted-foreground">{metadata.redirectDescription}</p></div></details>
@@ -179,6 +183,7 @@ export function PaymentProviderSettings({ accessToken }: { accessToken: string }
     </section>}
 
     <section className="rounded-2xl border border-border p-4"><h4 className="text-sm font-bold">قابلیت‌های آداپتور</h4><div className="mt-3 flex flex-wrap gap-2">{capabilitySummary.map((item) => <StatusBadge key={item} tone="amber">{item}</StatusBadge>)}{capabilitySummary.length === 0 && <span className="text-xs text-muted-foreground">قابلیت عملیاتی اعلام نشده است.</span>}</div></section>
+    </>}
     {message && <p role={message.tone === "error" ? "alert" : "status"} className={`rounded-xl px-3 py-2 text-sm ${message.tone === "success" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`}>{message.text}</p>}
   </div>;
 }

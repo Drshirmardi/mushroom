@@ -7,6 +7,8 @@
 
 ## Taskها
 
+Sadad request diagnostics (2026-10-22), same active F12-FE01 /root: IMPLEMENTED_UNVERIFIED / REWORK, unchecked. Provider settings request search/filter/server pagination and per-attempt dialog, both shared and legacy billing histories, clinic membership plus existing commerce/billing permissions, safe REQUEST/CALLBACK/VERIFY events in existing indexed audit storage. No financial decisions/configuration/schema changes. OpenAPI additive source/client generated; all execution checks deferred by owner. Handoff: [Sadad diagnostics](../logs/phase-12.md#sadad-request-diagnostics--implemented-unverified). Await owner interface review; no final task commit/DONE/new batch.
+
 Bottom-sheet grip focus corrective (2026-10-22), same F12-FE01 /root: shared button rectangle replaced by grip-only keyboard indicator, touch highlight suppressed. Live390px notification sheet/keyboard dismissal/focus restoration and whitespace review PASS; real Safari/iPhone matrix pending, broader task remains REWORK/unchecked. Evidence phase-12 log.
 
 - [x] `F12-T02-I04` — Docker default network null IPAM recovery (2026-10-22), INSTALLATION-04, sole Codex /root. Depends on I01/I02/I03 DONE. Normalize null/missing Config/IPAM; retain existing network collision/retry behavior; redact unexpected CLI errors.38 cases:36 PASS/2 existing tool skips; actual Docker baseline/fix allocation/retry verified without network mutation. Evidence: phase-12 log F12-T02-I04; review PASS. Owner VPS resume remains external.
