@@ -51,7 +51,8 @@ export class PaymentGatewayDiagnosticsService {
 
   async detail(actorUserId: string, provider: string, source: string, id: string): Promise<PaymentGatewayRequestDetailDto> {
     if (!['BILLING', 'COMMERCE'].includes(source)) throw missing();
-    const rows = await this.prisma.$queryRaw<Row[]>(Prisma.sql`SELECT * FROM (${this.rows(actorUserId, provider)}) r WHERE r.id = ${id}::uuid AND r.source = ${source} LIMIT 1`);
+    // The shared UNION projects both attempt IDs as text; the controller validates UUID syntax.
+    const rows = await this.prisma.$queryRaw<Row[]>(Prisma.sql`SELECT * FROM (${this.rows(actorUserId, provider)}) r WHERE r.id = ${id}::text AND r.source = ${source} LIMIT 1`);
     if (!rows[0]) throw missing();
     const events = await this.prisma.auditEvent.findMany({ where: { subjectType: 'PAYMENT_GATEWAY_TRACE', subjectId: id, action: 'PAYMENT_GATEWAY_TRACE' }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 101, select: { id: true, createdAt: true, metadata: true } });
     return { request: this.view(rows[0]), eventsTruncated: events.length > 100, events: events.slice(0, 100).reverse().flatMap(event => {

@@ -7,6 +7,8 @@
 
 ## Taskها
 
+Sadad detail500 corrective (2026-10-22), same F12-FE01 /root: fix text-projected attempt ID versus UUID comparison in detail query; controller validation and access scope retained. IMPLEMENTED_UNVERIFIED / REWORK; runtime/deployed retry and actual PostgreSQL regression pending, execution checks remain deferred. Evidence: phase-12 log Sadad detail500 correction.
+
 Sadad request diagnostics (2026-10-22), same active F12-FE01 /root: IMPLEMENTED_UNVERIFIED / REWORK, unchecked. Provider settings request search/filter/server pagination and per-attempt dialog, both shared and legacy billing histories, clinic membership plus existing commerce/billing permissions, safe REQUEST/CALLBACK/VERIFY events in existing indexed audit storage. No financial decisions/configuration/schema changes. OpenAPI additive source/client generated; all execution checks deferred by owner. Handoff: [Sadad diagnostics](../logs/phase-12.md#sadad-request-diagnostics--implemented-unverified). Await owner interface review; no final task commit/DONE/new batch.
 
 Bottom-sheet grip focus corrective (2026-10-22), same F12-FE01 /root: shared button rectangle replaced by grip-only keyboard indicator, touch highlight suppressed. Live390px notification sheet/keyboard dismissal/focus restoration and whitespace review PASS; real Safari/iPhone matrix pending, broader task remains REWORK/unchecked. Evidence phase-12 log.
