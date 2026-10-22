@@ -30,7 +30,13 @@ try {
   const env = { ...process.env, DATABASE_URL: url, INSTALLATION_TEST_DATABASE_URL: url };
   run(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], { cwd: resolve(root, 'apps/api'), env });
   console.log('All repository migrations applied to a new disposable installer database.');
+  run('docker', ['exec', name, 'createdb', '-U', 'postgres', '--template=mushroom_installation_test', 'mushroom_empty_clinic_installation_test']);
   process.stdout.write(run(process.execPath, ['scripts/test-installation-bootstrap.mjs'], { env }));
+  const emptyClinicUrl = new URL(url);
+  emptyClinicUrl.pathname = '/mushroom_empty_clinic_installation_test';
+  process.stdout.write(run(process.execPath, ['scripts/test-installation-bootstrap.mjs', '--without-existing-clinic'], {
+    env: { ...env, DATABASE_URL: emptyClinicUrl.href, INSTALLATION_TEST_DATABASE_URL: emptyClinicUrl.href },
+  }));
 } finally {
   const removed = spawnSync('docker', ['rm', '-fv', name], { encoding: 'utf8' });
   if (removed.status !== 0) process.stderr.write(`Fixture cleanup needs review: ${name}\n`);

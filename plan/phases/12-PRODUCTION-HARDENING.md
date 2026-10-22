@@ -410,3 +410,5 @@ F12-FE01 delete assessment with retained results (2026-10-21): owner-authorized 
 - [x] F12-T02-CI03 — Observable/bounded source transfer diagnostics: named phases, progress and90s idle timeout, SSH keepalives; intercepted success/failure and release checks PASS. Actual deployment incident remains REWORK; see phase log.
 
 - [x] F12-T02-CI04 — Compiler-only dev bootstrap heap640→1536MiB; clean real API emit, deployment contracts and retry/recovery rehearsal PASS. Live startup/capacity acceptance pending; see phase log.
+
+- [x] F12-T02-I05 — Initial installer administrator gets exact installed-clinic membership from input-selected identity, with atomic audit. Real PostgreSQL default/new clinic, dynamic phone, concurrency/rollback/retry boundaries PASS; sole /root, review PASS. Existing memberships are not backfilled. See phase log.

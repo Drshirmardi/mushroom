@@ -4825,3 +4825,24 @@ Changes: deploy/vps/dev-service.sh raises only the compile command Node heap to1
 Verification: actual TypeScript5.9 clean full API emit using Node --max-old-space-size1536, same noCheck/declaration flags, incremental=false and exclusive temporary output PASS (10.9s), main.js exists; checked Temp-child cleanup removes only generated temporary output. Local environment differs from live Linux VPS; this establishes compiler headroom locally, not total-host capacity. node scripts/test-release-pipeline.mjs PASS (includes shell syntax); bash scripts/test-vps-dev.sh PASS covering first sync, unchanged retry, source/artifact refresh, failure recovery, readiness/cache repair and lock wait; git diff --check PASS. Graphify AST update run with known optional extractor limitations unchanged. Main-agent combined diff/owned paths review PASS. No unrelated application suites repeated.
 
 Result: scoped software task DONE; claim released. Push to dev triggers new deployment. Existing successful migrations are retained and normal deploy retries apply only pending migrations; first-admin bootstrap remains after successful compile. Actual VPS compile/startup and sustained RAM/swap capacity remain external until observed. No next roadmap batch started; F12-FE01/F12-T13 acceptance unchanged.
+
+## F12-T02-I05 — Initial administrator clinic membership
+
+Completed:2026-10-22; batch INSTALLATION-05; sole writer/coordinator/reviewer Codex /root. Explicit owner request to fix the installer and commit, without a static phone. Baseline dcad898/current dev clean. Depends on I01/I04 and CI04 accepted installer/deploy contracts; no ownership conflict, no subagents.
+
+Problem: initial helper created ADMIN identity/role but no clinical_clinic_accesses membership; wallet administration separately requires exact clinic scope. Owner already repaired the current account manually.
+
+Changed files:
+- apps/api/prisma/bootstrap-installation.mjs: retain selected default-clinic ID or RETURNING ID from newly inserted clinic; insert one membership for newly created user ID inside original transaction; existing first-admin audit records clinicId using UUID-typed parameters. All identity selection remains driven by validated input.phone; no static owner phone/IDs or all-admin/all-clinic grant.
+- scripts/test-installation-bootstrap.mjs: generated valid synthetic admin phone per run; real membership/phone/clinic/audit identity assertions; rejecting audit trigger verifies membership already exists and all identity/scope rows roll back; concurrent retry remains single; password hash policy/unchanged retry, different-user denial and later scope-revocation preservation covered.
+- scripts/test-installation-postgres.mjs: clone the untouched fully migrated disposable database before first case; run same real suite for default clinic and no-active-clinic creation, exclusively inside its own UUID-named PostgreSQL16 container.
+- installation/README.md: document exact initial clinic scope and existing-account retry boundary.
+- plan/STATUS.md, phase checklist and this log: ownership/review/evidence synchronization.
+
+Verification:
+- node --check for helper and both fixture runners PASS.
+- node scripts/test-installation-postgres.mjs PASS: all79 immutable migrations, both default/new-clinic suites, generated input phones, exactly one correct active-clinic membership/audit under concurrent initialization, audit-failure rollback, credential preservation, refusal to upgrade an existing ordinary user/change administrator, invalid password rejection, no fabricated consent, and revoked membership not silently restored on retry. Own fixture container/databases removed by finally; no real server/database accessed.
+- node scripts/test-release-pipeline.mjs PASS; git diff --check PASS; Graphify AST update completed with existing optional SQL/HCL extraction/chat-parser limitations unchanged; generated graph outputs ignored.
+- Main-agent source/combined-diff review PASS: only owned paths, no schema/migration/auth-policy/API/client or protected-file edits. No broad application suite repeated for this bootstrap-only fix.
+
+Result: software task DONE, claim released. Commit/push on current dev as requested in ongoing session. The helper is consumed from the repository deployment checkout, not bundled as standalone manager code; manager.py/archive runtime behavior unchanged. Fresh installations gain exact clinic scope; existing-admin early return intentionally preserves existing/revoked scopes and password. Current owner manual repair is retained; no automatic historical backfill or live data mutation. Next eligible action: updated checkout for future first-run installation; no next roadmap batch started, broader F12-FE01/F12-T13 acceptance unchanged.

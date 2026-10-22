@@ -30,9 +30,11 @@ export async function bootstrapInstallation(client, input) {
     if (clinics.rowCount > 1 || (clinics.rowCount === 1 && ![input.clinicName, 'کلینیک سبز زندگی'].includes(clinics.rows[0].name))) {
       throw new Error('Existing clinic does not match first-run input.');
     }
+    let clinicId = clinics.rows[0]?.id;
     if (!clinics.rowCount) {
-      await client.query(`INSERT INTO clinics (id, name, time_zone, status, updated_at)
-        VALUES (gen_random_uuid(), $1, $2, 'ACTIVE', CURRENT_TIMESTAMP)`, [input.clinicName, input.timeZone]);
+      const clinic = await client.query(`INSERT INTO clinics (id, name, time_zone, status, updated_at)
+        VALUES (gen_random_uuid(), $1, $2, 'ACTIVE', CURRENT_TIMESTAMP) RETURNING id`, [input.clinicName, input.timeZone]);
+      clinicId = clinic.rows[0].id;
     } else {
       // The migration already supplies one default clinic; name it only before any user exists.
       await client.query('UPDATE clinics SET name=$1, time_zone=$2, updated_at=CURRENT_TIMESTAMP WHERE id=$3::uuid',
@@ -46,9 +48,10 @@ export async function bootstrapInstallation(client, input) {
     await client.query(`INSERT INTO credentials (id, user_id, password_hash, updated_at)
       VALUES (gen_random_uuid(), $1::uuid, $2, CURRENT_TIMESTAMP)`, [id, passwordHash]);
     await client.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1::uuid, $2::uuid)', [id, role.rows[0].id]);
+    await client.query('INSERT INTO clinical_clinic_accesses (user_id, clinic_id) VALUES ($1::uuid, $2::uuid)', [id, clinicId]);
     await client.query(`INSERT INTO audit_events (id, action, actor_user_id, subject_type, subject_id, metadata)
       VALUES (gen_random_uuid(), 'installation.first_administrator_created', $1::uuid, 'User', $1::uuid,
-      '{"source":"server-installer","version":1}'::jsonb)`, [id]);
+      jsonb_build_object('source', 'server-installer', 'version', 1, 'clinicId', $2::uuid))`, [id, clinicId]);
     await client.query('COMMIT');
     return 'initialized';
   } catch (error) {
