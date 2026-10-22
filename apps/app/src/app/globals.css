@@ -567,6 +567,10 @@
 .store-pagination nav button { min-height: 44px; }
 .patient-bottom-sheet { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: transparent; color: var(--patient-ink); }
 .patient-bottom-sheet::backdrop { background: transparent; }
+.patient-bottom-sheet .patient-bottom-sheet__handle { -webkit-tap-highlight-color: transparent; }
+/* Keep modal autofocus on the accessible button, with its indicator on the grip. */
+.patient-bottom-sheet .patient-bottom-sheet__handle:focus { outline: none; }
+.patient-bottom-sheet .patient-bottom-sheet__handle:focus-visible > span { background: var(--patient-focus); outline: 2px solid var(--patient-focus); outline-offset: 4px; }
 .store-product__incart { position: absolute; bottom: 8px; inset-inline-start: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--patient-action); color: white; font-size: 11px; line-height: 18px; font-weight: 500; }
 .store-promo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 20px; border: 1px solid var(--store-border); border-radius: 12px; color: var(--store-ink); background: #fff; }
 .store-promo h2 { font-size: 18px; line-height: 30px; font-weight: 500; }

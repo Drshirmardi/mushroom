@@ -52,7 +52,7 @@ export function BottomSheet({ title, ariaLabel, onClose, children }: BottomSheet
         initial={reduceMotion ? false : { y: "100%" }} animate={{ y: 0 }} exit={reduceMotion ? { opacity: 0 } : { y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}>
         <button
           type="button"
-          className="mx-auto -mt-2 block min-h-11 cursor-grab px-16 pb-3 pt-4 active:cursor-grabbing"
+          className="patient-bottom-sheet__handle mx-auto -mt-2 block min-h-11 cursor-grab px-16 pb-3 pt-4 active:cursor-grabbing"
           style={{ touchAction: "none" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}

@@ -1,5 +1,11 @@
 # Phase 12 Execution Evidence
 
+## Bottom-sheet handle focus correction (2026-10-22)
+
+F12-FE01 / CLIENT-INTEGRATION, owner-authorized continuation, sole /root. Clean baseline; source review traced native showModal autofocus to the first wide handle button and shared teal focus-visible outline. Add a scoped handle class, suppress its outer outline/touch highlight and put the keyboard focus indicator on its40px grip instead. Keep44px touch target, accessible close label, keyboard click, native modal focus handling and existing pointer/drag callbacks. All shared BottomSheet callers inherit the correction; no financial, notification or API behavior change.
+
+Scoped live Chromium verification on actual local Home notification sheet at390×844: button width168px has outline none, tap highlight transparent, no horizontal overflow; keyboard Tab/Shift+Tab gives grip-only solid2px outline while button remains unoutlined. Escape closes after existing exit animation and restores focus to notification trigger. Main-agent diff/whitespace review PASS. Real Safari/iPhone and full browser matrix not run; no full build, new tests, graph rebuild, commit or deployment. Small presentation-only correction; overall F12-FE01 remains REWORK/unchecked.
+
 ## Owner-requested initial entry and Home checkpoint (2026-10-21)
 
 Owner explicitly requests committing all remaining changes. One cohesive F12-FE01 checkpoint includes required initial entry and dashboard source selection, Home status/pending-action projection, related retained medical onboarding UI, both additive migrations, generated API contracts, focused test sources, ADR0038 and coordinator evidence. These changes share authentication, Journey and generated contracts and are saved atomically rather than leaving an intermediate incompatible checkout. Prior uncommitted statements below are historical.
