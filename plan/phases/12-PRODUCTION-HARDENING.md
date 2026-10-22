@@ -406,3 +406,5 @@ F12-FE01 delete assessment with retained results (2026-10-21): owner-authorized 
 - [x] F12-T02-CI01 PR27 validation repair — hosted CI/security, installer and all release artifacts PASS on1827010; owner merged PR27. Claim released; F12-FE01 remains REWORK.
 
 - [x] F12-T02-CI02 — Restore real dev deployment with owner-observed working SSH options; syntax/composition/actionlint/contracts PASS. Sole /root, review PASS; live deployment result external. See phase log.
+
+- [x] F12-T02-CI03 — Observable/bounded source transfer diagnostics: named phases, progress and90s idle timeout, SSH keepalives; intercepted success/failure and release checks PASS. Actual deployment incident remains REWORK; see phase log.

@@ -4801,3 +4801,15 @@ Changes: scripts/deploy-dev-vps.mjs adds ConnectTimeout=20, KexAlgorithms=curve2
 Verification: node --check PASS; intercepted execution of actual module with synthetic environment PASS (3 SSH calls + rsync all carry expected compatibility/security options; port9011, env exclusions and source-SHA deployment command retained); no network command executed by this check. node scripts/test-release-pipeline.mjs PASS; actionlint1.7.12 all workflows PASS; git diff --check PASS. Graphify AST update performed, existing optional extractor warnings unchanged. Main-agent combined diff/owned paths review PASS. No broad application tests needed for transport-option/workflow-only change.
 
 Result: software task DONE, review PASS, claim released. Push to dev intentionally triggers real shared-dev deployment per owner request; live deployment success is not yet established. Next eligible action: inspect that workflow; broader F12-FE01/F12-T13 acceptance remains separate, no next roadmap batch started.
+
+## F12-T02-CI03 — Make stalled source upload observable and bounded
+
+Completed:2026-10-22; sole coordinator/writer/reviewer Codex /root; batch DEV-SYNC-DIAGNOSTICS; baseline0ac681e clean/current dev. Continuation of owner-authorized dev deployment repair/commit/push.
+
+Evidence: server rsync134059 sleeping in do_select; workspace4KiB. Associated SSH connection reports zero send/receive queues, bytes_sent3259/acked3259, bytes_received2486 and lastsnd/lastrcv341899ms. Thus no new data in about342s, but this does not distinguish sender/protocol/path causes. Existing local tracked source about18MiB. Prior working test only establishes SSH authentication with the observed option combination, not bulk transfer.
+
+Change: scripts/deploy-dev-vps.mjs logs start/complete/failure of directory, lock, upload and build/verify stages without credential/host values. rsync prints file-list/progress/stats using line buffering and fails after90s without data I/O. Existing SSH options gain15s encrypted keepalive interval/4 unanswered probes. Preserve checksum, delayed deletion/update, env/generated output exclusions, pinned host verification and stop-before-build on upload failure. No speculative cipher/MTU/firewall/server-data changes.
+
+Checks: node --check PASS; node scripts/test-release-pipeline.mjs PASS; intercepted actual-module success/failure scenarios PASS: all4 named phases, all3 SSH calls/rsync transport include security/compatibility/keepalive options, expected rsync timeout/progress/exclusions preserved, simulated rsync exit30 propagates and never invokes build. No real network command executed by this verification. git diff --check PASS; Graphify AST update run, known optional extractor limitations unchanged; combined diff/owned-path review PASS. No application test suite repeated for transport diagnostics only.
+
+Software task DONE; deployment incident remains REWORK, cause unproven. GitHub old run39703762190 on0ac681e observed in progress; new dev push triggers replacement diagnostic execution. Next action: inspect upload progress/error before choosing any transport workaround. Broader F12-FE01/production acceptance unchanged.
