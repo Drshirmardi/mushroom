@@ -31,7 +31,7 @@ export function AppointmentsPage({ initialStatus = "ALL" }: { initialStatus?: Ad
       if (key === generation.current) { setItems(value.items); setTotal(value.total); }
     }, reason => { if (key === generation.current) setError(dashboardAppointmentError(reason)); }).finally(() => { if (key === generation.current) setLoading(false); });
   }, [authentication.accessToken, physician, status, date, page]);
-  useEffect(() => { load(); const timer = setInterval(() => { if (document.visibilityState === "visible") load(); }, 15_000); return () => { generation.current++; clearInterval(timer); }; }, [load]);
+  useEffect(() => { queueMicrotask(load); const timer = setInterval(() => { if (document.visibilityState === "visible") load(); }, 15_000); return () => { generation.current++; clearInterval(timer); }; }, [load]);
   const act = async (visit: Visit, action: "confirm" | "check-in") => {
     setBusy(visit.id); setError(null);
     try { await changeVisit(authentication.accessToken, physician, visit.id, action); load(); }

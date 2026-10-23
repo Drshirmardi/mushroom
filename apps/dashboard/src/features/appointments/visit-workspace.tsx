@@ -32,7 +32,7 @@ export function VisitWorkspace({ appointmentId }: { appointmentId: string }) {
       if (value.visitMode !== "ONLINE") { setTab(current => current === "chat" ? "notes" : current); setOpened(current => current.includes("notes") ? current : [...current, "notes"]); }
     } catch (reason) { if (key === generation.current) setError(dashboardAppointmentError(reason)); }
   }, [authentication.accessToken, physician, appointmentId]);
-  useEffect(() => { void load(); const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 30_000); return () => { generation.current++; clearInterval(timer); }; }, [load]);
+  useEffect(() => { queueMicrotask(() => void load()); const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 30_000); return () => { generation.current++; clearInterval(timer); }; }, [load]);
   const act = async (action: "start" | "complete" | "confirm" | "check-in" | "queue") => {
     if (busy) return;
     setBusy(true); setError(null);

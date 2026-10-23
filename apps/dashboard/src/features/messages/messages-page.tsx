@@ -70,27 +70,30 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
       .finally(() => { if (generation === listGeneration.current) setLoadingMore(false); });
   }, [authentication.accessToken, authentication.user.roles]);
   useEffect(() => {
-    setText(""); pending.current = null; setConfirmingCloseId(null);
+    queueMicrotask(() => { setText(""); pending.current = null; setConfirmingCloseId(null); });
   }, [openedId]);
   useEffect(() => {
     if (!canAccessChat || visitId) return;
-    loadAppointments();
+    queueMicrotask(loadAppointments);
     return () => { listGeneration.current++; };
   }, [loadAppointments, canAccessChat, visitId]);
 
   useEffect(() => {
     if (!openedId || !canAccessChat) return;
     let active = true; let handle: ChatConnection | undefined;
-    conversationEpoch.current += 1;
-    setChat(null); setAccess(null); setError(null); setConnection("idle"); setLoadingOlder(false); pendingPrepend.current = null;
-    void loadChat(authentication.accessToken, openedId).then(loaded => {
+    queueMicrotask(() => {
       if (!active) return;
-      setChat(loaded); follow.current = true; setAtBottom(true); activeConversation.current = loaded.conversation.id;
-      handle = connectChat(authentication.accessToken, loaded, message => {
-        if (active) setChat(current => current ? { ...current, messages: reconcileChatMessages(current.messages, message) } : current);
-      }, (state, availability) => { if (active) { setConnection(state); if (availability) setAccess(availability); } });
-      transport.current = handle;
-    }, () => { if (active) { setError("دریافت این گفتگو ممکن نشد. دسترسی و اتصال را بررسی کنید."); setConnection("recovery-failed"); } });
+      conversationEpoch.current += 1;
+      setChat(null); setAccess(null); setError(null); setConnection("idle"); setLoadingOlder(false); pendingPrepend.current = null;
+      void loadChat(authentication.accessToken, openedId).then(loaded => {
+        if (!active) return;
+        setChat(loaded); follow.current = true; setAtBottom(true); activeConversation.current = loaded.conversation.id;
+        handle = connectChat(authentication.accessToken, loaded, message => {
+          if (active) setChat(current => current ? { ...current, messages: reconcileChatMessages(current.messages, message) } : current);
+        }, (state, availability) => { if (active) { setConnection(state); if (availability) setAccess(availability); } });
+        transport.current = handle;
+      }, () => { if (active) { setError("دریافت این گفتگو ممکن نشد. دسترسی و اتصال را بررسی کنید."); setConnection("recovery-failed"); } });
+    });
     return () => { active = false; handle?.disconnect(); if (transport.current === handle) transport.current = null; activeConversation.current = null; };
   }, [authentication.accessToken, openedId, attempt, canAccessChat]);
   useEffect(() => { if (follow.current && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight; }, [chat?.messages]);
