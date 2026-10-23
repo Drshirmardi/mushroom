@@ -50,7 +50,7 @@ function BookStep3() {
   };
 
   return (
-    <ServicePage title={appointmentId ? "بررسی تغییر زمان" : "بررسی نوبت"} description="زمان انتخاب‌شده را بررسی کنید. هزینه و روش‌های پرداخت در مرحلهٔ بعد از سرور دریافت می‌شوند." icon={CalendarDays} backHref={`/appointments/book/schedule?doctorId=${encodeURIComponent(searchParams.get("doctorId") ?? "")}&doctorServiceId=${encodeURIComponent(doctorServiceId)}&appointmentId=${encodeURIComponent(appointmentId)}`} backLabel="انتخاب زمان">
+    <ServicePage title={appointmentId ? "بررسی تغییر زمان" : "بررسی نوبت"} description="زمان انتخاب‌شده را بررسی کنید. هزینه و روش‌های پرداخت در مرحلهٔ بعد از سرور دریافت می‌شوند." icon={CalendarDays} backHref={`/appointments/book/schedule?doctorId=${encodeURIComponent(searchParams.get("doctorId") ?? "")}&doctorServiceId=${encodeURIComponent(doctorServiceId)}&appointmentId=${encodeURIComponent(appointmentId)}&date=${encodeURIComponent(searchParams.get("date") ?? "")}`} backLabel="انتخاب زمان">
       <ServiceSteps steps={["پزشک و خدمت", "روز و ساعت", "بررسی و پرداخت"]} current={2} />
       <div className="space-y-4">
         <div className="rounded-2xl border border-border bg-white p-4">
@@ -58,7 +58,7 @@ function BookStep3() {
           <div className="mt-3 flex justify-between text-sm">
             <span className="text-muted-foreground">زمان انتخاب‌شده</span>
             <span className="font-semibold text-foreground">
-              {startsAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(startsAt)) : "—"}
+              {startsAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tehran" }).format(new Date(startsAt)) : "—"}
             </span>
           </div>
         </div>

@@ -66,13 +66,24 @@ async function voidOrThrow(request: Promise<{ error?: unknown; response: Respons
   }
 }
 
+async function loadAllDoctors(client: ApiClient, headers: ReturnType<typeof authorization>): Promise<Doctor[]> {
+  const pageSize = 50;
+  const first = await dataOrThrow<components["schemas"]["DoctorPageResponseDto"]>(client.GET("/v1/admin/doctors", { headers, params: { query: { page: 1, pageSize } } }));
+  const doctors = [...first.items];
+  for (let page = 2; page <= Math.ceil(first.total / pageSize); page += 1) {
+    const next = await dataOrThrow<components["schemas"]["DoctorPageResponseDto"]>(client.GET("/v1/admin/doctors", { headers, params: { query: { page, pageSize } } }));
+    doctors.push(...next.items);
+  }
+  return doctors;
+}
+
 export async function loadDirectorySettings(client: ApiClient, accessToken: string): Promise<DirectorySettingsState> {
   try {
     const headers = authorization(accessToken);
     const pageQuery = { page: 1, pageSize: 50 } as never;
     const [clinic, doctors, specialties, services, doctorServices, availabilityRules, closures, exceptions] = await Promise.all([
       dataOrThrow<Clinic>(client.GET("/v1/admin/clinic", { headers })),
-      dataOrThrow<components["schemas"]["DoctorPageResponseDto"]>(client.GET("/v1/admin/doctors", { headers, params: { query: pageQuery } })),
+      loadAllDoctors(client, headers),
       dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(client.GET("/v1/admin/specialties", { headers, params: { query: pageQuery } })),
       dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(client.GET("/v1/admin/services", { headers, params: { query: pageQuery } })),
       dataOrThrow<components["schemas"]["DoctorServicePageResponseDto"]>(client.GET("/v1/admin/doctor-services", { headers, params: { query: pageQuery } })),
@@ -80,7 +91,7 @@ export async function loadDirectorySettings(client: ApiClient, accessToken: stri
       dataOrThrow<components["schemas"]["ClinicClosurePageResponseDto"]>(client.GET("/v1/admin/clinic-closures", { headers, params: { query: pageQuery } })),
       dataOrThrow<components["schemas"]["DoctorAvailabilityExceptionPageResponseDto"]>(client.GET("/v1/admin/doctor-availability-exceptions", { headers, params: { query: pageQuery } })),
     ]);
-    return { status: "ready", data: { clinic, doctors: doctors.items, specialties: specialties.items, services: services.items, doctorServices: doctorServices.items, availabilityRules: availabilityRules.items, closures: closures.items, exceptions: exceptions.items } };
+    return { status: "ready", data: { clinic, doctors, specialties: specialties.items, services: services.items, doctorServices: doctorServices.items, availabilityRules: availabilityRules.items, closures: closures.items, exceptions: exceptions.items } };
   } catch (error) {
     const status = statusFor(error);
     if (status === 401) return { status: "unauthenticated" };
