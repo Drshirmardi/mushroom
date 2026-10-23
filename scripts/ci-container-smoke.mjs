@@ -1,5 +1,8 @@
 import { execFileSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { generateKeyPairSync, randomBytes } from 'node:crypto';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import assert from 'node:assert/strict';
 
 const [image, service] = process.argv.slice(2);
@@ -11,6 +14,7 @@ assert(
 
 const prefix = `ci-smoke-${randomBytes(6).toString('hex')}`;
 const resources = [];
+const temporaryDirectories = [];
 
 const docker = (...args) =>
   execFileSync('docker', args, {
@@ -173,7 +177,32 @@ try {
 
       '-e',
       'PORT=3003',
+
+      '-e',
+      'EJABBERD_DOMAIN=chat.example.invalid',
+
+      '-e',
+      'EJABBERD_WEBSOCKET_URL=wss://chat.example.invalid/xmpp-websocket',
+
+      '-e',
+      'EJABBERD_API_URL=http://127.0.0.1:5280/api/v2',
+
+      '-e',
+      `EJABBERD_POLICY_SECRET=${randomBytes(48).toString('hex')}`,
+
+      '-e',
+      'EJABBERD_JWT_PRIVATE_KEY_FILE=/run/secrets/ejabberd-private.pem',
     ];
+
+    const keyDirectory = mkdtempSync(join(tmpdir(), `${prefix}-`));
+    temporaryDirectories.push(keyDirectory);
+    const { privateKey } = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+    });
+    const keyPath = join(keyDirectory, 'ejabberd-private.pem');
+    writeFileSync(keyPath, privateKey, { mode: 0o644 });
 
     /*
      * ------------------------------------------------------------
@@ -198,6 +227,8 @@ try {
     run(`${prefix}-api`, [
       '-d',
       ...sharedEnv,
+      '--mount',
+      `type=bind,src=${keyPath},dst=/run/secrets/ejabberd-private.pem,readonly`,
       image,
     ]);
 
@@ -329,6 +360,14 @@ fetch('http://127.0.0.1:3000/runtime-config.js')
         '-v',
         name,
       );
+    } catch {
+      cleanupFailed = true;
+    }
+  }
+
+  for (const directory of temporaryDirectories) {
+    try {
+      rmSync(directory, { recursive: true, force: true });
     } catch {
       cleanupFailed = true;
     }
