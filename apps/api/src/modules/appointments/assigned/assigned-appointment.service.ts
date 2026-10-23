@@ -22,7 +22,7 @@ export class AssignedAppointmentService {
     const offset = (query.page - 1) * query.pageSize; if (!Number.isSafeInteger(offset) || offset > 2_147_483_647) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'Pagination offset exceeds the supported range.', details: {} });
     return this.prisma.$transaction(async tx => {
       const actor = await this.actor(tx, ctx), range = await this.range(tx, query);
-      const dates: Prisma.AppointmentWhereInput = query.from || query.to ? { startsAt: { gte: range.from, lt: range.to } } : { OR: [{ startsAt: { gte: range.from, lt: range.to } }, { status: { in: ['CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, startsAt: { lt: range.to } }] };
+      const dates: Prisma.AppointmentWhereInput = query.from || query.to ? { startsAt: { gte: range.from, lt: range.to } } : { OR: [{ startsAt: { gte: range.from, lt: range.to } }, { status: { in: ['CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, startsAt: { lt: range.to }, endsAt: { gte: new Date(range.now.getTime() - 4 * 3_600_000) } }] };
       const where: Prisma.AppointmentWhereInput = { clinicId: actor.clinicId, doctorId: actor.doctorId, patient: { user: { status: 'ACTIVE' } }, status: query.status ?? { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS'] }, ...dates };
       const [rows, total] = await Promise.all([tx.appointment.findMany({ where, select, orderBy: query.status === 'QUEUED' ? [{ queuedAt: 'asc' }, { id: 'asc' }] : [{ startsAt: 'asc' }, { id: 'asc' }], skip: offset, take: query.pageSize }), tx.appointment.count({ where })]);
       await this.audit.recordMany(rows.map(row => ({ clinicId: row.clinicId, patientId: row.patientId, action: 'READ' as const, resourceType: 'ASSIGNED_APPOINTMENT_WORKLIST', resourceId: row.id, metadata: {} })), ctx, tx);
@@ -61,7 +61,10 @@ export class AssignedAppointmentService {
   }
   private async open(tx: Tx, appointment: { status: AppointmentStatus; startsAt: Date; endsAt: Date }) {
     if (!['CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS'].includes(appointment.status)) return false;
-    const [clock] = await tx.$queryRaw<{ open: boolean }[]>(Prisma.sql`SELECT CURRENT_TIMESTAMP>=${appointment.startsAt}::timestamptz-INTERVAL '15 minutes' AS open`); return !!clock?.open;
+    // Clinical transitions retain their existing time bounds. Chat closure is
+    // evaluated independently by ChatService through the explicit close action.
+    const grace = appointment.status === 'CONFIRMED' ? 60 : 240;
+    const [clock] = await tx.$queryRaw<{ open: boolean }[]>(Prisma.sql`SELECT CURRENT_TIMESTAMP>=${appointment.startsAt}::timestamptz-INTERVAL '15 minutes' AND CURRENT_TIMESTAMP<=${appointment.endsAt}::timestamptz+${grace}*INTERVAL '1 minute' AS open`); return !!clock?.open;
   }
   private async range(tx: Tx, query: AssignedAppointmentQueryDto) {
     const [clock] = await tx.$queryRaw<{ now: Date }[]>(Prisma.sql`SELECT CURRENT_TIMESTAMP AS now`), day = 86_400_000;

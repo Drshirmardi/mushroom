@@ -13,13 +13,17 @@ export type ChatFixture = Awaited<ReturnType<typeof createChatFixture>>;
 
 const phone = () => `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}`;
 
-export async function createChatFixture(app: NestFastifyApplication) {
+export function isolateChatEngineAdministration(app: NestFastifyApplication) {
   // These tests exercise real PostgreSQL, HTTP authorization and engine policy.
   // External XMPP administration is isolated; native delivery has a separate gate.
   const engine = app.get(EjabberdApiClient);
   for (const command of ['ensureRoom', 'addMember', 'removeMember', 'disconnect', 'visibility'] as const) {
     vi.spyOn(engine, command).mockResolvedValue(undefined);
   }
+}
+
+export async function createChatFixture(app: NestFastifyApplication) {
+  isolateChatEngineAdministration(app);
   const prisma = app.get(PrismaService);
   const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
   const baseOffering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: clinic.id, visitMode: 'ONLINE', isActive: true, publicationStatus: 'PUBLISHED' }, select: { serviceId: true, durationMinutes: true, priceAmount: true, currency: true } });
