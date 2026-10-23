@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, Check, Package, RefreshCw, Truck, X } from 'lucide-react';
 import { cancelCommerceOrder, commerceOrdersErrorMessage, completeBillingOrderRefund, failOrderBillingAttempt, getCommerceOrder, rejectCommerceRequest, requestBillingOrderRefund, requestManualRefund, requestOrderCancellation, requestOrderReturn, retryOrderBillingAttempt, transitionCommerceOrder, transitionManualRefund, updateCommerceTracking, type OrderDetail } from '@/lib/commerce-orders-api';
 import { date, digits, money, nextLabels, nextStep, orderStatuses, paymentStatuses, refundableToman, rialMoney } from './order-display';
@@ -13,10 +13,13 @@ const titles: Record<ActionKind, string> = { advance: 'تغییر مرحلهٔ �
 
 export function OrderManagement({ id, token, onClose, onChanged }: { id: string; token: string; onClose: () => void; onChanged: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null); const heading = useId();
-  const [order, setOrder] = useState<OrderDetail | null>(null); const [reading, setReading] = useState(true); const [loadError, setLoadError] = useState(''); const [revision, setRevision] = useState(0);
+  const [order, setOrder] = useState<OrderDetail | null>(null); const [finishedRequest, setFinishedRequest] = useState<object | null>(null); const [loadErrorState, setLoadError] = useState(''); const [revision, setRevision] = useState(0);
   const [action, setAction] = useState<Action | null>(null); const [busy, setBusy] = useState(false); const lock = useRef(false);
   const [error, setError] = useState(''); const [success, setSuccess] = useState(''); const [discard, setDiscard] = useState(false); const [dirty, setDirty] = useState(false);
   const [form, setForm] = useState({ carrierName: '', trackingCode: '', trackingUrl: '', reason: '', amount: '', evidence: '' });
+  const request = useMemo(() => ({ id, token, revision }), [id, token, revision]);
+  const reading = finishedRequest !== request;
+  const loadError = reading ? '' : loadErrorState;
   useEffect(() => { if (discard) { const warning = dialog.current?.querySelector<HTMLElement>('[data-discard]'); warning?.scrollIntoView({ block: 'nearest' }); warning?.querySelector<HTMLButtonElement>('button')?.focus(); } }, [discard]);
   const keys = useRef(new Map<string, string>()); const actionForm = useRef<HTMLFormElement>(null);
   useEffect(() => { if (action) { actionForm.current?.scrollIntoView({ block: 'nearest' }); actionForm.current?.querySelector<HTMLElement>('input,textarea,button')?.focus({ preventScroll: true }); } }, [action]);
@@ -26,10 +29,10 @@ export function OrderManagement({ id, token, onClose, onChanged }: { id: string;
     return () => { node?.close(); document.body.style.overflow = overflow; if (opener?.isConnected) opener.focus(); };
   }, []);
   useEffect(() => {
-    let active = true; setLoadError(''); setReading(true);
-    void getCommerceOrder(token, id).then(value => { if (active) setOrder(value); }, reason => { if (active) setLoadError(commerceOrdersErrorMessage(reason)); }).finally(() => { if (active) setReading(false); });
+    let active = true;
+    void getCommerceOrder(token, id).then(value => { if (active) { setOrder(value); setLoadError(''); } }, reason => { if (active) setLoadError(commerceOrdersErrorMessage(reason)); }).finally(() => { if (active) setFinishedRequest(request); });
     return () => { active = false; };
-  }, [id, token, revision]);
+  }, [id, token, revision, request]);
   const close = () => { if (busy || lock.current) return; if (dirty) setDiscard(true); else onClose(); };
   const choose = (kind: ActionKind, target?: string) => {
     if (!order || busy || dirty) return;
