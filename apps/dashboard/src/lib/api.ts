@@ -6,6 +6,7 @@ const webBaseUrl = runtimePublicUrl("webUrl", "http://localhost:3000");
 const appBaseUrl = runtimePublicUrl("appUrl", "http://localhost:3001");
 
 const sessionTransport = createSessionAwareFetch();
+export const sessionFetch = sessionTransport.fetch;
 
 export const authApiClient = createApiClient({ baseUrl: apiBaseUrl });
 export const apiClient = createApiClient({
