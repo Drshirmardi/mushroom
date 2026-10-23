@@ -25,6 +25,7 @@ bun.lockb
 yarn.lock
 
 # Environment
+/.local/
 *.local
 .env
 .env.*

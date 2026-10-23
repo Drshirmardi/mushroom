@@ -10,6 +10,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
+  "watchOptions": {
+    "excludeDirectories": ["**/node_modules", "**/.git", "**/.next", "**/dist", "../../.local"]
+  },
   "include": [
     "src/**/*.ts"
   ],

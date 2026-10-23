@@ -34,7 +34,7 @@ PostgreSQL توسعه روی پورت `5432` اجرا می‌شود. در produc
 
 - Node.js 24 و pnpm 10.10
 - Next.js 16، React 19 و TypeScript
-- NestJS 11، Fastify و Socket.IO
+- NestJS 11، Fastify و ejabberd برای چت
 - PostgreSQL 16+، Prisma 7 و migrationهای immutable
 - Docker/OCI با runnerهای Distroless و non-root
 - GitHub Actions برای CI، تست، audit و بررسی artifactها
@@ -50,6 +50,11 @@ pnpm test
 pnpm build
 pnpm images:build
 ```
+
+برای اجرای محلی، Docker باید روشن باشد. `pnpm dev` سرویس ejabberd و PostgreSQL مخصوص آرشیو آن را
+خودکار آماده می‌کند و سپس برنامه‌ها را اجرا می‌کند. کلیدهای محلی در `.local/chat/` نگه‌داری می‌شوند؛
+با `Ctrl+C` کانتینرهای چت متوقف می‌شوند و داده‌ها حفظ می‌شوند. تنظیم و آماده‌سازی دیتابیس اصلی مطابق
+[راهنمای توسعه](docs/DEVELOPMENT.md) است.
 
 `pnpm images:build` هر چهار image تولیدی را با tag همان commit می‌سازد. smoke test و اسکن امنیتی با
 `pnpm images:verify` و انتشار کنترل‌شده در registry با `pnpm images:push` انجام می‌شود؛ جزئیات در

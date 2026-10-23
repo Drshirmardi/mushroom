@@ -34,6 +34,7 @@ fi
 
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
 [[ -f $compose_file ]] || die 'versioned dev Compose file is missing from the synced workspace'
+[[ -f $environment_root/chat.compose.yaml ]] || die 'ejabberd chat.compose.yaml is required; follow deploy/ejabberd/README.md before deploying this branch'
 
 env_value() {
   local key=$1
@@ -127,6 +128,7 @@ compose() {
     --project-name mushroom-dev \
     --env-file "$runtime_env" \
     --file "$compose_file" \
+    --file "$environment_root/chat.compose.yaml" \
     "${network_args[@]}" \
     "$@"
 }

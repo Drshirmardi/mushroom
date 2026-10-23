@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "turbo dev",
-    "dev:api": "pnpm --filter @sabz-zendegi/api dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "node scripts/dev.mjs --filter=@sabz-zendegi/api",
     "images:print": "node scripts/release-images.mjs print",
     "images:build": "node scripts/release-images.mjs build",
     "images:verify": "node scripts/release-images.mjs verify",
@@ -37,6 +37,9 @@
       "fast-uri@4.1.2": "4.1.4",
       "@prisma/config>deepmerge-ts": "8.0.2",
       "prisma>mysql2": "3.24.5"
+    },
+    "patchedDependencies": {
+      "stanza@12.22.1": "patches/stanza@12.22.1.patch"
     }
   },
   "packageManager": "pnpm@10.10.0"

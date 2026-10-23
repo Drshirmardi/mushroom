@@ -439,7 +439,8 @@ def configure_proxy(config, directory=None):
     for environment, spec in config['environments'].items():
         for service, domain in spec['domains'].items():
             offset = {'web': 0, 'app': 1, 'dashboard': 2, 'api': 3}[service]
-            sites.append(f'{domain} {{\n  tls {config["email"]}\n  encode zstd gzip\n  reverse_proxy 127.0.0.1:{spec.get("basePort", PORTS[environment]) + offset}\n}}\n')
+            chat_import = f'  import /etc/caddy/mushroom-chat/{environment}/*.caddy\n' if service == 'api' else ''
+            sites.append(f'{domain} {{\n  tls {config["email"]}\n  encode zstd gzip\n{chat_import}  reverse_proxy 127.0.0.1:{spec.get("basePort", PORTS[environment]) + offset}\n}}\n')
     site_content = '\n'.join(sites)
     new_main = existing if imported else marker + '\n' + import_line + '\n'
     # Validate the proposed complete config before changing either live file.
@@ -636,6 +637,8 @@ def compose_command(config, environment):
             '--env-file', env, '--file', compose]
     if (root / 'network.yaml').exists():
         args.extend(['--file', root / 'network.yaml'])
+    if (root / 'chat.compose.yaml').exists():
+        args.extend(['--file', root / 'chat.compose.yaml'])
     return args
 
 
@@ -685,7 +688,7 @@ def audit_environment(repository, current=False):
     missing = keys - example.keys()
     require(not missing, 'API example lacks schema keys: ' + ', '.join(sorted(missing)))
     for relative in ('deploy/vps/compose.dev.yaml', 'deploy/vps/compose.yaml', 'compose.production.example.yaml'):
-        source = (repository / relative).read_text(encoding='utf-8')
+        source = (repository / relative).read_text(encoding='utf-8') + '\n' + (repository / 'deploy/ejabberd/compose.yaml').read_text(encoding='utf-8')
         secret_keys = {name.upper() for name in SECRET_NAMES}
         absent = [key for key in keys - {'NODE_ENV', 'PORT'} if not re.search(rf'\b{key}(?:_FILE)?\b', source)
                   and not (relative.endswith('compose.dev.yaml') and key in secret_keys

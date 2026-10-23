@@ -43,3 +43,6 @@ R2_ENDPOINT=
 R2_BUCKET=
 R2_REGION=auto
 R2_REQUEST_TIMEOUT_MS=5000
+
+# Required before deploying the ejabberd-only chat branch: merge deploy/ejabberd/env.example
+# into runtime.env and install chat.compose.yaml as described in deploy/ejabberd/README.md.

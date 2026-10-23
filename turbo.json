@@ -9,13 +9,19 @@
     "JWT_ACCESS_AUDIENCE",
     "REFRESH_TOKEN_PEPPER",
     "OTP_PEPPER",
-    "DEV_COMPILER_HEAP_MB"
+    "DEV_COMPILER_HEAP_MB",
+    "HOSTNAME",
+    "EJABBERD_DOMAIN",
+    "EJABBERD_WEBSOCKET_URL",
+    "EJABBERD_API_URL",
+    "EJABBERD_POLICY_SECRET",
+    "EJABBERD_JWT_PRIVATE_KEY_FILE",
+    "EJABBERD_REQUEST_TIMEOUT_MS"
   ],
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true,
-      "interactive": true
+      "persistent": true
     },
     "start": {
       "cache": false,

@@ -1,0 +1,56 @@
+# Used only by scripts/dev.mjs. Application PostgreSQL and VPS profiles are untouched.
+services:
+  chat-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mushroom_chat
+      POSTGRES_USER: mushroom_chat
+      POSTGRES_PASSWORD: "${DEV_CHAT_SQL_PASSWORD:?start with pnpm dev}"
+    volumes: [chat_sql:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U mushroom_chat -d mushroom_chat"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  ejabberd:
+    image: "mushroom-chat-local:${DEV_CHAT_INSTANCE:?start with pnpm dev}"
+    build:
+      context: "${DEV_CHAT_SOURCE_ROOT:?start with pnpm dev}"
+      dockerfile: deploy/ejabberd/Dockerfile
+    environment:
+      EJABBERD_MACRO_XMPP_HOST: chat.localhost
+      EJABBERD_MACRO_BRIDGE_JID: bridge@chat.localhost
+      EJABBERD_MACRO_SQL_HOST: chat-postgres
+      EJABBERD_MACRO_SQL_DB: mushroom_chat
+      EJABBERD_MACRO_SQL_USER: mushroom_chat
+      EJABBERD_MACRO_SQL_PASSWORD: "${DEV_CHAT_SQL_PASSWORD:?start with pnpm dev}"
+      EJABBERD_MACRO_POLICY_URL: "http://host.docker.internal:${DEV_CHAT_API_PORT:-3003}/v1/chat/ejabberd/policy"
+      EJABBERD_POLICY_SECRET: "${DEV_CHAT_POLICY_SECRET:?start with pnpm dev}"
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      - "${DEV_CHAT_SOURCE_ROOT}/deploy/ejabberd/ejabberd.yml:/opt/ejabberd/conf/ejabberd.yml:ro"
+      - chat_engine:/opt/ejabberd/database
+    secrets: [ejabberd_public_key]
+    ports:
+      - "127.0.0.1:${DEV_CHAT_WS_PORT:-5444}:5281"
+      - "127.0.0.1:${DEV_CHAT_ADMIN_PORT:-5445}:5280"
+    depends_on:
+      chat-postgres:
+        condition: service_healthy
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: [CMD, ejabberdctl, status]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  chat_sql:
+  chat_engine:
+
+secrets:
+  ejabberd_public_key:
+    file: "${DEV_CHAT_STATE_ROOT}/public.jwk"

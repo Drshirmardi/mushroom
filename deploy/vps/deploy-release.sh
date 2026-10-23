@@ -63,6 +63,7 @@ trap cleanup EXIT
 mkdir -p -- "$environment_root" "$state_root" "$releases_root"
 mkdir -- "$lock_dir" 2>/dev/null || die "another deployment is active for $environment"
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
+[[ -f $environment_root/chat.compose.yaml ]] || die 'ejabberd chat.compose.yaml is required; follow deploy/ejabberd/README.md before deploying this branch'
 [[ -f $compose_source ]] || die "versioned compose file is missing"
 if [[ $action == deploy ]]; then
   [[ -f $consent_policy_source ]] || die "environment-approved consent policy is missing"
@@ -159,6 +160,7 @@ compose_for() {
     --project-name "$expected_project" \
     --env-file "$release_dir/release.env" \
     --file "$release_dir/compose.yaml" \
+    --file "$environment_root/chat.compose.yaml" \
     "${network_args[@]}" \
     "${@:2}"
 }
