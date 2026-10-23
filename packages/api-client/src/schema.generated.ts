@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/health/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HealthController_chatReady"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/otp/challenges": {
         parameters: {
             query?: never;
@@ -275,6 +291,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chat/conversations/{conversationId}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read current conversation readiness and explicit closure state */
+        get: operations["chatConversationAccess"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explicitly close a conversation as its assigned physician or authorized clinic administrator */
+        post: operations["chatConversationClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/conversations/{conversationId}/messages": {
         parameters: {
             query?: never;
@@ -405,6 +455,23 @@ export interface paths {
         get: operations["chatWaitingRoomGet"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/appointments/{appointmentId}/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue an authorized short-lived ejabberd session for one consultation */
+        post: operations["chatAppointmentEngineSessionCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3567,6 +3634,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/appointments/{appointmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one clinic appointment and display names */
+        get: operations["adminAppointmentDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/appointments/{appointmentId}/history": {
         parameters: {
             query?: never;
@@ -5138,6 +5222,40 @@ export interface paths {
         patch: operations["adminCommerceDiscountsUpdate"];
         trace?: never;
     };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search secret-free gateway attempts within administrator clinic membership */
+        get: operations["adminPaymentGatewayRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read safe adapter events for a clinic-owned payment attempt */
+        get: operations["adminPaymentGatewayRequestDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/commerce/payment-providers": {
         parameters: {
             query?: never;
@@ -5249,6 +5367,40 @@ export interface paths {
         };
         /** List clinic commerce orders */
         get: operations["adminCommerceOrdersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search clinic orders with server pagination */
+        get: operations["adminCommerceOrdersSearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read clinic order items, delivery snapshot and payment operations */
+        get: operations["adminCommerceOrderGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5748,156 +5900,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/admin/commerce/orders/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search clinic orders with server pagination */
-        get: operations["adminCommerceOrdersSearch"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/commerce/orders/{orderId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read clinic order items, delivery snapshot and payment operations */
-        get: operations["adminCommerceOrderGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search secret-free gateway attempts within administrator clinic membership */
-        get: operations["adminPaymentGatewayRequests"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read safe adapter events for a clinic-owned payment attempt */
-        get: operations["adminPaymentGatewayRequestDetail"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/appointments/{appointmentId}/session": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Issue an authorized short-lived ejabberd session for one consultation */
-        post: operations["chatAppointmentEngineSessionCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/health/chat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["HealthController_chatReady"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/access": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["chatConversationAccess"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/chat/conversations/{conversationId}/close": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["chatConversationClose"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/appointments/{appointmentId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get one clinic appointment and display names */
-        get: operations["adminAppointmentDetail"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6071,6 +6073,8 @@ export interface components {
             nextCursor?: string | null;
         };
         ChatConversationResponseDto: {
+            /** Format: date-time */
+            closedAt?: string | null;
             /** @enum {string} */
             transport: "ejabberd";
             /** Format: uuid */
@@ -6085,8 +6089,15 @@ export interface components {
             doctorId: string;
             /** Format: date-time */
             createdAt: string;
+        };
+        ChatAccessResponseDto: {
+            canSend: boolean;
+            readOnlyReason: string | null;
             /** Format: date-time */
-            closedAt?: string | null;
+            opensAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            canClose: boolean;
         };
         ChatMessageResponseDto: {
             /** Format: uuid */
@@ -6152,6 +6163,36 @@ export interface components {
             action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
             /** @description Non-sensitive administrative note. */
             safeNote?: string;
+        };
+        EjabberdSessionDto: {
+            canSend: boolean;
+            readOnlyReason: string | null;
+            /** Format: date-time */
+            opensAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            canClose: boolean;
+            /** @enum {string} */
+            transport: "ejabberd";
+            /** Format: uuid */
+            conversationId: string;
+            /** Format: uuid */
+            appointmentId: string;
+            websocketUrl: string;
+            jid: string;
+            /** @description Short-lived XMPP password. Keep in memory; never log or persist. */
+            token: string;
+            /** @enum {string} */
+            resource: "sabz";
+            roomJid: string;
+            /** @enum {string} */
+            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Authoritative retained history; use its opaque cursor for recovery. */
+            historyUrl: string;
+            /** @description Durable moderation changes must also be reconciled on reconnect. */
+            visibilityUrl: string;
         };
         PatientClinicalItemResponseDto: {
             /** Format: uuid */
@@ -8906,6 +8947,8 @@ export interface components {
             startsAt: string;
         };
         PatientAppointmentResponseDto: {
+            /** @enum {string} */
+            visitMode?: "ONLINE" | "IN_PERSON";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -8929,8 +8972,6 @@ export interface components {
             priceCapturedAt: string;
             /** Format: date-time */
             createdAt: string;
-            /** @enum {string} */
-            visitMode?: "ONLINE" | "IN_PERSON";
         };
         PatientAppointmentPageResponseDto: {
             items: components["schemas"]["PatientAppointmentResponseDto"][];
@@ -8978,6 +9019,11 @@ export interface components {
             startsAt: string;
         };
         AdminAppointmentResponseDto: {
+            patientDisplayName?: string | null;
+            doctorDisplayName?: string;
+            serviceName?: string;
+            /** @enum {string} */
+            visitMode?: "ONLINE" | "IN_PERSON";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -9001,11 +9047,6 @@ export interface components {
             priceCapturedAt: string;
             /** Format: date-time */
             createdAt: string;
-            patientDisplayName?: string | null;
-            doctorDisplayName?: string;
-            serviceName?: string;
-            /** @enum {string} */
-            visitMode?: "ONLINE" | "IN_PERSON";
         };
         AdminAppointmentPageResponseDto: {
             items: components["schemas"]["AdminAppointmentResponseDto"][];
@@ -10264,6 +10305,49 @@ export interface components {
             perPatientUsageLimit?: number | null;
             isActive?: boolean;
         };
+        PaymentGatewayRequestDto: {
+            id: string;
+            /** @enum {string} */
+            source: "BILLING" | "COMMERCE";
+            patientId: string;
+            userId: string;
+            phone: string;
+            name: string;
+            purpose: string;
+            intentId: string | null;
+            orderId: string | null;
+            providerOrderId: string;
+            revisionNumber: number;
+            amountRial: string;
+            status: string;
+            resultCode: string | null;
+            reference: string | null;
+            traceNumber: string | null;
+            createdAt: string;
+            updatedAt: string;
+            verifiedAt: string | null;
+        };
+        PaymentGatewayRequestsPageDto: {
+            items: components["schemas"]["PaymentGatewayRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PaymentGatewayTraceDto: {
+            id: string;
+            at: string;
+            stage: string;
+            outcome: string;
+            resultCode: string | null;
+            errorKind: string | null;
+            httpStatus: number | null;
+            durationMs: number;
+        };
+        PaymentGatewayRequestDetailDto: {
+            request: components["schemas"]["PaymentGatewayRequestDto"];
+            events: components["schemas"]["PaymentGatewayTraceDto"][];
+            eventsTruncated: boolean;
+        };
         PaymentProviderConfigDto: {
             code: string;
             displayName: string;
@@ -10306,6 +10390,14 @@ export interface components {
             providerAmount?: string | null;
             providerUnit: string;
             redirectUrl?: string | null;
+        };
+        OrderSearchPageDto: {
+            items: {
+                [key: string]: unknown;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         OrderTransitionDto: {
             /** @enum {string} */
@@ -10566,96 +10658,6 @@ export interface components {
             page: number;
             pageSize: number;
         };
-        OrderSearchPageDto: {
-            items: {
-                [key: string]: unknown;
-            }[];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        PaymentGatewayRequestDto: {
-            id: string;
-            patientId: string;
-            userId: string;
-            phone: string;
-            name: string;
-            purpose: string;
-            providerOrderId: string;
-            amountRial: string;
-            status: string;
-            createdAt: string;
-            updatedAt: string;
-            /** @enum {string} */
-            source: "BILLING" | "COMMERCE";
-            intentId: string | null;
-            orderId: string | null;
-            resultCode: string | null;
-            verifiedAt: string | null;
-            revisionNumber: number;
-            reference: string | null;
-            traceNumber: string | null;
-        };
-        PaymentGatewayTraceDto: {
-            id: string;
-            at: string;
-            stage: string;
-            outcome: string;
-            resultCode: string | null;
-            errorKind: string | null;
-            httpStatus: number | null;
-            durationMs: number;
-        };
-        PaymentGatewayRequestsPageDto: {
-            items: components["schemas"]["PaymentGatewayRequestDto"][];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        PaymentGatewayRequestDetailDto: {
-            request: components["schemas"]["PaymentGatewayRequestDto"];
-            events: components["schemas"]["PaymentGatewayTraceDto"][];
-            eventsTruncated: boolean;
-        };
-        EjabberdSessionDto: {
-            /** @enum {string} */
-            transport: "ejabberd";
-            /** Format: uuid */
-            conversationId: string;
-            /** Format: uuid */
-            appointmentId: string;
-            websocketUrl: string;
-            jid: string;
-            /** @description Short-lived XMPP password. Keep in memory; never log or persist. */
-            token: string;
-            /** @enum {string} */
-            resource: "sabz";
-            roomJid: string;
-            /** @enum {string} */
-            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
-            canSend: boolean;
-            /** Format: date-time */
-            expiresAt: string;
-            /** @description Authoritative retained history; use its opaque cursor for recovery. */
-            historyUrl: string;
-            /** @description Durable moderation changes must also be reconciled on reconnect. */
-            visibilityUrl: string;
-            readOnlyReason: string | null;
-            /** Format: date-time */
-            opensAt: string;
-            /** Format: date-time */
-            closedAt: string | null;
-            canClose: boolean;
-        };
-        ChatAccessResponseDto: {
-            canSend: boolean;
-            readOnlyReason: string | null;
-            /** Format: date-time */
-            opensAt: string;
-            /** Format: date-time */
-            closedAt: string | null;
-            canClose: boolean;
-        };
     };
     responses: never;
     parameters: never;
@@ -10683,6 +10685,23 @@ export interface operations {
         };
     };
     HealthController_ready: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HealthController_chatReady: {
         parameters: {
             query?: never;
             header?: never;
@@ -11536,6 +11555,48 @@ export interface operations {
             };
         };
     };
+    chatConversationAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatAccessResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationResponseDto"];
+                };
+            };
+        };
+    };
     chatConversationHistory: {
         parameters: {
             query?: {
@@ -11721,6 +11782,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatAppointmentEngineSessionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EjabberdSessionDto"];
                 };
             };
         };
@@ -20829,6 +20911,27 @@ export interface operations {
             };
         };
     };
+    adminAppointmentDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAppointmentResponseDto"];
+                };
+            };
+        };
+    };
     adminAppointmentsHistory: {
         parameters: {
             query?: {
@@ -26537,6 +26640,57 @@ export interface operations {
             };
         };
     };
+    adminPaymentGatewayRequests: {
+        parameters: {
+            query?: {
+                from?: string;
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
+                until?: string;
+            };
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestsPageDto"];
+                };
+            };
+        };
+    };
+    adminPaymentGatewayRequestDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: string;
+                providerCode: string;
+                source: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestDetailDto"];
+                };
+            };
+        };
+    };
     adminCommercePaymentProvidersList: {
         parameters: {
             query?: never;
@@ -26688,6 +26842,54 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminCommerceOrdersSearch: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                shippingMethod?: "PICKUP" | "COURIER";
+                status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderSearchPageDto"];
+                };
+            };
+        };
+    };
+    adminCommerceOrderGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -28266,206 +28468,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    adminCommerceOrdersSearch: {
-        parameters: {
-            query?: {
-                page?: number;
-                pageSize?: number;
-                query?: string;
-                status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
-                shippingMethod?: "PICKUP" | "COURIER";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OrderSearchPageDto"];
-                };
-            };
-        };
-    };
-    adminCommerceOrderGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    adminPaymentGatewayRequests: {
-        parameters: {
-            query?: {
-                query?: string;
-                status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
-                from?: string;
-                until?: string;
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path: {
-                providerCode: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentGatewayRequestsPageDto"];
-                };
-            };
-        };
-    };
-    adminPaymentGatewayRequestDetail: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerCode: string;
-                source: string;
-                attemptId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentGatewayRequestDetailDto"];
-                };
-            };
-        };
-    };
-    chatAppointmentEngineSessionCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EjabberdSessionDto"];
-                };
-            };
-        };
-    };
-    HealthController_chatReady: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    chatConversationAccess: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatAccessResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationClose: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatConversationResponseDto"];
-                };
-            };
-        };
-    };
-    adminAppointmentDetail: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminAppointmentResponseDto"];
                 };
             };
         };

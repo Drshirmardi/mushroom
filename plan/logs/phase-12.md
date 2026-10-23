@@ -5055,3 +5055,13 @@ Verification:
 - Frozen dependency installation PASS. `pnpm audit --prod --audit-level high` exits0 with zero high/critical findings (one low/five moderate remain).
 
 Hosted checks must be rerun on the corrective commits. These policy tests do not substitute for actual two-browser native XMPP delivery, reconnection, browser/mobile workflow or VPS acceptance. F12-FE01-CHAT01 remains REWORK/unchecked; no next batch or final clinical-completion claim.
+
+### PR28 runtime contract follow-up (2026-10-23)
+
+Hosted e7d2b36: security, installer, release-contract and all four artifact build/HTTP/non-root/security jobs PASS. Main CI lint/types PASS; regular API run reported517 passed/3 failed (32 explicitly isolated suites skipped). The three failures were strict runtime OpenAPI parity, a legacy REST-send contract assertion and elapsed-time waiting-room closure expectations.
+
+Corrected the fixtures to assert the real session/private-policy contract, absence of the retired public write/private policy in public Swagger, numeric diagnostics pagination, fifteen-minute preparation and explicit authorized closure. Waiting-room checks retain pending/cancelled rejection and verify no encounter creation. Added explicit Number metadata to diagnostics pagination and UUID metadata on the new appointment/chat operations; validation and financial/business rules are unchanged.
+
+Built the clean verification API and ran the official exporter against the disposable review database; regenerated the complete SDK source. Compared the old/new documents after ignoring object/required/query-parameter ordering: schema shapes are unchanged; semantic path differences are the session UUID format and descriptions of the new access/close operations. Larger generated-file diffs reflect canonical runtime property ordering, not added business scope. Manual partial document synchronization is no longer used for this correction.
+
+API clean emit/test typecheck PASS; actual runtime OpenAPI equality and waiting-room suite10 cases PASS; SDK generated parity and12 tests PASS. No live/owner database or unrelated local file was changed. Full hosted rerun remains the next gate; no merge, deployment, new batch or task-DONE claim.

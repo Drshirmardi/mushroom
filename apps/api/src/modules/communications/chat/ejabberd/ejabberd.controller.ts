@@ -1,5 +1,5 @@
 import { Body, CanActivate, Controller, ExecutionContext, Header, HttpCode, HttpStatus, Injectable, Param, ParseUUIDPipe, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiExcludeController, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiExcludeController, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { timingSafeEqual } from 'node:crypto';
 import type { AuthenticatedRequest } from '../../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../../common/auth/authorization.decorator';
@@ -29,6 +29,7 @@ export class EjabberdPolicyGuard implements CanActivate {
 export class EjabberdSessionController {
   constructor(private readonly sessions: EjabberdSessionService) {}
   @Post(':appointmentId/session')
+  @ApiParam({ name: 'appointmentId', schema: { type: 'string', format: 'uuid' } })
   @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
   @Header('Cache-Control', 'no-store')
   @Header('Pragma', 'no-cache')

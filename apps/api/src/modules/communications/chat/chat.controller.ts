@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../common/auth/authorization.decorator';
@@ -35,6 +35,7 @@ export class ChatController {
   }
 
   @Get('conversations/:conversationId/access')
+  @ApiParam({ name: 'conversationId', schema: { type: 'string', format: 'uuid' } })
   @Header('Cache-Control', 'private, no-store')
   @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
   @ApiOperation({ operationId: 'chatConversationAccess', summary: 'Read current conversation readiness and explicit closure state' })
@@ -45,6 +46,7 @@ export class ChatController {
   }
 
   @Post('conversations/:conversationId/close')
+  @ApiParam({ name: 'conversationId', schema: { type: 'string', format: 'uuid' } })
   @HttpCode(HttpStatus.OK)
   @RequirePermissions(PERMISSIONS.CHAT_MESSAGE_SEND)
   @ApiOperation({ operationId: 'chatConversationClose', summary: 'Explicitly close a conversation as its assigned physician or authorized clinic administrator' })

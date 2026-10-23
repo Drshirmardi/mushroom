@@ -211,12 +211,20 @@ describe('identity OpenAPI contract', () => {
     expect(document.components.schemas.PatientCommerceSkuDto.properties.currentPriceToman.description).toBe('Integer TOMAN.');
   });
 
-  it('publishes the appointment-bound chat REST contract with bearer protection and stable errors', () => {
+  it('publishes numeric gateway diagnostics pagination', () => {
+    const parameters = document.paths['/v1/admin/commerce/payment-providers/{providerCode}/requests'].get.parameters;
+    for (const name of ['page', 'pageSize']) {
+      expect(parameters.find((parameter: { name: string }) => parameter.name === name).schema.type).toBe('number');
+    }
+  });
+
+  it('publishes protected engine sessions and retained REST reads without the retired send operation', () => {
     const paths = document.paths;
     const chatOperations = [
       ['/v1/chat/appointments/{appointmentId}/conversation', 'get', 'chatAppointmentConversationGet'],
       ['/v1/chat/conversations/{conversationId}/messages', 'get', 'chatConversationHistory'],
-      ['/v1/chat/conversations/{conversationId}/messages', 'post', 'chatConversationMessageSend'],
+      ['/v1/chat/appointments/{appointmentId}/session', 'post', 'chatAppointmentEngineSessionCreate'],
+      ['/v1/chat/conversations/{conversationId}/close', 'post', 'chatConversationClose'],
       ['/v1/chat/messages/{messageId}/reports', 'post', 'chatMessageReportCreate'],
       ['/v1/chat/messages/{messageId}/visibility', 'post', 'chatMessageVisibilityChange'],
       ['/v1/chat/messages/{messageId}/restricted-content', 'get', 'chatRestrictedContentReview'],
@@ -226,10 +234,14 @@ describe('identity OpenAPI contract', () => {
       expect(paths[path][method].operationId).toBe(operationId);
       expect(paths[path][method].security).toEqual([{ bearerAuth: [] }]);
     }
+    expect(paths['/v1/chat/conversations/{conversationId}/messages'].post).toBeUndefined();
+    expect(paths['/v1/chat/ejabberd/policy']).toBeUndefined();
+    expect(document.components.schemas.EjabberdSessionDto.properties.transport.enum).toEqual(['ejabberd']);
+    expect(paths['/v1/chat/appointments/{appointmentId}/session'].post.parameters[0].schema.format).toBe('uuid');
     const errors = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
     expect(errors).toEqual(expect.arrayContaining([
       'CHAT_FORBIDDEN', 'CHAT_BLOCKED', 'CHAT_IDEMPOTENCY_CONFLICT',
-      'CHAT_CURSOR_INVALID', 'CHAT_RATE_LIMITED', 'CHAT_MESSAGE_TOO_LONG',
+      'CHAT_CURSOR_INVALID', 'CHAT_RATE_LIMITED', 'CHAT_MESSAGE_TOO_LONG', 'CHAT_ENGINE_UNAVAILABLE',
     ]));
   });
 });
