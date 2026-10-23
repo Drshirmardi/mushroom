@@ -19,6 +19,11 @@ const timeLabel = (value: string) => new Intl.DateTimeFormat("fa-IR", { timeStyl
 
 export function MessagesPage({ visitId, embedded = false }: { visitId?: string; embedded?: boolean } = {}) {
   const { authentication } = useDashboardSession();
+  return <MessagesWorkspace key={`${authentication.user.id}:${[...authentication.user.roles].sort().join(",")}:${visitId ?? "list"}`} visitId={visitId} embedded={embedded} />;
+}
+
+function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: boolean }) {
+  const { authentication } = useDashboardSession();
   const [openedId, setOpenedId] = useState(visitId ?? "");
   const [mobileView, setMobileView] = useState<"list" | "thread">(visitId ? "thread" : "list");
   const [attempt, setAttempt] = useState(0);
@@ -27,7 +32,9 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
   const [chat, setChat] = useState<LoadedChat | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [connection, setConnection] = useState<Connection>("idle");
+  const [connectionState, setConnection] = useState<Connection>("idle");
+  const [loadedForToken, setLoadedForToken] = useState<string | null>(null);
+  const connection = loadedForToken === authentication.accessToken ? connectionState : "idle";
   const [access, setAccess] = useState<ChatAccess | null>(null);
   const [confirmingCloseId, setConfirmingCloseId] = useState<string | null>(null);
   const [closing, setClosing] = useState<string | null>(null);
@@ -53,11 +60,9 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
 
   const loadAppointments = useCallback((page = 1, append = false) => {
     const generation = ++listGeneration.current;
-    if (append) setLoadingMore(true);
-    else { setAppointments(null); setListTotal(null); setListPage(1); }
-    setAppointmentsError(null);
     void listVisits(authentication.accessToken, !authentication.user.roles.includes("ADMIN"), { page }).then(result => {
       if (generation !== listGeneration.current) return;
+      setAppointmentsError(null);
       const available = result.items.filter(appointment => appointment.visitMode === "ONLINE" && appointment.status !== "CANCELLED" && appointment.status !== "NO_SHOW");
       setAppointments(current => {
         if (!append || !current) return available;
@@ -70,30 +75,23 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
       .finally(() => { if (generation === listGeneration.current) setLoadingMore(false); });
   }, [authentication.accessToken, authentication.user.roles]);
   useEffect(() => {
-    queueMicrotask(() => { setText(""); pending.current = null; setConfirmingCloseId(null); });
-  }, [openedId]);
-  useEffect(() => {
     if (!canAccessChat || visitId) return;
-    queueMicrotask(loadAppointments);
+    loadAppointments();
     return () => { listGeneration.current++; };
   }, [loadAppointments, canAccessChat, visitId]);
 
   useEffect(() => {
     if (!openedId || !canAccessChat) return;
     let active = true; let handle: ChatConnection | undefined;
-    queueMicrotask(() => {
-      if (!active) return;
-      conversationEpoch.current += 1;
-      setChat(null); setAccess(null); setError(null); setConnection("idle"); setLoadingOlder(false); pendingPrepend.current = null;
-      void loadChat(authentication.accessToken, openedId).then(loaded => {
+    conversationEpoch.current += 1;
+    void loadChat(authentication.accessToken, openedId).then(loaded => {
         if (!active) return;
-        setChat(loaded); follow.current = true; setAtBottom(true); activeConversation.current = loaded.conversation.id;
+        setChat(loaded); setLoadedForToken(authentication.accessToken); follow.current = true; setAtBottom(true); activeConversation.current = loaded.conversation.id;
         handle = connectChat(authentication.accessToken, loaded, message => {
           if (active) setChat(current => current ? { ...current, messages: reconcileChatMessages(current.messages, message) } : current);
         }, (state, availability) => { if (active) { setConnection(state); if (availability) setAccess(availability); } });
         transport.current = handle;
-      }, () => { if (active) { setError("دریافت این گفتگو ممکن نشد. دسترسی و اتصال را بررسی کنید."); setConnection("recovery-failed"); } });
-    });
+      }, () => { if (active) { setLoadedForToken(authentication.accessToken); setError("دریافت این گفتگو ممکن نشد. دسترسی و اتصال را بررسی کنید."); setConnection("recovery-failed"); } });
     return () => { active = false; handle?.disconnect(); if (transport.current === handle) transport.current = null; activeConversation.current = null; };
   }, [authentication.accessToken, openedId, attempt, canAccessChat]);
   useEffect(() => { if (follow.current && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight; }, [chat?.messages]);
@@ -102,8 +100,21 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
     if (!pending || !chat || chat.conversation.id !== pending.conversationId || !scroll.current) return;
     scroll.current.scrollTop += scroll.current.scrollHeight - pending.height;
     pendingPrepend.current = null;
-  }, [chat?.messages, chat?.conversation.id]);
+  }, [chat]);
   useEffect(() => { const el = composer.current; if (el && !text) el.style.height = "auto"; }, [text]);
+
+  const retryConnection = () => {
+    setChat(null); setAccess(null); setError(null); setConnection("idle"); setLoadingOlder(false); pendingPrepend.current = null;
+    setAttempt(value => value + 1);
+  };
+  const openVisit = (id: string) => {
+    if (id !== openedId) {
+      setText(""); pending.current = null; setConfirmingCloseId(null);
+      setChat(null); setAccess(null); setError(null); setConnection("idle"); setLoadingOlder(false); pendingPrepend.current = null;
+      setOpenedId(id);
+    }
+    setMobileView("thread");
+  };
 
   const send = async () => {
     const handle = transport.current;
@@ -174,7 +185,7 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
       await closeChat(authentication.accessToken, targetId);
       if (activeConversation.current !== targetId || conversationEpoch.current !== epoch) return;
       setConfirmingCloseId(null);
-      setAttempt(value => value + 1);
+      retryConnection();
     } catch {
       if (activeConversation.current === targetId && conversationEpoch.current === epoch) setError("بستن گفتگو انجام نشد؛ دوباره تلاش کنید.");
     } finally {
@@ -184,18 +195,18 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
 
   return <div className={`flex min-h-0 flex-1 flex-col overflow-hidden ${embedded ? "h-[70dvh] min-h-[480px] max-h-[800px] p-3" : "p-4 sm:p-7"}`}>
     {!embedded && <header className="mb-3 flex flex-wrap items-end justify-between gap-2"><div><h1 className="text-xl font-bold">گفتگوهای درمانی</h1><p className="mt-1 text-sm text-muted-foreground">هویت ارسال: {title}</p></div></header>}
-    {!embedded && appointmentsError && <p role="alert" className="mb-3 flex items-center gap-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{appointmentsError}<button type="button" onClick={() => loadAppointments()} className="inline-flex items-center gap-1 font-bold"><RefreshCw size={14} />تلاش دوباره</button></p>}
+    {!embedded && appointmentsError && <p role="alert" className="mb-3 flex items-center gap-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{appointmentsError}<button type="button" onClick={() => { setAppointments(null); setListTotal(null); setListPage(1); setAppointmentsError(null); loadAppointments(); }} className="inline-flex items-center gap-1 font-bold"><RefreshCw size={14} />تلاش دوباره</button></p>}
     <div className={showList ? "grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(260px,340px)_1fr]" : "flex min-h-0 flex-1 flex-col"}>
       {showList && <aside className={`min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3"><h2 className="text-sm font-bold">گفتگوها با بیماران</h2>{appointments && <span className="text-xs text-muted-foreground">{appointments.length.toLocaleString("fa-IR")}</span>}</div>
         <div className="min-h-0 flex-1 overflow-y-auto">
           {appointments === null ? (appointmentsError ? null : <p role="status" className="p-4 text-sm text-muted-foreground">در حال دریافت نوبت‌ها…</p>)
             : appointments.length === 0 && !(listTotal !== null && listPage * listPageSize < listTotal) ? <p className="p-4 text-sm text-muted-foreground">گفتگوی فعالی برای شما وجود ندارد.</p>
-              : appointments.map(visit => <button key={visit.id} type="button" onClick={() => { setOpenedId(visit.id); setMobileView("thread"); }} aria-current={openedId === visit.id ? "true" : undefined} className={`flex w-full flex-col items-start gap-1 border-b border-border px-4 py-3 text-right transition-colors last:border-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#176b9a] ${openedId === visit.id ? "bg-[#176b9a]/5" : "hover:bg-slate-100"}`}>
+              : appointments.map(visit => <button key={visit.id} type="button" onClick={() => openVisit(visit.id)} aria-current={openedId === visit.id ? "true" : undefined} className={`flex w-full flex-col items-start gap-1 border-b border-border px-4 py-3 text-right transition-colors last:border-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#176b9a] ${openedId === visit.id ? "bg-[#176b9a]/5" : "hover:bg-slate-100"}`}>
                 <span className="flex w-full items-center justify-between gap-2"><span className="truncate text-sm font-bold">{visit.patientDisplayName ?? "بیمار"}</span><span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${statusTone[visit.status]}`}>{appointmentStatus[visit.status]}</span></span>
                 <span className="truncate text-xs text-muted-foreground">{visitTime(visit.startsAt)}{visit.serviceName ? ` · ${visit.serviceName}` : ""}</span>
               </button>)}
-          {appointments && listTotal !== null && listPage * listPageSize < listTotal && <button type="button" disabled={loadingMore} onClick={() => loadAppointments(listPage + 1, true)} className="w-full border-t border-border py-3 text-xs font-bold text-[#176b9a] disabled:opacity-60">{loadingMore ? "در حال دریافت…" : "نمایش بیشتر"}</button>}
+          {appointments && listTotal !== null && listPage * listPageSize < listTotal && <button type="button" disabled={loadingMore} onClick={() => { setLoadingMore(true); loadAppointments(listPage + 1, true); }} className="w-full border-t border-border py-3 text-xs font-bold text-[#176b9a] disabled:opacity-60">{loadingMore ? "در حال دریافت…" : "نمایش بیشتر"}</button>}
         </div>
       </aside>}
       <section className={`min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card ${showList && mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
@@ -209,7 +220,7 @@ export function MessagesPage({ visitId, embedded = false }: { visitId?: string; 
         </div>
         {confirmingCloseId !== null && <div role="alert" className="mx-4 mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><p>با بستن گفتگو، ارسال پیام برای طرفین پایان می‌یابد. سابقهٔ پیام‌ها باقی می‌ماند.</p><div className="mt-3 flex gap-2"><button type="button" disabled={closing === confirmingCloseId} onClick={() => void close()} className="min-h-11 rounded-xl bg-red-700 px-4 font-bold text-white">{closing === confirmingCloseId ? "در حال بستن…" : "بستن گفتگو"}</button><button type="button" disabled={closing === confirmingCloseId} onClick={() => setConfirmingCloseId(null)} className="min-h-11 px-4">ادامهٔ گفتگو</button></div></div>}
         {error && <p role="alert" className="mx-4 mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        {(connection === "offline" || connection === "recovery-failed" || connection === "read-only") && <button type="button" onClick={() => setAttempt(value => value + 1)} className="mx-4 mt-2 self-start text-xs font-bold text-[#176b9a]">بررسی دوباره اتصال و امکان ارسال</button>}
+        {(connection === "offline" || connection === "recovery-failed" || connection === "read-only") && <button type="button" onClick={retryConnection} className="mx-4 mt-2 self-start text-xs font-bold text-[#176b9a]">بررسی دوباره اتصال و امکان ارسال</button>}
         <div className="relative flex min-h-0 flex-1 flex-col">
           <div ref={scroll} onScroll={onMessagesScroll} className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4 [overflow-anchor:none]">
             {chat?.olderCursor && <button type="button" onClick={() => void older()} disabled={loadingOlder} className="mx-auto block rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-[#176b9a] disabled:opacity-60">{loadingOlder ? "در حال دریافت…" : "پیام‌های قبلی"}</button>}

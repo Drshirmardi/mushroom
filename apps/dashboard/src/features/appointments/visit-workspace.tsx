@@ -23,16 +23,15 @@ export function VisitWorkspace({ appointmentId }: { appointmentId: string }) {
   const [tab, setTab] = useState<Tab>("chat");
   const [opened, setOpened] = useState<Tab[]>(["chat"]);
   const generation = useRef(0);
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     const key = ++generation.current;
-    try {
-      const value = await getVisit(authentication.accessToken, physician, appointmentId);
+    return getVisit(authentication.accessToken, physician, appointmentId).then(value => {
       if (key !== generation.current) return;
       setVisit(value); setError(null);
       if (value.visitMode !== "ONLINE") { setTab(current => current === "chat" ? "notes" : current); setOpened(current => current.includes("notes") ? current : [...current, "notes"]); }
-    } catch (reason) { if (key === generation.current) setError(dashboardAppointmentError(reason)); }
+    }, reason => { if (key === generation.current) setError(dashboardAppointmentError(reason)); });
   }, [authentication.accessToken, physician, appointmentId]);
-  useEffect(() => { queueMicrotask(() => void load()); const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 30_000); return () => { generation.current++; clearInterval(timer); }; }, [load]);
+  useEffect(() => { void load(); const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 30_000); return () => { generation.current++; clearInterval(timer); }; }, [load]);
   const act = async (action: "start" | "complete" | "confirm" | "check-in" | "queue") => {
     if (busy) return;
     setBusy(true); setError(null);
