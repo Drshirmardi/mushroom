@@ -177,11 +177,12 @@ fi
 run_deploy rollback production - 11
 [[ $(<"$MUSHROOM_ROOT/production/state/current") == "$first_production" ]] || exit 1
 
-first_migration=$(grep -n 'migrate deploy' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
-first_policy_publish=$(grep -n 'manage-consent-policy.mjs publish' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
-first_policy_verify=$(grep -n 'manage-consent-policy.mjs verify' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
-first_secret_prepare=$(grep -n -- '--cap-add CHOWN' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
-first_switch=$(grep -n -- '--wait' "$FAKE_DOCKER_LOG" | head -n 1 | cut -d: -f1)
+# Limit matches in grep itself so pipefail cannot turn head's early exit into SIGPIPE.
+first_migration=$(grep -nm 1 'migrate deploy' "$FAKE_DOCKER_LOG" | cut -d: -f1)
+first_policy_publish=$(grep -nm 1 'manage-consent-policy.mjs publish' "$FAKE_DOCKER_LOG" | cut -d: -f1)
+first_policy_verify=$(grep -nm 1 'manage-consent-policy.mjs verify' "$FAKE_DOCKER_LOG" | cut -d: -f1)
+first_secret_prepare=$(grep -nm 1 -- '--cap-add CHOWN' "$FAKE_DOCKER_LOG" | cut -d: -f1)
+first_switch=$(grep -nm 1 -- '--wait' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 [[ $first_secret_prepare -lt $first_migration ]] || { printf 'secret permissions were not prepared before migration\n' >&2; exit 1; }
 [[ $first_migration -lt $first_policy_publish && $first_policy_publish -lt $first_policy_verify && $first_policy_verify -lt $first_switch ]] \
   || { printf 'migration, policy publication and verification did not precede application switching\n' >&2; exit 1; }
