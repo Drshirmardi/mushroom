@@ -5029,3 +5029,29 @@ The owner reports testing/review complete and requested the branch work be commi
 - `4a9f823` — `build(F12-FE01-CHAT01): provision ejabberd for development and deploy` (local `pnpm dev`, engine configuration, deployment and installer integration).
 
 Each staged area passed `git diff --cached --check`. No tests or builds were run in this commit turn; the previously recorded local-startup, API/client compile and native smoke evidence remains in the earlier entry above. No push or PR was created. F12-FE01-CHAT01 remains unchecked/REWORK pending reconciliation of its full authenticated clinical/browser/moderation acceptance and deployment requirements; these commits are checkpoints and do not claim task completion. Unrelated booking/availability/calendar/settings changes were not staged and remain in the worktree.
+
+## PR28 stabilization and verification (2026-10-23)
+
+Task: F12-FE01-CHAT01 with existing F12-FE01 dashboard CI blockers. Same coordinator /root; corrective review, no new batch. Owner requested taking over and correcting the recent CI-repair process. PR28 is open against `dev`; no merge or deployment performed.
+
+Reviewed the four recent CI fixes. Both deployment fixtures correctly supply the actual required ejabberd overlay. API image smoke now supplies disposable signing material and passed hosted artifact build/HTTP/non-root/security checks on 6b422c8. The latest installer failure was the unchanged environment-validation fixture, not a runtime regression. Hosted lint and Next security failures concealed additional stale test contracts.
+
+Corrections:
+
+- Removed the added unguarded microtask loads. Initial fetches update React state in their asynchronous response callbacks; filter/selection/retry resets run in user events. User/visit keys reset the message workspace, and token changes disable stale connection state. Request generations and effect cleanup still reject obsolete responses.
+- Existing order/payment-request loading is derived from the current request identity; loading/error resets no longer synchronously cascade through effects. No financial action, permission or API contract changed.
+- Dashboard appointment test mocks the actual session-aware transport. API validation fixtures include the required synthetic chat settings. Vitest creates and removes a temporary RSA key and points external engine calls at a closed loopback test port, independently of the owner's `.env`.
+- Seven PostgreSQL chat suites now issue credentials through the public session API and submit native SEND policy callbacks. They assert the actual HTTP200/messageId contract. Persisted test roles match the JWT roles. External room administration alone is mocked; HTTP authentication, policy guard, session/resource checks and PostgreSQL remain real.
+- Added policy regressions for the removed public send route, missing/incorrect policy key, signed distinct credentials, connection eviction, moderation at native delivery, durable revocation, and explicit closure after a completed visit. A first fixture revocation failed the existing paired-field DB constraint; corrected it to use the real session-deletion API, then all four policy regressions passed.
+- Next advanced to resolved 16.4.2 with eslint-config-next16.4.1. Regenerated from the previous lockfile so unrelated React/Playwright/Turbo updates were excluded. Existing Stanza patch retained. No audit threshold or lint rule weakened.
+
+Verification:
+
+- A managed detached verification checkout contains only these corrections; the ten original unstaged booking/availability/calendar/settings/compose changes are absent. API test typecheck and app/dashboard/web typechecks PASS there. Original-checkout API typecheck reported only the two pre-existing patient-availability union errors; no edits were made to that owner file.
+- Workspace `pnpm lint` PASS (zero errors; three existing request-generation cleanup warnings).
+- Patient174, dashboard163 and SDK12 tests PASS (349 total); SDK OpenAPI/client generation parity check PASS.
+- Isolated PostgreSQL16 container with a unique name and dynamic loopback port: all79 migrations and development seed PASS; six retained chat suites12 cases PASS; two rate-limit cases PASS; four new policy cases PASS. Application/owner databases were not used.
+- Four validation/auth suites29 cases PASS.
+- Frozen dependency installation PASS. `pnpm audit --prod --audit-level high` exits0 with zero high/critical findings (one low/five moderate remain).
+
+Hosted checks must be rerun on the corrective commits. These policy tests do not substitute for actual two-browser native XMPP delivery, reconnection, browser/mobile workflow or VPS acceptance. F12-FE01-CHAT01 remains REWORK/unchecked; no next batch or final clinical-completion claim.

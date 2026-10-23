@@ -1,6 +1,6 @@
 # Consultation chat — ejabberd 26.09
 
-Status: **LOCAL STARTUP VERIFIED (2026-10-23)**; full clinical/browser consultation acceptance remains pending. This branch uses ejabberd only. Socket.IO gateway/clients/dependencies and the old public REST message-write operation are removed. The agent ran local startup, engine/API/route health, disposable private-room provisioning/membership, WebSocket negotiation and clean shutdown checks. No VPS/production deployment, push, PR or merge was performed.
+Status: **PR28 UNDER REVIEW (2026-10-23)**; full clinical/browser consultation acceptance remains pending. [PR28](https://github.com/Drshirmardi/mushroom/pull/28) targets `dev`. This branch uses ejabberd only. Socket.IO gateway/clients/dependencies and the old public REST message-write operation are removed. Recorded verification includes local startup, engine/API/route health, disposable private-room provisioning/membership, WebSocket negotiation and clean shutdown. No VPS/production deployment or merge was performed.
 
 ## Local development: one command
 
@@ -76,15 +76,15 @@ The standalone installer packages configuration examples, not the private applic
 
 This implementation is text-only. Native public upload, rich payloads, direct messaging, room management and federation are disabled. Private medical attachments still need a validated/quarantined appointment-authorized storage endpoint and structured message contract. No photo/upload or call-ready claim is made.
 
-## Owner acceptance before commit / PR to dev
+## Owner acceptance before merge into dev
 
-- Compile/typecheck/build API, shared client and both frontends; run the official Swagger exporter and check contract parity. Build the engine image/Erlang module; validate Compose and Caddy. These have not been executed by the agent.
-- Replace the retired Socket.IO transport tests with native-engine scenarios. Other existing integration fixtures still sending through the removed REST POST must be adapted; their existing result is not evidence for this replacement. Business-policy/moderation tests remain in the repository.
+- Review the latest CI results for API/client/frontend compilation, builds and contract checks. Local startup/engine image evidence is recorded above; Caddy/VPS operational acceptance remains separate.
+- PostgreSQL chat policy/moderation tests now obtain credentials through the session API and send through the private ejabberd policy endpoint. Test fixtures isolate external room administration, so these checks do not claim live XMPP delivery. Real native-engine scenarios remain a separate acceptance gate.
 - Two synthetic accounts: patient and assigned physician, plus clinic admin. Exercise delivery, canonical ordering, same-ID retry after uncertain delivery, typing during an incoming message, switching appointments during a request, older pages, multi-tab use and five-minute renewal.
 - Validate revoked/expired session, disabled user, wrong physician/clinic/appointment, STAFF, closed/early appointment and blocks; active delivery, native archive and REST must preserve their access boundaries.
 - Restrict/restore old and recent messages while online, reconnecting and paging. Validate private-room isolation and rejection of direct messages, invites, arbitrary IQ/room management, rich payloads and federation.
 - Stop engine/API/network separately: no alternate send path, no lost committed record, draft/retry recovery, correct chat health and independent ordinary API readiness. Check actual SQL archive durability and expired membership housekeeping.
 - Inspect logs for credential/message leakage; measure real browser bundle, engine memory/CPU, policy latency and throughput before declaring stable.
-- Owner frontend/browser acceptance, then task review and final task commit, push and PR targeting `dev`. No merge before acceptance.
+- Owner frontend/browser acceptance and task review remain required before merging PR28 into `dev`.
 
 References: [ejabberd](https://docs.ejabberd.im/admin/configuration/database/), [26.09 source](https://github.com/processone/ejabberd/tree/26.09), [StanzaJS](https://github.com/legastero/stanza), [Caddy WebSocket proxy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy).
