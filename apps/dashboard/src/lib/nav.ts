@@ -1,5 +1,5 @@
 import {
-  LayoutGrid, CalendarDays, Clock, Users, FileText,
+  LayoutGrid, CalendarDays, Users, FileText,
   ClipboardList, Activity, ShoppingBag, ShoppingCart,
   Tag, TrendingUp, MessageSquare, Bell, Archive, Settings,
   Layout, ShieldCheck, Wallet,
@@ -15,9 +15,8 @@ export interface NavItem {
 
 export const NAV: NavItem[] = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutGrid, group: "اصلی" },
-  { href: "/appointments", label: "نوبت‌ها", icon: CalendarDays, group: "اصلی" },
+  { href: "/appointments", label: "نوبت‌ها و ویزیت‌ها", icon: CalendarDays, group: "اصلی" },
   { href: "/calendar", label: "تقویم", icon: CalendarDays, group: "اصلی" },
-  { href: "/queue", label: "صف انتظار", icon: Clock, group: "اصلی" },
   { href: "/patients", label: "بیماران", icon: Users, group: "بالینی" },
   { href: "/prescriptions", label: "نسخه بیماران", icon: FileText, group: "بالینی" },
   { href: "/assessments", label: "ارزیابی‌ها", icon: ClipboardList, group: "بالینی" },

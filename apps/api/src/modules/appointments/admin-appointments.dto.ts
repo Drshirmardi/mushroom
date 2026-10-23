@@ -77,6 +77,10 @@ export class CancelAdminAppointmentDto { @ApiPropertyOptional({ maxLength: 500 }
 export class RescheduleAdminAppointmentDto { @ApiProperty({ format: 'uuid' }) @IsUUID('4') doctorServiceId!: string; @ApiProperty({ format: 'date-time' }) @IsDateString({ strict: true }) startsAt!: string; }
 
 export class AdminAppointmentResponseDto {
+  @ApiPropertyOptional({ type: String, nullable: true }) patientDisplayName?: string | null;
+  @ApiPropertyOptional() doctorDisplayName?: string;
+  @ApiPropertyOptional() serviceName?: string;
+  @ApiPropertyOptional({ enum: ['ONLINE', 'IN_PERSON'] }) visitMode?: string;
   @ApiProperty({ format: 'uuid' }) id!: string; @ApiProperty({ format: 'uuid' }) clinicId!: string; @ApiProperty({ format: 'uuid' }) patientId!: string; @ApiProperty({ format: 'uuid' }) doctorServiceId!: string; @ApiProperty({ format: 'uuid' }) doctorId!: string;
   @ApiProperty({ format: 'date-time' }) startsAt!: Date; @ApiProperty({ format: 'date-time' }) endsAt!: Date; @ApiProperty({ enum: statuses }) status!: string; @ApiProperty() priceAmount!: number; @ApiProperty({ enum: ['IRR'] }) currency!: string; @ApiProperty({ format: 'date-time' }) priceCapturedAt!: Date; @ApiProperty({ format: 'date-time' }) createdAt!: Date;
 }
