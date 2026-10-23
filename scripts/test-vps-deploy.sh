@@ -41,6 +41,7 @@ environment_file() {
   local root="$test_home/mushroom/$environment"
   local suffix=${environment//-/_}
   mkdir -p "$root/secrets"
+  cp "$repository_root/deploy/ejabberd/compose.yaml" "$root/chat.compose.yaml"
   cat >"$root/runtime.env" <<EOF
 MUSHROOM_ENVIRONMENT=$environment
 COMPOSE_PROJECT_NAME=mushroom-$environment
@@ -117,6 +118,8 @@ run_deploy() {
 }
 
 run_deploy deploy staging "$scratch/release-1.json" 1
+grep -Fq -- "--file $MUSHROOM_ROOT/staging/chat.compose.yaml" "$FAKE_DOCKER_LOG" \
+  || { printf 'staging deployment did not include the required ejabberd compose overlay\n' >&2; exit 1; }
 first_staging=$(<"$MUSHROOM_ROOT/staging/state/current")
 [[ $first_staging == *0000000000000000000000000000000000000001-1 ]] || exit 1
 
