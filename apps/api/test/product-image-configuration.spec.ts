@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { environmentValidationSchema } from '../src/config/environment.validation';
+import { chatTestEnvironment } from './chat-environment-fixture';
 import { ConfigService } from '@nestjs/config';
 import { R2ProductImageStorage } from '../src/modules/commerce/media/product-image-storage';
 import { existsSync, mkdtempSync, writeFileSync, unlinkSync, rmdirSync } from 'node:fs';
@@ -7,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const base = { NODE_ENV: 'test', DATABASE_URL: 'postgresql://test:test@localhost/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43), OTP_PEPPER: 'c'.repeat(43) };
+const base = { ...chatTestEnvironment, NODE_ENV: 'test', DATABASE_URL: 'postgresql://test:test@localhost/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43), OTP_PEPPER: 'c'.repeat(43) };
 describe('product media configuration', () => {
   it('defaults to disabled and never creates a live client without an explicit mode', async () => {
     const config = environmentValidationSchema.validate(base); expect(config.error).toBeUndefined(); expect(config.value.PRODUCT_MEDIA_STORAGE_MODE).toBe('disabled');

@@ -2,6 +2,7 @@ import { withRequestTimeout } from "@sabz-zendegi/api-client";
 import { apiBaseUrl, sessionFetch } from "@/lib/api";
 
 export type PatientAppointment = {
+  visitMode?: "ONLINE" | "IN_PERSON";
   id: string;
   clinicId: string;
   patientId: string;

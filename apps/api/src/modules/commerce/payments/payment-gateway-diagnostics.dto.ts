@@ -7,8 +7,8 @@ export class PaymentGatewayRequestsQueryDto {
   @ApiPropertyOptional({ enum: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'VERIFIED', 'FAILED', 'EXPIRED', 'REQUIRES_RECONCILIATION'] }) @IsOptional() @IsIn(['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'VERIFIED', 'FAILED', 'EXPIRED', 'REQUIRES_RECONCILIATION']) status?: string;
   @ApiPropertyOptional() @IsOptional() @IsISO8601() from?: string;
   @ApiPropertyOptional() @IsOptional() @IsISO8601() until?: string;
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100000) page = 1;
-  @ApiPropertyOptional({ default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
+  @ApiPropertyOptional({ type: Number, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100000) page = 1;
+  @ApiPropertyOptional({ type: Number, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
 }
 
 export class PaymentGatewayRequestDto {

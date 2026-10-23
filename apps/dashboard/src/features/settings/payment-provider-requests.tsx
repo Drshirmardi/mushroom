@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { ChevronLeft, RefreshCw, Search, X } from "lucide-react";
 import { getGatewayRequest, listGatewayRequests, PaymentProviderApiError, type GatewayRequest, type GatewayRequestDetail, type GatewayRequestsPage, type GatewayRequestsQuery } from "@/lib/commerce-payment-provider-api";
 
@@ -22,15 +22,18 @@ function DetailField({ label, children, ltr = false }: { label: string; children
 export function PaymentProviderRequests({ token, provider }: { token: string; provider: string }) {
   const [filters, setFilters] = useState({ query: "", status: "", from: "", until: "" });
   const [query, setQuery] = useState<GatewayRequestsQuery>({ page: 1, pageSize: 20 });
-  const [data, setData] = useState<GatewayRequestsPage | null>(null);
-  const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [revision, setRevision] = useState(0);
+  const [storedData, setData] = useState<GatewayRequestsPage | null>(null);
+  const [finishedRequest, setFinishedRequest] = useState<object | null>(null); const [errorState, setError] = useState(""); const [revision, setRevision] = useState(0);
   const [selected, setSelected] = useState<GatewayRequest | null>(null);
+  const request = useMemo(() => ({ token, provider, query, revision }), [token, provider, query, revision]);
+  const loading = finishedRequest !== request;
+  const data = loading ? null : storedData;
+  const error = loading ? "" : errorState;
   useEffect(() => {
     let active = true;
-    setLoading(true); setError(""); setData(null);
-    listGatewayRequests(token, provider, query).then(value => { if (active) setData(value); }).catch(reason => { if (active) setError(message(reason)); }).finally(() => { if (active) setLoading(false); });
+    listGatewayRequests(token, provider, query).then(value => { if (active) { setData(value); setError(""); } }).catch(reason => { if (active) setError(message(reason)); }).finally(() => { if (active) setFinishedRequest(request); });
     return () => { active = false; };
-  }, [token, provider, query, revision]);
+  }, [token, provider, query, revision, request]);
   const search = (event: FormEvent) => {
     event.preventDefault();
     setQuery({ page: 1, pageSize: 20, query: normalize(filters.query.trim()) || undefined, status: (filters.status || undefined) as GatewayRequestsQuery["status"], from: filters.from ? new Date(`${filters.from}T00:00:00`).toISOString() : undefined, until: filters.until ? new Date(`${filters.until}T23:59:59.999`).toISOString() : undefined });
@@ -58,18 +61,22 @@ export function PaymentProviderRequests({ token, provider }: { token: string; pr
 }
 
 function RequestDetail({ token, provider, selected, onClose }: { token: string; provider: string; selected: GatewayRequest; onClose: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null); const title = useId(); const [detail, setDetail] = useState<GatewayRequestDetail | null>(null);
-  const [error, setError] = useState(""); const [loading, setLoading] = useState(true); const [revision, setRevision] = useState(0);
+  const dialog = useRef<HTMLDialogElement>(null); const title = useId(); const [storedDetail, setDetail] = useState<GatewayRequestDetail | null>(null);
+  const [errorState, setError] = useState(""); const [finishedRequest, setFinishedRequest] = useState<object | null>(null); const [revision, setRevision] = useState(0);
+  const request = useMemo(() => ({ token, provider, source: selected.source, id: selected.id, revision }), [token, provider, selected.source, selected.id, revision]);
+  const loading = finishedRequest !== request;
+  const detail = loading ? null : storedDetail;
+  const error = loading ? "" : errorState;
   useEffect(() => {
     const node = dialog.current; const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const overflow = document.body.style.overflow; document.body.style.overflow = "hidden"; node?.showModal();
     return () => { node?.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus(); };
   }, []);
   useEffect(() => {
-    let active = true; setLoading(true); setError(""); setDetail(null);
-    getGatewayRequest(token, provider, selected.source, selected.id).then(value => { if (active) setDetail(value); }).catch(reason => { if (active) setError(message(reason)); }).finally(() => { if (active) setLoading(false); });
+    let active = true;
+    getGatewayRequest(token, provider, selected.source, selected.id).then(value => { if (active) { setDetail(value); setError(""); } }).catch(reason => { if (active) setError(message(reason)); }).finally(() => { if (active) setFinishedRequest(request); });
     return () => { active = false; };
-  }, [token, provider, selected.source, selected.id, revision]);
+  }, [token, provider, selected.source, selected.id, revision, request]);
   const item = detail?.request;
   return <dialog ref={dialog} aria-labelledby={title} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) { const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) onClose(); } }} className="m-auto max-h-[90dvh] w-[calc(100%_-_1rem)] max-w-4xl overflow-y-auto rounded-2xl border border-border bg-background p-0 text-foreground shadow-2xl backdrop:bg-black/40">
     <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-background p-4"><div><h3 id={title} className="font-bold">جزئیات درخواست سداد</h3><p className="mt-1 text-xs text-muted-foreground">وضعیت پرداخت و پاسخ‌های هر مرحله</p></div><div className="flex gap-2"><button className={button} aria-label="بازخوانی جزئیات" disabled={loading} onClick={() => setRevision(value => value + 1)}><RefreshCw size={17} /></button><button className={button} aria-label="بستن جزئیات" onClick={onClose}><X size={18} /></button></div></div>

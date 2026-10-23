@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { Plus, Save, Send, Trash2 } from "lucide-react";
 
@@ -19,9 +19,12 @@ import {
 const emptyItem = (): PrescriptionItemInput => ({ medicationName: "", doseText: "", frequencyText: "", durationText: "", instructions: "" });
 const itemInput = (item: PrescriptionItem): PrescriptionItemInput => ({ medicationName: item.medicationName, doseText: item.doseText ?? "", frequencyText: item.frequencyText ?? "", durationText: item.durationText ?? "", instructions: item.instructions ?? "" });
 
-export function PrescriptionsPage() {
+export function PrescriptionsPage({ forPatientId }: { forPatientId?: string } = {}) {
+  return forPatientId ? <PrescriptionEditor patientId={forPatientId} /> : <Suspense fallback={<p className="p-5">در حال دریافت نسخه‌ها…</p>}><PrescriptionsFromQuery /></Suspense>;
+}
+function PrescriptionsFromQuery() { return <PrescriptionEditor patientId={useSearchParams().get("patientId")} />; }
+function PrescriptionEditor({ patientId }: { patientId: string | null }) {
   const { authentication } = useDashboardSession();
-  const patientId = useSearchParams().get("patientId");
   const [prescriptions, setPrescriptions] = useState<Prescription[] | null>(null);
   const [items, setItems] = useState<PrescriptionItemInput[]>([emptyItem()]);
   const [error, setError] = useState<PrescriptionTreatmentApiError | null>(null);

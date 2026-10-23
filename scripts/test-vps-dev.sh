@@ -26,6 +26,7 @@ cp "$repo_root/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/Dockerfile.dev"
 cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.yaml"
 cp "$repo_root/deploy/vps/deploy-dev.sh" "$workspace/deploy/vps/deploy-dev.sh"
 cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
+cp "$repo_root/deploy/ejabberd/compose.yaml" "$dev_root/chat.compose.yaml"
 cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
 cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
@@ -174,6 +175,8 @@ run_deploy() {
 
 run_deploy
 grep -q 'build bootstrap' "$docker_log" || fail 'first sync did not build the dev runtime'
+grep -Fq -- "--file $dev_root/chat.compose.yaml" "$docker_log" \
+  || fail 'dev deployment did not include the required ejabberd compose overlay'
 grep -q 'run --rm --no-deps bootstrap.*install=true.*seed=true' "$docker_log" \
   || fail 'first sync did not install dependencies and seed once'
 grep -q 'run --rm --no-deps bootstrap.*client=true.*prisma=true.*migrate=true.*compile=true.*config=true' "$docker_log" \

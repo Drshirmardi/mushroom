@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, ClipboardList, Package, RefreshCw, Search, ShieldAlert, Truck, X } from 'lucide-react';
 import { useDashboardSession } from '@/components/auth/dashboard-session-gate';
 import { commerceOrdersErrorMessage, listReconciliationAttempts, reconcilePaymentAttempt, searchCommerceOrders, type OrderPage, type ReconciliationAttempt } from '@/lib/commerce-orders-api';
@@ -10,21 +10,25 @@ import { date, digits, money, orderStatuses } from './order-display';
 const field = 'min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/25';
 export function OrdersPage() {
   const { authentication } = useDashboardSession(); const token = authentication.accessToken;
-  const [result, setResult] = useState<OrderPage | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
+  const [result, setResult] = useState<OrderPage | null>(null); const [errorState, setError] = useState('');
+  const [finishedRequest, setFinishedRequest] = useState<object | null>(null);
   const [query, setQuery] = useState(''); const [search, setSearch] = useState(''); const [status, setStatus] = useState('');
   const [shipping, setShipping] = useState<'' | 'PICKUP' | 'COURIER'>(''); const [page, setPage] = useState(1); const [revision, setRevision] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [queue, setQueue] = useState<ReconciliationAttempt[] | null>(null); const [queueError, setQueueError] = useState(''); const [queueRevision, setQueueRevision] = useState(0);
   const [attempt, setAttempt] = useState<ReconciliationAttempt | null>(null); const [resolution, setResolution] = useState<'VERIFIED' | 'FAILED'>('FAILED'); const [evidence, setEvidence] = useState(''); const [reconciling, setReconciling] = useState(false); const [reconcileError, setReconcileError] = useState(''); const [message, setMessage] = useState('');
+  const request = useMemo(() => ({ token, search, status, shipping, page, revision }), [token, search, status, shipping, page, revision]);
+  const loading = finishedRequest !== request;
+  const error = loading ? '' : errorState;
   const lock = useRef(false); const commandKey = useRef(new Map<string, string>());
   useEffect(() => {
-    let live = true; setLoading(true); setError('');
-    void searchCommerceOrders(token, { query: search || undefined, status: status || undefined, shippingMethod: shipping || undefined, page, pageSize: 20 }).then(data => { if (live) { setResult(data); if (!data.items.length && data.total > 0 && page > 1) setPage(Math.max(1, Math.ceil(data.total / data.pageSize))); } }, reason => { if (live) setError(commerceOrdersErrorMessage(reason)); }).finally(() => { if (live) setLoading(false); });
+    let live = true;
+    void searchCommerceOrders(token, { query: search || undefined, status: status || undefined, shippingMethod: shipping || undefined, page, pageSize: 20 }).then(data => { if (live) { setResult(data); setError(''); if (!data.items.length && data.total > 0 && page > 1) setPage(Math.max(1, Math.ceil(data.total / data.pageSize))); } }, reason => { if (live) setError(commerceOrdersErrorMessage(reason)); }).finally(() => { if (live) setFinishedRequest(request); });
     return () => { live = false; };
-  }, [token, search, status, shipping, page, revision]);
+  }, [token, search, status, shipping, page, revision, request]);
   useEffect(() => {
-    let live = true; setQueueError('');
-    void listReconciliationAttempts(token).then(data => { if (live) setQueue(data); }, reason => { if (live) setQueueError(commerceOrdersErrorMessage(reason)); });
+    let live = true;
+    void listReconciliationAttempts(token).then(data => { if (live) { setQueue(data); setQueueError(''); } }, reason => { if (live) setQueueError(commerceOrdersErrorMessage(reason)); });
     return () => { live = false; };
   }, [token, queueRevision]);
   const refresh = () => { setRevision(v => v + 1); setQueueRevision(v => v + 1); };

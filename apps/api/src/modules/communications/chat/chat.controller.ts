@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../common/auth/authorization.decorator';
@@ -8,6 +8,7 @@ import { ApiErrorResponse } from '../../../common/errors/api-error-response.deco
 import {
   ChangeChatVisibilityDto,
   ChatConversationResponseDto,
+  ChatAccessResponseDto,
   ChatHistoryQueryDto,
   ChatHistoryResponseDto,
   ChatMessageResponseDto,
@@ -15,7 +16,6 @@ import {
   ChatVisibilityReconciliationResponseDto,
   CreateChatReportDto,
   ResolveChatReportDto,
-  SendChatMessageDto,
 } from './chat.dto';
 import { ChatService } from './chat.service';
 
@@ -34,12 +34,33 @@ export class ChatController {
     return this.chat.appointmentConversation(request.auth, appointmentId);
   }
 
+  @Get('conversations/:conversationId/access')
+  @ApiParam({ name: 'conversationId', schema: { type: 'string', format: 'uuid' } })
+  @Header('Cache-Control', 'private, no-store')
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  @ApiOperation({ operationId: 'chatConversationAccess', summary: 'Read current conversation readiness and explicit closure state' })
+  @ApiOkResponse({ type: ChatAccessResponseDto })
+  async access(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) {
+    const access = await this.chat.engineAccess(request.auth, id);
+    return { canSend: access.canSend, readOnlyReason: access.readOnlyReason, opensAt: access.opensAt, closedAt: access.closedAt, canClose: access.canClose };
+  }
+
+  @Post('conversations/:conversationId/close')
+  @ApiParam({ name: 'conversationId', schema: { type: 'string', format: 'uuid' } })
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions(PERMISSIONS.CHAT_MESSAGE_SEND)
+  @ApiOperation({ operationId: 'chatConversationClose', summary: 'Explicitly close a conversation as its assigned physician or authorized clinic administrator' })
+  @ApiOkResponse({ type: ChatConversationResponseDto })
+  close(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) {
+    return this.chat.closeConversation(request.auth, id);
+  }
+
   @Get('conversations/:conversationId/messages')
   @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
   @ApiOperation({ operationId: 'chatConversationHistory', summary: 'Read an authorized bounded ascending message history page' })
   @ApiOkResponse({ type: ChatHistoryResponseDto })
   history(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) conversationId: string, @Query() query: ChatHistoryQueryDto, @Req() request: AuthenticatedRequest) {
-    return this.chat.history(request.auth, conversationId, query.cursor, query.limit);
+    return this.chat.history(request.auth, conversationId, query.cursor, query.limit, query.direction);
   }
 
   @Get('conversations/:conversationId/visibility-reconciliation')
@@ -48,14 +69,6 @@ export class ChatController {
   @ApiOkResponse({ type: ChatVisibilityReconciliationResponseDto })
   visibilityReconciliation(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) conversationId: string, @Query() query: ChatVisibilityReconciliationQueryDto, @Req() request: AuthenticatedRequest) {
     return this.chat.visibilityReconciliation(request.auth, conversationId, query.cursor, query.limit);
-  }
-
-  @Post('conversations/:conversationId/messages')
-  @RequirePermissions(PERMISSIONS.CHAT_MESSAGE_SEND)
-  @ApiOperation({ operationId: 'chatConversationMessageSend', summary: 'Persist an idempotent appointment-bound text message' })
-  @ApiCreatedResponse({ type: ChatMessageResponseDto })
-  send(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) conversationId: string, @Body() body: SendChatMessageDto, @Req() request: AuthenticatedRequest) {
-    return this.chat.send(request.auth, conversationId, body);
   }
 
   @Post('messages/:messageId/reports')

@@ -8,7 +8,7 @@ describe('chat waiting-room eligibility', () => {
   let app: NestFastifyApplication | undefined;
   let fixture: ChatFixture | undefined;
 
-  it('evaluates the UTC lifecycle on every request without changing appointment or encounter state', async () => {
+  it('enforces preparation time and explicit closure without using elapsed appointment time as closure', async () => {
     app = await createApiApplication();
     await app.init();
     fixture = await createChatFixture(app);
@@ -26,7 +26,7 @@ describe('chat waiting-room eligibility', () => {
     await fixture.prisma.appointment.update({ where: { id: fixture.appointment.id }, data: {
       status: 'CONFIRMED', startsAt: new Date(now - 2 * 60 * 60_000), endsAt: new Date(now - 61 * 60_000),
     } });
-    expect((await app.inject({ method: 'GET', url, headers: auth(fixture.tokens.patient) })).statusCode).toBe(403);
+    expect((await app.inject({ method: 'GET', url, headers: auth(fixture.tokens.patient) })).statusCode).toBe(200);
 
     await fixture.prisma.appointment.update({ where: { id: fixture.appointment.id }, data: {
       status: 'CHECKED_IN', startsAt: new Date(now - 4 * 60 * 60_000), endsAt: new Date(now - 3 * 60 * 60_000),
@@ -34,8 +34,16 @@ describe('chat waiting-room eligibility', () => {
     expect((await app.inject({ method: 'GET', url, headers: auth(fixture.tokens.patient) })).statusCode).toBe(200);
 
     await fixture.prisma.appointment.update({ where: { id: fixture.appointment.id }, data: {
-      startsAt: new Date(now - 5 * 60 * 60_000), endsAt: new Date(now - 4 * 60 * 60_000 - 1),
+      startsAt: new Date(now + 16 * 60_000), endsAt: new Date(now + 46 * 60_000),
     } });
+    expect((await app.inject({ method: 'GET', url, headers: auth(fixture.tokens.patient) })).statusCode).toBe(403);
+
+    await fixture.prisma.appointment.update({ where: { id: fixture.appointment.id }, data: {
+      startsAt: new Date(now + 15 * 60_000), endsAt: new Date(now + 45 * 60_000),
+    } });
+    expect((await app.inject({ method: 'GET', url, headers: auth(fixture.tokens.patient) })).statusCode).toBe(200);
+    const closed = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${eligible.json().conversationId}/close`, headers: auth(fixture.tokens.doctor) });
+    expect(closed.statusCode).toBe(200);
     expect((await app.inject({ method: 'GET', url, headers: auth(fixture.tokens.patient) })).statusCode).toBe(403);
 
     await fixture.prisma.appointment.update({ where: { id: fixture.appointment.id }, data: { status: 'CANCELLED' } });

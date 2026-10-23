@@ -40,6 +40,7 @@ const launches = [
     args: [
       '--enable-source-maps',
       '--watch',
+      ...(process.platform === 'win32' ? ['--watch-path=dist'] : []),
       '--watch-preserve-output',
       'dist/main.js',
     ],

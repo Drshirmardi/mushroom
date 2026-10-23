@@ -96,12 +96,16 @@ export class PatientAppointmentsService {
     const where = { clinicId: patient.clinicId, patientId: patient.id };
     const [total, items] = await this.prisma.$transaction([
       this.prisma.appointment.count({ where }),
-      this.prisma.appointment.findMany({ where, orderBy: [{ startsAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
+      this.prisma.appointment.findMany({ include: { doctorService: { select: { visitMode: true } } }, where, orderBy: [{ startsAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
     ]);
-    return { items: items.map((item) => this.response(item)), page: query.page, pageSize: query.pageSize, total };
+    return { items: items.map(({ doctorService, ...item }) => ({ ...this.response(item), visitMode: doctorService.visitMode })), page: query.page, pageSize: query.pageSize, total };
   }
 
-  async get(userId: string, id: string) { return this.response(await this.owned(userId, id)); }
+  async get(userId: string, id: string) {
+    const appointment = await this.owned(userId, id);
+    const offering = await this.prisma.doctorService.findUnique({ where: { id: appointment.doctorServiceId }, select: { visitMode: true } });
+    return { ...this.response(appointment), visitMode: offering?.visitMode };
+  }
 
   async history(userId: string, id: string, query: AppointmentTimelineQueryDto) {
     const appointment = await this.owned(userId, id);

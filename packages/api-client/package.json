@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./chat-engine": {
+      "types": "./dist/chat-engine.d.ts",
+      "import": "./dist/chat-engine.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
@@ -20,7 +24,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "openapi-fetch": "^0.15.0"
+    "events": "3.3.0",
+    "openapi-fetch": "^0.15.0",
+    "stanza": "12.22.1"
   },
   "devDependencies": {
     "openapi-typescript": "^7.10.0",

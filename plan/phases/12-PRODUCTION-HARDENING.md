@@ -1,11 +1,19 @@
 # Phase 12 — Production Hardening
 
+PATIENT CHAT MOBILE KEYBOARD (2026-10-23): same F12-FE01 / F12-FE01-CHAT01, REWORK/unchecked. Patient room follows VisualViewport changes and scroller can shrink/scroll with closed-chat card. IMPLEMENTED_UNVERIFIED; owner mobile review pending. No verification commands or commit; details in phase-12 log.
+
+CHAT SASL CORRECTION (2026-10-23): same active F12-FE01 / F12-FE01-CHAT01, /root, REWORK/unchecked. Native JWT/PLAIN mismatch with default X-OAUTH2 corrected in shared transport and engine advertisement; local reload now yields two connected sessions and two room occupants. Message delivery/owner acceptance remain pending; no commit or DONE. Scoped evidence in phase-12 log.
+
+CONSULTATION WORKFLOW (2026-10-23): owner-authorized same F12-FE01 / F12-FE01-CHAT01, sole /root; IMPLEMENTED_UNVERIFIED / REWORK, unchecked. Explicit audited physician/authorized ADMIN chat closure replaces completion/elapsed-time closure;15min preparation retained. Role-aware paginated visits and merged waiting view open one visit workspace with chat/exact encounter notes/existing prescriptions. Existing permissions/consents retained; source/client generation only. Tests/types/lint/build/Swagger parity/browser/delivery and runtime SDK rebuild deferred until owner review; no DB mutation/migration/commit/new batch. Handoff: logs/phase-12.md#consultation-workflow-and-explicit-chat-closure--implemented_unverified-2026-10-23.
+
 - وضعیت اولیه: `NOT_STARTED`
 - Milestone: `E — عملیات و انتشار`
 - پیش‌نیاز: featureهای target release تکمیل شده باشند
 - خروجی اصلی: release قابل استقرار، مشاهده، rollback و بازیابی است.
 
 ## Taskها
+
+- [ ] `F12-FE01-CHAT01` — Owner-authorized ejabberd-only chat replacement on `codex/chat-ejabberd` (2026-10-23), same CLIENT-INTEGRATION /root coordinator. Backend AND both frontends connected in source; old Socket.IO gateway/clients/dependencies and REST write removed. Shared lazy StanzaJS, retained canonical PostgreSQL/moderation/identity rules, bounded history and safe retries; existing Caddy and required deployment overlay integrated. Root pnpm dev/dev:api now provision isolated local engine dependencies/keys, wait for health and launch Turbo; local-only WS and safe shutdown/data retention. ADR-0040; handoff deploy/ejabberd/README.md. LOCAL STARTUP VERIFIED (2026-10-23), broader REWORK/unchecked: actual repeated pnpm dev, healthy containers, strict API/shared build, all three frontends/API health200, WebSocket/private-room/member/cleanup smoke,3 regression tests and Ctrl+C cleanup PASS. Owner reports testing/review complete and requested area-separated checkpoint commits (see phase-12 log). Full authenticated clinical/browser/moderation acceptance, VPS provisioning and remaining REST-send fixture adaptation remain pending. No production activation, DONE status or PR until the complete acceptance record is reconciled.
 
 Sadad detail500 corrective (2026-10-22), same F12-FE01 /root: fix text-projected attempt ID versus UUID comparison in detail query; controller validation and access scope retained. IMPLEMENTED_UNVERIFIED / REWORK; runtime/deployed retry and actual PostgreSQL regression pending, execution checks remain deferred. Evidence: phase-12 log Sadad detail500 correction.
 

@@ -43,6 +43,8 @@ export const CHAT_REPORT_ACTIONS = [
 ] as const;
 
 export class ChatHistoryQueryDto {
+  @ApiPropertyOptional({ enum: ['after', 'before', 'latest'], default: 'after' })
+  @IsOptional() @IsEnum(['after', 'before', 'latest']) direction?: 'after' | 'before' | 'latest';
   @ApiPropertyOptional({ description: 'Opaque, versioned server cursor.' })
   @IsOptional() @IsString() @MaxLength(512) cursor?: string;
 
@@ -114,6 +116,8 @@ export class ChatMessageResponseDto {
 }
 
 export class ChatConversationResponseDto {
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) closedAt?: Date | null;
+  @ApiProperty({ enum: ['ejabberd'] }) transport!: 'ejabberd';
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) appointmentId!: string;
   @ApiProperty({ format: 'uuid' }) clinicId!: string;
@@ -123,8 +127,9 @@ export class ChatConversationResponseDto {
 }
 
 export class ChatHistoryResponseDto {
+  @ApiProperty({ description: 'Opaque cursor after the newest returned item for incremental recovery.' }) checkpointCursor!: string;
   @ApiProperty({ type: ChatMessageResponseDto, isArray: true }) items!: ChatMessageResponseDto[];
-  @ApiPropertyOptional() nextCursor?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) nextCursor?: string | null;
   @ApiProperty() highWaterSequence!: string;
 }
 
@@ -135,7 +140,15 @@ export class ChatVisibilityReconciliationItemDto {
 
 export class ChatVisibilityReconciliationResponseDto {
   @ApiProperty({ type: ChatVisibilityReconciliationItemDto, isArray: true }) items!: ChatVisibilityReconciliationItemDto[];
-  @ApiPropertyOptional() nextCursor?: string | null;
-  @ApiPropertyOptional({ description: 'Opaque checkpoint to persist after applying this page.' }) checkpointCursor?: string | null;
-  @ApiPropertyOptional({ description: 'Opaque high-water revision identity.' }) highWaterRevision?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) nextCursor?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Opaque checkpoint to persist after applying this page.' }) checkpointCursor?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Opaque high-water revision identity.' }) highWaterRevision?: string | null;
+}
+
+export class ChatAccessResponseDto {
+  @ApiProperty() canSend!: boolean;
+  @ApiProperty({ type: String, nullable: true }) readOnlyReason!: string | null;
+  @ApiProperty({ format: 'date-time' }) opensAt!: string;
+  @ApiProperty({ type: String, format: 'date-time', nullable: true }) closedAt!: string | null;
+  @ApiProperty() canClose!: boolean;
 }

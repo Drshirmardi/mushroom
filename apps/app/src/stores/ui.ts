@@ -7,6 +7,9 @@ type UiState = {
   closeSheet: () => void;
   onboardingSeen: boolean;
   completeOnboarding: () => void;
+  /** Full-height route that hides the bottom navigation (e.g. an open chat room). */
+  immersive: boolean;
+  setImmersive: (immersive: boolean) => void;
 };
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -15,4 +18,6 @@ export const useUiStore = create<UiState>()((set) => ({
   closeSheet: () => set({ sheet: null }),
   onboardingSeen: false,
   completeOnboarding: () => set({ onboardingSeen: true }),
+  immersive: false,
+  setImmersive: (immersive) => set({ immersive }),
 }));

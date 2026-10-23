@@ -29,6 +29,20 @@
         ]
       }
     },
+    "/v1/health/chat": {
+      "get": {
+        "operationId": "HealthController_chatReady",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
     "/v1/auth/otp/challenges": {
       "post": {
         "operationId": "authOtpChallengeCreate",
@@ -1268,6 +1282,80 @@
         ]
       }
     },
+    "/v1/chat/conversations/{conversationId}/access": {
+      "get": {
+        "operationId": "chatConversationAccess",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatAccessResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read current conversation readiness and explicit closure state",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/close": {
+      "post": {
+        "operationId": "chatConversationClose",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatConversationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Explicitly close a conversation as its assigned physician or authorized clinic administrator",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
     "/v1/chat/conversations/{conversationId}/messages": {
       "get": {
         "operationId": "chatConversationHistory",
@@ -1287,6 +1375,20 @@
             "description": "Opaque, versioned server cursor.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "after",
+              "type": "string",
+              "enum": [
+                "after",
+                "before",
+                "latest"
+              ]
             }
           },
           {
@@ -1323,50 +1425,6 @@
           }
         ],
         "summary": "Read an authorized bounded ascending message history page",
-        "tags": [
-          "Chat consultation"
-        ]
-      },
-      "post": {
-        "operationId": "chatConversationMessageSend",
-        "parameters": [
-          {
-            "name": "conversationId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SendChatMessageDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatMessageResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Persist an idempotent appointment-bound text message",
         "tags": [
           "Chat consultation"
         ]
@@ -1673,6 +1731,43 @@
           }
         ],
         "summary": "Get server-evaluated appointment waiting-room readiness",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/appointments/{appointmentId}/session": {
+      "post": {
+        "operationId": "chatAppointmentEngineSessionCreate",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EjabberdSessionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Issue an authorized short-lived ejabberd session for one consultation",
         "tags": [
           "Chat consultation"
         ]
@@ -16644,6 +16739,43 @@
         ]
       }
     },
+    "/v1/admin/appointments/{appointmentId}": {
+      "get": {
+        "operationId": "adminAppointmentDetail",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get one clinic appointment and display names",
+        "tags": [
+          "Admin appointments"
+        ]
+      }
+    },
     "/v1/admin/appointments/{appointmentId}/history": {
       "get": {
         "operationId": "adminAppointmentsHistory",
@@ -25070,6 +25202,154 @@
         ]
       }
     },
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
+      "get": {
+        "operationId": "adminPaymentGatewayRequests",
+        "parameters": [
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CREATED",
+                "REDIRECT_READY",
+                "CALLBACK_RECEIVED",
+                "VERIFYING",
+                "VERIFIED",
+                "FAILED",
+                "EXPIRED",
+                "REQUIRES_RECONCILIATION"
+              ]
+            }
+          },
+          {
+            "name": "until",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentGatewayRequestsPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Search secret-free gateway attempts within administrator clinic membership",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
+      "get": {
+        "operationId": "adminPaymentGatewayRequestDetail",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentGatewayRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read safe adapter events for a clinic-owned payment attempt",
+        "tags": [
+          "Admin Commerce Payment Providers"
+        ]
+      }
+    },
     "/v1/admin/commerce/payment-providers": {
       "get": {
         "operationId": "adminCommercePaymentProvidersList",
@@ -25320,6 +25600,142 @@
           }
         ],
         "summary": "List clinic commerce orders",
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/search": {
+      "get": {
+        "operationId": "adminCommerceOrdersSearch",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "shippingMethod",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PICKUP",
+                "COURIER"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING_PAYMENT",
+                "PAYMENT_PROCESSING",
+                "PAID",
+                "FULFILLMENT_PENDING",
+                "READY_FOR_PICKUP",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLATION_REQUESTED",
+                "RETURN_REQUESTED",
+                "CANCELLATION_REJECTED",
+                "RETURN_REJECTED",
+                "FULFILLING",
+                "FULFILLED",
+                "CANCELLED",
+                "PAYMENT_FAILED",
+                "REQUIRES_RECONCILIATION",
+                "REFUND_PENDING",
+                "REFUNDED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderSearchPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Search clinic orders with server pagination",
+        "tags": [
+          "Admin Commerce Orders"
+        ]
+      }
+    },
+    "/v1/admin/commerce/orders/{orderId}": {
+      "get": {
+        "operationId": "adminCommerceOrderGet",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read clinic order items, delivery snapshot and payment operations",
         "tags": [
           "Admin Commerce Orders"
         ]
@@ -27699,290 +28115,6 @@
           "Paid Patient Assessments"
         ]
       }
-    },
-    "/v1/admin/commerce/orders/search": {
-      "get": {
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": [
-          "Admin Commerce Orders"
-        ],
-        "operationId": "adminCommerceOrdersSearch",
-        "summary": "Search clinic orders with server pagination",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "default": 1,
-              "minimum": 1,
-              "maximum": 10000
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "default": 20,
-              "minimum": 1,
-              "maximum": 50
-            }
-          },
-          {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "maxLength": 120
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "PENDING_PAYMENT",
-                "PAYMENT_PROCESSING",
-                "PAID",
-                "FULFILLMENT_PENDING",
-                "READY_FOR_PICKUP",
-                "SHIPPED",
-                "DELIVERED",
-                "CANCELLATION_REQUESTED",
-                "RETURN_REQUESTED",
-                "CANCELLATION_REJECTED",
-                "RETURN_REJECTED",
-                "FULFILLING",
-                "FULFILLED",
-                "CANCELLED",
-                "PAYMENT_FAILED",
-                "REQUIRES_RECONCILIATION",
-                "REFUND_PENDING",
-                "REFUNDED"
-              ]
-            }
-          },
-          {
-            "name": "shippingMethod",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "PICKUP",
-                "COURIER"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderSearchPageDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/admin/commerce/orders/{orderId}": {
-      "get": {
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": [
-          "Admin Commerce Orders"
-        ],
-        "operationId": "adminCommerceOrderGet",
-        "summary": "Read clinic order items, delivery snapshot and payment operations",
-        "parameters": [
-          {
-            "name": "orderId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
-      "get": {
-        "operationId": "adminPaymentGatewayRequests",
-        "summary": "Search secret-free gateway attempts within administrator clinic membership",
-        "parameters": [
-          {
-            "name": "providerCode",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "CREATED",
-                "REDIRECT_READY",
-                "CALLBACK_RECEIVED",
-                "VERIFYING",
-                "VERIFIED",
-                "FAILED",
-                "EXPIRED",
-                "REQUIRES_RECONCILIATION"
-              ]
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "until",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "default": 1
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "default": 20
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentGatewayRequestsPageDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Admin Commerce Payment Providers"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
-      "get": {
-        "operationId": "adminPaymentGatewayRequestDetail",
-        "summary": "Read safe adapter events for a clinic-owned payment attempt",
-        "parameters": [
-          {
-            "name": "providerCode",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "attemptId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentGatewayRequestDetailDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Admin Commerce Payment Providers"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
     }
   },
   "info": {
@@ -28317,6 +28449,7 @@
               "PAYMENT_RECONCILIATION_REQUIRED",
               "PAYMENT_CALLBACK_RATE_LIMITED",
               "CHAT_FORBIDDEN",
+              "CHAT_ENGINE_UNAVAILABLE",
               "CHAT_APPOINTMENT_NOT_ELIGIBLE",
               "CHAT_WINDOW_CLOSED",
               "CHAT_BLOCKED",
@@ -28784,6 +28917,17 @@
       "ChatConversationResponseDto": {
         "type": "object",
         "properties": {
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "ejabberd"
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -28810,12 +28954,44 @@
           }
         },
         "required": [
+          "transport",
           "id",
           "appointmentId",
           "clinicId",
           "patientId",
           "doctorId",
           "createdAt"
+        ]
+      },
+      "ChatAccessResponseDto": {
+        "type": "object",
+        "properties": {
+          "canSend": {
+            "type": "boolean"
+          },
+          "readOnlyReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "opensAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canClose": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "canSend",
+          "readOnlyReason",
+          "opensAt",
+          "closedAt",
+          "canClose"
         ]
       },
       "ChatMessageResponseDto": {
@@ -28877,6 +29053,10 @@
       "ChatHistoryResponseDto": {
         "type": "object",
         "properties": {
+          "checkpointCursor": {
+            "type": "string",
+            "description": "Opaque cursor after the newest returned item for incremental recovery."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -28884,13 +29064,15 @@
             }
           },
           "nextCursor": {
-            "type": "object"
+            "type": "string",
+            "nullable": true
           },
           "highWaterSequence": {
             "type": "string"
           }
         },
         "required": [
+          "checkpointCursor",
           "items",
           "highWaterSequence"
         ]
@@ -28921,37 +29103,22 @@
             }
           },
           "nextCursor": {
-            "type": "object"
+            "type": "string",
+            "nullable": true
           },
           "checkpointCursor": {
-            "type": "object",
+            "type": "string",
+            "nullable": true,
             "description": "Opaque checkpoint to persist after applying this page."
           },
           "highWaterRevision": {
-            "type": "object",
+            "type": "string",
+            "nullable": true,
             "description": "Opaque high-water revision identity."
           }
         },
         "required": [
           "items"
-        ]
-      },
-      "SendChatMessageDto": {
-        "type": "object",
-        "properties": {
-          "clientMessageId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Client-generated idempotency identifier."
-          },
-          "body": {
-            "type": "string",
-            "maxLength": 4000
-          }
-        },
-        "required": [
-          "clientMessageId",
-          "body"
         ]
       },
       "CreateChatReportDto": {
@@ -29053,6 +29220,102 @@
         "required": [
           "resolution",
           "action"
+        ]
+      },
+      "EjabberdSessionDto": {
+        "type": "object",
+        "properties": {
+          "canSend": {
+            "type": "boolean"
+          },
+          "readOnlyReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "opensAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canClose": {
+            "type": "boolean"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "ejabberd"
+            ]
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "websocketUrl": {
+            "type": "string"
+          },
+          "jid": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Short-lived XMPP password. Keep in memory; never log or persist."
+          },
+          "resource": {
+            "type": "string",
+            "enum": [
+              "sabz"
+            ]
+          },
+          "roomJid": {
+            "type": "string"
+          },
+          "senderKind": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "DOCTOR",
+              "CLINIC_OPERATOR"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "historyUrl": {
+            "type": "string",
+            "description": "Authoritative retained history; use its opaque cursor for recovery."
+          },
+          "visibilityUrl": {
+            "type": "string",
+            "description": "Durable moderation changes must also be reconciled on reconnect."
+          }
+        },
+        "required": [
+          "canSend",
+          "readOnlyReason",
+          "opensAt",
+          "closedAt",
+          "canClose",
+          "transport",
+          "conversationId",
+          "appointmentId",
+          "websocketUrl",
+          "jid",
+          "token",
+          "resource",
+          "roomJid",
+          "senderKind",
+          "expiresAt",
+          "historyUrl",
+          "visibilityUrl"
         ]
       },
       "PatientClinicalItemResponseDto": {
@@ -39046,6 +39309,13 @@
       "PatientAppointmentResponseDto": {
         "type": "object",
         "properties": {
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -39077,7 +39347,14 @@
           "status": {
             "type": "string",
             "enum": [
-              "PENDING"
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
             ]
           },
           "priceAmount": {
@@ -39275,6 +39552,23 @@
       "AdminAppointmentResponseDto": {
         "type": "object",
         "properties": {
+          "patientDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "doctorDisplayName": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -44204,6 +44498,189 @@
           }
         }
       },
+      "PaymentGatewayRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "BILLING",
+              "COMMERCE"
+            ]
+          },
+          "patientId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerOrderId": {
+            "type": "string"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "resultCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "patientId",
+          "userId",
+          "phone",
+          "name",
+          "purpose",
+          "intentId",
+          "orderId",
+          "providerOrderId",
+          "revisionNumber",
+          "amountRial",
+          "status",
+          "resultCode",
+          "reference",
+          "traceNumber",
+          "createdAt",
+          "updatedAt",
+          "verifiedAt"
+        ]
+      },
+      "PaymentGatewayRequestsPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentGatewayRequestDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "PaymentGatewayTraceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "resultCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorKind": {
+            "type": "string",
+            "nullable": true
+          },
+          "httpStatus": {
+            "type": "number",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "stage",
+          "outcome",
+          "resultCode",
+          "errorKind",
+          "httpStatus",
+          "durationMs"
+        ]
+      },
+      "PaymentGatewayRequestDetailDto": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/PaymentGatewayRequestDto"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentGatewayTraceDto"
+            }
+          },
+          "eventsTruncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request",
+          "events",
+          "eventsTruncated"
+        ]
+      },
       "PaymentProviderConfigDto": {
         "type": "object",
         "properties": {
@@ -44356,6 +44833,33 @@
           "status",
           "commerceAmountToman",
           "providerUnit"
+        ]
+      },
+      "OrderSearchPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
         ]
       },
       "OrderTransitionDto": {
@@ -45283,216 +45787,6 @@
           "total",
           "page",
           "pageSize"
-        ]
-      },
-      "OrderSearchPageDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "total": {
-            "type": "number"
-          },
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "total",
-          "page",
-          "pageSize"
-        ]
-      },
-      "PaymentGatewayRequestDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "patientId": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "purpose": {
-            "type": "string"
-          },
-          "providerOrderId": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "BILLING",
-              "COMMERCE"
-            ]
-          },
-          "intentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "orderId": {
-            "type": "string",
-            "nullable": true
-          },
-          "resultCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "verifiedAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "revisionNumber": {
-            "type": "number"
-          },
-          "reference": {
-            "type": "string",
-            "nullable": true
-          },
-          "traceNumber": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "patientId",
-          "userId",
-          "phone",
-          "name",
-          "purpose",
-          "providerOrderId",
-          "amountRial",
-          "status",
-          "createdAt",
-          "updatedAt",
-          "source",
-          "intentId",
-          "orderId",
-          "resultCode",
-          "verifiedAt",
-          "revisionNumber",
-          "reference",
-          "traceNumber"
-        ]
-      },
-      "PaymentGatewayTraceDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "at": {
-            "type": "string"
-          },
-          "stage": {
-            "type": "string"
-          },
-          "outcome": {
-            "type": "string"
-          },
-          "resultCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "errorKind": {
-            "type": "string",
-            "nullable": true
-          },
-          "httpStatus": {
-            "type": "number",
-            "nullable": true
-          },
-          "durationMs": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "at",
-          "stage",
-          "outcome",
-          "resultCode",
-          "errorKind",
-          "httpStatus",
-          "durationMs"
-        ]
-      },
-      "PaymentGatewayRequestsPageDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentGatewayRequestDto"
-            }
-          },
-          "total": {
-            "type": "number"
-          },
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "total",
-          "page",
-          "pageSize"
-        ]
-      },
-      "PaymentGatewayRequestDetailDto": {
-        "type": "object",
-        "properties": {
-          "request": {
-            "$ref": "#/components/schemas/PaymentGatewayRequestDto"
-          },
-          "events": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentGatewayTraceDto"
-            }
-          },
-          "eventsTruncated": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "request",
-          "events",
-          "eventsTruncated"
         ]
       }
     }

@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/health/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HealthController_chatReady"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/otp/challenges": {
         parameters: {
             query?: never;
@@ -275,6 +291,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chat/conversations/{conversationId}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read current conversation readiness and explicit closure state */
+        get: operations["chatConversationAccess"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explicitly close a conversation as its assigned physician or authorized clinic administrator */
+        post: operations["chatConversationClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/conversations/{conversationId}/messages": {
         parameters: {
             query?: never;
@@ -285,8 +335,7 @@ export interface paths {
         /** Read an authorized bounded ascending message history page */
         get: operations["chatConversationHistory"];
         put?: never;
-        /** Persist an idempotent appointment-bound text message */
-        post: operations["chatConversationMessageSend"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -406,6 +455,23 @@ export interface paths {
         get: operations["chatWaitingRoomGet"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/appointments/{appointmentId}/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue an authorized short-lived ejabberd session for one consultation */
+        post: operations["chatAppointmentEngineSessionCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3568,6 +3634,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/appointments/{appointmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one clinic appointment and display names */
+        get: operations["adminAppointmentDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/appointments/{appointmentId}/history": {
         parameters: {
             query?: never;
@@ -5139,6 +5222,40 @@ export interface paths {
         patch: operations["adminCommerceDiscountsUpdate"];
         trace?: never;
     };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search secret-free gateway attempts within administrator clinic membership */
+        get: operations["adminPaymentGatewayRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read safe adapter events for a clinic-owned payment attempt */
+        get: operations["adminPaymentGatewayRequestDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/commerce/payment-providers": {
         parameters: {
             query?: never;
@@ -5250,6 +5367,40 @@ export interface paths {
         };
         /** List clinic commerce orders */
         get: operations["adminCommerceOrdersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search clinic orders with server pagination */
+        get: operations["adminCommerceOrdersSearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read clinic order items, delivery snapshot and payment operations */
+        get: operations["adminCommerceOrderGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5749,74 +5900,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/admin/commerce/orders/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search clinic orders with server pagination */
-        get: operations["adminCommerceOrdersSearch"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/commerce/orders/{orderId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read clinic order items, delivery snapshot and payment operations */
-        get: operations["adminCommerceOrderGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search secret-free gateway attempts within administrator clinic membership */
-        get: operations["adminPaymentGatewayRequests"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read safe adapter events for a clinic-owned payment attempt */
-        get: operations["adminPaymentGatewayRequestDetail"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5838,7 +5921,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "PATIENT_ENTRY_REQUIRED" | "ENTRY_UNAVAILABLE" | "ENTRY_CONFLICT" | "ENTRY_PROFILE_INVALID" | "CUSTOM_PROGRAM_DELIVERY_NOT_FOUND" | "CUSTOM_PROGRAM_DELIVERY_CONFLICT" | "CUSTOM_PROGRAM_CLINICAL_FORBIDDEN" | "CUSTOM_PROGRAM_PLAN_IMMUTABLE" | "CUSTOM_PROGRAM_NOT_FOUND" | "CUSTOM_PROGRAM_CONFLICT" | "COUPLE_JOINT_RESULT_UNAVAILABLE" | "ASSESSMENT_CARE_NOT_FOUND" | "ASSIGNED_CONSULTATION_NOT_FOUND" | "PROGRAM_DEFINITION_NOT_FOUND" | "PROGRAM_DEFINITION_CONFLICT" | "PROGRAM_DEFINITION_INVALID" | "PROGRAM_RATE_LIMITED" | "PROGRAM_PUBLICATION_NOT_FOUND" | "PROGRAM_PUBLICATION_CONFLICT" | "PROGRAM_PUBLICATION_INVALID" | "ASSESSMENT_CARE_CONFLICT" | "COUPLE_JOINT_RESULT_NOT_READY" | "COUPLE_ASSESSMENT_NOT_FOUND" | "COUPLE_ASSESSMENT_INVALID" | "COUPLE_ASSESSMENT_CONFLICT" | "COUPLE_PROTOCOL_NOT_FOUND" | "COUPLE_PROTOCOL_INVALID" | "COUPLE_PROTOCOL_CONFLICT" | "ASSESSMENT_PURCHASE_NOT_FOUND" | "ASSESSMENT_PURCHASE_INVALID" | "ASSESSMENT_PURCHASE_CONFLICT" | "ASSESSMENT_PAYMENT_REQUIRED" | "ASSESSMENT_ACCESS_UNAVAILABLE" | "ASSESSMENT_REFUND_NOT_ALLOWED" | "ASSESSMENT_PUBLICATION_NOT_FOUND" | "ASSESSMENT_PUBLICATION_CONFLICT" | "ASSESSMENT_PUBLICATION_INVALID" | "ASSESSMENT_PROTOCOL_NOT_FOUND" | "ASSESSMENT_PROTOCOL_CONFLICT" | "ASSESSMENT_PROTOCOL_INVALID" | "ASSESSMENT_GUIDANCE_NOT_FOUND" | "ASSESSMENT_GUIDANCE_INVALID" | "ASSESSMENT_GUIDANCE_CONFLICT" | "GUIDANCE_NOT_FOUND" | "GUIDANCE_CONFLICT" | "GUIDANCE_INVALID" | "COUPLE_SESSION_NOT_FOUND" | "COUPLE_INVITATION_NOT_FOUND" | "COUPLE_INVITATION_UNAVAILABLE" | "COUPLE_PARTICIPANT_INELIGIBLE" | "COUPLE_POLICY_UNAVAILABLE" | "COUPLE_CONSENT_POLICY_CHANGED" | "COUPLE_STATE_CONFLICT" | "COUPLE_RATE_LIMITED" | "ASSESSMENT_OFFERING_NOT_FOUND" | "ASSESSMENT_OFFERING_INVALID" | "ASSESSMENT_OFFERING_CONFLICT" | "WALLET_INSUFFICIENT_FUNDS" | "WALLET_VERSION_CONFLICT" | "WALLET_FROZEN" | "BILLING_INPUT_INVALID" | "BILLING_INTENT_NOT_FOUND" | "BILLING_STATE_CONFLICT" | "BILLING_PAYMENT_PENDING" | "BILLING_HOLD_EXPIRED" | "BILLING_REFUND_EXCEEDS_PAYMENT" | "BILLING_REFUND_REQUIRED" | "BILLING_RATE_LIMITED" | "APPOINTMENT_PAYMENT_REQUIRED" | "APPOINTMENT_REPRICE_REQUIRED" | "COMMERCE_CONTENT_REVISION_CONFLICT" | "COMMERCE_CONTENT_INVALID" | "COMMERCE_CONTENT_SOURCE_REQUIRED" | "COMMERCE_IMAGE_INVALID" | "COMMERCE_IMAGE_TOO_LARGE" | "COMMERCE_IMAGE_BUSY" | "COMMERCE_IMAGE_STORAGE_UNAVAILABLE" | "COMMERCE_IMAGE_REVISION_CONFLICT" | "COMMERCE_IMAGE_OPERATION_PENDING" | "COMMERCE_IMAGE_OPERATION_EXPIRED" | "COMMERCE_IMAGE_NOT_FOUND" | "COMMERCE_IMAGE_RATE_LIMITED" | "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "REFRESH_CONCURRENT_RETRY" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "ASSESSMENT_ANSWERS_INVALID" | "ASSESSMENT_CLINIC_UNAVAILABLE" | "ASSESSMENT_NOT_FOUND" | "ASSESSMENT_STRUCTURE_INVALID" | "ASSESSMENT_PREVIEW_CONFLICT" | "ASSESSMENT_RELEASE_NOT_READY" | "ASSESSMENT_FOLLOW_UP_REQUIRED" | "ASSESSMENT_DELETE_NOT_ALLOWED" | "ASSESSMENT_DELETE_CONFLICT" | "ASSESSMENT_DELETE_REFERENCED" | "ASSESSMENT_SUBMISSION_IMMUTABLE" | "ASSESSMENT_SUBMISSION_REVISION_CONFLICT" | "ASSESSMENT_SUBMISSION_NOT_FOUND" | "ASSESSMENT_VERSION_ALREADY_PUBLISHED" | "ASSESSMENT_VERSION_IMMUTABLE" | "ASSESSMENT_VERSION_NOT_FOUND" | "ASSESSMENT_VERSION_NOT_PUBLISHED" | "AUDIT_QUERY_INVALID" | "CLINICAL_AUDIT_UNAVAILABLE" | "CLINICAL_NOTE_AMENDMENT_REASON_REQUIRED" | "CLINICAL_NOTE_CONTENT_REQUIRED" | "CLINICAL_NOTE_FORBIDDEN" | "CLINICAL_NOTE_PUBLICATION_NOT_ALLOWED" | "CLINICAL_NOTE_REVISION_CONFLICT" | "CLINICAL_NOTE_SIGNING_NOT_ALLOWED" | "CLINICAL_RECONCILIATION_CONTENT_INVALID" | "CLINICAL_RECONCILIATION_FORBIDDEN" | "CLINICAL_RECONCILIATION_SOURCE_INVALID" | "CLINICAL_RECORD_AMENDMENT_REASON_REQUIRED" | "CLINICAL_RECORD_KIND_INVALID" | "CLINICAL_RECORD_REVISION_CONFLICT" | "CLINICAL_RECORD_SIGNING_NOT_ALLOWED" | "CLINICAL_RESOURCE_FORBIDDEN" | "CLINICAL_SUMMARY_FORBIDDEN" | "COMMERCE_REVENUE_RANGE_INVALID" | "CONTENT_CONFLICT" | "CONTENT_INVALID" | "BANNER_NOT_FOUND" | "CONTENT_MEDIA_UNAVAILABLE" | "CONTENT_REVISION_CONFLICT" | "CONTENT_RATE_LIMITED" | "ENCOUNTER_INVALID_TRANSITION" | "HEALTH_OBSERVATION_FORBIDDEN" | "HEALTH_OBSERVATION_INVALID" | "MEZAJ_RESULT_NOT_FOUND" | "NOTIFICATION_NOT_FOUND" | "PAYMENT_ATTEMPT_INVALID" | "PRESCRIPTION_AMENDMENT_REASON_REQUIRED" | "PRESCRIPTION_AUDIT_CONTEXT_REQUIRED" | "PRESCRIPTION_ISSUE_NOT_ALLOWED" | "PRESCRIPTION_MEDICATION_REQUIRED" | "PRESCRIPTION_RESOURCE_FORBIDDEN" | "PRESCRIPTION_REVISION_CONFLICT" | "REQUIRED_ASSESSMENT_VERSION_INVALID" | "REQUIRED_ASSESSMENT_VERSION_MISSING" | "OTP_DISABLED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_ATTEMPTS_EXHAUSTED" | "OTP_RATE_LIMITED" | "OTP_RESEND_COOLDOWN" | "OTP_DELIVERY_UNAVAILABLE" | "OTP_ACCOUNT_PROVISIONING_UNAVAILABLE" | "IDEMPOTENCY_KEY_INVALID" | "SMS_TRANSPORT_DISABLED" | "SMS_PROVIDER_UNAVAILABLE" | "SMS_CREDENTIAL_KEY_UNAVAILABLE" | "SMS_PROVIDER_ACTIVATION_BLOCKED" | "SMS_PROVIDER_CAPABILITY_UNSUPPORTED" | "SMS_PROVIDER_CONFIGURATION_INVALID" | "SMS_PROVIDER_NOT_CONFIGURED" | "SMS_PROVIDER_NOT_FOUND" | "SMS_TEST_RATE_LIMITED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "PAYMENT_CALLBACK_RATE_LIMITED" | "CHAT_FORBIDDEN" | "CHAT_APPOINTMENT_NOT_ELIGIBLE" | "CHAT_WINDOW_CLOSED" | "CHAT_BLOCKED" | "CHAT_IDEMPOTENCY_CONFLICT" | "CHAT_CURSOR_INVALID" | "CHAT_CURSOR_FORBIDDEN" | "CHAT_SEQUENCE_INVALID" | "CHAT_TOKEN_EXPIRED" | "CHAT_CONNECTION_LIMITED" | "CHAT_RATE_LIMITED" | "CHAT_MESSAGE_TOO_LONG" | "CHAT_MODERATION_FORBIDDEN" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "PROGRAM_PURCHASE_NOT_FOUND" | "PROGRAM_PURCHASE_CONFLICT" | "PROGRAM_ACCESS_UNAVAILABLE" | "PROGRAM_REFUND_NOT_ALLOWED" | "INTERNAL_SERVER_ERROR";
+            code: "PATIENT_ENTRY_REQUIRED" | "ENTRY_UNAVAILABLE" | "ENTRY_CONFLICT" | "ENTRY_PROFILE_INVALID" | "CUSTOM_PROGRAM_DELIVERY_NOT_FOUND" | "CUSTOM_PROGRAM_DELIVERY_CONFLICT" | "CUSTOM_PROGRAM_CLINICAL_FORBIDDEN" | "CUSTOM_PROGRAM_PLAN_IMMUTABLE" | "CUSTOM_PROGRAM_NOT_FOUND" | "CUSTOM_PROGRAM_CONFLICT" | "COUPLE_JOINT_RESULT_UNAVAILABLE" | "ASSESSMENT_CARE_NOT_FOUND" | "ASSIGNED_CONSULTATION_NOT_FOUND" | "PROGRAM_DEFINITION_NOT_FOUND" | "PROGRAM_DEFINITION_CONFLICT" | "PROGRAM_DEFINITION_INVALID" | "PROGRAM_RATE_LIMITED" | "PROGRAM_PUBLICATION_NOT_FOUND" | "PROGRAM_PUBLICATION_CONFLICT" | "PROGRAM_PUBLICATION_INVALID" | "ASSESSMENT_CARE_CONFLICT" | "COUPLE_JOINT_RESULT_NOT_READY" | "COUPLE_ASSESSMENT_NOT_FOUND" | "COUPLE_ASSESSMENT_INVALID" | "COUPLE_ASSESSMENT_CONFLICT" | "COUPLE_PROTOCOL_NOT_FOUND" | "COUPLE_PROTOCOL_INVALID" | "COUPLE_PROTOCOL_CONFLICT" | "ASSESSMENT_PURCHASE_NOT_FOUND" | "ASSESSMENT_PURCHASE_INVALID" | "ASSESSMENT_PURCHASE_CONFLICT" | "ASSESSMENT_PAYMENT_REQUIRED" | "ASSESSMENT_ACCESS_UNAVAILABLE" | "ASSESSMENT_REFUND_NOT_ALLOWED" | "ASSESSMENT_PUBLICATION_NOT_FOUND" | "ASSESSMENT_PUBLICATION_CONFLICT" | "ASSESSMENT_PUBLICATION_INVALID" | "ASSESSMENT_PROTOCOL_NOT_FOUND" | "ASSESSMENT_PROTOCOL_CONFLICT" | "ASSESSMENT_PROTOCOL_INVALID" | "ASSESSMENT_GUIDANCE_NOT_FOUND" | "ASSESSMENT_GUIDANCE_INVALID" | "ASSESSMENT_GUIDANCE_CONFLICT" | "GUIDANCE_NOT_FOUND" | "GUIDANCE_CONFLICT" | "GUIDANCE_INVALID" | "COUPLE_SESSION_NOT_FOUND" | "COUPLE_INVITATION_NOT_FOUND" | "COUPLE_INVITATION_UNAVAILABLE" | "COUPLE_PARTICIPANT_INELIGIBLE" | "COUPLE_POLICY_UNAVAILABLE" | "COUPLE_CONSENT_POLICY_CHANGED" | "COUPLE_STATE_CONFLICT" | "COUPLE_RATE_LIMITED" | "ASSESSMENT_OFFERING_NOT_FOUND" | "ASSESSMENT_OFFERING_INVALID" | "ASSESSMENT_OFFERING_CONFLICT" | "WALLET_INSUFFICIENT_FUNDS" | "WALLET_VERSION_CONFLICT" | "WALLET_FROZEN" | "BILLING_INPUT_INVALID" | "BILLING_INTENT_NOT_FOUND" | "BILLING_STATE_CONFLICT" | "BILLING_PAYMENT_PENDING" | "BILLING_HOLD_EXPIRED" | "BILLING_REFUND_EXCEEDS_PAYMENT" | "BILLING_REFUND_REQUIRED" | "BILLING_RATE_LIMITED" | "APPOINTMENT_PAYMENT_REQUIRED" | "APPOINTMENT_REPRICE_REQUIRED" | "COMMERCE_CONTENT_REVISION_CONFLICT" | "COMMERCE_CONTENT_INVALID" | "COMMERCE_CONTENT_SOURCE_REQUIRED" | "COMMERCE_IMAGE_INVALID" | "COMMERCE_IMAGE_TOO_LARGE" | "COMMERCE_IMAGE_BUSY" | "COMMERCE_IMAGE_STORAGE_UNAVAILABLE" | "COMMERCE_IMAGE_REVISION_CONFLICT" | "COMMERCE_IMAGE_OPERATION_PENDING" | "COMMERCE_IMAGE_OPERATION_EXPIRED" | "COMMERCE_IMAGE_NOT_FOUND" | "COMMERCE_IMAGE_RATE_LIMITED" | "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "REFRESH_CONCURRENT_RETRY" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "ASSESSMENT_ANSWERS_INVALID" | "ASSESSMENT_CLINIC_UNAVAILABLE" | "ASSESSMENT_NOT_FOUND" | "ASSESSMENT_STRUCTURE_INVALID" | "ASSESSMENT_PREVIEW_CONFLICT" | "ASSESSMENT_RELEASE_NOT_READY" | "ASSESSMENT_FOLLOW_UP_REQUIRED" | "ASSESSMENT_DELETE_NOT_ALLOWED" | "ASSESSMENT_DELETE_CONFLICT" | "ASSESSMENT_DELETE_REFERENCED" | "ASSESSMENT_SUBMISSION_IMMUTABLE" | "ASSESSMENT_SUBMISSION_REVISION_CONFLICT" | "ASSESSMENT_SUBMISSION_NOT_FOUND" | "ASSESSMENT_VERSION_ALREADY_PUBLISHED" | "ASSESSMENT_VERSION_IMMUTABLE" | "ASSESSMENT_VERSION_NOT_FOUND" | "ASSESSMENT_VERSION_NOT_PUBLISHED" | "AUDIT_QUERY_INVALID" | "CLINICAL_AUDIT_UNAVAILABLE" | "CLINICAL_NOTE_AMENDMENT_REASON_REQUIRED" | "CLINICAL_NOTE_CONTENT_REQUIRED" | "CLINICAL_NOTE_FORBIDDEN" | "CLINICAL_NOTE_PUBLICATION_NOT_ALLOWED" | "CLINICAL_NOTE_REVISION_CONFLICT" | "CLINICAL_NOTE_SIGNING_NOT_ALLOWED" | "CLINICAL_RECONCILIATION_CONTENT_INVALID" | "CLINICAL_RECONCILIATION_FORBIDDEN" | "CLINICAL_RECONCILIATION_SOURCE_INVALID" | "CLINICAL_RECORD_AMENDMENT_REASON_REQUIRED" | "CLINICAL_RECORD_KIND_INVALID" | "CLINICAL_RECORD_REVISION_CONFLICT" | "CLINICAL_RECORD_SIGNING_NOT_ALLOWED" | "CLINICAL_RESOURCE_FORBIDDEN" | "CLINICAL_SUMMARY_FORBIDDEN" | "COMMERCE_REVENUE_RANGE_INVALID" | "CONTENT_CONFLICT" | "CONTENT_INVALID" | "BANNER_NOT_FOUND" | "CONTENT_MEDIA_UNAVAILABLE" | "CONTENT_REVISION_CONFLICT" | "CONTENT_RATE_LIMITED" | "ENCOUNTER_INVALID_TRANSITION" | "HEALTH_OBSERVATION_FORBIDDEN" | "HEALTH_OBSERVATION_INVALID" | "MEZAJ_RESULT_NOT_FOUND" | "NOTIFICATION_NOT_FOUND" | "PAYMENT_ATTEMPT_INVALID" | "PRESCRIPTION_AMENDMENT_REASON_REQUIRED" | "PRESCRIPTION_AUDIT_CONTEXT_REQUIRED" | "PRESCRIPTION_ISSUE_NOT_ALLOWED" | "PRESCRIPTION_MEDICATION_REQUIRED" | "PRESCRIPTION_RESOURCE_FORBIDDEN" | "PRESCRIPTION_REVISION_CONFLICT" | "REQUIRED_ASSESSMENT_VERSION_INVALID" | "REQUIRED_ASSESSMENT_VERSION_MISSING" | "OTP_DISABLED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_ATTEMPTS_EXHAUSTED" | "OTP_RATE_LIMITED" | "OTP_RESEND_COOLDOWN" | "OTP_DELIVERY_UNAVAILABLE" | "OTP_ACCOUNT_PROVISIONING_UNAVAILABLE" | "IDEMPOTENCY_KEY_INVALID" | "SMS_TRANSPORT_DISABLED" | "SMS_PROVIDER_UNAVAILABLE" | "SMS_CREDENTIAL_KEY_UNAVAILABLE" | "SMS_PROVIDER_ACTIVATION_BLOCKED" | "SMS_PROVIDER_CAPABILITY_UNSUPPORTED" | "SMS_PROVIDER_CONFIGURATION_INVALID" | "SMS_PROVIDER_NOT_CONFIGURED" | "SMS_PROVIDER_NOT_FOUND" | "SMS_TEST_RATE_LIMITED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "PAYMENT_CALLBACK_RATE_LIMITED" | "CHAT_FORBIDDEN" | "CHAT_ENGINE_UNAVAILABLE" | "CHAT_APPOINTMENT_NOT_ELIGIBLE" | "CHAT_WINDOW_CLOSED" | "CHAT_BLOCKED" | "CHAT_IDEMPOTENCY_CONFLICT" | "CHAT_CURSOR_INVALID" | "CHAT_CURSOR_FORBIDDEN" | "CHAT_SEQUENCE_INVALID" | "CHAT_TOKEN_EXPIRED" | "CHAT_CONNECTION_LIMITED" | "CHAT_RATE_LIMITED" | "CHAT_MESSAGE_TOO_LONG" | "CHAT_MODERATION_FORBIDDEN" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "PROGRAM_PURCHASE_NOT_FOUND" | "PROGRAM_PURCHASE_CONFLICT" | "PROGRAM_ACCESS_UNAVAILABLE" | "PROGRAM_REFUND_NOT_ALLOWED" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -5990,6 +6073,10 @@ export interface components {
             nextCursor?: string | null;
         };
         ChatConversationResponseDto: {
+            /** Format: date-time */
+            closedAt?: string | null;
+            /** @enum {string} */
+            transport: "ejabberd";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -6002,6 +6089,15 @@ export interface components {
             doctorId: string;
             /** Format: date-time */
             createdAt: string;
+        };
+        ChatAccessResponseDto: {
+            canSend: boolean;
+            readOnlyReason: string | null;
+            /** Format: date-time */
+            opensAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            canClose: boolean;
         };
         ChatMessageResponseDto: {
             /** Format: uuid */
@@ -6020,8 +6116,10 @@ export interface components {
             tombstone?: string;
         };
         ChatHistoryResponseDto: {
+            /** @description Opaque cursor after the newest returned item for incremental recovery. */
+            checkpointCursor: string;
             items: components["schemas"]["ChatMessageResponseDto"][];
-            nextCursor?: Record<string, never>;
+            nextCursor?: string | null;
             highWaterSequence: string;
         };
         ChatVisibilityReconciliationItemDto: {
@@ -6031,19 +6129,11 @@ export interface components {
         };
         ChatVisibilityReconciliationResponseDto: {
             items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
-            nextCursor?: Record<string, never>;
+            nextCursor?: string | null;
             /** @description Opaque checkpoint to persist after applying this page. */
-            checkpointCursor?: Record<string, never>;
+            checkpointCursor?: string | null;
             /** @description Opaque high-water revision identity. */
-            highWaterRevision?: Record<string, never>;
-        };
-        SendChatMessageDto: {
-            /**
-             * Format: uuid
-             * @description Client-generated idempotency identifier.
-             */
-            clientMessageId: string;
-            body: string;
+            highWaterRevision?: string | null;
         };
         CreateChatReportDto: {
             /** @enum {string} */
@@ -6073,6 +6163,36 @@ export interface components {
             action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
             /** @description Non-sensitive administrative note. */
             safeNote?: string;
+        };
+        EjabberdSessionDto: {
+            canSend: boolean;
+            readOnlyReason: string | null;
+            /** Format: date-time */
+            opensAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            canClose: boolean;
+            /** @enum {string} */
+            transport: "ejabberd";
+            /** Format: uuid */
+            conversationId: string;
+            /** Format: uuid */
+            appointmentId: string;
+            websocketUrl: string;
+            jid: string;
+            /** @description Short-lived XMPP password. Keep in memory; never log or persist. */
+            token: string;
+            /** @enum {string} */
+            resource: "sabz";
+            roomJid: string;
+            /** @enum {string} */
+            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Authoritative retained history; use its opaque cursor for recovery. */
+            historyUrl: string;
+            /** @description Durable moderation changes must also be reconciled on reconnect. */
+            visibilityUrl: string;
         };
         PatientClinicalItemResponseDto: {
             /** Format: uuid */
@@ -8827,6 +8947,8 @@ export interface components {
             startsAt: string;
         };
         PatientAppointmentResponseDto: {
+            /** @enum {string} */
+            visitMode?: "ONLINE" | "IN_PERSON";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -8842,7 +8964,7 @@ export interface components {
             /** Format: date-time */
             endsAt: string;
             /** @enum {string} */
-            status: "PENDING";
+            status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
             priceAmount: number;
             /** @enum {string} */
             currency: "IRR";
@@ -8897,6 +9019,11 @@ export interface components {
             startsAt: string;
         };
         AdminAppointmentResponseDto: {
+            patientDisplayName?: string | null;
+            doctorDisplayName?: string;
+            serviceName?: string;
+            /** @enum {string} */
+            visitMode?: "ONLINE" | "IN_PERSON";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -10178,6 +10305,49 @@ export interface components {
             perPatientUsageLimit?: number | null;
             isActive?: boolean;
         };
+        PaymentGatewayRequestDto: {
+            id: string;
+            /** @enum {string} */
+            source: "BILLING" | "COMMERCE";
+            patientId: string;
+            userId: string;
+            phone: string;
+            name: string;
+            purpose: string;
+            intentId: string | null;
+            orderId: string | null;
+            providerOrderId: string;
+            revisionNumber: number;
+            amountRial: string;
+            status: string;
+            resultCode: string | null;
+            reference: string | null;
+            traceNumber: string | null;
+            createdAt: string;
+            updatedAt: string;
+            verifiedAt: string | null;
+        };
+        PaymentGatewayRequestsPageDto: {
+            items: components["schemas"]["PaymentGatewayRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PaymentGatewayTraceDto: {
+            id: string;
+            at: string;
+            stage: string;
+            outcome: string;
+            resultCode: string | null;
+            errorKind: string | null;
+            httpStatus: number | null;
+            durationMs: number;
+        };
+        PaymentGatewayRequestDetailDto: {
+            request: components["schemas"]["PaymentGatewayRequestDto"];
+            events: components["schemas"]["PaymentGatewayTraceDto"][];
+            eventsTruncated: boolean;
+        };
         PaymentProviderConfigDto: {
             code: string;
             displayName: string;
@@ -10220,6 +10390,14 @@ export interface components {
             providerAmount?: string | null;
             providerUnit: string;
             redirectUrl?: string | null;
+        };
+        OrderSearchPageDto: {
+            items: {
+                [key: string]: unknown;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         OrderTransitionDto: {
             /** @enum {string} */
@@ -10480,57 +10658,6 @@ export interface components {
             page: number;
             pageSize: number;
         };
-        OrderSearchPageDto: {
-            items: {
-                [key: string]: unknown;
-            }[];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        PaymentGatewayRequestDto: {
-            id: string;
-            patientId: string;
-            userId: string;
-            phone: string;
-            name: string;
-            purpose: string;
-            providerOrderId: string;
-            amountRial: string;
-            status: string;
-            createdAt: string;
-            updatedAt: string;
-            /** @enum {string} */
-            source: "BILLING" | "COMMERCE";
-            intentId: string | null;
-            orderId: string | null;
-            resultCode: string | null;
-            verifiedAt: string | null;
-            revisionNumber: number;
-            reference: string | null;
-            traceNumber: string | null;
-        };
-        PaymentGatewayTraceDto: {
-            id: string;
-            at: string;
-            stage: string;
-            outcome: string;
-            resultCode: string | null;
-            errorKind: string | null;
-            httpStatus: number | null;
-            durationMs: number;
-        };
-        PaymentGatewayRequestsPageDto: {
-            items: components["schemas"]["PaymentGatewayRequestDto"][];
-            total: number;
-            page: number;
-            pageSize: number;
-        };
-        PaymentGatewayRequestDetailDto: {
-            request: components["schemas"]["PaymentGatewayRequestDto"];
-            events: components["schemas"]["PaymentGatewayTraceDto"][];
-            eventsTruncated: boolean;
-        };
     };
     responses: never;
     parameters: never;
@@ -10558,6 +10685,23 @@ export interface operations {
         };
     };
     HealthController_ready: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HealthController_chatReady: {
         parameters: {
             query?: never;
             header?: never;
@@ -11411,11 +11555,54 @@ export interface operations {
             };
         };
     };
+    chatConversationAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatAccessResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationResponseDto"];
+                };
+            };
+        };
+    };
     chatConversationHistory: {
         parameters: {
             query?: {
                 /** @description Opaque, versioned server cursor. */
                 cursor?: string;
+                direction?: "after" | "before" | "latest";
                 limit?: components["schemas"]["Object"];
             };
             header?: never;
@@ -11432,31 +11619,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatHistoryResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationMessageSend: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendChatMessageDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessageResponseDto"];
                 };
             };
         };
@@ -11620,6 +11782,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatAppointmentEngineSessionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EjabberdSessionDto"];
                 };
             };
         };
@@ -20728,6 +20911,27 @@ export interface operations {
             };
         };
     };
+    adminAppointmentDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAppointmentResponseDto"];
+                };
+            };
+        };
+    };
     adminAppointmentsHistory: {
         parameters: {
             query?: {
@@ -26436,6 +26640,57 @@ export interface operations {
             };
         };
     };
+    adminPaymentGatewayRequests: {
+        parameters: {
+            query?: {
+                from?: string;
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
+                until?: string;
+            };
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestsPageDto"];
+                };
+            };
+        };
+    };
+    adminPaymentGatewayRequestDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: string;
+                providerCode: string;
+                source: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestDetailDto"];
+                };
+            };
+        };
+    };
     adminCommercePaymentProvidersList: {
         parameters: {
             query?: never;
@@ -26587,6 +26842,54 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminCommerceOrdersSearch: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                shippingMethod?: "PICKUP" | "COURIER";
+                status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderSearchPageDto"];
+                };
+            };
+        };
+    };
+    adminCommerceOrderGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -28165,105 +28468,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    adminCommerceOrdersSearch: {
-        parameters: {
-            query?: {
-                page?: number;
-                pageSize?: number;
-                query?: string;
-                status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
-                shippingMethod?: "PICKUP" | "COURIER";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OrderSearchPageDto"];
-                };
-            };
-        };
-    };
-    adminCommerceOrderGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    adminPaymentGatewayRequests: {
-        parameters: {
-            query?: {
-                query?: string;
-                status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
-                from?: string;
-                until?: string;
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path: {
-                providerCode: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentGatewayRequestsPageDto"];
-                };
-            };
-        };
-    };
-    adminPaymentGatewayRequestDetail: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerCode: string;
-                source: string;
-                attemptId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentGatewayRequestDetailDto"];
                 };
             };
         };
