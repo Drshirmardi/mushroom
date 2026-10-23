@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { Socket } from 'socket.io';
-
-type RegisteredSocket = Pick<Socket, 'id' | 'disconnect'>;
+type RegisteredSocket = { id: string; disconnect(close?: boolean): unknown };
 
 /**
- * Single-instance, in-memory ownership for authenticated chat sockets. It is
+ * Single-instance, in-memory ownership for authenticated chat connections,
+ * including engine leases. It is
  * deliberately not a durable authority or a cross-instance fan-out mechanism.
  */
 @Injectable()

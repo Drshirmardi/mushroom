@@ -1290,6 +1290,20 @@
             }
           },
           {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "after",
+              "type": "string",
+              "enum": [
+                "after",
+                "before",
+                "latest"
+              ]
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -1323,50 +1337,6 @@
           }
         ],
         "summary": "Read an authorized bounded ascending message history page",
-        "tags": [
-          "Chat consultation"
-        ]
-      },
-      "post": {
-        "operationId": "chatConversationMessageSend",
-        "parameters": [
-          {
-            "name": "conversationId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SendChatMessageDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatMessageResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Persist an idempotent appointment-bound text message",
         "tags": [
           "Chat consultation"
         ]
@@ -27983,6 +27953,165 @@
           }
         ]
       }
+    },
+    "/v1/chat/appointments/{appointmentId}/session": {
+      "post": {
+        "operationId": "chatAppointmentEngineSessionCreate",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EjabberdSessionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Issue an authorized short-lived ejabberd session for one consultation",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/health/chat": {
+      "get": {
+        "operationId": "HealthController_chatReady",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/access": {
+      "get": {
+        "operationId": "chatConversationAccess",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatAccessResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/close": {
+      "post": {
+        "operationId": "chatConversationClose",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatConversationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}": {
+      "get": {
+        "operationId": "adminAppointmentDetail",
+        "summary": "Get one clinic appointment and display names",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Admin appointments"
+        ]
+      }
     }
   },
   "info": {
@@ -28317,6 +28446,7 @@
               "PAYMENT_RECONCILIATION_REQUIRED",
               "PAYMENT_CALLBACK_RATE_LIMITED",
               "CHAT_FORBIDDEN",
+              "CHAT_ENGINE_UNAVAILABLE",
               "CHAT_APPOINTMENT_NOT_ELIGIBLE",
               "CHAT_WINDOW_CLOSED",
               "CHAT_BLOCKED",
@@ -28784,6 +28914,12 @@
       "ChatConversationResponseDto": {
         "type": "object",
         "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "ejabberd"
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -28807,9 +28943,15 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "required": [
+          "transport",
           "id",
           "appointmentId",
           "clinicId",
@@ -28877,6 +29019,10 @@
       "ChatHistoryResponseDto": {
         "type": "object",
         "properties": {
+          "checkpointCursor": {
+            "type": "string",
+            "description": "Opaque cursor after the newest returned item for incremental recovery."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -28884,13 +29030,15 @@
             }
           },
           "nextCursor": {
-            "type": "object"
+            "type": "string",
+            "nullable": true
           },
           "highWaterSequence": {
             "type": "string"
           }
         },
         "required": [
+          "checkpointCursor",
           "items",
           "highWaterSequence"
         ]
@@ -28921,37 +29069,22 @@
             }
           },
           "nextCursor": {
-            "type": "object"
+            "type": "string",
+            "nullable": true
           },
           "checkpointCursor": {
-            "type": "object",
+            "type": "string",
+            "nullable": true,
             "description": "Opaque checkpoint to persist after applying this page."
           },
           "highWaterRevision": {
-            "type": "object",
+            "type": "string",
+            "nullable": true,
             "description": "Opaque high-water revision identity."
           }
         },
         "required": [
           "items"
-        ]
-      },
-      "SendChatMessageDto": {
-        "type": "object",
-        "properties": {
-          "clientMessageId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Client-generated idempotency identifier."
-          },
-          "body": {
-            "type": "string",
-            "maxLength": 4000
-          }
-        },
-        "required": [
-          "clientMessageId",
-          "body"
         ]
       },
       "CreateChatReportDto": {
@@ -39077,7 +39210,14 @@
           "status": {
             "type": "string",
             "enum": [
-              "PENDING"
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "NO_SHOW",
+              "CANCELLED"
             ]
           },
           "priceAmount": {
@@ -39096,6 +39236,13 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
           }
         },
         "required": [
@@ -39332,6 +39479,23 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "patientDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "doctorDisplayName": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "visitMode": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "IN_PERSON"
+            ]
           }
         },
         "required": [
@@ -45493,6 +45657,133 @@
           "request",
           "events",
           "eventsTruncated"
+        ]
+      },
+      "EjabberdSessionDto": {
+        "type": "object",
+        "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "ejabberd"
+            ]
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "websocketUrl": {
+            "type": "string"
+          },
+          "jid": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Short-lived XMPP password. Keep in memory; never log or persist."
+          },
+          "resource": {
+            "type": "string",
+            "enum": [
+              "sabz"
+            ]
+          },
+          "roomJid": {
+            "type": "string"
+          },
+          "senderKind": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "DOCTOR",
+              "CLINIC_OPERATOR"
+            ]
+          },
+          "canSend": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "historyUrl": {
+            "type": "string",
+            "description": "Authoritative retained history; use its opaque cursor for recovery."
+          },
+          "visibilityUrl": {
+            "type": "string",
+            "description": "Durable moderation changes must also be reconciled on reconnect."
+          },
+          "readOnlyReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "opensAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canClose": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "transport",
+          "conversationId",
+          "appointmentId",
+          "websocketUrl",
+          "jid",
+          "token",
+          "resource",
+          "roomJid",
+          "senderKind",
+          "canSend",
+          "expiresAt",
+          "historyUrl",
+          "visibilityUrl",
+          "readOnlyReason",
+          "opensAt",
+          "closedAt",
+          "canClose"
+        ]
+      },
+      "ChatAccessResponseDto": {
+        "type": "object",
+        "properties": {
+          "canSend": {
+            "type": "boolean"
+          },
+          "readOnlyReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "opensAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canClose": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "canSend",
+          "readOnlyReason",
+          "opensAt",
+          "closedAt",
+          "canClose"
         ]
       }
     }

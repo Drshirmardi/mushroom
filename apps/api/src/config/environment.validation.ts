@@ -105,6 +105,19 @@ const sadadResultUrlSchema = Joi.string()
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /store/order-success with no query or fragment' });
 
 export const environmentValidationSchema = Joi.object({
+  EJABBERD_DOMAIN: Joi.string().hostname().lowercase().required(),
+  EJABBERD_WEBSOCKET_URL: Joi.string().when('NODE_ENV', {
+    is: 'development',
+    then: Joi.string().uri({ scheme: ['ws', 'wss'] }).custom((value, helpers) => {
+      const url = new URL(value);
+      return url.protocol === 'wss:' || ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) ? value : helpers.error('any.invalid');
+    }),
+    otherwise: Joi.string().uri({ scheme: ['wss'] }),
+  }).required(),
+  EJABBERD_API_URL: Joi.string().uri({ scheme: ['http', 'https'] }).required(),
+  EJABBERD_POLICY_SECRET: Joi.string().min(43).max(256).pattern(/^[A-Za-z0-9_-]+$/u).invalid(Joi.ref('JWT_ACCESS_SECRET'), Joi.ref('REFRESH_TOKEN_PEPPER')).required(),
+  EJABBERD_JWT_PRIVATE_KEY_FILE: Joi.string().max(4096).required(),
+  EJABBERD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(500).max(5000).default(3000),
   PRODUCT_MEDIA_STORAGE_MODE: Joi.string().valid('disabled', 'r2').default('disabled').when('NODE_ENV', { is: 'production', then: Joi.valid(Joi.override, 'disabled') }),
   R2_ENDPOINT: Joi.string().uri({ scheme: ['https'] }).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
   R2_BUCKET: Joi.string().pattern(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
