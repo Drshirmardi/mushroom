@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { ChatService } from '../src/modules/communications/chat/chat.service';
-import { auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
+import { sendEngineMessage, auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
 
 describe('chat abuse moderation and authorization (PostgreSQL integration)', () => {
   let app: NestFastifyApplication;
@@ -18,21 +18,21 @@ describe('chat abuse moderation and authorization (PostgreSQL integration)', () 
     fixture = await createChatFixture(app);
     const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
     const id = conversation.json().id as string;
-    const doctorMessage = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${id}/messages`, headers: auth(fixture.tokens.doctor), payload: { clientMessageId: 'a9400000-0000-4000-8000-000000000001', body: 'synthetic sensitive message' } });
-    const report = await app.inject({ method: 'POST', url: `/v1/chat/messages/${doctorMessage.json().id}/reports`, headers: auth(fixture.tokens.patient), payload: { reasonCategory: 'ABUSE_OR_HARASSMENT', requestImmediateBlock: true } });
+    const doctorMessage = await sendEngineMessage(app, fixture.tokens.doctor, id, { clientMessageId: 'a9400000-0000-4000-8000-000000000001', body: 'synthetic sensitive message' });
+    const report = await app.inject({ method: 'POST', url: `/v1/chat/messages/${doctorMessage.json().messageId}/reports`, headers: auth(fixture.tokens.patient), payload: { reasonCategory: 'ABUSE_OR_HARASSMENT', requestImmediateBlock: true } });
     expect(report.statusCode).toBe(201);
     const history = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${id}/messages`, headers: auth(fixture.tokens.patient) });
     expect(history.statusCode).toBe(200); expect(history.json().items).toHaveLength(1);
     const chat = app.get(ChatService);
     const patientPrincipal = await app.get(AccessTokenService).verify(fixture.tokens.patient);
-    expect(await chat.realtimeSync(patientPrincipal, id, 0n)).toMatchObject({ items: [expect.objectContaining({ id: doctorMessage.json().id })] });
+    expect(await chat.realtimeSync(patientPrincipal, id, 0n)).toMatchObject({ items: [expect.objectContaining({ id: doctorMessage.json().messageId })] });
     expect(await chat.acknowledgeReceipt(patientPrincipal, id, 1n, 1n)).toMatchObject({ lastDeliveredSequence: '1', lastReadSequence: '1' });
-    const blocked = await app.inject({ method: 'POST', url: `/v1/chat/conversations/${id}/messages`, headers: auth(fixture.tokens.patient), payload: { clientMessageId: 'a9400000-0000-4000-8000-000000000002', body: 'must be rejected' } });
+    const blocked = await sendEngineMessage(app, fixture.tokens.patient, id, { clientMessageId: 'a9400000-0000-4000-8000-000000000002', body: 'must be rejected' });
     expect(blocked.statusCode).toBe(403); expect(blocked.json().code).toBe('CHAT_BLOCKED');
     const resolution = await app.inject({ method: 'POST', url: `/v1/chat/reports/${report.json().id}/resolve`, headers: auth(fixture.tokens.admin), payload: { resolution: 'UPHELD_POLICY_VIOLATION', action: 'RESTRICT_MESSAGE', safeNote: 'synthetic review' } });
     expect(resolution.statusCode).toBe(200);
     const ordinary = await app.inject({ method: 'GET', url: `/v1/chat/conversations/${id}/messages`, headers: auth(fixture.tokens.patient) });
-    expect(ordinary.json().items[0]).toMatchObject({ id: doctorMessage.json().id, visibility: 'RESTRICTED', tombstone: expect.any(String) });
+    expect(ordinary.json().items[0]).toMatchObject({ id: doctorMessage.json().messageId, visibility: 'RESTRICTED', tombstone: expect.any(String) });
     expect(ordinary.json().items[0].body).toBeUndefined();
     const audit = await fixture.prisma.chatAuditEvent.findMany({ where: { conversationId: id }, select: { action: true } });
     expect(audit.map(({ action }) => action)).toEqual(expect.arrayContaining(['REPORT_CREATED', 'BLOCK_REQUESTED', 'REPORT_RESOLVED', 'MESSAGE_RESTRICTED']));

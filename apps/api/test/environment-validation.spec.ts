@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { environmentValidationSchema } from '../src/config/environment.validation';
+import { chatTestEnvironment } from './chat-environment-fixture';
 
-const base = { DATABASE_URL: 'postgresql://user:password@localhost:5432/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43), OTP_PEPPER: 'c'.repeat(43) };
+const base = { ...chatTestEnvironment, DATABASE_URL: 'postgresql://user:password@localhost:5432/test', JWT_ACCESS_SECRET: 'a'.repeat(43), REFRESH_TOKEN_PEPPER: 'b'.repeat(43), OTP_PEPPER: 'c'.repeat(43) };
 
 describe('production-hardening environment validation', () => {
   it('accepts an empty optional example API origin only while Sadad is disabled', () => {
