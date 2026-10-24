@@ -2,16 +2,10 @@
 import hashlib
 from pathlib import Path
 import tarfile
+from manager import BUNDLE_FILES
 
 ROOT = Path(__file__).resolve().parent.parent
-FILES = [
-    'installation/install.sh', 'installation/manager.py', 'installation/README.md',
-    'deploy/vps/dev-env.example', 'deploy/vps/env.example',
-    'deploy/vps/production-env.example',
-    'deploy/ejabberd/compose.yaml', 'deploy/ejabberd/env.example',
-    'deploy/ejabberd/chat.caddy.example', 'deploy/ejabberd/README.md',
-    'scripts/ejabberd-public-key.mjs',
-]
+FILES = BUNDLE_FILES
 
 
 def build(destination):

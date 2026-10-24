@@ -123,12 +123,15 @@ done
 
 compose() {
   local network_args=()
+  local chat_database_args=()
   [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
+  [[ ! -f $environment_root/chat.database.yaml ]] || chat_database_args=(--file "$environment_root/chat.database.yaml")
   docker compose \
     --project-name mushroom-dev \
     --env-file "$runtime_env" \
     --file "$compose_file" \
     --file "$environment_root/chat.compose.yaml" \
+    "${chat_database_args[@]}" \
     "${network_args[@]}" \
     "$@"
 }

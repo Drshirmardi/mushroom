@@ -42,6 +42,7 @@ environment_file() {
   local suffix=${environment//-/_}
   mkdir -p "$root/secrets"
   cp "$repository_root/deploy/ejabberd/compose.yaml" "$root/chat.compose.yaml"
+  cp "$repository_root/deploy/ejabberd/compose.database.yaml" "$root/chat.database.yaml"
   cat >"$root/runtime.env" <<EOF
 MUSHROOM_ENVIRONMENT=$environment
 COMPOSE_PROJECT_NAME=mushroom-$environment

@@ -18,11 +18,20 @@ import ssl
 import subprocess
 import sys
 import tempfile
+import time
 import unicodedata
 from urllib.parse import parse_qs, unquote, urlsplit
 from urllib.request import urlopen
 
 BUNDLE = Path(__file__).resolve().parent.parent
+BUNDLE_FILES = [
+    'installation/install.sh', 'installation/manager.py', 'installation/README.md',
+    'deploy/vps/dev-env.example', 'deploy/vps/env.example', 'deploy/vps/production-env.example',
+    'deploy/ejabberd/compose.yaml', 'deploy/ejabberd/compose.database.yaml',
+    'deploy/ejabberd/env.example', 'deploy/ejabberd/chat.caddy.example', 'deploy/ejabberd/README.md',
+    'deploy/ejabberd/Dockerfile', 'deploy/ejabberd/mod_sabz_chat.erl', 'deploy/ejabberd/ejabberd.yml',
+    'scripts/ejabberd-public-key.mjs',
+]
 STATE = Path('/etc/mushroom')
 ENVIRONMENTS = ('dev', 'staging', 'production-sim', 'production')
 PORTS = {'dev': 3300, 'staging': 3100, 'production-sim': 3200, 'production': 3000}
@@ -422,6 +431,141 @@ def check_dns(config):
             '; remove unrelated AAAA/proxying for: ' + ', '.join(missing) + '. Then rerun install.')
 
 
+def prepare_chat(config, environment, *, root=None, owner=None):
+    """Prepare the companion engine without touching application databases or rotating keys."""
+    spec = config['environments'][environment]
+    root = Path(root) if root else Path(spec['home']) / 'mushroom' / environment
+    if owner is None:
+        import pwd
+        account = pwd.getpwnam(spec['user'])
+        owner = (account.pw_uid, account.pw_gid)
+    values = load_env(root / 'runtime.env')
+    require(values.get('MUSHROOM_ENV_ROOT') == str(root) and values.get('COMPOSE_PROJECT_NAME') == f'mushroom-{environment}',
+            'Chat environment boundary mismatch.')
+    marker = root / 'state/chat.initialized'
+    required = ('EJABBERD_SQL_PASSWORD', 'EJABBERD_POLICY_SECRET', 'EJABBERD_PRIVATE_KEY_PATH', 'EJABBERD_PUBLIC_KEY_PATH')
+    if marker.exists():
+        require(all(values.get(key) for key in required), 'Established chat credentials missing; restore the original settings.')
+        require(Path(values['EJABBERD_PRIVATE_KEY_PATH']).is_file(), 'Established chat private key missing; restore its backup.')
+    if values.get('EJABBERD_SQL_HOST') and not values.get('EJABBERD_SQL_PASSWORD'):
+        raise InstallationError('Existing chat database settings have lost their password; restore the original value.')
+    if not values.get('EJABBERD_SQL_PASSWORD'):
+        retained = run(['docker', 'volume', 'ls', '--filter', f'name=^mushroom-{environment}_chat_postgres_data$',
+                        '--format', '{{.Name}}'], capture=True, sensitive=True)
+        require(not retained.strip(), 'Existing chat database volume has no saved credentials; restore the original runtime.env.')
+    source = root / 'chat-source'
+    assets = ('Dockerfile', 'mod_sabz_chat.erl', 'ejabberd.yml')
+    asset_hash = hashlib.sha256(b''.join((BUNDLE / 'deploy/ejabberd' / name).read_bytes() for name in assets)).hexdigest()[:16]
+    port = spec.get('basePort', PORTS[environment]) + 4
+    if not values.get('EJABBERD_PROXY_PORT'):
+        for port in range(port, min(port + 100, 65536)):
+            try:
+                with socket.socket() as probe:
+                    probe.bind(('127.0.0.1', port))
+                break
+            except OSError:
+                continue
+        else:
+            raise InstallationError('No free loopback chat port found.')
+    defaults = {
+        'EJABBERD_SOURCE_ROOT': str(source), 'EJABBERD_IMAGE': f'mushroom-ejabberd:installer-{asset_hash}',
+        'EJABBERD_DOMAIN': spec['domains']['api'],
+        'EJABBERD_WEBSOCKET_URL': f'https://{spec["domains"]["api"]}/xmpp-websocket'.replace('https:', 'wss:'),
+        'EJABBERD_SQL_HOST': 'chat-postgres', 'EJABBERD_SQL_DB': 'mushroom_chat_' + environment.replace('-', '_'),
+        'EJABBERD_SQL_USER': 'mushroom_chat_' + environment.replace('-', '_'),
+        'EJABBERD_SQL_PASSWORD': secrets.token_hex(32), 'EJABBERD_POLICY_SECRET': secrets.token_hex(32),
+        'EJABBERD_PRIVATE_KEY_PATH': str(root / 'secrets/ejabberd-private.pem'),
+        'EJABBERD_PUBLIC_KEY_PATH': str(root / 'secrets/ejabberd-public.jwk'),
+        'EJABBERD_API_INTERNAL_PORT': '3003', 'EJABBERD_PROXY_PORT': str(port),
+    }
+    for key, value in defaults.items():
+        if key not in values:
+            values[key] = value
+        require(values[key] and not any(c in values[key] for c in '\r\n\x00$'), f'Invalid chat setting: {key}')
+    require(values['EJABBERD_PROXY_PORT'].isdigit() and 1024 <= int(values['EJABBERD_PROXY_PORT']) <= 65535,
+            'Invalid chat proxy port.')
+    private = Path(values['EJABBERD_PRIVATE_KEY_PATH'])
+    public = Path(values['EJABBERD_PUBLIC_KEY_PATH'])
+    require(private.is_absolute() and public.is_absolute() and private != public,
+            'Chat keys require distinct absolute paths.')
+    require(not private.is_symlink() and not public.is_symlink(), 'Chat keys cannot be symlinks.')
+    require(not public.exists() or private.is_file(), 'Chat public key exists without its private key; restore the original private key.')
+    private.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.chat-key-', dir=private.parent) as temporary:
+        if not private.exists():
+            generated = Path(temporary) / 'private.pem'
+            run(['openssl', 'genpkey', '-algorithm', 'RSA', '-pkeyopt', 'rsa_keygen_bits:3072', '-out', generated], sensitive=True)
+            atomic_write(private, generated.read_text())
+        pem = Path(temporary) / 'public.pem'
+        run(['openssl', 'pkey', '-in', private, '-pubout', '-out', pem], sensitive=True)
+        modulus = run(['openssl', 'rsa', '-pubin', '-in', pem, '-modulus', '-noout'], capture=True, sensitive=True)
+        details = run(['openssl', 'pkey', '-pubin', '-in', pem, '-text', '-noout'], capture=True, sensitive=True)
+        match, exponent = re.search(r'Modulus=([0-9A-Fa-f]+)', modulus), re.search(r'Exponent:\s+(\d+)', details)
+        require(match and exponent, 'Cannot derive the RSA public key.')
+        number = int(match.group(1), 16)
+        require(number.bit_length() >= 2048, 'Chat RSA key must be at least 2048 bits.')
+        encode = lambda n: base64.urlsafe_b64encode(n.to_bytes((n.bit_length() + 7) // 8, 'big')).decode().rstrip('=')
+        jwk = {'kty': 'RSA', 'n': encode(number), 'e': encode(int(exponent.group(1))), 'alg': 'RS256', 'use': 'sig'}
+        if public.exists():
+            existing = json.loads(public.read_text())
+            require(all(existing.get(key) == jwk[key] for key in ('kty', 'n', 'e')), 'Existing chat public/private keys do not match; restore the correct pair.')
+        else:
+            atomic_write(public, json.dumps(jwk) + '\n', 0o644)
+    os.chmod(private, 0o600 if environment == 'dev' else 0o640)
+    os.chown(private, owner[0], owner[1] if environment == 'dev' else 65532)
+    os.chmod(public, 0o644)
+    os.chown(public, *owner)
+    for name in assets:
+        target = source / 'deploy/ejabberd' / name
+        if not target.exists():
+            atomic_write(target, (BUNDLE / 'deploy/ejabberd' / name).read_text(), 0o644)
+    if not (root / 'chat.compose.yaml').exists():
+        atomic_write(root / 'chat.compose.yaml', (BUNDLE / 'deploy/ejabberd/compose.yaml').read_text())
+    managed_database = values['EJABBERD_SQL_HOST'] == 'chat-postgres'
+    if managed_database and not (root / 'chat.database.yaml').exists():
+        atomic_write(root / 'chat.database.yaml', (BUNDLE / 'deploy/ejabberd/compose.database.yaml').read_text())
+    # Bootstrap only the engine. The placeholder API is never pulled or started.
+    bootstrap = root / 'state/chat.bootstrap.yaml'
+    atomic_write(bootstrap, 'services:\n  api:\n    image: scratch\n')
+    atomic_write(root / 'runtime.env', ''.join(f'{key}={value}\n' for key, value in values.items()))
+    for path in [root / 'runtime.env', root / 'chat.compose.yaml', root / 'state', bootstrap, source,
+                 *source.rglob('*'), *([root / 'chat.database.yaml'] if managed_database else [])]:
+        require(not path.is_symlink(), f'Refusing symlink: {path}')
+        os.chown(path, *owner)
+    command = ['runuser', '-u', spec['user'], '--', 'docker', 'compose', '--project-name', f'mushroom-{environment}',
+               '--env-file', root / 'runtime.env', '--file', bootstrap, '--file', root / 'chat.compose.yaml']
+    if managed_database:
+        command.extend(['--file', root / 'chat.database.yaml'])
+    if (root / 'network.yaml').exists():
+        command.extend(['--file', root / 'network.yaml'])
+    # This marks retained credentials, not successful engine startup.
+    atomic_write(marker, 'version=1\n')
+    os.chown(marker, *owner)
+    run(command + ['config', '--quiet'], sensitive=True)
+    image = values['EJABBERD_IMAGE']
+    try:
+        run(['docker', 'image', 'inspect', image], capture=True, sensitive=True)
+    except InstallationError:
+        print(f'{environment}: preparing chat image (first build may take several minutes)...')
+        if '@sha256:' in image:
+            run(['docker', 'pull', image], sensitive=True)
+        else:
+            run(command + ['build', 'ejabberd'], sensitive=True)
+    services = ['chat-postgres', 'ejabberd'] if managed_database else ['ejabberd']
+    run(command + ['up', '-d', '--wait', '--wait-timeout', '180', *services], sensitive=True)
+    if managed_database:
+        # Check TCP authentication and real engine schema, not only pg_isready/process liveness.
+        probe = 'PGPASSWORD="$POSTGRES_PASSWORD" exec psql -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_tables WHERE schemaname=\'public\'"'
+        for attempt in range(15):
+            tables = run(command + ['exec', '-T', 'chat-postgres', 'sh', '-c', probe], capture=True, sensitive=True).strip()
+            if tables.isdigit() and int(tables) > 0:
+                break
+            if attempt == 14:
+                raise InstallationError('Chat SQL schema not ready; inspect the engine and rerun setup-chat. Credentials retained.')
+            time.sleep(2)
+    print(f'{environment}: chat engine ready; existing keys and data retained.')
+
+
 def configure_proxy(config, directory=None):
     directory = Path(directory) if directory is not None else Path('/etc/caddy')
     target = directory / 'Caddyfile'
@@ -436,10 +580,25 @@ def configure_proxy(config, directory=None):
     require(not existing.strip() or default or imported,
             'Existing Caddy configuration preserved. Add `import /etc/caddy/mushroom.caddy` at top level, validate it, then rerun install.')
     sites = []
+    snippets = {}
     for environment, spec in config['environments'].items():
+        root = Path(spec['home']) / 'mushroom' / environment
+        settings = load_env(root / 'runtime.env') if (root / 'runtime.env').exists() else {}
+        port = settings.get('EJABBERD_PROXY_PORT', str(spec.get('basePort', PORTS[environment]) + 4))
+        require(port.isdigit() and 1024 <= int(port) <= 65535, 'Invalid chat proxy port.')
+        snippets[environment] = (BUNDLE / 'deploy/ejabberd/chat.caddy.example').read_text().replace(
+            'https://dev-app.example.invalid', 'https://' + spec['domains']['app']).replace(
+            'https://dev-dashboard.example.invalid', 'https://' + spec['domains']['dashboard']).replace(
+            '127.0.0.1:5444', '127.0.0.1:' + port)
+        chat_file = directory / 'mushroom-chat' / environment / 'chat.caddy'
+        if chat_file.exists() and not chat_file.read_text().startswith('# Managed by mushroom installation'):
+            normalize = lambda text: '\n'.join(line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith('#'))
+            require(normalize(chat_file.read_text()) == normalize(snippets[environment]),
+                    f'Custom chat proxy preserved at {chat_file}; review it before automated setup.')
+        snippets[environment] = '# Managed by mushroom installation: chat\n' + snippets[environment]
         for service, domain in spec['domains'].items():
             offset = {'web': 0, 'app': 1, 'dashboard': 2, 'api': 3}[service]
-            chat_import = f'  import /etc/caddy/mushroom-chat/{environment}/*.caddy\n' if service == 'api' else ''
+            chat_import = f'  import {directory}/mushroom-chat/{environment}/*.caddy\n' if service == 'api' else ''
             sites.append(f'{domain} {{\n  tls {config["email"]}\n  encode zstd gzip\n{chat_import}  reverse_proxy 127.0.0.1:{spec.get("basePort", PORTS[environment]) + offset}\n}}\n')
     site_content = '\n'.join(sites)
     new_main = existing if imported else marker + '\n' + import_line + '\n'
@@ -447,11 +606,17 @@ def configure_proxy(config, directory=None):
     with tempfile.TemporaryDirectory(prefix='mushroom-validate-', dir=target.parent) as temporary:
         proposed_sites = Path(temporary) / 'sites.caddy'
         proposed_main = Path(temporary) / 'Caddyfile'
-        atomic_write(proposed_sites, site_content, 0o644)
+        for environment, content in snippets.items():
+            atomic_write(Path(temporary) / 'chat' / environment / 'chat.caddy', content, 0o644)
+        atomic_write(proposed_sites, site_content.replace(f'{directory}/mushroom-chat/', f'{temporary}/chat/'), 0o644)
         atomic_write(proposed_main, new_main.replace(import_line, f'import {proposed_sites}'), 0o644)
         run(['caddy', 'validate', '--config', proposed_main, '--adapter', 'caddyfile'], capture=True)
     if not imported:
         atomic_write(target.with_suffix('.before-mushroom'), existing, 0o600)
+    for environment, content in snippets.items():
+        atomic_write(directory / 'mushroom-chat' / environment / 'chat.caddy', content, 0o644)
+        os.chmod(directory / 'mushroom-chat', 0o755)
+        os.chmod(directory / 'mushroom-chat' / environment, 0o755)
     atomic_write(site_file, site_content, 0o644)
     if not imported:
         atomic_write(target, new_main, 0o644)
@@ -553,7 +718,8 @@ def install(config):
             if not (root / 'consent-policy.json').exists():
                 policy = ask('Absolute path to approved production consent-policy JSON',
                              validator=lambda v: str(Path(v).resolve()) if validate_policy(v, 'production') else '')
-        write_environment(config, environment, owner=owner, first_run=first_run, db_url=db, policy=policy)
+        root = write_environment(config, environment, owner=owner, first_run=first_run, db_url=db, policy=policy)
+        prepare_chat(config, environment, root=root, owner=owner)
         configure_backups(config, environment)
     # The current SSH port must already be listening; never edit sshd or close the current SSH session.
     firewall(config)
@@ -601,8 +767,11 @@ def configure(config, environment=None):
         domains = [domain for item in candidate['environments'].values() for domain in item['domains'].values()]
         require(len(domains) == len(set(domains)), 'Environment hostnames must all be distinct.')
         check_dns(candidate)
+        previous_api = values.get('PUBLIC_API_URL', '')
         for service, domain in spec['domains'].items():
             values[f'PUBLIC_{service.upper()}_URL'] = 'https://' + domain
+        if values.get('EJABBERD_WEBSOCKET_URL') == previous_api.replace('https:', 'wss:') + '/xmpp-websocket':
+            values['EJABBERD_WEBSOCKET_URL'] = values['PUBLIC_API_URL'].replace('https:', 'wss:') + '/xmpp-websocket'
         values['APP_ORIGINS'] = ','.join(values[f'PUBLIC_{key}_URL'] for key in ('WEB', 'APP', 'DASHBOARD'))
         values['SADAD_RETURN_URL'] = values['PUBLIC_API_URL'] + '/v1/payments/providers/sadad/callback'
         values['SADAD_RESULT_URL'] = values['PUBLIC_APP_URL'] + '/store/order-success'
@@ -639,6 +808,8 @@ def compose_command(config, environment):
         args.extend(['--file', root / 'network.yaml'])
     if (root / 'chat.compose.yaml').exists():
         args.extend(['--file', root / 'chat.compose.yaml'])
+    if (root / 'chat.database.yaml').exists():
+        args.extend(['--file', root / 'chat.database.yaml'])
     return args
 
 
@@ -650,6 +821,15 @@ def doctor(config, deployed=False):
     for environment, spec in config['environments'].items():
         root = Path(spec['home']) / 'mushroom' / environment
         values = load_env(root / 'runtime.env')
+        require((root / 'chat.compose.yaml').is_file() and all(values.get(key) for key in (
+            'EJABBERD_SOURCE_ROOT', 'EJABBERD_IMAGE', 'EJABBERD_DOMAIN', 'EJABBERD_WEBSOCKET_URL',
+            'EJABBERD_SQL_HOST', 'EJABBERD_SQL_DB', 'EJABBERD_SQL_USER', 'EJABBERD_SQL_PASSWORD',
+            'EJABBERD_POLICY_SECRET', 'EJABBERD_PRIVATE_KEY_PATH', 'EJABBERD_PUBLIC_KEY_PATH', 'EJABBERD_PROXY_PORT')),
+            f'{environment}: chat preparation incomplete; run mushroom setup-chat --environment {environment}.')
+        require(all(Path(values[key]).is_file() for key in ('EJABBERD_PRIVATE_KEY_PATH', 'EJABBERD_PUBLIC_KEY_PATH')),
+                f'{environment}: chat key missing; restore its backup or complete setup-chat.')
+        require(values['EJABBERD_SQL_HOST'] != 'chat-postgres' or (root / 'chat.database.yaml').is_file(),
+                f'{environment}: managed chat database overlay missing; run setup-chat.')
         require(all((root / 'secrets' / name).is_file() for name in SECRET_NAMES), f'{environment}: missing secret file.')
         for name in ('jwt_access_secret', 'refresh_token_pepper', 'otp_pepper'):
             require(re.fullmatch(r'[A-Za-z0-9_-]{43,256}', (root / 'secrets' / name).read_text().strip()), f'{environment}: invalid {name}.')
@@ -676,6 +856,8 @@ def doctor(config, deployed=False):
                 path = '/v1/health/ready' if name == 'api' else '/'
                 with urlopen(f'https://{domain}{path}', timeout=15) as response:
                     require(response.status == 200, f'{environment}: {name} HTTPS probe failed.')
+            with urlopen(f'https://{spec["domains"]["api"]}/v1/health/chat', timeout=15) as response:
+                require(response.status == 200, f'{environment}: chat health probe failed.')
             print(f'{environment}: external HTTPS probes passed')
 
 
@@ -716,8 +898,7 @@ def audit_environment(repository, current=False):
 def persist_bundle():
     destination = Path('/opt/mushroom-installer')
     if BUNDLE != destination:
-        for name in ('installation/install.sh', 'installation/manager.py', 'installation/README.md',
-                     'deploy/vps/dev-env.example', 'deploy/vps/env.example', 'deploy/vps/production-env.example'):
+        for name in BUNDLE_FILES:
             atomic_write(destination / name, (BUNDLE / name).read_text(encoding='utf-8'), 0o755 if name.endswith('.sh') else 0o644)
     atomic_write('/usr/local/sbin/mushroom', '#!/usr/bin/env bash\nset -Eeuo pipefail\nexec python3 -X utf8 /opt/mushroom-installer/installation/manager.py "$@"\n', 0o755)
 
@@ -850,7 +1031,7 @@ def lock():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['install', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
+    parser.add_argument('command', choices=['install', 'setup-chat', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
     parser.add_argument('--environment', choices=ENVIRONMENTS)
     parser.add_argument('--repository', default=str(BUNDLE))
     parser.add_argument('--current', action='store_true', help='Audit existing .env key names without displaying values')
@@ -875,6 +1056,13 @@ def main():
             save(config)
         if args.command == 'install':
             install(config)
+        elif args.command == 'setup-chat':
+            persist_bundle()
+            for environment in ([args.environment] if args.environment else config['environments']):
+                require(environment in config['environments'], 'Select an installed --environment.')
+                prepare_chat(config, environment)
+            configure_proxy(config)
+            print('Chat prepared. Rerun the environment deployment, then mushroom verify.')
         elif args.command == 'configure':
             configure(config, args.environment)
         elif args.command in ('doctor', 'verify'):
