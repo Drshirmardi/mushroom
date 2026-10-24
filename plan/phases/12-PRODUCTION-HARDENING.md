@@ -1,5 +1,7 @@
 # Phase 12 — Production Hardening
 
+Welcome mobile redesign (2026-10-24), same F12-FE01 /root: scoped review PASS, owner visual review pending. Image-free welcome/profile, conditional progress, compact native demographic fields and consistent assessment/result presentation. Types and five intercepted responsive browser scenarios PASS; real-phone/clinical end-to-end acceptance remains separate. Broader task REWORK/unchecked, no commit/deploy. Evidence: phase-12 log welcome mobile redesign.
+
 PATIENT CHAT MOBILE KEYBOARD (2026-10-23): same F12-FE01 / F12-FE01-CHAT01, REWORK/unchecked. Patient room follows VisualViewport changes and scroller can shrink/scroll with closed-chat card. IMPLEMENTED_UNVERIFIED; owner mobile review pending. No verification commands or commit; details in phase-12 log.
 
 CHAT SASL CORRECTION (2026-10-23): same active F12-FE01 / F12-FE01-CHAT01, /root, REWORK/unchecked. Native JWT/PLAIN mismatch with default X-OAUTH2 corrected in shared transport and engine advertisement; local reload now yields two connected sessions and two room occupants. Message delivery/owner acceptance remain pending; no commit or DONE. Scoped evidence in phase-12 log.

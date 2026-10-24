@@ -5158,3 +5158,25 @@ Local review/verification: Linux standard-library suite49 cases,46 PASS/3 explic
 Gate: local reviewed implementation PASS; hosted installer job includes an opt-in clean-runner real engine build/SQL initialization/retry/archive-retention/pull-policy rehearsal. Local Docker Desktop daemon is unresponsive (bounded probes timed out), so no local native-engine run is claimed. Hosted rehearsal remains the explicit acceptance gate before marking this corrective task DONE. Owner must merge the matching deployment helper changes before applying the new installer and rerunning shared dev; engine archive backup is separate from the existing application backup.
 
 F12-T02-I06 hosted acceptance gate: PASS on implementation commit2e5d9f1. Server installer workflow40065714815 completed successfully, including real engine build/start, real SQL schema creation/TCP authentication, retained archive row and key/credential bytes on rerun, engine pull-policy retention, standard-library/native Caddy/Compose checks, API environment regression, actual PostgreSQL first-administrator retries and encrypted backup/restore drill. Review accepted; corrective task DONE and INSTALLATION-06 claim released. No live VPS action or application data mutation. Next action is owner merge of PR30, transfer of the matching updated archive, setup-chat --environment dev, normal shared-dev deployment and HTTPS/chat/manual acceptance. No next implementation batch started. Engine archive backup remains separately required; broad F12-FE01 unchanged.
+
+## Welcome mobile redesign 2026-10-24
+
+Task ID: F12-FE01 (bounded continuation; broader task REWORK/unchecked)
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION (no new batch)
+Reviewed by: Codex /root
+Status: READY_FOR_OWNER_VISUAL_REVIEW
+Changed files:
+- apps/app/src/app/welcome/page.tsx
+- apps/app/src/app/globals.css (entry-only rules)
+- coordinator STATUS/phase checklist/this log
+Scope: applied redesign-existing-projects skill to the existing Next/React/CSS screen. Removed both welcome brain images, retained the Home asset. Brand/leaf motif, responsive split desktop/compact mobile layout, real one/three-step progress, explicit next action, labeled native Persian birthday selectors, native radio selection highlight, 16px controls, safe-area/dynamic viewport handling, reduced motion and forced-colors support. Existing demographic prefill, profile/start/complete/result requests and assessment engine retained.
+Verification:
+- pnpm --filter @sabz/app typecheck -> PASS.
+- node .local/welcome-mobile-check.mjs -> PASS at320/390/430/768/1440: synthetic refresh/entry only, no real profile writes; profile values/date/gender prefill, no brain images, one/three progress items, controls at least44px, no horizontal page overflow, failed save retains values, successful retry sends exact ISO date/gender, assessment introduction and result states display without overflow or runtime errors.
+- Profile screenshots320/390/430/768/1440, start/result screenshots same widths saved in ignored .local/welcome-review;390/1440 profile reviewed visually;390 spacing compacted after review.
+- git diff --check -> PASS.
+- Graphify AST update requested; final outcome recorded below.
+Migrations: none. API/contracts/dependencies unchanged.
+Limits: native desktop Chromium emulation, not real iOS/Android keyboard/safe-area acceptance; active question engine behavior was not changed or tested end-to-end in this visual slice. Owner phone review pending. No commit/push/deploy or next batch.
+- Graphify update . -> PASS (AST graph rebuilt); existing extractor limitations for SQL/Erlang/HCL and partial chat.service.ts extraction reported, unrelated to this UI slice.
