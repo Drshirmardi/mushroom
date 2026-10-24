@@ -6711,6 +6711,7 @@ export interface components {
         };
         PatientEntryStatusDto: {
             required: boolean;
+            assessmentRequired: boolean;
             /** @enum {string} */
             phase: "PROFILE" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
             /** Format: uuid */
@@ -6720,12 +6721,16 @@ export interface components {
             submissionId: string | null;
             firstName: string | null;
             lastName: string | null;
+            /** @enum {string|null} */
+            gender: "FEMALE" | "MALE" | null;
             /** Format: date */
             birthDate: string | null;
         };
         EntryProfileDto: {
             firstName: string;
             lastName: string;
+            /** @enum {string} */
+            gender: "FEMALE" | "MALE";
             /** Format: date */
             birthDate: string;
         };
@@ -20623,8 +20628,8 @@ export interface operations {
         parameters: {
             query: {
                 fromDate: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 toDate: string;
             };
             header?: never;

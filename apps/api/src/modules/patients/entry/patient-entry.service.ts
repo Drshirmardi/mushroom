@@ -18,7 +18,7 @@ export class PatientEntryService {
 
   private async patient(userId: string, tx: Prisma.TransactionClient = this.prisma) {
     const p = await tx.patientProfile.findUnique({ where: { userId }, include: {
-      user: { select: { createdAt: true, userProfile: { select: { firstName: true, lastName: true } } } },
+      user: { select: { createdAt: true, userProfile: { select: { firstName: true, lastName: true, gender: true } } } },
       clinic: { select: { entryPolicy: true } },
       entry: { include: { submission: { select: { state: true, invalidatedAt: true } } } },
     } });
@@ -28,30 +28,39 @@ export class PatientEntryService {
 
   async status(userId: string, tx: Prisma.TransactionClient = this.prisma): Promise<PatientEntryStatusDto> {
     const p = await this.patient(userId, tx); const policy = p.clinic.entryPolicy; const entry = p.entry;
-    const required = entryRequired(policy?.enabled ?? false, policy?.enforcedFrom ?? null, p.user.createdAt, !!entry, !!entry?.completedAt);
-    const sourceId = entry?.assessmentVersionId ?? policy?.assessmentVersionId ?? null;
+    const completed = !!entry?.completedAt;
+    const assessmentRequired = entryRequired(policy?.enabled ?? false, policy?.enforcedFrom ?? null, p.user.createdAt, !!entry, completed);
+    const sourceId = entry?.assessmentVersionId ?? (assessmentRequired ? policy?.assessmentVersionId : null) ?? null;
     const source = sourceId ? await tx.assessmentVersion.findFirst({ where: { id: sourceId, clinicId: p.clinicId }, select: { id: true, title: true, status: true, locale: true, structure: true, offeringVersions: { where: { commercialPublications: { some: {} } }, select: { id: true }, take: 1 } } }) : null;
     const readableResult = entry?.submission?.state === 'COMPLETE' && !entry.submission.invalidatedAt;
     const available = !!source && (source.status === 'PUBLISHED' || source.status === 'RETIRED' && !!entry?.submissionId) && source.locale === 'fa-IR' && source.offeringVersions.length === 0;
     const profile = p.user.userProfile;
+    const birthDate = entry?.birthDate.toISOString().slice(0, 10) ?? null;
+    const profileComplete = !!profile?.firstName?.trim() && !!profile.lastName?.trim() && (profile.gender === 'FEMALE' || profile.gender === 'MALE') && !!birthDate;
+    const needsProfile = !profileComplete;
+    const required = needsProfile || assessmentRequired;
     return {
-      required, phase: !required ? 'COMPLETE' : readableResult ? 'RESULT' : !available ? 'UNAVAILABLE' : !entry || !profile?.firstName?.trim() || !profile.lastName?.trim() ? 'PROFILE' : 'ASSESSMENT',
+      required, assessmentRequired, phase: !required ? 'COMPLETE' : needsProfile ? 'PROFILE' : readableResult ? 'RESULT' : !available ? 'UNAVAILABLE' : 'ASSESSMENT',
       assessmentVersionId: sourceId, assessmentTitle: source?.title ?? null, submissionId: entry?.submissionId ?? null,
-      firstName: profile?.firstName ?? null, lastName: profile?.lastName ?? null, birthDate: entry?.birthDate.toISOString().slice(0, 10) ?? null,
+      firstName: profile?.firstName ?? null, lastName: profile?.lastName ?? null, gender: profile?.gender === 'FEMALE' || profile?.gender === 'MALE' ? profile.gender : null, birthDate,
     };
   }
 
   async saveProfile(userId: string, body: EntryProfileDto, ctx: EntryActor) {
     const firstName = body.firstName.trim().replace(/\s+/g, ' '); const lastName = body.lastName.trim().replace(/\s+/g, ' ');
     const date = new Date(`${body.birthDate}T00:00:00.000Z`); const now = new Date();
-    if (!firstName || !lastName || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== body.birthDate || date > now || date.getUTCFullYear() < now.getUTCFullYear() - 130) throw new UnprocessableEntityException({ code: 'ENTRY_PROFILE_INVALID', message: 'Valid name and birth date required.', details: {} });
+    if (!firstName || !lastName || !['FEMALE', 'MALE'].includes(body.gender) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== body.birthDate || date > now || date.getUTCFullYear() < now.getUTCFullYear() - 130) throw new UnprocessableEntityException({ code: 'ENTRY_PROFILE_INVALID', message: 'Valid name, gender, and birth date required.', details: {} });
     await this.prisma.$transaction(async tx => {
-      const p = await this.patient(userId, tx); await this.lock(tx, p.id);
+      const pointer = await this.patient(userId, tx); await this.lock(tx, pointer.id);
+      await this.lockPolicy(tx, pointer.clinicId);
+      const p = await this.patient(userId, tx);
       const state = await this.status(userId, tx); if (!state.required) return;
-      if (state.phase === 'UNAVAILABLE') throw unavailable();
-      if (state.submissionId) throw conflict();
-      await tx.userProfile.upsert({ where: { userId }, create: { userId, firstName, lastName }, update: { firstName, lastName } });
-      await tx.patientEntry.upsert({ where: { patientId: p.id }, create: { patientId: p.id, clinicId: p.clinicId, birthDate: date }, update: { birthDate: date } });
+      if (state.submissionId && state.phase !== 'PROFILE') throw conflict();
+      if (state.phase !== 'PROFILE' && state.phase !== 'ASSESSMENT') throw unavailable();
+      await tx.userProfile.upsert({ where: { userId }, create: { userId, firstName, lastName, gender: body.gender }, update: { firstName, lastName, gender: body.gender } });
+      const completedAt = p.entry?.completedAt ?? (!state.assessmentRequired && !state.submissionId ? new Date() : null);
+      if (p.entry) await tx.patientEntry.update({ where: { patientId: p.id }, data: { birthDate: date, completedAt } });
+      else await tx.patientEntry.create({ data: { patientId: p.id, clinicId: p.clinicId, birthDate: date, completedAt } });
       await this.audit(tx, 'PATIENT_ENTRY_PROFILE_SAVED', p.id, ctx);
     });
     return this.status(userId);
@@ -60,6 +69,7 @@ export class PatientEntryService {
   async start(userId: string, ctx: EntryActor) {
     await this.prisma.$transaction(async tx => {
       const p = await this.patient(userId, tx); await this.lock(tx, p.id);
+      await this.lockPolicy(tx, p.clinicId);
       const state = await this.status(userId, tx);
       if (!state.required || state.submissionId) return;
       if (state.phase !== 'ASSESSMENT' || !state.assessmentVersionId) throw unavailable();
@@ -74,6 +84,7 @@ export class PatientEntryService {
   async complete(userId: string, ctx: EntryActor) {
     await this.prisma.$transaction(async tx => {
       const p = await this.patient(userId, tx); await this.lock(tx, p.id);
+      await this.lockPolicy(tx, p.clinicId);
       const state = await this.status(userId, tx);
       if (!state.required) return;
       if (state.phase !== 'RESULT' || !state.submissionId) throw conflict();
@@ -111,6 +122,7 @@ export class PatientEntryService {
     return this.policy();
   }
   private async lock(tx: Prisma.TransactionClient, patientId: string) { await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${'patient-entry:' + patientId},0))`); }
+  private async lockPolicy(tx: Prisma.TransactionClient, clinicId: string) { await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${'entry-policy:' + clinicId},0))`); }
   private async audit(tx: Prisma.TransactionClient, action: string, subjectId: string, ctx: EntryActor, metadata: Prisma.InputJsonValue = {}) {
     await tx.auditEvent.create({ data: { action, actorUserId: ctx.actorUserId, actorSessionId: ctx.actorSessionId, subjectType: 'PATIENT_ENTRY', subjectId, requestId: ctx.requestId.slice(0, 128), ipAddress: ctx.ipAddress, metadata } });
   }

@@ -1,5 +1,41 @@
 # Phase 12 Execution Evidence
 
+## Patient entry final correction and primary migration (2026-10-24)
+
+Same F12-FE01 CLIENT-INTEGRATION corrective slice, sole /root on `codex/patient-entry-flow`. Owner explicitly authorized fixing review findings, clearing startup blockers and migrating the configured primary database. This entry supersedes the earlier IMPLEMENTED_UNVERIFIED/profile-cutoff proposal below. Scope review PASS; slice READY_FOR_OWNER_TEST. Broader F12-FE01 stays REWORK/unchecked, no new task/batch or completion commit.
+
+Corrections:
+
+- Mandatory names, profile gender and birth date apply to every incomplete account, independently of assessment configuration. Removed the proposed profile cutoff from final schema while preserving the existing assessment cohort cutoff.
+- Profile-only completion is persisted, so later assessment activation does not reopen completed registration. An existing started/completed assessment permits missing-demographic repair without discarding its pinned source, answers, submission or completion timestamp.
+- Patient and policy transaction locks serialize conflicting entry/policy changes. Forward SQL guards retain same-clinic ownership, exact free submission binding, completed/valid submission checks and immutable terminal bindings while allowing demographic correction. Consent/intake remain separate.
+- Corrected occupied-window TypeScript shape and explicit numeric Swagger pagination metadata in scheduling; regenerated the affected runtime-derived client contracts and corrected the stale pagination test expectation. No scheduling business rule changed.
+- Profile UI requires gender, prefills saved values and displays one or three steps according to the actual assessment requirement. Existing gate, result persistence and recommendation engines remain authoritative. Review covered endpoint boundaries, source pinning, labelled controls and unrelated/protected changes.
+
+Verification:
+
+- API production emit, full API types/test types, patient/dashboard/web types: PASS. Prisma generate and SDK build/typecheck/parity: PASS.
+- Fresh disposable PostgreSQL16 database: all81 migrations and seed deployed; entry integration12/12 PASS, including legacy repair, concurrent profile save/start, durable completion, SQL bypass rejection, source pinning, owner authorization and consent isolation. Disposable database removed afterward.
+- Targeted API rules/Home journey/availability authorization11/11; app Persian date/Home status/directory9/9; SDK12/12: PASS.
+- Chromium synthetic intercepted API journeys at390px and1440px: profile-only to Home and required assessment through saved result to Home,4/4 PASS. Required-gender disabling, payload fields, overflow and JS errors checked. These browser fixtures do not write main patient data or substitute for the owner's real manual acceptance.
+- Actual root `pnpm dev` launched API and all three frontends. API live/ready/chat, web3000, patient3001/welcome and dashboard3002 all HTTP200. Owned smoke processes stopped, ports3000–3003 released and dev lock removed. Windows Turbo shutdown required terminating its verified owned child tree after Ctrl+C stalled; root cleanup then completed. Chat containers restored to their pre-smoke running state; main PostgreSQL remained running.
+- Graphify update completed; optional SQL/Erlang/HCL and existing chat parser warnings only. Final diff whitespace review PASS.
+
+Primary migration:
+
+- Validated custom-format backup: `C:/Users/R3dPi/AppData/Local/Mushroom/Backups/patient-entry-before-20261024-bfb8efbc.dump` (963822 bytes). Aggregate row fingerprints/counts retained beside it; no patient data placed in repository evidence.
+- Restored populated backup to a random temporary database and applied both forward migrations. No schema drift or user/profile/entry/submission/Mezaj fingerprint changes; clone dropped.
+- Applied `20261024100000_patient_entry_profile_cutoff` and corrective `20261024110000_patient_entry_completion` via Prisma migrate deploy to the owner's configured `localhost:5432/sabz_zendegi`. Applied migration history preserved. All81 migrations current; Prisma schema diff reports no differences. Primary user, patient/user profile, entry, assessment submission and Mezaj data fingerprints/counts match the premigration snapshot.
+- No real assessment policy enabled, no patient answers/results altered, no seed on primary. Normal browser authentication refresh during startup may rotate sessions.
+
+Handoff: feature files remain uncommitted for owner review. From repository root run `pnpm dev`, open patient app at `http://localhost:3001`, and test an incomplete existing account plus a fresh account without an assessment. For the required-assessment journey, the owner can select a published supported assessment in dashboard entry settings and use a fresh account; verify resume, saved result and Home transition. No additional roadmap batch started.
+
+## Patient entry corrective slice — IMPLEMENTED_UNVERIFIED (2026-10-24)
+
+Owner-authorized continuation of the existing `F12-FE01` CLIENT-INTEGRATION task on `codex/patient-entry-flow`; SpecKit package: `specs/011-patient-entry-flow/`. Source review confirmed that a disabled/missing assessment policy bypassed all entry, the profile form omitted gender, and unavailable assessment state could precede profile collection. The correction adds immutable `profileEnforcedFrom` independent of assessment `enforcedFrom`, requires name/surname/profile gender/birth date for the new cohort regardless of assessment configuration, then follows the existing exact-version assessment/result flow only when required. It preserves separate medical-intake `sexAtBirth`/consent and reuses patient-owned assessment/Mezaj recommendation records. The migration seeds the cutoff for existing clinics and supplies defaults/fallbacks for future policy/clinic rows; no live policy/source activation or patient mutation was performed.
+
+Verification: fresh disposable PostgreSQL migration and patient-entry integration harness → PASS (7/7); pure entry boundary rules → PASS (3/3); API client generated-contract parity/typecheck/build → PASS; API build/typecheck both encounter pre-existing `patient-availability.service.ts:88` errors; app typecheck encounters pre-existing `directory-api.ts:38` pagination-contract errors and no errors in changed entry files. No browser journey was run. `graphify update .` completed; its existing optional SQL/Erlang/HCL extractors and one unrelated chat parser warning were reported. `git diff --check` → PASS. The slice remains `IMPLEMENTED_UNVERIFIED`; `F12-FE01` remains REWORK/unchecked. Safe next action: clear the unrelated workspace type errors and run scoped browser acceptance, then review/commit this isolated branch slice.
+
 ## Bottom-sheet handle focus correction (2026-10-22)
 
 F12-FE01 / CLIENT-INTEGRATION, owner-authorized continuation, sole /root. Clean baseline; source review traced native showModal autofocus to the first wide handle button and shared teal focus-visible outline. Add a scoped handle class, suppress its outer outline/touch highlight and put the keyboard focus indicator on its40px grip instead. Keep44px touch target, accessible close label, keyboard click, native modal focus handling and existing pointer/drag callbacks. All shared BottomSheet callers inherit the correction; no financial, notification or API behavior change.

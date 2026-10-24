@@ -4,6 +4,7 @@ import { PrismaService } from '../../database/prisma/prisma.service';
 import type { PatientAvailabilityQueryDto } from './patient-availability.dto';
 
 type Window = { start: Date; end: Date };
+type OccupiedWindow = { startsAt: Date; endsAt: Date };
 type LocalDate = { year: number; month: number; day: number };
 const visible = { isActive: true, publicationStatus: DirectoryPublicationStatus.PUBLISHED };
 const queryInvalid = (fields: string[]) => new UnprocessableEntityException({ code: 'AVAILABILITY_QUERY_INVALID', message: 'Availability query is invalid.', details: { fields } });
@@ -67,8 +68,8 @@ export class PatientAvailabilityService {
       this.prisma.availabilityRule.findMany({ where: { clinicId: clinic.id, doctorId: offering.doctorId, visitMode: offering.visitMode, isActive: true, isoWeekday: { in: Array.from({ length: Math.round((rangeEnd.getTime() - rangeStart.getTime()) / 86_400_000) + 2 }, (_, index) => ISO_WEEKDAY(addDays(from, index))) } }, select: { isoWeekday: true, startLocalTime: true, endLocalTime: true } }),
       this.prisma.clinicClosure.findMany({ where: { clinicId: clinic.id, isActive: true, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { startsAt: true, endsAt: true } }),
       this.prisma.doctorAvailabilityException.findMany({ where: { clinicId: clinic.id, doctorId: offering.doctorId, isActive: true, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart }, OR: [{ visitMode: offering.visitMode }, { visitMode: null }] }, select: { kind: true, visitMode: true, startsAt: true, endsAt: true } }),
-      forCandidate ? Promise.resolve([] as Window[]) : this.prisma.appointment.findMany({ where: { clinicId: clinic.id, doctorId: offering.doctorId, status: { in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.CHECKED_IN, AppointmentStatus.QUEUED, AppointmentStatus.IN_PROGRESS] }, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { startsAt: true, endsAt: true } }),
-      forCandidate ? Promise.resolve([] as Window[]) : this.prisma.appointmentHold.findMany({ where: { clinicId: clinic.id, doctorId: offering.doctorId, releasedAt: null, expiresAt: { gt: now }, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { startsAt: true, endsAt: true } }),
+      forCandidate ? Promise.resolve([] as OccupiedWindow[]) : this.prisma.appointment.findMany({ where: { clinicId: clinic.id, doctorId: offering.doctorId, status: { in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.CHECKED_IN, AppointmentStatus.QUEUED, AppointmentStatus.IN_PROGRESS] }, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { startsAt: true, endsAt: true } }),
+      forCandidate ? Promise.resolve([] as OccupiedWindow[]) : this.prisma.appointmentHold.findMany({ where: { clinicId: clinic.id, doctorId: offering.doctorId, releasedAt: null, expiresAt: { gt: now }, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { startsAt: true, endsAt: true } }),
     ]);
     const closureWindows = closures.map((closure) => ({ start: closure.startsAt, end: closure.endsAt }));
     const unavailable = exceptions.filter((exception) => exception.kind === DoctorAvailabilityExceptionKind.UNAVAILABLE).map((exception) => ({ start: exception.startsAt, end: exception.endsAt }));
