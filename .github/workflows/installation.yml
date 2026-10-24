@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'installation/**'
+      - 'deploy/ejabberd/**'
       - 'deploy/vps/**'
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
@@ -17,6 +18,7 @@ on:
     branches: [main]
     paths:
       - 'installation/**'
+      - 'deploy/ejabberd/**'
       - 'deploy/vps/**'
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
@@ -51,6 +53,8 @@ jobs:
           python3 -B installation/build.py
           bash -n installation/install.sh
           bash scripts/test-vps-deploy.sh
+      - name: Real standalone chat engine and retained database rehearsal
+        run: sudo env INSTALLER_CHAT_DOCKER_TEST=1 INSTALLER_TEST_USER="$USER" python3 -B -m unittest discover -s installation -p 'test_chat_docker.py' -v
       - run: pnpm install --frozen-lockfile
       - name: Build the actual API used by the first-administrator helper
         env:

@@ -18,6 +18,12 @@ Verified on the owner's local Windows/Docker setup: `pnpm dev` starts both engin
 
 The setup steps below apply to deployed environments.
 
+### Installer-managed deployments
+
+The standalone installer now automates new engine provisioning. On an existing installation, transfer the matching updated installer bundle and run `sudo bash installation/install.sh setup-chat --environment dev`, then rerun the normal deployment. It bundles the engine Dockerfile/module/config, generates and retains RSA/JWK keys and credentials, starts a private engine PostgreSQL container, builds a source-hashed local engine image and installs/validates Caddy's exact-origin WebSocket route. No host Node or application checkout is needed for preparation.
+
+Installer-managed databases use the optional `chat.database.yaml` companion; all deployment and management operations retain it. It marks the local engine image `pull_policy: never`, so release pulls still fetch the four application images while retaining the prepared engine. Existing operator-provided engine/database settings are preserved. The manual steps below remain applicable to externally managed configurations. The dedicated engine archive volume needs its own backup; application-database backups do not contain it. Production's application PostgreSQL remains external.
+
 ## How this fits Mushroom
 
 - StanzaJS 12.22.1 has a pinned pnpm metadata patch in `patches/stanza@12.22.1.patch` so Turbopack resolves its browser platform instead of Node-only DNS code. Both application Dockerfiles copy patches before frozen installation. The SDK is loaded dynamically when a writable consultation is opened. Both frontends use `packages/api-client/src/chat-engine.ts`; existing authentication refresh is reused. No extra UI framework is installed. Browser bundle size and server capacity are not yet measured.

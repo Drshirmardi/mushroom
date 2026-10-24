@@ -155,12 +155,15 @@ release_env_from_manifest() {
 compose_for() {
   local release_dir=$1
   local network_args=()
+  local chat_database_args=()
   [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
+  [[ ! -f $environment_root/chat.database.yaml ]] || chat_database_args=(--file "$environment_root/chat.database.yaml")
   docker compose \
     --project-name "$expected_project" \
     --env-file "$release_dir/release.env" \
     --file "$release_dir/compose.yaml" \
     --file "$environment_root/chat.compose.yaml" \
+    "${chat_database_args[@]}" \
     "${network_args[@]}" \
     "${@:2}"
 }
