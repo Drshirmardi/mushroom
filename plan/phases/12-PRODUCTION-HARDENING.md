@@ -1,5 +1,7 @@
 # Phase 12 — Production Hardening
 
+- [x] `F12-FE01-MZ01` — Paid Mezaj text-service software slice DONE; CLIENT-INTEGRATION, sole /root review PASS. Reused reviewed programs/PROGRAM billing/grants; ordered pair/icon placement, exact11+1/scalar recommendations, result services/products, owned Home library, admin and qualified-physician workspace.47 program/entry/guard +28 commerce tests,83 migrations/no drift, types/SDK/dashboard lint/token validators and3 responsive intercepted browser scenarios PASS. Contract: ../contracts/mezaj-paid-content-v1.md; design: ../mezaj-services-design.md; evidence: phase-12 log. Main/VPS migration and actual approved content/terms configuration remain operator actions. Broad F12-FE01 REWORK; no next batch.
+
 Welcome mobile redesign (2026-10-24), same F12-FE01 /root: scoped review PASS, owner visual review pending. Image-free welcome/profile, conditional progress, compact native demographic fields and consistent assessment/result presentation. Types and five intercepted responsive browser scenarios PASS; real-phone/clinical end-to-end acceptance remains separate. Broader task REWORK/unchecked, no commit/deploy. Evidence: phase-12 log welcome mobile redesign.
 
 PATIENT CHAT MOBILE KEYBOARD (2026-10-23): same F12-FE01 / F12-FE01-CHAT01, REWORK/unchecked. Patient room follows VisualViewport changes and scroller can shrink/scroll with closed-chat card. IMPLEMENTED_UNVERIFIED; owner mobile review pending. No verification commands or commit; details in phase-12 log.

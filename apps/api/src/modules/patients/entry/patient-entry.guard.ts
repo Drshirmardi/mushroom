@@ -25,6 +25,8 @@ export class PatientEntryGuard implements CanActivate {
     const path = new URL(request.url ?? '/', 'http://internal').pathname; const method = request.method ?? 'GET';
     if (entryRequestAllowed(method, path, null)) return true;
     const status = await this.entry.status(auth.userId);
+    const querySubmission = new URL(request.url ?? '/', 'http://internal').searchParams.get('submissionId');
+    if (method === 'GET' && status.phase === 'RESULT' && status.submissionId && querySubmission?.toLowerCase() === status.submissionId.toLowerCase() && ['/v1/patients/me/program-recommendations', '/v1/patients/me/commerce/recommendations'].includes(path)) return true;
     if (!status.required || entryRequestAllowed(method, path, status.submissionId)) return true;
     throw new ForbiddenException({ code: 'PATIENT_ENTRY_REQUIRED', message: 'Complete initial entry before continuing.', details: {} });
   }

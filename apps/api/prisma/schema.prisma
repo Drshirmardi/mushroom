@@ -3620,6 +3620,7 @@ model AssessmentCareShare {
 
 
 model ProgramDefinitionVersion {
+  mezajPresentation ProgramMezajPresentation?
   customProgramRequests CustomProgramRequest[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -3660,11 +3661,25 @@ model ProgramDefinitionVersion {
   revoker User? @relation("ProgramDefinitionRevoker", fields: [revokedByUserId], references: [id], onDelete: Restrict)
   revocationSession Session? @relation("ProgramDefinitionRevocationSession", fields: [revokedSessionId], references: [id], onDelete: Restrict)
   @@unique([clinicId, programKey, locale, versionNumber], map: "program_definitions_identity_version_key")
+  @@unique([id, clinicId], map: "program_definitions_id_clinic_key")
   @@unique([clinicId, createdByUserId, idempotencyKey], map: "program_definitions_command_key")
   @@index([clinicId, status, createdAt, id], map: "program_definitions_clinic_status_created_idx")
   @@map("program_definition_versions")
   commercialPublications ProgramOfferingPublication[]
   purchases ProgramPurchase[]
+}
+
+model ProgramMezajPresentation {
+  programDefinitionId String @id @map("program_definition_id") @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  icon String @db.VarChar(20)
+  pairs String[]
+  enabled Boolean @default(false)
+  revision Int @default(1)
+  definition ProgramDefinitionVersion @relation(fields: [programDefinitionId, clinicId], references: [id, clinicId], onDelete: Restrict, map: "program_mezaj_definition_fkey")
+  @@unique([programDefinitionId, clinicId], map: "program_mezaj_definition_clinic_key")
+  @@index([clinicId, enabled], map: "program_mezaj_clinic_enabled_idx")
+  @@map("program_mezaj_presentations")
 }
 
 

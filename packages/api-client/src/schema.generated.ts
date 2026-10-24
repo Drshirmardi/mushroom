@@ -4216,6 +4216,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/program-definitions/{id}/mezaj": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramMezajGet"];
+        put: operations["adminProgramMezajSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramRecommendationsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramLibraryList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/custom-program-offerings": {
         parameters: {
             query?: never;
@@ -9546,6 +9594,62 @@ export interface components {
             contentReferences: components["schemas"]["ProgramContentReferenceDto"][];
             /** @enum {boolean} */
             educationalOnly: true;
+        };
+        ProgramMezajDto: {
+            programDefinitionId: string;
+            revision: number;
+            enabled: boolean;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            pairs: string[];
+        };
+        SaveProgramMezajDto: {
+            expectedRevision: number;
+            enabled: boolean;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            pairs: string[];
+        };
+        MezajProgramCardDto: {
+            programDefinitionId: string;
+            publicationId: string;
+            title: string;
+            summary: string;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            state: "BUY" | "PENDING" | "OWNED";
+            accessGrantId: string | null;
+            purchaseId: string | null;
+        };
+        MezajProgramRecommendationsDto: {
+            /** @enum {string} */
+            status: "READY" | "NO_RESULT" | "RESULT_UNSUPPORTED" | "REVIEW_REQUIRED" | "NOT_CONFIGURED";
+            /** @enum {string|null} */
+            primary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            /** @enum {string|null} */
+            secondary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            submissionId: string | null;
+            items: components["schemas"]["MezajProgramCardDto"][];
+        };
+        OwnedProgramCardDto: {
+            accessGrantId: string;
+            purchaseId: string;
+            title: string;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            accessAvailable: boolean;
+            /** Format: date-time */
+            endsAt: string | null;
+        };
+        OwnedProgramPageDto: {
+            items: components["schemas"]["OwnedProgramCardDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         CustomProgramPhysicianDto: {
             id: string;
@@ -21614,8 +21718,8 @@ export interface operations {
     adminProgramDefinitionList: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 programKey?: string;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
@@ -21869,8 +21973,8 @@ export interface operations {
     clinicalProgramDefinitionList: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 programKey?: string;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
@@ -22641,8 +22745,8 @@ export interface operations {
     patientProgramOfferingsList: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
             };
             header?: never;
             path?: never;
@@ -22950,8 +23054,8 @@ export interface operations {
     patientProgramPurchasesList: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
             };
             header?: never;
             path?: never;
@@ -23169,6 +23273,95 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramMezajGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramMezajDto"];
+                };
+            };
+        };
+    };
+    adminProgramMezajSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveProgramMezajDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramMezajDto"];
+                };
+            };
+        };
+    };
+    patientProgramRecommendationsGet: {
+        parameters: {
+            query?: {
+                submissionId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MezajProgramRecommendationsDto"];
+                };
+            };
+        };
+    };
+    patientProgramLibraryList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnedProgramPageDto"];
                 };
             };
         };
@@ -25230,7 +25423,9 @@ export interface operations {
     };
     patientCommerceRecommendationsGet: {
         parameters: {
-            query?: never;
+            query?: {
+                submissionId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

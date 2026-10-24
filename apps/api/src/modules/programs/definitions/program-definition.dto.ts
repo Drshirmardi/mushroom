@@ -26,8 +26,8 @@ export class ProgramDefinitionApprovalDto {
   @ApiProperty({ enum: [true] }) @Equals(true) noAutomaticTherapyActivation!: true;
 }
 export class ProgramDefinitionQueryDto {
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
-  @ApiPropertyOptional({ default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
+  @ApiPropertyOptional({ type: Number, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
+  @ApiPropertyOptional({ type: Number, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
   @ApiPropertyOptional() @IsOptional() @Matches(/^[A-Z][A-Z0-9_]{2,99}$/u) programKey?: string;
   @ApiPropertyOptional({ enum: ['DRAFT', 'APPROVED', 'REVOKED'] }) @IsOptional() @IsIn(['DRAFT', 'APPROVED', 'REVOKED']) status?: string;
 }
