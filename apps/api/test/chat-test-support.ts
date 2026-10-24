@@ -1,3 +1,4 @@
+import { completeTestPatientEntry } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -32,9 +33,9 @@ export async function createChatFixture(app: NestFastifyApplication) {
   const doctor = await prisma.user.create({ data: { phone: phone() } });
   const admin = await prisma.user.create({ data: { phone: phone() } });
   const staff = await prisma.user.create({ data: { phone: phone() } });
-  const patientProfile = await prisma.patientProfile.create({ data: { userId: patient.id, clinicId: clinic.id } });
+  const patientProfile = await prisma.patientProfile.create({ data: { userId: patient.id, clinicId: clinic.id } }); await completeTestPatientEntry(prisma, patient.id);
   await prisma.clinicalClinicAccess.create({ data: { userId: admin.id, clinicId: clinic.id } });
-  await prisma.patientProfile.create({ data: { userId: outsider.id, clinicId: clinic.id } });
+  await prisma.patientProfile.create({ data: { userId: outsider.id, clinicId: clinic.id } }); await completeTestPatientEntry(prisma, outsider.id);
   const specialty = await prisma.specialty.findFirstOrThrow({ where: { clinicId: clinic.id, isActive: true, publicationStatus: 'PUBLISHED' }, select: { id: true } });
   const profile = await prisma.doctorProfile.create({ data: { clinicId: clinic.id, userId: doctor.id, displayName: `Synthetic chat doctor ${randomUUID()}` } });
   await prisma.doctorSpecialty.create({ data: { clinicId: clinic.id, doctorId: profile.id, specialtyId: specialty.id } });

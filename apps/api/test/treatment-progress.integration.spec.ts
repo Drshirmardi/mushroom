@@ -1,3 +1,4 @@
+import { completeTestPatientEntry, clearTestPatientEntries } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -26,14 +27,14 @@ describe('treatment progress API (PostgreSQL integration)', () => {
     await prisma.treatmentPlan.deleteMany({ where: { patient: { userId: { in: ids } } } });
     await prisma.clinicalClinicAccess.deleteMany({ where: { userId: { in: ids } } }); await prisma.session.deleteMany({ where: { userId: { in: ids } } }); await prisma.userRole.deleteMany({ where: { userId: { in: ids } } });
     if (addedPermissions.size) { await prisma.clinicalRolePermission.deleteMany({ where: { role: { code: 'DOCTOR' }, permission: { in: [...addedPermissions] } } }); addedPermissions.clear(); }
-    await prisma.patientProfile.deleteMany({ where: { userId: { in: ids } } }); await prisma.user.deleteMany({ where: { id: { in: ids } } }); users.clear();
+    await clearTestPatientEntries(prisma, { userId: { in: ids } }); await prisma.patientProfile.deleteMany({ where: { userId: { in: ids } } }); await prisma.user.deleteMany({ where: { id: { in: ids } } }); users.clear();
   });
 
   const fixture = async () => {
     const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
     const [doctorRole, patientRole] = await Promise.all([prisma.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } }), prisma.role.findUniqueOrThrow({ where: { code: 'PATIENT' } })]);
     const [patientUser, doctor] = await Promise.all([prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }), prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } })]); users.add(patientUser.id); users.add(doctor.id);
-    const patient = await prisma.patientProfile.create({ data: { userId: patientUser.id, clinicId: clinic.id } });
+    const patient = await prisma.patientProfile.create({ data: { userId: patientUser.id, clinicId: clinic.id } }); await completeTestPatientEntry(prisma, patientUser.id);
     await prisma.userRole.createMany({ data: [{ userId: patientUser.id, roleId: patientRole.id }, { userId: doctor.id, roleId: doctorRole.id }] }); await prisma.clinicalClinicAccess.create({ data: { userId: doctor.id, clinicId: clinic.id } });
     const permissions = ['CLINICAL_RECORD_VIEW', 'CLINICAL_RECORD_EDIT'] as const; const existing = new Set((await prisma.clinicalRolePermission.findMany({ where: { roleId: doctorRole.id, permission: { in: [...permissions] } }, select: { permission: true } })).map((entry) => entry.permission)); const missing = permissions.filter((permission) => !existing.has(permission));
     if (missing.length) { await prisma.clinicalRolePermission.createMany({ data: missing.map((permission) => ({ roleId: doctorRole.id, permission })), skipDuplicates: true }); missing.forEach((permission) => addedPermissions.add(permission)); }

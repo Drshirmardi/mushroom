@@ -1,3 +1,4 @@
+import { completeTestPatientEntry, clearTestPatientEntries } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -29,12 +30,12 @@ describe('commerce inventory atomic reservations (PostgreSQL integration)', () =
     if (inventories.length) await prisma.inventoryLedgerEntry.deleteMany({ where: { inventoryItemId: { in: inventories } } });
     if (inventories.length) await prisma.inventoryItem.deleteMany({ where: { id: { in: inventories } } });
     if (skuIds.size) await prisma.commerceSku.deleteMany({ where: { id: { in: [...skuIds] } } }); if (productIds.size) await prisma.commerceProduct.deleteMany({ where: { id: { in: [...productIds] } } }); if (categoryIds.size) await prisma.commerceCategory.deleteMany({ where: { id: { in: [...categoryIds] } } });
-    if (patientIds.size) await prisma.patientProfile.deleteMany({ where: { id: { in: [...patientIds] } } }); if (userIds.size) await prisma.user.deleteMany({ where: { id: { in: [...userIds] } } });
+    if (patientIds.size) await clearTestPatientEntries(prisma, { id: { in: [...patientIds] } }); await prisma.patientProfile.deleteMany({ where: { id: { in: [...patientIds] } } }); if (userIds.size) await prisma.user.deleteMany({ where: { id: { in: [...userIds] } } });
     userIds.clear(); patientIds.clear(); categoryIds.clear(); productIds.clear(); skuIds.clear(); inventoryIds.clear(); orderIds.clear();
   });
 
   const headers = (token: string, idempotencyKey?: string) => ({ authorization: `Bearer ${token}`, origin: 'http://localhost:3000', ...(idempotencyKey ? { 'idempotency-key': idempotencyKey } : {}) });
-  const patient = async () => { const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); userIds.add(user.id); const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId } }); patientIds.add(profile.id); return { id: profile.id, token: (await createTestAccessToken(prisma, tokens, ['PATIENT'], user.id)).token }; };
+  const patient = async () => { const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); userIds.add(user.id); const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId } }); await completeTestPatientEntry(prisma, user.id); patientIds.add(profile.id); return { id: profile.id, token: (await createTestAccessToken(prisma, tokens, ['PATIENT'], user.id)).token }; };
   const sku = async (onHandQuantity: number) => { const suffix = randomUUID().slice(0, 8); const category = await prisma.commerceCategory.create({ data: { clinicId, name: `inventory ${suffix}`, slug: `inventory-${suffix}` } }); categoryIds.add(category.id); const product = await prisma.commerceProduct.create({ data: { clinicId, categoryId: category.id, title: `inventory ${suffix}`, slug: `inventory-product-${suffix}`, status: 'ACTIVE' } }); productIds.add(product.id); const record = await prisma.commerceSku.create({ data: { clinicId, productId: product.id, code: `INV-${suffix}`, currentPriceToman: 10_000n, currentTaxToman: 0n, isActive: true, inventoryItem: { create: { clinicId, onHandQuantity } } }, include: { inventoryItem: true } }); skuIds.add(record.id); inventoryIds.add(record.inventoryItem!.id); return record; };
   const addToCart = async (token: string, skuId: string, quantity: number) => { const result = await app.inject({ method: 'PUT', url: '/v1/patients/me/cart', headers: headers(token), payload: { skuId, quantity } }); expect(result.statusCode).toBe(200); };
   const checkout = async (token: string, key = `inventory-${randomUUID()}`) => app.inject({ method: 'POST', url: '/v1/patients/me/orders', headers: headers(token, key), payload: { shippingMethod: 'PICKUP' } });

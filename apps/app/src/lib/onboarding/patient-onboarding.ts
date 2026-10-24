@@ -58,13 +58,12 @@ export function loadMedicalIntake(accessToken: string, client: Client = apiClien
 
 export async function loadPatientOnboarding(accessToken: string, client: Client = apiClient) {
   const headers = authorizationHeaders(accessToken);
-  const [profile, status, policy, intake] = await Promise.all([
+  const [profile, entry, intake] = await Promise.all([
     expectData(client.GET("/v1/patients/me", { headers })),
-    expectData(client.GET("/v1/patients/me/onboarding-status", { headers })),
-    expectData(client.GET("/v1/patients/me/consent-policy", { headers })),
+    expectData(client.GET("/v1/patients/me/entry", { headers })),
     expectData(client.GET("/v1/patients/me/medical-intake", { headers })),
   ]);
-  return { profile, status, policy, intake };
+  return { profile, entry, intake };
 }
 
 export function updateSelfProfile(

@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -26,9 +27,9 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
     const role = await db.role.findUniqueOrThrow({ where: { code: 'PATIENT' } });
     await db.userRole.create({ data: { userId: auth.userId, roleId: role.id } });
-    const profile = await db.patientProfile.create({ data: { userId: auth.userId, clinicId } });
+    const profile = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
     if (complete) {
-      await db.userProfile.create({ data: { userId: auth.userId, firstName: 'Private first', lastName: 'Private last' } });
+      await db.userProfile.upsert({ where: { userId: auth.userId }, create: { userId: auth.userId, firstName: 'Private first', lastName: 'Private last' }, update: { userId: auth.userId, firstName: 'Private first', lastName: 'Private last' } });
       const policy = await db.consentPolicyVersion.findFirstOrThrow({ where: { clinicId, policyKey: 'MEDICAL_INTAKE_PROCESSING', locale: 'fa-IR', status: 'ACTIVE' } });
       const consent = await db.patientConsentRecord.create({ data: { patientId: profile.id, policyVersionId: policy.id, contentHash: policy.contentHash, acceptedByUserId: auth.userId, acceptanceIdempotencyKey: randomUUID() } });
       const intake = await db.patientMedicalIntake.create({ data: { patientId: profile.id, clinicId, currentRevisionNumber: 1, completedRevisionNumber: 1, submissionState: 'COMPLETE' } });
@@ -55,7 +56,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
   it('derives incomplete progress without blocking independent shopping', async () => {
     const p = await patient(); const response = await get(p); expect(response.statusCode).toBe(200);
     expect(response.headers['cache-control']).toBe('private, no-store');
-    expect(response.json()).toMatchObject({ onboarding: { isComplete: false, requiredCount: 8, answeredRequiredCount: 0 }, nextAction: { code: 'COMPLETE_PROFILE', resourceId: null }, storeAvailable: true });
+    expect(response.json()).toMatchObject({ onboarding: { isComplete: false, requiredCount: 6, answeredRequiredCount: 3 }, nextAction: { code: 'START_MEDICAL_INTAKE', resourceId: null }, storeAvailable: true });
     expect(await db.patientMedicalIntake.count({ where: { patientId: p.patientId } })).toBe(0);
   });
   it('does not provision a missing patient from a read', async () => {
@@ -65,7 +66,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
   });
   it('uses existing completion and booking rules, never returns medical values', async () => {
     const p = await patient(true); const response = await get(p); expect(response.statusCode).toBe(200);
-    expect(response.json().onboarding).toMatchObject({ state: 'COMPLETE', isComplete: true, requiredCount: 8, answeredRequiredCount: 8, missingFields: [] });
+    expect(response.json().onboarding).toMatchObject({ state: 'COMPLETE', isComplete: true, requiredCount: 6, answeredRequiredCount: 6, missingFields: [] });
     for (const forbidden of ['Private first', 'Private last', '1990-01-01', 'FEMALE', 'allergyReport', 'activeConsentRecordId']) expect(response.body).not.toContain(forbidden);
   });
   it('isolates another patient and ignores identity overrides in query strings', async () => {
@@ -132,14 +133,15 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
   });
   it('prioritizes a near appointment even when onboarding later becomes incomplete, without creating chat', async () => {
     const p = await patient();
-    const baseline = await db.doctorService.findFirstOrThrow({ where: { clinicId } });
+    const name = `Synthetic journey service ${randomUUID()}`;
+    const definition = await db.service.create({ data: { clinicId, name, canonicalName: name } });
     const doctor = await db.doctorProfile.create({ data: { clinicId, displayName: 'Synthetic journey doctor' } });
-    const service = await db.doctorService.create({ data: { clinicId, doctorId: doctor.id, serviceId: baseline.serviceId, visitMode: baseline.visitMode, durationMinutes: 15, priceAmount: baseline.priceAmount } });
+    const service = await db.doctorService.create({ data: { clinicId, doctorId: doctor.id, serviceId: definition.id, visitMode: 'ONLINE', durationMinutes: 15, priceAmount: 100000 } });
     const appointment = await db.appointment.create({ data: { clinicId, patientId: p.patientId, doctorId: service.doctorId, doctorServiceId: service.id, startsAt: new Date(), endsAt: new Date(Date.now() + 15 * 60_000), status: 'CONFIRMED', priceAmount: service.priceAmount, currency: 'IRR', priceCapturedAt: new Date() } });
     const response = await get(p); expect(response.json().nextAction).toEqual({ code: 'OPEN_APPOINTMENT', resourceId: appointment.id });
     expect(await db.chatConversation.count({ where: { appointmentId: appointment.id } })).toBe(0);
     await db.appointment.update({ where: { id: appointment.id }, data: { status: 'COMPLETED' } });
-    const terminal = await get(p); expect(terminal.json().appointments.items).toEqual([]); expect(terminal.json().nextAction.code).toBe('COMPLETE_PROFILE');
+    const terminal = await get(p); expect(terminal.json().appointments.items).toEqual([]); expect(terminal.json().nextAction.code).toBe('START_MEDICAL_INTAKE');
   });
   it('returns pending Store orders with explicit toman units and hides shipping data', async () => {
     const p = await patient();

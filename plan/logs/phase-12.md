@@ -1,5 +1,41 @@
 # Phase 12 Execution Evidence
 
+## Patient entry final correction and primary migration (2026-10-24)
+
+Same F12-FE01 CLIENT-INTEGRATION corrective slice, sole /root on `codex/patient-entry-flow`. Owner explicitly authorized fixing review findings, clearing startup blockers and migrating the configured primary database. This entry supersedes the earlier IMPLEMENTED_UNVERIFIED/profile-cutoff proposal below. Scope review PASS; slice READY_FOR_OWNER_TEST. Broader F12-FE01 stays REWORK/unchecked, no new task/batch or completion commit.
+
+Corrections:
+
+- Mandatory names, profile gender and birth date apply to every incomplete account, independently of assessment configuration. Removed the proposed profile cutoff from final schema while preserving the existing assessment cohort cutoff.
+- Profile-only completion is persisted, so later assessment activation does not reopen completed registration. An existing started/completed assessment permits missing-demographic repair without discarding its pinned source, answers, submission or completion timestamp.
+- Patient and policy transaction locks serialize conflicting entry/policy changes. Forward SQL guards retain same-clinic ownership, exact free submission binding, completed/valid submission checks and immutable terminal bindings while allowing demographic correction. Consent/intake remain separate.
+- Corrected occupied-window TypeScript shape and explicit numeric Swagger pagination metadata in scheduling; regenerated the affected runtime-derived client contracts and corrected the stale pagination test expectation. No scheduling business rule changed.
+- Profile UI requires gender, prefills saved values and displays one or three steps according to the actual assessment requirement. Existing gate, result persistence and recommendation engines remain authoritative. Review covered endpoint boundaries, source pinning, labelled controls and unrelated/protected changes.
+
+Verification:
+
+- API production emit, full API types/test types, patient/dashboard/web types: PASS. Prisma generate and SDK build/typecheck/parity: PASS.
+- Fresh disposable PostgreSQL16 database: all81 migrations and seed deployed; entry integration12/12 PASS, including legacy repair, concurrent profile save/start, durable completion, SQL bypass rejection, source pinning, owner authorization and consent isolation. Disposable database removed afterward.
+- Targeted API rules/Home journey/availability authorization11/11; app Persian date/Home status/directory9/9; SDK12/12: PASS.
+- Chromium synthetic intercepted API journeys at390px and1440px: profile-only to Home and required assessment through saved result to Home,4/4 PASS. Required-gender disabling, payload fields, overflow and JS errors checked. These browser fixtures do not write main patient data or substitute for the owner's real manual acceptance.
+- Actual root `pnpm dev` launched API and all three frontends. API live/ready/chat, web3000, patient3001/welcome and dashboard3002 all HTTP200. Owned smoke processes stopped, ports3000–3003 released and dev lock removed. Windows Turbo shutdown required terminating its verified owned child tree after Ctrl+C stalled; root cleanup then completed. Chat containers restored to their pre-smoke running state; main PostgreSQL remained running.
+- Graphify update completed; optional SQL/Erlang/HCL and existing chat parser warnings only. Final diff whitespace review PASS.
+
+Primary migration:
+
+- Validated custom-format backup: `C:/Users/R3dPi/AppData/Local/Mushroom/Backups/patient-entry-before-20261024-bfb8efbc.dump` (963822 bytes). Aggregate row fingerprints/counts retained beside it; no patient data placed in repository evidence.
+- Restored populated backup to a random temporary database and applied both forward migrations. No schema drift or user/profile/entry/submission/Mezaj fingerprint changes; clone dropped.
+- Applied `20261024100000_patient_entry_profile_cutoff` and corrective `20261024110000_patient_entry_completion` via Prisma migrate deploy to the owner's configured `localhost:5432/sabz_zendegi`. Applied migration history preserved. All81 migrations current; Prisma schema diff reports no differences. Primary user, patient/user profile, entry, assessment submission and Mezaj data fingerprints/counts match the premigration snapshot.
+- No real assessment policy enabled, no patient answers/results altered, no seed on primary. Normal browser authentication refresh during startup may rotate sessions.
+
+Handoff: feature files remain uncommitted for owner review. From repository root run `pnpm dev`, open patient app at `http://localhost:3001`, and test an incomplete existing account plus a fresh account without an assessment. For the required-assessment journey, the owner can select a published supported assessment in dashboard entry settings and use a fresh account; verify resume, saved result and Home transition. No additional roadmap batch started.
+
+## Patient entry corrective slice — IMPLEMENTED_UNVERIFIED (2026-10-24)
+
+Owner-authorized continuation of the existing `F12-FE01` CLIENT-INTEGRATION task on `codex/patient-entry-flow`; SpecKit package: `specs/011-patient-entry-flow/`. Source review confirmed that a disabled/missing assessment policy bypassed all entry, the profile form omitted gender, and unavailable assessment state could precede profile collection. The correction adds immutable `profileEnforcedFrom` independent of assessment `enforcedFrom`, requires name/surname/profile gender/birth date for the new cohort regardless of assessment configuration, then follows the existing exact-version assessment/result flow only when required. It preserves separate medical-intake `sexAtBirth`/consent and reuses patient-owned assessment/Mezaj recommendation records. The migration seeds the cutoff for existing clinics and supplies defaults/fallbacks for future policy/clinic rows; no live policy/source activation or patient mutation was performed.
+
+Verification: fresh disposable PostgreSQL migration and patient-entry integration harness → PASS (7/7); pure entry boundary rules → PASS (3/3); API client generated-contract parity/typecheck/build → PASS; API build/typecheck both encounter pre-existing `patient-availability.service.ts:88` errors; app typecheck encounters pre-existing `directory-api.ts:38` pagination-contract errors and no errors in changed entry files. No browser journey was run. `graphify update .` completed; its existing optional SQL/Erlang/HCL extractors and one unrelated chat parser warning were reported. `git diff --check` → PASS. The slice remains `IMPLEMENTED_UNVERIFIED`; `F12-FE01` remains REWORK/unchecked. Safe next action: clear the unrelated workspace type errors and run scoped browser acceptance, then review/commit this isolated branch slice.
+
 ## Bottom-sheet handle focus correction (2026-10-22)
 
 F12-FE01 / CLIENT-INTEGRATION, owner-authorized continuation, sole /root. Clean baseline; source review traced native showModal autofocus to the first wide handle button and shared teal focus-visible outline. Add a scoped handle class, suppress its outer outline/touch highlight and put the keyboard focus indicator on its40px grip instead. Keep44px touch target, accessible close label, keyboard click, native modal focus handling and existing pointer/drag callbacks. All shared BottomSheet callers inherit the correction; no financial, notification or API behavior change.
@@ -5075,3 +5111,38 @@ Reviewed downstream isolated suites before the next hosted gate. The assigned-co
 The first isolated run passed13/14 cases and exposed a real source regression in this branch: `AssignedAppointmentService.open` and its default worklist had lost the previous clinical expiry bounds while chat expiry was being removed. Restored the original one-hour confirmed/four-hour checked-in/queued/in-progress predicates and stale-worklist filter. ChatService retains independent explicit closure. Kept the expired-start rejection assertion; did not weaken it to make the test pass.
 
 Started a second uniquely named disposable PostgreSQL16 container on the isolation guard's required loopback55419, applied all79 migrations and seed, and ran the real isolated assigned-consultation suite: all14 cases PASS, including concurrency, current capabilities, clinical consent/privacy, audit rollback, expired-start rejection and retained chat after completion. Clean API test typecheck PASS. Owner PostgreSQL and all ten original worktree files untouched. Hosted815a798 passed the complete main `pnpm test` step and reached build; the final correction needs its own complete hosted gate. No merge/deployment/DONE or new batch.
+
+### PR29 self-reported onboarding follow-up (2026-10-24)
+
+Owner-authorized F12-FE01 corrective continuation on `codex/patient-entry-flow`; this is not completion of the broader Phase12 roadmap. ADR-0041 records the explicit product change to independent patient-authored health intake. No next batch started.
+
+Changes:
+
+- Replaced patient `/onboarding` with health declarations, optional lifestyle and response review. Existing account name/gender/birth date are reused; historical clinical sex-at-birth answers are preserved without inference. Draft saving, honest unknown/unanswered distinctions, local validation, retry and accessible mobile/desktop controls remain. Separate consent capture and unrelated policy/journey requests were removed.
+- Entry and onboarding resources retain unsaved forms across access-token rotation; account identity changes still fence resources. Account security exceptions are exact authenticated GET/PATCH `/v1/me` and POST `/v1/me/change-password`; other patient features retain initial-registration enforcement.
+- Self-intake draft/completion and status no longer require a policy/grant or clinical sex-at-birth answer. Current exact existing processing grants retain their revision reference for independently authorized clinical care; no consent is silently created. Sharing, purchase, couple and custom-care authorization remains enforced. Completion now uses the already published HTTP200 contract.
+- Protected-feature test patients explicitly include completed registration; cleanup respects retained foreign keys. Journey tests no longer depend on another suite having created a doctor service. Production web Zod was upgraded to4.6.7 with a narrow frozen lockfile change.
+
+Database:
+
+- Forward migration `20261024120000_self_intake_independent_completion` relaxes only the consent-reference condition for completed PATIENT_ENTRY revisions; completed timestamps and operator correction requirements remain.
+- Configured loopback primary migrated successfully to82 migrations after a validated pg_dump and populated-clone rehearsal. Backup: `%LOCALAPPDATA%/Mushroom/Backups/self-intake-before-20261024-ec181681.dump` with adjacent count/hash evidence. Profile, entry, intake/revision, consent, assessment-submission and mezaj-result counts/fingerprints were unchanged. No real patient/assessment policy data was backfilled or activated.
+
+Verification evidence:
+
+- Workspace typechecks PASS; API production/test typechecks PASS, including final optional-grant logic. Workspace lint PASS with only seven existing dashboard warnings. Patient app178/178, web14/14 and generated SDK12/12 PASS; web production build and SDK build PASS. Full official OpenAPI exporter/client generation completed; final runtime equality and intake unit suites13/13 PASS.
+- Mobile390px and desktop1440px browser flows PASS: registration prefill, incomplete validation, multiline declarations, partial save, optional skip, review/completion, access-token expiry refresh, no consent requests, no horizontal overflow or JavaScript errors. Screenshots visually reviewed. Final loader additionally avoids refetching on token rotation.
+- Real PostgreSQL entry/appointments19/19 PASS; pure entry/domain/intake/home projection23/23 PASS. New self-report regression covers no configured policy/consent, null clinical sex, exact idempotency and ownership. Final no-policy rerun pending after optional-grant compatibility adjustment.
+- Full normal API sweep: reminder3/3, then526 passed/8 failed/527 explicitly skipped across142 files. Failures were isolated to five appointment fixture collisions, stale home-projection expectation, HTTP completion status and OpenAPI regeneration; their corrected targeted reruns passed. No full-green normal-suite claim is made from that intermediate run.
+- Broad isolated assessment/program/care sweep passed413 tests and exposed eight failures in four suites. Targeted rerun passed couple-assessment and admin-purpose suites; journey fixture independence was corrected. Final journey/custom-delivery checks pending. Local Docker CLI stopped responding, so final disposable PostgreSQL checks use a temporary loopback55419 forward to the configured local server, freshly created allowlisted test databases and unconditional owned-database cleanup; no application database is used by these tests.
+- Production audit exits0 at high threshold: no high/critical vulnerabilities (five low/nine moderate remain). Bounded Zod collection exploit now rejects before parsing10,000 children; resolver/auth controls pass. Graphify AST update completed.
+
+Gate: final targeted checks and hosted PR rerun pending; no merge/deployment claim. F12-FE01 remains REWORK/unchecked.
+
+Final local review gate: PASS. Journey15/15 and custom-program-delivery23/23 pass on separate newly migrated disposable databases; the latter includes policy retirement/recompletion, exact existing-grant reference, observed row-lock withdrawal and lock-order checks. Couple/admin-purpose targeted rerun also passed (35 combined cases). Fresh patient-entry13/13 passes after optional-grant compatibility, proving no-policy completion still succeeds. Final app types and onboarding14/14 pass; runtime contract/intake units13/13 pass. All owned disposable databases and loopback forwarding were removed. Initial broad-suite failures are resolved by the recorded targeted reruns; hosted clean full CI remains the final shared-dev gate. No timeout budget, SQL clinical authority, global patient gate or audit threshold was weakened.
+
+### PR29 hosted wallet fixture correction (2026-10-24)
+
+Hosted `8643f17`: all four artifact jobs, release-contract and security PASS; SDK12/web14/app178/dashboard163, reminders3 and normal API521 tests PASS. Verify then stopped at three wallet HTTP403 failures. Those fixtures lacked initial-registration completion, so the entry guard correctly denied them before wallet validation/controller execution. The old isolated media cart/wishlist fixture had the same omission and would run later in CI.
+
+Reused `createCompleteTestPatient` in wallet and product-image fixtures; removed duplicate profile insertion from wallet's optional completed-medical-intake setup. Entry enforcement, wallet/booking/financial logic, production files, database schema and test assertions are unchanged. Targeted fresh disposable PostgreSQL: wallet15/15 and product-image/content49/49 PASS. API test typecheck and diff whitespace check PASS; Graphify AST update completed. Test databases/temporary loopback forward removed; primary application data untouched. Same F12-FE01 corrective continuation; broader task remains REWORK and hosted rerun is the next gate. No next batch started.

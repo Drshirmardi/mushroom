@@ -18,7 +18,7 @@ describe("patient directory API", () => {
     await getPatientAvailability("token", "offering-1", "2026-09-01", "2026-09-07");
     const requests = fetchMock.mock.calls.map(([request]) => request as Request);
     expect(requests.map((request) => new URL(request.url).pathname)).toEqual(["/v1/directory/doctors", "/v1/directory/doctors/doctor-1", "/v1/directory/doctor-services/offering-1/availability"]);
-    expect(new URL(requests[2].url).searchParams).toMatchObject(new URLSearchParams({ fromDate: "2026-09-01", toDate: "2026-09-07" }));
+    expect(Object.fromEntries(new URL(requests[2].url).searchParams)).toEqual({ fromDate: "2026-09-01", toDate: "2026-09-07", page: "1", pageSize: "100" });
     expect(requests.every((request) => request.headers.get("authorization") === "Bearer token")).toBe(true);
   });
 

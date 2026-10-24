@@ -2,11 +2,9 @@ export const REQUIRED_ONBOARDING_FIELDS = [
   'firstName',
   'lastName',
   'birthDate',
-  'sexAtBirth',
   'allergyReport',
   'chronicConditionReport',
   'currentMedicationReport',
-  'activeCurrentConsent',
 ] as const;
 
 export type RequiredOnboardingField = (typeof REQUIRED_ONBOARDING_FIELDS)[number];
@@ -180,43 +178,29 @@ export const evaluateOnboarding = (
   requirements: OnboardingRequirements,
 ): OnboardingEvaluation => {
   const missingFields = REQUIRED_ONBOARDING_FIELDS.filter((field) => {
-    if (field === 'activeCurrentConsent') return !requirements.activeCurrentConsent;
     return !isAnswered(requirements[field]);
   });
   const profileMissing = missingFields.some((field) => field === 'firstName' || field === 'lastName');
-  const medicalMissing = missingFields.some((field) => !['firstName', 'lastName', 'activeCurrentConsent'].includes(field));
+  const medicalMissing = missingFields.some((field) => !['firstName', 'lastName'].includes(field));
   const blockerCodes: OnboardingBlockerCode[] = [];
   if (profileMissing) blockerCodes.push('PROFILE_FIELDS_INCOMPLETE');
-  if (!requirements.consentPolicyAvailable) blockerCodes.push('CONSENT_POLICY_NOT_AVAILABLE');
-  else if (!requirements.activeCurrentConsent) blockerCodes.push('CONSENT_REQUIRED');
   if (medicalMissing) blockerCodes.push('MEDICAL_INTAKE_INCOMPLETE');
 
   const requirementsSatisfied = missingFields.length === 0;
   const completionCurrent = requirements.submissionState === 'COMPLETE'
     && requirements.currentRevision > 0
-    && requirements.currentRevision === requirements.completedRevision
-    && requirements.completedConsentRecordId !== null
-    && requirements.completedConsentRecordId === requirements.activeConsentRecordId;
+    && requirements.currentRevision === requirements.completedRevision;
   const isComplete = requirementsSatisfied && completionCurrent;
   const state: OnboardingState = isComplete
     ? 'COMPLETE'
     : requirements.currentRevision === 0 && !requirements.firstName && !requirements.lastName
-      && !requirements.hasConsentDecision
       ? 'NOT_STARTED'
       : 'IN_PROGRESS';
   const nextAction: OnboardingNextAction = profileMissing
     ? 'COMPLETE_PROFILE'
-    : !requirements.consentPolicyAvailable
-      ? 'CONSENT_UNAVAILABLE'
-      : !requirements.activeCurrentConsent
-        ? 'REVIEW_CONSENT'
-        : medicalMissing && requirements.currentRevision === 0
-          ? 'START_MEDICAL_INTAKE'
-          : medicalMissing
-            ? 'CONTINUE_MEDICAL_INTAKE'
-          : !completionCurrent
-            ? 'COMPLETE_ONBOARDING'
-            : 'NONE';
+    : medicalMissing
+      ? requirements.currentRevision === 0 ? 'START_MEDICAL_INTAKE' : 'CONTINUE_MEDICAL_INTAKE'
+      : !completionCurrent ? 'COMPLETE_ONBOARDING' : 'NONE';
 
   return {
     state,

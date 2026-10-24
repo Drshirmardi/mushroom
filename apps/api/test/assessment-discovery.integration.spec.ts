@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -25,7 +26,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment d
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
     const role = await db.role.findUniqueOrThrow({ where: { code: 'PATIENT' } });
     await db.userRole.create({ data: { userId: auth.userId, roleId: role.id } });
-    const profile = await db.patientProfile.create({ data: { userId: auth.userId, clinicId } });
+    const profile = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
     return { ...auth, patientId: profile.id };
   }
   const request = (p: { token: string }, method: 'GET' | 'POST' | 'PUT', path: string, payload?: object) => app.inject({ method, url: `/v1/${path}`, headers: { authorization: `Bearer ${p.token}`, origin: 'http://localhost:3000', 'idempotency-key': randomUUID(), ...(payload ? { 'content-type': 'application/json' } : {}) }, ...(payload ? { payload: JSON.stringify(payload) } : {}) });

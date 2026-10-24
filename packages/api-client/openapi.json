@@ -11822,7 +11822,7 @@
             }
           },
           "403": {
-            "description": "Current consent is required.",
+            "description": "Patient access is required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11909,7 +11909,7 @@
             }
           },
           "403": {
-            "description": "Current consent is required.",
+            "description": "Patient access is required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -16118,11 +16118,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -16133,11 +16129,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -31163,6 +31155,9 @@
           "required": {
             "type": "boolean"
           },
+          "assessmentRequired": {
+            "type": "boolean"
+          },
           "phase": {
             "type": "string",
             "enum": [
@@ -31195,6 +31190,14 @@
             "type": "string",
             "nullable": true
           },
+          "gender": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "FEMALE",
+              "MALE"
+            ]
+          },
           "birthDate": {
             "type": "string",
             "nullable": true,
@@ -31203,12 +31206,14 @@
         },
         "required": [
           "required",
+          "assessmentRequired",
           "phase",
           "assessmentVersionId",
           "assessmentTitle",
           "submissionId",
           "firstName",
           "lastName",
+          "gender",
           "birthDate"
         ]
       },
@@ -31223,6 +31228,13 @@
             "type": "string",
             "maxLength": 100
           },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "FEMALE",
+              "MALE"
+            ]
+          },
           "birthDate": {
             "type": "string",
             "format": "date"
@@ -31231,6 +31243,7 @@
         "required": [
           "firstName",
           "lastName",
+          "gender",
           "birthDate"
         ]
       },

@@ -18,4 +18,11 @@ describe('Entry boundaries', () => {
     expect(entryRequestAllowed('POST', '/v1/patients/me/entry/profile', null)).toBe(true);
     expect(entryRequestAllowed('GET', '/v1/patients/me/entry/profile/other', null)).toBe(false);
   });
+  it('keeps exact account security operations usable before entry without opening patient features', () => {
+    expect(entryRequestAllowed('GET', '/v1/me', null)).toBe(true);
+    expect(entryRequestAllowed('PATCH', '/v1/me', null)).toBe(true);
+    expect(entryRequestAllowed('POST', '/v1/me/change-password', null)).toBe(true);
+    expect(entryRequestAllowed('POST', '/v1/me/change-password/other', null)).toBe(false);
+    expect(entryRequestAllowed('GET', '/v1/patients/me/cart', null)).toBe(false);
+  });
 });

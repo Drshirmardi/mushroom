@@ -50,10 +50,10 @@ describe('patient onboarding domain rules', () => {
       submissionState: null, currentRevision: 0, completedRevision: null,
     });
     expect(result).toMatchObject({
-      state: 'IN_PROGRESS', requiredCount: 8, answeredRequiredCount: 2,
-      missingFields: ['birthDate', 'sexAtBirth', 'allergyReport', 'chronicConditionReport', 'currentMedicationReport', 'activeCurrentConsent'],
-      blockerCodes: ['CONSENT_REQUIRED', 'MEDICAL_INTAKE_INCOMPLETE'],
-      nextAction: 'REVIEW_CONSENT',
+      state: 'IN_PROGRESS', requiredCount: 6, answeredRequiredCount: 2,
+      missingFields: ['birthDate', 'allergyReport', 'chronicConditionReport', 'currentMedicationReport'],
+      blockerCodes: ['MEDICAL_INTAKE_INCOMPLETE'],
+      nextAction: 'START_MEDICAL_INTAKE',
     });
   });
 
@@ -73,7 +73,7 @@ describe('patient onboarding domain rules', () => {
       .toMatchObject({ state: 'COMPLETE', isComplete: true, nextAction: 'NONE' });
   });
 
-  it('requires completion against the currently active consent grant', () => {
+  it('keeps self-reported completion independent of a changed sharing consent', () => {
     const result = evaluateOnboarding({
       firstName: 'سارا', lastName: 'رضایی', birthDate: '1995-01-01', sexAtBirth: 'UNKNOWN',
       allergyReport: { status: 'NONE', items: [] }, chronicConditionReport: { status: 'NONE', items: [] },
@@ -81,7 +81,7 @@ describe('patient onboarding domain rules', () => {
       consentPolicyAvailable: true, activeConsentRecordId: 'new-grant', completedConsentRecordId: 'old-grant',
       hasConsentDecision: true, submissionState: 'COMPLETE', currentRevision: 2, completedRevision: 2,
     });
-    expect(result).toMatchObject({ state: 'IN_PROGRESS', nextAction: 'COMPLETE_ONBOARDING' });
+    expect(result).toMatchObject({ state: 'COMPLETE', nextAction: 'NONE' });
   });
 
   it('distinguishes starting medical intake from continuing it and started consent state', () => {

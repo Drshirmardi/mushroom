@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -21,7 +22,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('custom reque
   async function actor(role: 'ADMIN'|'DOCTOR'|'PATIENT', live = true) {
     const a = await createTestAccessToken(db, app.get(AccessTokenService), [role]); if (live) await db.userRole.create({ data: { userId: a.userId, roleId: (await db.role.findUniqueOrThrow({ where: { code: role } })).id } });
     if (role !== 'PATIENT') await db.clinicalClinicAccess.create({ data: { userId: a.userId, clinicId } });
-    const profile = role === 'PATIENT' ? await db.patientProfile.create({ data: { userId: a.userId, clinicId } }) : null;
+    const profile = role === 'PATIENT' ? await createCompleteTestPatient(db, { data: { userId: a.userId, clinicId } }) : null;
     const d = role === 'DOCTOR' ? await db.doctorProfile.create({ data: { userId: a.userId, clinicId, displayName: 'Synthetic named professional', isActive: true } }) : null;
     if (d) { const name = randomUUID(), specialty = await db.specialty.create({ data: { clinicId, name, canonicalName: name, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } }); await db.doctorSpecialty.create({ data: { clinicId, doctorId: d.id, specialtyId: specialty.id } }); await db.doctorProfile.update({ where: { id: d.id }, data: { publicationStatus: 'PUBLISHED', publishedAt: new Date() } }); }
     return { ...a, profile, doctorId: d?.id };

@@ -1,3 +1,4 @@
+import { completeTestPatientEntry, clearTestPatientEntries } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -33,7 +34,7 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     await prisma.patientConsentRecord.deleteMany({ where: { patient: { userId: { in: users } } } });
     await prisma.patientMedicalIntake.deleteMany({ where: { patient: { userId: { in: users } } } });
     await prisma.userProfile.deleteMany({ where: { userId: { in: users } } });
-    await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
+    await clearTestPatientEntries(prisma, { userId: { in: users } }); await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.user.deleteMany({ where: { id: { in: users } } });
     if (isolatedDoctorServiceIds.size) await prisma.appointmentHold.deleteMany({ where: { doctorServiceId: { in: [...isolatedDoctorServiceIds] } } });
     if (isolatedDoctorServiceIds.size) await prisma.doctorService.deleteMany({ where: { id: { in: [...isolatedDoctorServiceIds] } } });
@@ -55,9 +56,9 @@ describe('patient appointment create (PostgreSQL API integration)', () => {
     const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
     const policy = await prisma.consentPolicyVersion.findFirstOrThrow({ where: { clinicId: clinic.id, policyKey: 'MEDICAL_INTAKE_PROCESSING', locale: 'fa-IR', status: 'ACTIVE' } });
     const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }); userIds.add(user.id);
-    const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId: clinic.id } });
+    const profile = await prisma.patientProfile.create({ data: { userId: user.id, clinicId: clinic.id } }); await completeTestPatientEntry(prisma, user.id);
     if (complete) {
-      await prisma.userProfile.create({ data: { userId: user.id, firstName: 'Test', lastName: 'Patient' } });
+      await prisma.userProfile.update({ where: { userId: user.id }, data: { firstName: 'Test', lastName: 'Patient' } });
       const consent = await prisma.patientConsentRecord.create({ data: { patientId: profile.id, policyVersionId: policy.id, contentHash: policy.contentHash, acceptedByUserId: user.id, acceptanceIdempotencyKey: randomUUID() } });
       const intake = await prisma.patientMedicalIntake.create({ data: { patientId: profile.id, clinicId: clinic.id, currentRevisionNumber: 1, completedRevisionNumber: 1, submissionState: 'COMPLETE' } });
       await prisma.patientMedicalIntakeRevision.create({ data: { intakeId: intake.id, revisionNumber: 1, assignedSchemaVersion: 1, revisionState: 'COMPLETE', birthDate: new Date('1990-01-01T00:00:00Z'), sexAtBirth: 'FEMALE', allergyReport: { status: 'NONE', items: [] }, chronicConditionReport: { status: 'UNKNOWN', items: [] }, currentMedicationReport: { status: 'NONE', items: [] }, completedAt: new Date(), completedConsentRecordId: consent.id, mutationOperation: 'COMPLETE', mutationKey: randomUUID(), recordingMode: 'PATIENT_ENTRY', reportedPatientId: profile.id, payloadHash: randomUUID().replaceAll('-', '').repeat(2) } });

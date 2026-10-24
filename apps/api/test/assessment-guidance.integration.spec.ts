@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -23,7 +24,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment e
   async function actor(role: 'ADMIN' | 'DOCTOR' | 'PATIENT', membership = true, liveRole = true) {
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), [role]);
     if (liveRole) await db.userRole.create({ data: { userId: auth.userId, roleId: (await db.role.findUniqueOrThrow({ where: { code: role } })).id } });
-    if (role === 'PATIENT') await db.patientProfile.create({ data: { userId: auth.userId, clinicId } });
+    if (role === 'PATIENT') await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
     else if (membership) await db.clinicalClinicAccess.create({ data: { userId: auth.userId, clinicId } });
     if (role === 'DOCTOR') {
       const key = randomUUID(); const specialty = await db.specialty.create({ data: { clinicId, name: key, canonicalName: key, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
