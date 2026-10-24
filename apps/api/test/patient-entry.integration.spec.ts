@@ -162,4 +162,27 @@ describe.skipIf(process.env.PATIENT_ENTRY_TEST_ISOLATED !== '1')('required patie
     expect((await request(p, 'POST', '/v1/patients/me/entry/profile', { firstName: 'Synthetic', lastName: 'Person', gender: 'MALE', birthDate: '1990-01-01' })).json().phase).toBe('UNAVAILABLE');
     expect((await policy(false, temporary.id)).statusCode).toBe(200); expect((await status(p)).json().required).toBe(false);
   });
+  it('saves and completes owned self-reported health without consent configuration or a repeated gender answer', async () => {
+    const clinic = await db.clinic.create({ data: { name: 'Synthetic independent health', status: 'INACTIVE' } });
+    const p = await actor();
+    await db.patientProfile.update({ where: { id: p.patientId }, data: { clinicId: clinic.id } });
+    const profile = await request(p, 'POST', '/v1/patients/me/entry/profile', { firstName: 'Synthetic', lastName: 'Health', gender: 'FEMALE', birthDate: '1990-01-01' });
+    expect(profile.statusCode, profile.body).toBe(200);
+    const body = { expectedRevision: 0, birthDate: profile.json().birthDate, allergyReport: { status: 'NONE', items: [] }, chronicConditionReport: { status: 'UNKNOWN', items: [] }, currentMedicationReport: { status: 'PRESENT', items: ['Synthetic medication'] } };
+    const saved = await request(p, 'PUT', '/v1/patients/me/medical-intake', body);
+    expect(saved.statusCode, saved.body).toBe(200);
+    const key = randomUUID();
+    const complete = () => app.inject({ method: 'POST', url: '/v1/patients/me/medical-intake/complete', headers: { ...headers(p.token), 'idempotency-key': key }, payload: { expectedRevision: saved.json().currentRevision } });
+    const completed = await complete(); expect(completed.statusCode, completed.body).toBe(200);
+    expect(completed.json()).toMatchObject({ submissionState: 'COMPLETE', snapshot: { sexAtBirth: null } });
+    expect((await complete()).json().currentRevision).toBe(completed.json().currentRevision);
+    const summary = await request(p, 'GET', '/v1/patients/me/onboarding-status');
+    expect(summary.json()).toMatchObject({ isComplete: true, missingFields: [], blockerCodes: [], activeConsentRecordId: null });
+    expect(await db.patientConsentRecord.count({ where: { patientId: p.patientId } })).toBe(0);
+    expect(await db.consentPolicyVersion.count({ where: { clinicId: clinic.id } })).toBe(0);
+    const revision = await db.patientMedicalIntakeRevision.findFirstOrThrow({ where: { intake: { patientId: p.patientId }, revisionState: 'COMPLETE' } });
+    expect(revision.completedConsentRecordId).toBeNull();
+    const other = await actor();
+    expect((await request(other, 'GET', '/v1/patients/me/medical-intake')).statusCode).toBe(403);
+  });
 });

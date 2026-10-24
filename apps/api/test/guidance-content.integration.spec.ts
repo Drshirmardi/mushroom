@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -28,7 +29,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('approved edu
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), [role]);
     if (liveRole) await db.userRole.create({ data: { userId: auth.userId, roleId: (await db.role.findUniqueOrThrow({ where: { code: role } })).id } });
     if (membership && role !== 'PATIENT') await db.clinicalClinicAccess.create({ data: { userId: auth.userId, clinicId } });
-    if (role === 'PATIENT' && profile) await db.patientProfile.create({ data: { userId: auth.userId, clinicId } });
+    if (role === 'PATIENT' && profile) await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
     if (role === 'DOCTOR' && profile) {
       const suffix = randomUUID();
       const specialty = await db.specialty.create({ data: { clinicId, name: `Synthetic ${suffix}`, canonicalName: `synthetic ${suffix}`, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
@@ -125,7 +126,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('approved edu
     const other = await db.clinic.create({ data: { name: 'Synthetic foreign guidance', status: 'INACTIVE' } }); const foreign = await article(other.id);
     expect((await req('POST', 'admin/guidance-content/versions', admin, body(foreign.id))).statusCode).toBe(404);
     const row = await create(); await approve(row);
-    const outsider = await actor('PATIENT', true, false); await db.patientProfile.create({ data: { userId: outsider.userId, clinicId: other.id } });
+    const outsider = await actor('PATIENT', true, false); await createCompleteTestPatient(db, { data: { userId: outsider.userId, clinicId: other.id } });
     expect((await req('GET', `patients/me/guidance-content/${row.id}`, outsider)).statusCode).toBe(404); expect((await req('GET', `patients/me/guidance-content/${row.id}`, await actor('PATIENT', true, false))).statusCode).toBe(404);
     expect((await req('GET', `clinical/guidance-content/${randomUUID()}`, doctor)).statusCode).toBe(404);
   });

@@ -1,3 +1,4 @@
+import { completeTestPatientEntry } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -35,7 +36,7 @@ describe('Mezaj result API (PostgreSQL integration)', () => {
     const role = await prisma.role.findUniqueOrThrow({ where: { code: 'PATIENT' } });
     const user = await prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } });
     userIds.add(user.id);
-    const patient = await prisma.patientProfile.create({ data: { userId: user.id, clinicId: clinic.id } });
+    const patient = await prisma.patientProfile.create({ data: { userId: user.id, clinicId: clinic.id } }); await completeTestPatientEntry(prisma, user.id);
     await prisma.userRole.create({ data: { userId: user.id, roleId: role.id } });
     const version = await prisma.assessmentVersion.create({ data: { clinicId: clinic.id, assessmentKey: 'MEZAJ', locale: `x-${randomUUID().replaceAll('-', '').slice(0, 12)}`, versionNumber: 1_000_000_000 + Math.floor(Math.random() * 1_000_000_000), title: 'مزاج', status: 'PUBLISHED', publishedAt: new Date(), contentHash: 'a'.repeat(64), structure: { schemaVersion: 1, sections: [{ id: 's', questions: [{ id: 'q', type: 'SINGLE_CHOICE', required: true, options: [{ id: 'warm', score: 5 }, { id: 'cold', score: 1 }] }] }], resultBands: [{ id: 'safravi', title: 'صفراوی', minInclusive: 5 }, { id: 'sodavi', title: 'سوداوی', minInclusive: 0, maxExclusive: 5 }] } } });
     versionIds.add(version.id);

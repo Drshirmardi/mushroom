@@ -3,7 +3,7 @@ import { homeJourney, type JourneySummary } from '../src/modules/patients/journe
 
 function summary(complete = true): JourneySummary {
   return {
-    evaluatedAt: new Date(), onboarding: { state: complete ? 'COMPLETE' : 'IN_PROGRESS', isComplete: complete, requiredCount: 8, answeredRequiredCount: complete ? 8 : 0, missingFields: complete ? [] : ['firstName', 'lastName', 'birthDate', 'sexAtBirth', 'activeCurrentConsent'], blockerCodes: [], nextAction: complete ? 'NONE' : 'COMPLETE_PROFILE' },
+    evaluatedAt: new Date(), onboarding: { state: complete ? 'COMPLETE' : 'IN_PROGRESS', isComplete: complete, requiredCount: 6, answeredRequiredCount: complete ? 6 : 0, missingFields: complete ? [] : ['firstName', 'lastName', 'birthDate', 'allergyReport', 'chronicConditionReport', 'currentMedicationReport'], blockerCodes: [], nextAction: complete ? 'NONE' : 'COMPLETE_PROFILE' },
     bookingEligibility: { eligible: true, reason: 'ELIGIBLE', nextAction: null },
     assessments: { items: [], hasMore: false }, appointments: { items: [], hasMore: false }, pendingPayments: { items: [], hasMore: false }, pendingOrders: { items: [], hasMore: false }, treatmentPlans: { items: [], hasMore: false }, coupleLinks: { items: [], hasMore: false }, coupleAssessments: { items: [], hasMore: false }, assessmentPurchases: { items: [], hasMore: false }, programPurchases: { items: [], hasMore: false }, customPrograms: { items: [], hasMore: false }, storeAvailable: true,
   };
@@ -21,9 +21,9 @@ describe('Home setup, status and pending action projection', () => {
     const s = summary(false); s.onboarding.missingFields = ['birthDate'];
     expect(homeJourney(s, sources()).setupSteps[0].state).toBe('CURRENT');
   });
-  it('keeps consent unavailability in the health step instead of final confirmation', () => {
+  it('does not make a separate sharing policy a prerequisite for the health step', () => {
     const s = summary(false); s.onboarding.missingFields = []; s.onboarding.blockerCodes = ['CONSENT_POLICY_NOT_AVAILABLE'];
-    expect(homeJourney(s, sources()).setupSteps[1].state).toBe('CURRENT');
+    expect(homeJourney(s, sources()).setupSteps.map(step => step.state)).toEqual(['COMPLETE', 'COMPLETE', 'CURRENT']);
   });
   it('does not turn completed results, completed plans or available content into pending tasks', () => {
     const s = summary(); s.treatmentPlans.items = [{ id: 'completed', state: 'COMPLETED', updatedAt: new Date() }];

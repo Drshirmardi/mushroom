@@ -23,3 +23,11 @@
 
 - [x] T008 Run focused isolated PostgreSQL integration and rule tests, API/app typechecks, generated contract parity, and targeted browser journey for no-assessment and required-assessment flows
 - [x] T009 Review diff for patient/clinic/source ownership, assessment cutoff immutability, consent separation, accessibility, protected-route behavior, and existing changes; record evidence and handoff under `plan/logs/phase-12.md` and synchronize `plan/STATUS.md`
+
+## Owner-requested PR29 follow-up (2026-10-24)
+
+- [x] T010 Remediate the production Zod audit blocker while preserving authentication validation compatibility.
+- [x] T011 Align protected-feature patient fixtures with complete registration and preserve exact account-security route access.
+- [x] T012 Replace health onboarding with clear health/lifestyle/review steps, existing registration summary, reusable birth date and retained draft answers; remove consent capture and policy fetches.
+- [x] T013 Implement consent-independent patient-authored intake completion with a forward constraint migration; preserve independent third-party/purchase/care authority (ADR-0041).
+- [ ] T014 Verify complete API and relevant isolated suites, app/browser flows, migration/data preservation and hosted PR checks; record evidence and push to PR29.

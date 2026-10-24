@@ -18213,7 +18213,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
-            /** @description Current consent is required. */
+            /** @description Patient access is required. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -18276,7 +18276,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
-            /** @description Current consent is required. */
+            /** @description Patient access is required. */
             403: {
                 headers: {
                     [name: string]: unknown;

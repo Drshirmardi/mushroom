@@ -34,9 +34,6 @@ export type SelfOnboardingStatus = ReturnType<typeof evaluateOnboarding> & {
   updatedAt: Date | null;
 };
 
-const PROFILE_POLICY_KEY = 'MEDICAL_INTAKE_PROCESSING';
-const PROFILE_POLICY_LOCALE = 'fa-IR';
-
 @Injectable()
 export class SelfProfileService {
   constructor(private readonly prisma: PrismaService) {}
@@ -69,23 +66,9 @@ export class SelfProfileService {
 
   async getOnboardingStatus(userId: string, db: Prisma.TransactionClient = this.prisma): Promise<SelfOnboardingStatus> {
     const patient = await this.ensurePatientProfile(userId, db);
-    const [intake, activePolicy, hasConsentDecision] = await Promise.all([
-      db.patientMedicalIntake.findUnique({
-        where: { patientId: patient.id },
-      }),
-      db.consentPolicyVersion.findFirst({
-        where: {
-          clinicId: patient.clinicId,
-          policyKey: PROFILE_POLICY_KEY,
-          locale: PROFILE_POLICY_LOCALE,
-          status: 'ACTIVE',
-        },
-        select: { id: true },
-      }),
-      db.patientConsentRecord.findFirst({
-        where: { patientId: patient.id, policyVersion: { policyKey: PROFILE_POLICY_KEY } },
-        select: { id: true },
-      }),
+    const [intake, entry] = await Promise.all([
+      db.patientMedicalIntake.findUnique({ where: { patientId: patient.id } }),
+      db.patientEntry.findUnique({ where: { patientId: patient.id }, select: { birthDate: true } }),
     ]);
     const currentRevision = intake && intake.currentRevisionNumber > 0
       ? await db.patientMedicalIntakeRevision.findUnique({
@@ -97,32 +80,22 @@ export class SelfProfileService {
         },
       })
       : null;
-    const activeConsent = activePolicy
-      ? await db.patientConsentRecord.findFirst({
-        where: {
-          patientId: patient.id,
-          policyVersionId: activePolicy.id,
-          withdrawnAt: null,
-        },
-        select: { id: true },
-      })
-      : null;
     const profile = patient.user.userProfile;
     const revisionNumber = intake?.currentRevisionNumber ?? 0;
     const completedRevision = intake?.completedRevisionNumber ?? null;
     const evaluation = evaluateOnboarding({
       firstName: profile?.firstName,
       lastName: profile?.lastName,
-      birthDate: currentRevision?.birthDate?.toISOString().slice(0, 10),
+      birthDate: (currentRevision?.birthDate ?? entry?.birthDate)?.toISOString().slice(0, 10),
       sexAtBirth: currentRevision?.sexAtBirth,
       allergyReport: currentRevision?.allergyReport as never,
       chronicConditionReport: currentRevision?.chronicConditionReport as never,
       currentMedicationReport: currentRevision?.currentMedicationReport as never,
-      activeCurrentConsent: activeConsent !== null,
-      activeConsentRecordId: activeConsent?.id ?? null,
+      activeCurrentConsent: false,
+      activeConsentRecordId: null,
       completedConsentRecordId: currentRevision?.completedConsentRecordId ?? null,
-      hasConsentDecision: hasConsentDecision !== null,
-      consentPolicyAvailable: activePolicy !== null,
+      hasConsentDecision: false,
+      consentPolicyAvailable: false,
       submissionState: intake?.submissionState ?? null,
       currentRevision: revisionNumber,
       completedRevision,
@@ -136,8 +109,8 @@ export class SelfProfileService {
       evaluatedSchemaVersion: intake?.assignedSchemaVersion ?? 1,
       currentRevision: revisionNumber,
       completedRevision,
-      currentPolicyVersionId: activePolicy?.id ?? null,
-      activeConsentRecordId: activeConsent?.id ?? null,
+      currentPolicyVersionId: null,
+      activeConsentRecordId: null,
       updatedAt: this.latestUpdate(profile?.updatedAt ?? null, intake?.updatedAt ?? null),
     };
   }

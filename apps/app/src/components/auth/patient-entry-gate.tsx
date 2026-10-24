@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useCallback, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthSessionSnapshot, useOptionalAuthSession } from './session-gate';
 import { getPatientEntry, type PatientEntryStatus } from '@/lib/patient-entry-api';
@@ -13,9 +13,12 @@ export function PatientEntryGate({ children }: { children: ReactNode }) {
   const session = useOptionalAuthSession(); const snapshot = useAuthSessionSnapshot();
   const pathname = usePathname(); const router = useRouter();
   const token = session?.authentication.accessToken;
+  const userId = session?.authentication.user.id;
+  const currentToken = useRef(token);
+  useEffect(() => { currentToken.current = token; }, [token]);
   const roles = session?.authentication.user.roles;
   const patient = !!roles?.includes('PATIENT') && !roles.some(role => ['ADMIN', 'DOCTOR', 'STAFF'].includes(role));
-  const resource = usePatientResource(useCallback(() => token && patient ? getPatientEntry(token) : Promise.resolve(null), [token, patient]));
+  const resource = usePatientResource(useCallback(() => userId && currentToken.current && patient ? getPatientEntry(currentToken.current) : Promise.resolve(null), [userId, patient]));
   const required = resource.data?.required;
   useEffect(() => {
     if (!patient && session && pathname === '/welcome') { router.replace('/'); return; }

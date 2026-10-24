@@ -4,6 +4,8 @@ import { PatientEntryService } from './patient-entry.service';
 
 export function entryRequestAllowed(method: string, path: string, submissionId: string | null) {
   if (path.startsWith('/v1/auth/')) return true;
+  if (['GET', 'PATCH'].includes(method) && path === '/v1/me') return true;
+  if (method === 'POST' && path === '/v1/me/change-password') return true;
   if (method === 'GET' && path === '/v1/patients/me/entry') return true;
   if (method === 'POST' && ['profile', 'start', 'complete'].some(action => path === `/v1/patients/me/entry/${action}`)) return true;
   if (!submissionId) return false;

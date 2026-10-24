@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -33,7 +34,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment r
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
     const role = await db.role.findUniqueOrThrow({ where: { code: 'PATIENT' } });
     await db.userRole.create({ data: { userId: auth.userId, roleId: role.id } });
-    const patient = await db.patientProfile.create({ data: { userId: auth.userId, clinicId } });
+    const patient = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
     const version = await db.assessmentVersion.create({ data: {
       clinicId, assessmentKey, versionNumber: 1, locale: `x-${randomUUID().replaceAll('-', '').slice(0, 12)}`,
       title: 'Synthetic assessment', contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(),

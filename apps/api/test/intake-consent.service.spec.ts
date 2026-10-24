@@ -15,26 +15,6 @@ const patient = {
 };
 
 describe('PatientIntakeService', () => {
-  it('does not persist a draft before it proves current consent', async () => {
-    const create = vi.fn();
-    const tx = {
-      $queryRaw: vi.fn(),
-      patientProfile: { findUnique: vi.fn().mockResolvedValue(patient) },
-      consentPolicyVersion: { findFirst: vi.fn().mockResolvedValue(null) },
-      patientMedicalIntake: { findUnique: vi.fn(), create },
-    };
-    const prisma = { $transaction: (work: (value: typeof tx) => unknown) => work(tx) };
-    const service = new PatientIntakeService(prisma as never);
-
-    await expect(service.saveDraft(audit.actorUserId, {
-      expectedRevision: 0,
-      birthDate: '1990-01-01',
-    }, audit)).rejects.toMatchObject({
-      response: { code: 'CONSENT_POLICY_NOT_AVAILABLE' },
-    });
-    expect(create).not.toHaveBeenCalled();
-  });
-
   it('canonicalizes declaration text before computing a draft snapshot', () => {
     const service = new PatientIntakeService({} as never);
     const snapshot = (service as unknown as { canonicalSnapshot(value: unknown): Record<string, unknown> })

@@ -1,3 +1,4 @@
+import { createCompleteTestPatient, clearTestPatientEntries } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Logger } from '@nestjs/common';
@@ -34,7 +35,7 @@ describe.skipIf(process.env.PRODUCT_MEDIA_TEST_ISOLATED !== '1')('Product Detail
     admin = await createTestAccessToken(prisma, tokens, ['ADMIN']); staff = await createTestAccessToken(prisma, tokens, ['STAFF']); patient = await createTestAccessToken(prisma, tokens, ['PATIENT']);
     clinicId = (await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } })).id;
     categoryId = (await prisma.commerceCategory.create({ data: { clinicId, name: 'Disposable content category', slug: `pd-${randomUUID()}` } })).id;
-    await prisma.patientProfile.create({ data: { userId: patient.userId, clinicId } });
+    await createCompleteTestPatient(prisma, { data: { userId: patient.userId, clinicId } });
   }, 30_000);
   afterEach(async () => {
     if (!prisma) return;
@@ -55,7 +56,7 @@ describe.skipIf(process.env.PRODUCT_MEDIA_TEST_ISOLATED !== '1')('Product Detail
   afterAll(async () => {
     if (prisma) {
       const profile = await prisma.patientProfile.findUnique({ where: { userId: patient.userId } });
-      if (profile) { await prisma.commerceCart.deleteMany({ where: { patientId: profile.id } }); await prisma.patientProfile.delete({ where: { id: profile.id } }); }
+      if (profile) { await prisma.commerceCart.deleteMany({ where: { patientId: profile.id } }); await clearTestPatientEntries(prisma, { id: profile.id }); await prisma.patientProfile.delete({ where: { id: profile.id } }); }
       await prisma.commerceCategory.delete({ where: { id: categoryId } });
       for (const principal of [admin, staff, patient]) { await prisma.auditEvent.deleteMany({ where: { actorUserId: principal.userId } }); await prisma.session.deleteMany({ where: { userId: principal.userId } }); await prisma.user.delete({ where: { id: principal.userId } }); }
     }

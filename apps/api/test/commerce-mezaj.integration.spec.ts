@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -24,7 +25,7 @@ describe.skipIf(process.env.STORE_MEZAJ_TEST_ISOLATED !== '1')('ordered Mezaj co
   async function patient() {
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
     const role = await db.role.findUniqueOrThrow({ where: { code: 'PATIENT' } }); await db.userRole.create({ data: { userId: auth.userId, roleId: role.id } });
-    const profile = await db.patientProfile.create({ data: { userId: auth.userId, clinicId } }); return { auth, profile };
+    const profile = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } }); return { auth, profile };
   }
   async function result(i: number, who?: Awaited<ReturnType<typeof patient>>, version?: Awaited<ReturnType<typeof source>>, tamper = false) {
     who ??= await patient(); version ??= await db.assessmentVersion.findUniqueOrThrow({ where: { id: versionId } });

@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -62,7 +63,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
     const published = await req('POST', `admin/assessments/${v.id}/publish`, admin);
     expect(published.statusCode).toBe(201); expect(published.json().publishedByUserId).toBe(admin.userId);
     expect(await db.assessmentProtocolReview.count({ where: { assessmentVersionId: v.id } })).toBe(0);
-    const patient = await actor('PATIENT'); await db.patientProfile.create({ data: { userId: patient.userId, clinicId } });
+    const patient = await actor('PATIENT'); await createCompleteTestPatient(db, { data: { userId: patient.userId, clinicId } });
     const started = await req('POST', `assessments/${v.id}/submissions`, patient); expect(started.statusCode).toBe(201); const attempt = started.json();
     const choices = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3];
     const answers = Object.fromEntries(definition.sections.flatMap(s => s.questions).map((q, index) => [q.id, q.options[choices[index]!]!.id]));

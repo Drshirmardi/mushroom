@@ -99,16 +99,14 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
       onboardingState: 'IN_PROGRESS',
       submissionState: null,
       currentRevision: 0,
-      nextAction: 'CONSENT_UNAVAILABLE',
-      blockerCodes: ['CONSENT_POLICY_NOT_AVAILABLE', 'MEDICAL_INTAKE_INCOMPLETE'],
+      nextAction: 'START_MEDICAL_INTAKE',
+      blockerCodes: ['MEDICAL_INTAKE_INCOMPLETE'],
     });
     expect(status.missingFields).toEqual([
       'birthDate',
-      'sexAtBirth',
       'allergyReport',
       'chronicConditionReport',
       'currentMedicationReport',
-      'activeCurrentConsent',
     ]);
   });
 
@@ -185,8 +183,8 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
       submissionState: 'DRAFT',
       currentRevision: 1,
       completedRevision: null,
-      currentPolicyVersionId: policy.id,
-      activeConsentRecordId: consent.id,
+      currentPolicyVersionId: null,
+      activeConsentRecordId: null,
       nextAction: 'COMPLETE_ONBOARDING',
     });
     expect(status.missingFields).toEqual([]);

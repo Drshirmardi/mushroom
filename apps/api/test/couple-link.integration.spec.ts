@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -27,7 +28,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('adult couple
   }
   async function patient(birthDate: Date | null = new Date('1990-01-01T00:00:00Z'), otherClinic = clinicId) {
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
-    const profile = await db.patientProfile.create({ data: { userId: auth.userId, clinicId: otherClinic } });
+    const profile = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId: otherClinic } });
     if (birthDate) {
       const intake = await db.patientMedicalIntake.create({ data: { patientId: profile.id, clinicId: otherClinic, currentRevisionNumber: 1 } });
       await db.patientMedicalIntakeRevision.create({ data: { intakeId: intake.id, revisionNumber: 1, assignedSchemaVersion: 1, revisionState: 'DRAFT', birthDate,

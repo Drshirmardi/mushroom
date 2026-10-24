@@ -17,7 +17,7 @@ type HomeSources = {
 /** Presentation projection only; never changes eligibility, consent or resource authority. */
 export function homeJourney(summary: JourneySummary, sources: HomeSources): JourneyHomeDto {
   const profileComplete = !summary.onboarding.missingFields.some(field => ['firstName', 'lastName', 'birthDate', 'sexAtBirth'].includes(field));
-  const healthComplete = summary.onboarding.missingFields.length === 0 && !summary.onboarding.blockerCodes.includes('CONSENT_POLICY_NOT_AVAILABLE');
+  const healthComplete = summary.onboarding.missingFields.length === 0;
   const complete = [profileComplete, healthComplete, summary.onboarding.isComplete];
   const current = complete.findIndex(done => !done);
   const setupSteps = (['PROFILE', 'HEALTH', 'CONFIRM'] as const).map((code, index) => ({

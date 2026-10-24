@@ -11822,7 +11822,7 @@
             }
           },
           "403": {
-            "description": "Current consent is required.",
+            "description": "Patient access is required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11909,7 +11909,7 @@
             }
           },
           "403": {
-            "description": "Current consent is required.",
+            "description": "Patient access is required.",
             "content": {
               "application/json": {
                 "schema": {
