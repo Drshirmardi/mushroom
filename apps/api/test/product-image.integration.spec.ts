@@ -13,6 +13,7 @@ import { PublicAuthRateLimiter } from '../src/modules/identity/application/ports
 import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
 import { createReleaseAdminTestPrincipal } from './release-admin-test-support';
 import { createTestAccessToken } from './auth-test-support';
+import { createCompleteTestPatient } from './patient-entry-test-support';
 
 describe.skipIf(process.env.PRODUCT_MEDIA_TEST_ISOLATED !== '1')('product media (isolated PostgreSQL + mocked private R2)', () => {
   let app: NestFastifyApplication; let prisma: PrismaService; let storage: ProductImageStorage; let productId: string; let adminToken: string; let staffToken: string; let png: Buffer;
@@ -154,7 +155,7 @@ describe.skipIf(process.env.PRODUCT_MEDIA_TEST_ISOLATED !== '1')('product media 
   });
   it('transfers image metadata to persisted cart and wishlist product DTOs', async () => {
     const image = (await upload()).json(); const tokens = app.get(AccessTokenService); const patient = await createTestAccessToken(prisma, tokens, ['PATIENT']); const product = await prisma.commerceProduct.findUniqueOrThrow({ where: { id: productId }, include: { skus: true } });
-    await prisma.patientProfile.create({ data: { userId: patient.userId, clinicId: product.clinicId } });
+    await createCompleteTestPatient(prisma, { data: { userId: patient.userId, clinicId: product.clinicId } });
     for (const [path, body] of [['cart', { skuId: product.skus[0].id, quantity: 1 }], ['wishlist', { skuId: product.skus[0].id, saved: true }]] as const) {
       const response = await app.inject({ method: 'PUT', url: `/v1/patients/me/${path}`, headers: headers(patient.token), payload: body }); expect(response.statusCode).toBe(200); expect(response.json().items[0].product.image.id).toBe(image.id);
     }

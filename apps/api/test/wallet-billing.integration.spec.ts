@@ -19,6 +19,7 @@ import { PatientAvailabilityService } from '../src/modules/scheduling/patient-av
 import { PatientAppointmentsService } from '../src/modules/appointments/patient-appointments.service';
 import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
 import { createTestAccessToken } from './auth-test-support';
+import { createCompleteTestPatient } from './patient-entry-test-support';
 
 // Immutable financial fixtures are retained until the disposable database is removed.
 describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet/billing (real PostgreSQL, simulated PSP)', () => {
@@ -59,9 +60,8 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
   async function patient(complete = false) {
     const session = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
     sessions.set(session.userId, session.sessionId);
-    const profile = await db.patientProfile.create({ data: { userId: session.userId, clinicId } });
+    const profile = await createCompleteTestPatient(db, { data: { userId: session.userId, clinicId } });
     if (complete) {
-      await db.userProfile.create({ data: { userId: session.userId, firstName: 'Synthetic', lastName: 'Patient' } });
       const policy = await db.consentPolicyVersion.findFirstOrThrow({ where: { clinicId, policyKey: 'MEDICAL_INTAKE_PROCESSING', locale: 'fa-IR', status: 'ACTIVE' } });
       const consent = await db.patientConsentRecord.create({ data: { patientId: profile.id, policyVersionId: policy.id, contentHash: policy.contentHash, acceptedByUserId: session.userId, acceptanceIdempotencyKey: randomUUID() } });
       const intake = await db.patientMedicalIntake.create({ data: { patientId: profile.id, clinicId, currentRevisionNumber: 1, completedRevisionNumber: 1, submissionState: 'COMPLETE' } });
