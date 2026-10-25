@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { dashboardUrl, resolvePostLoginUrl } from "@/lib/api";
+import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { loginPasswordSchema, normalizePhone, phoneSchema } from "@/lib/validation";
 import { loginWithPhone } from "@/services/auth";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -35,8 +35,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 function redirectAfterAuthentication(roles: string[]) {
     const requestedDestination = new URLSearchParams(window.location.search).get("next");
-    const hasDashboardRole = roles.some((role) => ["ADMIN", "DOCTOR", "STAFF"].includes(role));
-    window.location.assign(requestedDestination ? resolvePostLoginUrl(requestedDestination) : hasDashboardRole ? dashboardUrl : resolvePostLoginUrl(null));
+    window.location.assign(postAuthenticationUrl(roles, requestedDestination));
 }
 
 function PasswordLoginForm() {

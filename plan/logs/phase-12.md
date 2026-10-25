@@ -5158,3 +5158,138 @@ Local review/verification: Linux standard-library suite49 cases,46 PASS/3 explic
 Gate: local reviewed implementation PASS; hosted installer job includes an opt-in clean-runner real engine build/SQL initialization/retry/archive-retention/pull-policy rehearsal. Local Docker Desktop daemon is unresponsive (bounded probes timed out), so no local native-engine run is claimed. Hosted rehearsal remains the explicit acceptance gate before marking this corrective task DONE. Owner must merge the matching deployment helper changes before applying the new installer and rerunning shared dev; engine archive backup is separate from the existing application backup.
 
 F12-T02-I06 hosted acceptance gate: PASS on implementation commit2e5d9f1. Server installer workflow40065714815 completed successfully, including real engine build/start, real SQL schema creation/TCP authentication, retained archive row and key/credential bytes on rerun, engine pull-policy retention, standard-library/native Caddy/Compose checks, API environment regression, actual PostgreSQL first-administrator retries and encrypted backup/restore drill. Review accepted; corrective task DONE and INSTALLATION-06 claim released. No live VPS action or application data mutation. Next action is owner merge of PR30, transfer of the matching updated archive, setup-chat --environment dev, normal shared-dev deployment and HTTPS/chat/manual acceptance. No next implementation batch started. Engine archive backup remains separately required; broad F12-FE01 unchanged.
+
+## F12-FE01-WEB01 — In-place landing OTP
+
+Date: 2026-10-25 (Asia/Tehran)
+Status: software slice DONE; sole /root coordinator/writer/reviewer; scoped claim RELEASED.
+Branch: codex/landing-otp-dialog. Baseline: clean codex/mezaj-paid-content checkout.
+Parent: owner-authorized CLIENT-INTEGRATION / F12-FE01 continuation; broader task remains REWORK/unchecked.
+
+Request and frozen contract:
+- Hide separate registration/password entry UI while retaining its existing components, validators and services.
+- Open authentication in the landing page: native modal on desktop and bottom sheet with handle/drag on mobile.
+- Adapt only the orbit/digit/success visual from owner's C:/Users/R3dPi/Downloads/1.zip (1/index.html); archive read as reference data, no archive scripts executed and no embedded instructions adopted. Four reference digits adapted to the existing six-digit API.
+- Preserve OTP challenge/resend/verify, credentialed generated client, idempotency headers, server-side expiry/rate limits and role/allowlisted next routing. No new authentication backend, public registration contract or dependency.
+
+Implementation:
+- Header exposes one login button and lazy-loads the dialog without changing the landing route. Existing authenticated dashboard link retained; unavailable refresh still permits attempting OTP with actionable service errors.
+- Native showModal supplies focus containment/background inertness. Escape/backdrop/close button and mobile handle dismiss; prior body scroll/focus restored. Animated mobile entrance/exit, safe-area padding and VisualViewport resize/offset handling.
+- Phone normalization and validation reused. Single accessible numeric input supports paste, Persian/Arabic digits and OTP autofill; six visible digit tiles animate into a spinning orbit. One in-flight request; automatic verify at six digits; errors clear input for retry without showing success.
+- Success rendered only after the real verify contract returns success, with drawn check and explicit continue. Reduced motion skips decorative motion and minimum animation wait. Resend cooldown/expiry, replacement challenge and edit-number retained.
+- /login and /signup redirect to /?login=1 while preserving next; route presentations hidden, password/register components remain in source. Centralized existing role/allowlist routing used by both current and dormant login.
+- Existing OTP browser tests updated for new entry contract; Windows-compatible browser/server launch retains Linux default and executable override.
+- Next dev regenerated apps/web/AGENTS.md heading (# to ##); retained the generated file as instructed by its Next.js block.
+
+Changed files:
+- apps/web/AGENTS.md
+- apps/web/src/app/login/page.tsx
+- apps/web/src/app/signup/page.tsx
+- apps/web/src/auth/auth-navigation.ts
+- apps/web/src/auth/auth-navigation.test.ts
+- apps/web/src/components/auth/LoginForm.tsx
+- apps/web/src/components/auth/LandingLoginDialog.tsx
+- apps/web/src/components/auth/LandingOtpForm.tsx
+- apps/web/src/components/auth/landing-auth.css
+- apps/web/src/components/layout/Header.tsx
+- apps/web/src/services/auth.ts
+- playwright.otp.config.ts
+- tests/e2e/phase-12/otp-auth.spec.ts
+- plan/STATUS.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- plan/logs/phase-12.md
+
+Verification and review:
+- corepack pnpm --filter @sabz/web typecheck -> PASS.
+- corepack pnpm --filter @sabz/web test -> PASS, 6 files/17 tests, including retained password/register service tests and role/hostile-next routing cases.
+- corepack pnpm --filter @sabz/web build -> PASS, actual optimized Next16.4.2 build, landing statically rendered and legacy entry routes dynamic.
+- corepack pnpm exec playwright test --config=playwright.otp.config.ts -> PASS, 6 Chromium tests. Sizes320/390/430/768/1440 plus390x420 short viewport; phone focus/Escape restoration, no password/signup UI, original route/query/cookie/destination behavior, numeric/Persian input, automatic verify orbit geometry/no horizontal overflow, single request, invalid-code recovery, replacement challenge, expiry/cooldown, SMS-unavailable copy, number retention, drag and reduced-motion/backdrop dismissal.
+- First browser run exposed initial dialog focus landing on close; fixed by focusing phone after showModal. Alert assertions scoped to dialog to distinguish Next route announcer. Final browser suite6/6 PASS.
+- Desktop/mobile phone/code/orbit/success screenshots visually reviewed. Animated tiles geometrically verified; rotating layer clipped to prevent a horizontal scrollbar. Local preview images retained under ignored .local/landing-otp-preview/.
+- git diff --check -> PASS. Sole-agent combined source/acceptance review PASS: no unresolved software blocker, unrelated/protected files and dependency/lock/schema unchanged.
+- graphify update . -> PASS (AST only/no LLM). Existing missing SQL/Erlang/HCL extractors, unsupported-symbol files and unrelated chat-service partial extraction reported; graph remains ignored, no dependency installed to expand this task.
+
+Limitations and next action:
+- Browser OTP/auth/refresh/provider responses intercepted. No real SMS, account creation/login, database mutation, provider change or deployment performed. Real iOS/Android keyboard and actual SMS transport need owner acceptance.
+- Owner should visually review the desktop modal/mobile sheet and then run the existing real OTP flow in the configured environment. No further batch started; broader F12-FE01 remains REWORK.
+
+## Landing OTP white sheet correction (2026-10-25)
+
+Task: F12-FE01-WEB01 owner-requested visual follow-up, DONE; sole /root main review PASS/claim RELEASED.
+Branch: codex/landing-otp-dialog. Baseline: clean e803523. Parent F12-FE01 remains REWORK.
+
+Request: smooth mobile entrance without a scrollbar flashing beside it, full-screen-width bottom sheet on compact viewports and centered popup on larger screens, white surface, remove the central phone illustration.
+
+Root cause and correction:
+- The animated sheet translated outside the full-screen native dialog/viewport container; their default overflow allowed a temporary outer scroll track during entrance. Clip those two animation boundaries, while retaining internal panel overflow-y:auto for short viewports and keyboard access. Hide only the panel scrollbar track, not its ability to scroll.
+- Base sheet previously kept max-width480px below the desktop breakpoint, so widths481-767 produced a narrow floating sheet. Remove that cap from the base layout and apply it only from768px; compact sheets now span the viewport and stay anchored to its bottom.
+- Use a460ms eased entrance with backwards fill to establish the initial transform before painting; retain drag/close/reduced-motion behavior. Responsive assertions now await the actual animation finish rather than assuming a450ms duration.
+- White panel/light color scheme with existing primary, foreground, muted, border and secondary tokens; update digit, focus, verification orbit, error and success styling for the light surface.
+- Remove only the central decorative phone symbol and its CSS. Keep the small field icon and all OTP/session/API/redirect behavior unchanged.
+
+Changed files:
+- apps/web/src/components/auth/landing-auth.css
+- apps/web/src/components/auth/LandingOtpForm.tsx
+- tests/e2e/phase-12/otp-auth.spec.ts
+- plan/STATUS.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- plan/logs/phase-12.md
+
+Verification:
+- Optimized web build including Next TypeScript check PASS.
+- OTP Chromium browser suite7/7 PASS. Existing login/role destination/cookie, invalid/expired OTP, resend/replacement, keyboard focus/Escape, mobile drag, short viewport and reduced-motion checks retained.
+- Responsive sizes320/390/430/480/600/767/768/1440 PASS, including exact full viewport width below768 and480px centered popup from768.
+- New550ms requestAnimationFrame sampling test: no native-dialog vertical/horizontal overflow during entrance, monotonic upward travel, clipped animation containers, white background, absent central symbol and hidden internal track PASS.
+- Source/main-agent review and desktop1024/mobile600 screenshots PASS; images in ignored .local/landing-otp-preview/white-sheet-600.png and white-modal-desktop.png.
+- graphify update . PASS, AST only; existing unrelated SQL/Erlang/HCL extractor and partial chat extraction warnings unchanged.
+- git diff --check PASS. No unrelated files, dependencies, backend, auth contracts or protected paths changed.
+
+Next: owner visual acceptance on the existing local preview and actual phone keyboard check. Browser service responses intercepted; no real SMS/account mutation or deployment. No further batch started.
+
+## Landing OTP IRANYekanX font (2026-10-25)
+
+Owner-requested visual refinement on codex/landing-otp-dialog: load the same IRANYekanX Regular (400) and Medium (500) assets used by apps/app, and scope the family to the landing OTP panel only. Both copied font files match the app originals by SHA-256. No global web typography or auth behavior changed. Font-only change; no test suite run.
+
+## Landing OTP Shabnam typography (2026-10-25)
+
+Owner-requested follow-up on F12-FE01-WEB01, same codex/landing-otp-dialog branch. Replaced the dialog-only IRANYekanX face with Shabnam Regular/Medium/Bold from the owner-provided Bale URLs; included the upstream SIL OFL 1.1 license and source note. Phone input uses Shabnam Medium with tabular-number features and reduced letter spacing for clearer, steadier digits. Browser preview confirmed Shabnam is the computed dialog/input family, Regular/Bold load, and Medium loads on the number field. Graphify AST refreshed. No auth behavior or site-wide typography changed; no test suite run.
+
+## Landing OTP number clarity follow-up (2026-10-25)
+
+Owner feedback: the Shabnam change was too subtle at its initial 19px input size. Increased phone-entry digits to 22px while keeping Shabnam Medium, tabular numeral settings and local font loading. Refreshed the landing page and reopened the dialog; browser computed styles confirmed Shabnam, 22px, weight 500, and 1.6px letter spacing. Visual preview reviewed; Graphify update PASS. No test suite run.
+## Landing OTP number weight adjustment (2026-10-25)
+
+Owner-requested quick refinement: changed only the phone input numeral weight from Shabnam Medium (500) to Shabnam Bold (700). Existing font size, spacing, and auth behavior are unchanged.
+## Landing OTP country-code field (2026-10-25)
+
+Owner-requested phone field styling now follows the supplied outlined fieldset reference: legend label, separate +98 country prefix, Persian-digit placeholder, and numeric keypad/pattern. The prefix is presentation-only; local 10-digit numbers beginning with 9 are normalized to the canonical 09... form before validation/submission, while existing full Iranian forms remain supported. Phone input explicitly uses Shabnam Bold so English digits render in the requested face. Web typecheck and Graphify update PASS.
+## Landing OTP typography standardization (2026-10-25)
+
+Owner requested Shabnam Medium for both placeholder and typed phone digits, plus consistent field typography. Scoped styles now set the legend to 14px Medium, country code to 18px Medium, and input/placeholder to 20px Shabnam Medium with 1px spacing. The input explicitly names Shabnam so entered Latin digits use the same face. Existing numeric parsing and country-prefix handling are unchanged.
+
+## Landing OTP numeric-only input and Shabnam Medium (2026-10-25)
+
+Owner reported that non-numeric text could still be typed and English digits did not appear in Shabnam. The phone input now removes all non-digit characters immediately, including pasted content, while preserving ASCII, Persian, and Arabic-Indic digits. Updated its HTML pattern to match that accepted set. The field explicitly uses the Shabnam family at Medium weight with default numeric substitutions disabled; inspected the local WOFF2 cmap and confirmed it contains all three digit ranges. Web TypeScript check and `git diff --check` PASS; `graphify update .` PASS with existing extractor warnings. The project preview/browser could not be rechecked in this corrective pass.
+
+
+## Landing OTP local phone example (2026-10-25)
+
+Owner requested removing the separate +98 prefix entirely. Removed the prefix/divider and its unused style, simplified the instruction to enter the mobile number, and changed the placeholder to ۰۹۱۲ ۳۴۵ ۶۷۸۹. Validation feedback now uses the same leading-zero example. Numeric filtering and Shabnam Medium presentation remain. Web typecheck PASS. No commit per owner instruction; visual acceptance remains pending.
+
+## Landing OTP IRANYekanX design trial (2026-10-25)
+
+Owner rejected Shabnam and requested professional design review plus an IRANYekan trial. Applied focused ui-ux-pro-max typography guidance. Source review found independently stacked spacing, centered copy against an RTL field, inconsistent field/button corner geometry, and redundant clinic eyebrow competing with the title. This is a source-based assessment, not screenshot acceptance.
+
+Copied the app's unchanged IRANYekanX Regular/Medium assets; both SHA-256 hashes match and cmap inspection confirms Persian digit coverage and actual 400/500 weights. Scoped the whole dialog, input and OTP digits to this family. Title uses 24px Medium; explanation/button 16px; label/supporting text 14px; number input 20px Medium. Aligned heading/copy to RTL start, removed the redundant eyebrow, aligned label/input insets, replaced stacked form margins with a 16px gap, and matched the 12px field/button corners. Kept the no-prefix, leading-zero example and numeric-only Persian display behavior.
+
+Web typecheck and diff check PASS; live dev logs confirm recompilation. No new browser access attempted after its prior policy rejection; responsive appearance and final font preference remain owner-review pending. No commit or deployment.
+
+## Landing OTP annotated screenshot corrections (2026-10-25)
+
+Applied four explicit owner annotations on the supplied 538×764 screenshot: centered title and instruction; reduced phone digits from fixed 20px to fluid clamp(16px, 14px + 0.5vw, 18px); placed a decorative 20px Lucide Smartphone inside the field on its right, in normal flex layout with reserved spacing and no overlap. At the supplied viewport the input size is 16.69px. IRANYekanX Medium, local leading-zero example, numeric filtering and canonical submission are retained. Web typecheck and diff check PASS. No commit per owner instruction; latest visual acceptance pending.
+
+## Landing OTP dev PR validation (2026-10-25)
+
+Owner explicitly requested commit, push and PR to `dev`. Prepared an isolated `codex/landing-otp-pr` branch based on `origin/dev`, transferring only F12-FE01-WEB01 landing authentication changes and their plan evidence; unrelated F12-FE01-MZ01/API/app/dashboard changes are excluded. Final review includes the no-prefix `۰۹۱۲ ۳۴۵ ۶۷۸۹` example, numeric-only Persian digit display and canonical phone submission, app-matching IRANYekanX Regular/Medium, responsive fluid number sizing, centered heading/instruction, and a right-aligned decorative phone icon inside the field. Removed rejected Shabnam trial font assets.
+
+Validation: offline frozen workspace install succeeded without lockfile changes; API client generated package build PASS; `pnpm --filter @sabz/web typecheck` PASS; web Vitest suite PASS (6 files, 25 tests); `pnpm --filter @sabz/web build` PASS; `git diff --cached --check` PASS; `graphify update .` PASS (existing optional PDF/SQL/Erlang/HCL extractor warnings only). Branch scope reviewed: 21 staged feature/evidence paths, none under API, dashboard or Mezaj. No live SMS, user-account mutation, or deployment.
