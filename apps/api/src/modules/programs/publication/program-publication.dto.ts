@@ -9,7 +9,7 @@ export class ProgramCommercialConfigDto {
   @ApiProperty({ enum: ['PERPETUAL', 'DAYS', 'ONE_DELIVERY'] }) @IsIn(['PERPETUAL', 'DAYS', 'ONE_DELIVERY']) accessMode!: 'PERPETUAL' | 'DAYS' | 'ONE_DELIVERY';
   @ApiPropertyOptional({ type: Number, nullable: true, minimum: 1, maximum: 3650 }) @IsOptional() @IsInt() @Min(1) @Max(3650) accessDurationDays?: number | null;
   @ApiProperty({ minimum: 60, maximum: 86400 }) @IsInt() @Min(60) @Max(86400) quoteTtlSeconds!: number;
-  @ApiProperty() @Matches(/^[A-Za-z0-9._:-]{1,80}$/u) retentionPolicyRef!: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @Matches(/^[A-Za-z0-9._:-]{1,80}$/u) retentionPolicyRef?: string | null;
 }
 export class PublishProgramOfferingDto extends ProgramCommercialConfigDto {
   @ApiProperty({ pattern: '^[a-f0-9]{64}$' }) @Matches(/^[a-f0-9]{64}$/u) publicationHash!: string;
@@ -70,7 +70,7 @@ export class ProgramPublicationResponseDto {
   @ApiProperty({ enum: ['PERPETUAL', 'DAYS', 'ONE_DELIVERY'] }) accessMode!: string;
   @ApiProperty({ type: Number, nullable: true }) accessDurationDays!: number | null;
   @ApiProperty() quoteTtlSeconds!: number;
-  @ApiProperty() retentionPolicyRef!: string;
+  @ApiProperty({ type: String, nullable: true }) retentionPolicyRef!: string | null;
   @ApiProperty({ format: 'uuid' }) termsPolicyVersionId!: string;
   @ApiProperty() termsContentHash!: string;
   @ApiProperty({ type: ProgramCommercialPolicyDto }) policy!: ProgramCommercialPolicyDto;

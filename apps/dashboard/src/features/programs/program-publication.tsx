@@ -15,7 +15,7 @@ function errorText(error: unknown) {
   if (error.status === 403) return 'برای قیمت‌گذاری، دسترسی مدیریت محتوای همین کلینیک لازم است.';
   if (error.status === 401) return 'نشست شما پایان یافته است. دوباره وارد شوید.';
   if (error.status === 429) return 'درخواست‌ها زیاد شده‌اند. کمی بعد دوباره تلاش کنید.';
-  return 'بررسی یا انتشار انجام نشد. اعتبار مبلغ، مرجع نگهداری و شرایط خرید را بررسی کنید.';
+  return 'بررسی یا انتشار انجام نشد. اعتبار مبلغ و شرایط خرید را بررسی کنید.';
 }
 
 export function Publication({ token, item }: { token: string; item: Definition }) {
@@ -45,7 +45,6 @@ export function Publication({ token, item }: { token: string; item: Definition }
 function PublicationForm({ token, item, setup, reload }: { token: string; item: Definition; setup: PublicationSetup; reload: () => void }) {
   const [latest, setLatest] = useState<PublicationRecord | null>(setup.latestPublication);
   const [amount, setAmount] = useState(setup.latestPublication ? priceToInput(setup.latestPublication.amountRial) : '');
-  const [retention, setRetention] = useState(setup.suggestedRetentionPolicyRef ?? '');
   const [accepted, setAccepted] = useState(false), [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
   const lock = useRef(false), keys = useRef(new Map<string, string>());
@@ -55,8 +54,7 @@ function PublicationForm({ token, item, setup, reload }: { token: string; item: 
   const configuration = (): Commercial | null => {
     if (amountRial === null) { setNotice('مبلغ را به تومان، با عدد فارسی یا انگلیسی وارد کنید؛ برای خدمت رایگان صفر بنویسید. حداکثر یک رقم اعشار مجاز است.'); return null; }
     if (!terms) { setNotice('ابتدا شرایط خرید خدمات باید برای این کلینیک فعال شود.'); return null; }
-    if (!/^[A-Za-z0-9._:-]{1,80}$/.test(retention)) { setNotice('مرجع مصوب نگهداری سوابق را وارد کنید؛ این مقدار باید شناسهٔ واقعی سیاست مجموعه باشد.'); return null; }
-    return { programDefinitionId: item.id, termsPolicyVersionId: terms.id, amountRial, currency: 'IRR', accessMode: latest?.accessMode === 'DAYS' ? 'DAYS' : 'PERPETUAL', accessDurationDays: latest?.accessMode === 'DAYS' ? latest.accessDurationDays : null, quoteTtlSeconds: latest?.quoteTtlSeconds ?? 1800, retentionPolicyRef: retention };
+    return { programDefinitionId: item.id, termsPolicyVersionId: terms.id, amountRial, currency: 'IRR', accessMode: latest?.accessMode === 'DAYS' ? 'DAYS' : 'PERPETUAL', accessDurationDays: latest?.accessMode === 'DAYS' ? latest.accessDurationDays : null, quoteTtlSeconds: latest?.quoteTtlSeconds ?? 1800 };
   };
   const run = async (operation: () => Promise<void>) => {
     if (lock.current) return;
@@ -77,10 +75,6 @@ function PublicationForm({ token, item, setup, reload }: { token: string; item: 
         </label>
         <p id="program-price-help">مثلاً برای ۱۵۰ هزار تومان، ۱۵۰۰۰۰ وارد کنید. صفر یعنی رایگان. {amountRial !== null && <strong>مبلغ انتخابی: {amountRial === '0' ? 'رایگان' : formatRial(BigInt(amountRial))}</strong>}</p>
         {terms && <details className="program-terms"><summary>شرایط خرید: {terms.title} · نسخه {terms.versionNumber.toLocaleString('fa-IR')}</summary><p className="program-full-body">{terms.body}</p></details>}
-        <label htmlFor="program-retention">مرجع مصوب نگهداری سوابق
-          <input id="program-retention" dir="ltr" className="program-field" required maxLength={80} pattern="[A-Za-z0-9._:\-]{1,80}" aria-describedby="program-retention-help" value={retention} onChange={e => { setRetention(e.target.value.trim()); changed(); }} />
-        </label>
-        <p id="program-retention-help">{setup.suggestedRetentionPolicyRef ? 'از سابقهٔ انتشار همین کلینیک پر شده است؛ معتبر بودن آن را بررسی کنید.' : 'شناسهٔ واقعی سیاست مصوب مجموعه را از مدیر سامانه بگیرید. این مقدار، قیمت یا شناسهٔ خدمت نیست.'}</p>
         <p>مبلغ و تنظیمات این فرم تا زدن «انتشار برای خرید» ذخیره نمی‌شوند.</p>
         <button className="dashboard-button" type="submit" disabled={!terms}>{busy ? 'در حال بررسی…' : 'بررسی آمادگی انتشار'}</button>
       </fieldset>
@@ -91,8 +85,7 @@ function PublicationForm({ token, item, setup, reload }: { token: string; item: 
       {preview.configurationReady && preview.publicationHash && <>
         <p>قیمت نهایی: <strong>{preview.configuration.amountRial === '0' ? 'رایگان' : formatRial(BigInt(preview.configuration.amountRial))}</strong></p>
         {preview.termsPolicy && <details open><summary>{preview.termsPolicy.title}</summary><p className="program-full-body">{preview.termsPolicy.body}</p></details>}
-        <p>مرجع نگهداری: <bdi>{preview.configuration.retentionPolicyRef}</bdi></p>
-        <label className="program-check"><input type="checkbox" checked={accepted} disabled={busy} onChange={e => setAccepted(e.target.checked)} />مبلغ، شرایط خرید و مرجع نگهداری سوابق را بررسی کرده‌ام.</label>
+        <label className="program-check"><input type="checkbox" checked={accepted} disabled={busy} onChange={e => setAccepted(e.target.checked)} />مبلغ و شرایط خرید را بررسی کرده‌ام.</label>
         <button disabled={!accepted || busy} className="dashboard-button dashboard-button-primary" onClick={() => {
           const config = configuration(); if (!config) return;
           const body = { ...config, publicationHash: preview.publicationHash!, expectedPublicationNumber: preview.expectedPublicationNumber, reviewedTermsAndRetention: true as const };

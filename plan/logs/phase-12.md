@@ -5500,3 +5500,25 @@ Verification:
 - Graphify AST refreshed. Owned review server stopped; Next generated-only AGENTS heading restored.
 
 No API/schema/database/dependency/payment/policy/deployment changes. Local frontend commit only, no push. Broad F12-FE01 remains REWORK; no next batch. Owner can review and request publication.
+
+## Ready program retention input removal (2026-10-25)
+
+Task: F12-FE01-MZ01 owner-requested ready text-service correction, sole writer/reviewer Codex /root on dev@d305195, clean baseline. Scoped software review PASS; claim released, broad F12-FE01 stays REWORK.
+
+Problem: an internal retention-policy reference was required by the ready-service publication form/API/NOT NULL/check constraint, so the owner could not publish a Mezaj service without unrelated technical configuration.
+
+Changes/files:
+- ProgramOfferingPublication.retentionPolicyRef nullable; migration20261025170000_ready_program_retention_optional relaxes ready-service nullability/shape while preserving explicit custom-professional reference validation in SQL guard. No existing text, price, reference, receipt or grant data rewritten.
+- publication DTO/service: optional nullable input normalized to null, nullable retained response; custom professional API still requires reference. Existing explicit-reference clients and publication hash/idempotency semantics retained.
+- Dashboard program-publication.tsx removes reference input/helper/validation/preview; checkbox reviews actual price and purchase terms. No fake identifier or policy auto-created. Existing price, real terms, approval, duration/TTL, revision and payment rules retained.
+- Official OpenAPI/SDK regenerated; schema diff limited to optional/nullable program retention reference. Definition/source and assessment-policy fields unaffected.
+- Publication/purchase/browser regressions and scoped contract/design/status/phase/log updated.
+
+Verification:
+- Isolated PostgreSQL program-publication21/21 and program-purchase33/33 PASS,85 fresh migrations. Ready publication accepts omitted reference as null and preserves old explicit reference on retained retired publication. Complete source-free/reference-free publication->purchase->owned content read PASS. Custom professional omitted reference rejected by API and direct SQL; existing price/idempotency/approval/access regressions pass.
+- API Prisma generate and openapi export PASS; SDK generate/build PASS; API test/dashboard TypeScript and focused dashboard ESLint PASS; token validator/diff check PASS.
+- program-pricing.browser.mjs PASS320/390/1440: no retention label/input or payload field; exact price/preview/publish,409 preservation/retry,reopen,duration/TTL/real terms and load recovery retained in popup. Synthetic intercepted API, no actual purchase/content writes.
+- Applied exactly20261025170000_ready_program_retention_optional to configured local sabz_zendegi at localhost:5432 after disposable verification. migrate status:85/up to date; Prisma datasource-to-schema diff:No difference detected.
+- Graphify AST update, owned review-server stop and generated-only Next AGENTS heading restoration completed. No unrelated user process stopped.
+
+Next/limits: ready publication still follows its actual program approval and active purchase terms; this change removes only the unrelated retention input. No remote/VPS migration, policy activation, push or deployment, no next batch. Owner can test local pricing/publication before publishing commits.

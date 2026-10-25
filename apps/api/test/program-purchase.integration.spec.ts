@@ -64,7 +64,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     const approved = await req('POST', `clinical/program-definitions/${definition.id}/approve`, doctor, { contentHash: definition.contentHash, reviewedProgramAndSafety: true, noAutomaticTherapyActivation: true }); expect(approved.statusCode, approved.body).toBe(201);
     await db.consentPolicyVersion.updateMany({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR', status: 'ACTIVE' }, data: { status: 'RETIRED', retiredAt: new Date() } });
     const previous = await db.consentPolicyVersion.findFirst({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR' }, orderBy: { versionNumber: 'desc' } }), body = 'Synthetic legal fixture only, no approved legal text.', terms = await db.consentPolicyVersion.create({ data: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR', versionNumber: (previous?.versionNumber ?? 0) + 1, title: 'Synthetic terms', body, contentHash: createHash('sha256').update(body).digest('hex'), status: 'ACTIVE', activatedAt: new Date() } });
-    const config = { programDefinitionId: definition.id, termsPolicyVersionId: terms.id, amountRial: amount, currency: 'IRR', accessMode: mode, accessDurationDays: mode === 'DAYS' ? 30 : null, quoteTtlSeconds: 600, retentionPolicyRef: 'SYNTHETIC_TEST_ONLY' }, pub = await publish(config);
+    const config = { programDefinitionId: definition.id, termsPolicyVersionId: terms.id, amountRial: amount, currency: 'IRR', accessMode: mode, accessDurationDays: mode === 'DAYS' ? 30 : null, quoteTtlSeconds: 600, retentionPolicyRef: sourceFree ? undefined : 'SYNTHETIC_TEST_ONLY' }, pub = await publish(config);
     return { definition, input, content, terms, config, pub };
   }
   async function publish(config: object) { const preview = await req('POST', 'admin/program-offerings/preview', admin, config); expect(preview.statusCode, preview.body).toBe(200); const response = await req('POST', 'admin/program-offerings', admin, { ...config, publicationHash: preview.json().publicationHash, expectedPublicationNumber: preview.json().expectedPublicationNumber, reviewedTermsAndRetention: true }); expect(response.statusCode, response.body).toBe(201); return response.json(); }
@@ -159,6 +159,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
   it('publishes, purchases and reads a text service without any educational references', async () => {
     const f = await setup('0', 'PERPETUAL', true), p = await patient();
     expect(f.definition.contentReferences).toEqual([]);
+    expect(f.pub.retentionPolicyRef).toBeNull();
     expect(f.pub.configurationReady).toBe(true);
     const i = await purchase(f, p), g = await grant(p, i.intent.programPurchaseId);
     expect(g).not.toBeNull();

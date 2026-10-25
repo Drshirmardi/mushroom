@@ -9416,7 +9416,7 @@ export interface components {
             accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
             accessDurationDays: number | null;
             quoteTtlSeconds: number;
-            retentionPolicyRef: string;
+            retentionPolicyRef: string | null;
             /** Format: uuid */
             termsPolicyVersionId: string;
             termsContentHash: string;
@@ -9462,7 +9462,7 @@ export interface components {
             accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
             accessDurationDays?: number | null;
             quoteTtlSeconds: number;
-            retentionPolicyRef: string;
+            retentionPolicyRef?: string | null;
         };
         ProgramCommercialDefinitionDto: {
             /** Format: uuid */
@@ -9499,7 +9499,7 @@ export interface components {
             accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
             accessDurationDays?: number | null;
             quoteTtlSeconds: number;
-            retentionPolicyRef: string;
+            retentionPolicyRef?: string | null;
             publicationHash: string;
             expectedPublicationNumber: number;
             /** @enum {boolean} */

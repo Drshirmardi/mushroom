@@ -3697,7 +3697,7 @@ model ProgramOfferingPublication {
   accessMode String @map("access_mode") @db.VarChar(24)
   accessDurationDays Int? @map("access_duration_days")
   quoteTtlSeconds Int @map("quote_ttl_seconds")
-  retentionPolicyRef String @map("retention_policy_ref") @db.VarChar(80)
+  retentionPolicyRef String? @map("retention_policy_ref") @db.VarChar(80)
   termsPolicyVersionId String @map("terms_policy_version_id") @db.Uuid
   termsContentHash String @map("terms_content_hash") @db.Char(64)
   policySnapshot Json @map("policy_snapshot")

@@ -32,7 +32,7 @@ try {
         publishedBody = req.postDataJSON();
         if (conflict) return send({ code: 'PROGRAM_PUBLICATION_CONFLICT' }, 409);
         assert.ok(req.headers()['idempotency-key']);
-        publication = { ...publication, ...publishedBody, publicationNumber: publication.publicationNumber + 1 };
+        publication = { ...publication, ...publishedBody, retentionPolicyRef: publishedBody.retentionPolicyRef ?? null, publicationNumber: publication.publicationNumber + 1 };
         return send(publication, 201);
       }
       return send({ items: [], total: 0, unreadCount: 0 });
@@ -48,6 +48,8 @@ try {
     await region.getByRole('button', { name: 'بررسی آمادگی انتشار' }).click();
     await region.getByRole('heading', { name: 'آمادهٔ انتشار', exact: true }).waitFor();
     assert.equal(previewConfig.amountRial, '1500000');
+    assert.equal(previewConfig.retentionPolicyRef, undefined);
+    assert.equal(await page.getByLabel('مرجع مصوب نگهداری سوابق', { exact: true }).count(), 0);
     assert.equal(previewConfig.termsPolicyVersionId, termsId);
     assert.equal(previewConfig.accessMode, 'DAYS');
     assert.equal(previewConfig.accessDurationDays, 30);
@@ -63,6 +65,7 @@ try {
     await publish.click();
     await region.getByText('تعرفه با موفقیت منتشر شد.').waitFor();
     assert.equal(publishedBody.amountRial, '1500000');
+    assert.equal(publishedBody.retentionPolicyRef, undefined);
     await page.getByRole('button', { name: 'بستن', exact: true }).click();
     await page.getByRole('button', { name: /خدمت آزمایشی/ }).click();
     await page.getByRole('button', { name: 'قیمت و انتشار', exact: true }).click();

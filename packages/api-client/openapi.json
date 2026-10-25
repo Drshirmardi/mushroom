@@ -40980,7 +40980,8 @@
             "type": "number"
           },
           "retentionPolicyRef": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "termsPolicyVersionId": {
             "type": "string",
@@ -41167,7 +41168,8 @@
             "maximum": 86400
           },
           "retentionPolicyRef": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -41176,8 +41178,7 @@
           "amountRial",
           "currency",
           "accessMode",
-          "quoteTtlSeconds",
-          "retentionPolicyRef"
+          "quoteTtlSeconds"
         ]
       },
       "ProgramCommercialDefinitionDto": {
@@ -41317,7 +41318,8 @@
             "maximum": 86400
           },
           "retentionPolicyRef": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "publicationHash": {
             "type": "string",
@@ -41342,7 +41344,6 @@
           "currency",
           "accessMode",
           "quoteTtlSeconds",
-          "retentionPolicyRef",
           "publicationHash",
           "expectedPublicationNumber",
           "reviewedTermsAndRetention"
