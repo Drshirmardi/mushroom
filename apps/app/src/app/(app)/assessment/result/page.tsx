@@ -11,6 +11,7 @@ import { getAssessmentResult, getAssessmentQuestionnaire, getAssessmentGuidance,
 import { usePatientResource } from "@/lib/use-patient-resource";
 import { MizajResult } from "@/components/assessments/mizaj-result";
 import { toP } from "@/lib/format";
+import { ResultRecommendations } from '@/components/programs/result-recommendations';
 
 function Result({ id }: { id: string }) {
   const router = useRouter();
@@ -27,6 +28,7 @@ function Result({ id }: { id: string }) {
     {result.data.completedAt && <p className="text-xs text-muted-foreground">تاریخ تکمیل: {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.data.completedAt))}</p>}
     {band?.requiresReview === true && <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">این نتیجه نیاز به بررسی درمانگر دارد.</p>}
     <section className="space-y-3"><h2 className="font-bold">راهنمای نتیجه</h2><PatientResourceState {...guidance} retry={() => void guidance.reload()} />{guidance.data?.status === "READY" ? <>{guidance.data.content.map(item => <article key={item.id} className="space-y-3 rounded-2xl border border-border bg-white p-4"><h3 className="font-bold">{item.title}</h3>{item.summary && <p className="text-sm text-muted-foreground">{item.summary}</p>}<p className="whitespace-pre-wrap text-sm leading-7">{item.body}</p><GuidanceSafety safety={item.safety} /></article>)}{guidance.data.services.map(service => <Link key={service.id} href="/appointments/book" className="block rounded-xl border border-border p-3 text-sm text-primary">{service.name}</Link>)}</> : guidance.data && <p className="text-sm leading-7 text-muted-foreground">{guidance.data.status === "CLINICAL_REVIEW_REQUIRED" ? "پیش از ارائهٔ راهنما، نتیجه باید توسط درمانگر بررسی شود." : "در حال حاضر راهنمای تأییدشده‌ای برای این نتیجه در دسترس نیست."}</p>}</section>
+    {questionnaire.data && ['MEZAJ', 'MIZAJ'].includes(questionnaire.data.assessmentKey) && <ResultRecommendations token={token} submissionId={id} />}
     <details className="rounded-xl border border-border p-4 text-sm"><summary className="cursor-pointer font-bold">اطلاعات نسخهٔ نتیجه</summary><PatientResourceState {...provenance} retry={() => void provenance.reload()} />{questionnaire.data && <p className="mt-3">نسخهٔ پرسش‌نامه: {toP(questionnaire.data.versionNumber)}</p>}{provenance.data && <p className="mt-2 text-xs text-muted-foreground">{provenance.data.provenanceStatus === "RECORDED" ? "مشخصات نسخهٔ محاسبه برای این نتیجه ثبت شده است." : "مشخصات کامل محاسبه در نتیجهٔ قدیمی ثبت نشده است."}</p>}</details>
     <Link href="/appointments/book" className="block rounded-2xl bg-primary p-4 text-center font-bold text-white">بررسی شرایط و رزرو مشاوره</Link>
   </>}</div></ServicePage>;

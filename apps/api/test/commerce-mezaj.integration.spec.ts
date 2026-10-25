@@ -66,7 +66,8 @@ describe.skipIf(process.env.STORE_MEZAJ_TEST_ISOLATED !== '1')('ordered Mezaj co
   it('returns explicit no-result without accessing another patient via query input', async () => {
     const withResult = await result(0); const empty = await patient();
     const r = await call('GET', `patients/me/commerce/recommendations?patientId=${withResult.profile.id}`, empty.auth);
-    expect(r.json()).toEqual({ status: 'NO_RESULT', primary: null, secondary: null, items: [] });
+    expect(r.statusCode).toBe(400);
+    expect((await call('GET', 'patients/me/commerce/recommendations', empty.auth)).json()).toEqual({ status: 'NO_RESULT', primary: null, secondary: null, items: [] });
   });
   it('requires patient self permissions and ADMIN commerce authority', async () => {
     expect((await app.inject({ method: 'GET', url: '/v1/patients/me/commerce/recommendations' })).statusCode).toBe(401);

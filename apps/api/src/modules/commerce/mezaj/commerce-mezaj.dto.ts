@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsInt, IsString, IsUUID, Length, Max, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min, ValidateNested } from 'class-validator';
 import { PatientCommerceProductDto } from '../catalog/patient-commerce-catalog.dto';
 
 export const MEZAJ_CODES = ['damavi', 'safravi', 'balgami', 'sodavi'] as const;
@@ -48,4 +48,8 @@ export class PatientCommerceRecommendationsDto {
   @ApiProperty({ type: String, enum: MEZAJ_CODES, nullable: true }) primary!: MezajCode | null;
   @ApiProperty({ type: String, enum: MEZAJ_CODES, nullable: true }) secondary!: MezajCode | null;
   @ApiProperty({ type: [PatientCommerceProductDto] }) items!: PatientCommerceProductDto[];
+}
+
+export class MezajRecommendationQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') submissionId?: string;
 }

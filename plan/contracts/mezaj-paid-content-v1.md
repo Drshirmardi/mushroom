@@ -1,0 +1,15 @@
+# Mezaj paid educational content — implementation contract
+
+Owner authorization: 2026-10-24, F12-FE01-MZ01, CLIENT-INTEGRATION, sole /root, codex/mezaj-paid-content.
+
+Reuse reviewed READY_EDUCATION definitions, immutable publications, commercial terms, PROGRAM billing and proved owned grants. No second checkout, free guidance leak, scoring change or physician-approval bypass. Admin authors drafts and configures icon/ordered canonical pair placements; existing qualified physician approves; existing preview/publication gates remain authoritative. Exact definition versions retained after purchase. Changing placement/result never revokes grants.
+
+One optional merchandising record per exact definition: clinic, icon enum, enabled, bounded unique array of16 ordered canonical pair keys, optimistic revision. Composite source clinic FK, database shape constraints and scoped metadata audit. No invented text, mapping, legal policy or activation.
+
+Read one authenticated self-owned completed non-invalidated MEZAJ submission by optional UUID; absent UUID uses latest accessible completed MEZAJ submission. Enforce processing access and exact source/engine/content/payload provenance.11+1 PAIR/SINGLE only; use canonical dimension IDs, SINGLE maps to primary/primary explicitly. No inference from labels/answers/scores and no older-result fallback. Legacy scalar version/band continues through configured commerce source links. Product recommendation selection uses this same resolver.
+
+Program recommendations query only enabled pair placements and current READY_EDUCATION publications; return metadata/price/icon and proved current own access link or existing pending purchase link, never body. Owned Home library is independent of current result/placements/sale availability; read existing grants with current content authorization and pagination. Full body stays on existing owned grant endpoint. Purchases continue through current offering/terms/wallet/bank flow.
+
+Dashboard workspace: paginated definitions, create text/summary/safety drafts, retained immutable versions, qualified review path, commercial preview/publish with exact actual terms/retention reference, optimistic pair/icon placement editor. Patient: result -> optional services -> products; same section in welcome result. Shared token-based service card with buy/pending/read/unavailable states; accessible44px targets, RTL/mobile, loading/error/empty states. Home services library links to owned content and all purchases.
+
+Verify additive clean migration/retention, foreign actor/resource denial, source tamper/ties/unmapped/older exact result, reverse pairs, pending/owned precedence and no-body metadata, concurrent config edits, existing payment/access regressions; SDK/types and mobile/desktop intercepted display/links. Actual physician/legal content and live payment/provider acceptance remain owner-operated.

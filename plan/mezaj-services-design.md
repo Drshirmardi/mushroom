@@ -1,0 +1,17 @@
+# Mezaj services component specification
+
+Skill: design-system, 2026-10-24. Reuse the patient and dashboard visual foundations. No new font, UI dependency, design library, mock service or generated medical text.
+
+Token chain: dashboard local primitive size scale in `program-services.tokens.css` -> existing semantic `--card`, `--foreground`, `--muted`, `--primary`, `--border` aliases -> workspace/card/input/pair states. Patient existing primitives -> `--service-surface/text/action/border` -> `--service-card-background/radius/padding/gap`. Colors in components use variables exclusively. Focus ring uses the action semantic color. Touch controls minimum44px, form inputs16px to avoid mobile auto-zoom. Only a viewport breakpoint is literal because CSS custom properties cannot substitute media-query bounds.
+
+Result hierarchy: existing result and guidance -> optional relevant text services -> selected products. Welcome keeps its explicit Home action and acknowledges completed entry before following a recommendation; reading these recommendations before completion is restricted to the exact completed entry submission. Buying is not a registration prerequisite.
+
+Service card: icon, title, short introduction, price in existing IRR formatter and one destination. BUY -> details/terms and existing checkout; PENDING -> retained purchase/payment; OWNED -> exact access grant. Full body is never in recommendation metadata. No imaginary ratings, discounts or clinical claims. Product cards reuse the store component and select real SKUs through product detail.
+
+Home library: only acquired ready educational grants, independent of latest result, placement enablement or commercial retirement. Icon/title and read destination; expired or withdrawn access points to receipt/status. Six per page and explicit next/previous; all purchases link retained. No modal automatically opens after purchase.
+
+States: skeleton/status text while loading; inline error with retry; result empty states explain that no configured service/product is available; absent purchased library is omitted. Draft/pair selections persist on failed save or409. Explicit confirmed reload replaces the draft. Token refresh preserves edits; account change remounts private state. Default/hover/pressed/focus/disabled states use existing buttons and token styles. Reduced-motion handling is explicit. RTL desktop/two-column and narrow single-column cards;16 pair choices in2/4 columns.
+
+Operator flow: Dashboard -> خدمات متنی مزاج. Write a version with title/summary/body and actual educational safety/source references; drafts are not saleable. Existing qualified physician approval is required and is not replaced by ADMIN status. Configure pair/icon, preview actual price/current purchase-terms version/retention reference, then explicitly publish. A content edit creates a new immutable version; existing purchased content stays bound to its original version. No legal policy or qualified review evidence is invented automatically.
+
+Validation: design-system token validator PASS for new patient components and dashboard workspace; intercepted Chromium320/390/1440 with real rendering/no overflow, result and purchased reading links, welcome acknowledgement/navigation, owned Home and16-pair/conflict editor. Screenshots under ignored `.local/mezaj-review/`. Actual phone/browser and live gateway acceptance remain owner-operated.
