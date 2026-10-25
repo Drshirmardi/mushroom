@@ -1,0 +1,121 @@
+/* Orbit and success motion adapted from the owner's 1.zip; the API uses six digits. */
+@font-face {
+    font-family: "IRANYekanX";
+    src: url("/fonts/IRANYekanX-Regular.woff") format("woff");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "IRANYekanX";
+    src: url("/fonts/IRANYekanX-Medium.woff") format("woff");
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+.landing-auth-dialog {
+    position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+    margin: 0; padding: 0; border: 0; background: transparent; color: var(--foreground); overflow: clip;
+}
+.landing-auth-dialog::backdrop { background: transparent; }
+.landing-auth-backdrop { position: absolute; inset: 0; background: #07191799; backdrop-filter: blur(7px); animation: auth-fade-in 220ms ease; }
+.landing-auth-position {
+    position: absolute; top: var(--auth-viewport-top, 0px); inset-inline: 0;
+    height: var(--auth-viewport-height, 100dvh); display: flex; align-items: flex-end; justify-content: center;
+    pointer-events: none; overflow: clip;
+}
+.landing-auth-panel {
+    font-family: "IRANYekanX", sans-serif;
+    font-size: 16px; font-weight: 400; line-height: 1.75;
+    color-scheme: light;
+    --auth-green: var(--primary); --auth-muted: var(--muted-foreground); --digit-width: clamp(34px, 10vw, 48px);
+    position: relative; pointer-events: auto; width: 100%;
+    max-height: calc(var(--auth-viewport-height, 100dvh) - 12px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+    background: #fff; border: 1px solid var(--border);
+    border-bottom: 0; border-radius: 32px 32px 0 0; padding: 62px 24px max(28px, env(safe-area-inset-bottom));
+    box-shadow: 0 -12px 80px #0002; animation: auth-sheet-in 460ms cubic-bezier(.22, 1, .36, 1) backwards;
+    scrollbar-width: none;
+}
+.landing-auth-panel::-webkit-scrollbar { display: none; }
+.landing-auth-panel button, .landing-auth-panel input { font: inherit; }
+.landing-auth-panel button { cursor: pointer; }
+.landing-auth-panel button:disabled { cursor: default; opacity: .48; }
+.landing-auth-panel button:focus-visible { outline: 2px solid var(--auth-green); outline-offset: 4px; }
+.landing-auth-handle { position: absolute; top: 0; left: calc(50% - 50px); width: 100px; height: 44px; display: grid; place-items: center; touch-action: none; background: transparent; border: 0; }
+.landing-auth-handle span { width: 42px; height: 4px; border-radius: 4px; background: var(--border); }
+.landing-auth-close { position: absolute; top: 14px; inset-inline-start: 14px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--muted-foreground); background: transparent; border: 0; }
+.landing-auth-close:hover { background: var(--secondary); }
+.landing-auth-heading { text-align: center; }
+.landing-auth-heading h2 { margin: 0; font-family: inherit; font-size: 24px; font-weight: 500; line-height: 1.5; letter-spacing: normal; color: var(--foreground); }
+.landing-auth-heading p { font-size: 16px; line-height: 1.8; color: var(--auth-muted); margin: 8px 0 0; }
+.landing-auth-heading b { display: inline-block; color: var(--foreground); font-weight: 500; }
+.landing-phone-form { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+.landing-phone-field { min-width: 0; margin: 0; padding: 0 12px 4px; border: 1px solid var(--border); border-radius: 12px; background: transparent; }
+.landing-phone-field legend { padding: 0 4px; margin: 0; color: var(--auth-muted); font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1.5; }
+.landing-phone-control { display: flex; align-items: center; min-width: 0; min-height: 48px; }
+.landing-phone-field input { flex: 1; width: 100%; min-width: 0; height: 48px; border: 0; background: transparent; color: var(--foreground); padding: 0 4px; font-family: inherit; font-size: clamp(16px, calc(14px + .5vw), 18px); font-weight: 500; font-variant-numeric: normal; font-feature-settings: normal; letter-spacing: normal; line-height: 1.5; text-align: left; outline: none; }
+.landing-phone-icon { flex: 0 0 auto; margin-inline: 8px 4px; color: var(--auth-muted); pointer-events: none; }
+.landing-phone-field input::placeholder { color: var(--muted-foreground); font: inherit; opacity: 1; }
+.landing-phone-field:focus-within { border-color: var(--auth-green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+.landing-phone-field input:focus { outline: none; }
+.landing-auth-primary { display: flex; gap: 12px; align-items: center; justify-content: center; width: 100%; min-height: 52px; border-radius: 12px; background: var(--auth-green); color: var(--primary-foreground); border: 0; font-size: 16px; font-weight: 500; margin-top: 24px; transition: background 180ms, transform 180ms; }
+.landing-auth-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 90%, black); transform: translateY(-1px); }
+.landing-auth-footnote { display: flex; gap: 8px; align-items: center; justify-content: center; color: var(--auth-muted); font-size: 14px; margin: 24px 0 0; }
+.landing-phone-form .landing-auth-primary, .landing-phone-form .landing-auth-footnote { margin: 0; }
+.landing-otp-scene { position: relative; height: 260px; direction: ltr; overflow: hidden; }
+.landing-otp-rotor { position: absolute; inset: 0; pointer-events: none; }
+.landing-otp-digit {
+    position: absolute; left: 50%; top: 50%; width: var(--digit-width); height: calc(var(--digit-width) + 10px);
+    margin-left: calc(var(--digit-width) / -2); margin-top: calc((var(--digit-width) + 10px) / -2);
+    border: 1.5px solid var(--border); border-radius: 14px; display: grid; place-items: center;
+    background: var(--secondary); color: var(--foreground); font-size: 28px; font-weight: 500;
+    transform: translateX(calc((var(--digit-index) - 2.5) * (var(--digit-width) + 7px)));
+    transition: transform 600ms cubic-bezier(.22, 1, .36, 1), border-color 250ms, box-shadow 250ms, opacity 350ms;
+}
+.landing-otp-digit.is-active { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 8%, transparent); }
+.landing-otp-digit.is-filled { border-color: color-mix(in srgb, var(--primary) 55%, var(--border)); }
+.landing-otp-digit.is-filled span { animation: auth-digit-in 260ms cubic-bezier(.22, 1, .36, 1); }
+.landing-otp-input { position: absolute; width: 100%; height: 84px; top: calc(50% - 42px); left: 0; opacity: 0; font-size: 20px !important; cursor: text; }
+.landing-otp-scene:focus-within .landing-otp-digit.is-active { outline: 2px solid var(--auth-green); outline-offset: 4px; }
+.landing-otp-orbit { position: absolute; top: 50%; left: 50%; width: 174px; height: 174px; margin: -87px; border: 1px solid transparent; border-radius: 50%; opacity: 0; transition: opacity 350ms; }
+.is-verifying .landing-otp-orbit { opacity: 1; border-color: var(--border); border-top-color: var(--primary); animation: auth-orbit 2.6s cubic-bezier(.72, 0, .8, .45) infinite; }
+.is-verifying .landing-otp-rotor { animation: auth-orbit 2.6s cubic-bezier(.72, 0, .8, .45) infinite; }
+.is-verifying .landing-otp-digit { transform: rotate(calc(var(--digit-index) * 60deg)) translateX(87px) rotate(calc(var(--digit-index) * -60deg)); border-color: var(--primary); }
+.landing-otp-feedback { min-height: 44px; text-align: center; color: var(--auth-muted); font-size: 14px; line-height: 1.8; }
+.landing-otp-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: center; margin-top: 12px; }
+.landing-otp-actions button { min-height: 44px; padding: 4px 8px; border: 0; background: transparent; color: var(--auth-green); font-size: 14px; }
+.landing-otp-expiry { flex-basis: 100%; text-align: center; color: var(--auth-muted); font-size: 14px; }
+.landing-otp-success { position: absolute; width: 220px; height: 220px; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.75); opacity: 0; pointer-events: none; transition: opacity 600ms, transform 900ms cubic-bezier(.22, 1, .36, 1); }
+.landing-success-ring { position: absolute; inset: 0; border: 1.5px solid #5cbaa02b; border-radius: 58px; transform: rotate(-9deg); }
+.landing-success-ring.inner { inset: 30px; border-radius: 43px; border-color: #5cbaa042; transform: rotate(9deg); }
+.landing-success-check { position: absolute; inset: 73px; border-radius: 22px; display: grid; place-items: center; background: color-mix(in srgb, var(--primary) 8%, white); border: 2px solid var(--auth-green); color: var(--primary); box-shadow: 0 0 40px color-mix(in srgb, var(--primary) 8%, transparent); }
+.landing-success-check svg { stroke-dasharray: 60; stroke-dashoffset: 60; }
+.landing-otp-success i { position: absolute; width: 4px; height: 4px; background: var(--auth-green); border-radius: 50%; top: 50%; left: 50%; transform: rotate(calc(var(--particle-index) * 45deg)) translateX(100px); }
+.is-success .landing-otp-success { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.is-success .landing-success-check svg { animation: auth-check 650ms 200ms ease forwards; }
+.is-success .landing-otp-digit { opacity: 0; transform: scale(.3); }
+.is-success .landing-auth-heading h2 { color: var(--auth-green); }
+.landing-auth-secure { color: var(--auth-green); display: inline-flex; gap: 8px; align-items: center; }
+.has-error .landing-otp-digit { border-color: #e4a09c; }
+.landing-auth-panel [role="alert"] { margin: 12px 0; }
+@keyframes auth-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes auth-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes auth-modal-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes auth-digit-in { from { opacity: 0; transform: translateY(8px) scale(.8); } to { opacity: 1; transform: none; } }
+@keyframes auth-orbit { from { transform: rotate(0); } to { transform: rotate(1080deg); } }
+@keyframes auth-check { to { stroke-dashoffset: 0; } }
+.is-closing .landing-auth-backdrop { animation: auth-fade-in 220ms ease reverse forwards; }
+.is-closing .landing-auth-panel { animation: auth-sheet-out 220ms ease forwards; }
+@keyframes auth-sheet-out { to { transform: translateY(100%); opacity: 0; } }
+@media (min-width: 768px) {
+    .landing-auth-position { align-items: center; padding: 24px; }
+    .landing-auth-panel { max-width: 480px; border: 1px solid var(--border); border-radius: 30px; padding: 54px 36px 32px; max-height: calc(var(--auth-viewport-height, 100dvh) - 48px); animation-name: auth-modal-in; }
+    .landing-auth-handle { display: none; }
+    .is-closing .landing-auth-panel { animation-name: auth-modal-out; }
+}
+@keyframes auth-modal-out { to { transform: translateY(12px) scale(.97); opacity: 0; } }
+@media (max-height: 600px) { .landing-otp-scene { height: 210px; } .landing-auth-panel { padding-top: 52px; } }
+@media (prefers-reduced-motion: reduce) {
+    .landing-auth-dialog *, .landing-auth-dialog *::before, .landing-auth-dialog *::after { animation: none !important; transition: none !important; }
+    .is-success .landing-success-check svg { stroke-dashoffset: 0; }
+}
