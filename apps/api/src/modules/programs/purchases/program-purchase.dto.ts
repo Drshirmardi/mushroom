@@ -6,8 +6,8 @@ import { GuidanceSafetyDto } from '../../content/guidance/guidance-content.dto';
 import { ProgramContentReferenceDto } from '../definitions/program-definition.dto';
 
 export class ProgramPurchaseQueryDto {
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
-  @ApiPropertyOptional({ default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
+  @ApiPropertyOptional({ type: Number, default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1;
+  @ApiPropertyOptional({ type: Number, default: 20 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) pageSize = 20;
 }
 export class ProgramConsentAcceptDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') policyVersionId!: string;

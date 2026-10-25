@@ -12,6 +12,7 @@ import { HomeJourney } from "@/components/home/home-journey";
 import { useOptionalPatientEntry } from "@/components/auth/patient-entry-gate";
 import { listPatientArticles, listNotifications } from "@/lib/follow-up-api";
 import { usePatientResource } from "@/lib/use-patient-resource";
+import { OwnedServices } from '@/components/programs/owned-services';
 
 const services = [
   { href: "/assessment", title: "ارزیابی فردی", description: "شروع آزمون، ادامه و نتایج", icon: ClipboardList },
@@ -45,6 +46,7 @@ export default function HomePage() {
     </header>
 
     <HomeJourney key={authentication.user.id} journey={journey} token={token} />
+    <OwnedServices key={`services:${authentication.user.id}`} />
 
     <section className="home-access" aria-labelledby="home-access-title"><div className="home-section-heading"><div><h2 id="home-access-title">دسترسی‌های من</h2><p>نوبت، مراقبت و حساب شما</p></div><span className="home-section-detail" aria-hidden="true"><FileHeart size={21} strokeWidth={1.5} /></span></div><nav aria-label="دسترسی‌های شخصی" className="home-followups">{followUps.map(({ href, title, icon: Icon }) => <Link href={href} key={href}><span className="home-access-icon"><Icon size={24} strokeWidth={1.5} aria-hidden="true" /></span><span>{title}</span></Link>)}</nav></section>
 

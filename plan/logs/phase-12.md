@@ -5293,3 +5293,76 @@ Applied four explicit owner annotations on the supplied 538×764 screenshot: cen
 Owner explicitly requested commit, push and PR to `dev`. Prepared an isolated `codex/landing-otp-pr` branch based on `origin/dev`, transferring only F12-FE01-WEB01 landing authentication changes and their plan evidence; unrelated F12-FE01-MZ01/API/app/dashboard changes are excluded. Final review includes the no-prefix `۰۹۱۲ ۳۴۵ ۶۷۸۹` example, numeric-only Persian digit display and canonical phone submission, app-matching IRANYekanX Regular/Medium, responsive fluid number sizing, centered heading/instruction, and a right-aligned decorative phone icon inside the field. Removed rejected Shabnam trial font assets.
 
 Validation: offline frozen workspace install succeeded without lockfile changes; API client generated package build PASS; `pnpm --filter @sabz/web typecheck` PASS; web Vitest suite PASS (6 files, 25 tests); `pnpm --filter @sabz/web build` PASS; `git diff --cached --check` PASS; `graphify update .` PASS (existing optional PDF/SQL/Erlang/HCL extractor warnings only). Branch scope reviewed: 21 staged feature/evidence paths, none under API, dashboard or Mezaj. No live SMS, user-account mutation, or deployment.
+## Welcome mobile redesign 2026-10-24
+
+Task ID: F12-FE01 (bounded continuation; broader task REWORK/unchecked)
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION (no new batch)
+Reviewed by: Codex /root
+Status: READY_FOR_OWNER_VISUAL_REVIEW
+Changed files:
+- apps/app/src/app/welcome/page.tsx
+- apps/app/src/app/globals.css (entry-only rules)
+- coordinator STATUS/phase checklist/this log
+Scope: applied redesign-existing-projects skill to the existing Next/React/CSS screen. Removed both welcome brain images, retained the Home asset. Brand/leaf motif, responsive split desktop/compact mobile layout, real one/three-step progress, explicit next action, labeled native Persian birthday selectors, native radio selection highlight, 16px controls, safe-area/dynamic viewport handling, reduced motion and forced-colors support. Existing demographic prefill, profile/start/complete/result requests and assessment engine retained.
+Verification:
+- pnpm --filter @sabz/app typecheck -> PASS.
+- node .local/welcome-mobile-check.mjs -> PASS at320/390/430/768/1440: synthetic refresh/entry only, no real profile writes; profile values/date/gender prefill, no brain images, one/three progress items, controls at least44px, no horizontal page overflow, failed save retains values, successful retry sends exact ISO date/gender, assessment introduction and result states display without overflow or runtime errors.
+- Profile screenshots320/390/430/768/1440, start/result screenshots same widths saved in ignored .local/welcome-review;390/1440 profile reviewed visually;390 spacing compacted after review.
+- git diff --check -> PASS.
+- Graphify AST update requested; final outcome recorded below.
+Migrations: none. API/contracts/dependencies unchanged.
+Limits: native desktop Chromium emulation, not real iOS/Android keyboard/safe-area acceptance; active question engine behavior was not changed or tested end-to-end in this visual slice. Owner phone review pending. No commit/push/deploy or next batch.
+- Graphify update . -> PASS (AST graph rebuilt); existing extractor limitations for SQL/Erlang/HCL and partial chat.service.ts extraction reported, unrelated to this UI slice.
+
+## F12-FE01-MZ01 — paid Mezaj services and result products
+
+Task ID: F12-FE01-MZ01
+Completed at: 2026-10-24 Asia/Tehran
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION, bounded owner-authorized continuation
+Reviewed by: Codex /root; PASS
+Status: software slice DONE; broad F12-FE01 remains REWORK/unchecked
+Branch: codex/mezaj-paid-content, clean baseline dev34e3c79
+
+Changed files:
+- API: optional ProgramMezajPresentation Prisma model/additive migration; shared assessment provenance/pair resolver; scoped commerce selector/query/source-version metadata; program recommendation/configuration/library DTOs/controllers/service and existing module registration; exact-result welcome read exception only.
+- Contracts: existing program definition/purchase numeric query Swagger metadata corrected, actual exported OpenAPI and generated SDK synchronized.
+- App: shared token-based service/owned cards, parallel result recommendations, exact-result product call, result/welcome/Home wiring; existing protected offering/purchase/content routes retained. Welcome acknowledges entry before recommendation navigation.
+- Dashboard: programs route/menu/meta, text version/source editor, qualified physician review, optimistic ordered pair/icon settings, commercial preview/publication using actual terms/retention; local primitive/semantic/component tokens and focused styling.
+- Regression/evidence: program purchase suite additions, exact welcome guard tests, reproducible disposable harness/package command, strict local test-helper allowlist, updated commerce unknown-query assertion, intercepted browser runner; contract/design/status/checklist/log.
+
+Implementation decisions:
+- Existing READY_EDUCATION definitions/publications/PROGRAM billing/grants are authoritative; no second payment or entitlement system. Full paid text never travels in recommendations/library. Prior paid content stays on its exact retained definition; result/config/tariff changes do not erase owned grants.
+- Shared resolver selects the requested self-owned accessible completed submission or the latest accessible completion. It accepts canonical MEZAJ/MIZAJ keys, explicit uppercase preset IDs to canonical store codes, hashes/source engine/version/profile checks and SINGLE->same-pair; unsupported/latest-unmapped/tied results never fall back to an older recommendation. Scalar band mapping remains supported. No clinical score recomputation or label inference.
+- Program cards select actual current publications, preserve PENDING/OWNED actions and use exact IRR->TOMAN formatting including sub-toman remainder. Home library is independent of the latest result and commercial placement, paginated and server-authorized.
+- Admin authoring/publishing remains distinct from qualified physician approval. Pure physician view uses existing clinical list/approve APIs and hides administrative mutation controls. Source approval and actual purchase terms are never fabricated.
+
+Migrations:
+- 20261024120000_program_mezaj_presentations: one optional bounded placement record per exact definition, composite clinic/source FK, icon/pair/enabled/revision constraints and clinic-enabled index. Existing definitions receive a supporting compound unique key. No patient or payment table rewrite.
+-83 fresh migrations plus additive upgrade/catalog/result preservation and final schema diff PASS on a random disposable local database. Main/owner/VPS database untouched.
+
+Verification:
+- pnpm --filter @sabz-zendegi/api test:mezaj-programs ->47/47 PASS (program purchase/access integration32, existing entry13, exact welcome recommendation guard2). Includes11+1 ordered/reverse pairs, explicit older result, cross-patient denial, no-body metadata, pending/owned, tamper/no fallback, concurrent revisions, invalid SQL/DTO shape, revoked placement and tariff retirement retaining owned access, existing wallet/server-Verify/clinical source/lifecycle regressions. Synthetic encryption keys and gateway only; temporary DB destroyed.
+- pnpm --filter @sabz-zendegi/api test:commerce-mezaj ->28/28 PASS;83 migrations, legacy catalog/results preserved, no schema difference. Old patientId query fixture updated to400 because the now-documented DTO correctly rejects unknown selection inputs; normal self NO_RESULT response retained.
+- Prisma generate, API source/test types, patient app/dashboard types and generated SDK generate/build ->PASS. OpenAPI exported from compiled Nest application; no manual contract patch.
+- pnpm --filter @sabz/dashboard exec eslint src/features/programs/program-services-page.tsx src/lib/program-services-api.ts ->PASS. Initial root ESLint attempt had no root config; used the actual dashboard configuration. Effect loading corrected to asynchronous cancellation-safe callbacks, no disable or rule weakening.
+- design-system validate-tokens.cjs --dir apps/dashboard/src/features/programs and --dir apps/app/src/components/programs ->PASS. Primitive definitions in dedicated token file; component colors semantic, no new raw hex.
+- node apps/app/e2e/mezaj-services.browser.mjs ->PASS320/390/1440: real compiled pages with intercepted API fixtures, result/services/product display, exact result query, correct purchase/read destinations and protected text reading, welcome acknowledgement+navigation, independent owned Home library, dashboard16 ordered pairs,409 preserves selection, no overflow/page errors. Screenshots ignored under .local/mezaj-review; result390 and dashboard390 visually inspected. Existing local frontends served on3001/3002 for review; no main API/database command or payment sent.
+- git diff --check ->PASS. Graphify AST update ->PASS; existing missing SQL/Erlang/HCL extractors/partial chat extraction noted, unrelated to feature.
+
+Review:
+- Clean baseline and explicit write-set reviewed; protected slider-data.ts/justforcheck.md and dependency/lockfile untouched. Generated Next AGENTS heading change removed.
+- Main-agent scope, authorization, data ownership, exact source/retention, SDK contracts, UI states, mobile rendering and no real data mutations reviewed. No unresolved software blocker in this slice.
+
+Known limits / next action:
+- Operator must apply the additive migration through normal deployment before the new endpoints query the main database. No main/VPS migration, merge, push or deployment performed.
+- Configure actual educational source/text, qualified approval, active PROGRAM_PURCHASE_TERMS/retention reference, publication and real products/pairs in dashboard. None is seeded or silently activated.
+- Browser checks emulate Chromium mobile sizes, not actual iOS/Android keyboard; live bank/provider, clinical/legal content acceptance and broader release review remain owner-operated.
+- Next action is owner visual review and authorized rollout/configuration. No unrelated task or next batch started.
+
+## Landing OTP PR branch synchronization (2026-10-25)
+
+PR #32 initially used `9b8c40e` as its dev base. After PR #31 merged as `4121081`, GitHub reported the OTP branch as non-mergeable and the local branch no longer contained the current dev tip. Merged `origin/dev` into `codex/landing-otp-pr`; the only content conflict was the append-only phase log, resolved by preserving both the OTP and dev entries. No OTP code conflict or lockfile change. The resulting PR diff remains based on current dev.
+
+The original PR CI reported `verify` failure only at “Assessment reliability in an isolated disposable database”; API security and artifact checks passed, as did the preceding lint, types, full test, database regression, and build steps. The failure is outside OTP-owned paths. GitHub’s job-log download endpoint returned a transport error, preventing identification of the specific failing assertion from that run. After merging dev, API-client build, web typecheck, all 25 web tests, web production build, and diff checks pass. Push the merge update and inspect the new hosted CI run before declaring the reported error resolved.

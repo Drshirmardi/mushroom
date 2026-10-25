@@ -16,6 +16,9 @@ import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
 import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
+import { ProgramMezajService } from '../src/modules/programs/purchases/program-mezaj.service';
+import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
+import { previewTieBreakDraft, TIEBREAK_ALGORITHM } from '../src/modules/assessments/domain/assessment-tiebreak-draft';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready program purchase/access (disposable PostgreSQL, synthetic PSP)', () => {
   let app: NestFastifyApplication, db: PrismaService, billing: BillingService, gateway: BillingGatewayService, wallet: WalletService, clinicId: string, doctorRole: string, originalSign: boolean;
@@ -71,6 +74,47 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
   async function fund(p: Awaited<ReturnType<typeof patient>>) { const s = await wallet.summary(p.profile); await wallet.adjust(ctx(), p.profile.id, { type: 'CREDIT', amountToman: '100000', expectedVersion: s.version, reason: 'Synthetic program funding' }, randomUUID()); }
   async function paid(f: Awaited<ReturnType<typeof setup>>, p: Awaited<ReturnType<typeof patient>>) { const i = await purchase(f, p); await fund(p); const r = await req('POST', `patients/me/billing/intents/${i.intent.id}/wallet-payment`, p); expect(r.statusCode, r.body).toBe(201); expect(r.json().status).toBe('PAID'); return { ...i, access: await grant(p, i.intent.programPurchaseId) }; }
 
+  async function dimensionalResult(p: Awaited<ReturnType<typeof patient>>, reverse = false) {
+    const base = structuredClone(MIZAJ_DRAFT_PRESET.structure);
+    for (const section of base.sections) for (const q of section.questions) q.options.forEach((option, i) => { option.scores = { [base.scoring.dimensions[i]!.id]: 1 }; });
+    const structure = { ...base, schemaVersion: 3 as const, scoring: { ...base.scoring, ...TIEBREAK_ALGORITHM, minInformativeAnswers: 1 }, followUps: [] };
+    const questions = structure.sections.flatMap(s => s.questions);
+    const answers = Object.fromEntries(questions.map((q,i) => [q.id,q.options[i < 8 ? reverse ? 1 : 0 : reverse ? 0 : 1]!.id]));
+    const evaluation = previewTieBreakDraft(structure,answers);
+    const key='MIZAJ'; await db.assessmentVersion.updateMany({where:{clinicId,assessmentKey:key,status:'PUBLISHED'},data:{status:'RETIRED',retiredAt:new Date()}});
+    const last=await db.assessmentVersion.aggregate({where:{clinicId,assessmentKey:key,locale:'fa-IR'},_max:{versionNumber:true}});
+    const v=await db.assessmentVersion.create({data:{clinicId,assessmentKey:key,locale:'fa-IR',versionNumber:(last._max.versionNumber??0)+1,title:'Synthetic11+1',contentHash:'c'.repeat(64),structure:structure as unknown as Prisma.InputJsonValue,status:'PUBLISHED',publishedAt:new Date()}});
+    const payloadHash='a'.repeat(64);
+    const snapshot={...evaluation,reviewState:'ADMIN_PUBLISHED',questionnaireContentHash:v.contentHash,answerPayloadHash:payloadHash,resultBand:{id:evaluation.profile!.id,title:evaluation.profile!.title,riskLevel:'NONE',requiresReview:false},answers};
+    return db.patientAssessmentSubmission.create({data:{patientId:p.profile.id,assessmentVersionId:v.id,attemptNumber:1,state:'COMPLETE',completedAt:new Date(),completionPayloadHash:payloadHash,completionIdempotencyKey:randomUUID(),resultSnapshot:snapshot as unknown as Prisma.InputJsonValue}});
+  }
+  it('Mezaj exact result recommendations support11+1 canonical IDs, private bodies, reverse pairs and source tamper without older fallback', async()=>{
+    const f=await setup(),p=await patient(),q=await patient(),service=app.get(ProgramMezajService);
+    await service.settings(f.definition.id,ctx(),{expectedRevision:0,enabled:true,icon:'compass',pairs:['damavi/safravi']});
+    const s=await dimensionalResult(p);
+    const r=await req('GET',`patients/me/program-recommendations?submissionId=${s.id}`,p);expect(r.statusCode,r.body).toBe(200);expect(r.json()).toMatchObject({status:'READY',primary:'damavi',secondary:'safravi',items:[{programDefinitionId:f.definition.id,state:'BUY',icon:'compass'}]});expect(r.body).not.toContain(f.input.body);
+    expect((await req('GET',`patients/me/program-recommendations?submissionId=${s.id}`,q)).statusCode).toBe(404);
+    const reversed=await dimensionalResult(p,true);const fresh=await req('GET','patients/me/program-recommendations',p);expect(fresh.json()).toMatchObject({primary:'safravi',secondary:'damavi',items:[]});
+    expect((await req('GET',`patients/me/program-recommendations?submissionId=${s.id}`,p)).json().items).toHaveLength(1);
+    const snapshot=reversed.resultSnapshot as Record<string,unknown>;await db.patientAssessmentSubmission.create({data:{patientId:p.profile.id,assessmentVersionId:reversed.assessmentVersionId,attemptNumber:2,state:'COMPLETE',completedAt:new Date(),completionPayloadHash:'a'.repeat(64),completionIdempotencyKey:randomUUID(),resultSnapshot:{...snapshot,answerPayloadHash:'b'.repeat(64)} as Prisma.InputJsonValue}});
+    expect((await req('GET','patients/me/program-recommendations',p)).json()).toMatchObject({status:'RESULT_UNSUPPORTED',items:[]});
+    expect((await req('GET','patients/me/commerce/recommendations?submissionId='+s.id,p)).json()).toMatchObject({primary:'damavi',secondary:'safravi'});
+    await purchase(f,q);await dimensionalResult(q);expect((await req('GET','patients/me/program-recommendations',q)).json().items[0].state).toBe('PENDING');
+  },20000);
+  it('Mezaj config serializes edits, enforces clinic/auth/shape, and owned library survives placement removal and tariff retirement',async()=>{
+    const f=await setup('0','PERPETUAL'),p=await patient(),q=await patient(),service=app.get(ProgramMezajService);
+    const config={expectedRevision:0,enabled:true,icon:'leaf' as const,pairs:['damavi/safravi']};
+    const results=await Promise.allSettled([service.settings(f.definition.id,ctx(),config),service.settings(f.definition.id,ctx(),config)]);expect(results.filter(r=>r.status==='fulfilled')).toHaveLength(1);
+    const outsider=await req('GET',`admin/program-definitions/${f.definition.id}/mezaj`,p);expect(outsider.statusCode).toBe(403);
+    await dimensionalResult(p);const pending=await purchase(f,p);expect(pending.intent.status).toBe('PAID');
+    const recommendations=await req('GET','patients/me/program-recommendations',p);expect(recommendations.json().items[0].state).toBe('OWNED');
+    const library=await req('GET','patients/me/program-library',p);expect(library.statusCode,library.body).toBe(200);expect(library.json().items).toHaveLength(1);expect(library.json().items[0].accessAvailable).toBe(true);expect(library.body).not.toContain(f.input.body);expect((await req('GET','patients/me/program-library',q)).json().items).toEqual([]);
+    await service.settings(f.definition.id,ctx(),{...config,expectedRevision:1,enabled:false,pairs:[]});await req('POST',`admin/program-offerings/${f.pub.id}/retire`);
+    expect((await req('GET','patients/me/program-library',p)).json().items[0].accessAvailable).toBe(true);
+    expect((await req('GET','patients/me/program-recommendations',p)).json().items).toEqual([]);
+    const bad=await app.inject({method:'PUT',url:`/v1/admin/program-definitions/${f.definition.id}/mezaj`,headers:{authorization:`Bearer ${admin.token}`},payload:{...config,expectedRevision:2,pairs:['wrong/pair']}});expect(bad.statusCode).toBe(400);
+    await expect(db.programMezajPresentation.update({where:{programDefinitionId:f.definition.id},data:{pairs:['wrong/pair']}})).rejects.toThrow();
+  },20000);
   it('catalog has exact terms/safety/current price, no curriculum or medical intake/age gate', async () => {
     const f = await setup(), p = await patient(), r = await req('GET', `patients/me/program-offerings/${f.pub.id}`, p); expect(r.statusCode, r.body).toBe(200); expect(r.json()).toMatchObject({ amountRial: '50000', educationalOnly: true, ordinaryRefunds: false, terms: { id: f.terms.id }, termsConsent: null }); expect(r.body).not.toContain(f.input.body); expect(await db.patientMedicalIntake.count({ where: { patientId: p.profile.id } })).toBe(0);
     const list = await req('GET', 'patients/me/program-offerings?pageSize=1', p); expect(list.statusCode, list.body).toBe(200); expect(list.json().items).toHaveLength(1); const empty = await req('GET', 'patients/me/program-offerings?page=10000&pageSize=50', p); expect(empty.json().total).toBe(list.json().total); expect(empty.json().items).toEqual([]);

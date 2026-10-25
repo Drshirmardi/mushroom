@@ -20,6 +20,7 @@ export const NAV: NavItem[] = [
   { href: "/patients", label: "بیماران", icon: Users, group: "بالینی" },
   { href: "/prescriptions", label: "نسخه بیماران", icon: FileText, group: "بالینی" },
   { href: "/assessments", label: "ارزیابی‌ها", icon: ClipboardList, group: "بالینی" },
+  { href: "/programs", label: "خدمات متنی مزاج", icon: FileText, group: "بالینی" },
   { href: "/health-tracking", label: "ردیابی سلامت", icon: Activity, group: "بالینی" },
   { href: "/store", label: "محصولات", icon: ShoppingBag, group: "فروشگاه" },
   { href: "/store-builder", label: "استور بیلدر", icon: Layout, group: "فروشگاه" },
