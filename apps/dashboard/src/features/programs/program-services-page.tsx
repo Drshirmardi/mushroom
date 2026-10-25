@@ -34,7 +34,7 @@ function Workspace({ token, doctor, manage }: { token: string; doctor: boolean; 
   return <div ref={scroll} className="program-workspace" dir="rtl" tabIndex={0} role="region" aria-label="فضای مدیریت خدمات">
     <div className="program-content">
       <header className="program-workspace-header">
-        <div><span className="program-eyebrow">مدیریت خدمات آموزشی</span><h1>خدمات متنی مزاج</h1><p>از نوشتن محتوا تا پیشنهاد و فروش، همهٔ تنظیمات هر خدمت در یک جا.</p></div>
+        <div><span className="program-eyebrow">مدیریت خدمات آموزشی</span><h1>خدمات اختصاصی مزاج</h1><p>از نوشتن محتوا تا پیشنهاد و فروش، همهٔ تنظیمات هر خدمت در یک جا.</p></div>
         {!selection && manage && <button className="dashboard-button dashboard-button-primary" onClick={() => select('new')}><Plus size={18} aria-hidden="true" />خدمت جدید</button>}
       </header>
       {selection ? <Editor key={selection === 'new' ? 'new' : selection.id} token={token} initial={selection === 'new' ? null : selection} doctor={doctor} manage={manage} onClose={() => { select(null); list.refresh(); }} onCreated={item => { select(item); list.refresh(); }} /> : <>

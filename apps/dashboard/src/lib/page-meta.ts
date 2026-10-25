@@ -13,7 +13,7 @@ export const PAGE_META = {
   patients: { title: "بیماران", subtitle: "فضای کاری بیمار — مدیریت کامل" },
   prescriptions: { title: "نسخه بیماران", subtitle: "نسخه‌نویسی، درمان، رژیم و ورزش" },
   assessments: { title: "ارزیابی‌ها", subtitle: "ساخت و بررسی پرسشنامه‌های بالینی" },
-  programs: { title: "خدمات متنی مزاج", subtitle: "محتوا، مزاج‌های مرتبط و عرضهٔ خدمات آموزشی" },
+  programs: { title: "خدمات اختصاصی مزاج", subtitle: "محتوا، مزاج‌های مرتبط و عرضهٔ خدمات آموزشی" },
   "health-tracking": { title: "ردیابی سلامت", subtitle: "پایش شاخص‌های سلامت از اپ موبایل" },
   store: { title: "مدیریت محصولات", subtitle: "فروشگاه، انبار و دسته‌بندی‌ها" },
   "store-builder": { title: "استور بیلدر", subtitle: "طراحی صفحه فروشگاه، بنرها و بخش‌ها" },

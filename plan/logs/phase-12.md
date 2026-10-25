@@ -5475,3 +5475,7 @@ Verification:
 - Graphify AST updated, existing missing extractor/unrelated chat parser warnings retained. Owned review server stopped; generated-only Next AGENTS heading restored. Diff check PASS.
 
 Next/limits: owner can test local /programs and request push/deployment; server needs the committed migrations on deployment. No next roadmap batch or real source/legal/content activation.
+
+## Programs naming correction (2026-10-25)
+
+Task: F12-FE01-MZ01 owner-selected label follow-up; sole /root, dev. Renamed the dashboard navigation, page heading, header metadata and browser title to «خدمات اختصاصی مزاج». Source search confirms all four runtime occurrences replaced. Static text-only review and diff check PASS; no runtime tests needed for this label change. No API/route/data change, push/deployment or next batch.
