@@ -55,7 +55,7 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon size={14} /></div>
               <div className="flex-1 min-w-0">
                 <p className={`text-xs leading-snug ${!item.readAt ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{item.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
+                <p className="mt-1 text-xs font-semibold text-foreground">کاربر: {item.recipientDisplayName || "نام ثبت نشده"}</p><p className="mt-1 text-xs text-muted-foreground"><span className="font-medium">متن ارسال‌شده به کاربر: </span>{item.body}</p>
                 <p className="text-[0.65rem] text-muted-foreground/60 mt-1">{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(item.createdAt))}</p>
               </div>
               {!item.readAt && <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0" />}

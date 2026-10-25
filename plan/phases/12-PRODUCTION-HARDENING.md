@@ -1,5 +1,7 @@
 # Phase 12 — Production Hardening
 
+Notification recipient context (2026-10-25), same F12-FE01 /root: admin-only projection adds selected recipient profile name; dashboard full list and header panel identify the user and label original patient-directed notification text. IMPLEMENTED_UNVERIFIED / REWORK, no commit/DONE; checks deferred. Evidence phase-12 log.
+
 Dashboard notification render correction (2026-10-25), same F12-FE01 /root on dev: IMPLEMENTED_UNVERIFIED / REWORK. Current owner runtime trace caused by undefined icon for native FINANCIAL category. Dashboard page/panel now support Wallet with Bell fallback; frontend category union synchronized. Source review only; tests/types/lint/build/browser deferred, no commit/DONE. See phase-12 log.
 
 - [x] `F12-FE01-MZ01` — Paid Mezaj text-service software slice DONE; CLIENT-INTEGRATION, sole /root review PASS. Reused reviewed programs/PROGRAM billing/grants; ordered pair/icon placement, exact11+1/scalar recommendations, result services/products, owned Home library, admin and qualified-physician workspace.47 program/entry/guard +28 commerce tests,83 migrations/no drift, types/SDK/dashboard lint/token validators and3 responsive intercepted browser scenarios PASS. Contract: ../contracts/mezaj-paid-content-v1.md; design: ../mezaj-services-design.md; evidence: phase-12 log. Main/VPS migration and actual approved content/terms configuration remain operator actions. Broad F12-FE01 REWORK; no next batch.
