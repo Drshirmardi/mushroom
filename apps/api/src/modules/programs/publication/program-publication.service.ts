@@ -5,6 +5,7 @@ import { Prisma, type ProgramOfferingPublication } from '../../../generated/pris
 import { GuidanceAuthorityService, type GuidanceActorContext as Context } from '../../content/guidance/guidance-authority.service';
 import { moneyRial } from '../../billing/billing.policy';
 import type { ProgramCommercialConfigDto, ProgramCommercialPolicyDto, ProgramPublicationQueryDto, ProgramPublicationResponseDto, PublishProgramOfferingDto } from './program-publication.dto';
+import { ensureReadyProgramTerms, READY_PROGRAM_TERMS } from './ready-program-terms';
 type Tx = Prisma.TransactionClient;
 export const PROGRAM_COMMERCIAL_POLICY = Object.freeze({ schemaVersion: 1, ordinaryRefunds: false, paymentPoint: 'PRE_ACCESS_OR_REQUEST' } as const);
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -25,6 +26,7 @@ export class ProgramPublicationService {
       ]);
       await this.audit(tx, 'SETUP_READ', definition.id, ctx);
       return {
+        defaultTerms: definition.kind === 'READY_EDUCATION' ? { title: READY_PROGRAM_TERMS.title, body: READY_PROGRAM_TERMS.body, versionNumber: READY_PROGRAM_TERMS.versionNumber } : null,
         latestPublication: latest ? await this.response(tx, latest) : null,
         termsPolicy: terms ? { id: terms.id, policyKey: 'PROGRAM_PURCHASE_TERMS' as const, versionNumber: terms.versionNumber, locale: terms.locale, title: terms.title, body: terms.body, contentHash: terms.contentHash } : null,
         suggestedRetentionPolicyRef: latest?.retentionPolicyRef ?? previous?.retentionPolicyRef ?? null,
@@ -32,16 +34,17 @@ export class ProgramPublicationService {
     }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
   }
   async preview(input: ProgramCommercialConfigDto, ctx: Context) {
-    const configuration = this.config(input);
-    return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), source = await this.sources(tx, clinicId, configuration), latest = await this.latest(tx, source.definition);
-      await this.audit(tx, 'PREVIEW_READ', source.definition.id, ctx); return { configuration, definition: { id: source.definition.id, programKey: source.definition.programKey, locale: source.definition.locale, kind: source.definition.kind, title: source.definition.title, contentHash: source.definition.contentHash, status: source.definition.status, usable: source.usable }, termsPolicy: source.terms ? { id: source.terms.id, policyKey: 'PROGRAM_PURCHASE_TERMS' as const, versionNumber: source.terms.versionNumber, locale: source.terms.locale, title: source.terms.title, body: source.terms.body, contentHash: source.terms.contentHash } : null, policy: PROGRAM_COMMERCIAL_POLICY, publicationHash: source.hash, expectedPublicationNumber: latest?.publicationNumber ?? 0, configurationReady: !source.blockers.length, blockers: source.blockers, checkoutAvailable: false as const };
-    }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
+    const requested = this.config(input);
+    return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), configuration = await this.resolveConfiguration(tx, clinicId, requested, ctx.actorUserId), source = await this.sources(tx, clinicId, configuration), latest = await this.latest(tx, source.definition);
+      await this.audit(tx, 'PREVIEW_READ', source.definition.id, ctx); return { configuration, definition: { id: source.definition.id, programKey: source.definition.programKey, locale: source.definition.locale, kind: source.definition.kind, title: source.definition.title, contentHash: source.definition.contentHash, status: source.definition.status, usable: source.usable }, termsPolicy: source.terms ? { id: source.terms.id, policyKey: source.terms.policyKey as 'PROGRAM_PURCHASE_TERMS' | 'READY_PROGRAM_PURCHASE_TERMS', versionNumber: source.terms.versionNumber, locale: source.terms.locale, title: source.terms.title, body: source.terms.body, contentHash: source.terms.contentHash } : null, policy: PROGRAM_COMMERCIAL_POLICY, publicationHash: source.hash, expectedPublicationNumber: latest?.publicationNumber ?? 0, configurationReady: !source.blockers.length, blockers: source.blockers, checkoutAvailable: false as const };
+    }, { isolationLevel: 'ReadCommitted', timeout: 15_000 });
   }
   async publish(input: PublishProgramOfferingDto, rawKey: string | undefined, ctx: Context) {
-    const key = rawKey?.trim(); if (!key || !/^[\x21-\x7e]{8,200}$/u.test(key) || input.reviewedTermsAndRetention !== true) throw invalid(); const configuration = this.config(input), payloadHash = hash({ configuration, publicationHash: input.publicationHash, expectedPublicationNumber: input.expectedPublicationNumber, reviewedTermsAndRetention: true });
+    const key = rawKey?.trim(); if (!key || !/^[\x21-\x7e]{8,200}$/u.test(key) || input.reviewedTermsAndRetention !== true) throw invalid(); const requested = this.config(input), payloadHash = hash({ configuration: requested, publicationHash: input.publicationHash, expectedPublicationNumber: input.expectedPublicationNumber, reviewedTermsAndRetention: true });
     return this.prisma.$transaction(async tx => {
       const clinicId = await this.authority.scope(tx, 'admin', ctx); await this.lock(tx, 'program-publication-command:' + ctx.actorUserId + ':' + key);
       const replay = await tx.programOfferingPublication.findUnique({ where: { clinicId_publishedByUserId_idempotencyKey: { clinicId, publishedByUserId: ctx.actorUserId, idempotencyKey: key } } }); if (replay) { if (replay.payloadHash !== payloadHash) throw new ConflictException({ code: 'IDEMPOTENCY_KEY_REUSED', message: 'Command key already used for different publication.', details: {} }); await this.audit(tx, 'READ', replay.id, ctx); return this.response(tx, replay); }
+      const configuration = await this.resolveConfiguration(tx, clinicId, requested, ctx.actorUserId);
       const definition = await this.definition(tx, clinicId, configuration.programDefinitionId); await this.lock(tx, this.identity(definition)); const latest = await this.latest(tx, definition); if ((latest?.publicationNumber ?? 0) !== input.expectedPublicationNumber) throw conflict();
       const source = await this.sources(tx, clinicId, configuration, true); if (source.blockers.length || !source.terms || !source.hash || source.hash !== input.publicationHash) throw conflict();
       const now = await this.time(tx, latest?.retiredAt ?? latest?.createdAt); if (latest?.status === 'ACTIVE') await this.retireRow(tx, latest, 'REPLACED', now, ctx);
@@ -55,15 +58,22 @@ export class ProgramPublicationService {
   }
   async get(id: string, ctx: Context) { return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), row = await this.owned(tx, clinicId, id); await this.audit(tx, 'READ', id, ctx); return this.response(tx, row); }, { isolationLevel: 'RepeatableRead', timeout: 15_000 }); }
   async retire(id: string, ctx: Context) { return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), initial = await this.owned(tx, clinicId, id); await this.lock(tx, this.identity(initial)); await tx.$queryRaw(Prisma.sql`SELECT id FROM program_offering_publications WHERE id=${id}::uuid AND clinic_id=${clinicId}::uuid FOR UPDATE`); const row = await this.owned(tx, clinicId, id); if (row.status === 'RETIRED') { await this.audit(tx, 'READ', id, ctx); return this.response(tx, row); } const next = await this.retireRow(tx, row, 'MANUAL', await this.time(tx, row.createdAt), ctx); await this.audit(tx, 'RETIRED', id, ctx); return this.response(tx, next); }, { maxWait: 30_000, timeout: 15_000 }); }
-  private config(input: ProgramCommercialConfigDto) { moneyRial(input.amountRial, true); return { programDefinitionId: input.programDefinitionId.toLowerCase(), termsPolicyVersionId: input.termsPolicyVersionId.toLowerCase(), amountRial: input.amountRial, currency: input.currency, accessMode: input.accessMode, accessDurationDays: input.accessDurationDays ?? null, quoteTtlSeconds: input.quoteTtlSeconds, retentionPolicyRef: input.retentionPolicyRef ?? null }; }
-  private async sources(tx: Tx, clinicId: string, config: ReturnType<ProgramPublicationService['config']>, lock = false) {
+  private config(input: ProgramCommercialConfigDto) { moneyRial(input.amountRial, true); return { programDefinitionId: input.programDefinitionId.toLowerCase(), termsPolicyVersionId: input.termsPolicyVersionId?.toLowerCase() ?? null, amountRial: input.amountRial, currency: input.currency, accessMode: input.accessMode, accessDurationDays: input.accessDurationDays ?? null, quoteTtlSeconds: input.quoteTtlSeconds, retentionPolicyRef: input.retentionPolicyRef ?? null }; }
+  private async resolveConfiguration(tx: Tx, clinicId: string, requested: ReturnType<ProgramPublicationService['config']>, actorId: string) {
+    if (requested.termsPolicyVersionId) return { ...requested, termsPolicyVersionId: requested.termsPolicyVersionId };
+    const definition = await this.definition(tx, clinicId, requested.programDefinitionId);
+    if (definition.kind !== 'READY_EDUCATION' || requested.accessMode !== 'PERPETUAL' || requested.accessDurationDays !== null) throw invalid();
+    const terms = await ensureReadyProgramTerms(tx, clinicId, definition.locale, actorId);
+    return { ...requested, termsPolicyVersionId: terms.id };
+  }
+  private async sources(tx: Tx, clinicId: string, config: ReturnType<ProgramPublicationService['config']> & { termsPolicyVersionId: string }, lock = false) {
     const definition = await this.definition(tx, clinicId, config.programDefinitionId); if (definition.kind === 'READY_EDUCATION' && config.accessMode === 'ONE_DELIVERY' || definition.kind === 'CUSTOM_PROFESSIONAL_PLAN' && config.accessMode !== 'ONE_DELIVERY' || (config.accessMode === 'DAYS') !== (config.accessDurationDays !== null)) throw invalid();
     if (definition.kind === 'CUSTOM_PROFESSIONAL_PLAN' && !config.retentionPolicyRef) throw invalid();
     let usable: boolean;
     if (lock) { usable = !!(await tx.$queryRaw<{ allowed: boolean }[]>(Prisma.sql`SELECT program_publication_lock_definition(${definition.id}::uuid) AS allowed`))[0]?.allowed; await tx.$queryRaw(Prisma.sql`SELECT id FROM consent_policy_versions WHERE id=${config.termsPolicyVersionId}::uuid AND clinic_id=${clinicId}::uuid FOR SHARE`); }
     else usable = !!(await tx.$queryRaw<{ allowed: boolean }[]>(Prisma.sql`SELECT program_definition_usable(${definition.id}::uuid) AS allowed`))[0]?.allowed;
     const blockers: string[] = []; if (!usable) blockers.push('PROGRAM_CLINICAL_DEFINITION_UNAVAILABLE');
-    const terms = await tx.consentPolicyVersion.findFirst({ where: { id: config.termsPolicyVersionId, clinicId, locale: definition.locale, policyKey: 'PROGRAM_PURCHASE_TERMS', status: 'ACTIVE', activatedAt: { not: null } } }); if (!terms) blockers.push('PROGRAM_PURCHASE_TERMS_UNAVAILABLE');
+    const terms = await tx.consentPolicyVersion.findFirst({ where: { id: config.termsPolicyVersionId, clinicId, locale: definition.locale, policyKey: { in: definition.kind === 'READY_EDUCATION' && config.accessMode === 'PERPETUAL' ? ['PROGRAM_PURCHASE_TERMS', READY_PROGRAM_TERMS.policyKey] : ['PROGRAM_PURCHASE_TERMS'] }, status: 'ACTIVE', activatedAt: { not: null } } }); if (!terms) blockers.push('PROGRAM_PURCHASE_TERMS_UNAVAILABLE');
     if (definition.kind === 'CUSTOM_PROFESSIONAL_PLAN') { const service = await tx.doctorService.findFirst({ where: { id: definition.doctorServiceId!, clinicId }, select: { priceAmount: true, currency: true } }); if (!service || service.currency !== 'IRR' || BigInt(service.priceAmount) !== moneyRial(config.amountRial, true)) blockers.push('CUSTOM_SERVICE_PRICE_CHANGED'); }
     return { definition, terms, usable, blockers, hash: !blockers.length && terms ? hash({ schemaVersion: 1, configuration: config, definitionContentHash: definition.contentHash, termsContentHash: terms.contentHash, policy: PROGRAM_COMMERCIAL_POLICY }) : null };
   }

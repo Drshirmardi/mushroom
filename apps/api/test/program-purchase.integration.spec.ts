@@ -64,8 +64,8 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     const approved = await req('POST', `clinical/program-definitions/${definition.id}/approve`, doctor, { contentHash: definition.contentHash, reviewedProgramAndSafety: true, noAutomaticTherapyActivation: true }); expect(approved.statusCode, approved.body).toBe(201);
     await db.consentPolicyVersion.updateMany({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR', status: 'ACTIVE' }, data: { status: 'RETIRED', retiredAt: new Date() } });
     const previous = await db.consentPolicyVersion.findFirst({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR' }, orderBy: { versionNumber: 'desc' } }), body = 'Synthetic legal fixture only, no approved legal text.', terms = await db.consentPolicyVersion.create({ data: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR', versionNumber: (previous?.versionNumber ?? 0) + 1, title: 'Synthetic terms', body, contentHash: createHash('sha256').update(body).digest('hex'), status: 'ACTIVE', activatedAt: new Date() } });
-    const config = { programDefinitionId: definition.id, termsPolicyVersionId: terms.id, amountRial: amount, currency: 'IRR', accessMode: mode, accessDurationDays: mode === 'DAYS' ? 30 : null, quoteTtlSeconds: 600, retentionPolicyRef: sourceFree ? undefined : 'SYNTHETIC_TEST_ONLY' }, pub = await publish(config);
-    return { definition, input, content, terms, config, pub };
+    const config = { programDefinitionId: definition.id, termsPolicyVersionId: sourceFree ? undefined : terms.id, amountRial: amount, currency: 'IRR', accessMode: mode, accessDurationDays: mode === 'DAYS' ? 30 : null, quoteTtlSeconds: 600, retentionPolicyRef: sourceFree ? undefined : 'SYNTHETIC_TEST_ONLY' }, pub = await publish(config);
+    return { definition, input, content, terms: sourceFree ? await db.consentPolicyVersion.findUniqueOrThrow({ where: { id: pub.termsPolicyVersionId } }) : terms, config, pub };
   }
   async function publish(config: object) { const preview = await req('POST', 'admin/program-offerings/preview', admin, config); expect(preview.statusCode, preview.body).toBe(200); const response = await req('POST', 'admin/program-offerings', admin, { ...config, publicationHash: preview.json().publicationHash, expectedPublicationNumber: preview.json().expectedPublicationNumber, reviewedTermsAndRetention: true }); expect(response.statusCode, response.body).toBe(201); return response.json(); }
   async function accept(f: Awaited<ReturnType<typeof setup>>, p: Awaited<ReturnType<typeof patient>>, key = randomUUID()) { const r = await req('POST', 'patients/me/program-consents', p, { policyVersionId: f.terms.id, contentHash: f.terms.contentHash, accepted: true }, key); expect(r.statusCode, r.body).toBe(201); return r.json(); }
@@ -156,16 +156,23 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     const f = await setup(), p = await patient(), i = await paid(f, p); expect((await req('POST', `admin/program-offerings/${f.pub.id}/retire`)).statusCode).toBe(201); await db.consentPolicyVersion.update({ where: { id: f.terms.id }, data: { status: 'RETIRED', retiredAt: new Date() } }); expect((await req('GET', `patients/me/program-access-grants/${i.access.id}/content`, p)).statusCode).toBe(200); expect((await req('POST', `clinical/program-definitions/${f.definition.id}/revoke`, doctor)).statusCode).toBe(201);
     const r = await req('GET', `patients/me/program-access-grants/${i.access.id}/content`, p); expect(r.statusCode, r.body).toBe(409); expect(r.body).not.toContain(f.input.body); expect((await grant(p, i.intent.programPurchaseId)).accessAvailable).toBe(false); expect((await req('GET', 'patients/me/journey', p)).json().programPurchases.items[0]).toMatchObject({ paymentState: 'PAID', accessAvailable: false });
   }, 15_000);
-  it('publishes, purchases and reads a text service without any educational references', async () => {
-    const f = await setup('0', 'PERPETUAL', true), p = await patient();
+  it('buys a fixed-terms service without manual setup and retains permanent access after a new login', async () => {
+    const f = await setup('50000', 'PERPETUAL', true), p = await patient();
     expect(f.definition.contentReferences).toEqual([]);
     expect(f.pub.retentionPolicyRef).toBeNull();
     expect(f.pub.configurationReady).toBe(true);
-    const i = await purchase(f, p), g = await grant(p, i.intent.programPurchaseId);
+    const i = await paid(f, p), g = i.access;
+    expect(f.terms.policyKey).toBe('READY_PROGRAM_PURCHASE_TERMS');
+    expect(g.endsAt).toBeNull();
+    await expect(db.patientConsentRecord.delete({ where: { id: i.input.termsConsentRecordId } })).rejects.toThrow();
     expect(g).not.toBeNull();
     const read = await req('GET', `patients/me/program-access-grants/${g.id}/content`, p);
     expect(read.statusCode, read.body).toBe(200);
     expect(read.json().body).toBe(f.input.body);
+    const refreshed = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT'], p.userId);
+    const recovered = await req('GET', `patients/me/program-access-grants/${g.id}/content`, { ...p, ...refreshed });
+    expect(recovered.statusCode, recovered.body).toBe(200);
+    expect(recovered.json().body).toBe(f.input.body);
   }, 15_000);
   it('ready services retain reviewer checks and ignore revoked legacy educational references', async () => {
     const f = await setup('0'), p = await patient(), i = await purchase(f, p), g = await grant(p, i.intent.programPurchaseId); await db.clinicalRolePermission.delete({ where: { roleId_permission: { roleId: doctorRole, permission: 'CLINICAL_RECORD_SIGN' } } }); try { expect((await req('GET', `patients/me/program-access-grants/${g.id}/content`, p)).statusCode).toBe(409); } finally { await db.clinicalRolePermission.create({ data: { roleId: doctorRole, permission: 'CLINICAL_RECORD_SIGN' } }); }

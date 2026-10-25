@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { READY_PROGRAM_TERMS, READY_PROGRAM_TERMS_HASH } from '../src/modules/programs/publication/ready-program-terms';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
@@ -41,6 +42,27 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('program comm
     const config={programDefinitionId:row.id as string,termsPolicyVersionId:terms.id,amountRial:ds?String(ds.priceAmount):'50000',currency:'IRR',accessMode:ds?'ONE_DELIVERY':'DAYS',accessDurationDays:ds?null:30,quoteTtlSeconds:600,retentionPolicyRef:'SYNTHETIC_REVIEWED_REF'};return {row,config,terms,ds};
   }
   async function publish(config:object,key=randomUUID()) {const preview=await req('POST','admin/program-offerings/preview',admin,config);expect(preview.statusCode,preview.body).toBe(200);expect(preview.json().configurationReady,preview.body).toBe(true);const input={...config,publicationHash:preview.json().publicationHash,expectedPublicationNumber:preview.json().expectedPublicationNumber,reviewedTermsAndRetention:true},response=await req('POST','admin/program-offerings',admin,input,key);expect(response.statusCode,response.body).toBe(201);return {row:response.json(),input,key};}
+  it('automatically uses fixed terms without manual setup and shares one version across concurrent previews', async () => {
+    const row = await definition(body()); expect((await approveDefinition(row)).statusCode).toBe(201);
+    await db.consentPolicyVersion.updateMany({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', status: 'ACTIVE' }, data: { status: 'RETIRED', retiredAt: new Date() } });
+    const initial = await req('GET', `admin/program-offerings/setup/${row.id}`);
+    expect(initial.json()).toMatchObject({ termsPolicy: null, defaultTerms: { body: READY_PROGRAM_TERMS.body, versionNumber: 1 } });
+    const config = { programDefinitionId: row.id, amountRial: '1500000', currency: 'IRR', accessMode: 'PERPETUAL', quoteTtlSeconds: 600 };
+    const previews = await Promise.all([req('POST', 'admin/program-offerings/preview', admin, config), req('POST', 'admin/program-offerings/preview', admin, config)]);
+    for (const response of previews) { expect(response.statusCode, response.body).toBe(200); expect(response.json()).toMatchObject({ configurationReady: true, termsPolicy: { policyKey: READY_PROGRAM_TERMS.policyKey, body: READY_PROGRAM_TERMS.body, contentHash: READY_PROGRAM_TERMS_HASH } }); }
+    expect(previews[0]!.json().termsPolicy.id).toBe(previews[1]!.json().termsPolicy.id);
+    expect(await db.consentPolicyVersion.count({ where: { clinicId, policyKey: READY_PROGRAM_TERMS.policyKey } })).toBe(1);
+    const result = await publish(config); expect(result.row).toMatchObject({ configurationReady: true, accessMode: 'PERPETUAL', accessDurationDays: null, retentionPolicyRef: null });
+    const id = result.row.termsPolicyVersionId;
+    await expect(db.consentPolicyVersion.update({ where: { id }, data: { body: 'Changed terms' } })).rejects.toThrow();
+    await expect(db.consentPolicyVersion.delete({ where: { id } })).rejects.toThrow();
+    expect((await req('POST', 'admin/program-offerings/preview', admin, { ...config, accessMode: 'DAYS', accessDurationDays: 30 })).statusCode).toBe(422);
+    expect((await req('POST', 'admin/program-offerings/preview', admin, { ...config, termsPolicyVersionId: id, accessMode: 'DAYS', accessDurationDays: 30 })).json().configurationReady).toBe(false);
+  }, 20_000);
+  it('keeps custom professional publication outside the fixed ready-service contract', async () => {
+    const f = await setup('CUSTOM_PROFESSIONAL_PLAN');
+    expect((await req('POST', 'admin/program-offerings/preview', admin, { ...f.config, termsPolicyVersionId: undefined })).statusCode).toBe(422);
+  });
   it('previews exact reviewed definition/terms/configuration without publishing, charging or revealing curriculum',async()=>{const f=await setup(),before=await Promise.all([db.programOfferingPublication.count(),db.billingIntent.count(),db.treatmentPlan.count()]),r=await req('POST','admin/program-offerings/preview',admin,f.config);expect(r.statusCode,r.body).toBe(200);expect(r.json()).toMatchObject({configuration:f.config,definition:{id:f.row.id,usable:true},termsPolicy:{id:f.terms.id,policyKey:'PROGRAM_PURCHASE_TERMS'},configurationReady:true,checkoutAvailable:false,expectedPublicationNumber:0,blockers:[],policy:{ordinaryRefunds:false,paymentPoint:'PRE_ACCESS_OR_REQUEST'}});expect(r.json().publicationHash).toMatch(/^[a-f0-9]{64}$/);expect(r.body).not.toContain('Private synthetic curriculum');expect(await Promise.all([db.programOfferingPublication.count(),db.billingIntent.count(),db.treatmentPlan.count()])).toEqual(before);},15_000);
   it('publishes configurable price and duration with exact retained no-ordinary-refund terms and no entitlement',async()=>{const f=await setup(),{row}=await publish(f.config);expect(row).toMatchObject({programDefinitionId:f.row.id,definitionContentHash:f.row.contentHash,publicationNumber:1,amountRial:'50000',currency:'IRR',priceMode:'PAID',accessMode:'DAYS',accessDurationDays:30,quoteTtlSeconds:600,termsPolicyVersionId:f.terms.id,termsContentHash:f.terms.contentHash,status:'ACTIVE',configurationReady:true,checkoutAvailable:false,policy:{schemaVersion:1,ordinaryRefunds:false,paymentPoint:'PRE_ACCESS_OR_REQUEST'}});for(const field of['publishedByUserId','publishedSessionId','idempotencyKey','patientId','answers'])expect(row).not.toHaveProperty(field);expect((await req('GET',`patients/me/program-offerings/${row.id}`,patient)).statusCode).toBe(404);},15_000);
   it('custom program reuses the real current IRR service fee and one-delivery access without parallel pricing',async()=>{const f=await setup('CUSTOM_PROFESSIONAL_PLAN'),wrong={...f.config,amountRial:String(f.ds!.priceAmount+1)},r=await req('POST','admin/program-offerings/preview',admin,wrong);expect(r.statusCode,r.body).toBe(200);expect(r.json()).toMatchObject({configurationReady:false,publicationHash:null,blockers:['CUSTOM_SERVICE_PRICE_CHANGED']});const {row}=await publish(f.config);expect(row).toMatchObject({amountRial:String(f.ds!.priceAmount),accessMode:'ONE_DELIVERY',accessDurationDays:null,configurationReady:true});for(const patch of[{accessMode:'PERPETUAL'},{accessMode:'DAYS',accessDurationDays:30}])expect((await req('POST','admin/program-offerings/preview',admin,{...f.config,...patch})).statusCode).toBe(422);},15_000);

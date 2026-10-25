@@ -22,7 +22,7 @@ try {
       if (path === '/v1/auth/refresh') return send({ accessToken: 'synthetic', tokenType: 'Bearer', expiresIn: 600, user: { id, phone: '+989000000000', roles: ['ADMIN'] } });
       if (path === '/v1/admin/program-definitions') return send({ items: Array.from({length:12}, (_,i) => ({ ...first, id: i ? `${String(i + 1).padStart(8,'0')}-1111-4111-8111-111111111111` : id, title: i ? `خدمت آموزشی شماره ${i + 1}` : first.title, status: i % 2 ? 'DRAFT' : 'APPROVED' })), total: 12, page: 1, pageSize: 12 });
       if (path.endsWith('/mezaj')) return send({ programDefinitionId: id, revision: 1, enabled: true, icon: 'book', pairs: ['damavi/safravi'] });
-      if (path.includes('/program-offerings/setup/')) return send({ latestPublication: null, termsPolicy: null, suggestedRetentionPolicyRef: null });
+      if (path.includes('/program-offerings/setup/')) return send({ latestPublication: null, defaultTerms: { title: 'شرایط خرید خدمات اختصاصی مزاج', body: 'دسترسی دائمی پس از خرید', versionNumber: 1 }, termsPolicy: null, suggestedRetentionPolicyRef: null });
       if (path === '/v1/admin/guidance-content') { sourceRequests++; return send({ items: [], total: 0, page: 1, pageSize: 50 }); }
       if (path === '/v1/admin/program-definitions/versions' && req.method() === 'POST') { created = req.postDataJSON(); return send({ ...first, ...created, contentReferences: [], status: 'DRAFT' }); }
       return send({ items: [], total: 0, unreadCount: 0 });

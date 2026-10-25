@@ -5522,3 +5522,27 @@ Verification:
 - Graphify AST update, owned review-server stop and generated-only Next AGENTS heading restoration completed. No unrelated user process stopped.
 
 Next/limits: ready publication still follows its actual program approval and active purchase terms; this change removes only the unrelated retention input. No remote/VPS migration, policy activation, push or deployment, no next batch. Owner can test local pricing/publication before publishing commits.
+
+
+## Ready service static purchase terms (2026-10-25)
+
+Task ID: F12-FE01-MZ01 owner-authorized continuation. Coordinator/reviewer: Codex /root, sole writer on dev@81d76f9. Scoped implementation DONE/review PASS; claim released. Broad F12-FE01 remains REWORK, no new task selected.
+
+Problem: ready-service publication required an independently configured active purchase policy; the owner explicitly requires fixed simple copy and permanent access in the purchaser's account.
+
+Changes/files:
+- publication/ready-program-terms.ts defines the owner-approved Persian copy once. Authenticated scoped administrator preview/publication automatically materializes its real same-clinic/locale immutable consent policy under a transaction advisory lock. No fabricated identifier, operator prerequisite or new dependency. Setup GET remains read-only and exposes defaultTerms.
+- publication DTO/service make input terms ID optional for permanent READY_EDUCATION only. Publication hash uses actual resolved terms; legacy explicit-ID idempotency payloads remain compatible. Custom professional requests still require explicit original policy/configuration.
+- purchases/program-purchase.service.ts accepts the fixed purpose through the existing patient/session/hash/acceptance boundary. Existing money, retained receipts and owned content engine unchanged.
+- migration20261025190000_ready_program_static_terms updates current/quoted/publication/acceptance SQL guards to recognize the fixed purpose only for perpetual ready services; locks exact static copy/hash/version/locale against edits/deletes. Historical/manual/custom policies, purchases and grants unchanged. Reuses latest custom/retention SQL function contracts.
+- dashboard program-publication.tsx displays default copy and removes missing-policy preview gate/payload ID. New publication always PERPETUAL/null end date; price, preview/CAS/idempotency and actual review remain. OpenAPI/SDK generated officially. Tests/fixtures and contract/design/status/checklist updated.
+
+Verification:
+- Disposable local PostgreSQL,86 fresh migrations: publication23/23 + purchase33/33 PASS. Includes no active manual terms, concurrent default resolution, immutable static evidence, permanent-only restriction, custom exclusion and legacy financial/ownership regressions.
+- Final paid-purchase suite33/33 PASS after enhancing the source-free service case: automatic fixed terms, paid wallet debit, no retention input, owned grant endsAt:null, retained acceptance, body access and recovery with a newly issued patient session. One intervening rerun hit a Windows worker/memory process failure before collecting tests; clean serial rerun with a bounded Node heap passed.
+- API test TypeScript, official OpenAPI export, SDK generation/build, dashboard TypeScript/focused ESLint and design token validation PASS. One initial concurrent TypeScript process exited unexpectedly; serial rerun PASS.
+- Pricing browser checks320/390/1440 PASS: exact saved/Persian toman price, permanent access payload without terms ID or retention input,409 retry/draft preservation, reopen, translated blockers, setup error recovery, publication enabled with no manual terms, no overflow/page errors. Intercepted API with synthetic fixtures; mobile screenshot inspected. Workspace fixture updated for additive setup contract.
+- Applied only new migration86 to configured local sabz_zendegi at localhost:5432 after disposable gates; migrate status up to date, schema diff no difference. No historical row rewrite. Static policy rows are created only when a real scoped administrator requests ready-service preview/publication.
+- Graphify AST refreshed; generated-only Next AGENTS heading restored; review server stopped; final diff reviewed and diff check passed.
+
+Limits/next: no live bank transaction, VPS migration, push or deployment. Owner can restart local API/dashboard and test the actual service price/publication/purchase. Existing content approval and account ownership remain required. No next batch started.

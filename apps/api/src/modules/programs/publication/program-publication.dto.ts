@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { Equals, IsIn, IsInt, IsOptional, IsUUID, Matches, Max, Min } from 'class-validator';
 export class ProgramCommercialConfigDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') programDefinitionId!: string;
-  @ApiProperty({ format: 'uuid' }) @IsUUID('4') termsPolicyVersionId!: string;
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') termsPolicyVersionId?: string;
   @ApiProperty({ pattern: '^(0|[1-9][0-9]{0,18})$' }) @Matches(/^(0|[1-9][0-9]{0,18})$/u) amountRial!: string;
   @ApiProperty({ enum: ['IRR'] }) @Equals('IRR') currency!: 'IRR';
   @ApiProperty({ enum: ['PERPETUAL', 'DAYS', 'ONE_DELIVERY'] }) @IsIn(['PERPETUAL', 'DAYS', 'ONE_DELIVERY']) accessMode!: 'PERPETUAL' | 'DAYS' | 'ONE_DELIVERY';
@@ -39,7 +39,7 @@ export class ProgramCommercialDefinitionDto {
 }
 export class ProgramPurchaseTermsDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
-  @ApiProperty({ enum: ['PROGRAM_PURCHASE_TERMS'] }) policyKey!: 'PROGRAM_PURCHASE_TERMS';
+  @ApiProperty({ enum: ['PROGRAM_PURCHASE_TERMS', 'READY_PROGRAM_PURCHASE_TERMS'] }) policyKey!: 'PROGRAM_PURCHASE_TERMS' | 'READY_PROGRAM_PURCHASE_TERMS';
   @ApiProperty() versionNumber!: number;
   @ApiProperty() locale!: string;
   @ApiProperty() title!: string;
@@ -88,7 +88,13 @@ export class ProgramPublicationPageDto {
   @ApiProperty() pageSize!: number;
   @ApiProperty() total!: number;
 }
+export class ProgramStaticTermsDto {
+  @ApiProperty() title!: string;
+  @ApiProperty() body!: string;
+  @ApiProperty({ enum: [1] }) versionNumber!: 1;
+}
 export class ProgramPublicationSetupDto {
+  @ApiProperty({ type: ProgramStaticTermsDto, nullable: true }) defaultTerms!: ProgramStaticTermsDto | null;
   @ApiProperty({ type: ProgramPublicationResponseDto, nullable: true }) latestPublication!: ProgramPublicationResponseDto | null;
   @ApiProperty({ type: ProgramPurchaseTermsDto, nullable: true }) termsPolicy!: ProgramPurchaseTermsDto | null;
   @ApiProperty({ type: String, nullable: true }) suggestedRetentionPolicyRef!: string | null;

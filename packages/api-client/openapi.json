@@ -40897,6 +40897,28 @@
           "noAutomaticTherapyActivation"
         ]
       },
+      "ProgramStaticTermsDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "versionNumber"
+        ]
+      },
       "ProgramCommercialPolicyDto": {
         "type": "object",
         "properties": {
@@ -41066,7 +41088,8 @@
           "policyKey": {
             "type": "string",
             "enum": [
-              "PROGRAM_PURCHASE_TERMS"
+              "PROGRAM_PURCHASE_TERMS",
+              "READY_PROGRAM_PURCHASE_TERMS"
             ]
           },
           "versionNumber": {
@@ -41098,6 +41121,15 @@
       "ProgramPublicationSetupDto": {
         "type": "object",
         "properties": {
+          "defaultTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramStaticTermsDto"
+              }
+            ]
+          },
           "latestPublication": {
             "nullable": true,
             "type": "object",
@@ -41122,6 +41154,7 @@
           }
         },
         "required": [
+          "defaultTerms",
           "latestPublication",
           "termsPolicy",
           "suggestedRetentionPolicyRef"
@@ -41174,7 +41207,6 @@
         },
         "required": [
           "programDefinitionId",
-          "termsPolicyVersionId",
           "amountRial",
           "currency",
           "accessMode",
@@ -41339,7 +41371,6 @@
         },
         "required": [
           "programDefinitionId",
-          "termsPolicyVersionId",
           "amountRial",
           "currency",
           "accessMode",

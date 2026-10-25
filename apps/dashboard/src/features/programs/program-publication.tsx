@@ -48,13 +48,12 @@ function PublicationForm({ token, item, setup, reload }: { token: string; item: 
   const [accepted, setAccepted] = useState(false), [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
   const lock = useRef(false), keys = useRef(new Map<string, string>());
-  const terms = setup.termsPolicy;
+  const terms = setup.defaultTerms;
   const changed = () => { setPreview(null); setAccepted(false); setNotice(''); };
   const amountRial = priceFromInput(amount);
   const configuration = (): Commercial | null => {
     if (amountRial === null) { setNotice('مبلغ را به تومان، با عدد فارسی یا انگلیسی وارد کنید؛ برای خدمت رایگان صفر بنویسید. حداکثر یک رقم اعشار مجاز است.'); return null; }
-    if (!terms) { setNotice('ابتدا شرایط خرید خدمات باید برای این کلینیک فعال شود.'); return null; }
-    return { programDefinitionId: item.id, termsPolicyVersionId: terms.id, amountRial, currency: 'IRR', accessMode: latest?.accessMode === 'DAYS' ? 'DAYS' : 'PERPETUAL', accessDurationDays: latest?.accessMode === 'DAYS' ? latest.accessDurationDays : null, quoteTtlSeconds: latest?.quoteTtlSeconds ?? 1800 };
+    return { programDefinitionId: item.id, amountRial, currency: 'IRR', accessMode: 'PERPETUAL', accessDurationDays: null, quoteTtlSeconds: latest?.quoteTtlSeconds ?? 1800 };
   };
   const run = async (operation: () => Promise<void>) => {
     if (lock.current) return;
@@ -66,17 +65,16 @@ function PublicationForm({ token, item, setup, reload }: { token: string; item: 
       {latest ? <><strong>{latest.status === 'ACTIVE' ? 'آخرین تعرفهٔ منتشرشده' : 'آخرین تعرفهٔ بایگانی‌شده'}: {latest.amountRial === '0' ? 'رایگان' : formatRial(BigInt(latest.amountRial))}</strong>
         <p>{latest.programDefinitionId !== item.id ? 'این تعرفه مربوط به نسخهٔ قبلی متن است؛ برای فروش نسخهٔ انتخاب‌شده، تعرفه را دوباره بررسی و منتشر کنید.' : latest.configurationReady ? 'تعرفهٔ همین نسخه برای خرید معتبر است.' : 'این تعرفه اکنون آمادهٔ فروش نیست؛ اعتبار متن، منابع و شرایط خرید باید بررسی شود.'}</p></> : <p>برای این خدمت هنوز تعرفه‌ای منتشر نشده است.</p>}
     </div>
-    <p>{latest?.accessMode === 'DAYS' ? `دسترسی این تعرفه پس از خرید ${latest.accessDurationDays} روز است.` : 'دسترسی این خدمت پس از خرید بدون تاریخ پایان است.'} تغییر قیمت، خریدهای قبلی را تغییر نمی‌دهد.</p>
-    {!terms && <p className="program-notice" role="alert">شرایط خرید خدمات برای این کلینیک هنوز فعال نشده است. مدیر سامانه باید متن مصوب شرایط خرید خدمات را ثبت و فعال کند؛ تا آن زمان انتشار ممکن نیست.</p>}
+    <p>دسترسی این خدمت پس از خرید بدون تاریخ پایان است. تغییر قیمت، خریدهای قبلی را تغییر نمی‌دهد.</p>
     <form onSubmit={e => { e.preventDefault(); const config = configuration(); if (!config) return; setPreview(null); setAccepted(false); void run(async () => { setPreview(await previewProgram(token, config)); }); }}>
       <fieldset disabled={busy} className="program-editor-form">
         <label htmlFor="program-price">قیمت خدمت به تومان
           <input id="program-price" className="program-field" inputMode="decimal" maxLength={40} required aria-describedby="program-price-help" value={amount} onChange={e => { setAmount(e.target.value); changed(); }} />
         </label>
         <p id="program-price-help">مثلاً برای ۱۵۰ هزار تومان، ۱۵۰۰۰۰ وارد کنید. صفر یعنی رایگان. {amountRial !== null && <strong>مبلغ انتخابی: {amountRial === '0' ? 'رایگان' : formatRial(BigInt(amountRial))}</strong>}</p>
-        {terms && <details className="program-terms"><summary>شرایط خرید: {terms.title} · نسخه {terms.versionNumber.toLocaleString('fa-IR')}</summary><p className="program-full-body">{terms.body}</p></details>}
+        {terms && <details className="program-terms"><summary>شرایط خرید: {terms.title}</summary><p className="program-full-body">{terms.body}</p></details>}
         <p>مبلغ و تنظیمات این فرم تا زدن «انتشار برای خرید» ذخیره نمی‌شوند.</p>
-        <button className="dashboard-button" type="submit" disabled={!terms}>{busy ? 'در حال بررسی…' : 'بررسی آمادگی انتشار'}</button>
+        <button className="dashboard-button" type="submit">{busy ? 'در حال بررسی…' : 'بررسی آمادگی انتشار'}</button>
       </fieldset>
     </form>
     {preview && <div className="program-notice" aria-live="polite">

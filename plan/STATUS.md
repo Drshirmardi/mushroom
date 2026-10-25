@@ -14,7 +14,10 @@ NOTIFICATION RENDER FIX (2026-10-25): Owner-authorized same F12-FE01 continuatio
 
 PROGRAMS PRICING CORRECTION (2026-10-25): F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Saved tariff and active scoped terms read; exact Persian toman input, preserved duration/TTL, explicit retention/terms review, translated blockers and publication/retry/409 states.19 isolated publication tests +3 price tests, API/dashboard types, SDK/lint/tokens and320/390/1440 browser checks PASS; Graphify AST updated. No schema/persistent database/policy activation/push/deployment. Evidence: logs/phase-12.md#programs-pricing-correction-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
 
+STATIC READY SERVICE TERMS (2026-10-25): F12-FE01-MZ01 scoped correction DONE/review PASS on dev, sole /root; claim RELEASED. Fixed owner-approved Persian terms require no manual policy setup; new ready-service publications use permanent account access. Retained consent/payment/ownership and historical/custom contracts preserved. Publication23 + purchase33, final paid-purchase33, API/dashboard/SDK types, responsive pricing320/390/1440 PASS; migration86 applied only to local sabz_zendegi, no drift. Evidence: logs/phase-12.md#ready-service-static-purchase-terms-2026-10-25. Broad F12-FE01 remains REWORK; no next batch/push/VPS/deploy.
+
 # وضعیت زنده اجرای پروژه
+
 
 READY SERVICE RETENTION INPUT REMOVAL (2026-10-25): same F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Reference input/helper/review copy removed; omitted reference accepted as null for ready services, no fabricated policy.21 publication+33 purchase tests, API/dashboard types, SDK/lint/tokens and three pricing browser cases PASS. Migration85 applied to configured local sabz_zendegi, status up to date and schema diff clear. Existing history/custom professional/price/terms/approval/ownership retained. Graphify updated; no VPS/push/deploy. Evidence: logs/phase-12.md#ready-program-retention-input-removal-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
 

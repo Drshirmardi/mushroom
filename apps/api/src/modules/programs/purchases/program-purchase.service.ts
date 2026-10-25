@@ -47,7 +47,7 @@ export class ProgramPurchaseService {
       const old = await tx.walletCommand.findUnique({ where: { actorUserId_idempotencyKey: { actorUserId: ctx.actorUserId, idempotencyKey: key } } });
       if (old) { if (old.fingerprint !== hash) throw programConflict(); await this.audit(tx, 'CONSENT_READ', p.id, ctx); return old.response; }
       await tx.$queryRaw(Prisma.sql`SELECT id FROM consent_policy_versions WHERE id=${policyId}::uuid AND clinic_id=${p.clinicId}::uuid FOR SHARE`);
-      const policy = await tx.consentPolicyVersion.findFirst({ where: { id: policyId, clinicId: p.clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', status: 'ACTIVE', activatedAt: { not: null } } });
+      const policy = await tx.consentPolicyVersion.findFirst({ where: { id: policyId, clinicId: p.clinicId, policyKey: { in: ['PROGRAM_PURCHASE_TERMS', 'READY_PROGRAM_PURCHASE_TERMS'] }, status: 'ACTIVE', activatedAt: { not: null } } });
       if (!policy || policy.contentHash !== body.contentHash || createHash('sha256').update(policy.body, 'utf8').digest('hex') !== policy.contentHash) throw programConflict();
       const existing = await tx.patientConsentRecord.findFirst({ where: { patientId: p.id, policyVersionId: policyId, withdrawnAt: null } });
       const now = await this.time(tx), record = existing ?? await tx.patientConsentRecord.create({ data: { patientId: p.id, policyVersionId: policyId, contentHash: policy.contentHash, acceptedByUserId: ctx.actorUserId, acceptedBySessionId: ctx.actorSessionId, acceptanceIdempotencyKey: key, acceptanceRequestId: ctx.requestId.slice(0, 128), acceptedAt: now, createdAt: now } });

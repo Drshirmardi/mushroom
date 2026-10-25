@@ -9390,6 +9390,12 @@ export interface components {
             /** @enum {boolean} */
             noAutomaticTherapyActivation: true;
         };
+        ProgramStaticTermsDto: {
+            title: string;
+            body: string;
+            /** @enum {number} */
+            versionNumber: 1;
+        };
         ProgramCommercialPolicyDto: {
             /** @enum {number} */
             schemaVersion: 1;
@@ -9438,7 +9444,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            policyKey: "PROGRAM_PURCHASE_TERMS";
+            policyKey: "PROGRAM_PURCHASE_TERMS" | "READY_PROGRAM_PURCHASE_TERMS";
             versionNumber: number;
             locale: string;
             title: string;
@@ -9446,6 +9452,7 @@ export interface components {
             contentHash: string;
         };
         ProgramPublicationSetupDto: {
+            defaultTerms: components["schemas"]["ProgramStaticTermsDto"] | null;
             latestPublication: components["schemas"]["ProgramPublicationResponseDto"] | null;
             termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
             suggestedRetentionPolicyRef: string | null;
@@ -9454,7 +9461,7 @@ export interface components {
             /** Format: uuid */
             programDefinitionId: string;
             /** Format: uuid */
-            termsPolicyVersionId: string;
+            termsPolicyVersionId?: string;
             amountRial: string;
             /** @enum {string} */
             currency: "IRR";
@@ -9491,7 +9498,7 @@ export interface components {
             /** Format: uuid */
             programDefinitionId: string;
             /** Format: uuid */
-            termsPolicyVersionId: string;
+            termsPolicyVersionId?: string;
             amountRial: string;
             /** @enum {string} */
             currency: "IRR";

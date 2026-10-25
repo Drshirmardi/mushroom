@@ -5,7 +5,7 @@ import { mkdir } from 'node:fs/promises';
 await mkdir('.local/program-pricing', { recursive: true });
 const id = '11111111-1111-4111-8111-111111111111';
 const termsId = '22222222-2222-4222-8222-222222222222';
-const terms = { id: termsId, policyKey: 'PROGRAM_PURCHASE_TERMS', title: 'شرایط خرید آموزشی', versionNumber: 2, locale: 'fa-IR', body: 'متن آزمایشی شرایط خرید خدمات آموزشی', contentHash: 'b'.repeat(64) };
+const terms = { id: termsId, policyKey: 'READY_PROGRAM_PURCHASE_TERMS', title: 'شرایط خرید آموزشی', versionNumber: 2, locale: 'fa-IR', body: 'متن آزمایشی شرایط خرید خدمات آموزشی', contentHash: 'b'.repeat(64) };
 const definition = { id, programKey: 'TEXT_TEST', locale: 'fa-IR', versionNumber: 1, kind: 'READY_EDUCATION', title: 'خدمت آزمایشی', summary: 'متن معرفی آزمایشی', body: 'متن کامل', status: 'APPROVED', contentHash: 'a'.repeat(64), safety: { limitations: 'آموزشی', contraindications: [], seekProfessionalCare: 'مراجعه به متخصص' }, contentReferences: [] };
 const browser = await chromium.launch();
 try {
@@ -23,7 +23,7 @@ try {
       if (path === '/v1/auth/refresh') return send({ accessToken: 'synthetic', tokenType: 'Bearer', expiresIn: 600, user: { id, phone: '+989000000000', roles: ['ADMIN'] } });
       if (path === '/v1/admin/program-definitions') return send({ items: [definition], total: 1, page: 1, pageSize: 12 });
       if (path.endsWith('/mezaj')) return send({ programDefinitionId: id, revision: 1, enabled: true, icon: 'book', pairs: ['damavi/safravi'] });
-      if (path === `/v1/admin/program-offerings/setup/${id}`) return loadError ? send({ code: 'UNAVAILABLE' }, 503) : send({ latestPublication: publication, termsPolicy: missingTerms ? null : terms, suggestedRetentionPolicyRef: 'REVIEWED_TEST' });
+      if (path === `/v1/admin/program-offerings/setup/${id}`) return loadError ? send({ code: 'UNAVAILABLE' }, 503) : send({ latestPublication: publication, defaultTerms: terms, termsPolicy: missingTerms ? null : terms, suggestedRetentionPolicyRef: 'REVIEWED_TEST' });
       if (path === '/v1/admin/program-offerings/preview') {
         previewConfig = req.postDataJSON();
         return send({ configuration: previewConfig, definition, termsPolicy: terms, configurationReady: !blocked, publicationHash: blocked ? null : 'c'.repeat(64), expectedPublicationNumber: publication.publicationNumber, blockers: blocked ? ['PROGRAM_CLINICAL_DEFINITION_UNAVAILABLE'] : [] });
@@ -50,9 +50,9 @@ try {
     assert.equal(previewConfig.amountRial, '1500000');
     assert.equal(previewConfig.retentionPolicyRef, undefined);
     assert.equal(await page.getByLabel('مرجع مصوب نگهداری سوابق', { exact: true }).count(), 0);
-    assert.equal(previewConfig.termsPolicyVersionId, termsId);
-    assert.equal(previewConfig.accessMode, 'DAYS');
-    assert.equal(previewConfig.accessDurationDays, 30);
+    assert.equal(previewConfig.termsPolicyVersionId, undefined);
+    assert.equal(previewConfig.accessMode, 'PERPETUAL');
+    assert.equal(previewConfig.accessDurationDays, null);
     assert.equal(previewConfig.quoteTtlSeconds, 600);
     const publish = region.getByRole('button', { name: 'انتشار برای خرید', exact: true });
     assert.equal(await publish.isDisabled(), true);
@@ -80,8 +80,12 @@ try {
     assert.equal(await publish.count(), 0);
     missingTerms = true;
     await open();
-    await region.getByText(/شرایط خرید خدمات برای این کلینیک هنوز فعال نشده/).waitFor();
-    assert.equal(await region.getByRole('button', { name: 'بررسی آمادگی انتشار' }).isDisabled(), true);
+    await price.waitFor();
+    assert.equal(await region.getByRole('button', { name: 'بررسی آمادگی انتشار' }).isDisabled(), false);
+    blocked = false;
+    await region.getByRole('button', { name: 'بررسی آمادگی انتشار' }).click();
+    await region.getByRole('heading', { name: 'آمادهٔ انتشار', exact: true }).waitFor();
+    assert.equal(previewConfig.termsPolicyVersionId, undefined);
     loadError = true;
     await open();
     await region.getByRole('button', { name: 'تلاش دوباره', exact: true }).waitFor();
