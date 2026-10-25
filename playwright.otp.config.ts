@@ -13,13 +13,14 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:3200",
     browserName: "chromium",
-    launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH ?? "/usr/bin/chromium" },
+    launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (process.platform === "win32"
+      ? "C:/Program Files/Google/Chrome/Application/chrome.exe" : "/usr/bin/chromium") },
     trace: "off",
     video: "off",
     screenshot: "off",
   },
   webServer: {
-    command: "./node_modules/.bin/next dev --hostname 127.0.0.1 --port 3200",
+    command: "node ./node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3200",
     cwd: "apps/web",
     url: "http://127.0.0.1:3200/login",
     timeout: 120_000,

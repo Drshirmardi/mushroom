@@ -17863,11 +17863,7 @@
             "in": "query",
             "schema": {
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -17876,11 +17872,7 @@
             "in": "query",
             "schema": {
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -18222,11 +18214,7 @@
             "in": "query",
             "schema": {
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -18235,11 +18223,7 @@
             "in": "query",
             "schema": {
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -19279,11 +19263,7 @@
             "in": "query",
             "schema": {
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -19292,11 +19272,7 @@
             "in": "query",
             "schema": {
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           }
         ],
@@ -19702,11 +19678,7 @@
             "in": "query",
             "schema": {
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -19715,11 +19687,7 @@
             "in": "query",
             "schema": {
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           }
         ],
@@ -19997,6 +19965,171 @@
         "summary": "Read only the owned paid or free exact reviewed educational version",
         "tags": [
           "Patient Educational Programs"
+        ]
+      }
+    },
+    "/v1/admin/program-definitions/{id}/mezaj": {
+      "get": {
+        "operationId": "adminProgramMezajGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramMezajDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program Mezaj"
+        ]
+      },
+      "put": {
+        "operationId": "adminProgramMezajSave",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveProgramMezajDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramMezajDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program Mezaj"
+        ]
+      }
+    },
+    "/v1/patients/me/program-recommendations": {
+      "get": {
+        "operationId": "patientProgramRecommendationsGet",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MezajProgramRecommendationsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program Mezaj"
+        ]
+      }
+    },
+    "/v1/patients/me/program-library": {
+      "get": {
+        "operationId": "patientProgramLibraryList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnedProgramPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program Mezaj"
         ]
       }
     },
@@ -23050,7 +23183,17 @@
     "/v1/patients/me/commerce/recommendations": {
       "get": {
         "operationId": "patientCommerceRecommendationsGet",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "submissionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -41507,6 +41650,260 @@
           "safety",
           "contentReferences",
           "educationalOnly"
+        ]
+      },
+      "ProgramMezajDto": {
+        "type": "object",
+        "properties": {
+          "programDefinitionId": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "book",
+              "compass",
+              "leaf",
+              "sparkles",
+              "heart"
+            ]
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "programDefinitionId",
+          "revision",
+          "enabled",
+          "icon",
+          "pairs"
+        ]
+      },
+      "SaveProgramMezajDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "book",
+              "compass",
+              "leaf",
+              "sparkles",
+              "heart"
+            ]
+          },
+          "pairs": {
+            "maxItems": 16,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "enabled",
+          "icon",
+          "pairs"
+        ]
+      },
+      "MezajProgramCardDto": {
+        "type": "object",
+        "properties": {
+          "programDefinitionId": {
+            "type": "string"
+          },
+          "publicationId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "book",
+              "compass",
+              "leaf",
+              "sparkles",
+              "heart"
+            ]
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "PENDING",
+              "OWNED"
+            ]
+          },
+          "accessGrantId": {
+            "type": "string",
+            "nullable": true
+          },
+          "purchaseId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "programDefinitionId",
+          "publicationId",
+          "title",
+          "summary",
+          "icon",
+          "amountRial",
+          "currency",
+          "state",
+          "accessGrantId",
+          "purchaseId"
+        ]
+      },
+      "MezajProgramRecommendationsDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "NO_RESULT",
+              "RESULT_UNSUPPORTED",
+              "REVIEW_REQUIRED",
+              "NOT_CONFIGURED"
+            ]
+          },
+          "primary": {
+            "type": "string",
+            "enum": [
+              "damavi",
+              "safravi",
+              "balgami",
+              "sodavi"
+            ],
+            "nullable": true
+          },
+          "secondary": {
+            "type": "string",
+            "enum": [
+              "damavi",
+              "safravi",
+              "balgami",
+              "sodavi"
+            ],
+            "nullable": true
+          },
+          "submissionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MezajProgramCardDto"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "primary",
+          "secondary",
+          "submissionId",
+          "items"
+        ]
+      },
+      "OwnedProgramCardDto": {
+        "type": "object",
+        "properties": {
+          "accessGrantId": {
+            "type": "string"
+          },
+          "purchaseId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "book",
+              "compass",
+              "leaf",
+              "sparkles",
+              "heart"
+            ]
+          },
+          "accessAvailable": {
+            "type": "boolean"
+          },
+          "endsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "accessGrantId",
+          "purchaseId",
+          "title",
+          "icon",
+          "accessAvailable",
+          "endsAt"
+        ]
+      },
+      "OwnedProgramPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OwnedProgramCardDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
         ]
       },
       "CustomProgramPhysicianDto": {

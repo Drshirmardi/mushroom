@@ -11,6 +11,7 @@ import { homeResultSummary } from '@/lib/home-status';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { toP } from '@/lib/format';
 import { persianBirthDate, persianDateParts } from '@/lib/persian-birth-date';
+import { ResultRecommendations } from '@/components/programs/result-recommendations';
 
 const entryLabels = ['مشخصات', 'آزمون', 'نتیجه'];
 const errorMessage = 'انجام نشد؛ اطلاعات و ارتباط اینترنت را بررسی و دوباره تلاش کنید.';
@@ -34,7 +35,7 @@ function Profile({ status, token, onSaved }: { status: PatientEntryStatus; token
   </form></div>;
 }
 
-function Result({ id, token, onEnter }: { id: string; token: string; onEnter: () => Promise<void> }) {
+function Result({ id, token, onEnter }: { id: string; token: string; onEnter: (href?: string) => Promise<void> }) {
   const result = usePatientResource(useCallback(() => getAssessmentResult(token, id), [token, id]));
   const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const summary = result.data ? homeResultSummary(result.data.resultSnapshot) : null;
@@ -52,6 +53,7 @@ function Result({ id, token, onEnter }: { id: string; token: string; onEnter: ()
     <p className="entry-result-caption">این نتیجه توصیف آموزشیِ پاسخ‌های شماست.</p>
     {error && <p role="alert" className="entry-error">{error}</p>}
     <button className="entry-primary" onClick={() => void enter()} disabled={busy}>{busy ? 'در حال ورود…' : 'ورود به خانهٔ من'}<ArrowLeft size={18} aria-hidden="true" /></button>
+    {!result.loading && result.data && <ResultRecommendations token={token} submissionId={id} onNavigate={onEnter} />}
   </div>;
 }
 
@@ -63,7 +65,7 @@ function Welcome() {
   const labels = status.assessmentRequired ? entryLabels : entryLabels.slice(0, 1);
   const phase = status.phase === 'PROFILE' ? 0 : status.phase === 'RESULT' ? 2 : 1;
   const start = async () => { if (busy) return; setBusy(true); setError(''); try { await startEntryAssessment(token); await reload(); } catch { setError(errorMessage); } finally { setBusy(false); } };
-  const enter = async () => { await finishPatientEntry(token); await reload(); router.replace('/'); };
+  const enter = async (href?: string) => { await finishPatientEntry(token); if (href) { window.location.assign(href); return; } await reload(); router.replace('/'); };
   return <main className="entry-screen" dir="rtl"><div className="entry-container"><header className="entry-header"><span className="entry-brand"><span className="entry-mark" aria-hidden="true"><Leaf size={19} strokeWidth={1.7} /></span>سبز زندگی</span><span className="entry-step-count">شروع همراهی شما</span></header>
     <ol className="entry-progress" aria-label="مراحل شروع">{labels.map((label, index) => <li key={label} data-active={index === phase} data-done={index < phase} aria-current={index === phase ? 'step' : undefined}><span aria-hidden="true">{index < phase ? <Check size={15} /> : toP(index + 1)}</span><span className="entry-progress-label">{label}</span></li>)}</ol>
     <section aria-label="تکمیل ورود" className={`entry-card ${status.submissionId && status.phase === 'ASSESSMENT' ? 'entry-card--quiz' : ''}`}>

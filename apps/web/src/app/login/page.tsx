@@ -1,24 +1,10 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { landingLoginUrl } from "@/auth/auth-navigation";
 
-import { AuthLayout } from "@/components/auth/AuthLayout";
-import { LoginForm } from "@/components/auth/LoginForm";
-
-export const metadata: Metadata = {
-    title: "ورود | دکتر شیرمردی",
-    description: "ورود به حساب کاربری مرکز تخصصی طب سوزنی دکتر شیرمردی",
-};
-
-export default function LoginPage() {
-    return (
-        <AuthLayout
-            brand={{
-                title: "خوش برگشتید،",
-                highlight: "مسیر سلامت شما ادامه دارد",
-                description:
-                    "برای مشاهده برنامه درمان، نتایج ارزیابی و جزئیات جلسات بعدی خود، وارد حساب کاربری شوید.",
-            }}
-        >
-            <LoginForm />
-        </AuthLayout>
-    );
+// Keep existing entry links while password and registration forms remain dormant.
+export default async function LoginPage({ searchParams }: {
+    searchParams: Promise<{ next?: string | string[] }>;
+}) {
+    const { next } = await searchParams;
+    redirect(landingLoginUrl(typeof next === "string" ? next : undefined));
 }

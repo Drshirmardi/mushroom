@@ -40,8 +40,8 @@ export const listCommerceProducts = (query?: { page?: number; pageSize?: number;
 export const getCommerceProduct = (productId: string) =>
   expectData<CommerceProduct>(apiClient.GET("/v1/commerce/products/{productId}", { params: { path: { productId } } }));
 
-export const getCommerceRecommendations = (accessToken: string) =>
-  expectData<CommerceRecommendations>(apiClient.GET("/v1/patients/me/commerce/recommendations", { headers: authorization(accessToken), cache: "no-store" }));
+export const getCommerceRecommendations = (accessToken: string, submissionId?: string) =>
+  expectData<CommerceRecommendations>(apiClient.GET("/v1/patients/me/commerce/recommendations", { headers: authorization(accessToken), params: { query: { submissionId } }, cache: "no-store" }));
 
 export const getCommerceCart = (accessToken: string) =>
   expectData<CommerceCart>(apiClient.GET("/v1/patients/me/cart", { headers: authorization(accessToken) }));

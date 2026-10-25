@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
-import { CommerceMezajCollectionDto, CommerceMezajPairDto, CommerceMezajVersionPageDto, CommerceMezajVersionQueryDto, PatientCommerceRecommendationsDto, SaveCommerceMezajDto } from './commerce-mezaj.dto';
+import { MezajRecommendationQueryDto, CommerceMezajCollectionDto, CommerceMezajPairDto, CommerceMezajVersionPageDto, CommerceMezajVersionQueryDto, PatientCommerceRecommendationsDto, SaveCommerceMezajDto } from './commerce-mezaj.dto';
 import { CommerceMezajService } from './commerce-mezaj.service';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 
@@ -18,5 +18,5 @@ export class AdminCommerceMezajController {
 @ApiTags('Patient Commerce') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF, PERMISSIONS.ASSESSMENTS_READ_SELF) @Controller('patients/me/commerce')
 export class PatientCommerceMezajController {
   constructor(private readonly mezaj: CommerceMezajService) {}
-  @Get('recommendations') @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'patientCommerceRecommendationsGet', summary: 'Get self-only products for the latest accessible exact ordered Mezaj result; never inferred from title or score' }) @ApiOkResponse({ type: PatientCommerceRecommendationsDto }) patient(@Req() request: AuthenticatedRequest) { return this.mezaj.patient(context(request)); }
+  @Get('recommendations') @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'patientCommerceRecommendationsGet', summary: 'Get self-only products for the latest accessible exact ordered Mezaj result; never inferred from title or score' }) @ApiOkResponse({ type: PatientCommerceRecommendationsDto }) patient(@Query() query: MezajRecommendationQueryDto, @Req() request: AuthenticatedRequest) { return this.mezaj.patient(context(request), query.submissionId); }
 }
