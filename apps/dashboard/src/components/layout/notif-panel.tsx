@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, BookOpen, Calendar, FileText } from "lucide-react";
+import { Bell, BookOpen, Calendar, FileText, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import { dashboardPhaseEightError, listDashboardNotifications, type DashboardNotification } from "@/lib/phase-08-api";
 import { p } from "@/lib/utils";
 
-const ICONS: Record<DashboardNotification["category"], LucideIcon> = { REMINDER: Calendar, TREATMENT: FileText, CONTENT: BookOpen, SYSTEM: Bell };
+const ICONS: Record<DashboardNotification["category"], LucideIcon> = { FINANCIAL: Wallet, REMINDER: Calendar, TREATMENT: FileText, CONTENT: BookOpen, SYSTEM: Bell };
 
 export function NotifPanel({ onClose }: { onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ export function NotifPanel({ onClose }: { onClose: () => void }) {
         {isCurrent && error && <p className="px-4 py-5 text-xs text-red-700" role="alert">{error}</p>}
         {isCurrent && items?.length === 0 && <p className="px-4 py-5 text-xs text-muted-foreground">اعلانی وجود ندارد.</p>}
         {isCurrent && items?.slice(0, 5).map(item => {
-          const Icon = ICONS[item.category];
+          const Icon = ICONS[item.category] ?? Bell;
           return (
             <div key={item.id} className={`flex items-start gap-3 px-4 py-3.5 hover:bg-secondary/40 transition-colors ${!item.readAt ? "bg-primary/5" : ""}`}>
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon size={14} /></div>
