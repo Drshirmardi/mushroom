@@ -12,6 +12,8 @@ MEZAJ PAID CONTENT (2026-10-24): F12-FE01-MZ01 software slice DONE, sole /root r
 
 NOTIFICATION RENDER FIX (2026-10-25): Owner-authorized same F12-FE01 continuation on dev, sole /root; IMPLEMENTED_UNVERIFIED / REWORK. Added missing FINANCIAL type/Wallet icon to dashboard notifications page and panel, plus Bell fallback in both renderers. Owner runtime trace matches this defect; prior branch fix was absent from current dev. Source review complete; execution checks deferred, no commit/DONE. Owner refresh next; evidence phase-12 log.
 
+PROGRAMS PRICING CORRECTION (2026-10-25): F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Saved tariff and active scoped terms read; exact Persian toman input, preserved duration/TTL, explicit retention/terms review, translated blockers and publication/retry/409 states.19 isolated publication tests +3 price tests, API/dashboard types, SDK/lint/tokens and320/390/1440 browser checks PASS; Graphify AST updated. No schema/persistent database/policy activation/push/deployment. Evidence: logs/phase-12.md#programs-pricing-correction-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
+
 # وضعیت زنده اجرای پروژه
 
 NOTIFICATION RECIPIENT CONTEXT (2026-10-25): owner-authorized F12-FE01 continuation, sole /root on dev; IMPLEMENTED_UNVERIFIED / REWORK. Admin notification projection adds actual profile recipientDisplayName; dashboard page/header panel show recipient and identify the original patient-directed text. Only selected first/last name exposed; no patient response/data/permission/schema change. Source review complete, execution checks deferred, no commit/DONE. Owner review next; phase-12 log.

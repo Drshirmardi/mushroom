@@ -6,6 +6,8 @@ export type DefinitionInput = components['schemas']['ProgramDefinitionCreateDto'
 export type Presentation = components['schemas']['ProgramMezajDto'];
 export type Commercial = components['schemas']['ProgramCommercialConfigDto'];
 export type Preview = components['schemas']['ProgramCommercialPreviewDto'];
+export type PublicationSetup = components['schemas']['ProgramPublicationSetupDto'];
+export type PublicationRecord = components['schemas']['ProgramPublicationResponseDto'];
 export class ProgramApiError extends Error { constructor(public status: number, public code: string) { super(code); } }
 async function data<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>) {
   const r = await withRequestTimeout(request);
@@ -19,4 +21,5 @@ export const approveDefinition = (token: string, item: Definition) => data(apiCl
 export const getPresentation = (token: string, id: string) => data(apiClient.GET('/v1/admin/program-definitions/{id}/mezaj', { headers: headers(token), params: { path: { id } }, cache: 'no-store' }));
 export const savePresentation = (token: string, id: string, body: components['schemas']['SaveProgramMezajDto']) => data(apiClient.PUT('/v1/admin/program-definitions/{id}/mezaj', { headers: headers(token), params: { path: { id } }, body }));
 export const previewProgram = (token: string, body: Commercial) => data(apiClient.POST('/v1/admin/program-offerings/preview', { headers: headers(token), body }));
+export const getPublicationSetup = (token: string, id: string) => data(apiClient.GET('/v1/admin/program-offerings/setup/{id}', { headers: headers(token), params: { path: { id } }, cache: 'no-store' }));
 export const publishProgram = (token: string, body: components['schemas']['PublishProgramOfferingDto'], key: string) => data(apiClient.POST('/v1/admin/program-offerings', { headers: headers(token), params: { header: { 'Idempotency-Key': key } }, body }));

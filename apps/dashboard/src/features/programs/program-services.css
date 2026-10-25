@@ -35,6 +35,12 @@
 .program-pair-grid small { display: block; color: var(--program-muted); }
 .program-notice, .program-empty { background: var(--program-soft); padding: var(--program-size-4); border-radius: var(--program-size-text-xs); margin-block: var(--program-size-4); }
 .program-full-body { white-space: pre-wrap; padding-block: var(--program-size-4); }
+.program-publication-form { display: grid; gap: var(--program-size-4); }
+.program-publication-form > .program-notice { margin-block: 0; }
+.program-publication-form strong { color: var(--program-ink); overflow-wrap: anywhere; }
+.program-publication-form details { overflow-wrap: anywhere; min-width: 0; }
+.program-publication-form summary { cursor: pointer; padding-block: var(--program-size-2); }
+.program-publication-form .program-full-body { max-height: var(--program-size-card-width); overflow-y: auto; }
 .program-workspace :is(button,input,textarea,select,summary):focus-visible { outline: 2px solid var(--program-accent); outline-offset: 3px; }
 .program-workspace button { min-height: var(--program-size-touch); }
 @media(width >= 48rem) { .program-pair-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }

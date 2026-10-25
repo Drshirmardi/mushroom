@@ -5,7 +5,7 @@ import { RequirePermissions, RequireRoles } from '../../../common/auth/authoriza
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { ProgramDefinitionRateGuard } from '../definitions/program-definition.controller';
-import { ProgramCommercialConfigDto, ProgramCommercialPreviewDto, ProgramPublicationPageDto, ProgramPublicationQueryDto, ProgramPublicationResponseDto, PublishProgramOfferingDto } from './program-publication.dto';
+import { ProgramCommercialConfigDto, ProgramCommercialPreviewDto, ProgramPublicationPageDto, ProgramPublicationQueryDto, ProgramPublicationResponseDto, ProgramPublicationSetupDto, PublishProgramOfferingDto } from './program-publication.dto';
 import { ProgramPublicationService } from './program-publication.service';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
@@ -14,6 +14,8 @@ const uuid = () => new ParseUUIDPipe({ version: '4' });
 @Controller('admin/program-offerings')
 export class ProgramPublicationController {
   constructor(private readonly programs: ProgramPublicationService) {}
+  @Get('setup/:id') @Header('Cache-Control', 'private, no-store') @ApiParam({ name: 'id', format: 'uuid' }) @ApiOperation({ operationId: 'adminProgramOfferingSetup', summary: 'Read saved program price and exact active purchase terms for the current clinic and locale' }) @ApiOkResponse({ type: ProgramPublicationSetupDto })
+  setup(@Param('id', uuid()) id: string, @Req() r: AuthenticatedRequest) { return this.programs.setup(id.toLowerCase(), context(r)); }
   @Post('preview') @HttpCode(200) @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'adminProgramOfferingPreview', summary: 'Preview exact price/access/terms and clinical prerequisites without publishing or charging' }) @ApiOkResponse({ type: ProgramCommercialPreviewDto })
   preview(@Body() body: ProgramCommercialConfigDto, @Req() r: AuthenticatedRequest) { return this.programs.preview(body, context(r)); }
   @Post() @Header('Cache-Control', 'private, no-store') @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', minLength: 8, maxLength: 200 } }) @ApiOperation({ operationId: 'adminProgramOfferingPublish', summary: 'Publish exact immutable program commercial configuration; no patient entitlement or therapy activation' }) @ApiCreatedResponse({ type: ProgramPublicationResponseDto })

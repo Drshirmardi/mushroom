@@ -18672,6 +18672,113 @@
         ]
       }
     },
+    "/v1/admin/program-offerings/setup/{id}": {
+      "get": {
+        "operationId": "adminProgramOfferingSetup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramPublicationSetupDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Program commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, command or publication revision conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Incomplete program commercial configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read saved program price and exact active purchase terms for the current clinic and locale",
+        "tags": [
+          "Program commercial publication"
+        ]
+      }
+    },
     "/v1/admin/program-offerings/preview": {
       "post": {
         "operationId": "adminProgramOfferingPreview",
@@ -40790,139 +40897,6 @@
           "noAutomaticTherapyActivation"
         ]
       },
-      "ProgramCommercialConfigDto": {
-        "type": "object",
-        "properties": {
-          "programDefinitionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termsPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountRial": {
-            "type": "string",
-            "pattern": "^(0|[1-9][0-9]{0,18})$"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "accessMode": {
-            "type": "string",
-            "enum": [
-              "PERPETUAL",
-              "DAYS",
-              "ONE_DELIVERY"
-            ]
-          },
-          "accessDurationDays": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 1,
-            "maximum": 3650
-          },
-          "quoteTtlSeconds": {
-            "type": "number",
-            "minimum": 60,
-            "maximum": 86400
-          },
-          "retentionPolicyRef": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "programDefinitionId",
-          "termsPolicyVersionId",
-          "amountRial",
-          "currency",
-          "accessMode",
-          "quoteTtlSeconds",
-          "retentionPolicyRef"
-        ]
-      },
-      "ProgramCommercialDefinitionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "programKey": {
-            "type": "string"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "kind": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "contentHash": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "usable": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "programKey",
-          "locale",
-          "kind",
-          "title",
-          "contentHash",
-          "status",
-          "usable"
-        ]
-      },
-      "ProgramPurchaseTermsDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "policyKey": {
-            "type": "string",
-            "enum": [
-              "PROGRAM_PURCHASE_TERMS"
-            ]
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "body": {
-            "type": "string"
-          },
-          "contentHash": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "policyKey",
-          "versionNumber",
-          "locale",
-          "title",
-          "body",
-          "contentHash"
-        ]
-      },
       "ProgramCommercialPolicyDto": {
         "type": "object",
         "properties": {
@@ -40949,134 +40923,6 @@
           "schemaVersion",
           "ordinaryRefunds",
           "paymentPoint"
-        ]
-      },
-      "ProgramCommercialPreviewDto": {
-        "type": "object",
-        "properties": {
-          "configuration": {
-            "$ref": "#/components/schemas/ProgramCommercialConfigDto"
-          },
-          "definition": {
-            "$ref": "#/components/schemas/ProgramCommercialDefinitionDto"
-          },
-          "termsPolicy": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProgramPurchaseTermsDto"
-              }
-            ]
-          },
-          "policy": {
-            "$ref": "#/components/schemas/ProgramCommercialPolicyDto"
-          },
-          "publicationHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "expectedPublicationNumber": {
-            "type": "number"
-          },
-          "configurationReady": {
-            "type": "boolean"
-          },
-          "blockers": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "checkoutAvailable": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
-          }
-        },
-        "required": [
-          "configuration",
-          "definition",
-          "termsPolicy",
-          "policy",
-          "publicationHash",
-          "expectedPublicationNumber",
-          "configurationReady",
-          "blockers",
-          "checkoutAvailable"
-        ]
-      },
-      "PublishProgramOfferingDto": {
-        "type": "object",
-        "properties": {
-          "programDefinitionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termsPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountRial": {
-            "type": "string",
-            "pattern": "^(0|[1-9][0-9]{0,18})$"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "accessMode": {
-            "type": "string",
-            "enum": [
-              "PERPETUAL",
-              "DAYS",
-              "ONE_DELIVERY"
-            ]
-          },
-          "accessDurationDays": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 1,
-            "maximum": 3650
-          },
-          "quoteTtlSeconds": {
-            "type": "number",
-            "minimum": 60,
-            "maximum": 86400
-          },
-          "retentionPolicyRef": {
-            "type": "string"
-          },
-          "publicationHash": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "expectedPublicationNumber": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 2147483646
-          },
-          "reviewedTermsAndRetention": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          }
-        },
-        "required": [
-          "programDefinitionId",
-          "termsPolicyVersionId",
-          "amountRial",
-          "currency",
-          "accessMode",
-          "quoteTtlSeconds",
-          "retentionPolicyRef",
-          "publicationHash",
-          "expectedPublicationNumber",
-          "reviewedTermsAndRetention"
         ]
       },
       "ProgramPublicationResponseDto": {
@@ -41207,6 +41053,299 @@
           "retirementReason",
           "configurationReady",
           "checkoutAvailable"
+        ]
+      },
+      "ProgramPurchaseTermsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyKey": {
+            "type": "string",
+            "enum": [
+              "PROGRAM_PURCHASE_TERMS"
+            ]
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "policyKey",
+          "versionNumber",
+          "locale",
+          "title",
+          "body",
+          "contentHash"
+        ]
+      },
+      "ProgramPublicationSetupDto": {
+        "type": "object",
+        "properties": {
+          "latestPublication": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramPublicationResponseDto"
+              }
+            ]
+          },
+          "termsPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramPurchaseTermsDto"
+              }
+            ]
+          },
+          "suggestedRetentionPolicyRef": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "latestPublication",
+          "termsPolicy",
+          "suggestedRetentionPolicyRef"
+        ]
+      },
+      "ProgramCommercialConfigDto": {
+        "type": "object",
+        "properties": {
+          "programDefinitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountRial": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "PERPETUAL",
+              "DAYS",
+              "ONE_DELIVERY"
+            ]
+          },
+          "accessDurationDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "quoteTtlSeconds": {
+            "type": "number",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "retentionPolicyRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "programDefinitionId",
+          "termsPolicyVersionId",
+          "amountRial",
+          "currency",
+          "accessMode",
+          "quoteTtlSeconds",
+          "retentionPolicyRef"
+        ]
+      },
+      "ProgramCommercialDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "programKey": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "usable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "programKey",
+          "locale",
+          "kind",
+          "title",
+          "contentHash",
+          "status",
+          "usable"
+        ]
+      },
+      "ProgramCommercialPreviewDto": {
+        "type": "object",
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/ProgramCommercialConfigDto"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/ProgramCommercialDefinitionDto"
+          },
+          "termsPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramPurchaseTermsDto"
+              }
+            ]
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ProgramCommercialPolicyDto"
+          },
+          "publicationHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedPublicationNumber": {
+            "type": "number"
+          },
+          "configurationReady": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "checkoutAvailable": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "configuration",
+          "definition",
+          "termsPolicy",
+          "policy",
+          "publicationHash",
+          "expectedPublicationNumber",
+          "configurationReady",
+          "blockers",
+          "checkoutAvailable"
+        ]
+      },
+      "PublishProgramOfferingDto": {
+        "type": "object",
+        "properties": {
+          "programDefinitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountRial": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "PERPETUAL",
+              "DAYS",
+              "ONE_DELIVERY"
+            ]
+          },
+          "accessDurationDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "quoteTtlSeconds": {
+            "type": "number",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "retentionPolicyRef": {
+            "type": "string"
+          },
+          "publicationHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedPublicationNumber": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reviewedTermsAndRetention": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "programDefinitionId",
+          "termsPolicyVersionId",
+          "amountRial",
+          "currency",
+          "accessMode",
+          "quoteTtlSeconds",
+          "retentionPolicyRef",
+          "publicationHash",
+          "expectedPublicationNumber",
+          "reviewedTermsAndRetention"
         ]
       },
       "ProgramPublicationPageDto": {

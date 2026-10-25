@@ -5382,3 +5382,42 @@ Owner supplied NotificationsPage runtime trace: Element type is invalid at ICONS
 Owner reports wallet notifications address the administrator as if they owned the changed wallet. Existing admin endpoint lists clinic notifications intended for users, but omits recipient identity. Same F12-FE01 continuation, sole /root on dev, IMPLEMENTED_UNVERIFIED / REWORK. Admin list now selects only notification presentation fields and recipient.userProfile firstName/lastName, returning nullable recipientDisplayName without phone/email/medical data or nested user object. Patient endpoint and stored notification text unchanged. Existing active-clinic filter/permission/100-item limit preserved. Both dashboard page and header panel show actual recipient name (explicit name-not-registered fallback) and label body as text sent to that user, avoiding ambiguous administrator-directed copy. Names are current profile data, not historical snapshots.
 
 Changed: notifications.service.ts adminList; dashboard phase-08-api.ts optional additive field, notifications-page.tsx and notif-panel.tsx. Current admin list OpenAPI response is unspecified; no generated response schema exists to regenerate for this additive field. No schema/migration/real database write/dependency/financial change. Source projection/schema/consumer review performed; tests/types/lint/build/browser and runtime API confirmation deferred per owner. No commit/DONE; owner preview next.
+
+## Programs pricing correction (2026-10-25)
+
+Task ID: F12-FE01-MZ01 (owner-requested corrective continuation)
+Branch/baseline: dev@c05feb8; baseline worktree clean.
+Agent/reviewer: Codex /root, sole writer, no subagents.
+Status: software review PASS; broad F12-FE01 remains REWORK.
+
+Changes:
+- Existing ADMIN/CONTENT_MANAGE/clinic/session authority guards a new audited, private/no-store setup read. It returns the retained latest same-identity tariff, exact active same-clinic/locale purchase terms and an actual historical retention reference suggestion; no new schema or policy mutation.
+- Dashboard loads saved price, marks retired/unusable/older-text tariffs, accepts Persian/Arabic/grouped toman and preserves one-rial remainders and maximum BigInt amounts. Existing DAYS/PERPETUAL access and quote TTL are retained when repricing.
+- Active terms are displayed directly; manual terms UUID input removed. Missing real terms explain the blocker. Retention reference is populated from real publication history where available and still explicitly reviewed. No fabricated initial retention/legal configuration.
+- Preview shows exact final price/terms/retention, publication is explicit and idempotent, success updates the saved-tariff block,409/network errors retain inputs, explicit reload asks before replacing them. Unsaved price is clearly labeled as unpublished.
+- Split publication form and price conversion from the existing program workspace; existing create/review/Mezaj-placement/purchase/grant flows retained.
+
+Owned files:
+- apps/api/src/modules/programs/publication/program-publication.{controller,dto,service}.ts
+- apps/api/test/program-publication.integration.spec.ts
+- apps/dashboard/src/features/programs/program-services-page.tsx, program-services.css, program-publication.tsx, program-price.ts, program-price.spec.ts
+- apps/dashboard/src/lib/program-services-api.ts
+- apps/app/e2e/program-pricing.browser.mjs
+- packages/api-client/openapi.json, src/schema.generated.ts
+- scoped contract/design/status/phase/log evidence
+
+Verification:
+- API openapi:export PASS; generated semantic diff adds only setup endpoint and ProgramPublicationSetupDto (other textual changes are schema ordering).
+- API client generate/build PASS.
+- Isolated patient-entry-verify harness with PATIENT_JOURNEY_TEST_ISOLATED=1, program-publication.integration.spec.ts:19/19 PASS; randomly named local database migrated/seeded/dropped; retained-price/retired-terms/read-only behavior and existing authorization/CAS/immutability/audit/price replacement cases.
+- API test TypeScript and dashboard TypeScript PASS; focused dashboard ESLint PASS.
+- Dashboard program-price.spec.ts:3/3 PASS (Persian/Arabic/grouping/free, exact one-rial/max round trip, invalid/out-of-range amounts).
+- apps/app/e2e/program-pricing.browser.mjs PASS320/390/1440: saved price, Persian toman->exact rial, explicit review and publication,409 input retention/retry, reopened persisted price, DAYS/TTL preservation, translated blockers, missing terms, failed-load retry, no page errors/overflow. Actual compiled Next page with intercepted API; no real writes.390px screenshot reviewed, images under ignored .local/program-pricing/.
+- Design-system token validator and git diff --check PASS.
+- Next generated only its AGENTS heading during the owned review server startup; restored that generated-only change and stopped the owned review server after browser verification.
+
+Known limitations / next action:
+- First real PROGRAM_PURCHASE_TERMS activation and the approved retention reference remain operator responsibilities; no legal text or real content auto-created. Price drafts are not persisted until publication.
+- No persistent/main/VPS database mutation, new migration, live payment, push or deployment in this corrective turn. Owner can review and request publication of the local fix.
+- No next roadmap batch started.
+- Graphify AST update PASS (11531 nodes); existing missing SQL/Erlang/HCL extractors and unrelated chat parser warnings retained. No generated graph files tracked in this commit.

@@ -88,3 +88,8 @@ export class ProgramPublicationPageDto {
   @ApiProperty() pageSize!: number;
   @ApiProperty() total!: number;
 }
+export class ProgramPublicationSetupDto {
+  @ApiProperty({ type: ProgramPublicationResponseDto, nullable: true }) latestPublication!: ProgramPublicationResponseDto | null;
+  @ApiProperty({ type: ProgramPurchaseTermsDto, nullable: true }) termsPolicy!: ProgramPurchaseTermsDto | null;
+  @ApiProperty({ type: String, nullable: true }) suggestedRetentionPolicyRef!: string | null;
+}

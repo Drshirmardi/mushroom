@@ -14,6 +14,23 @@ const invalid = () => new UnprocessableEntityException({ code: 'PROGRAM_PUBLICAT
 @Injectable()
 export class ProgramPublicationService {
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService) {}
+  async setup(id: string, ctx: Context) {
+    return this.prisma.$transaction(async tx => {
+      const clinicId = await this.authority.scope(tx, 'admin', ctx);
+      const definition = await this.definition(tx, clinicId, id);
+      const [latest, terms, previous] = await Promise.all([
+        this.latest(tx, definition),
+        tx.consentPolicyVersion.findFirst({ where: { clinicId, locale: definition.locale, policyKey: 'PROGRAM_PURCHASE_TERMS', status: 'ACTIVE', activatedAt: { not: null } }, orderBy: { versionNumber: 'desc' } }),
+        tx.programOfferingPublication.findFirst({ where: { clinicId, locale: definition.locale, definition: { kind: 'READY_EDUCATION' } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { retentionPolicyRef: true } }),
+      ]);
+      await this.audit(tx, 'SETUP_READ', definition.id, ctx);
+      return {
+        latestPublication: latest ? await this.response(tx, latest) : null,
+        termsPolicy: terms ? { id: terms.id, policyKey: 'PROGRAM_PURCHASE_TERMS' as const, versionNumber: terms.versionNumber, locale: terms.locale, title: terms.title, body: terms.body, contentHash: terms.contentHash } : null,
+        suggestedRetentionPolicyRef: latest?.retentionPolicyRef ?? previous?.retentionPolicyRef ?? null,
+      };
+    }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
+  }
   async preview(input: ProgramCommercialConfigDto, ctx: Context) {
     const configuration = this.config(input);
     return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), source = await this.sources(tx, clinicId, configuration), latest = await this.latest(tx, source.definition);

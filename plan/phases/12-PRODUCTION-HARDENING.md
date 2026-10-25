@@ -1,5 +1,7 @@
 # Phase 12 — Production Hardening
 
+Programs pricing correction (2026-10-25), same F12-FE01-MZ01 software continuation, sole /root review PASS on dev. Saved tariff/active terms read, exact Persian toman input, retained duration/TTL, explicit terms/retention review, translated blockers and success/conflict/retry states.19 isolated publication tests,3 price tests, API/dashboard types, SDK build/lint/tokens and320/390/1440 browser flows PASS. No schema/persistent DB/policy activation/deployment. Broad F12-FE01 remains REWORK. Evidence: phase-12 log programs-pricing-correction-2026-10-25.
+
 Notification recipient context (2026-10-25), same F12-FE01 /root: admin-only projection adds selected recipient profile name; dashboard full list and header panel identify the user and label original patient-directed notification text. IMPLEMENTED_UNVERIFIED / REWORK, no commit/DONE; checks deferred. Evidence phase-12 log.
 
 Dashboard notification render correction (2026-10-25), same F12-FE01 /root on dev: IMPLEMENTED_UNVERIFIED / REWORK. Current owner runtime trace caused by undefined icon for native FINANCIAL category. Dashboard page/panel now support Wallet with Bell fallback; frontend category union synchronized. Source review only; tests/types/lint/build/browser deferred, no commit/DONE. See phase-12 log.

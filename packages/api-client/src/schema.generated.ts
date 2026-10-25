@@ -4037,6 +4037,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/program-offerings/setup/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read saved program price and exact active purchase terms for the current clinic and locale */
+        get: operations["adminProgramOfferingSetup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/program-offerings/preview": {
         parameters: {
             query?: never;
@@ -9372,42 +9389,6 @@ export interface components {
             /** @enum {boolean} */
             noAutomaticTherapyActivation: true;
         };
-        ProgramCommercialConfigDto: {
-            /** Format: uuid */
-            programDefinitionId: string;
-            /** Format: uuid */
-            termsPolicyVersionId: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** @enum {string} */
-            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
-            accessDurationDays?: number | null;
-            quoteTtlSeconds: number;
-            retentionPolicyRef: string;
-        };
-        ProgramCommercialDefinitionDto: {
-            /** Format: uuid */
-            id: string;
-            programKey: string;
-            locale: string;
-            kind: string;
-            title: string;
-            contentHash: string;
-            status: string;
-            usable: boolean;
-        };
-        ProgramPurchaseTermsDto: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            policyKey: "PROGRAM_PURCHASE_TERMS";
-            versionNumber: number;
-            locale: string;
-            title: string;
-            body: string;
-            contentHash: string;
-        };
         ProgramCommercialPolicyDto: {
             /** @enum {number} */
             schemaVersion: 1;
@@ -9415,36 +9396,6 @@ export interface components {
             ordinaryRefunds: false;
             /** @enum {string} */
             paymentPoint: "PRE_ACCESS_OR_REQUEST";
-        };
-        ProgramCommercialPreviewDto: {
-            configuration: components["schemas"]["ProgramCommercialConfigDto"];
-            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
-            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
-            policy: components["schemas"]["ProgramCommercialPolicyDto"];
-            publicationHash: string | null;
-            expectedPublicationNumber: number;
-            configurationReady: boolean;
-            blockers: string[];
-            /** @enum {boolean} */
-            checkoutAvailable: false;
-        };
-        PublishProgramOfferingDto: {
-            /** Format: uuid */
-            programDefinitionId: string;
-            /** Format: uuid */
-            termsPolicyVersionId: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** @enum {string} */
-            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
-            accessDurationDays?: number | null;
-            quoteTtlSeconds: number;
-            retentionPolicyRef: string;
-            publicationHash: string;
-            expectedPublicationNumber: number;
-            /** @enum {boolean} */
-            reviewedTermsAndRetention: true;
         };
         ProgramPublicationResponseDto: {
             /** Format: uuid */
@@ -9481,6 +9432,77 @@ export interface components {
             configurationReady: boolean;
             /** @enum {boolean} */
             checkoutAvailable: false;
+        };
+        ProgramPurchaseTermsDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            policyKey: "PROGRAM_PURCHASE_TERMS";
+            versionNumber: number;
+            locale: string;
+            title: string;
+            body: string;
+            contentHash: string;
+        };
+        ProgramPublicationSetupDto: {
+            latestPublication: components["schemas"]["ProgramPublicationResponseDto"] | null;
+            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
+            suggestedRetentionPolicyRef: string | null;
+        };
+        ProgramCommercialConfigDto: {
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef: string;
+        };
+        ProgramCommercialDefinitionDto: {
+            /** Format: uuid */
+            id: string;
+            programKey: string;
+            locale: string;
+            kind: string;
+            title: string;
+            contentHash: string;
+            status: string;
+            usable: boolean;
+        };
+        ProgramCommercialPreviewDto: {
+            configuration: components["schemas"]["ProgramCommercialConfigDto"];
+            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
+            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
+            policy: components["schemas"]["ProgramCommercialPolicyDto"];
+            publicationHash: string | null;
+            expectedPublicationNumber: number;
+            configurationReady: boolean;
+            blockers: string[];
+            /** @enum {boolean} */
+            checkoutAvailable: false;
+        };
+        PublishProgramOfferingDto: {
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef: string;
+            publicationHash: string;
+            expectedPublicationNumber: number;
+            /** @enum {boolean} */
+            reviewedTermsAndRetention: true;
         };
         ProgramPublicationPageDto: {
             items: components["schemas"]["ProgramPublicationResponseDto"][];
@@ -22294,6 +22316,90 @@ export interface operations {
                 };
             };
             /** @description Inconsistent source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramPublicationSetupDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
             422: {
                 headers: {
                     [name: string]: unknown;
