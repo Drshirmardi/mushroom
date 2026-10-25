@@ -23,17 +23,19 @@
 .program-workspace p { font-size: var(--program-size-text-sm); line-height: 2; color: var(--program-muted); overflow-wrap: anywhere; }
 .program-workspace :is(h1,h2,h3,strong,label) { overflow-wrap: anywhere; }
 .program-list-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--program-size-2); align-items: baseline; margin-bottom: var(--program-size-5); }
-.program-definition-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,var(--program-size-card-width)),1fr)); gap: var(--program-size-5); }
-.program-definition-card { display: flex; flex-direction: column; align-items: stretch; gap: var(--program-size-2); padding: var(--program-size-6); border: 1px solid var(--program-line); border-radius: var(--program-size-5); background: var(--program-surface); text-align: start; min-width: 0; cursor: pointer; transition: border-color .18s, background-color .18s; }
+.program-definition-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,var(--program-size-list-column)),1fr)); gap: var(--program-size-text-xs); }
+.program-definition-card { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: start; gap: var(--program-size-text-xs); padding: var(--program-size-4); border: 1px solid var(--program-line); border-radius: var(--program-size-4); background: var(--program-surface); text-align: start; min-width: 0; cursor: pointer; transition: border-color .18s, background-color .18s; }
 .program-definition-card:hover { border-color: var(--program-accent); background: color-mix(in srgb,var(--program-accent) 2%,var(--program-surface)); }
 .program-definition-card:active { background: var(--program-soft); }
-.program-card-top { display: flex; justify-content: space-between; align-items: center; gap: var(--program-size-4); margin-bottom: var(--program-size-4); }
-.program-card-icon { display: grid; place-items: center; width: var(--program-size-control); height: var(--program-size-control); border-radius: var(--program-size-4); color: var(--program-accent); background: color-mix(in srgb,var(--program-accent) 8%,var(--program-surface)); }
-.program-badge { font-size: var(--program-size-text-xs); background: var(--program-soft); color: var(--program-muted); padding: var(--program-size-1) var(--program-size-2); border-radius: var(--program-size-2); }
-.program-badge[data-status=APPROVED] { color: var(--program-accent); background: color-mix(in srgb,var(--program-accent) 8%,var(--program-surface)); }
+.program-card-icon { display: grid; place-items: center; width: var(--program-size-8); height: var(--program-size-8); border-radius: var(--program-size-text-xs); color: var(--program-accent); background: color-mix(in srgb,var(--program-accent) 8%,var(--program-surface)); }
+.program-card-copy { display: grid; gap: var(--program-size-1); min-width: 0; }
+.program-card-title { font-size: var(--program-size-text-sm); line-height: 1.9; font-weight: 650; overflow-wrap: anywhere; }
+.program-card-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; font-size: var(--program-size-text-sm); line-height: 1.9; color: var(--program-muted); font-weight: 400; }
 .program-card-version { font-size: var(--program-size-text-xs); color: var(--program-muted); }
-.program-definition-card p { flex: 1; font-weight: 400; }
-.program-definition-card strong { color: var(--program-accent); font-size: var(--program-size-text-sm); display: flex; justify-content: space-between; gap: var(--program-size-4); border-top: 1px solid var(--program-line); padding-top: var(--program-size-4); margin-top: var(--program-size-4); }
+.program-card-side { display: flex; flex-direction: column; align-items: end; justify-content: space-between; align-self: stretch; gap: var(--program-size-4); }
+.program-card-action { display: flex; align-items: center; gap: var(--program-size-2); font-size: var(--program-size-text-xs); color: var(--program-accent); }
+.program-badge { white-space: nowrap; font-size: var(--program-size-text-xs); background: var(--program-soft); color: var(--program-muted); padding: var(--program-size-1) var(--program-size-2); border-radius: var(--program-size-2); }
+.program-badge[data-status=APPROVED] { color: var(--program-accent); background: color-mix(in srgb,var(--program-accent) 8%,var(--program-surface)); }
 .program-pagination, .program-editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--program-size-2); margin-top: var(--program-size-5); }
 .program-pagination { justify-content: center; }
 .program-pagination span { font-size: var(--program-size-text-sm); padding-inline: var(--program-size-4); color: var(--program-muted); }
@@ -86,3 +88,13 @@
 .program-workspace button:disabled, .program-workspace fieldset:disabled { cursor: not-allowed; opacity: .6; }
 @media(width >= 48rem) { .program-pair-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } .program-form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(prefers-reduced-motion:reduce) { .program-workspace * { transition: none !important; scroll-behavior: auto !important; } }
+
+.program-workspace:has(.program-dialog[open]) { overflow-y: hidden; }
+.program-dialog { position: fixed; inset: 0; margin: auto; width: calc(100% - var(--program-size-4)); max-width: var(--program-size-dialog-width); max-height: calc(100dvh - var(--program-size-4)); padding: 0; border: 1px solid var(--program-line); border-radius: var(--program-size-5); background: var(--program-surface); color: var(--program-ink); overflow-y: auto; overscroll-behavior: contain; scroll-padding-block: var(--program-size-dialog-scroll-inset); }
+.program-dialog::backdrop { background: color-mix(in srgb,var(--program-ink) 42%,transparent); }
+.program-dialog .program-editor { border: none; padding: 0; border-radius: inherit; }
+.program-dialog .program-editor > header { position: sticky; top: 0; z-index: 1; background: var(--program-surface); border-bottom: 1px solid var(--program-line); padding: var(--program-size-4) var(--program-size-5); }
+.program-dialog .program-editor > :not(header) { margin-inline: var(--program-size-5); }
+.program-dialog .program-section-nav { margin-block: var(--program-size-5); }
+.program-dialog .program-editor > div[id] { padding-block: var(--program-size-4) var(--program-size-6); }
+@media(width >= 48rem) { .program-dialog { width: calc(100% - var(--program-size-8)); max-height: calc(100dvh - var(--program-size-8)); } }

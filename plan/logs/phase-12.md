@@ -5479,3 +5479,24 @@ Next/limits: owner can test local /programs and request push/deployment; server 
 ## Programs naming correction (2026-10-25)
 
 Task: F12-FE01-MZ01 owner-selected label follow-up; sole /root, dev. Renamed the dashboard navigation, page heading, header metadata and browser title to «خدمات اختصاصی مزاج». Source search confirms all four runtime occurrences replaced. Static text-only review and diff check PASS; no runtime tests needed for this label change. No API/route/data change, push/deployment or next batch.
+
+## Programs compact list and editor dialog (2026-10-25)
+
+Task: F12-FE01-MZ01 owner-authorized frontend continuation; baseline dev@f5ffa24, clean. Sole writer/reviewer Codex /root, no subagents.
+
+Scope/files: program-services-page.tsx, program-services.css, program-services.tokens.css; program-workspace.browser.mjs; scoped design/status/phase/log evidence.
+
+Changes:
+- Tall service cards replaced with compact icon/title/introduction/version/status/edit rows and responsive one/two-column list. Synthetic cards stay under170px in all tested viewports; full title wraps and full description remains readable in the editor.
+- Existing editor/new-service form opens in native dialog instead of replacing list. Main list remains mounted and retains exact scroll position on close. Native modal/inert background and scoped overflow lock prevent background scrolling.
+- Viewport-bounded dialog independently scrolls; sticky header keeps close available. Focus starts on close, wraps at Tab boundaries and returns to opener without scrolling. Escape/backdrop follow the same dirty-text confirmation and in-flight fieldset guard. No additional dependency.
+- Content/Mezaj/pricing state, actual API operations and source-free creation preserved. Removed stale generic source-dependent error wording.
+
+Verification:
+- program-workspace.browser.mjs PASS375/390/768/1440 and844x390 landscape: compact-height assertions; native dialog; touch/End form scrolling and bottom actions; repeated Tab focus cycle; Escape/focus return/exact list scroll; desktop backdrop dismissal; dirty-close cancel; section draft retention; filled-form source-free create with no source API request; no page/React/overflow errors.
+- Initial boundary Tab check exposed native browser chrome traversal; explicit first/last control handling added and final five viewport checks pass.
+- program-pricing.browser.mjs PASS320/390/1440 inside popup: exact price/publish/409/reopen/DAYS/TTL/terms/retry preserved.
+- Mobile compact list/popup and desktop list screenshots reviewed under ignored .local/program-workspace/. Dashboard typecheck, focused ESLint and token validator PASS; diff check PASS.
+- Graphify AST refreshed. Owned review server stopped; Next generated-only AGENTS heading restored.
+
+No API/schema/database/dependency/payment/policy/deployment changes. Local frontend commit only, no push. Broad F12-FE01 remains REWORK; no next batch. Owner can review and request publication.

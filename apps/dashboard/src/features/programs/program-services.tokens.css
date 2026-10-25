@@ -5,6 +5,9 @@
   --program-size-text-xs: .75rem;
   --program-size-text-sm: .875rem;
   --program-size-title: 1.75rem;
+  --program-size-list-column: 25rem;
+  --program-size-dialog-width: 64rem;
+  --program-size-dialog-scroll-inset: 8rem;
   --program-size-page-width: 72rem;
   --program-size-reading-width: 52rem;
   --program-size-card-width: 17rem;

@@ -33,6 +33,8 @@ try {
     assert.ok(await root.evaluate(el => el.scrollHeight > el.clientHeight));
     assert.equal(await root.evaluate(el => getComputedStyle(el).overflowY), 'auto');
     await root.evaluate(el => { el.scrollTop = 0; });
+    const cardSizes = await page.locator('.program-definition-card').evaluateAll(elements => elements.map(el => el.getBoundingClientRect().height));
+    assert.ok(cardSizes.every(height => height <= 170));
     await page.screenshot({ path: `.local/program-workspace/list-${width}.png` });
     await root.hover();
     await page.mouse.wheel(0, 1000);
@@ -43,22 +45,24 @@ try {
     const pager = await page.getByRole('navigation', { name: 'صفحه‌های خدمات', exact: true }).boundingBox();
     assert.ok(pager.y >= 0 && pager.y + pager.height <= height);
     await page.getByRole('button', { name: 'خدمت جدید', exact: true }).click();
+    const popup = page.getByRole('dialog');
+    await popup.waitFor();
     await page.getByLabel(/عنوان خدمت/).fill('متن ذخیره‌نشدهٔ آزمایشی');
-    assert.ok(await root.evaluate(el => el.scrollHeight > el.clientHeight));
+    assert.ok(await popup.evaluate(el => el.scrollHeight > el.clientHeight));
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await page.screenshot({ path: `.local/program-workspace/form-${width}.png` });
     if (mobile) {
-      await root.evaluate(el => { el.scrollTop = 0; });
+      await popup.evaluate(el => { el.scrollTop = 0; });
       const client = await context.newCDPSession(page);
       const x = Math.round(width / 2), y = height - 80;
       await client.send('Input.dispatchTouchEvent', { type:'touchStart', touchPoints:[{x,y}] });
       for (let offset=20;offset<=300;offset+=20) await client.send('Input.dispatchTouchEvent', { type:'touchMove', touchPoints:[{x,y:y-offset}] });
       await client.send('Input.dispatchTouchEvent', { type:'touchEnd', touchPoints:[] });
-      await page.waitForFunction(() => document.querySelector('.program-workspace').scrollTop > 30);
+      await page.waitForFunction(() => document.querySelector('.program-dialog[open]').scrollTop > 30);
       await client.detach();
     }
-    await root.focus(); await page.keyboard.press('End');
-    await page.waitForFunction(() => { const el=document.querySelector('.program-workspace');return el.scrollTop+el.clientHeight>=el.scrollHeight-2; });
+    await popup.focus(); await page.keyboard.press('End');
+    await page.waitForFunction(() => { const el=document.querySelector('.program-dialog[open]');return el.scrollTop+el.clientHeight>=el.scrollHeight-2; });
     const save = await page.getByRole('button', { name: 'ذخیرهٔ پیش‌نویس نسخهٔ جدید', exact: true }).boundingBox();
     assert.ok(save.y >= 0 && save.y + save.height <= height);
     await page.screenshot({ path: `.local/program-workspace/form-end-${width}.png` });
@@ -67,6 +71,21 @@ try {
     assert.equal(await page.getByLabel(/عنوان خدمت/).inputValue(), 'متن ذخیره‌نشدهٔ آزمایشی');
     page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'بستن', exact: true }).click();
+    await root.focus(); await page.keyboard.press('End');
+    await page.waitForFunction(() => { const el=document.querySelector('.program-workspace');return el.scrollTop+el.clientHeight>=el.scrollHeight-2; });
+    const opener = page.locator('.program-definition-card').last();
+    const listPosition = await root.evaluate(el => el.scrollTop);
+    await opener.click();
+    for (let i=0;i<12;i++) { await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog[open]')), true); }
+    await page.keyboard.press('Escape');
+    await popup.waitFor({ state: 'hidden' });
+    assert.equal(await root.evaluate(el => el.scrollTop), listPosition);
+    assert.equal(await opener.evaluate(el => el === document.activeElement), true);
+    if (width >= 768) {
+      await opener.click(); await popup.waitFor();
+      await page.mouse.click(2, 2);
+      await popup.waitFor({ state: 'hidden' });
+    }
     await page.getByRole('button', { name: /شناخت ویژگی‌های شخصیتی/ }).click();
     await page.getByRole('button', { name: 'مزاج و نمایش', exact: true }).click();
     await page.getByLabel('آیکون خدمت', { exact: true }).selectOption('heart');
@@ -76,7 +95,7 @@ try {
     assert.equal(await page.getByLabel('آیکون خدمت', { exact: true }).inputValue(), 'heart');
     await page.getByRole('button', { name: 'قیمت و انتشار', exact: true }).click();
     assert.equal(await page.getByLabel('قیمت خدمت به تومان', { exact: true }).inputValue(), '۱۲۳۴۵');
-    await root.evaluate(el => { el.scrollTop = 0; });
+    await popup.evaluate(el => { el.scrollTop = 0; });
     await page.screenshot({ path: `.local/program-workspace/editor-${width}.png` });
     await page.getByRole('button', { name: 'بستن', exact: true }).click();
     await page.getByRole('button', { name: 'خدمت جدید', exact: true }).click();

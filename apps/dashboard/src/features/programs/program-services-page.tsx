@@ -18,7 +18,7 @@ function useCommand() {
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
   const lock = useRef(false), keys = useRef(new Map<string, string>());
   const key = (body: unknown) => { const fingerprint = JSON.stringify(body); if (!keys.current.has(fingerprint)) keys.current.set(fingerprint, crypto.randomUUID()); return keys.current.get(fingerprint)!; };
-  const run = async <T,>(operation: () => Promise<T>) => { if (lock.current) return null; lock.current = true; setBusy(true); setNotice(''); try { const value = await operation(); setNotice('ذخیره شد.'); return value; } catch (e) { setNotice(e instanceof ProgramApiError && e.status === 409 ? 'نسخه یا تنظیمات تغییر کرده است. نوشته‌های شما حفظ شده؛ اطلاعات تازه را دریافت و دوباره بررسی کنید.' : e instanceof ProgramApiError && e.status === 403 ? 'برای این عملیات مجوز یا عضویت معتبر لازم است.' : 'عملیات انجام نشد. انتشار به منبع، بازبینی و شرایط خرید معتبر نیاز دارد.'); return null; } finally { lock.current = false; setBusy(false); } };
+  const run = async <T,>(operation: () => Promise<T>) => { if (lock.current) return null; lock.current = true; setBusy(true); setNotice(''); try { const value = await operation(); setNotice('ذخیره شد.'); return value; } catch (e) { setNotice(e instanceof ProgramApiError && e.status === 409 ? 'نسخه یا تنظیمات تغییر کرده است. نوشته‌های شما حفظ شده؛ اطلاعات تازه را دریافت و دوباره بررسی کنید.' : e instanceof ProgramApiError && e.status === 403 ? 'برای این عملیات مجوز یا عضویت معتبر لازم است.' : 'عملیات انجام نشد. اطلاعات واردشده، دسترسی و شرایط انتشار را بررسی کنید.'); return null; } finally { lock.current = false; setBusy(false); } };
   return { busy, notice, key, run };
 }
 export function ProgramServicesPage() {
@@ -29,30 +29,39 @@ function Workspace({ token, doctor, manage }: { token: string; doctor: boolean; 
   const [page, setPage] = useState(1), [selection, setSelection] = useState<Definition | 'new' | null>(null);
   const list = useResource(useCallback(() => listDefinitions(token, page, doctor && !manage), [token, page, doctor, manage]));
   const scroll = useRef<HTMLDivElement>(null);
-  const select = (value: Definition | 'new' | null) => { setSelection(value); scroll.current?.scrollTo({ top: 0 }); };
+  const select = (value: Definition | 'new' | null) => setSelection(value);
   const visible = list.data?.items.filter(item => item.kind === 'READY_EDUCATION') ?? [];
   return <div ref={scroll} className="program-workspace" dir="rtl" tabIndex={0} role="region" aria-label="فضای مدیریت خدمات">
     <div className="program-content">
       <header className="program-workspace-header">
         <div><span className="program-eyebrow">مدیریت خدمات آموزشی</span><h1>خدمات اختصاصی مزاج</h1><p>از نوشتن محتوا تا پیشنهاد و فروش، همهٔ تنظیمات هر خدمت در یک جا.</p></div>
-        {!selection && manage && <button className="dashboard-button dashboard-button-primary" onClick={() => select('new')}><Plus size={18} aria-hidden="true" />خدمت جدید</button>}
+        {manage && <button className="dashboard-button dashboard-button-primary" onClick={() => select('new')}><Plus size={18} aria-hidden="true" />خدمت جدید</button>}
       </header>
-      {selection ? <Editor key={selection === 'new' ? 'new' : selection.id} token={token} initial={selection === 'new' ? null : selection} doctor={doctor} manage={manage} onClose={() => { select(null); list.refresh(); }} onCreated={item => { select(item); list.refresh(); }} /> : <>
+      {selection && <Editor key={selection === 'new' ? 'new' : selection.id} token={token} initial={selection === 'new' ? null : selection} doctor={doctor} manage={manage} onClose={() => { select(null); list.refresh(); }} onCreated={item => { select(item); list.refresh(); }} />}
+      <>
         <div className="program-list-heading"><h2>خدمت‌های شما</h2><p>برای ویرایش متن، تنظیم مزاج یا تعیین قیمت، خدمت را باز کنید.</p></div>
         {list.error ? <div role="alert" className="program-empty"><p>{list.error}</p><button className="dashboard-button" onClick={list.refresh}>تلاش دوباره</button></div> : !list.data ? <p role="status" className="program-empty">در حال دریافت خدمات…</p> : <>
           <div className="program-definition-grid">{visible.map(item => <button key={item.id} className="program-definition-card" onClick={() => select(item)}>
-            <span className="program-card-top"><span className="program-card-icon"><BookOpen size={23} aria-hidden="true" /></span><span className="program-badge" data-status={item.status}>{item.status === 'APPROVED' ? 'تأییدشده' : item.status === 'DRAFT' ? 'پیش‌نویس' : 'لغوشده'}</span></span>
-            <span className="program-card-version">نسخه {item.versionNumber.toLocaleString('fa-IR')}</span><h3>{item.title}</h3><p>{item.summary}</p><strong>مشاهده و مدیریت <ArrowLeft size={16} aria-hidden="true" /></strong>
+            <span className="program-card-icon"><BookOpen size={20} aria-hidden="true" /></span>
+            <span className="program-card-copy"><span className="program-card-title">{item.title}</span><span className="program-card-summary">{item.summary}</span><span className="program-card-version">نسخه {item.versionNumber.toLocaleString('fa-IR')}</span></span>
+            <span className="program-card-side"><span className="program-badge" data-status={item.status}>{item.status === 'APPROVED' ? 'تأییدشده' : item.status === 'DRAFT' ? 'پیش‌نویس' : 'لغوشده'}</span><span className="program-card-action">ویرایش <ArrowLeft size={16} aria-hidden="true" /></span></span>
           </button>)}</div>
           {!visible.length && <div className="program-empty"><BookOpen size={28} aria-hidden="true" /><h3>{list.data.total ? 'خدمت متنی در این صفحه نیست' : 'اولین خدمتتان را بسازید'}</h3><p>{list.data.total ? 'صفحه‌های دیگر را بررسی کنید.' : 'با یک عنوان، معرفی کوتاه و محتوای آموزشی شروع کنید؛ تنظیم مزاج و قیمت در مرحلهٔ بعد انجام می‌شود.'}</p></div>}
           <nav className="program-pagination" aria-label="صفحه‌های خدمات"><button className="dashboard-button" disabled={page === 1} onClick={() => { setPage(p => p - 1); scroll.current?.scrollTo({ top: 0 }); }}>قبلی</button><span>صفحه {page.toLocaleString('fa-IR')}</span><button className="dashboard-button" disabled={page * 12 >= list.data.total} onClick={() => { setPage(p => p + 1); scroll.current?.scrollTo({ top: 0 }); }}>بعدی</button></nav>
         </>}
-      </>}
+      </>
     </div>
   </div>;
 }
 function Editor({ token, initial, doctor, manage, onClose, onCreated }: { token: string; initial: Definition | null; doctor: boolean; manage: boolean; onClose: () => void; onCreated: (item: Definition) => void }) {
   const [item, setItem] = useState(initial), [editing, setEditing] = useState(!initial);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (element && !element.open) element.showModal();
+    return () => { element?.close(); if (opener?.isConnected) opener.focus({ preventScroll: true }); };
+  }, []);
   const [section, setSection] = useState('content');
   const [dirty, setDirty] = useState(false);
   const command = useCommand();
@@ -60,9 +69,20 @@ function Editor({ token, initial, doctor, manage, onClose, onCreated }: { token:
   const generatedKey = useRef(`TEXT_${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`);
   const submit = async (event: FormEvent) => { event.preventDefault(); const body: DefinitionInput = { programKey: initial?.programKey ?? generatedKey.current, locale: initial?.locale ?? 'fa-IR', kind: 'READY_EDUCATION', title: form.title, summary: form.summary, body: form.body, category: form.category, eligibilityDescription: form.eligibility, safety: { intendedAudience: form.audience, limitations: form.limitations, contraindications: form.contraindications.split('\n').map(s => s.trim()).filter(Boolean), seekProfessionalCare: form.care } }; const saved = await command.run(() => createDefinition(token, body, command.key(body))); if (saved) onCreated(saved); };
   const input = (name: keyof typeof form, label: string, maxLength: number, multiline = false) => <label key={name} htmlFor={`program-${name}`}>{label}<span className="program-required">ضروری</span>{multiline ? <textarea id={`program-${name}`} className={field} rows={3} required maxLength={maxLength} value={form[name]} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} /> : <input id={`program-${name}`} className={field} required maxLength={maxLength} value={form[name]} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} />}</label>;
-  const close = () => { if (editing && dirty && !window.confirm('تغییرات متن هنوز ذخیره نشده‌اند. از ویرایش خارج می‌شوید؟')) return; onClose(); };
-  return <section className="program-editor" aria-label="ویرایش خدمت">
-    <header><div><span className="program-eyebrow">{item ? `نسخه ${item.versionNumber.toLocaleString('fa-IR')} · ${item.status === 'APPROVED' ? 'تأییدشده' : item.status === 'DRAFT' ? 'در انتظار بازبینی' : 'لغوشده'}` : 'ساخت خدمت'}</span><h2>{editing ? initial ? 'ویرایش در نسخهٔ تازه' : 'خدمت متنی جدید' : item?.title}</h2></div><button className="dashboard-button" disabled={command.busy} onClick={close}><X size={17} aria-hidden="true" />بستن</button></header>
+  const close = () => { if (command.busy || dialog.current?.querySelector('fieldset[disabled]')) return; if (editing && dirty && !window.confirm('تغییرات متن هنوز ذخیره نشده‌اند. از ویرایش خارج می‌شوید؟')) return; onClose(); };
+  return <dialog ref={dialog} tabIndex={-1} className="program-dialog" aria-labelledby="program-editor-title" onKeyDown={event => {
+    if (event.key !== 'Tab') return;
+    const controls = [...event.currentTarget.querySelectorAll<HTMLElement>('button,a[href],input,textarea,select,summary,[tabindex="0"]')].filter(element => !element.matches(':disabled') && element.getClientRects().length > 0);
+    const first = controls[0], last = controls[controls.length - 1];
+    if (!first || !last) { event.preventDefault(); return; }
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === event.currentTarget)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || document.activeElement === event.currentTarget)) { event.preventDefault(); first.focus(); }
+  }} onCancel={event => { event.preventDefault(); close(); }} onClick={event => {
+    if (event.target !== event.currentTarget || command.busy) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close();
+  }}><section className="program-editor" aria-label="ویرایش خدمت">
+    <header><div><span className="program-eyebrow">{item ? `نسخه ${item.versionNumber.toLocaleString('fa-IR')} · ${item.status === 'APPROVED' ? 'تأییدشده' : item.status === 'DRAFT' ? 'در انتظار بازبینی' : 'لغوشده'}` : 'ساخت خدمت'}</span><h2 id="program-editor-title">{editing ? initial ? 'ویرایش در نسخهٔ تازه' : 'خدمت متنی جدید' : item?.title}</h2></div><button className="dashboard-button" autoFocus disabled={command.busy} onClick={close}><X size={17} aria-hidden="true" />بستن</button></header>
     {item && manage && <nav className="program-section-nav" aria-label="بخش‌های مدیریت خدمت">{[['content','متن و محتوا'],['placement','مزاج و نمایش'],['price','قیمت و انتشار']].map(([value,label]) => <button type="button" key={value} aria-pressed={section === value} aria-controls={`program-panel-${value}`} onClick={() => setSection(value)}>{label}</button>)}</nav>}
     {command.notice && <p role="status" className="program-notice">{command.notice}</p>}
     <div id="program-panel-content" hidden={section !== 'content'}>
@@ -74,7 +94,7 @@ function Editor({ token, initial, doctor, manage, onClose, onCreated }: { token:
       </fieldset></form> : item && <div className="program-read-content"><div className="program-notice"><p>ویرایش متن، نسخهٔ تازه می‌سازد؛ دسترسی خریدهای قبلی حفظ می‌شود.</p></div><h3>معرفی خدمت</h3><p>{item.summary}</p><details className="program-content-preview"><summary>مشاهدهٔ متن و اطلاعات بازبینی</summary><p className="program-full-body">{item.body}</p><h3>محدودیت‌ها</h3><p>{item.safety.limitations}</p><h3>مراجعه به متخصص</h3><p>{item.safety.seekProfessionalCare}</p></details><div className="program-editor-actions">{manage && <button className="dashboard-button" onClick={() => setEditing(true)} disabled={command.busy}>ویرایش در نسخهٔ تازه</button>}{doctor && item.status === 'DRAFT' && <button className="dashboard-button dashboard-button-primary" disabled={command.busy} onClick={async () => { if (!window.confirm('متن، منابع و محدودیت‌ها را بررسی کرده‌اید و تأیید می‌کنید؟')) return; const approved = await command.run(() => approveDefinition(token, item)); if (approved) setItem(approved); }}>تأیید با اختیار پزشک</button>}</div></div>}
     </div>
     {item && manage && <><div id="program-panel-placement" hidden={section !== 'placement'}><Placement key={item.id} token={token} item={item} /></div><div id="program-panel-price" hidden={section !== 'price'}><Publication key={`publication:${item.id}:${item.status}`} token={token} item={item} /></div></>}
-  </section>;
+  </section></dialog>;
 }
 function Placement({ token, item }: { token: string; item: Definition }) {
   const [draft, setDraft] = useState<Presentation | null>(null);
