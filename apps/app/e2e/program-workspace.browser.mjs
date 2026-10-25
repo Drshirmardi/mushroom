@@ -12,6 +12,7 @@ try {
     const mobile = width < 768;
     const context = await browser.newContext({ viewport: { width, height }, isMobile: mobile, hasTouch: mobile, reducedMotion: 'reduce' });
     const page = await context.newPage(), errors = [];
+    let sourceRequests = 0, created = null;
     page.on('pageerror', e => errors.push(e.message));
     page.on('console', msg => { if (msg.type() === 'error' && /validateDOMNesting|In HTML|hydration|unique.*key|cannot be a descendant/i.test(msg.text())) errors.push(msg.text()); });
     await page.route('**/v1/**', async route => {
@@ -22,7 +23,8 @@ try {
       if (path === '/v1/admin/program-definitions') return send({ items: Array.from({length:12}, (_,i) => ({ ...first, id: i ? `${String(i + 1).padStart(8,'0')}-1111-4111-8111-111111111111` : id, title: i ? `خدمت آموزشی شماره ${i + 1}` : first.title, status: i % 2 ? 'DRAFT' : 'APPROVED' })), total: 12, page: 1, pageSize: 12 });
       if (path.endsWith('/mezaj')) return send({ programDefinitionId: id, revision: 1, enabled: true, icon: 'book', pairs: ['damavi/safravi'] });
       if (path.includes('/program-offerings/setup/')) return send({ latestPublication: null, termsPolicy: null, suggestedRetentionPolicyRef: null });
-      if (path === '/v1/admin/guidance-content') return send({ items: [{ id, contentHash: 'a'.repeat(64), title: 'منبع آموزشی تأییدشده', status: 'APPROVED' }], total: 1, page: 1, pageSize: 50 });
+      if (path === '/v1/admin/guidance-content') { sourceRequests++; return send({ items: [], total: 0, page: 1, pageSize: 50 }); }
+      if (path === '/v1/admin/program-definitions/versions' && req.method() === 'POST') { created = req.postDataJSON(); return send({ ...first, ...created, contentReferences: [], status: 'DRAFT' }); }
       return send({ items: [], total: 0, unreadCount: 0 });
     });
     await page.goto('http://localhost:3002/programs');
@@ -76,6 +78,17 @@ try {
     assert.equal(await page.getByLabel('قیمت خدمت به تومان', { exact: true }).inputValue(), '۱۲۳۴۵');
     await root.evaluate(el => { el.scrollTop = 0; });
     await page.screenshot({ path: `.local/program-workspace/editor-${width}.png` });
+    await page.getByRole('button', { name: 'بستن', exact: true }).click();
+    await page.getByRole('button', { name: 'خدمت جدید', exact: true }).click();
+    for (const [label,value] of [['عنوان خدمت','شخصیت‌شناسی بر اساس مزاج'],['دسته‌بندی','شناخت خود'],['معرفی کوتاه پیش از خرید','معرفی آموزشی خدمت'],['متن کامل پس از خرید','متن خریداری‌شدهٔ آموزشی'],['این محتوا برای چه کسانی است؟','عموم بزرگسالان'],['شرایط استفاده','مطالعهٔ شخصی'],['محدودیت‌های محتوای آموزشی','محتوای آموزشی'],['راهنمای مراجعه به متخصص','در صورت نیاز مراجعه کنید.']]) await page.getByLabel(label).fill(value);
+    assert.equal(await page.getByText('منابع آموزشی تأییدشدهٔ مرتبط', { exact: true }).count(), 0);
+    const create = page.getByRole('button', { name: 'ذخیرهٔ پیش‌نویس نسخهٔ جدید', exact: true });
+    assert.equal(await create.isDisabled(), false);
+    await create.click();
+    await page.getByRole('button', { name: 'ویرایش در نسخهٔ تازه', exact: true }).waitFor();
+    assert.equal(created.title, 'شخصیت‌شناسی بر اساس مزاج');
+    assert.equal(created.contentReferences, undefined);
+    assert.equal(sourceRequests, 0);
     assert.deepEqual(errors, []);
     await context.close();
     console.log(`PASS ${width}x${height}: real wheel/End${mobile?'/touch':''} scrolling, bottom actions reachable, sections preserve drafts, dirty-close recovery, no overflow/errors`);

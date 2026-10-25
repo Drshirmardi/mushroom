@@ -17,7 +17,7 @@ export class ProgramDefinitionCreateDto {
   @ApiProperty({ description: 'Exact plain educational curriculum or professional service specification; never execute as HTML.' }) @IsString() @Length(1, 100000) @Matches(/\S/u) body!: string;
   @ApiProperty() @IsString() @Length(1, 4000) @Matches(/\S/u) eligibilityDescription!: string;
   @ApiProperty({ type: GuidanceSafetyDto }) @IsObject() @ValidateNested() @Type(() => GuidanceSafetyDto) safety!: GuidanceSafetyDto;
-  @ApiProperty({ type: [ProgramContentReferenceDto] }) @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => ProgramContentReferenceDto) contentReferences!: ProgramContentReferenceDto[];
+  @ApiPropertyOptional({ type: [ProgramContentReferenceDto], default: [] }) @IsOptional() @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => ProgramContentReferenceDto) contentReferences: ProgramContentReferenceDto[] = [];
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') doctorServiceId?: string;
 }
 export class ProgramDefinitionApprovalDto {

@@ -9327,7 +9327,8 @@ export interface components {
             body: string;
             eligibilityDescription: string;
             safety: components["schemas"]["GuidanceSafetyDto"];
-            contentReferences: components["schemas"]["ProgramContentReferenceDto"][];
+            /** @default [] */
+            contentReferences?: components["schemas"]["ProgramContentReferenceDto"][];
             /** Format: uuid */
             doctorServiceId?: string;
         };

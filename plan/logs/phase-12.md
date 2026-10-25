@@ -5449,3 +5449,29 @@ Verification:
 - Owned Next review server stopped; generated-only AGENTS heading change restored. No other user process stopped.
 
 Limits/next: real Safari/device keyboard acceptance remains external. No push/deploy or next roadmap batch. Owner can review the local frontend fix before publishing it.
+
+## Ready program source removal (2026-10-25)
+
+Task ID: F12-FE01-MZ01, owner-authorized policy correction; baseline dev@a40bcd6, clean.
+Agent/reviewer: Codex /root, sole writer. Status: scoped software review PASS; broad F12-FE01 stays REWORK, claim released.
+
+Owner explicitly rejects external educational-source requirements for Mezaj text services such as personality content. This overrides earlier source-required READY_EDUCATION contracts. No new architecture or clinical service type introduced.
+
+Implementation/files:
+- definitions/program-definition.dto.ts: contentReferences optional/default empty; compatible with older explicit-reference clients.
+- definitions/program-definition.service.ts: no nonempty ready-service source requirement; omitted references normalized; ready approval independent of legacy source state. Explicit legacy references still validated at creation; custom professional checks retained.
+- prisma/migrations/20261025150000_ready_program_sources_optional/migration.sql: additive transaction replaces shape constraint, dependency predicate, lifecycle guard and publication locking seam. Empty-reference READY_EDUCATION is valid; legacy refs remain immutable metadata and do not suppress ready approval/sale/read after retirement. Service's own physician approval, scope/session/immutability/payment/terms and custom professional service/source rules remain. No existing content/hash/purchase rows rewritten.
+- Dashboard program-services-page.tsx/program-services.css: source picker, source calls/state/pagination and source-dependent save disabling removed; draft payload omits references. Native required fields and busy-state guard retained.
+- Official OpenAPI/SDK regenerated for optional create field; only semantic contract change is required->optional contentReferences with default[].
+- Existing program-mezaj-verify.mjs accepts optional targeted suite arguments, preserving defaults. Definition/purchase tests and workspace browser runner cover new policy.
+- Scoped STATUS/phase/contract/design/log evidence updated.
+
+Verification:
+- API openapi:export, SDK generate/build, API test TypeScript, dashboard TypeScript/focused ESLint and design token validation PASS.
+- Publication19/19 and purchase33/33 PASS in isolated migrated/seeded temporary PostgreSQL, including create->approve->publish->purchase->owned-read with no source field, and continued access/publication after legacy source retirement. Existing payment/reviewer/ownership/access regressions pass.
+- Definition20/20 PASS on final isolated run: omitted-source creation/approval, retained legacy metadata and revoked-reference independence; custom professional service and qualified reviewer checks retained. Initial assertions that expected source-dependent readiness were updated to the explicit new policy; custom-service duration invalidation still expects false and passes.
+- program-workspace.browser.mjs PASS375/390/768/1440 and844x390: all real fields filled, enabled save and successful synthetic creation without a source payload or source API request; wheel/touch/keyboard reachability, draft section retention/dirty close, no overflow/React/page errors. No real test content created.
+- prisma migrate deploy applied exactly pending20261024120000_program_mezaj_presentations and20261025150000_ready_program_sources_optional to configured local sabz_zendegi at localhost:5432. Follow-up migrate status:84 migrations, schema up to date. No remote/VPS migration or deployment.
+- Graphify AST updated, existing missing extractor/unrelated chat parser warnings retained. Owned review server stopped; generated-only Next AGENTS heading restored. Diff check PASS.
+
+Next/limits: owner can test local /programs and request push/deployment; server needs the committed migrations on deployment. No next roadmap batch or real source/legal/content activation.

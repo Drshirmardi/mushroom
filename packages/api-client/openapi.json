@@ -40656,6 +40656,7 @@
             "$ref": "#/components/schemas/GuidanceSafetyDto"
           },
           "contentReferences": {
+            "default": [],
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProgramContentReferenceDto"
@@ -40675,8 +40676,7 @@
           "category",
           "body",
           "eligibilityDescription",
-          "safety",
-          "contentReferences"
+          "safety"
         ]
       },
       "ProgramServiceSnapshotDto": {
