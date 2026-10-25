@@ -5421,3 +5421,31 @@ Known limitations / next action:
 - No persistent/main/VPS database mutation, new migration, live payment, push or deployment in this corrective turn. Owner can review and request publication of the local fix.
 - No next roadmap batch started.
 - Graphify AST update PASS (11531 nodes); existing missing SQL/Erlang/HCL extractors and unrelated chat parser warnings retained. No generated graph files tracked in this commit.
+
+## Programs workspace visual scroll correction (2026-10-25)
+
+Task ID: F12-FE01-MZ01, owner-authorized corrective continuation.
+Baseline: dev@47d7579, clean worktree. Sole agent/reviewer: Codex /root; no subagents.
+Status: scoped software review PASS, claim released; broad F12-FE01 remains REWORK.
+
+Root cause: dashboard AppShell deliberately uses a fixed-height flex viewport with hidden overflow and delegates scroll ownership to each page. Programs lacked flex shrink/min-height/overflow-y, so its lower content was clipped. Prior overflow-width and locator auto-scroll checks were insufficient evidence for actual wheel/touch reachability.
+
+Implementation:
+- Programs owns one focusable labeled scroll region with flex:1/min-height:0/overflow-y:auto. Shared shell is unchanged; terms body no longer creates a nested scroll region.
+- Responsive bounded list/editor, service cards with icon/status/version, distinct headings/action rows, larger consistent fields and spacing reuse existing dashboard semantic tokens.
+- Content/Mezaj/price section buttons use pressed state and controlled mounted panels; switching sections retains drafts. Pure physician authority and existing create/approve/placement/price/purchase contracts are unchanged.
+- Authoring groups introduction, paid text, usage boundaries and source selection. Long descriptions use multiline controls; missing sources have an explanation; unsaved text close is confirmed. Icon select has an explicit associated label.
+- No added package, schema, backend endpoint, financial policy or persistent data change.
+
+Files: apps/dashboard/src/features/programs/program-services-page.tsx, program-services.css, program-services.tokens.css; apps/app/e2e/program-workspace.browser.mjs; existing pricing and Mezaj browser runners updated for section navigation; scoped design/status/phase/log evidence.
+Skills: ui-ux-pro-max and ui-styling supplied by owner. Local focused dataset searches were inspected; generic scroll/Next suggestions did not address the shell ownership defect, so the supplied responsive/form/accessibility quick-reference guidance and existing project stack were applied. No dependency/framework migration.
+
+Verification:
+- Dashboard typecheck and focused ESLint PASS; design-system token validator PASS; git diff --check PASS.
+- program-workspace.browser.mjs PASS375x820,390x850,768x850,1440x900,844x390 landscape: actual mouse wheel and focused End-key scrolling reach final actions; CDP touch gestures on375/390 scroll the form; no horizontal overflow, page errors, React hydration/duplicate-key warnings; dirty-close cancel preserves text; section changes preserve icon and price drafts. Fixtures use synthetic API interception and unique IDs; no real records written.
+- program-pricing.browser.mjs PASS320/390/1440 after section navigation change: exact saved/Persian price, publication,409 retention/retry,reopen,duration/TTL,missing terms and load retry.
+- Desktop list and mobile form/editor screenshots reviewed under ignored .local/program-workspace/. Price screenshot reviewed under .local/program-pricing/.
+- Graphify AST update PASS with existing SQL/Erlang/HCL dependency and unrelated chat parser warnings. No graph output staged.
+- Owned Next review server stopped; generated-only AGENTS heading change restored. No other user process stopped.
+
+Limits/next: real Safari/device keyboard acceptance remains external. No push/deploy or next roadmap batch. Owner can review the local frontend fix before publishing it.

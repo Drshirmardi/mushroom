@@ -37,7 +37,7 @@ try {
       }
       return send({ items: [], total: 0, unreadCount: 0 });
     });
-    const open = async () => { await page.goto('http://localhost:3002/programs'); await page.getByRole('button', { name: /خدمت آزمایشی/ }).click(); };
+    const open = async () => { await page.goto('http://localhost:3002/programs'); await page.getByRole('button', { name: /خدمت آزمایشی/ }).click(); await page.getByRole('button', { name: 'قیمت و انتشار', exact: true }).click(); };
     await open();
     const region = page.getByRole('region', { name: 'قیمت و انتشار' });
     const price = page.getByLabel('قیمت خدمت به تومان', { exact: true });
@@ -65,6 +65,7 @@ try {
     assert.equal(publishedBody.amountRial, '1500000');
     await page.getByRole('button', { name: 'بستن', exact: true }).click();
     await page.getByRole('button', { name: /خدمت آزمایشی/ }).click();
+    await page.getByRole('button', { name: 'قیمت و انتشار', exact: true }).click();
     await price.waitFor();
     assert.equal(await price.inputValue(), '150000');
     await region.scrollIntoViewIfNeeded();
