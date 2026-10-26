@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
-import { CreateTreatmentPlanDto, ExercisePlanDto, NutritionPlanDto, TreatmentMedicationDto, TreatmentSessionPlanDto, UpdateExercisePlanDto, UpdateNutritionPlanDto, UpdateTreatmentMedicationDto, UpdateTreatmentPlanDto, UpdateTreatmentSessionPlanDto } from './treatment-plan.dto';
+import { CreateTreatmentPlanDto, ReplaceTreatmentDraftDto, ExercisePlanDto, NutritionPlanDto, TreatmentMedicationDto, TreatmentSessionPlanDto, UpdateExercisePlanDto, UpdateNutritionPlanDto, UpdateTreatmentMedicationDto, UpdateTreatmentPlanDto, UpdateTreatmentSessionPlanDto } from './treatment-plan.dto';
 import { ExercisePlanResponseDto, NutritionPlanResponseDto, TreatmentMedicationResponseDto, TreatmentPlanListResponseDto, TreatmentPlanResponseDto, TreatmentReportingQueryDto, TreatmentReportingResponseDto, TreatmentSessionPlanResponseDto } from './treatment-plan-response.dto';
 import { TreatmentPlanService } from './treatment-plan.service';
 import { TreatmentActivityService } from './treatment-activity.service';
@@ -27,6 +27,12 @@ export class AdminTreatmentPlansController {
   @ApiOperation({ operationId: 'adminTreatmentPlansCreate', summary: 'Create an authorized treatment-plan definition' })
   @ApiOkResponse({ type: TreatmentPlanResponseDto })
   create(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Body() body: CreateTreatmentPlanDto, @Req() request: AuthenticatedRequest) { return this.treatmentPlans.create(patientId, body, this.actor(request)); }
+
+  @Put(':planId/draft')
+  @RequirePermissions(PERMISSIONS.CLINICAL_RECORD_EDIT)
+  @ApiOperation({ operationId: 'adminTreatmentDraftReplace' })
+  @ApiOkResponse({ type: TreatmentPlanResponseDto })
+  replaceDraft(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Param('planId', new ParseUUIDPipe({ version: '4' })) planId: string, @Body() body: ReplaceTreatmentDraftDto, @Req() request: AuthenticatedRequest) { return this.treatmentPlans.replaceDraft(patientId, planId, body, this.actor(request)); }
 
   @Get(':planId')
   @RequirePermissions(PERMISSIONS.CLINICAL_RECORD_VIEW)

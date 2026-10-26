@@ -1,10 +1,11 @@
+import { createHash } from 'node:crypto';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 
 import { ClinicStatus, PatientAccessAction, Prisma, TreatmentPlanState } from '../../generated/prisma/client';
 import { ClinicalPermissionService, type ClinicalPermission } from '../../common/auth/clinical-permission.service';
 import type { RoleCode } from '../../common/auth/authorization.policy';
 import { PrismaService } from '../../database/prisma/prisma.service';
-import type { CreateTreatmentPlanDto, ExercisePlanDto, NutritionPlanDto, TreatmentMedicationDto, TreatmentSessionPlanDto, UpdateExercisePlanDto, UpdateNutritionPlanDto, UpdateTreatmentMedicationDto, UpdateTreatmentPlanDto, UpdateTreatmentSessionPlanDto } from './treatment-plan.dto';
+import type { CreateTreatmentPlanDto, ReplaceTreatmentDraftDto, ExercisePlanDto, NutritionPlanDto, TreatmentMedicationDto, TreatmentSessionPlanDto, UpdateExercisePlanDto, UpdateNutritionPlanDto, UpdateTreatmentMedicationDto, UpdateTreatmentPlanDto, UpdateTreatmentSessionPlanDto } from './treatment-plan.dto';
 import type { TreatmentReportingQueryDto } from './treatment-plan-response.dto';
 import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
@@ -57,7 +58,44 @@ export class TreatmentPlanService {
 
   async create(patientId: string, input: CreateTreatmentPlanDto, actor: ClinicalActor) {
     const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
-    return this.transaction(tx => this.createDraftInTransaction(tx, patient, input, actor));
+    return this.transaction(async tx => {
+      if (input.commandId) {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`treatment-create:${input.commandId}`}, 0))::text`;
+        const existing = await tx.treatmentPlan.findUnique({ where: { id: input.commandId }, include: planInclude });
+        if (existing) {
+          const event = await tx.patientAccessAudit.findFirst({ where: { action: PatientAccessAction.CREATE, resourceType: 'TREATMENT_PLAN', resourceId: existing.id }, orderBy: { createdAt: 'asc' } });
+          if (existing.patientId !== patient.id || existing.clinicId !== patient.clinicId || event?.actorUserId !== actor.actorUserId || (event.metadata as Record<string, unknown>)?.requestHash !== this.requestHash(input)) throw new ConflictException({ code: 'CONFLICT', message: 'Command input changed.', details: {} });
+          return this.response(existing);
+        }
+      }
+      return this.createDraftInTransaction(tx, patient, input, actor);
+    });
+  }
+
+  async replaceDraft(patientId: string, planId: string, input: ReplaceTreatmentDraftDto, actor: ClinicalActor) {
+    const patient = await this.authorize(patientId, actor, 'clinical:record:edit');
+    return this.transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM treatment_plans WHERE id=${planId}::uuid FOR UPDATE`;
+      const plan = await this.plan(tx, planId, patient.id, patient.clinicId);
+      await this.customPrograms.clinician(tx, planId, actor, true);
+      if (plan.state !== TreatmentPlanState.DRAFT) throw planNotEditable();
+      if (plan.updatedAt.toISOString() !== new Date(input.expectedUpdatedAt).toISOString()) throw new ConflictException({ code: 'CONFLICT', message: 'Draft changed; reload before saving.', details: {} });
+      this.uniquePositions(input.sessionPlans ?? []);
+      if (await tx.treatmentTask.count({ where: { treatmentPlanId: planId } })) throw new ConflictException({ code: 'CONFLICT', message: 'Scheduled activities already reference this draft.', details: {} });
+      await tx.treatmentMedication.deleteMany({ where: { treatmentPlanId: planId } });
+      await tx.treatmentSessionPlan.deleteMany({ where: { treatmentPlanId: planId } });
+      await tx.exercisePlan.deleteMany({ where: { treatmentPlanId: planId } });
+      await tx.nutritionPlan.deleteMany({ where: { treatmentPlanId: planId } });
+      const updated = await tx.treatmentPlan.update({ where: { id: planId }, data: {
+        title: this.optional(input.title),
+        medications: { create: (input.medications ?? []).map(item => this.medication(item)) },
+        sessionPlans: { create: (input.sessionPlans ?? []).map(item => this.session(item)) },
+        exercisePlans: { create: (input.exercisePlans ?? []).map(item => this.exercise(item)) },
+        nutritionPlans: { create: (input.nutritionPlans ?? []).map(item => this.nutrition(item)) },
+      }, include: planInclude });
+      await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.UPDATE, resourceType: 'TREATMENT_PLAN', resourceId: planId, metadata: { draftReplacement: true } }, actor, tx);
+      return this.response(updated);
+    });
   }
 
   async createDraftInTransaction(tx: Tx, patient: { id: string; clinicId: string }, input: CreateTreatmentPlanDto, actor: ClinicalActor, at?: Date) {
@@ -65,6 +103,7 @@ export class TreatmentPlanService {
     const stamp = at ? { createdAt: at, updatedAt: at } : {};
       const plan = await tx.treatmentPlan.create({
         data: {
+          ...(input.commandId ? { id: input.commandId } : {}),
           clinicId: patient.clinicId,
           patientId: patient.id,
           title: this.optional(input.title),
@@ -76,7 +115,7 @@ export class TreatmentPlanService {
         },
         include: planInclude,
       });
-      await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'TREATMENT_PLAN', resourceId: plan.id, metadata: { sessionPlanCount: plan.sessionPlans.length, medicationCount: plan.medications.length, exercisePlanCount: plan.exercisePlans.length, nutritionPlanCount: plan.nutritionPlans.length } }, actor, tx);
+      await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'TREATMENT_PLAN', resourceId: plan.id, metadata: { ...(input.commandId ? { requestHash: this.requestHash(input) } : {}), sessionPlanCount: plan.sessionPlans.length, medicationCount: plan.medications.length, exercisePlanCount: plan.exercisePlans.length, nutritionPlanCount: plan.nutritionPlans.length } }, actor, tx);
       return this.response(plan);
   }
 
@@ -228,6 +267,7 @@ export class TreatmentPlanService {
   }
 
   private editable(state: TreatmentPlanState) { if (state !== TreatmentPlanState.DRAFT && state !== TreatmentPlanState.ACTIVE) throw planNotEditable(); }
+  private requestHash(input: CreateTreatmentPlanDto) { const { commandId: _command, ...body } = input; return createHash('sha256').update(JSON.stringify(body)).digest('hex'); }
   private medication(input: TreatmentMedicationDto) { return { name: this.text(input.name), dosage: this.optional(input.dosage), instructions: this.optional(input.instructions) }; }
   private session(input: TreatmentSessionPlanDto) { return { position: input.position, title: this.text(input.title), goals: this.goals(input.goals), instructions: this.optional(input.instructions), patientInstructions: this.optional(input.patientInstructions) }; }
   private exercise(input: ExercisePlanDto) { return { title: this.text(input.title), instructions: this.optional(input.instructions) }; }

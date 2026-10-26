@@ -707,7 +707,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["adminPrescriptionHistory"];
         put?: never;
         /** Save an append-only prescription draft revision */
         post: operations["adminPrescriptionsSaveDraft"];
@@ -5982,6 +5982,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/prescriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientPrescriptionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminTreatmentDraftReplace"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/appointments/{appointmentId}/care/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["visitCareProductsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/appointments/{appointmentId}/care/cart-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["visitCareCartAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6488,6 +6552,7 @@ export interface components {
             items: components["schemas"]["PrescriptionResponseDto"][];
             /** Format: uuid */
             nextCursor?: string | null;
+            patientDisplayName?: string | null;
         };
         PrescriptionItemDto: {
             medicationName: string;
@@ -6499,6 +6564,10 @@ export interface components {
         CreatePrescriptionDto: {
             expectedRevision: number;
             items: components["schemas"]["PrescriptionItemDto"][];
+            /** Format: uuid */
+            commandId?: string;
+            /** Format: uuid */
+            appointmentId?: string;
         };
         SavePrescriptionDraftDto: {
             expectedRevision: number;
@@ -6601,6 +6670,8 @@ export interface components {
             sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
             exercisePlans?: components["schemas"]["ExercisePlanDto"][];
             nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+            /** Format: uuid */
+            commandId?: string;
         };
         UpdateTreatmentPlanDto: {
             title?: string;
@@ -10814,6 +10885,46 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        PrescriptionHistoryResponseDto: {
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            nextBefore: number | null;
+        };
+        ReplaceTreatmentDraftDto: {
+            title?: string;
+            medications?: components["schemas"]["TreatmentMedicationDto"][];
+            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
+            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
+            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+            /** Format: uuid */
+            commandId?: string;
+            /** Format: date-time */
+            expectedUpdatedAt: string;
+        };
+        VisitProductDto: {
+            skuId: string;
+            code: string;
+            title: string;
+            variant: string | null;
+            priceToman: string;
+        };
+        VisitProductsDto: {
+            items: components["schemas"]["VisitProductDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        VisitCartAddDto: {
+            /** Format: uuid */
+            commandId: string;
+            /** Format: uuid */
+            skuId: string;
+            quantity: number;
+        };
+        VisitCartResultDto: {
+            skuId: string;
+            addedQuantity: number;
+            quantity: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -12293,6 +12404,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PrescriptionResponseDto"];
+                };
+            };
+        };
+    };
+    adminPrescriptionHistory: {
+        parameters: {
+            query?: {
+                before?: number;
+            };
+            header?: never;
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionHistoryResponseDto"];
                 };
             };
         };
@@ -28831,6 +28966,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientPrescriptionsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentDraftReplace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceTreatmentDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    visitCareProductsList: {
+        parameters: {
+            query?: {
+                query?: string;
+                page?: number;
+            };
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitProductsDto"];
+                };
+            };
+        };
+    };
+    visitCareCartAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitCartAddDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitCartResultDto"];
                 };
             };
         };

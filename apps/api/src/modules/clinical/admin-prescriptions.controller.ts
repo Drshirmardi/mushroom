@@ -5,7 +5,7 @@ import type { AuthenticatedRequest } from '../../common/auth/access-token.guard'
 import { RequirePermissions } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
 import { CreatePrescriptionDto, IssuePrescriptionDto, SavePrescriptionDraftDto } from './prescription.dto';
-import { PrescriptionListResponseDto, PrescriptionResponseDto } from './prescription-response.dto';
+import { PrescriptionListResponseDto, PrescriptionResponseDto, PrescriptionHistoryResponseDto } from './prescription-response.dto';
 import { PrescriptionService } from './prescription.service';
 
 @ApiTags('Admin prescriptions')
@@ -35,6 +35,14 @@ export class AdminPrescriptionsController {
   @ApiOperation({ operationId: 'adminPrescriptionsGet', summary: 'Get an authorized prescription current revision' })
   @ApiOkResponse({ type: PrescriptionResponseDto })
   get(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Param('prescriptionId', new ParseUUIDPipe({ version: '4' })) prescriptionId: string, @Req() request: AuthenticatedRequest) { return this.prescriptions.get(patientId, prescriptionId, this.actor(request)); }
+
+  @Get(':prescriptionId/revisions')
+  @RequirePermissions(PERMISSIONS.CLINICAL_RECORD_VIEW)
+  @ApiOperation({ operationId: 'adminPrescriptionHistory' })
+  @ApiParam({ name: 'prescriptionId', format: 'uuid' })
+  @ApiOkResponse({ type: PrescriptionHistoryResponseDto })
+  @ApiQuery({ name: 'before', required: false, type: Number })
+  history(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Param('prescriptionId', new ParseUUIDPipe({ version: '4' })) id: string, @Query('before', new ParseIntPipe({ optional: true })) before: number | undefined, @Req() request: AuthenticatedRequest) { return this.prescriptions.history(patientId, id, this.actor(request), before); }
 
   @Post(':prescriptionId/revisions')
   @RequirePermissions(PERMISSIONS.CLINICAL_RECORD_EDIT)

@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsEnum, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, Min, ValidateNested } from 'class-validator';
 
 const treatmentPlanStates = ['DRAFT', 'ACTIVE', 'COMPLETED', 'VOIDED'] as const;
 
@@ -29,6 +29,7 @@ export class NutritionPlanDto {
 }
 
 export class CreateTreatmentPlanDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') commandId?: string;
   @ApiPropertyOptional({ maxLength: 255 }) @IsOptional() @IsString() @IsNotEmpty() @MaxLength(255) title?: string;
   @ApiPropertyOptional({ type: () => TreatmentMedicationDto, isArray: true, maxItems: 100 }) @IsOptional() @IsArray() @ArrayMaxSize(100) @ValidateNested({ each: true }) @Type(() => TreatmentMedicationDto) medications?: TreatmentMedicationDto[];
   @ApiPropertyOptional({ type: () => TreatmentSessionPlanDto, isArray: true, maxItems: 100 }) @IsOptional() @IsArray() @ArrayMaxSize(100) @ValidateNested({ each: true }) @Type(() => TreatmentSessionPlanDto) sessionPlans?: TreatmentSessionPlanDto[];
@@ -63,4 +64,8 @@ export class UpdateExercisePlanDto {
 export class UpdateNutritionPlanDto {
   @ApiPropertyOptional({ maxLength: 255 }) @IsOptional() @IsString() @IsNotEmpty() @MaxLength(255) title?: string;
   @ApiPropertyOptional({ maxLength: 10_000 }) @IsOptional() @IsString() @MaxLength(10_000) instructions?: string;
+}
+
+export class ReplaceTreatmentDraftDto extends CreateTreatmentPlanDto {
+  @ApiProperty({ format: 'date-time' }) @IsDateString() expectedUpdatedAt!: string;
 }

@@ -2,6 +2,7 @@
 import { Suspense, useCallback, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { PatientPrescriptions } from "@/components/treatment/patient-prescriptions";
 import { Activity, Check, HeartPulse, Pill, Leaf, Zap, ArrowLeft } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { ServicePage, ServiceSection, ServiceEmpty } from "@/components/shared/service-page";
@@ -22,8 +23,9 @@ function TreatmentContent() {
   }, [authentication.accessToken, planId]));
   const complete = async (task: TreatmentTask) => { if (busyTask) return; try { setBusyTask(task.id); setNotice(null); await completePatientTreatmentTask(authentication.accessToken, task.id); await resource.reload(); setNotice("انجام فعالیت ثبت شد."); } catch { setNotice("ثبت انجام فعالیت ممکن نشد؛ دوباره تلاش کنید."); } finally { setBusyTask(null); } };
   const adhere = async (id: string) => { if (busyTask) return; try { setBusyTask(id); setNotice(null); await recordPatientMedicationAdherence(authentication.accessToken, id); await resource.reload(); setNotice("مصرف دارو ثبت شد."); } catch { setNotice("ثبت مصرف دارو ممکن نشد؛ دوباره تلاش کنید."); } finally { setBusyTask(null); } };
-  return <ServicePage title="درمان من" description="برنامهٔ منتشرشدهٔ درمانگر و فعالیت‌های روزانهٔ خود را قدم‌به‌قدم پیگیری کنید." icon={HeartPulse}>
+  return <ServicePage title="نسخه‌ها و درمان من" description="برنامهٔ منتشرشدهٔ درمانگر و فعالیت‌های روزانهٔ خود را قدم‌به‌قدم پیگیری کنید." icon={HeartPulse}>
     {planId && <Link href="/treatment" className="service-text-action">همهٔ برنامه‌های درمان<ArrowLeft size={17} aria-hidden="true" /></Link>}
+    {!planId && <PatientPrescriptions token={authentication.accessToken} />}
     <PatientResourceState {...resource} retry={() => void resource.reload()} />
     {resource.data?.plans.length === 0 && <ServiceEmpty icon={HeartPulse} title={planId ? "این برنامه در دسترس شما نیست" : "برنامهٔ درمانی برای شما منتشر نشده"} description={planId ? "ممکن است دسترسی این برنامه تغییر کرده باشد. برنامه‌های دیگر خود را بررسی کنید." : "پس از بررسی درمانگر و انتشار برنامه، جزئیات داروها، تمرین‌ها و فعالیت‌ها را اینجا می‌بینید."} href={planId ? "/treatment" : "/appointments/book"} action={planId ? "همهٔ برنامه‌های درمان" : "رزرو مشاوره"} />}
     {resource.data?.plans.map(plan => { const progress = resource.data?.progress[plan.id]; return <ServiceSection key={plan.id} title={plan.title ?? "برنامهٔ درمان"}>

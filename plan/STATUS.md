@@ -20,6 +20,8 @@ STATIC READY SERVICE TERMS (2026-10-25): F12-FE01-MZ01 scoped correction DONE/re
 
 # وضعیت زنده اجرای پروژه
 
+VISIT CARE WORKSPACE (2026-10-27): owner-authorized same CLIENT-INTEGRATION / F12-FE01 continuation, sole /root on dev, IMPLEMENTED_UNVERIFIED / REWORK. Integrated visit prescriptions, notes/patient summary, treatment draft/publish and real SKU lookup/add-to-patient-cart; standalone patient selection and issued-only patient reader. Existing clinical grants/custom-program/payment boundaries retained. Create retry IDs, exact revisions, atomic draft replacement and cart increment/audited replay implemented. Visit provenance is recorded in creation audit, not a schema field. No migration/dependency/real clinical or financial writes/commit/DONE. SDK types generated; source/syntax review only. Tests/types/lint/build/runtime Swagger parity/browser/access/concurrency checks deferred to owner review; see phase-12 log and prescription dashboard contract continuation. No next batch.
+
 
 READY SERVICE RETENTION INPUT REMOVAL (2026-10-25): same F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Reference input/helper/review copy removed; omitted reference accepted as null for ready services, no fabricated policy.21 publication+33 purchase tests, API/dashboard types, SDK/lint/tokens and three pricing browser cases PASS. Migration85 applied to configured local sabz_zendegi, status up to date and schema diff clear. Existing history/custom professional/price/terms/approval/ownership retained. Graphify updated; no VPS/push/deploy. Evidence: logs/phase-12.md#ready-program-retention-input-removal-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
 

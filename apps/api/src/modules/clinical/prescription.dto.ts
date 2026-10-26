@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayMaxSize, IsArray, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class PrescriptionItemDto {
   @ApiProperty({ maxLength: 255 }) @IsString() @IsNotEmpty() @MaxLength(255) medicationName!: string;
@@ -10,12 +10,17 @@ export class PrescriptionItemDto {
   @ApiPropertyOptional({ maxLength: 10_000 }) @IsOptional() @IsString() @MaxLength(10_000) instructions?: string;
 }
 
-export class CreatePrescriptionDto {
+export class PrescriptionDraftDto {
   @ApiProperty({ minimum: 0 }) @Type(() => Number) @IsInt() @Min(0) expectedRevision!: number;
   @ApiProperty({ type: () => PrescriptionItemDto, isArray: true, maxItems: 100 }) @IsArray() @ArrayMaxSize(100) @ValidateNested({ each: true }) @Type(() => PrescriptionItemDto) items!: PrescriptionItemDto[];
 }
 
-export class SavePrescriptionDraftDto extends CreatePrescriptionDto {
+export class CreatePrescriptionDto extends PrescriptionDraftDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') appointmentId?: string;
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') commandId?: string;
+}
+
+export class SavePrescriptionDraftDto extends PrescriptionDraftDto {
   @ApiPropertyOptional({ maxLength: 100 }) @IsOptional() @IsString() @IsNotEmpty() @MaxLength(100) amendmentReasonCategory?: string;
 }
 

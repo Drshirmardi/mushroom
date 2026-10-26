@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 
 import { ClinicalPermissionService, type ClinicalPermission } from '../../common/auth/clinical-permission.service';
@@ -7,6 +7,7 @@ import { PrismaService } from '../../database/prisma/prisma.service';
 import { PatientAccessAction, PrescriptionRevisionState, Prisma } from '../../generated/prisma/client';
 import type { CreatePrescriptionDto, IssuePrescriptionDto, SavePrescriptionDraftDto } from './prescription.dto';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
+import { VisitCareService } from './visit-care.service';
 import { ClinicalAccessAuditService } from './clinical-access-audit.service';
 
 type PrescriptionActor = { actorUserId: string; actorSessionId?: string; requestId?: string; ipAddress?: string; roles: RoleCode[] };
@@ -19,9 +20,10 @@ const amendmentReasonRequired = () => new UnprocessableEntityException({ code: '
 
 @Injectable()
 export class PrescriptionService {
-  constructor(private readonly prisma: PrismaService, private readonly access: ClinicalResourceAccessService, private readonly permissions: ClinicalPermissionService, private readonly audit: ClinicalAccessAuditService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: ClinicalResourceAccessService, private readonly permissions: ClinicalPermissionService, private readonly audit: ClinicalAccessAuditService, private readonly visits: VisitCareService) {}
 
   async list(patientId: string, actor: PrescriptionActor, cursor?: string, limit = 50) {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'Limit must be between 1 and 100.', details: {} });
     const patient = await this.access.patient(actor.actorUserId, patientId);
     await this.require(actor, 'clinical:record:view');
     const records = await this.prisma.prescription.findMany({
@@ -33,7 +35,8 @@ export class PrescriptionService {
     });
     const hasNext = records.length > limit;
     const items = hasNext ? records.slice(0, limit) : records;
-    return { items: items.map((record) => this.response(record, record.revisions[0] ?? null)), nextCursor: hasNext ? items.at(-1)?.id ?? null : null };
+    const identity = await this.prisma.patientProfile.findUnique({ where: { id: patient.id }, select: { user: { select: { userProfile: { select: { firstName: true, lastName: true } } } } } });
+    return { patientDisplayName: [identity?.user.userProfile?.firstName, identity?.user.userProfile?.lastName].filter(Boolean).join(' ').trim() || null, items: items.map((record) => this.response(record, record.revisions[0] ?? null)), nextCursor: hasNext ? items.at(-1)?.id ?? null : null };
   }
 
   async get(patientId: string, prescriptionId: string, actor: PrescriptionActor) {
@@ -47,13 +50,47 @@ export class PrescriptionService {
     const patient = await this.access.patient(actor.actorUserId, patientId);
     await this.require(actor, 'clinical:record:edit');
     if (input.expectedRevision !== 0) throw revisionConflict(0);
+    const context = this.context(actor);
+    if (input.appointmentId) {
+      const visit = await this.visits.authorize(input.appointmentId, { ...context, roles: actor.roles });
+      if (visit.patientId !== patient.id) throw forbidden();
+    }
+    const requestHash = createHash('sha256').update(JSON.stringify({ items: input.items, appointmentId: input.appointmentId ?? null })).digest('hex');
     return this.prisma.$transaction(async (tx) => {
+      if (input.commandId) {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`prescription-create:${input.commandId}`}, 0))::text`;
+        const existing = await tx.prescription.findUnique({ where: { id: input.commandId }, include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1, include: { items: { orderBy: { position: 'asc' } } } } } });
+        if (existing) {
+          const event = await tx.patientAccessAudit.findFirst({ where: { resourceType: 'PRESCRIPTION', resourceId: existing.id, action: PatientAccessAction.CREATE }, orderBy: { createdAt: 'asc' } });
+          if (existing.patientId !== patient.id || existing.clinicId !== patient.clinicId || event?.actorUserId !== actor.actorUserId) throw forbidden();
+          if ((event.metadata as Record<string, unknown>)?.requestHash !== requestHash) throw revisionConflict(existing.currentRevisionNumber);
+          return this.response(existing, existing.revisions[0] ?? null);
+        }
+      }
       const prescription = await tx.prescription.create({
-        data: { clinicId: patient.clinicId, patientId: patient.id, currentRevisionNumber: 1, revisions: { create: this.draft(1, input.items, actor.actorUserId) } },
+        data: { ...(input.commandId ? { id: input.commandId } : {}), clinicId: patient.clinicId, patientId: patient.id, currentRevisionNumber: 1, revisions: { create: this.draft(1, input.items, actor.actorUserId) } },
         include: { revisions: { include: { items: { orderBy: { position: 'asc' } } } } },
       });
+      await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.CREATE, resourceType: 'PRESCRIPTION', resourceId: prescription.id, metadata: { appointmentId: input.appointmentId ?? null, requestHash } }, context, tx);
       return this.response(prescription, prescription.revisions[0]);
     });
+  }
+
+  async history(patientId: string, id: string, actor: PrescriptionActor, before?: number) {
+    if (before !== undefined && (!Number.isInteger(before) || before < 1)) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'Revision cursor is invalid.', details: {} });
+    const patient = await this.access.patient(actor.actorUserId, patientId);
+    await this.require(actor, 'clinical:record:view');
+    const prescription = await this.prescription(id, patient.id, patient.clinicId);
+    const rows = await this.prisma.prescriptionRevision.findMany({ where: { prescriptionId: id, ...(before ? { revisionNumber: { lt: before } } : {}) }, orderBy: { revisionNumber: 'desc' }, take: 21, include: { items: { orderBy: { position: 'asc' } } } });
+    return { items: rows.slice(0, 20).map(revision => this.response(prescription, revision)), nextBefore: rows.length > 20 ? rows[19]!.revisionNumber : null };
+  }
+
+  async patientList(userId: string, actor: PrescriptionActor, cursor?: string) {
+    const patient = await this.prisma.patientProfile.findUnique({ where: { userId }, select: { id: true, clinicId: true } });
+    if (!patient) throw forbidden();
+    const rows = await this.prisma.prescription.findMany({ where: { patientId: patient.id, clinicId: patient.clinicId, currentIssuedRevisionNumber: { not: null } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 21, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { revisions: { where: { state: PrescriptionRevisionState.ISSUED }, orderBy: { revisionNumber: 'desc' }, take: 1, include: { items: { orderBy: { position: 'asc' } } } } } });
+    await this.audit.record({ clinicId: patient.clinicId, patientId: patient.id, action: PatientAccessAction.READ, resourceType: 'PATIENT_PRESCRIPTIONS' }, this.context(actor));
+    return { items: rows.slice(0, 20).filter(row => row.revisions[0]?.revisionNumber === row.currentIssuedRevisionNumber).map(row => this.response({ ...row, currentRevisionNumber: row.currentIssuedRevisionNumber! }, row.revisions[0]!)), nextCursor: rows.length > 20 ? rows[19]!.id : null };
   }
 
   async save(patientId: string, prescriptionId: string, input: SavePrescriptionDraftDto, actor: PrescriptionActor) {
@@ -96,6 +133,10 @@ export class PrescriptionService {
     });
   }
 
+  private context(actor: PrescriptionActor) {
+    if (!actor.actorSessionId || !actor.requestId || !actor.ipAddress) throw new UnprocessableEntityException({ code: 'PRESCRIPTION_AUDIT_CONTEXT_REQUIRED', message: 'Audit context is required.', details: {} });
+    return { actorUserId: actor.actorUserId, actorSessionId: actor.actorSessionId, requestId: actor.requestId, ipAddress: actor.ipAddress };
+  }
   private async require(actor: PrescriptionActor, permission: ClinicalPermission) { if (!await this.permissions.allows(actor.roles, [permission])) throw forbidden(); }
   private async lock(tx: Prisma.TransactionClient, prescriptionId: string) { await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`prescription:${prescriptionId}`}, 0))::text AS locked`; }
   private async prescription(id: string, patientId: string, clinicId: string, tx: Prisma.TransactionClient = this.prisma) {

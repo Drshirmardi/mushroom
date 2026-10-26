@@ -36,6 +36,12 @@ export class PrescriptionResponseDto {
 }
 
 export class PrescriptionListResponseDto {
+  @ApiPropertyOptional({ type: String, nullable: true }) patientDisplayName?: string | null;
   @ApiProperty({ type: () => PrescriptionResponseDto, isArray: true }) items!: PrescriptionResponseDto[];
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) nextCursor?: string | null;
+}
+
+export class PrescriptionHistoryResponseDto {
+  @ApiProperty({ type: () => PrescriptionResponseDto, isArray: true }) items!: PrescriptionResponseDto[];
+  @ApiProperty({ type: Number, nullable: true }) nextBefore!: number | null;
 }
