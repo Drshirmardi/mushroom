@@ -24,6 +24,12 @@ export class OrderBillingTarget implements BillingTarget, OnModuleInit {
     return { kind: 'NONE' } as const;
   }
   async lock(tx: Tx, intent: BillingIntent) { await lockFinancial(tx, `billing-order:${intent.orderId}`); await tx.$queryRaw`SELECT id FROM commerce_orders WHERE id = ${intent.orderId}::uuid FOR UPDATE`; }
+  async preparePayment(tx: Tx, intent: BillingIntent) {
+    if (!intent.orderId) return false;
+    const order = await tx.commerceOrder.findUnique({ where: { id: intent.orderId }, include: { payment: true } });
+    if (!order || order.status !== 'PENDING_PAYMENT' || order.payment || order.totalAmountToman * 10n !== intent.amountRial) return false;
+    return this.inventory.renewOrderReservations(tx, order.id);
+  }
   async canSettle(tx: Tx, intent: BillingIntent) {
     if (!intent.orderId) return false;
     const order = await tx.commerceOrder.findUnique({ where: { id: intent.orderId }, include: { payment: true, reservations: true } });
@@ -44,5 +50,10 @@ export class OrderBillingTarget implements BillingTarget, OnModuleInit {
     await tx.refund.create({ data: { id: refundId, paymentId: payment.id, amountToman: amountRial / 10n, status: 'COMPLETED', idempotencyKey: `billing:${refundId}`, approvedAt: new Date(), completedAt: new Date(), evidenceReference: `billing-refund:${refundId}` } });
     const total = await tx.refund.aggregate({ where: { paymentId: payment.id, status: 'COMPLETED' }, _sum: { amountToman: true } });
     await tx.payment.update({ where: { id: payment.id }, data: { status: (total._sum.amountToman ?? 0n) >= payment.commerceAmountToman ? 'REFUNDED' : 'PARTIALLY_REFUNDED' } });
+  }
+  async cancel(tx: Tx, intent: BillingIntent) {
+    if (!intent.orderId) throw financialMissing();
+    const changed = await tx.commerceOrder.updateMany({ where: { id: intent.orderId, status: 'PENDING_PAYMENT', payment: null }, data: { status: 'CANCELLED' } });
+    if (changed.count) await this.inventory.releaseOrderReservations(tx, intent.orderId);
   }
 }

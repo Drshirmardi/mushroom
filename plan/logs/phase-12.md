@@ -5732,3 +5732,50 @@ Verification PASS:
 One final scoped commit; no push, deployment, live bank call or financial write. Next: deploy API commit; no Caddy/env/migration action. For the existing debited transaction, use administrator billing reconciliation Verify on its original attempt and follow the bank result. Do not initiate another payment or manually force success. Actual bank verification/settlement remains owner acceptance; broad F12-FE01 stays REWORK and no next batch starts.
 
 Changed files: API payment adapter/controller; payment-provider-contract and wallet-billing tests; packages/api-client/openapi.json and src/schema.generated.ts; deploy/sadad-live-runbook.md; plan/contracts/sadad-ipg-v1.md; plan/STATUS.md, phases/12-PRODUCTION-HARDENING.md and this log.
+
+## Saved order payment recovery — 2026-10-26
+
+F12-FE01-PAY04 DONE (software), depends PAY03, CLIENT-INTEGRATION sole coordinator/writer/reviewer /root on dev, clean initial baseline. Owner requests implementation with focused verification and one commit; explicitly confirms preserving the saved order amount. ADR0043 freezes this policy. Broader F12-FE01 remains REWORK/unchecked; scoped claim RELEASED, no next batch.
+
+Implemented: inventory expiry releases shared-path stock without cancelling its order; actual fresh payment/verified settlement reacquires every expired item under order/inventory locks. Entire required stock is checked before acquisition, with deterministic SKU lock ordering and per-cycle reservation/release ledger keys; consumption remains once. Accepted order/price/tax/shipping/discount snapshot remains immutable. Discount quota for new accepted orders survives stock expiry until consumption or explicit cancellation; historical expired discounts may settle at accepted value. Cancellation closes the unpaid order/releases stock and discount even if inventory already expired. New checkout detaches unchanged cart snapshot rows atomically; historical matching pending checkout can be resumed after expiry.
+
+Ready bank attempts resume before inventory viability checks, avoiding duplicate PSP requests when the original hold expires. Existing worker verifies ready attempts after20-minute grace; only definitive provider failure frees that payment guard. Uncertain Verify is retried through existing reconciliation. Token-less requests expire after two minutes, cannot expose a late response token, and retain proof-based late callback recovery. A late shared receipt reacquires stock and settles the original order or closes it and credits existing compensation exactly once. Legacy ambiguous receipts preserve their prior separate reconciliation protection; no force-success/cancellation from browser hints.
+
+Visible pending generic/store/result payment screens refresh every five seconds without loading flicker, confirmation loss or request overlap in the polling loop. Resource generations suppress stale session/resource responses. Terminal results stop polling. Normal manual status-refresh controls removed, error retry retained. Wallet/cancel controls honor unresolved bank guards and ready bank button resumes its original attempt. Stock and initial bank failure feedback is actionable.
+
+Verification PASS:
+- Real disposable PostgreSQL:29 tests across wallet-billing24, inventory expiry3 and commerce checkout2. Covers repeated expiry/reacquisition ledger cycles; recorded price despite catalog price change; concurrent wallet retries/one debit; competing last-unit orders/one sale; shared pending stock release and independent next order; resume original bank token after expiry; late original-order settlement; multi-item shortage with no partial acquisition and once-only wallet compensation; accepted discount and explicit cancellation; abandoned ready/token-less maintenance. Existing ownership, proof mismatch, callback parsing/replay, wallet/refund/appointment/ledger regressions retained.
+- App focused units:14 across wallet labels/API/cart. Browser:3 intercepted Chromium cases, actual subsequent polls preserve confirmation on both wallet and store payment; ambiguous result becomes server-confirmed paid automatically and stops reading. Fixtures updated for current entry gate and complete order DTO; initial Strict Mode double reads cannot satisfy polling assertions.
+- API build-source and test TypeScript, app TypeScript, git diff --check PASS. No HTTP DTO/schema/dependency change or SDK regeneration required. Full unrelated test/build suites intentionally not run.
+- Graphify AST refreshed after source edits (11615 nodes/33351 edges), existing unsupported SQL/Erlang/HCL and unrelated chat parser warnings only. Ignored graph output not staged.
+- Main-agent combined implementation/contract/acceptance diff review PASS; protected files untouched, no unrelated changes.
+
+All86 migrations/seed ran only in task-owned ephemeral127.0.0.1:55419/wallet_test Docker database. Database removed after checks; main local/VPS database and real bank untouched. No secrets copied from owner browser evidence. One task commit, no push/deploy. Dev acceptance: deploy API and app together; no new migration/env/Caddy settings. Existing stock TTL remains configurable/default20 minutes; server worker runs expiry every minute/bank maintenance every30 seconds, UI reads every5 seconds. Test return/abandonment then same-order retry, independent purchase, successful wallet/bank purchase and resulting tracking/receipt. Historical closed orders are not reopened; provider outages cannot safely be converted into invented failure for token-bearing attempts.
+
+Changed files:
+- apps/api/src/modules/billing/billing-gateway.service.ts
+- apps/api/src/modules/billing/billing-target.registry.ts
+- apps/api/src/modules/billing/billing.service.ts
+- apps/api/src/modules/commerce/checkout/commerce-checkout.service.ts
+- apps/api/src/modules/commerce/discounts/commerce-discount.service.ts
+- apps/api/src/modules/commerce/inventory/commerce-inventory.service.ts
+- apps/api/src/modules/commerce/payments/order-billing.target.ts
+- apps/api/test/commerce-checkout.integration.spec.ts
+- apps/api/test/inventory-reservation-expiry.integration.spec.ts
+- apps/api/test/wallet-billing.integration.spec.ts
+- apps/app/e2e/wallet.spec.ts
+- apps/app/src/app/(app)/profile/wallet/pay/page.tsx
+- apps/app/src/app/(app)/profile/wallet/payment-result/page.tsx
+- apps/app/src/app/(app)/store/checkout/page.tsx
+- apps/app/src/app/(app)/store/payment/page.tsx
+- apps/app/src/components/billing/payment-chooser.tsx
+- apps/app/src/lib/use-patient-resource.ts
+- apps/app/src/lib/use-payment-refresh.ts
+- apps/app/src/lib/wallet-billing-api.ts
+- apps/app/src/lib/wallet-labels.ts
+- plan/STATUS.md
+- plan/contracts/billing-target-effects-v1.md
+- plan/contracts/wallet-billing-v1.md
+- plan/decisions/ADR-0043-order-payment-recovery.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- plan/logs/phase-12.md

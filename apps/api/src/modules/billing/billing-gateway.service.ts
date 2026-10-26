@@ -21,9 +21,11 @@ export class BillingGatewayService {
     const pending = intent.status === 'PENDING' && (!intent.expiresAt || intent.expiresAt > new Date());
     const config = await this.prisma.paymentProviderConfig.findFirst({ where: { clinicId: intent.clinicId, enabled: true, isDefault: true, goLiveReady: true, activeRevision: { goLiveReady: true, providerUnit: 'RIAL', credentialVersion: { encryptedPayload: { not: null } } } }, select: { id: true } });
     let live = false; try { live = this.runtime.live && Boolean(this.runtime.settings()); } catch { live = false; }
+    const active = await this.prisma.billingGatewayAttempt.findFirst({ where: { intentId: id, status: { in: pendingAttempts } }, orderBy: { createdAt: 'desc' } });
+    const legacy = intent.orderId ? await this.prisma.paymentAttempt.count({ where: { orderId: intent.orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } }) : 0;
     return [
-      ...(intent.purpose === 'TOPUP' ? [] : [{ code: 'WALLET', available: pending && !summary.frozen && BigInt(summary.balanceRial) >= intent.amountRial, balanceRial: summary.balanceRial }]),
-      { code: 'GATEWAY', available: pending && live && Boolean(config) && intent.amountRial > 0n, balanceRial: null },
+      ...(intent.purpose === 'TOPUP' ? [] : [{ code: 'WALLET', available: pending && !active && !legacy && !summary.frozen && BigInt(summary.balanceRial) >= intent.amountRial, balanceRial: summary.balanceRial }]),
+      { code: 'GATEWAY', available: pending && !legacy && (!active || active.status === 'REDIRECT_READY') && live && Boolean(config) && intent.amountRial > 0n, balanceRial: null },
     ];
   }
 
@@ -41,10 +43,15 @@ export class BillingGatewayService {
       const existing = await tx.billingGatewayAttempt.findUnique({ where: { intentId_idempotencyKey: { intentId, idempotencyKey: key } } });
       if (existing) return { attempt: existing, request: false };
       if (intent.status !== 'PENDING' || (intent.expiresAt && intent.expiresAt <= new Date())) throw financialConflict('BILLING_HOLD_EXPIRED');
-      if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); if (!(await this.targets.get(intent.purpose).canSettle(tx, intent))) throw financialConflict(); }
       const active = await tx.billingGatewayAttempt.findFirst({ where: { intentId, status: { in: pendingAttempts } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
       if (active) return { attempt: active, request: false };
       await this.billing.assertNoPending(tx, intent);
+      if (intent.purpose !== 'TOPUP') {
+        const target = this.targets.get(intent.purpose);
+        await target.lock(tx, intent);
+        if (target.preparePayment && !await target.preparePayment(tx, intent)) throw financialConflict('COMMERCE_INVENTORY_INSUFFICIENT');
+        if (!await target.canSettle(tx, intent)) throw financialConflict();
+      }
       const providerOrderId = await this.orderIds.next(tx);
       const attempt = await tx.billingGatewayAttempt.create({ data: { intentId, revisionId: revision.id, providerOrderId, amountRial: intent.amountRial, idempotencyKey: key } });
       await financialAudit(tx, context, 'BILLING_GATEWAY_ATTEMPT_CREATED', intentId, { attemptId: attempt.id });
@@ -73,7 +80,7 @@ export class BillingGatewayService {
     } else if (attempt.providerToken !== callback.token) throw financialConflict('PAYMENT_VERIFICATION_MISMATCH');
     // Browser result codes are hints; only server-to-server Verify decides the outcome.
     if (attempt.providerToken && attempt.status !== 'VERIFIED') {
-      if (attempt.status === 'FAILED' && attempt.resultCode === 'MANUAL_FAILED') await this.prisma.billingGatewayAttempt.updateMany({ where: { id: attempt.id, status: 'FAILED', resultCode: 'MANUAL_FAILED' }, data: { status: 'REQUIRES_RECONCILIATION' } });
+      if (attempt.status === 'FAILED') await this.prisma.billingGatewayAttempt.updateMany({ where: { id: attempt.id, status: 'FAILED' }, data: { status: 'REQUIRES_RECONCILIATION' } });
       await this.verify(attempt.id);
     }
     const redirect = new URL('/profile/wallet/payment-result', settings.resultUrl);
@@ -153,8 +160,10 @@ export class BillingGatewayService {
 
   async maintain(limit = 10) {
     const before = new Date(Date.now() - 60_000);
+    // No browser received a usable bank token. Late proven callbacks still recover safely.
+    await this.prisma.billingGatewayAttempt.updateMany({ where: { status: { in: ['CREATED', 'REQUIRES_RECONCILIATION'] }, providerToken: null, createdAt: { lt: new Date(Date.now() - 2 * 60_000) } }, data: { status: 'FAILED', resultCode: 'REQUEST_EXPIRED' } });
     await this.prisma.billingGatewayAttempt.updateMany({ where: { status: 'CREATED', updatedAt: { lt: before } }, data: { status: 'REQUIRES_RECONCILIATION', resultCode: 'REQUEST_AMBIGUOUS' } });
-    const attempts = await this.prisma.billingGatewayAttempt.findMany({ where: { status: { in: pendingAttempts.filter(x => x !== 'CREATED' && x !== 'REDIRECT_READY') }, providerToken: { not: null }, updatedAt: { lt: before } }, orderBy: { updatedAt: 'asc' }, take: limit });
+    const attempts = await this.prisma.billingGatewayAttempt.findMany({ where: { providerToken: { not: null }, OR: [{ status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] }, updatedAt: { lt: before } }, { status: 'REDIRECT_READY', createdAt: { lt: new Date(Date.now() - 20 * 60_000) }, updatedAt: { lt: before } }] }, orderBy: { updatedAt: 'asc' }, take: limit });
     for (const attempt of attempts) await this.verify(attempt.id);
     return attempts.length;
   }

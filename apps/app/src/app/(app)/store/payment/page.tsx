@@ -11,6 +11,7 @@ import { PaymentChooser } from "@/components/billing/payment-chooser";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api";
 import { createOrderIntent, getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
+import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { formatPrice, toP } from "@/lib/format";
 
 type State = "loading" | "ready" | "error" | "notpayable";
@@ -28,13 +29,10 @@ function PaymentScreen() {
   const generation = useRef(0);
   const paymentRequest = useRef<{ orderId: string; key: string; intentId?: string } | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (quiet = false) => {
     const request = ++generation.current;
     const current = () => request === generation.current;
-    setState("loading");
-    setError(null);
-    setOrder(null);
-    setIntent(null);
+    if (!quiet) { setState("loading"); setError(null); setOrder(null); setIntent(null); }
     try {
       if (!orderId && !initialIntentId) {
         setError("شناسهٔ سفارش معتبر نیست.");
@@ -46,6 +44,10 @@ function PaymentScreen() {
         const nextOrder = await getCommerceOrder(authentication.accessToken, orderId);
         if (!current()) return;
         setOrder(nextOrder);
+        if (nextOrder.status === "PAID") {
+          router.replace(`/store/order-success?orderId=${encodeURIComponent(nextOrder.id)}`);
+          return;
+        }
         if (nextOrder.status !== "PENDING_PAYMENT") {
           setState("notpayable");
           return;
@@ -88,7 +90,7 @@ function PaymentScreen() {
       }
       setState(nextIntent.status === "PENDING" ? "ready" : "notpayable");
     } catch (cause) {
-      if (!current()) return;
+      if (!current() || quiet) return;
       setError(walletErrorMessage(cause));
       setState("error");
     }
@@ -98,6 +100,9 @@ function PaymentScreen() {
     void load();
     return () => { generation.current++; };
   }, [load]);
+
+  const refresh = useCallback(() => load(true), [load]);
+  usePaymentRefresh(state === "ready" && intent?.status === "PENDING", refresh);
 
   const resolvedOrderId = order?.id ?? intent?.orderId ?? orderId;
 

@@ -6,7 +6,7 @@ import { CommerceClock } from './commerce-clock';
 import { CommerceDiscountService } from '../discounts/commerce-discount.service';
 
 type Transaction = Prisma.TransactionClient;
-type ReservationRow = { id: string; inventory_item_id: string; order_id: string; quantity: number; clinic_id: string };
+type ReservationRow = { id: string; inventory_item_id: string; order_id: string; quantity: number; clinic_id: string; expires_at: Date | null };
 type InventoryRow = { id: string; clinic_id: string; sku_id: string; on_hand_quantity: number; reserved_quantity: number; updated_at: Date };
 
 const DEFAULT_RESERVATION_TTL_MINUTES = 20;
@@ -54,8 +54,43 @@ export class CommerceInventoryService {
     const rows = await this.lockOrderReservations(tx, orderId);
     let released = 0;
     for (const row of rows) if (await this.releaseLocked(tx, row, InventoryReservationStatus.RELEASED)) released += 1;
-    if (released) await this.discounts.releaseOrderReservation(tx, orderId);
+    await this.discounts.releaseOrderReservation(tx, orderId);
     return released;
+  }
+
+  /** Caller holds the order lock. Check the entire basket before acquiring any stock. */
+  async renewOrderReservations(tx: Transaction, orderId: string): Promise<boolean> {
+    const now = this.clock.now();
+    const rows = await this.lockOrderReservations(tx, orderId);
+    if (!rows.length || rows.some(row => row.status === 'CONSUMED')) return false;
+    for (const row of rows) {
+      if (row.status === 'ACTIVE' && row.expires_at && row.expires_at <= now) {
+        await this.releaseLocked(tx, row, InventoryReservationStatus.EXPIRED);
+        row.status = 'EXPIRED';
+      }
+    }
+    const needed = rows.filter(row => row.status !== 'ACTIVE');
+    const stock: InventoryRow[] = [];
+    for (const row of needed) {
+      const items = await tx.$queryRaw<InventoryRow[]>(Prisma.sql`
+        SELECT i.id, i.clinic_id, i.sku_id, i.on_hand_quantity, i.reserved_quantity, i.updated_at
+        FROM inventory_items i
+        JOIN commerce_skus s ON s.id = i.sku_id
+        JOIN commerce_products p ON p.id = s.product_id
+        JOIN commerce_categories c ON c.id = p.category_id
+        WHERE i.id = ${row.inventory_item_id}::uuid AND s.is_active AND p.status = 'ACTIVE' AND c.is_active
+        FOR UPDATE OF i
+      `);
+      if (!items[0] || items[0].on_hand_quantity - items[0].reserved_quantity < row.quantity) return false;
+      stock.push(items[0]);
+    }
+    for (const [index, row] of needed.entries()) {
+      const expiresAt = new Date(Math.max(now.getTime() + this.reservationTtlMs(), (row.expires_at?.getTime() ?? 0) + 1));
+      await tx.inventoryItem.update({ where: { id: row.inventory_item_id }, data: { reservedQuantity: { increment: row.quantity } } });
+      await tx.inventoryReservation.update({ where: { id: row.id }, data: { status: 'ACTIVE', expiresAt } });
+      await this.ledger(tx, { clinicId: stock[index]!.clinic_id, inventoryItemId: row.inventory_item_id, entryType: 'RESERVATION', quantityDelta: row.quantity, referenceType: 'INVENTORY_RESERVATION', referenceId: row.id, idempotencyKey: `inventory:reservation:${row.id}:${expiresAt.toISOString()}` });
+    }
+    return true;
   }
 
   async consumeOrderReservations(tx: Transaction, orderId: string) {
@@ -84,7 +119,7 @@ export class CommerceInventoryService {
     const now = this.clock.now();
     return this.transaction(async (tx) => {
       const rows = await tx.$queryRaw<ReservationRow[]>(Prisma.sql`
-        SELECT r.id, r.inventory_item_id, r.order_id, r.quantity, i.clinic_id
+        SELECT r.id, r.inventory_item_id, r.order_id, r.quantity, r.expires_at, i.clinic_id
         FROM inventory_reservations r
         JOIN inventory_items i ON i.id = r.inventory_item_id
         JOIN commerce_orders o ON o.id = r.order_id
@@ -94,14 +129,12 @@ export class CommerceInventoryService {
         LIMIT ${limit}
       `);
       let expired = 0;
-      let cancelled = 0;
+      const cancelled = 0;
       for (const row of rows) {
-        if (await this.hasAmbiguousPayment(tx, row.order_id)) continue;
+        // Legacy receipts use a separate reconciliation path without wallet compensation.
+        if (await tx.paymentAttempt.count({ where: { orderId: row.order_id, status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) continue;
         if (await this.releaseLocked(tx, row, InventoryReservationStatus.EXPIRED)) {
           expired += 1;
-          const active = await tx.inventoryReservation.count({ where: { orderId: row.order_id, status: InventoryReservationStatus.ACTIVE } });
-          if (!active) await this.discounts.expireOrderReservation(tx, row.order_id);
-          if (await this.cancelExpiredPendingOrder(tx, row.order_id, now)) cancelled += 1;
         }
       }
       return { expired, cancelled };
@@ -142,36 +175,18 @@ export class CommerceInventoryService {
     const item = inventory[0];
     if (!item) throw reservationInvalid();
     await tx.inventoryReservation.update({ where: { id: row.id }, data: { status } });
-    await this.ledger(tx, { clinicId: item.clinic_id, inventoryItemId: item.id, entryType: 'RELEASE', quantityDelta: -row.quantity, referenceType: 'INVENTORY_RESERVATION', referenceId: row.id, idempotencyKey: `inventory:release:${row.id}` });
+    await this.ledger(tx, { clinicId: item.clinic_id, inventoryItemId: item.id, entryType: 'RELEASE', quantityDelta: -row.quantity, referenceType: 'INVENTORY_RESERVATION', referenceId: row.id, idempotencyKey: `inventory:release:${row.id}:${row.expires_at?.toISOString() ?? 'initial'}` });
     return true;
   }
 
   private async lockOrderReservations(tx: Transaction, orderId: string) {
     return tx.$queryRaw<Array<ReservationRow & { status: string }>>(Prisma.sql`
-      SELECT r.id, r.inventory_item_id, r.order_id, r.quantity, r.status, i.clinic_id
+      SELECT r.id, r.inventory_item_id, r.order_id, r.quantity, r.status, r.expires_at, i.clinic_id
       FROM inventory_reservations r JOIN inventory_items i ON i.id = r.inventory_item_id
       WHERE r.order_id = ${orderId}::uuid
-      ORDER BY r.inventory_item_id ASC
+      ORDER BY i.sku_id ASC
       FOR UPDATE OF r
     `);
-  }
-
-  private async hasAmbiguousPayment(tx: Transaction, orderId: string) {
-    return (await tx.paymentAttempt.count({ where: { orderId, status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) > 0 || (await tx.billingGatewayAttempt.count({ where: { intent: { orderId }, status: { in: ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) > 0;
-  }
-
-  private async cancelExpiredPendingOrder(tx: Transaction, orderId: string, now: Date) {
-    const order = await tx.commerceOrder.findUnique({ where: { id: orderId }, select: { id: true, status: true } });
-    if (!order || order.status !== 'PENDING_PAYMENT') return false;
-    const [activeReservations, blockingAttempts] = await Promise.all([
-      tx.inventoryReservation.count({ where: { orderId, status: InventoryReservationStatus.ACTIVE } }),
-      tx.paymentAttempt.count({ where: { orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } }),
-    ]);
-    if (activeReservations || blockingAttempts || await tx.billingGatewayAttempt.count({ where: { intent: { orderId }, status: { in: ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) return false;
-    const updated = await tx.commerceOrder.updateMany({ where: { id: order.id, status: 'PENDING_PAYMENT' }, data: { status: 'CANCELLED' } });
-    if (updated.count !== 1) return false;
-    await tx.auditEvent.create({ data: { action: 'COMMERCE_ORDER_CANCELLED_BY_RESERVATION_EXPIRY', actorUserId: null, actorSessionId: null, subjectType: 'COMMERCE_ORDER', subjectId: order.id, requestId: 'system:inventory-reservation-expiry', ipAddress: null, metadata: { expiredAt: now.toISOString() } } });
-    return true;
   }
 
   private async ledger(tx: Transaction, input: { clinicId: string; inventoryItemId: string; entryType: 'RECEIPT' | 'ADJUSTMENT' | 'RESERVATION' | 'RELEASE' | 'CONSUMPTION'; quantityDelta: number; referenceType: string; referenceId: string; idempotencyKey: string }) {

@@ -33,6 +33,10 @@ async function installApi(page: Page, rules: Rule[]) {
       await route.fulfill({ status: 204, headers: corsHeaders });
       return;
     }
+    if (url.pathname === "/v1/patients/me/entry") {
+      await json(route, { required: false, assessmentRequired: false, phase: "COMPLETE", assessmentVersionId: null, assessmentTitle: null, submissionId: null, firstName: "تست", lastName: "پرداخت", gender: "MALE", birthDate: "1990-01-01" });
+      return;
+    }
     const rule = rules.find((candidate) => candidate.method === request.method() && candidate.pattern.test(url.pathname));
     if (rule) {
       await rule.handler(route, url, request);
@@ -221,4 +225,41 @@ test.describe("mobile viewport", () => {
     await page.getByLabel("مبلغ شارژ (تومان)").fill("۹۹۹۹۹۹۹۹۹۹۹");
     await expect(page.getByLabel("مبلغ شارژ (تومان)")).toHaveValue("۲۰٬۰۰۰٬۰۰۰");
   });
+});
+
+// Recovery regressions use only intercepted reads: no real financial writes.
+for (const screen of ["wallet", "store"] as const) {
+  test(`payment recovery polling preserves the wallet confirmation on ${screen}`, async ({ page }) => {
+    let reads = 0;
+    await installApi(page, [
+      refresh,
+      { method: "GET", pattern: /^\/v1\/patients\/me\/orders\/[^/]+$/, handler: route => json(route, { id: ORDER_ID, orderNumber: "1024", status: "PENDING_PAYMENT", totalAmountToman: "125000", subtotalAmountToman: "125000", taxAmountToman: "0", discountAmountToman: "0", shippingAmountToman: "0", shippingMethod: "PICKUP", lines: [], paymentStatus: null }) },
+      { method: "POST", pattern: /^\/v1\/patients\/me\/billing\/order-intents$/, handler: route => json(route, intent(), 201) },
+      { method: "GET", pattern: /^\/v1\/patients\/me\/billing\/intents\/[^/]+$/, handler: route => { reads++; return json(route, intent()); } },
+    ]);
+    await page.goto(screen === "wallet" ? `/profile/wallet/pay?intentId=${INTENT_ID}` : `/store/payment?orderId=${ORDER_ID}`);
+    await page.getByRole("button", { name: /پرداخت از کیف پول/ }).click();
+    const confirmation = page.getByRole("dialog");
+    await expect(confirmation).toBeVisible();
+    const initialReads = reads;
+    await expect.poll(() => reads, { timeout: 12000 }).toBeGreaterThan(initialReads);
+    await expect(confirmation).toBeVisible();
+    await expect(page.getByRole("button", { name: "دریافت وضعیت تازه از سرور" })).toHaveCount(0);
+  });
+}
+
+test("payment recovery result refreshes automatically and stops at a verified outcome", async ({ page }) => {
+  let reads = 0;
+  let verified = false;
+  await installApi(page, [refresh, {
+    method: "GET", pattern: /^\/v1\/patients\/me\/billing\/intents\/[^/]+$/,
+    handler: route => { reads++; return json(route, intent({ purpose: "TOPUP", orderId: null, status: verified ? "PAID" : "PENDING", attempts: verified ? [] : [{ id: "a1", status: "REQUIRES_RECONCILIATION" }] })); },
+  }]);
+  await page.goto(`/profile/wallet/payment-result?intentId=${INTENT_ID}`);
+  await expect(page.getByRole("heading", { name: "نتیجهٔ پرداخت هنوز قطعی نیست" })).toBeVisible();
+  verified = true;
+  await expect(page.getByRole("heading", { name: "پرداخت با موفقیت انجام شد" })).toBeVisible({ timeout: 12000 });
+  const terminalReads = reads;
+  await page.waitForTimeout(5500);
+  expect(reads).toBe(terminalReads);
 });

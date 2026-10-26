@@ -43,6 +43,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
   const amount = BigInt(intent.amountRial);
   const isTopup = intent.purpose === "TOPUP";
   const balance = wallet?.balanceRial ? BigInt(wallet.balanceRial) : null;
+  const bankAttempt = intent.attempts?.find(attempt => ["CREATED", "REDIRECT_READY", "VERIFYING", "REQUIRES_RECONCILIATION"].includes(attempt.status));
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
   const run = async (kind: "wallet" | "gateway" | "cancel", action: () => Promise<void>) => {
@@ -61,7 +62,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
   };
 
   const confirmationMatches = walletConfirmation?.id === intent.id && walletConfirmation.amountRial === intent.amountRial;
-  const canPayFromWallet = !isTopup && intent.status === "PENDING" && wallet?.available && deficit === null;
+  const canPayFromWallet = !isTopup && !bankAttempt && intent.status === "PENDING" && wallet?.available && deficit === null;
 
   const payFromWallet = () => {
     if (!confirmationMatches || !canPayFromWallet) return;
@@ -77,7 +78,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
     run("gateway", async () => {
       const attempt = await createGatewayAttempt(accessToken, intent.id, crypto.randomUUID());
       if (!attempt.redirectUrl) {
-        setError("پرداخت بانکی در وضعیت نامشخص است. برای بررسی نتیجه به صفحهٔ پرداخت مراجعه کنید.");
+        setError(attempt.status === "FAILED" ? "درگاه نتوانست این پرداخت را آغاز کند. می‌توانید دوباره تلاش کنید یا از کیف پول پرداخت کنید." : "نتیجهٔ پرداخت بانکی هنوز مشخص نیست؛ وضعیت به‌صورت خودکار بررسی می‌شود.");
         return;
       }
       window.location.assign(attempt.redirectUrl);
@@ -92,6 +93,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
 
   return (
     <div className="space-y-3">
+      {bankAttempt && <p role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">{bankAttempt.status === "REDIRECT_READY" ? "یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود." : "نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید."}</p>}
       {isTopup && <aside className="rounded-2xl border border-border bg-muted p-4 text-sm leading-7" aria-label="دربارهٔ افزایش موجودی">
         <p>این درخواست برای اضافه‌کردن {formatRial(amount)} تومان به کیف پول شماست؛ هزینهٔ خرید، نوبت یا آزمون نیست.</p>
         <p className="mt-2 text-muted-foreground">افزایش موجودی از درگاه بانکی انجام می‌شود و از موجودی همین کیف پول قابل پرداخت نیست. برای استفاده از موجودی فعلی، وارد پرداخت سفارش یا خدمت موردنظرتان شوید و «پرداخت از کیف پول» را انتخاب کنید.</p>
@@ -137,7 +139,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
           >
             <span className="wallet-method__icon" aria-hidden="true"><Landmark size={20} /></span>
             <span className="wallet-method__body">
-              <span className="wallet-method__title">پرداخت بانکی (درگاه)</span>
+              <span className="wallet-method__title">{bankAttempt?.status === "REDIRECT_READY" ? "ادامهٔ پرداخت بانکی" : "پرداخت بانکی (درگاه)"}</span>
               <span className="wallet-method__hint">
                 {gateway.available ? "انتقال به درگاه پرداخت امن." : isTopup ? "افزایش موجودی فعلاً ممکن نیست؛ درگاه بانکی برای این درخواست در دسترس نیست." : "درگاه بانکی در حال حاضر برای این مورد در دسترس نیست."}
               </span>
@@ -165,7 +167,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
 
       <button
         type="button"
-        disabled={busy !== null}
+        disabled={busy !== null || Boolean(bankAttempt)}
         onClick={() => void cancel()}
         className="w-full rounded-2xl border border-border bg-white py-3 text-sm font-bold text-muted-foreground disabled:opacity-50"
       >

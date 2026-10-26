@@ -77,7 +77,9 @@ export class BillingService {
       if (intent.purpose === 'TOPUP' || intent.status !== 'PENDING') throw financialConflict();
       await this.targets.get(intent.purpose).lock(tx, intent);
       await this.assertNoPending(tx, intent);
-      if (!(await this.targets.get(intent.purpose).canSettle(tx, intent))) throw financialConflict('BILLING_HOLD_EXPIRED');
+      const target = this.targets.get(intent.purpose);
+      if (target.preparePayment && !await target.preparePayment(tx, intent)) throw financialConflict('COMMERCE_INVENTORY_INSUFFICIENT');
+      if (!(await target.canSettle(tx, intent))) throw financialConflict('BILLING_HOLD_EXPIRED');
       const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
       const journal = await this.wallet.post(tx, patient, -intent.amountRial, 'PAYMENT', `intent:${id}:debit`, context);
       const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'WALLET' }, context, journal.id);
@@ -106,6 +108,7 @@ export class BillingService {
       if (intent.purpose !== 'TOPUP') await this.targets.get(intent.purpose).lock(tx, intent);
       await this.assertNoPending(tx, intent);
       if (intent.holdId) await tx.appointmentHold.update({ where: { id: intent.holdId }, data: { releasedAt: new Date() } });
+      if (intent.purpose !== 'TOPUP') await this.targets.get(intent.purpose).cancel?.(tx, intent);
       const updated = await tx.billingIntent.update({ where: { id }, data: { status: 'CANCELLED' } });
       await financialAudit(tx, context, 'BILLING_INTENT_CANCELLED', id, {});
       const response = this.view(updated);
@@ -131,10 +134,11 @@ export class BillingService {
     const context: FinancialContext = { actorUserId: intent.actorUserId, actorSessionId: null, requestId: `billing-verify:${attempt.id}`, ipAddress: null };
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
     let canSettle = intent.status === 'PENDING' && eligibilityValid;
-    if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); canSettle = canSettle && await this.targets.get(intent.purpose).canSettle(tx, intent); }
+    if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); const target = this.targets.get(intent.purpose); canSettle = canSettle && (!target.preparePayment || await target.preparePayment(tx, intent)) && await target.canSettle(tx, intent); }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { reference: proof.referenceId, traceNumber: proof.traceNumber, verifiedAt: new Date() } });
     let settlementFields: { appointmentId?: string } = {};
     if (intent.purpose === 'TOPUP' || !canSettle) {
+      if (!canSettle && intent.status === 'PENDING' && intent.purpose === 'ORDER') await this.targets.get(intent.purpose).cancel?.(tx, intent);
       await this.wallet.post(tx, patient, intent.amountRial, canSettle ? 'TOPUP' : 'LATE_PAYMENT_CREDIT', `gateway:${attempt.id}:credit`, context);
     } else {
       const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'GATEWAY' }, context, undefined, attempt.id);

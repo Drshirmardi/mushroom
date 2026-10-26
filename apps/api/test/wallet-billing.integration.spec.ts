@@ -15,6 +15,7 @@ import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sada
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
 import { parseSadadFormCallback } from '../src/modules/commerce/payments/sadad-payment-provider.adapter';
 import { CommerceCheckoutService } from '../src/modules/commerce/checkout/commerce-checkout.service';
+import { CommerceInventoryService } from '../src/modules/commerce/inventory/commerce-inventory.service';
 import { OrderBillingTarget } from '../src/modules/commerce/payments/order-billing.target';
 import { PatientAvailabilityService } from '../src/modules/scheduling/patient-availability.service';
 import { PatientAppointmentsService } from '../src/modules/appointments/patient-appointments.service';
@@ -74,13 +75,15 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const current = await wallet.summary(p.profile);
     return wallet.adjust(context(), p.profile.id, { type: 'CREDIT', amountToman, expectedVersion: current.version, reason: 'Synthetic admin funding' }, randomUUID());
   }
-  async function order(p: Awaited<ReturnType<typeof patient>>, price = 1000n) {
+  async function order(p: Awaited<ReturnType<typeof patient>>, price = 1000n, discountCode?: string, lineCount = 1) {
+    for (let index = 0; index < lineCount; index++) {
     const suffix = randomUUID();
     const category = await db.commerceCategory.create({ data: { clinicId, name: suffix, slug: suffix } });
     const product = await db.commerceProduct.create({ data: { clinicId, categoryId: category.id, title: 'Synthetic product', slug: suffix, status: 'ACTIVE' } });
     const sku = await db.commerceSku.create({ data: { clinicId, productId: product.id, code: suffix, currentPriceToman: price, currentTaxToman: 0n, isActive: true, inventoryItem: { create: { clinicId, onHandQuantity: 10 } } } });
-    await db.commerceCart.create({ data: { clinicId, patientId: p.profile.id, items: { create: { skuId: sku.id, quantity: 1 } } } });
-    return app.get(CommerceCheckoutService).checkout(p.userId, randomUUID(), { shippingMethod: 'PICKUP' }, context(p.userId));
+    await db.commerceCart.upsert({ where: { patientId: p.profile.id }, create: { clinicId, patientId: p.profile.id, items: { create: { skuId: sku.id, quantity: 1 } } }, update: { items: { create: { skuId: sku.id, quantity: 1 } } } });
+    }
+    return app.get(CommerceCheckoutService).checkout(p.userId, randomUUID(), { shippingMethod: 'PICKUP', ...(discountCode ? { discountCode } : {}) }, context(p.userId));
   }
   async function appointmentInput(p: Awaited<ReturnType<typeof patient>>) {
     const offering = await db.doctorService.findFirstOrThrow({ where: { clinicId, isActive: true, publicationStatus: 'PUBLISHED', priceAmount: { gt: 0 } } });
@@ -245,6 +248,125 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const refund = await billing.refund(context(), intent.id, '10000', 'Bank refund', randomUUID()); expect(refund.status).toBe('MANUAL_REQUIRED');
     expect((await wallet.summary(p.profile)).balanceRial).toBe('20000');
     await billing.completeRefund(context(), refund.id, 'synthetic-bank-transfer-evidence'); expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe('REFUNDED');
+  });
+
+  async function expireOrder(orderId: string) {
+    await db.inventoryReservation.updateMany({ where: { orderId, status: 'ACTIVE' }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    await app.get(CommerceInventoryService).expireDue(100);
+  }
+
+  it('resumes the same order after repeated stock expiry, preserves its price and debits once under concurrent wallet retries', async () => {
+    const p = await patient(); await credit(p, '2000'); const checkout = await order(p);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    expect(await db.commerceCartItem.count({ where: { cart: { patientId: p.profile.id } } })).toBe(0);
+    const reservation = await db.inventoryReservation.findFirstOrThrow({ where: { orderId: checkout.id } });
+    const item = await db.inventoryItem.findUniqueOrThrow({ where: { id: reservation.inventoryItemId } });
+    await db.commerceSku.update({ where: { id: item.skuId }, data: { currentPriceToman: 9000n } });
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await expireOrder(checkout.id);
+      expect((await db.commerceOrder.findUniqueOrThrow({ where: { id: checkout.id } })).status).toBe('PENDING_PAYMENT');
+      await db.$transaction(async tx => { const target = app.get(OrderBillingTarget); const row = await billing.lockIntent(tx, intent.id); await target.lock(tx, row); expect(await target.preparePayment(tx, row)).toBe(true); });
+    }
+    await expireOrder(checkout.id);
+    const results = await Promise.allSettled(Array.from({ length: 4 }, () => billing.payWallet(p.userId, intent.id, randomUUID(), context(p.userId))));
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('10000');
+    expect((await db.inventoryItem.findUniqueOrThrow({ where: { id: item.id } }))).toMatchObject({ onHandQuantity: 9, reservedQuantity: 0 });
+    const ledger = await db.inventoryLedgerEntry.findMany({ where: { referenceId: reservation.id } });
+    expect(ledger.filter(row => row.entryType === 'RESERVATION')).toHaveLength(4);
+    expect(ledger.filter(row => row.entryType === 'RELEASE')).toHaveLength(3);
+    expect(ledger.filter(row => row.entryType === 'CONSUMPTION')).toHaveLength(1);
+    expect((await db.payment.findUniqueOrThrow({ where: { orderId: checkout.id } })).commerceAmountToman).toBe(1000n);
+  });
+
+  it('releases shared pending bank stock, allows a separate purchase and settles the old bank receipt only once when stock remains', async () => {
+    const p = await patient(); await credit(p, '2000'); const checkout = await order(p);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    expect((await db.inventoryReservation.findFirstOrThrow({ where: { orderId: checkout.id } })).status).toBe('EXPIRED');
+    expect(await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))).toMatchObject({ id: attempt.id, redirectUrl: attempt.redirectUrl });
+    const methods = await gateway.methods(p.userId, intent.id); expect(methods.find(method => method.code === 'WALLET')?.available).toBe(false);
+    const nextOrder = await order(p); const next = await billing.create(p.userId, 'ORDER', { orderId: nextOrder.id }, randomUUID(), context(p.userId));
+    await billing.payWallet(p.userId, next.id, randomUUID(), context(p.userId));
+    await Promise.all([gateway.verify(attempt.id), gateway.verify(attempt.id)]);
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+    expect(await db.payment.count({ where: { orderId: checkout.id } })).toBe(1);
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('10000');
+    expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(0);
+  });
+
+  it('keeps unavailable orders intact and compensates a late bank receipt without consuming missing stock or double credit', async () => {
+    const p = await patient(); await credit(p, '3000'); const checkout = await order(p, 1000n, undefined, 2);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    const reservation = await db.inventoryReservation.findFirstOrThrow({ where: { orderId: checkout.id } });
+    await db.inventoryItem.update({ where: { id: reservation.inventoryItemId }, data: { onHandQuantity: 0 } });
+    await expect(billing.payWallet(p.userId, intent.id, randomUUID(), context(p.userId))).rejects.toMatchObject({ response: { code: 'COMMERCE_INVENTORY_INSUFFICIENT' } });
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('30000');
+    await db.inventoryItem.update({ where: { id: reservation.inventoryItemId }, data: { onHandQuantity: 1 } });
+    const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    await db.inventoryItem.update({ where: { id: reservation.inventoryItemId }, data: { onHandQuantity: 0 } });
+    await Promise.all([gateway.verify(attempt.id), gateway.verify(attempt.id)]);
+    expect((await billing.get(p.userId, intent.id)).status).toBe('COMPENSATED');
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('50000');
+    expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
+    expect(await db.inventoryReservation.count({ where: { orderId: checkout.id, status: 'ACTIVE' } })).toBe(0);
+    expect(await db.payment.count({ where: { orderId: checkout.id } })).toBe(0);
+    expect((await db.inventoryItem.findUniqueOrThrow({ where: { id: reservation.inventoryItemId } }))).toMatchObject({ onHandQuantity: 0, reservedQuantity: 0 });
+  });
+
+  it('does not oversell the last unit when two expired orders resume together', async () => {
+    const first = await patient(); const second = await patient(); await credit(first, '2000'); await credit(second, '2000');
+    const firstOrder = await order(first);
+    const line = await db.commerceOrderLine.findFirstOrThrow({ where: { orderId: firstOrder.id } });
+    await db.commerceCart.create({ data: { clinicId, patientId: second.profile.id, items: { create: { skuId: line.skuId!, quantity: 1 } } } });
+    const secondOrder = await app.get(CommerceCheckoutService).checkout(second.userId, randomUUID(), { shippingMethod: 'PICKUP' }, context(second.userId));
+    const firstIntent = await billing.create(first.userId, 'ORDER', { orderId: firstOrder.id }, randomUUID(), context(first.userId));
+    const secondIntent = await billing.create(second.userId, 'ORDER', { orderId: secondOrder.id }, randomUUID(), context(second.userId));
+    await expireOrder(firstOrder.id); await expireOrder(secondOrder.id);
+    await db.inventoryItem.update({ where: { skuId: line.skuId! }, data: { onHandQuantity: 1 } });
+    const outcomes = await Promise.allSettled([
+      billing.payWallet(first.userId, firstIntent.id, randomUUID(), context(first.userId)),
+      billing.payWallet(second.userId, secondIntent.id, randomUUID(), context(second.userId)),
+    ]);
+    expect(outcomes.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect(outcomes.find(result => result.status === 'rejected')).toMatchObject({ reason: { response: { code: 'COMMERCE_INVENTORY_INSUFFICIENT' } } });
+    expect(await db.payment.count({ where: { orderId: { in: [firstOrder.id, secondOrder.id] } } })).toBe(1);
+    expect((await db.inventoryItem.findUniqueOrThrow({ where: { skuId: line.skuId! } }))).toMatchObject({ onHandQuantity: 0, reservedQuantity: 0 });
+  });
+
+  it('keeps the accepted discount with a saved order and releases it on explicit cancellation after stock expiry', async () => {
+    const p = await patient(); const code = `SAVE_${randomUUID().slice(0, 8).toUpperCase()}`;
+    const discount = await db.commerceDiscount.create({ data: { clinicId, code, title: 'Synthetic accepted discount', kind: 'FIXED_AMOUNT', amountToman: 100n, usageLimit: 1 } });
+    const checkout = await order(p, 1000n, code);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    expect(intent.amountRial).toBe('9000');
+    expect(await db.commerceDiscountReservation.findUniqueOrThrow({ where: { orderId: checkout.id } })).toMatchObject({ status: 'ACTIVE', expiresAt: null });
+    await billing.cancel(p.userId, intent.id, randomUUID(), context(p.userId));
+    expect((await db.commerceOrder.findUniqueOrThrow({ where: { id: checkout.id } })).status).toBe('CANCELLED');
+    expect(await db.commerceDiscountReservation.findUniqueOrThrow({ where: { orderId: checkout.id } })).toMatchObject({ discountId: discount.id, status: 'RELEASED' });
+  });
+
+  it('maintenance resolves abandoned ready attempts and token-less requests without cancelling their orders', async () => {
+    const p = await patient(); const checkout = await order(p);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    const providerOrderId = (await db.$queryRaw<Array<{ value: bigint }>>`SELECT nextval('payment_provider_order_id_seq') AS value`)[0]!.value;
+    const old = new Date(Date.now() - 21 * 60_000);
+    const attempt = await db.billingGatewayAttempt.create({ data: { intentId: intent.id, revisionId, providerOrderId, amountRial: BigInt(intent.amountRial), idempotencyKey: randomUUID(), providerToken: `synthetic-abandoned-${providerOrderId}`, status: 'REDIRECT_READY', createdAt: old, updatedAt: old } });
+    const original = fake.verifyPayment;
+    fake.verifyPayment = async () => ({ resultCode: '101' });
+    try { await gateway.maintain(100); } finally { fake.verifyPayment = original; }
+    expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attempt.id } })).status).toBe('FAILED');
+    const nextId = (await db.$queryRaw<Array<{ value: bigint }>>`SELECT nextval('payment_provider_order_id_seq') AS value`)[0]!.value;
+    const tokenless = await db.billingGatewayAttempt.create({ data: { intentId: intent.id, revisionId, providerOrderId: nextId, amountRial: BigInt(intent.amountRial), idempotencyKey: randomUUID(), status: 'REQUIRES_RECONCILIATION', createdAt: old, updatedAt: old } });
+    await gateway.maintain(100);
+    expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: tokenless.id } })).status).toBe('FAILED');
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PENDING');
+    const retry = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId)); expect(retry.status).toBe('REDIRECT_READY');
   });
 
   it('full wallet payment creates the appointment only once, protects the slot and refunds an allowed cancellation', async () => {

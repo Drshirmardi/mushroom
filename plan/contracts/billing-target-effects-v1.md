@@ -12,3 +12,5 @@ Order returns NONE; its own order/payment/inventory effects remain transactional
 All prepare/lock/canSettle/settle/refund behavior, bank Verify amount/OrderId matching, wallet journals, compensation, refunds, idempotency and audit remain unchanged. No new provider capability/amount/default/permission/price or digital activation. Same existing API and Prisma schema; no new migration or generated artifacts expected.
 
 Acceptance: focused effect validation tests and real PostgreSQL current wallet/order/appointment/free/gateway/refund/compensation/concurrency regressions in a dedicated task-owned disposable wallet_test database using synthetic provider. API/test typecheck and unchanged OpenAPI/client freshness. No live gateway or persistent database acceptance inferred.
+
+PAY04 / ADR-0043 extension: optional preparePayment(tx,intent) reacquires stock only on an actual payment/verified settlement, returning false without partial acquisition. Optional cancel(tx,intent) closes an unpaid order/releases its stock and discount. Other targets are unaffected. Existing canSettle and typed settlement effects remain the final settlement gate; no HTTP shape changes.

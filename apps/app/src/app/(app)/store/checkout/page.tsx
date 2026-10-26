@@ -86,6 +86,8 @@ export default function CheckoutPage() {
     setSaving(true); setError(null);
     try {
       const order = await checkoutCommerceOrder(authentication.accessToken, checkoutIntent.current.idempotencyKey, body);
+      const checkedOut = new Set(items.map(item => item.id));
+      useCartStore.getState().replace(useCartStore.getState().items.filter(item => !checkedOut.has(item.id)));
       checkoutIntent.current = null;
       router.push(`/store/payment?orderId=${encodeURIComponent(order.id)}`);
     } catch (cause) { setError(commerceErrorMessage(cause)); }

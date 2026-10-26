@@ -1,13 +1,15 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Clock, Info, RefreshCw, ShieldQuestion, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Info, ShieldQuestion, XCircle } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
 import { Spinner } from "@/components/shared/skeletons";
-import { getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
+import { getBillingIntent, type BillingIntent } from "@/lib/wallet-billing-api";
 import { billingMethodLabel, billingPurposeLabel, billingStatusLabel, intentResultView, type IntentResultView } from "@/lib/wallet-labels";
+import { usePatientResource } from "@/lib/use-patient-resource";
+import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { formatRial } from "@/lib/wallet-money";
 
 type View = IntentResultView | "loading" | "error";
@@ -32,30 +34,12 @@ function PaymentResult() {
   const { authentication } = useAuthSession();
   const router = useRouter();
   const intentId = useSearchParams().get("intentId");
-  const [intent, setIntent] = useState<BillingIntent | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!intentId) {
-      setError("شناسهٔ پرداخت در آدرس وجود ندارد.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      setIntent(await getBillingIntent(authentication.accessToken, intentId));
-    } catch (cause) {
-      setError(walletErrorMessage(cause));
-    } finally {
-      setLoading(false);
-    }
-  }, [authentication.accessToken, intentId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const resource = usePatientResource(useCallback(() => intentId
+    ? getBillingIntent(authentication.accessToken, intentId)
+    : Promise.reject(new Error("MISSING_INTENT")), [authentication.accessToken, intentId]));
+  const { data: intent, error } = resource;
+  const load = resource.reload;
+  usePaymentRefresh(intent?.status === "PENDING", resource.refresh);
 
   const view: View = intent ? intentResultView(intent) : error ? "error" : "loading";
   useEffect(() => {
@@ -115,7 +99,7 @@ function PaymentResult() {
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {view === "paid" && "این نتیجه از سرور خوانده شده است و بر پایهٔ تأیید معتبر پرداخت است."}
-                {view === "compensated" && "زمان رزروشده در دسترس نبود؛ مبلغ به‌صورت اعتبار کیف پول شما ثبت شد."}
+                {view === "compensated" && "سفارش یا خدمت در دسترس نبود؛ مبلغ به‌صورت اعتبار کیف پول شما ثبت شد."}
                 {view === "pending" && "اگر از درگاه بازگشتید، چند لحظه صبر کنید و دوباره بررسی کنید. تا مشخص‌شدن نتیجه، پرداخت مجدد انجام ندهید."}
                 {view === "ambiguous" && "وضعیت این پرداخت نیازمند بررسی است. هیچ پرداخت یا مبلغی پیش از روشن‌شدن نتیجه نهایی فرض نمی‌شود."}
                 {view === "failed" && "می‌توانید با روش دیگری دوباره تلاش کنید."}
@@ -149,9 +133,6 @@ function PaymentResult() {
             </button>
 
             <div className="flex gap-3">
-              <button type="button" onClick={() => void load()} className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border bg-white py-3 text-sm font-bold text-foreground">
-                <RefreshCw size={16} aria-hidden="true" />بررسی دوباره
-              </button>
               {(view === "failed" || view === "pending") && retry && (
                 <button type="button" onClick={() => router.push(retry)} className="flex-1 rounded-2xl border border-primary/30 bg-primary/5 py-3 text-sm font-bold text-primary">
                   تلاش دوباره
