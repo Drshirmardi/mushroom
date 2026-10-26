@@ -28,7 +28,7 @@ After editing `runtime.env`, rerun the normal `Sync shared dev VPS` workflow or 
 ## Main-domain callback on shared dev
 
 The browser posts to `https://drshirmardi.com/v1/payments/providers/sadad/callback`.
-Only that path is proxied to the dev API; all other main-domain routes retain their existing handlers.
+Only the callback and browser-start paths are proxied to the dev API; all other main-domain routes retain their existing handlers.
 This reaches the same handler exposed at `https://dev-api.drshirmardi.com/v1/payments/providers/sadad/callback`.
 
 1. On the server serving **drshirmardi.com**, import [sadad-callback.caddy.example](vps/sadad-callback.caddy.example) **inside its existing Caddy site block**. Keep the existing site and its other routes. Confirm `API_PORT` in the selected dev runtime is `127.0.0.1:3303`; otherwise use its actual loopback port. Do not add a duplicate main-domain site or change DNS.
@@ -42,10 +42,31 @@ This repository commit prepares the source and proxy configuration; it does not 
 
 Reference: [Caddy reverse_proxy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy).
 
+## Browser departure and interrupted-attempt recovery (PAY02)
+
+Callback routing alone does not change the browser's departure origin. The app now opens a real merchant-origin HTML page before the bank. The token is kept in its URL fragment (never sent to the merchant HTTP server), cleared from history, and encoded into the fixed bank URL. The page is public/rate-limited with nonce CSP, no-store and Referrer-Policy origin; it does not create or confirm a payment.
+
+On an existing VPS using `/etc/caddy/sadad.caddy`, replace the old callback-only handle inside the existing `drshirmardi.com` block with this exact matcher/handle, retaining its TLS and fallback handlers:
+
+```caddy
+@sadad_routes path /v1/payments/providers/sadad/callback /v1/payments/providers/sadad/start
+handle @sadad_routes {
+    reverse_proxy 127.0.0.1:3303 {
+        header_down Cache-Control "no-store"
+    }
+}
+```
+
+Validate the full Caddyfile and reload; deploy PAY02 to dev. The existing SADAD_RETURN_URL stays at the main-domain callback. A GET to the main-domain start path must now return HTML200 when live mode is configured; without a token fragment it shows a safe invalid-link message and never contacts Sadad. A404 means the new proxy route or API version is absent. A502 means the API upstream is unavailable. Do not broaden this route to proxy all API paths.
+
+Clicking gateway payment again resumes the same active attempt with its original token, amount and revision, even with a fresh idempotency key. CREATED/VERIFYING/REQUIRES_RECONCILIATION remain pending and never spawn another bank attempt. If an old token is no longer usable, an authorized administrator can find REDIRECT_READY in Dashboard billing reconciliation and run the existing Verify action. A definitive bank failure permits another attempt. Uncertain responses stay in reconciliation; only existing reviewed failure-resolution controls may release them. Never delete records, cancel a potentially paid attempt based only on a browser error, or manually mark a bank payment successful. Existing wallet/cancel guards and late callback verification remain intact.
+
+Local Chromium tests establish the outgoing Referer behavior; live PSP acceptance and exact merchant whitelist matching still require an authorized bank test. Registering the actual frontend domain remains an alternative if Sadad requires it.
+
 ## Acceptance transaction
 
 1. Create a low-value real order using an authorized test customer.
-2. Confirm the create-attempt response redirects only to an allowlisted `sadad.shaparak.ir` URL.
+2. Confirm the create-attempt response opens the configured merchant origin at `/v1/payments/providers/sadad/start#...`. Its HTML document then navigates only to the configured allowlisted Sadad purchase endpoint. In browser Network with Preserve log enabled, confirm the Purchase request has `Referer: https://drshirmardi.com/`. Do not copy tokens/cookies into logs or messages.
 3. Complete or cancel the payment at Sadad.
 4. Confirm the browser POST reaches the exact Return URL with form fields `OrderId`, `Token` and `ResCode`.
 5. Confirm the API performs server-to-server Verify before creating a Payment, marking the order `PAID`, consuming inventory reservations or issuing a receipt.

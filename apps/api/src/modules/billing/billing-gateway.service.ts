@@ -4,7 +4,7 @@ import { PaymentProviderRegistry } from '../commerce/payments/payment-provider.r
 import { PaymentCredentialCryptoService } from '../commerce/payments/payment-credential-crypto.service';
 import { PaymentProviderOrderIdService } from '../commerce/payments/payment-provider-order-id.service';
 import { SadadRuntimeConfigService } from '../commerce/payments/sadad-runtime-config.service';
-import { buildSadadRedirect } from '../commerce/payments/sadad-payment-provider.adapter';
+import { buildSadadStartUrl } from '../commerce/payments/sadad-browser-start';
 import { BillingService } from './billing.service';
 import { BillingTargetRegistry } from './billing-target.registry';
 import { financialAudit, financialConflict, financialKey, financialMissing, fingerprint, lockFinancial, pendingAttempts, reasonText, type FinancialContext } from './billing.policy';
@@ -42,6 +42,8 @@ export class BillingGatewayService {
       if (existing) return { attempt: existing, request: false };
       if (intent.status !== 'PENDING' || (intent.expiresAt && intent.expiresAt <= new Date())) throw financialConflict('BILLING_HOLD_EXPIRED');
       if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); if (!(await this.targets.get(intent.purpose).canSettle(tx, intent))) throw financialConflict(); }
+      const active = await tx.billingGatewayAttempt.findFirst({ where: { intentId, status: { in: pendingAttempts } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
+      if (active) return { attempt: active, request: false };
       await this.billing.assertNoPending(tx, intent);
       const providerOrderId = await this.orderIds.next(tx);
       const attempt = await tx.billingGatewayAttempt.create({ data: { intentId, revisionId: revision.id, providerOrderId, amountRial: intent.amountRial, idempotencyKey: key } });
@@ -160,6 +162,6 @@ export class BillingGatewayService {
   private ambiguous(id: string, code: string) { return this.prisma.billingGatewayAttempt.updateMany({ where: { id, status: { not: 'VERIFIED' } }, data: { status: 'REQUIRES_RECONCILIATION', resultCode: code } }); }
   private credential(version: PaymentProviderCredentialVersion) { return this.crypto.decrypt({ encryptedPayload: version.encryptedPayload ? Buffer.from(version.encryptedPayload) : null, encryptionNonce: version.encryptionNonce ? Buffer.from(version.encryptionNonce) : null, authenticationTag: version.authenticationTag ? Buffer.from(version.authenticationTag) : null, encryptionKeyVersion: version.encryptionKeyVersion }); }
   private view(attempt: { id: string; intentId: string; status: string; providerToken: string | null; amountRial: bigint }) {
-    return { id: attempt.id, intentId: attempt.intentId, status: attempt.status, amountRial: attempt.amountRial.toString(), currency: 'IRR', redirectUrl: attempt.status === 'REDIRECT_READY' && attempt.providerToken && this.runtime.live ? buildSadadRedirect(this.runtime.settings().redirectProfile, attempt.providerToken) : null };
+    return { id: attempt.id, intentId: attempt.intentId, status: attempt.status, amountRial: attempt.amountRial.toString(), currency: 'IRR', redirectUrl: attempt.status === 'REDIRECT_READY' && attempt.providerToken && this.runtime.live ? buildSadadStartUrl(this.runtime.settings().returnUrl, attempt.providerToken) : null };
   }
 }

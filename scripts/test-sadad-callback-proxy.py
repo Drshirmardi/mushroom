@@ -17,9 +17,16 @@ class NoRedirect(HTTPRedirectHandler):
 
 def main():
     received = []
+    starts = []
     result = 'https://dev-app.example.test/store/order-success?orderId=synthetic'
 
     class Backend(BaseHTTPRequestHandler):
+        def do_GET(self):
+            starts.append(self.path)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'synthetic merchant start page')
+
         def do_POST(self):
             received.append((self.command, self.path, self.headers.get('Content-Type'),
                              self.rfile.read(int(self.headers['Content-Length']))))
@@ -65,10 +72,14 @@ def main():
                     assert response.headers['Location'] == result
                     assert response.headers['Cache-Control'] == 'no-store'
             assert received == [('POST', path, 'application/x-www-form-urlencoded', body)] * 2
+            with opener.open(address + '/v1/payments/providers/sadad/start', timeout=5) as response:
+                assert response.read() == b'synthetic merchant start page'
+                assert response.headers['Cache-Control'] == 'no-store'
+            assert starts == ['/v1/payments/providers/sadad/start']
             for unrelated in ['/store', '/v1/payments/providers/sadad/callback/extra']:
                 with opener.open(address + unrelated, timeout=5) as response:
                     assert response.read() == b'existing website'
-            print('Caddy callback transport PASS: exact route, POST/form/query, repeated delivery, 303/Location, no-store and unrelated routes.')
+            print('Caddy payment transport PASS: exact callback/start routes, POST/form/query, repeated delivery, 303/Location, no-store and unrelated routes.')
     finally:
         subprocess.run(['docker', 'rm', '-f', name], capture_output=True)
         backend.shutdown()

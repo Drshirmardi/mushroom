@@ -57,7 +57,7 @@ describe('Sadad live runtime wiring', () => {
 
   it('creates a real provider-bound attempt only from an enabled/default ready configuration', async () => {
     const active = service();
-    await expect(active.instance.createForOrder('user-id', 'order-id', 'idempotency-key')).resolves.toMatchObject({ id: 'attempt-id', redirectUrl: 'https://sadad.shaparak.ir/VPG/Purchase?Token=provider-token' });
+    await expect(active.instance.createForOrder('user-id', 'order-id', 'idempotency-key')).resolves.toMatchObject({ id: 'attempt-id', redirectUrl: 'https://dev-api.example.test/v1/payments/providers/sadad/start#provider-token' });
     expect(active.orchestration.createAttempt).toHaveBeenCalledWith(expect.objectContaining({ patientId: 'patient-id', orderId: 'order-id', providerConfigRevisionId: 'revision-id', providerAmount: 1_000n, providerUnit: 'RIAL', returnUrl: liveValues.SADAD_RETURN_URL, redirectProfile: liveValues.SADAD_REDIRECT_PROFILE, requestTimeoutMs: 4_000 }));
     const inactive = service({ config: null });
     await expect(inactive.instance.createForOrder('user-id', 'order-id', 'idempotency-key')).rejects.toMatchObject({ response: { code: 'SADAD_GO_LIVE_BLOCKED' } });

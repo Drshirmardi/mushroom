@@ -25786,6 +25786,31 @@
         ]
       }
     },
+    "/v1/payments/providers/sadad/start": {
+      "get": {
+        "operationId": "sadadPaymentBrowserStart",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "HTML payment navigation document",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Payment start rate limit exceeded."
+          }
+        },
+        "summary": "Render a merchant-origin document before navigating to the fixed Sadad payment page; token is supplied only in the browser fragment",
+        "tags": [
+          "Provider Callbacks"
+        ]
+      }
+    },
     "/v1/payments/providers/sadad/callback": {
       "post": {
         "operationId": "sadadPaymentCallback",

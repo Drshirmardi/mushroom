@@ -154,11 +154,49 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const other = await patient(); await expect(billing.get(other.userId, intent.id)).rejects.toThrow();
   });
 
+  it('serves the merchant browser page publicly through the real HTTP pipeline', async () => {
+    const response = await app.inject({ method: 'GET', url: '/v1/payments/providers/sadad/start' });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('text/html');
+    expect(response.headers['referrer-policy']).toBe('origin');
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.body).toContain('location.hash');
+  });
+
+  it('allows a fresh attempt only after server verification definitively rejects the prior token', async () => {
+    const p = await patient();
+    const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '100' }, randomUUID(), context(p.userId));
+    const before = creates;
+    const concurrent = await Promise.all(Array.from({ length: 6 }, () => gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))));
+    expect(new Set(concurrent.map(value => value.id)).size).toBe(1);
+    expect(creates - before).toBe(1);
+    const first = concurrent[0];
+    const original = fake.verifyPayment;
+    fake.verifyPayment = async () => ({ resultCode: '101' });
+    try {
+      expect(await gateway.retry(admin.userId, first.id)).toMatchObject({ status: 'FAILED' });
+    } finally { fake.verifyPayment = original; }
+    const next = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    expect(next.id).not.toBe(first.id);
+    expect(creates - before).toBe(2);
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('0');
+    expect(await db.billingGatewayAttempt.count({ where: { intentId: intent.id } })).toBe(2);
+  });
+
   it('top-up attempts reuse their original token/revision and duplicate concurrent Verify has exactly one credit', async () => {
     const p = await patient(); const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '1234' }, randomUUID(), context(p.userId)); const key = randomUUID(); const before = creates;
     const first = await gateway.create(p.userId, intent.id, key, context(p.userId)); expect((await gateway.create(p.userId, intent.id, key, context(p.userId))).id).toBe(first.id); expect(creates - before).toBe(1);
+    const resumed = await Promise.all(Array.from({ length: 6 }, () => gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))));
+    expect(resumed.every(value => value.id === first.id && value.redirectUrl === first.redirectUrl)).toBe(true);
+    expect(creates - before).toBe(1);
+    expect(new URL(first.redirectUrl!).pathname).toBe('/v1/payments/providers/sadad/start');
+    expect(await db.billingGatewayAttempt.count({ where: { intentId: intent.id } })).toBe(1);
+    const outsider = await patient();
+    await expect(gateway.create(outsider.userId, intent.id, randomUUID(), context(outsider.userId))).rejects.toThrow();
     verifyTimeout = true; await gateway.verify(first.id); verifyTimeout = false;
     expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: first.id } })).status).toBe('REQUIRES_RECONCILIATION'); expect((await wallet.summary(p.profile)).balanceRial).toBe('0');
+    expect(await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))).toMatchObject({ id: first.id, status: 'REQUIRES_RECONCILIATION', redirectUrl: null });
+    expect(creates - before).toBe(1);
     await Promise.all(Array.from({ length: 8 }, () => gateway.verify(first.id)));
     expect((await wallet.summary(p.profile)).balanceRial).toBe('12340'); expect(await db.walletJournal.count({ where: { reference: `gateway:${first.id}:credit` } })).toBe(1);
     expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: first.id } })).revisionId).toBe(revisionId);
@@ -172,6 +210,9 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
   it('pending bank payment blocks wallet; the generic bank order produces a real order receipt with its own proof', async () => {
     const p = await patient(); await credit(p, '2000'); const checkout = await order(p); const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
     const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    expect(await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))).toMatchObject({ id: attempt.id, redirectUrl: attempt.redirectUrl });
+    const review = await app.get(BillingReportingService).reconciliation(admin.userId, { page: 1, pageSize: 100 });
+    expect(review.items.some(value => value.id === attempt.id && value.status === 'REDIRECT_READY')).toBe(true);
     await expect(billing.payWallet(p.userId, intent.id, randomUUID(), context(p.userId))).rejects.toMatchObject({ response: { code: 'BILLING_PAYMENT_PENDING' } });
     await gateway.verify(attempt.id); const result = await billing.get(p.userId, intent.id); expect(result.status).toBe('PAID');
     const payment = await db.payment.findUniqueOrThrow({ where: { orderId: checkout.id } }); expect(payment).toMatchObject({ method: 'GATEWAY', billingAttemptId: attempt.id, paymentAttemptId: null }); expect(payment.providerReferenceId).toBeTruthy();

@@ -5406,6 +5406,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/payments/providers/sadad/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Render a merchant-origin document before navigating to the fixed Sadad payment page; token is supplied only in the browser fragment */
+        get: operations["sadadPaymentBrowserStart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/payments/providers/sadad/callback": {
         parameters: {
             query?: never;
@@ -27113,6 +27130,33 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PaymentAttemptDto"];
                 };
+            };
+        };
+    };
+    sadadPaymentBrowserStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description HTML payment navigation document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Payment start rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -5662,3 +5662,53 @@ No unresolved software blocker. Live activation/error1023 resolution remains unv
 - scripts/test-sadad-callback-proxy.py
 - scripts/test-sadad-runtime-config.mjs
 - scripts/test-vps-dev.sh
+
+## Sadad merchant departure and pending attempt recovery — 2026-10-26
+
+Task F12-FE01-PAY02: DONE (software), same CLIENT-INTEGRATION, sole /root on dev, main-agent review PASS. Owner explicitly authorized both fixes and one commit for all related changes. Baseline clean; PAY01 dependency complete. Broader F12-FE01 remains REWORK; no next batch.
+
+### Evidence and frozen behavior
+
+Owner supplied browser evidence: Sadad Purchase navigation carried a dev-app Referer even with a main-domain callback, and a new gateway-attempt request returned BILLING_PAYMENT_PENDING for an existing ready attempt. Domain rejection occurred before callback; exact PSP whitelist rule remains unconfirmed. ADR-0042 records owner-approved merchant document and financial recovery boundaries.
+
+Both shared billing and retained legacy payment response paths now return the configured callback origin's /v1/payments/providers/sadad/start URL. The token is in a fragment, so no token enters merchant proxy/API HTTP request logs. A real public rate-limited HTML document removes the fragment from history, validates bounds, URI-encodes the token into the fixed configured bank purchase endpoint and navigates with Referrer-Policy origin. Nonce CSP, no-store, no external resources, nosniff, frame/base restrictions and a manual continue link retained. No request-controlled redirect destination, amount, merchant credential or financial action is accepted by the page. Existing bank profiles and callback Verify authority remain unchanged.
+
+Gateway creation under the existing intent/target locks reuses an active attempt for fresh idempotency keys. No duplicate PSP request or financial record is created; token, amount and revision remain original. Ambiguous/in-flight attempts return their current state without a new bank request. Owner access, expiry, legacy pending guard, wallet spending/cancel guards and late verified callback recovery are preserved. REDIRECT_READY is visible in existing authorized billing reconciliation for server Verify and reviewed failure resolution. A bank-confirmed definitive failure permits a fresh attempt; browser failure alone cannot mark a payment failed or successful.
+
+Caddy forwards exactly callback and start paths. OpenAPI and generated client include the public HTML route. Deployment instructions describe updating the existing /etc/caddy/sadad.caddy matcher, validation/reload and normal dev deployment. No schema, dependencies, frontend source changes or server/database mutation.
+
+### Verification
+
+- Real PostgreSQL wallet suite:17 tests PASS, including actual public HTTP page, six different-key concurrent creates producing one PSP request/row, ready-token/order resumption, cross-patient rejection, timeout remains ambiguous/no replacement, exactly-once credit, definitive Verify failure permits a fresh attempt, and ready reconciliation visibility.
+- Targeted API browser-start/live-runtime/provider-adapter plus wallet suite:36 tests PASS total.
+- All86 migrations and dev seed applied only to task-owned temporary Docker PostgreSQL at127.0.0.1:55419/wallet_test. Container removed after verification; original local/VPS databases untouched.
+- scripts/test-sadad-browser-start.mjs PASS with real Chromium and actual controller HTML through Fastify: app -> merchant document -> intercepted bank destination has merchant Referer; encoded token preserved; fragment absent from merchant HTTP request; malformed/empty token refuses navigation. No bank network/payment.
+- scripts/test-sadad-callback-proxy.py PASS with real Caddy: exact GET start and POST callback, original form/query, repeated delivery,303/Location,no-store and unrelated-route preservation.
+- API build and source/test types PASS. SDK regenerated/built,12 client tests PASS; app/dashboard types PASS.
+- scripts/test-release-pipeline.mjs PASS. Combined diff and git diff --check PASS.
+- Graphify AST update PASS:11604 nodes/33313 edges; existing SQL/Erlang/HCL extractor and unrelated chat parser warnings. Ignored output not force-staged.
+
+### Handoff
+
+Software has no unresolved blocker. One final task commit on dev; no push/deployment or actual financial writes. Next safe action: push/deploy this commit, extend existing main-domain Caddy handle to callback AND start as documented in deploy/sadad-live-runbook.md, validate/reload, and resume the prior intent. Confirm Purchase Referer is https://drshirmardi.com/ with Preserve log. PSP error1023 resolution remains an external acceptance gate, not proven by local browser behavior. Expired/uncertain tokens require existing admin Verify/reconciliation; never delete/reset financial records. No next batch.
+
+### Changed files
+
+- apps/api/src/common/errors/api-error.ts
+- apps/api/src/modules/billing/billing-gateway.service.ts
+- apps/api/src/modules/billing/billing-reporting.service.ts
+- apps/api/src/modules/commerce/payments/patient-payment-attempt.controller.ts
+- apps/api/src/modules/commerce/payments/payment-attempt.service.ts
+- apps/api/src/modules/commerce/payments/sadad-browser-start.ts
+- apps/api/test/payment-live-runtime.spec.ts
+- apps/api/test/sadad-browser-start.spec.ts
+- apps/api/test/wallet-billing.integration.spec.ts
+- deploy/sadad-live-runbook.md
+- deploy/vps/sadad-callback.caddy.example
+- packages/api-client/openapi.json
+- packages/api-client/src/schema.generated.ts
+- plan/STATUS.md
+- plan/decisions/ADR-0042-sadad-merchant-browser-departure.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- scripts/test-sadad-browser-start.mjs
+- scripts/test-sadad-callback-proxy.py
