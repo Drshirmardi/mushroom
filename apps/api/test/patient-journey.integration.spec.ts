@@ -38,6 +38,36 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     return { ...auth, patientId: profile.id };
   }
   const get = (p: { token: string }, query = '') => app.inject({ method: 'GET', url: `/v1/patients/me/journey${query}`, headers: { authorization: `Bearer ${p.token}` } });
+  it('selects an owned paid unfulfilled order independently of unpaid previews and drops closed orders', async () => {
+    const p = await patient(); const outsider = await patient();
+    const makeOrder = (patientId: string, paid = true) => db.$transaction(async tx => {
+      const order = await tx.commerceOrder.create({ data: {
+        clinicId, patientId, idempotencyKey: randomUUID(), shippingMethod: 'COURIER',
+        subtotalAmountToman: 123n, totalAmountToman: 123n, shippingDetailSnapshot: {}, shippingAddressSnapshot: { line1: 'Synthetic fixture address' }, status: paid ? 'PAID' : 'PENDING_PAYMENT',
+      } });
+      if (paid) {
+        const profile = await tx.patientProfile.findUniqueOrThrow({ where: { id: patientId } });
+        const context = { actorUserId: profile.userId, actorSessionId: null, requestId: 'home-order-fixture', ipAddress: null };
+        await app.get(WalletService).post(tx, profile, 1230n, 'ADMIN_CREDIT', `home-fixture:${order.id}:fund`, context);
+        const debit = await app.get(WalletService).post(tx, profile, -1230n, 'PAYMENT', `home-fixture:${order.id}:debit`, context);
+        await tx.payment.create({ data: { orderId: order.id, method: 'WALLET', commerceAmountToman: 123n, walletJournalId: debit.id, verifiedAt: new Date() } });
+      }
+      return order;
+    });
+    const own = await makeOrder(p.patientId); await makeOrder(outsider.patientId);
+    const unverified = await makeOrder(p.patientId, false);
+    await db.commerceOrder.update({ where: { id: unverified.id }, data: { status: 'PAID' } });
+    for (let index = 0; index < 7; index++) await makeOrder(p.patientId, false);
+    for (const status of ['PAID', 'FULFILLMENT_PENDING', 'FULFILLING', 'READY_FOR_PICKUP', 'SHIPPED'] as const) {
+      await db.commerceOrder.update({ where: { id: own.id }, data: { status } });
+      const response = await get(p); expect(response.statusCode).toBe(200);
+      expect(response.json().home.actions.filter((action: { code: string }) => action.code === 'TRACK_ORDER')).toEqual([expect.objectContaining({ resourceId: own.id })]);
+    }
+    for (const status of ['DELIVERED', 'FULFILLED', 'CANCELLED', 'REFUNDED', 'CANCELLATION_REQUESTED'] as const) {
+      await db.commerceOrder.update({ where: { id: own.id }, data: { status } });
+      expect((await get(p)).json().home.actions.some((action: { resourceId: string }) => action.resourceId === own.id)).toBe(false);
+    }
+  });
   async function attempt(p: Actor, status: 'PUBLISHED' | 'RETIRED' = 'PUBLISHED', scopeClinic = clinicId) {
     const version = await db.assessmentVersion.create({ data: { clinicId: scopeClinic, assessmentKey: 'MEZAJ', locale: `x-${randomUUID().slice(0, 8)}`, versionNumber: 1, title: 'Synthetic questionnaire', contentHash: 'a'.repeat(64), structure: {}, status, publishedAt: new Date(), ...(status === 'RETIRED' ? { retiredAt: new Date() } : {}) } });
     return db.patientAssessmentSubmission.create({ data: { patientId: p.patientId, assessmentVersionId: version.id, answers: { privateAnswer: 'must not leak' } } });

@@ -5797,3 +5797,37 @@ Owned source: clinical module, prescription DTO/service/admin controller/respons
 Verification performed: source review of schema, controller/service callers, scope guards, issued visibility, retry/atomicity paths and UI async lifetimes. Official API-client generate completed successfully after scoped additive OpenAPI edits. TypeScript source syntax parsing (24 changed/new TS/TSX files) reports zero syntax diagnostics; this is not a typecheck or behavioral test. git diff whitespace review passed. No test/typecheck/lint/application build/automated browser or actual clinical/cart database mutation executed. Runtime Swagger export parity remains deferred; shared SDK dist was not rebuilt, and new endpoint consumers use the existing session-aware HTTP transport.
 
 Owner checks still required: assigned physician versus other clinician/clinic denial; create/save/amend/issue exact content and double-click/network retry; previously issued content remains visible while amendment is draft; patient self-only reads; tab/token-renewal retention and narrow-screen forms; new/draft/active/custom treatment boundaries, stale draft edits and publication; product search, variant/quantity, existing cart preservation/retry/concurrent patient edits/cap; current-visit note signing/summary publication and end-visit behavior. Automatic reminder/schedule generation from free-text prescriptions is not introduced. Existing clinical clinic/role grants must already be configured. Next action: owner manual review, resolve reported issues, then authorized deferred checks before acceptance/DONE.
+
+## Home compact paid-order progress — 2026-10-27
+
+F12-FE01-HOME05 DONE (software), same CLIENT-INTEGRATION sole /root continuation; scoped claim RELEASED. Owner asks for a compact order stepper in Home upcoming actions after verified purchase, linking the existing tracking page, explicitly NO COMMIT. Baseline contains unrelated uncommitted clinical/prescription/treatment/dashboard/generated-client/governance work; preserved entirely. Shared governance changes are append-only. No stage/commit/push/deploy or next batch; broad F12-FE01 stays REWORK.
+
+Home previously projected only pending-payment orders. Add a separate bounded findFirst scoped by patient/clinic, verified/partially-refunded Payment evidence and active fulfillment statuses (PAID, FULFILLMENT_PENDING, FULFILLING, READY_FOR_PICKUP, SHIPPED). It does not depend on the capped unpaid-order previews. Existing TRACK_ORDER shape remains unchanged; one paid representative takes priority over unpaid tracking, following urgent appointment/payment actions and staying within the first3 visible items. Delivered, fulfilled, cancelled, refund and cancellation-request states are not selected. Existing next-action authority/payment/order state remains unchanged.
+
+Home fetches details only for this single selected order using the existing owned order endpoint/resource generation guard. Entire compact card is an ordinary keyboard-focusable link to that exact tracking URL. Reuse existing OrderProgress with an optional compact presentation: hide the already-completed registration step and verbose header/hint, retaining real payment/preparation/dispatch-or-pickup/delivery statuses. Tracking page keeps its full5-step renderer. Error/loading fallback remains a useful link without invented progress; a terminal detail response hides the stale action. Ice/teal Home tokens, RTL connectors,12px stage labels, visible focus and compact28px icons fit the existing card layout; sibling action cards retain their own height. No normal polling or financial write introduced.
+
+Verification PASS:
+-9 Home projection tests, including exact urgent/payment/paid-order ordering and one representative category.
+-18 existing app Home status/journey unit tests.
+-1 targeted real PostgreSQL integration regression (other15 cases intentionally not run): actual balanced synthetic wallet/payment proof, foreign patient exclusion, PAID-without-proof exclusion,7 newer unpaid orders beyond preview cap, all5 active fulfillment and5 closed/requested states. Production constraints remain enabled; no mocked PostgreSQL. Fresh isolated86 migrations/seed on task-owned127.0.0.1:55419/patient_journey_test; ephemeral Docker database removed after verification. No main DB/live financial writes.
+-2 intercepted Chromium browser cases:320/390/768/1440, compact card height<215px, no horizontal overflow, RTL stage positions, exact tracking click/full5-step destination, real preparation/dispatch/pickup stages, delivered hiding and error fallback without progress. Visual review of390/1440 screenshots with neighboring appointment/payment actions PASS.
+-App typecheck and API test/source TypeScript PASS; combined scoped diff and whitespace review PASS. Full unrelated suites/build deliberately omitted. Shared OpenAPI/client untouched by this task because no DTO change (pre-existing dirty generated work retained).
+-Graphify AST refresh PASS; existing optional SQL/Erlang/HCL extractor and unrelated chat parser warnings retained. Ignored graph output not staged.
+
+Files owned by this slice:
+- apps/api/src/modules/patients/journey/patient-journey.service.ts
+- apps/api/src/modules/patients/journey/home-journey.projection.ts
+- apps/api/test/patient-journey.integration.spec.ts
+- apps/api/test/home-journey.projection.spec.ts
+- apps/app/src/components/home/home-order-progress.tsx
+- apps/app/src/components/home/home-journey.tsx
+- apps/app/src/components/store/order-progress.tsx
+- apps/app/src/app/globals.css
+- apps/app/src/lib/home-status.ts
+- apps/app/e2e/home-order-progress.spec.ts
+- playwright.home-order.config.ts
+- plan/STATUS.md (append only)
+- plan/phases/12-PRODUCTION-HARDENING.md (append only)
+- plan/logs/phase-12.md (this entry only)
+
+Next: owner visual review of Home with an actual paid unfulfilled order; API and app changes must both be running. No migration/env/Caddy change required. All changes deliberately remain uncommitted per owner instruction.

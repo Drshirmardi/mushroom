@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, CalendarDays, CheckCheck, ClipboardList, HeartPulse, ShoppingBag, Users, Wallet } from 'lucide-react';
 import { useOptionalPatientEntry } from '@/components/auth/patient-entry-gate';
 import { getAssessmentResult } from '@/lib/assessment-api';
+import { HomeOrderProgress } from './home-order-progress';
 import { homePendingAction, homeResultSummary } from '@/lib/home-status';
 import type { PatientJourney } from '@/lib/patient-journey-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -40,13 +41,14 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
   </Hero>;
 }
 
-function PendingActions({ actions }: { actions: PatientJourney['home']['actions'] }) {
+function PendingActions({ actions, token }: { actions: PatientJourney['home']['actions']; token: string }) {
   const [expanded, setExpanded] = useState(false);
   if (actions.length === 0) return null;
   const shown = expanded ? actions : actions.slice(0, 3);
   return <section className="home-pending" aria-labelledby="home-pending-title">
     <div className="home-section-heading"><div><h2 id="home-pending-title">اقدام‌های پیش رو</h2><p>پیگیری‌های مرتبط با خدمات شما</p></div></div>
     <div id="home-pending-list" className="home-pending-list">{shown.map(action => {
+      if (action.code === 'TRACK_ORDER' && action.resourceId) return <HomeOrderProgress key={`order:${action.resourceId}`} orderId={action.resourceId} token={token} />;
       const item = homePendingAction(action);
       const Icon = action.code === 'OPEN_APPOINTMENT' ? CalendarDays : action.code === 'CONTINUE_PAYMENT' ? Wallet : action.code === 'TRACK_ORDER' ? ShoppingBag : action.code === 'OPEN_COUPLE_LINK' || action.code === 'OPEN_COUPLE_ASSESSMENT' ? Users : action.code === 'VIEW_TREATMENT_PLAN' ? HeartPulse : ClipboardList;
       return <Link className="home-pending-item" href={item.href} key={`${action.code}:${action.resourceId ?? ''}`}><span className="home-pending-icon"><Icon size={22} strokeWidth={1.5} aria-hidden="true" /></span><div><h3>{item.title}</h3><p>{item.description}</p></div><ArrowLeft size={18} aria-hidden="true" /></Link>;
@@ -69,6 +71,6 @@ export function HomeJourney({ journey, token }: { journey: ReturnType<typeof use
   if (journey.error || !data?.home) return <Hero label="وضعیت شما" title="اطلاعات شما دریافت نشد" action={<button type="button" className="home-next-link" onClick={() => void journey.reload()}>دریافت دوباره</button>}><p className="home-next-description" role="alert">فعلاً امکان نمایش وضعیت پرونده و پیگیری‌ها وجود ندارد. دوباره تلاش کنید.</p></Hero>;
   return <>
     {data.home.latestAssessment ? <AssessmentStatus key={data.home.latestAssessment.id} data={data} token={token} /> : <Hero label="وضعیت شما" title="خانهٔ سلامت شما" action={heroLink('/assessment?view=history', 'ارزیابی‌های من')} footer={<StatusFooter data={data} />}><p className="home-next-description">نتیجهٔ ارزیابی‌ها و پیگیری خدماتتان را اینجا ببینید.</p></Hero>}
-    <PendingActions actions={data.home.actions} />
+    <PendingActions actions={data.home.actions} token={token} />
   </>;
 }

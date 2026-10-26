@@ -35,7 +35,7 @@ export class PatientJourneyService {
       const bookingEligibility = await this.eligibility.get(userId, tx, status, evaluatedAt);
       const nativePlanFilter = await this.customPrograms.patientFilter(tx, patient.id, patient.clinicId, context);
       const assessmentScope = { ...accessibleAssessmentWhere, patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, invalidatedAt: null };
-      const [attempts, appointments, intents, orders, plans, resumable, latestResult, nearAppointment, coupleLinks, purchases, unusedGrants, couples, programs, availableProgram, custom, payment, activePlan, pendingLink] = await Promise.all([
+      const [attempts, appointments, intents, orders, plans, resumable, latestResult, nearAppointment, coupleLinks, purchases, unusedGrants, couples, programs, availableProgram, custom, payment, activePlan, pendingLink, fulfillmentOrder] = await Promise.all([
         tx.patientAssessmentSubmission.findMany({
           where: { ...assessmentScope, state: { in: ['IN_PROGRESS', 'COMPLETE'] } },
           orderBy: [{ state: 'asc' }, { updatedAt: 'desc' }, { id: 'desc' }], take: 6,
@@ -79,6 +79,10 @@ export class PatientJourneyService {
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true, purpose: true, amountRial: true, orderId: true } }),
         tx.treatmentPlan.findFirst({ where: { ...scope, state: 'ACTIVE', AND: nativePlanFilter }, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], select: { id: true } }),
         tx.coupleSession.findFirst({ where: { clinicId: patient.clinicId, state: 'AWAITING_PARTNER', participants: { some: { patientId: patient.id } } }, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], select: { id: true } }),
+        tx.commerceOrder.findFirst({ where: { ...scope,
+          status: { in: ['PAID', 'FULFILLMENT_PENDING', 'FULFILLING', 'READY_FOR_PICKUP', 'SHIPPED'] },
+          payment: { is: { status: { in: ['VERIFIED', 'PARTIALLY_REFUNDED'] } } },
+        }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true } }),
       ]);
       const processable = await processableAssessmentGrants(tx, [...attempts.flatMap(row => row.accessGrantId ? [row.accessGrantId] : []), ...purchases.flatMap(row => row.grants.map(g => g.id))]);
       const assessments = page(attempts.map(({ assessmentVersion, accessGrantId, ...attempt }) => ({ ...attempt,
@@ -107,7 +111,7 @@ export class PatientJourneyService {
         appointmentId: nearAppointment?.id ?? appointments[0]?.id,
         unusedGrantId: unusedGrants[0]?.id, resumableId: resumable[0]?.id,
         readyCoupleId: couples.readyId, pendingCouple: couples.pending, pendingLinkId: pendingLink?.id,
-        customRequestId: custom.readyId, payment,
+        customRequestId: custom.readyId, payment, fulfillmentOrderId: fulfillmentOrder?.id,
       });
       await this.audit.record({ ...scope, action: 'READ', resourceType: 'PATIENT_JOURNEY',
         metadata: { view: 'HOME', assessmentCount: assessments.items.length, appointmentCount: summary.appointments.items.length } }, context, tx);

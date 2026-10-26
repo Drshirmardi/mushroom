@@ -5,6 +5,7 @@ type HomeSources = {
   latestAssessment: JourneyLatestAssessmentDto | null;
   activeTreatmentPlanId: string | null;
   appointmentId?: string;
+  fulfillmentOrderId?: string;
   unusedGrantId?: string;
   resumableId?: string;
   readyCoupleId?: string;
@@ -32,6 +33,7 @@ export function homeJourney(summary: JourneySummary, sources: HomeSources): Jour
     code: 'CONTINUE_PAYMENT', resourceId: sources.payment.id, title: null,
     amountRial: sources.payment.amountRial.toString(), paymentPurpose: sources.payment.purpose,
   });
+  if (sources.fulfillmentOrderId) add('TRACK_ORDER', sources.fulfillmentOrderId);
   if (sources.unusedGrantId) add('START_PAID_ASSESSMENT', sources.unusedGrantId);
   if (sources.resumableId) add('RESUME_ASSESSMENT', sources.resumableId);
   const couple = sources.pendingCouple;
@@ -42,7 +44,7 @@ export function homeJourney(summary: JourneySummary, sources: HomeSources): Jour
   if (summary.onboarding.isComplete && !summary.bookingEligibility.eligible) add('REVIEW_BOOKING_REQUIREMENTS', null);
   if (sources.activeTreatmentPlanId) add('VIEW_TREATMENT_PLAN', sources.activeTreatmentPlanId);
   const order = summary.pendingOrders.items.find(item => item.id !== sources.payment?.orderId);
-  if (order) add('TRACK_ORDER', order.id);
+  if (order && !sources.fulfillmentOrderId) add('TRACK_ORDER', order.id);
   if (sources.pendingLinkId) add('OPEN_COUPLE_LINK', sources.pendingLinkId);
   return { setupSteps, latestAssessment: sources.latestAssessment, activeTreatmentPlanId: sources.activeTreatmentPlanId, actions };
 }

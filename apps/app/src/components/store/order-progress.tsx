@@ -9,7 +9,7 @@ const progress: Record<string, number> = {
   READY_FOR_PICKUP: 3, SHIPPED: 3, DELIVERED: 4, FULFILLED: 4,
 };
 
-export function OrderProgress({ order }: { order: CommerceOrder }) {
+export function OrderProgress({ order, compact = false }: { order: CommerceOrder; compact?: boolean }) {
   const pickup = order.shippingMethod === "PICKUP";
   const current = progress[order.status];
   const exceptional = current === undefined;
@@ -23,14 +23,15 @@ export function OrderProgress({ order }: { order: CommerceOrder }) {
     { title: "تحویل سفارش", hint: "سفارش شما تحویل داده شده است.", icon: PackageCheck },
   ];
 
-  return <section aria-label="مراحل سفارش" className="rounded-2xl border border-border bg-white p-3 shadow-sm sm:p-5" dir="rtl">
-    <header className="mb-7 flex flex-wrap items-center justify-between gap-2">
+  return <section aria-label="مراحل سفارش" className={compact ? 'home-order-progress' : 'rounded-2xl border border-border bg-white p-3 shadow-sm sm:p-5'} dir="rtl">
+    {!compact && <header className="mb-7 flex flex-wrap items-center justify-between gap-2">
       <h2 className="text-sm font-semibold">مسیر سفارش شما</h2>
       <span className="text-xs text-muted-foreground">شماره <bdi className="font-iransans-fanum text-foreground">{toP(order.orderNumber)}</bdi></span>
-    </header>
+    </header>}
     {exceptional && <p role="status" className="mb-5 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900"><CircleAlert size={18} className="mt-1 shrink-0" aria-hidden="true" />{orderStatusLabel(order.status)}</p>}
-    <ol className="m-0 grid list-none grid-cols-5 p-0">
-      {steps.map((step, index) => {
+    <ol className={`m-0 grid list-none p-0 ${compact ? 'grid-cols-4' : 'grid-cols-5'}`}>
+      {(compact ? steps.slice(1) : steps).map((step, position) => {
+        const index = position + (compact ? 1 : 0);
         const done = exceptional ? index === 0 || (index === 1 && paymentConfirmed) : index < current || delivered;
         const active = !exceptional && index === current;
         const Icon = step.icon;
@@ -41,7 +42,7 @@ export function OrderProgress({ order }: { order: CommerceOrder }) {
         </li>;
       })}
     </ol>
-    {!exceptional && <div role="status" className={`mt-5 flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs leading-6 ${delivered ? "bg-emerald-50 text-emerald-800" : "bg-primary/5 text-primary"}`}>
+    {!compact && !exceptional && <div role="status" className={`mt-5 flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs leading-6 ${delivered ? "bg-emerald-50 text-emerald-800" : "bg-primary/5 text-primary"}`}>
       <span aria-hidden="true" className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${delivered ? "bg-emerald-600" : "bg-primary"}`} />
       <p>{steps[current].hint}</p>
     </div>}

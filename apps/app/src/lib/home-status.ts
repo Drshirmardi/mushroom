@@ -22,7 +22,7 @@ export function homeResultSummary(snapshot: unknown) {
 export function homePendingAction(action: PatientJourney['home']['actions'][number]) {
   const { code, resourceId } = action;
   const id = encodeURIComponent(resourceId ?? '');
-  if (code === 'TRACK_ORDER') return { href: `/store/order-tracking?orderId=${id}`, title: 'پیگیری سفارش فروشگاه', description: 'سفارش در انتظار پرداخت است؛ آخرین وضعیت را بررسی کنید.' };
+  if (code === 'TRACK_ORDER') return { href: `/store/order-tracking?orderId=${id}`, title: 'پیگیری سفارش فروشگاه', description: 'مراحل آماده‌سازی و تحویل سفارش را پیگیری کنید.' };
   if (code === 'OPEN_COUPLE_LINK') return { href: `/assessment/couples/links/${id}`, title: 'تکمیل اتصال همراه', description: 'وضعیت دعوت و رضایت مستقل همراه را بررسی کنید.' };
   const link = journeyActionLink({ code, resourceId });
   if (code === 'CONTINUE_PAYMENT' && action.amountRial !== null) return {
