@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { X } from "lucide-react";
 import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { LandingOtpForm } from "./LandingOtpForm";
@@ -12,6 +12,9 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
     const [offset, setOffset] = useState(0);
     const [closing, setClosing] = useState(false);
     const close = () => setClosing(true);
+    const completeLogin = useCallback((roles: string[]) => {
+        window.location.assign(postAuthenticationUrl(roles, new URLSearchParams(window.location.search).get("next")));
+    }, []);
 
     useEffect(() => {
         if (!closing || !open) return;
@@ -79,7 +82,7 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
                     onPointerUp={endDrag} onPointerCancel={() => { drag.current = null; setOffset(0); }}
                     onClick={event => { if (event.detail === 0) close(); }}><span /></button>
                 <button className="landing-auth-close" type="button" aria-label="بستن پنجره ورود" onClick={close}><X size={20} /></button>
-                <LandingOtpForm active={open} onAuthenticated={roles => window.location.assign(postAuthenticationUrl(roles, new URLSearchParams(window.location.search).get("next")))} />
+                <LandingOtpForm active={open} onAuthenticated={completeLogin} />
             </div>
         </div>
     </dialog>;

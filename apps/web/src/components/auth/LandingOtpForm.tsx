@@ -21,7 +21,6 @@ export function LandingOtpForm({ active, onAuthenticated }: {
     const [now, setNow] = useState(Date.now());
     const input = useRef<HTMLInputElement>(null);
     const phoneInput = useRef<HTMLInputElement>(null);
-    const continueButton = useRef<HTMLButtonElement>(null);
     const inFlight = useRef(false);
     const mounted = useRef(false);
 
@@ -36,9 +35,14 @@ export function LandingOtpForm({ active, onAuthenticated }: {
     }, [challenge, roles]);
     useEffect(() => {
         if (!active) return;
-        if (roles) continueButton.current?.focus();
-        else if (challenge) input.current?.focus();
+        if (challenge && !roles) input.current?.focus();
     }, [active, challenge, roles]);
+    useEffect(() => {
+        if (!roles) return;
+        const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 900;
+        const timer = window.setTimeout(() => onAuthenticated(roles), delay);
+        return () => window.clearTimeout(timer);
+    }, [roles, onAuthenticated]);
 
     const seconds = (date: string) => Math.max(0, Math.ceil((Date.parse(date) - Math.max(now, Date.now())) / 1000));
     const busy = action !== null;
@@ -160,13 +164,11 @@ export function LandingOtpForm({ active, onAuthenticated }: {
                 </div>
             </div>
             <div className="landing-otp-feedback" role="status" aria-live="polite">
-                {roles ? <span className="landing-auth-secure"><ShieldCheck size={18} /> با خیال آسوده ادامه دهید</span>
+                {roles ? <span className="landing-auth-secure"><ShieldCheck size={18} /> در حال ورود به حساب کاربری…</span>
                     : action === "verify" ? "در حال تأیید کد…" : <span id="landing-otp-help">کد شش‌رقمی را وارد کنید؛ تأیید به‌صورت خودکار انجام می‌شود.</span>}
             </div>
             {error && <div id="landing-auth-error"><AuthErrorAlert message={error} /></div>}
-            {roles ? <button ref={continueButton} type="button" className="landing-auth-primary" onClick={() => onAuthenticated(roles)}>
-                ادامه مسیر <ArrowLeft size={18} />
-            </button> : <div className="landing-otp-actions">
+            {!roles && <div className="landing-otp-actions">
                 <button className="landing-otp-expiry" type="button" disabled={busy || resendRemaining > 0} onClick={() => void send(true)}>
                     {action === "resend" ? "در حال ارسال…" : codeRemaining > 0
                         ? `اعتبار کد: ${codeRemaining.toLocaleString("fa-IR")} ثانیه` : resendRemaining > 0
