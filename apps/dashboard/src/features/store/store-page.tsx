@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { PackagePlus, Plus, RefreshCw, ShieldAlert } from "lucide-react";
+import { PackagePlus, Plus, RefreshCw, ShieldAlert, X } from "lucide-react";
 
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
 import MezajCollectionsEditor from "./mezaj-collections-editor";
@@ -40,6 +40,15 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
   const busy = mutation.status === "saving" || reloading || mezajBusy || workspaceBusy;
   useEffect(() => { onBusy(busy); return () => onBusy(false); }, [busy, onBusy]);
   const [creating, setCreating] = useState(false);
+  const createDialog = useRef<HTMLDialogElement>(null);
+  const [confirmCreateDiscard, setConfirmCreateDiscard] = useState(false);
+  useEffect(() => {
+    if (!creating) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const element = createDialog.current;
+    element?.showModal();
+    return () => { element?.close(); previousFocus?.focus(); };
+  }, [creating]);
   const [creatingSku, setCreatingSku] = useState(false);
   const [categoryName, setCategoryName] = useState(""); const [categorySlug, setCategorySlug] = useState("");
   const [title, setTitle] = useState(""); const [slug, setSlug] = useState("");
@@ -61,6 +70,15 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
       setMutation(status === 401 || status === 403 ? { status: "forbidden" } : status === 400 || status === 409 || status === 422 ? { status: "validation", message: "اطلاعات یا وضعیت محصول معتبر نیست؛ تغییر ثبت نشد." } : status === 0 || status === 503 || status === 504 ? { status: "unavailable" } : { status: "error" });
     } finally { saving.current = false; }
   };
+  const closeCreate = () => {
+    if (saving.current || busy) return;
+    if (title.trim() || slug.trim() || description.trim()) { setConfirmCreateDiscard(true); return; }
+    setCreating(false);
+  };
+  const discardCreate = () => {
+    if (saving.current || busy) return;
+    setTitle(""); setSlug(""); setDescription(""); setConfirmCreateDiscard(false); setCreating(false);
+  };
   const skuProducts = data.products;
   const skuPriceValue = catalogInteger(skuPrice); const skuStockValue = catalogInteger(skuStock);
   return <div className="space-y-5">
@@ -72,24 +90,26 @@ function StoreManagement({ data, accessToken, refresh, reloading, onBusy, onPage
     <MutationNotice state={mutation} />
     {busy && <p role="status" className="text-sm text-muted-foreground">در حال ذخیره و دریافت اطلاعات تازه…</p>}
     {tab === "products" && <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">محصولات فروشگاه</h2><p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">محصول را انتخاب کنید؛ اطلاعات، تصویر، محتوا و قیمت را در یک پنجره مدیریت کنید.</p></div><button type="button" disabled={busy || data.categories.every((category) => !category.isActive)} aria-expanded={creating} aria-controls="new-product-form" onClick={() => setCreating((current) => !current)} className={button}><PackagePlus size={18} aria-hidden="true" />{creating ? "بستن فرم ساخت" : "محصول جدید"}</button></div>
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">محصولات فروشگاه</h2><p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">محصول را انتخاب کنید؛ اطلاعات، تصویر، محتوا و قیمت را در یک پنجره مدیریت کنید.</p></div><button type="button" disabled={busy || data.categories.every((category) => !category.isActive)} aria-expanded={creating} aria-controls="new-product-dialog" aria-haspopup="dialog" onClick={() => { setMutation({ status: "idle" }); setConfirmCreateDiscard(false); setCreating(true); }} className={button}><PackagePlus size={18} aria-hidden="true" />افزودن محصول</button></div>
       {data.categories.every((category) => !category.isActive) && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">برای ساخت محصول، ابتدا در بخش دسته‌بندی‌ها یک دستهٔ فعال ثبت کنید.</p>}
-      {creating && <form id="new-product-form" className="space-y-4 rounded-2xl border border-border bg-card p-4 sm:p-5" onSubmit={(event) => {
+      {creating && <dialog ref={createDialog} id="new-product-dialog" dir="rtl" aria-labelledby="new-product-title" aria-describedby="new-product-help" onCancel={event => { event.preventDefault(); closeCreate(); }} className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-black/45 backdrop:backdrop-blur-sm">
+      <form id="new-product-form" className="space-y-5 p-4 sm:p-6" onSubmit={(event) => {
         event.preventDefault();
-        if (title.trim() && slug.trim() && categoryId) void submit(async () => {
+        if (!busy && !confirmCreateDiscard && title.trim() && slug.trim() && categoryId) void submit(async () => {
           const product = await createCommerceProduct(accessToken, { title: title.trim(), slug: slug.trim(), categoryId, ...(description.trim() ? { description: description.trim() } : {}) });
           setTitle(""); setSlug(""); setDescription(""); setCreating(false); setWorkspaceTab("inventory"); setManagedProduct(product);
         }, "پیش‌نویس ساخته شد؛ اکنون کد فروش، قیمت و موجودی اولیه را ثبت کنید.");
       }}>
-        <h3 className="font-bold">مرحلهٔ اول: اطلاعات پایهٔ محصول</h3>
+        <header className="flex items-start justify-between gap-3 border-b border-border pb-4"><div><h3 id="new-product-title" className="text-lg font-bold">افزودن محصول جدید</h3><p id="new-product-help" className="mt-2 text-xs leading-6 text-muted-foreground">ابتدا اطلاعات پایه را ثبت کنید؛ در مرحلهٔ بعد تصویر، محتوا، قیمت و موجودی را در همین روند تکمیل می‌کنید.</p></div><button type="button" disabled={busy} onClick={closeCreate} className="dashboard-icon shrink-0" aria-label="بستن افزودن محصول"><X size={20} /></button></header>
+        <MutationNotice state={mutation} />
         <fieldset disabled={busy} className="grid min-w-0 gap-4 border-0 p-0 md:grid-cols-3">
-          <label className="space-y-2 text-sm font-semibold">نام محصول<input className={field} required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="space-y-2 text-sm font-semibold">شناسهٔ آدرس<input className={field} required dir="ltr" value={slug} onChange={(event) => setSlug(event.target.value)} placeholder="product-name" /><span className="block text-xs font-normal text-muted-foreground">برای آدرس محصول؛ با حروف انگلیسی و خط تیره.</span></label>
+          <label className="space-y-2 text-sm font-semibold">نام محصول<input className={field} required autoFocus maxLength={240} value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+          <label className="space-y-2 text-sm font-semibold">شناسهٔ آدرس<input className={field} required maxLength={260} dir="ltr" value={slug} onChange={(event) => setSlug(event.target.value)} placeholder="product-name" /><span className="block text-xs font-normal text-muted-foreground">برای آدرس محصول؛ با حروف انگلیسی و خط تیره.</span></label>
           <label className="space-y-2 text-sm font-semibold">دسته‌بندی<select className={field} required value={categoryId} onChange={(event) => setCategoryId(event.target.value)}><option value="">انتخاب دسته</option>{data.categories.filter((category) => category.isActive).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
           <label className="space-y-2 text-sm font-semibold md:col-span-3">توضیح اولیه <span className="font-normal text-muted-foreground">(اختیاری)</span><textarea className={field} rows={3} value={description} onChange={(event) => setDescription(event.target.value)} /></label>
         </fieldset>
-        <button className={button} disabled={busy || !title.trim() || !slug.trim() || !categoryId}><Plus size={16} aria-hidden="true" />ساخت پیش‌نویس و ادامه</button>
-      </form>}
+        <footer className="border-t border-border pt-4">{confirmCreateDiscard ? <div className="space-y-3" role="alert"><p className="text-sm">اطلاعات واردشده کنار گذاشته شود؟</p><div className="flex flex-wrap gap-2"><button type="button" className="dashboard-button" disabled={busy} onClick={discardCreate}>بستن بدون ذخیره</button><button type="button" className={button} disabled={busy} onClick={() => setConfirmCreateDiscard(false)}>ادامهٔ تکمیل</button></div></div> : <div className="flex flex-wrap items-center justify-between gap-3"><button type="button" className="dashboard-button" disabled={busy} onClick={closeCreate}>انصراف</button><button className={button} disabled={busy || !title.trim() || !slug.trim() || !categoryId}><Plus size={16} aria-hidden="true" />{mutation.status === "saving" ? "در حال ساخت محصول…" : "ساخت پیش‌نویس و ادامه"}</button></div>}</footer>
+      </form></dialog>}
       <ProductCatalog data={data} busy={busy} onEdit={product => { setWorkspaceTab("base"); setManagedProduct(product); }} />
     </div>}
     {tab === "categories" && <div className="space-y-4">

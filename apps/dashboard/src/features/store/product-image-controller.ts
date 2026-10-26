@@ -1,6 +1,7 @@
 import Uppy, { type Meta, type UppyFile } from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
 import fa_IR from "@uppy/locales/lib/fa_IR";
+import { withRequestTimeout } from "@sabz-zendegi/api-client";
 import { imageErrorMessage, ProductImageApiError, type ImageOperation, type ImageRevision, type ProductImage, type createProductImageApi } from "../../lib/commerce-product-image-api";
 
 type Body = Record<string, never>;
@@ -32,7 +33,10 @@ export class ProductImageController {
   readonly subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
 
   constructor(readonly productId: string, private readonly deps: ImageEditorDependencies) {
-    this.uppy = new Uppy<Meta, Body>({ id: `product-media-${productId}`, autoProceed: false, locale: fa_IR, restrictions: { maxNumberOfFiles: 1, maxFileSize: 5 * 1024 * 1024, allowedFileTypes: ["image/jpeg", "image/png", "image/webp"] }, onBeforeFileAdded: file => !this.locked() && file.data instanceof Blob });
+    this.uppy = new Uppy<Meta, Body>({ id: `product-media-${productId}`, autoProceed: false, locale: fa_IR,
+      // Recoverable upload failures are shown inline; console.error opens Next's dev overlay.
+      logger: { debug: () => {}, warn: (...args) => console.warn("[Product upload]", ...args), error: (...args) => console.warn("[Product upload]", ...args) },
+      restrictions: { maxNumberOfFiles: 1, maxFileSize: 5 * 1024 * 1024, allowedFileTypes: ["image/jpeg", "image/png", "image/webp"] }, onBeforeFileAdded: file => !this.locked() && file.data instanceof Blob });
     this.uppy.use(XHRUpload, {
       endpoint: deps.endpoint, method: "PUT", formData: true, fieldName: "file", allowedMetaFields: ["altText"], bundle: false, limit: 1, timeout: 30_000,
       shouldRetry: () => false,
@@ -41,7 +45,7 @@ export class ProductImageController {
         xhr.timeout = 35_000;
         xhr.ontimeout = event => { this.xhrStatus = 0; this.xhrCode = ""; xhr.onerror?.call(xhr, event); };
         // Session bootstrap uses the existing single-flight refresh manager, never Uppy metadata.
-        const token = await deps.token().catch(() => null);
+        const token = await withRequestTimeout(deps.token()).catch(() => null);
         if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
         if (this.intent) { xhr.setRequestHeader("If-Match", this.intent.etag); xhr.setRequestHeader("idempotency-key", this.intent.key); }
       },
@@ -78,16 +82,16 @@ export class ProductImageController {
   private clearLocal() { this.uppy.clear(); this.setUrl("localPreview", null); this.update({ fileName: null, altText: "", progress: 0 }); }
   clearSelection() { if (!this.locked()) { this.intent = null; this.clearLocal(); } }
 
-  private async readCurrent(): Promise<ImageRevision> {
+  private async readCurrent(preview = true): Promise<ImageRevision> {
     this.read?.abort(); const read = new AbortController(); this.read = read;
     const generation = ++this.readGeneration;
-    const revision = await this.deps.api.metadata(this.productId, read.signal);
+    const revision = await withRequestTimeout(this.deps.api.metadata(this.productId, read.signal));
     if (this.disposed || generation !== this.readGeneration) throw new Error("Stale image read");
     this.update({ image: revision.image, etag: revision.etag });
     this.setUrl("savedPreview", null);
-    if (revision.image) {
+    if (preview && revision.image) {
       try {
-        const blob = await this.deps.api.preview(this.productId, read.signal);
+        const blob = await withRequestTimeout(this.deps.api.preview(this.productId, read.signal));
         if (!this.disposed && generation === this.readGeneration) this.setUrl("savedPreview", this.deps.createUrl(blob));
       } catch { if (!this.disposed && generation === this.readGeneration) this.update({ message: "پیش‌نمایش ذخیره‌شده دریافت نشد؛ می‌توانید وضعیت را دوباره دریافت کنید." }); }
     }
@@ -148,9 +152,11 @@ export class ProductImageController {
   private async failed(status: number, code: string) {
     const pending = code === "COMMERCE_IMAGE_OPERATION_PENDING";
     const conflict = (status === 409 && !pending) || status === 412;
-    const unknown = pending || status === 0 || status >= 500;
+    // These explicit rejections never commit image metadata. Transport/other 5xx results remain uncertain.
+    const rejected = code === "COMMERCE_IMAGE_STORAGE_UNAVAILABLE" || code === "COMMERCE_IMAGE_BUSY";
+    const unknown = !rejected && (pending || status === 0 || status >= 500);
     this.update({ phase: "confirming" });
-    try { await this.readCurrent(); }
+    try { await this.readCurrent(false); }
     catch { this.update({ etag: null }); }
     if (!unknown) this.intent = null;
     this.update({ phase: unknown ? "unresolved" : conflict ? "conflict" : "error", message: imageErrorMessage(status, code) });
