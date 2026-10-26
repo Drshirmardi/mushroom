@@ -168,13 +168,53 @@ sudo mushroom status --environment dev
 sudo mushroom logs --environment production
 sudo mushroom restart --environment production
 sudo mushroom configure --environment dev
+sudo mushroom setup-storage --environment dev
 sudo mushroom backup --environment production
 sudo mushroom restore --environment production --archive /var/backups/mushroom/production/BACKUP.dump.age --target-url-file /root/restore-test-url
 ```
 
 فرمان `configure` اتصال SSH، دامنه‌ها و حالت‌های runtime را تعاملی تنظیم می‌کند؛ برای اصلاح فقط اطلاعات اتصال،
-آن را بدون `--environment` اجرا کنید. تنظیمات دامنه پیش از ذخیره با DNS بررسی می‌شود. در dev، تنظیم R2 و دریافت
-مخفی کلیدهای آن هم در همین فرمان است. پس از تغییر runtime، workflow همان محیط را اجرا کنید تا کانتینرها تنظیم تازه را بگیرند.
+آن را بدون `--environment` اجرا کنید. تنظیمات دامنه پیش از ذخیره با DNS بررسی می‌شود. در dev، انتخاب فضای
+ذخیره‌سازی و دریافت مخفی کلیدهای آن هم در همین فرمان است. پس از تغییر runtime، workflow همان محیط را
+اجرا کنید تا کانتینرها تنظیم تازه را بگیرند.
+
+## انتخاب Cloudflare یا آروان برای تصاویر
+
+نصب اولیهٔ dev و `configure --environment dev` اکنون این سه انتخاب را می‌پرسند:
+
+| انتخاب | سرویس | تنظیمات و فایل کلید |
+| --- | --- | --- |
+| `disabled` | غیرفعال | پیش‌فرض؛ فایل‌های قبلی حفظ می‌شوند |
+| `r2` | Cloudflare R2 | `R2_*` و `secrets/r2_access_key_id`، `secrets/r2_secret_access_key` |
+| `arvancloud` | Object Storage آروان | `ARVAN_*` و `secrets/arvan_access_key_id`، `secrets/arvan_secret_access_key` |
+
+برای تغییر فقط ذخیره‌سازی، بدون پرسش دوباره دربارهٔ SSH، دامنه‌ها و DNS، از `setup-storage` استفاده کنید.
+endpoint منطقهٔ bucket خصوصی، نام bucket، region و timeout پرسیده می‌شوند. region برای R2 برابر `auto`
+و پیش‌فرض آروان `default` است. کلیدها با ورودی مخفی دریافت و با دسترسی `0600` و مالک محیط ذخیره می‌شوند؛
+در `runtime.env` یا `installation.json` نوشته نمی‌شوند. جایگزینی هر کلید موجود تأیید جداگانه می‌خواهد؛
+تنظیمات و کلیدهای سرویس غیرفعال حذف نمی‌شوند. نصب مجدد، تنظیمات ذخیره‌شده را بدون درخواست تغییر نمی‌دهد.
+
+برای سروری که منیجر قدیمی دارد، بستهٔ جدید را بسازید و دو فایل آرشیو و checksum را منتقل کنید. پس از
+بررسی checksum و استخراج، از پوشهٔ بسته اجرا کنید:
+
+```bash
+sudo bash installation/install.sh setup-storage --environment dev
+```
+
+این فرمان نسخهٔ نصب‌شدهٔ ابزار را هم به‌روز می‌کند. برای دفعات بعد:
+
+```bash
+sudo mushroom setup-storage --environment dev
+```
+
+این مرحله فقط تنظیمات را ذخیره می‌کند؛ برنامه را deploy نمی‌کند و موفقیت اتصال S3 را تأیید نمی‌کند.
+کد پشتیبانی از provider انتخاب‌شده باید روی dev مستقر شود؛ سپس workflow `Sync shared dev VPS` را اجرا
+کنید تا API تنظیمات را بگیرد. restart ساده برای تغییر environment کافی نیست.
+
+تعویض بین دو سرویس فعال فایل‌ها را منتقل نمی‌کند. منیجر پیش از تعویض، تأیید انتقال فایل‌ها با همان
+object key و توقف موقت نوشتن/پاک‌سازی، یا خالی‌بودن محیط را می‌گیرد. جزئیات انتقال و تست واقعی در
+[راهنمای ذخیره‌سازی](../deploy/vps/OBJECT-STORAGE.md) است. این قابلیت فعلاً برای dev است؛ محدودیت قبلی
+غیرفعال‌بودن ذخیره‌سازی در production حفظ می‌شود.
 
 در صورت انتخاب بکاپ، timer روزانهٔ systemd به وقت UTC نصب می‌شود. خروجی `pg_dump` مستقیم با age رمز می‌شود؛ dump بدون رمز روی دیسک ذخیره نمی‌شود. فایل‌ها در `/var/backups/mushroom/<environment>/` و کلید خصوصی age در `/etc/mushroom/backup-keys/` هستند. **نسخهٔ خارج سرور از آرشیو و نسخهٔ جدا از کلید لازم است.** این بکاپ منطقی جایگزین WAL/PITR، سیاست RPO/RTO یا پذیرش قابلیت provider نیست. مدت نگهداری محلی هنگام نصب دریافت می‌شود (پیش‌فرض ۱۴ روز)؛ فقط پس از بکاپ موفق، آرشیوهای قدیمی با نام تولیدشدهٔ خود ابزار پاک می‌شوند. انتقال خارج سرور و پایش فضا همچنان باید مطابق سیاست عملیاتی انجام شود.
 

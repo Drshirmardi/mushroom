@@ -27,6 +27,7 @@ BUNDLE = Path(__file__).resolve().parent.parent
 BUNDLE_FILES = [
     'installation/install.sh', 'installation/manager.py', 'installation/README.md',
     'deploy/vps/dev-env.example', 'deploy/vps/env.example', 'deploy/vps/production-env.example',
+    'deploy/vps/OBJECT-STORAGE.md',
     'deploy/ejabberd/compose.yaml', 'deploy/ejabberd/compose.database.yaml',
     'deploy/ejabberd/env.example', 'deploy/ejabberd/chat.caddy.example', 'deploy/ejabberd/README.md',
     'deploy/ejabberd/Dockerfile', 'deploy/ejabberd/mod_sabz_chat.erl', 'deploy/ejabberd/ejabberd.yml',
@@ -51,6 +52,8 @@ RUNTIME_DEFAULTS = {
     'SADAD_REQUEST_TIMEOUT_MS': '5000', 'SADAD_REDIRECT_PROFILE': '',
     'PRODUCT_MEDIA_STORAGE_MODE': 'disabled', 'R2_ENDPOINT': '', 'R2_BUCKET': '',
     'R2_REGION': 'auto', 'R2_REQUEST_TIMEOUT_MS': '5000',
+    'ARVAN_ENDPOINT': '', 'ARVAN_BUCKET': '', 'ARVAN_REGION': 'default',
+    'ARVAN_REQUEST_TIMEOUT_MS': '5000',
 }
 
 
@@ -179,6 +182,90 @@ def admin_details():
         print('Passwords must match and meet the password policy.')
     clinic = ask('Clinic name', 'کلینیک سبز زندگی', lambda v: v if 0 < len(v) <= 160 else choice(v, []))
     return {'phone': phone, 'password': password, 'clinicName': clinic, 'timeZone': 'Asia/Tehran'}
+
+
+def media_configuration(values, root):
+    """Collect one dev profile; never put credentials in runtime.env or saved state."""
+    values = dict(values)
+    root = Path(root)
+    require(not root.is_symlink() and not (root / 'secrets').is_symlink(), 'Storage directories cannot be symlinks.')
+    previous = values.get('PRODUCT_MEDIA_STORAGE_MODE', 'disabled')
+    mode = ask('Dev object storage: disabled / r2 (Cloudflare) / arvancloud (Arvan)', previous,
+               lambda v: choice(v, ['disabled', 'r2', 'arvancloud']))
+    if previous in ('r2', 'arvancloud') and mode not in (previous, 'disabled'):
+        print('Changing provider does not copy existing images. API and cleanup workers must use the same destination.')
+        require(ask('Existing images copied at identical keys and media writes/cleanup paused (or no images exist)',
+                    'no', lambda v: choice(v, ['yes', 'no'])) == 'yes',
+                'Storage configuration unchanged. Prepare the transfer before switching providers.')
+    values['PRODUCT_MEDIA_STORAGE_MODE'] = mode
+    credentials = {}
+    if mode == 'disabled':
+        return values, credentials
+    prefix = 'R2' if mode == 'r2' else 'ARVAN'
+
+    def endpoint(value):
+        parsed = urlsplit(value)
+        port = parsed.port  # Validate malformed/out-of-range ports before saving runtime settings.
+        require(parsed.scheme == 'https' and parsed.hostname and not parsed.username and not parsed.password
+                and parsed.path in ('', '/') and not parsed.query and not parsed.fragment
+                and (port is None or port > 0) and not any(c.isspace() for c in value), 'Use an HTTPS S3 endpoint without a bucket path, credentials or query.')
+        return value.rstrip('/')
+
+    def credential(value):
+        require(value and not any(c.isspace() for c in value), 'Storage credential must be nonempty and contain no whitespace.')
+        return value
+
+    values[f'{prefix}_ENDPOINT'] = ask(f'{prefix} S3 HTTPS endpoint (from the bucket region)', values.get(f'{prefix}_ENDPOINT', ''), endpoint)
+    values[f'{prefix}_BUCKET'] = ask(f'{prefix} private bucket', values.get(f'{prefix}_BUCKET', ''),
+                                    lambda v: v if re.fullmatch(r'[a-z0-9][a-z0-9-]{1,61}[a-z0-9]', v) else choice(v, []))
+    if mode == 'r2':
+        values['R2_REGION'] = 'auto'
+    else:
+        values['ARVAN_REGION'] = ask('Arvan signing region (official JavaScript default: default)', values.get('ARVAN_REGION', 'default'),
+                                     lambda v: v if re.fullmatch(r'[A-Za-z0-9_-]{1,64}', v) else choice(v, []))
+    values[f'{prefix}_REQUEST_TIMEOUT_MS'] = ask(f'{prefix} request timeout milliseconds (1000..10000)',
+        values.get(f'{prefix}_REQUEST_TIMEOUT_MS', '5000'), lambda v: str(int(v)) if 1000 <= int(v) <= 10000 else choice(v, []))
+    for suffix in ('access_key_id', 'secret_access_key'):
+        name = f'{prefix.lower()}_{suffix}'
+        existing = root / 'secrets' / name
+        require(not existing.is_symlink(), 'Storage secret files cannot be symlinks.')
+        require(not existing.exists() or existing.is_file(), 'Storage secret path must be a regular file.')
+        replace = not existing.exists() or existing.stat().st_size == 0 or ask(f'Replace existing {name}', 'no', lambda v: choice(v, ['yes', 'no'])) == 'yes'
+        if replace:
+            credentials[name] = ask(name + ' (hidden)', secret=True, validator=credential)
+    return values, credentials
+
+
+def write_media_configuration(root, values, credentials, owner):
+    root = Path(root)
+    require(not root.is_symlink() and not (root / 'secrets').is_symlink(), 'Storage directories cannot be symlinks.')
+    for path in [root / 'runtime.env', *(root / 'secrets' / name for name in credentials)]:
+        require(not path.is_symlink() and (not path.exists() or path.is_file()), 'Storage settings must be regular files.')
+    # Activate the profile only after its credential files are present.
+    for name, value in credentials.items():
+        atomic_write(root / 'secrets' / name, value)
+        os.chown(root / 'secrets' / name, *owner)
+    atomic_write(root / 'runtime.env', ''.join(f'{key}={value}\n' for key, value in values.items()))
+    os.chown(root / 'runtime.env', *owner)
+
+
+def configure_storage(config, environment):
+    require(environment == 'dev' and environment in config['environments'], 'Object storage configuration currently supports --environment dev only; production stays disabled.')
+    spec = config['environments'][environment]
+    root = Path(spec['home']) / 'mushroom' / environment
+    require(not (root / 'runtime.env').is_symlink() and (root / 'runtime.env').is_file()
+            and (root / 'secrets').is_dir(), 'Finish initial environment preparation first; runtime.env must be a regular file.')
+    values, credentials = media_configuration(load_env(root / 'runtime.env'), root)
+    owner = (root.stat().st_uid, root.stat().st_gid)
+    write_media_configuration(root, values, credentials, owner)
+    spec.setdefault('runtime', {}).update({key: value for key, value in values.items()
+                                         if key == 'PRODUCT_MEDIA_STORAGE_MODE' or key.startswith(('R2_', 'ARVAN_'))
+                                         if not any(word in key for word in ('ACCESS_KEY', 'SECRET'))})
+    spec['mediaConfigured'] = True
+    save(config)
+    print(f"Dev object storage configured: {values['PRODUCT_MEDIA_STORAGE_MODE']}. Credentials remain in secrets/. "
+          'Deploy the matching provider-capable application and rerun the shared dev workflow to apply these settings. '
+          'No connectivity or upload success is claimed by configuration alone.')
 
 
 def new_configuration():
@@ -719,6 +806,8 @@ def install(config):
                 policy = ask('Absolute path to approved production consent-policy JSON',
                              validator=lambda v: str(Path(v).resolve()) if validate_policy(v, 'production') else '')
         root = write_environment(config, environment, owner=owner, first_run=first_run, db_url=db, policy=policy)
+        if environment == 'dev' and not spec.get('mediaConfigured'):
+            configure_storage(config, environment)
         prepare_chat(config, environment, root=root, owner=owner)
         configure_backups(config, environment)
     # The current SSH port must already be listening; never edit sshd or close the current SSH session.
@@ -754,16 +843,11 @@ def configure(config, environment=None):
         spec['runtime'] = {name: values[name] for name in ('LOG_LEVEL', 'SMS_TRANSPORT_MODE', 'SADAD_TRANSPORT_MODE', 'SADAD_REDIRECT_PROFILE')}
         media = {}
         if environment == 'dev':
-            values['PRODUCT_MEDIA_STORAGE_MODE'] = ask('Development product media', values.get('PRODUCT_MEDIA_STORAGE_MODE', 'disabled'), lambda v: choice(v, ['disabled', 'r2']))
-            if values['PRODUCT_MEDIA_STORAGE_MODE'] == 'r2':
-                values['R2_ENDPOINT'] = ask('R2 HTTPS endpoint', values.get('R2_ENDPOINT', ''),
-                                          lambda v: v if urlsplit(v).scheme == 'https' and urlsplit(v).hostname and not urlsplit(v).username else choice(v, []))
-                values['R2_BUCKET'] = ask('R2 bucket', values.get('R2_BUCKET', ''), lambda v: v if re.fullmatch(r'[a-z0-9][a-z0-9-]{1,61}[a-z0-9]', v) else choice(v, []))
-                for name in ('r2_access_key_id', 'r2_secret_access_key'):
-                    existing = root / 'secrets' / name
-                    replace = not existing.exists() or ask(f'Replace existing {name}', 'no', lambda v: choice(v, ['yes', 'no'])) == 'yes'
-                    if replace:
-                        media[name] = ask(name + ' (hidden)', secret=True, validator=lambda v: v if v and not any(c.isspace() for c in v) else choice(v, []))
+            values, media = media_configuration(values, root)
+            spec['runtime'].update({key: value for key, value in values.items()
+                                    if key == 'PRODUCT_MEDIA_STORAGE_MODE' or key.startswith(('R2_', 'ARVAN_'))
+                                    if not any(word in key for word in ('ACCESS_KEY', 'SECRET'))})
+            spec['mediaConfigured'] = True
         domains = [domain for item in candidate['environments'].values() for domain in item['domains'].values()]
         require(len(domains) == len(set(domains)), 'Environment hostnames must all be distinct.')
         check_dns(candidate)
@@ -776,11 +860,7 @@ def configure(config, environment=None):
         values['SADAD_RETURN_URL'] = values['PUBLIC_API_URL'] + '/v1/payments/providers/sadad/callback'
         values['SADAD_RESULT_URL'] = values['PUBLIC_APP_URL'] + '/store/order-success'
         owner = (root.stat().st_uid, root.stat().st_gid)
-        atomic_write(root / 'runtime.env', ''.join(f'{key}={value}\n' for key, value in values.items()))
-        os.chown(root / 'runtime.env', *owner)
-        for name, value in media.items():
-            atomic_write(root / 'secrets' / name, value)
-            os.chown(root / 'secrets' / name, *owner)
+        write_media_configuration(root, values, media, owner)
     save(candidate)
     if candidate['steps'].get('serverReady'):
         firewall(candidate)
@@ -821,6 +901,17 @@ def doctor(config, deployed=False):
     for environment, spec in config['environments'].items():
         root = Path(spec['home']) / 'mushroom' / environment
         values = load_env(root / 'runtime.env')
+        mode = values.get('PRODUCT_MEDIA_STORAGE_MODE', 'disabled')
+        require(mode in ('disabled', 'r2', 'arvancloud'), 'Unknown object storage mode; run setup-storage --environment dev.')
+        require(environment == 'dev' or mode == 'disabled', 'Object storage must remain disabled outside the supported dev runtime.')
+        if mode != 'disabled':
+            prefix = 'R2' if mode == 'r2' else 'ARVAN'
+            require(all(values.get(f'{prefix}_{name}') for name in ('ENDPOINT', 'BUCKET')),
+                    'Selected object storage profile is incomplete; run setup-storage --environment dev.')
+            for suffix in ('access_key_id', 'secret_access_key'):
+                path = root / 'secrets' / f'{prefix.lower()}_{suffix}'
+                require(not path.is_symlink() and path.is_file() and path.stat().st_size > 0,
+                        'Selected storage credential file is missing/empty; run setup-storage --environment dev.')
         require((root / 'chat.compose.yaml').is_file() and all(values.get(key) for key in (
             'EJABBERD_SOURCE_ROOT', 'EJABBERD_IMAGE', 'EJABBERD_DOMAIN', 'EJABBERD_WEBSOCKET_URL',
             'EJABBERD_SQL_HOST', 'EJABBERD_SQL_DB', 'EJABBERD_SQL_USER', 'EJABBERD_SQL_PASSWORD',
@@ -1031,7 +1122,7 @@ def lock():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['install', 'setup-chat', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
+    parser.add_argument('command', choices=['install', 'setup-chat', 'setup-storage', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
     parser.add_argument('--environment', choices=ENVIRONMENTS)
     parser.add_argument('--repository', default=str(BUNDLE))
     parser.add_argument('--current', action='store_true', help='Audit existing .env key names without displaying values')
@@ -1063,6 +1154,10 @@ def main():
                 prepare_chat(config, environment)
             configure_proxy(config)
             print('Chat prepared. Rerun the environment deployment, then mushroom verify.')
+        elif args.command == 'setup-storage':
+            require(args.environment == 'dev', 'Use setup-storage --environment dev; production storage remains disabled.')
+            persist_bundle()
+            configure_storage(config, args.environment)
         elif args.command == 'configure':
             configure(config, args.environment)
         elif args.command in ('doctor', 'verify'):

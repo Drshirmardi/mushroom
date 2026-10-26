@@ -37,6 +37,59 @@ class InstallationTests(unittest.TestCase):
     def write(self, environment, **kwargs):
         return manager.write_environment(self.config, environment, base=self.root / environment, **kwargs)
 
+    def test_storage_profiles_collect_only_selected_hidden_credentials(self):
+        for mode, prefix, region in [('r2', 'R2', 'auto'), ('arvancloud', 'ARVAN', 'default')]:
+            with self.subTest(mode=mode):
+                root = self.write('dev')
+                original = (root / 'runtime.env').read_bytes()
+                answers = [mode, 'https://s3.example.test', 'private-bucket']
+                if mode == 'arvancloud':
+                    answers.append(region)
+                answers += ['5000', 'synthetic-key', 'synthetic-secret']
+                with patch('manager.ask', side_effect=answers) as prompts:
+                    values, credentials = manager.media_configuration(manager.load_env(root / 'runtime.env'), root)
+                self.assertEqual(values['PRODUCT_MEDIA_STORAGE_MODE'], mode)
+                self.assertEqual(values[f'{prefix}_REGION'], region)
+                self.assertEqual(credentials, {f'{prefix.lower()}_access_key_id': 'synthetic-key',
+                                               f'{prefix.lower()}_secret_access_key': 'synthetic-secret'})
+                self.assertTrue(all(call.kwargs.get('secret') for call in prompts.call_args_list[-2:]))
+                self.assertNotIn('synthetic-secret', json.dumps(values))
+                self.assertEqual((root / 'runtime.env').read_bytes(), original)
+
+    def test_storage_switch_requires_transfer_confirmation_before_any_write(self):
+        root = self.write('dev')
+        values = manager.load_env(root / 'runtime.env')
+        values['PRODUCT_MEDIA_STORAGE_MODE'] = 'r2'
+        original = (root / 'runtime.env').read_bytes()
+        with patch('manager.ask', side_effect=['arvancloud', 'no']), self.assertRaises(manager.InstallationError):
+            manager.media_configuration(values, root)
+        self.assertEqual((root / 'runtime.env').read_bytes(), original)
+        self.assertEqual(values['PRODUCT_MEDIA_STORAGE_MODE'], 'r2')
+
+    def test_disabling_storage_retains_existing_profiles_and_keys(self):
+        root = self.write('dev')
+        key = root / 'secrets/r2_access_key_id'
+        key.write_text('retained-key')
+        values = {**manager.load_env(root / 'runtime.env'), 'PRODUCT_MEDIA_STORAGE_MODE': 'r2', 'R2_BUCKET': 'retained-bucket'}
+        with patch('manager.ask', return_value='disabled'):
+            result, credentials = manager.media_configuration(values, root)
+        self.assertEqual(result['R2_BUCKET'], 'retained-bucket')
+        self.assertEqual(credentials, {})
+        self.assertEqual(key.read_text(), 'retained-key')
+
+    def test_storage_rejects_symlink_secret_and_nondev_configuration(self):
+        with self.assertRaises(manager.InstallationError):
+            manager.configure_storage(self.config, 'production')
+        root = self.write('dev')
+        if not hasattr(os, 'symlink') or os.name != 'posix':
+            return
+        target = self.root / 'unrelated-secret'
+        target.write_text('preserve')
+        (root / 'secrets/arvan_access_key_id').symlink_to(target)
+        with patch('manager.ask', side_effect=['arvancloud', 'https://s3.example.test', 'private-bucket', 'default', '5000']), self.assertRaises(manager.InstallationError):
+            manager.media_configuration(manager.load_env(root / 'runtime.env'), root)
+        self.assertEqual(target.read_text(), 'preserve')
+
     def test_bad_terminal_bytes_retry_without_accepting_or_printing_them(self):
         bad_bytes = UnicodeDecodeError('utf-8', b'private\xffvalue', 7, 8, 'invalid start byte')
         for secret, target in [(False, 'builtins.input'), (True, 'manager.getpass.getpass')]:
