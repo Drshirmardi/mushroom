@@ -4,6 +4,8 @@ import { readFile } from 'node:fs/promises';
 const fileBackedVariables = [
   'R2_ACCESS_KEY_ID',
   'R2_SECRET_ACCESS_KEY',
+  'ARVAN_ACCESS_KEY_ID',
+  'ARVAN_SECRET_ACCESS_KEY',
   'DATABASE_URL',
   'JWT_ACCESS_SECRET',
   'REFRESH_TOKEN_PEPPER',
