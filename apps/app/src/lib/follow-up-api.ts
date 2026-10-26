@@ -1,10 +1,10 @@
-import type { components } from "@sabz-zendegi/api-client";
-import { apiBaseUrl } from "@/lib/api";
+import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
+import { apiBaseUrl, sessionFetch } from "@/lib/api";
 
 export type HealthObservation = components["schemas"]["HealthObservationResponseDto"];
 export type HealthMetric = HealthObservation["metric"];
 export type MezajResult = components["schemas"]["MezajResultResponseDto"];
-export type NotificationCategory = "REMINDER" | "TREATMENT" | "CONTENT" | "SYSTEM";
+export type NotificationCategory = "FINANCIAL" | "REMINDER" | "TREATMENT" | "CONTENT" | "SYSTEM";
 export type PatientNotification = { id: string; category: NotificationCategory; title: string; body: string; readAt: string | null; createdAt: string };
 export type NotificationPreference = { category: NotificationCategory; inAppEnabled: boolean };
 export type PatientArticle = { id: string; slug: string; title: string; summary: string | null; body: string; category: { id: string; name: string; slug: string }; publishedAt: string | null; cover: { objectKey: string; contentType: string; sizeBytes: number } | null };
@@ -15,7 +15,7 @@ export class FollowUpRequestError extends Error {
 
 const request = async <T>(accessToken: string, path: string, init?: RequestInit): Promise<T> => {
   try {
-    const response = await fetch(new URL(path, apiBaseUrl), { ...init, headers: { authorization: `Bearer ${accessToken}`, ...(init?.headers ?? {}) } });
+    const response = await withRequestTimeout(sessionFetch(new URL(path, apiBaseUrl), { ...init, cache: "no-store", headers: { authorization: `Bearer ${accessToken}`, ...(init?.headers ?? {}) } }));
     const data: unknown = await response.json().catch(() => null);
     if (response.ok && data !== null) return data as T;
     const code = data && typeof data === "object" && "code" in data && typeof data.code === "string" ? data.code : null;

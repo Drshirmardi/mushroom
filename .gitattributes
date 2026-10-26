@@ -1,0 +1,2 @@
+*.sh text eol=lf
+installation/*.py text eol=lf

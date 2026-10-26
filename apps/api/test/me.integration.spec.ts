@@ -296,18 +296,17 @@ describe('current account (PostgreSQL API integration)', () => {
     const phone = await register();
     const loginResponse = await login(phone);
     const token = loginResponse.json().accessToken;
-    await prisma.user.update({ where: { phone }, data: { status: 'DISABLED' } });
-
-    const disabled = await app.inject({
-      method: 'GET',
-      url: '/v1/me',
-      headers: authorization(token),
-    });
     const forbidden = await app.inject({
       method: 'PATCH',
       url: '/v1/me',
       headers: { authorization: `Bearer ${token}`, origin: 'https://evil.example' },
       payload: { currentPassword: password, phone },
+    });
+    await prisma.user.update({ where: { phone }, data: { status: 'DISABLED' } });
+    const disabled = await app.inject({
+      method: 'GET',
+      url: '/v1/me',
+      headers: authorization(token),
     });
 
     expect(disabled.statusCode).toBe(401);

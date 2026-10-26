@@ -5,7 +5,7 @@ command_name=${1:-}
 
 read_secret() {
   local name=$1
-  local path="/run/secrets/$name"
+  local path="/run/secrets/${name,,}"
   [[ -r $path ]] || { printf '%s is not readable\n' "$path" >&2; exit 1; }
   printf -v "$name" '%s' "$(<"$path")"
   export "$name"
@@ -43,21 +43,64 @@ case "$command_name" in
       pnpm install --frozen-lockfile
     fi
     [[ -d node_modules/.pnpm ]] || { printf 'workspace dependencies are not installed\n' >&2; exit 1; }
-    write_runtime_configs
-    pnpm --filter @sabz-zendegi/api-client build
-    pnpm --filter @sabz-zendegi/api prisma:generate
-    pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+    if [[ ${DEV_WRITE_RUNTIME_CONFIG:-false} == true ]]; then
+      write_runtime_configs
+    fi
+    if [[ ${DEV_BUILD_API_CLIENT:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api-client build
+    fi
+    if [[ ${DEV_GENERATE_PRISMA:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api prisma:generate
+    fi
+    if [[ ${DEV_RUN_MIGRATIONS:-false} == true ]]; then
+      pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+    fi
+    if [[ ${DEV_COMPILE_API:-false} == true ]]; then
+      [[ ${DEV_API_SOURCE_HASH:-} =~ ^[0-9a-f]{64}$ ]] || {
+        printf 'DEV_API_SOURCE_HASH must be a SHA-256 fingerprint when compiling the API\n' >&2
+        exit 1
+      }
+      rm -rf -- apps/api/dist
+      NODE_OPTIONS=--max-old-space-size=1536 \
+        pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
+          --noCheck --declaration false --declarationMap false
+      printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
+    fi
+    if [[ -f /run/mushroom-installation/first-run.json ]]; then
+      MUSHROOM_ENVIRONMENT=development node apps/api/prisma/bootstrap-installation.mjs
+      : >/run/mushroom-installation/complete
+      rm -- /run/mushroom-installation/first-run.json
+    fi
     if [[ ${DEV_RUN_SEED:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:seed
     fi
     ;;
   api)
-    for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER \
-      PAYMENT_CREDENTIAL_ENCRYPTION_KEY PAYMENT_CREDENTIAL_DECRYPTION_KEYS; do
+    if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == arvancloud ]]; then
+      [[ -r $ARVAN_ACCESS_KEY_ID_FILE && -r $ARVAN_SECRET_ACCESS_KEY_FILE ]] || {
+        printf 'Development Arvan credentials are not readable\n' >&2
+        exit 1
+      }
+      ARVAN_ACCESS_KEY_ID=$(<"$ARVAN_ACCESS_KEY_ID_FILE")
+      ARVAN_SECRET_ACCESS_KEY=$(<"$ARVAN_SECRET_ACCESS_KEY_FILE")
+      export ARVAN_ACCESS_KEY_ID ARVAN_SECRET_ACCESS_KEY
+    fi
+    if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == r2 ]]; then
+      [[ -r $R2_ACCESS_KEY_ID_FILE && -r $R2_SECRET_ACCESS_KEY_FILE ]] || {
+        printf 'Development R2 credentials are not readable\n' >&2
+        exit 1
+      }
+      R2_ACCESS_KEY_ID=$(<"$R2_ACCESS_KEY_ID_FILE")
+      R2_SECRET_ACCESS_KEY=$(<"$R2_SECRET_ACCESS_KEY_FILE")
+      export R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY
+    fi
+    for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER OTP_PEPPER \
+      PAYMENT_CREDENTIAL_ENCRYPTION_KEY PAYMENT_CREDENTIAL_DECRYPTION_KEYS \
+      SMS_CREDENTIAL_ENCRYPTION_KEY SMS_CREDENTIAL_DECRYPTION_KEYS; do
       read_secret "$secret"
     done
     export NODE_ENV=development HOSTNAME=0.0.0.0 PORT=3003
-    exec pnpm --filter @sabz-zendegi/api dev
+    exec node --enable-source-maps apps/api/dist/main.js
     ;;
   web)
     exec pnpm --filter @sabz/web exec next dev --hostname 0.0.0.0 --port 3000

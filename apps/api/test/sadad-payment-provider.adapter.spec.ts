@@ -1,7 +1,8 @@
 import { createServer } from 'node:http';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FetchSadadTransport, SADAD_ENDPOINTS, SADAD_MAX_INT64, SadadPaymentProviderAdapter, SimulatedSadadPaymentProviderAdapter, serializeSadadJson, type SadadJson, type SadadTransport } from '../src/modules/commerce/payments/sadad-payment-provider.adapter';
 import { PaymentProviderRegistry } from '../src/modules/commerce/payments/payment-provider.registry';
+import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 
 const credential = { merchantId: 'synthetic-merchant', terminalId: '123456', terminalKey: Buffer.alloc(24, 7).toString('base64') };
 const returnUrl = 'https://staging.example.test/v1/payments/providers/sadad/callback';
@@ -32,6 +33,17 @@ const localSadadTransport = async (responseBody: string) => {
 };
 
 describe('Sadad payment provider adapter (simulated transport)', () => {
+  it('switches the Nest runtime to the real bounded HTTPS transport only in live mode', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ ResCode: '0', Token: 'live-token' }), { status: 200 })).mockResolvedValueOnce(new Response(JSON.stringify({ ResCode: '100', OrderId: '42', Amount: '1250000' }), { status: 200 }));
+    const runtime = new SadadRuntimeConfigService({ get: (key: string, fallback?: unknown) => ({ SADAD_TRANSPORT_MODE: 'live', SADAD_REQUEST_TIMEOUT_MS: 4000 } as Record<string, unknown>)[key] ?? fallback } as never);
+    const adapter = new SadadPaymentProviderAdapter(new PaymentProviderRegistry(), runtime);
+    try {
+      await expect(adapter.createPayment({ providerOrderId: 42n, commerceAmountToman: 125_000n, providerAmount: 1_250_000n, providerUnit: 'RIAL', credential, returnUrl, redirectProfile: 'PHP_VPG_PURCHASE' })).resolves.toMatchObject({ token: 'live-token' });
+      await expect(adapter.verifyPayment({ token: 'live-token', credential })).resolves.toMatchObject({ resultCode: '100', providerOrderId: 42n, amount: 1_250_000n });
+      expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([SADAD_ENDPOINTS.paymentRequest, SADAD_ENDPOINTS.verify]);
+    } finally { fetchMock.mockRestore(); }
+  });
+
   it('serializes the frozen request, redirect, callback and Verify protocol without contacting Sadad', async () => {
     const transport = new SimulatedSadadTransport([
       { ResCode: '0', Token: 'synthetic-token' },

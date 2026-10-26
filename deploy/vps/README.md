@@ -82,6 +82,9 @@ printf '%s' "$db_password" > secrets/postgres_password
 printf 'postgresql://mushroom_staging:%s@postgres:5432/mushroom_staging?schema=public' "$db_password" > secrets/database_url
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/jwt_access_secret
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/refresh_token_pepper
+openssl rand -base64 48 | tr -d '\n=+/' > secrets/otp_pepper
+openssl rand -base64 32 | tr -d '\n' > secrets/sms_credential_encryption_key
+printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/sms_credential_decryption_keys
 openssl rand -base64 32 | tr -d '\n' > secrets/payment_credential_encryption_key
 printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/payment_credential_decryption_keys
 chmod 600 runtime.env secrets/*
@@ -231,7 +234,7 @@ chmod 600 "$HOME/mushroom/dev/runtime.env"
 
 چهار دامنهٔ `dev*.example.com` داخل `runtime.env` را با دامنه‌های واقعی عوض کنید. مسیرهای `/home/deploy/...` نیز
 باید با home واقعی `VPS_USER` برابر باشند. پورت‌های
-پیش‌فرض dev عبارت‌اند از `3200` وب، `3201` اپ، `3202` داشبورد و `3203` API؛ آن‌ها باید فقط روی `127.0.0.1` بمانند
+پیش‌فرض dev عبارت‌اند از `3300` وب، `3301` اپ، `3302` داشبورد و `3303` API؛ آن‌ها باید فقط روی `127.0.0.1` بمانند
 و با staging/production-sim تکراری نباشند.
 
 secretهای dev را جداگانه بسازید؛ هیچ secret یا database URL از محیط‌های دیگر کپی نشود:
@@ -243,6 +246,9 @@ printf '%s' "$db_password" > secrets/postgres_password
 printf 'postgresql://mushroom_dev:%s@postgres:5432/mushroom_dev?schema=public' "$db_password" > secrets/database_url
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/jwt_access_secret
 openssl rand -base64 48 | tr -d '\n=+/' > secrets/refresh_token_pepper
+openssl rand -base64 48 | tr -d '\n=+/' > secrets/otp_pepper
+openssl rand -base64 32 | tr -d '\n' > secrets/sms_credential_encryption_key
+printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/sms_credential_decryption_keys
 openssl rand -base64 32 | tr -d '\n' > secrets/payment_credential_encryption_key
 printf 'v0:%s' "$(openssl rand -base64 32 | tr -d '\n')" > secrets/payment_credential_decryption_keys
 chmod 600 runtime.env secrets/*
@@ -251,37 +257,59 @@ unset db_password
 
 ### ۸.۳. DNS، HTTPS و دسترسی تیم
 
-چهار DNS record به IP همین VPS اشاره می‌کنند. reverse proxy موجود باید آن‌ها را به loopbackهای زیر بفرستد و TLS
-را terminate کند:
+چهار DNS record به IP همین VPS اشاره می‌کنند. Caddy باید آن‌ها را به loopbackهای زیر بفرستد و TLS را terminate کند:
 
 | hostname نمونه | upstream |
 |---|---|
-| `dev.example.com` | `http://127.0.0.1:3200` |
-| `dev-app.example.com` | `http://127.0.0.1:3201` |
-| `dev-dashboard.example.com` | `http://127.0.0.1:3202` |
-| `dev-api.example.com` | `http://127.0.0.1:3203` |
+| `dev.example.com` | `http://127.0.0.1:3300` |
+| `dev-app.example.com` | `http://127.0.0.1:3301` |
+| `dev-dashboard.example.com` | `http://127.0.0.1:3302` |
+| `dev-api.example.com` | `http://127.0.0.1:3303` |
 
-برای Nginx الگوی هر hostname چنین است؛ `server_name` و upstream را طبق جدول تکرار کنید و گواهی را با روش فعلی
-سرور صادر کنید:
+فایل `/etc/caddy/sites/mushroom-dev.caddy` را با این چهار virtual host بسازید:
 
-```nginx
-server {
-  listen 443 ssl http2;
-  server_name dev.example.com;
-  # ssl_certificate / ssl_certificate_key: managed by the server's existing ACME setup
-  location / {
-    proxy_pass http://127.0.0.1:3200;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-  }
+```caddyfile
+dev.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:3300
+}
+
+dev-app.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:3301
+}
+
+dev-dashboard.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:3302
+}
+
+dev-api.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:3303
 }
 ```
 
-این دامنه‌ها عمومی و حاوی دادهٔ واقعی نباشند. دسترسی را در reverse proxy با VPN، allowlist IP یا authentication
+فایل اصلی `/etc/caddy/Caddyfile` باید `import /etc/caddy/sites/*.caddy` داشته باشد. پس از تغییر، با
+`caddy fmt` و `caddy validate` بررسی و سپس Caddy را reload کنید؛ صدور و تمدید HTTPS را خود Caddy انجام می‌دهد.
+
+`reverse_proxy` در Caddy به‌صورت پیش‌فرض WebSocket را عبور می‌دهد. این رفتار برای Next development الزامی است:
+در Next 16، HTML اولیه تا اتصال موفق `/_next/hmr` hydrate نمی‌شود. deployment برای هر سه دامنه handshake واقعی
+مرورگر را با `Origin`، `Upgrade` و `Sec-WebSocket-Extensions` بررسی می‌کند و در صورت نگرفتن `101 Switching
+Protocols` پس از retry محدود warm-up موفق اعلام نمی‌شود. اگر یکی از watcherهای فرانت‌اند در readiness پاسخ ندهد،
+استقرار پس از ثبت وضعیت و لاگ آن سرویس فقط cache تولیدی `.next` همان برنامه را پاک می‌کند، watcher را یک‌بار
+recreate می‌کند و probe محدود دوم را اجرا می‌کند؛ شکست دوم deployment را بدون انتظار طولانی متوقف می‌کند.
+سه watcher فرانت‌اند سقف حافظهٔ container ندارند تا compilation اولیه بتواند از RAM آزاد host استفاده کند؛ کنترل
+ظرفیت host و خاموش‌بودن محیط‌های غیرضروری بر عهدهٔ عملیات است. هر سه برنامه compiler پیش‌فرض Next را نگه می‌دارند.
+`APP_ORIGINS` علاوه بر CORS API، پس از تبدیل URLها به
+hostname به `allowedDevOrigins` هر سه Next server داده می‌شود؛ بنابراین دامنه تازه باید ابتدا به همین فهرست اضافه
+شود.
+
+syncهای عادی build کامل فرانت اجرا نمی‌کنند. برای تغییر هرکدام از `apps/web`، `apps/app` یا `apps/dashboard` فقط
+همان Next dev container با source bind-mounted دوباره ساخته می‌شود؛ تغییر dependency یا runtime همچنان هر سه را
+برای سازگاری recreate می‌کند.
+
+این دامنه‌ها عمومی و حاوی دادهٔ واقعی نباشند. دسترسی را در Caddy با VPN، allowlist IP یا authentication
 سازمانی محدود کنید؛ dev نباید با credential بیمار یا درگاه واقعی استفاده شود.
 
 ### ۸.۴. فعال‌سازی GitHub و اولین sync
@@ -298,8 +326,12 @@ git push origin origin/main:refs/heads/dev
 ```
 
 از آن پس هر commit که باید فوری روی dev دیده شود روی همین branch push می‌شود. workflow `Sync shared dev VPS` سورس
-را sync، migrationهای forward-only را اجرا، فقط در اولین اجرا seed می‌کند و هر چهار URL را health-check می‌کند.
-merge به `main` همچنان مسیر کامل CI/CD production را طی می‌کند.
+را با checksum sync و هر چهار URL را health-check می‌کند. سه رابط Next.js واقعاً با `next dev` و HMR دائمی اجرا
+می‌شوند؛ بنابراین تغییر فقط در `web`، `app` یا `dashboard` نه build می‌گیرد و نه container را restart می‌کند.
+dependency install، API client build، Prisma generate/migrate و API transpile فقط وقتی ورودی همان بخش عوض شده باشد
+اجرا می‌شوند. API به‌دلیل سقف حافظهٔ VPS compiler دائمی ندارد: تغییر API یک transpile محدود انجام می‌دهد و فقط
+container API را recreate می‌کند. seed فقط در اولین اجراست. merge به `main` همچنان مسیر کامل CI/CD production را
+طی می‌کند.
 
 وضعیت جاری روی سرور:
 
@@ -313,3 +345,5 @@ cat "$HOME/mushroom/dev/state/source.sha"
 اگر عمداً volume دیتابیس dev را جداگانه حذف کردید، marker
 `$HOME/mushroom/dev/state/seeded` را نیز پیش از sync بعدی حذف کنید. اسکریپت معمول deployment هیچ database reset،
 down migration یا دست‌کاری state محیط‌های release انجام نمی‌دهد.
+
+راهنمای انتخاب Cloudflare R2 / ArvanCloud، تست محلی و تعویض سرویس: [Object Storage](OBJECT-STORAGE.md).

@@ -51,8 +51,8 @@ test('allows ADMIN direct dashboard navigation without an export surface', async
   const { context, page, protectedRequests } = await dashboardPage(browser, { status: 200, roles: ['ADMIN'] });
   try {
     await page.goto(`${dashboardOrigin}/dashboard`);
-    await expect(page.getByText('حساب مدیریتی', { exact: true })).toBeVisible();
-    await expect(page.getByText('مدیر سیستم', { exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'منوی اصلی' })).toBeVisible();
+    await expect(page.getByRole('complementary').getByText('مدیر سیستم', { exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /خروجی|export/i })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /خروجی|export/i })).toHaveCount(0);
     expect(protectedRequests.some((url) => /\/export(?:[/?#]|$)/u.test(url))).toBe(false);
@@ -65,6 +65,10 @@ test('renders clinic-scoped operational CRM from the real API contract without m
   const { context, page, protectedRequests } = await dashboardPage(browser, { status: 200, roles: ['ADMIN'] });
   const clinicId = '00000000-0000-4000-8000-000000000010';
   try {
+    await context.route('**/v1/admin/clinic', (route) => {
+      expect(route.request().headers().authorization).toBe('Bearer browser-test-access-token');
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ id: clinicId, name: 'کلینیک آزمایشی', timeZone: 'Asia/Tehran', status: 'ACTIVE' }) });
+    });
     await context.route('**/v1/admin/commerce/customers**', async (route) => {
       const request = route.request();
       const url = new URL(request.url());
@@ -83,8 +87,7 @@ test('renders clinic-scoped operational CRM from the real API contract without m
       });
     });
     await page.goto(`${dashboardOrigin}/store-crm`);
-    await page.locator('#crm-clinic-id').fill(clinicId);
-    await page.getByRole('button', { name: 'نمایش مشتریان' }).click();
+    await expect(page.getByRole('heading', { name: 'مشتریان عملیاتی فروشگاه', exact: true })).toBeVisible();
     await expect(page.getByText('مینا مشتری', { exact: true })).toBeVisible();
     await expect(page.getByText('محصول محبوب', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /خروجی|export|کمپین|campaign|پیام انبوه/i })).toHaveCount(0);
@@ -101,7 +104,8 @@ for (const role of ['PATIENT', 'DOCTOR', 'STAFF'] as const) {
       await page.goto(`${dashboardOrigin}/dashboard`);
       await expect(page).toHaveURL(new RegExp(`^${patientAppOrigin.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}/`, 'u'));
       await expect(page.getByText('patient application denial destination', { exact: true })).toBeVisible();
-      await expect(page.getByText('حساب مدیریتی', { exact: true })).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'منوی اصلی' })).toHaveCount(0);
+      await expect(page.getByText('مدیر سیستم', { exact: true })).toHaveCount(0);
       expect(protectedRequests).toEqual([]);
     } finally {
       await context.close();
@@ -116,7 +120,8 @@ for (const state of ['disabled', 'revoked'] as const) {
       await page.goto(`${dashboardOrigin}/dashboard`);
       await expect(page).toHaveURL(new RegExp(`^${webOrigin.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}/login`, 'u'));
       await expect(page.getByText('web login denial destination', { exact: true })).toBeVisible();
-      await expect(page.getByText('حساب مدیریتی', { exact: true })).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'منوی اصلی' })).toHaveCount(0);
+      await expect(page.getByText('مدیر سیستم', { exact: true })).toHaveCount(0);
       expect(protectedRequests).toEqual([]);
     } finally {
       await context.close();

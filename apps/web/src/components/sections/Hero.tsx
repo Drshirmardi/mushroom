@@ -35,10 +35,7 @@ export function Hero() {
                         </span>
                         دکتر سیدابوالفتح شیرمردی — صاحب تجربه طب سوزنی و سنتی
                     </div>
-                    <h1
-                        className="rise fade-up-2 font-serif text-[2.1rem] leading-[1.25] md:text-6xl md:leading-[1.15] text-foreground mb-4 md:mb-6 text-balance"
-                        style={{ fontFamily: '"Vazirmatn", serif', fontWeight: 800 }}
-                    >
+                    <h1 className="rise fade-up-2 font-serif text-[2.1rem] font-extrabold leading-[1.25] md:text-6xl md:leading-[1.15] text-foreground mb-4 md:mb-6 text-balance">
                         درمان هدفمند،{" "}
                         <span className="relative inline-block text-primary">
                             آرامش پایدار

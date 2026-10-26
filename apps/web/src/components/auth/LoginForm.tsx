@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { dashboardUrl, resolvePostLoginUrl } from "@/lib/api";
+import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { loginPasswordSchema, normalizePhone, phoneSchema } from "@/lib/validation";
 import { loginWithPhone } from "@/services/auth";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -23,6 +23,7 @@ import { PasswordField } from "./PasswordField";
 import { AuthSubmitButton } from "./AuthSubmitButton";
 import { AuthSwitchLink } from "./AuthSwitchLink";
 import { AuthErrorAlert } from "./AuthErrorAlert";
+import { OtpAuthForm } from "./OtpAuthForm";
 
 const loginSchema = z.object({
     phone: phoneSchema,
@@ -32,7 +33,12 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+function redirectAfterAuthentication(roles: string[]) {
+    const requestedDestination = new URLSearchParams(window.location.search).get("next");
+    window.location.assign(postAuthenticationUrl(roles, requestedDestination));
+}
+
+function PasswordLoginForm() {
     const [authError, setAuthError] = useState<string | null>(null);
 
     const form = useForm<LoginValues>({
@@ -51,30 +57,14 @@ export function LoginForm() {
 
         if (result.ok) {
             toast.success("خوش آمدید!", { description: "ورود شما با موفقیت انجام شد." });
-            const requestedDestination = new URLSearchParams(window.location.search).get("next");
-            const hasDashboardRole = result.roles.some((role) =>
-                ["ADMIN", "DOCTOR", "STAFF"].includes(role),
-            );
-            window.location.assign(
-                requestedDestination
-                    ? resolvePostLoginUrl(requestedDestination)
-                    : hasDashboardRole
-                        ? dashboardUrl
-                        : resolvePostLoginUrl(null),
-            );
+            redirectAfterAuthentication([...result.roles]);
         } else {
             setAuthError(result.message);
         }
     };
 
     return (
-        <GlassCard className="p-6 sm:p-8">
-            <div className="mb-8 space-y-2">
-                <h1 className="text-2xl font-bold">ورود به حساب کاربری</h1>
-                <p className="text-sm leading-6 text-muted-foreground">
-                    برای ادامه مسیر درمان و مشاهده برنامه اختصاصی خود، وارد شوید.
-                </p>
-            </div>
+        <div>
 
             <Form {...form}>
                 <form
@@ -125,13 +115,19 @@ export function LoginForm() {
                 </form>
             </Form>
 
-            <div className="mt-6">
-                <AuthSwitchLink
-                    question="حساب کاربری ندارید؟"
-                    to="/signup"
-                    label="ثبت‌نام کنید"
-                />
-            </div>
-        </GlassCard>
+        </div>
     );
+}
+
+export function LoginForm() {
+    const [method, setMethod] = useState<"otp" | "password">("otp");
+    return <GlassCard className="p-6 sm:p-8">
+        <div className="mb-6 space-y-2"><h1 className="text-2xl font-bold">ورود به حساب کاربری</h1><p className="text-sm leading-6 text-muted-foreground">روش ورود را انتخاب کنید؛ کد یک‌بارمصرف سریع‌ترین مسیر است.</p></div>
+        <div role="tablist" aria-label="روش ورود" className="mb-6 grid grid-cols-2 rounded-xl bg-secondary/60 p-1">
+            <button role="tab" aria-selected={method === "otp"} type="button" onClick={() => setMethod("otp")} className={`rounded-lg px-3 py-2 text-sm font-bold ${method === "otp" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"}`}>کد یک‌بارمصرف</button>
+            <button role="tab" aria-selected={method === "password"} type="button" onClick={() => setMethod("password")} className={`rounded-lg px-3 py-2 text-sm font-bold ${method === "password" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"}`}>رمز عبور</button>
+        </div>
+        {method === "otp" ? <OtpAuthForm onAuthenticated={redirectAfterAuthentication} /> : <PasswordLoginForm />}
+        <div className="mt-6"><AuthSwitchLink question="حساب کاربری ندارید؟" to="/signup" label="ثبت‌نام کنید" /></div>
+    </GlassCard>;
 }

@@ -9,6 +9,7 @@ import {
   InvalidAccessTokenError,
 } from '../src/common/auth/access-token.service';
 import { environmentValidationSchema } from '../src/config/environment.validation';
+import { chatTestEnvironment } from './chat-environment-fixture';
 
 const secret = 'test-only-access-secret-that-is-at-least-32-characters';
 const wrongSecret = 'different-test-secret-that-is-at-least-32-characters';
@@ -150,6 +151,7 @@ describe('AccessTokenService', () => {
 
   it('rejects the documented placeholder secret during configuration', () => {
     const result = environmentValidationSchema.validate({
+      ...chatTestEnvironment,
       DATABASE_URL: 'postgresql://user:password@localhost:5432/database',
       JWT_ACCESS_SECRET:
         'replace-this-placeholder-with-a-unique-32-character-secret',

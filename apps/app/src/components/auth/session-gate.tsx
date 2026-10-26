@@ -8,10 +8,22 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { AuthSessionManager, type Authentication } from "@/auth/session";
-import { apiClient, loginUrl } from "@/lib/api";
+import {
+  AuthSessionManager,
+  type Authentication,
+  type AuthSessionSnapshot,
+} from "@/auth/session";
+import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
+import { RefreshCw, WifiOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const sessionManager = new AuthSessionManager(apiClient);
+const sessionManager = new AuthSessionManager(authApiClient);
+setAccessTokenProvider(async () => {
+  const snapshot = await sessionManager.bootstrap();
+  return snapshot.status === "authenticated"
+    ? snapshot.authentication.accessToken
+    : null;
+});
 
 interface AuthSessionContextValue {
   authentication: Authentication;
@@ -19,24 +31,28 @@ interface AuthSessionContextValue {
 }
 
 const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
+const SessionSnapshotContext = createContext<AuthSessionSnapshot | null>(null);
 
-function SessionStatus({ redirecting = false }: { redirecting?: boolean }) {
+function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "unavailable"; retry: () => void }) {
+  const unavailable = status === "unavailable";
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#e8ede8] px-6">
-      <div className="w-full max-w-sm rounded-3xl border border-border bg-background p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full bg-primary/20" />
-        <p className="font-bold text-foreground">
-          {redirecting ? "در حال انتقال به صفحه ورود…" : "در حال بررسی حساب کاربری…"}
-        </p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          لطفاً چند لحظه صبر کنید.
-        </p>
-      </div>
-    </div>
+    <main className="patient-app-shell session-screen" data-state={status}>
+      <section className="session-screen__content" role={unavailable ? "alert" : "status"} aria-atomic="true">
+        {unavailable ? <>
+          <div className="session-screen__illustration" aria-hidden="true"><WifiOff size={28} strokeWidth={1.5} /></div>
+          <h1>یه کوچولو به مشکل خوردیم</h1>
+          <p>فعلاً نتونستیم اطلاعات حسابت رو بگیریم. یه بار دیگه امتحان کن؛ اگه نشد، اینترنتت رو هم چک کن.</p>
+          <Button onClick={retry}><RefreshCw size={18} aria-hidden="true" />دوباره امتحان کنیم</Button>
+        </> : <>
+          <div className="session-screen__dots" aria-hidden="true"><span /><span /><span /></div>
+          <span className="sr-only">{status === "anonymous" ? "در حال باز کردن صفحهٔ ورود…" : "در حال آماده‌سازی…"}</span>
+        </>}
+      </section>
+    </main>
   );
 }
 
-export function SessionGate({ children }: { children: React.ReactNode }) {
+export function SessionProvider({ children }: { children: React.ReactNode }) {
   const snapshot = useSyncExternalStore(
     sessionManager.subscribe,
     sessionManager.getSnapshot,
@@ -46,12 +62,6 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void sessionManager.bootstrap();
   }, []);
-
-  useEffect(() => {
-    if (snapshot.status === "anonymous") {
-      window.location.replace(loginUrl);
-    }
-  }, [snapshot.status]);
 
   const contextValue = useMemo<AuthSessionContextValue | null>(
     () =>
@@ -64,15 +74,33 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
     [snapshot],
   );
 
-  if (snapshot.status !== "authenticated" || !contextValue) {
-    return <SessionStatus redirecting={snapshot.status === "anonymous"} />;
+  return (
+    <SessionSnapshotContext.Provider value={snapshot}>
+      <AuthSessionContext.Provider value={contextValue}>
+        {children}
+      </AuthSessionContext.Provider>
+    </SessionSnapshotContext.Provider>
+  );
+}
+
+export function SessionGate({ children }: { children: React.ReactNode }) {
+  const snapshot = useContext(SessionSnapshotContext);
+
+  useEffect(() => {
+    if (snapshot?.status === "anonymous") {
+      window.location.replace(loginUrl);
+    }
+  }, [snapshot?.status]);
+
+  if (!snapshot) {
+    throw new Error("SessionGate must be used inside SessionProvider");
   }
 
-  return (
-    <AuthSessionContext.Provider value={contextValue}>
-      {children}
-    </AuthSessionContext.Provider>
-  );
+  if (snapshot.status !== "authenticated") {
+    return <SessionStatus status={snapshot.status} retry={() => { void sessionManager.refresh(); }} />;
+  }
+
+  return children;
 }
 
 export function useAuthSession(): AuthSessionContextValue {
@@ -81,4 +109,12 @@ export function useAuthSession(): AuthSessionContextValue {
     throw new Error("useAuthSession must be used inside SessionGate");
   }
   return value;
+}
+
+export function useOptionalAuthSession(): AuthSessionContextValue | null {
+  return useContext(AuthSessionContext);
+}
+
+export function useAuthSessionSnapshot() {
+  return useContext(SessionSnapshotContext);
 }

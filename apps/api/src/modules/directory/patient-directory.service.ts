@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DirectoryPublicationStatus, Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import type { PatientDoctorListQueryDto, PatientServiceListQueryDto } from './patient-directory.dto';
+import { patientServiceScope } from './patient-directory.visibility';
 
 const visible = { isActive: true, publicationStatus: DirectoryPublicationStatus.PUBLISHED };
 const doctorNotFound = () => new NotFoundException({ code: 'DOCTOR_NOT_FOUND', message: 'Doctor was not found.', details: {} });
@@ -38,10 +39,8 @@ export class PatientDirectoryService {
   async listServices(userId: string, query: PatientServiceListQueryDto) {
     const clinic = await this.patientClinic(userId);
     const where: Prisma.ServiceWhereInput = {
-      clinicId: clinic.id,
-      ...visible,
+      ...patientServiceScope(clinic.id, query),
       ...(query.query && canonical(query.query) ? { name: { contains: canonical(query.query), mode: 'insensitive' } } : {}),
-      doctorServices: { some: { ...visible, doctor: visible, ...(query.doctorId ? { doctorId: query.doctorId } : {}), ...(query.visitMode ? { visitMode: query.visitMode } : {}) } },
     };
     const [total, items] = await this.prisma.$transaction([
       this.prisma.service.count({ where }),

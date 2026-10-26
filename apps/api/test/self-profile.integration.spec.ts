@@ -99,17 +99,30 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
       onboardingState: 'IN_PROGRESS',
       submissionState: null,
       currentRevision: 0,
-      nextAction: 'CONSENT_UNAVAILABLE',
-      blockerCodes: ['CONSENT_POLICY_NOT_AVAILABLE', 'MEDICAL_INTAKE_INCOMPLETE'],
+      nextAction: 'START_MEDICAL_INTAKE',
+      blockerCodes: ['MEDICAL_INTAKE_INCOMPLETE'],
     });
     expect(status.missingFields).toEqual([
       'birthDate',
-      'sexAtBirth',
       'allergyReport',
       'chronicConditionReport',
       'currentMedicationReport',
-      'activeCurrentConsent',
     ]);
+  });
+
+  it('persists profile gender and returns it on subsequent reads', async () => {
+    const { user } = await createPatient();
+    const initial = await profiles.get(user.id);
+    expect(initial.gender).toBeNull();
+
+    const updated = await profiles.update(user.id, { firstName: 'سامان', lastName: 'رحیمی', gender: 'MALE' });
+    expect(updated.gender).toBe('MALE');
+
+    const reread = await profiles.get(user.id);
+    expect(reread).toMatchObject({ firstName: 'سامان', lastName: 'رحیمی', gender: 'MALE' });
+
+    const cleared = await profiles.update(user.id, { gender: null });
+    expect(cleared.gender).toBeNull();
   });
 
   it('reflects the current active consent and the intake revision pointer without medical payload leakage', async () => {
@@ -170,8 +183,8 @@ describe('self profile and onboarding status (PostgreSQL integration)', () => {
       submissionState: 'DRAFT',
       currentRevision: 1,
       completedRevision: null,
-      currentPolicyVersionId: policy.id,
-      activeConsentRecordId: consent.id,
+      currentPolicyVersionId: null,
+      activeConsentRecordId: null,
       nextAction: 'COMPLETE_ONBOARDING',
     });
     expect(status.missingFields).toEqual([]);

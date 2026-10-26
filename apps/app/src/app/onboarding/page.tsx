@@ -1,89 +1,94 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useAuthSession } from "@/components/auth/session-gate";
-import { ConsentPolicyPanel } from "@/components/onboarding/consent-policy-panel";
-import { MedicalDeclarationField, type MedicalDeclaration } from "@/components/onboarding/medical-declaration-field";
-import { ProfileFields, type ProfileDraft } from "@/components/onboarding/profile-fields";
-import { acceptConsent, completeMedicalIntake, loadPatientOnboarding, onboardingErrorMessage, saveMedicalIntake, type ConsentPolicy, type MedicalIntake, type OnboardingStatus, type SaveIntakeDraft, updateSelfProfile, withdrawConsent } from "@/lib/onboarding/patient-onboarding";
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, HeartPulse, LoaderCircle, Pencil, ShieldCheck } from 'lucide-react';
+import { useAuthSession } from '@/components/auth/session-gate';
+import { MedicalDeclarationField } from '@/components/onboarding/medical-declaration-field';
+import { completeMedicalIntake, loadPatientOnboarding, onboardingErrorMessage, saveMedicalIntake } from '@/lib/onboarding/patient-onboarding';
+import { intakeBody, intakeDraft, intakeIssue, optionalFields, type IntakeDraft } from '@/lib/onboarding/intake-form';
+import { toP } from '@/lib/format';
+import styles from './onboarding.module.css';
 
-type IntakeEnum<K extends "sexAtBirth" | "bloodType" | "sleepDurationBand" | "exerciseFrequency" | "stressLevel" | "tobaccoUse"> = Exclude<SaveIntakeDraft[K], null | undefined>;
-type IntakeDraft = { birthDate: string; sexAtBirth: "" | IntakeEnum<"sexAtBirth">; heightCm: string; weightKg: string; bloodType: "" | IntakeEnum<"bloodType">; sleepDurationBand: "" | IntakeEnum<"sleepDurationBand">; exerciseFrequency: "" | IntakeEnum<"exerciseFrequency">; stressLevel: "" | IntakeEnum<"stressLevel">; tobaccoUse: "" | IntakeEnum<"tobaccoUse">; allergyReport: MedicalDeclaration; chronicConditionReport: MedicalDeclaration; currentMedicationReport: MedicalDeclaration };
-const EMPTY_DECLARATION: MedicalDeclaration = { items: [] };
-const EMPTY_INTAKE: IntakeDraft = { birthDate: "", sexAtBirth: "", heightCm: "", weightKg: "", bloodType: "", sleepDurationBand: "", exerciseFrequency: "", stressLevel: "", tobaccoUse: "", allergyReport: EMPTY_DECLARATION, chronicConditionReport: EMPTY_DECLARATION, currentMedicationReport: EMPTY_DECLARATION };
-const SEX_OPTIONS = [["FEMALE", "زن"], ["MALE", "مرد"], ["INTERSEX", "اینترسکس"], ["UNKNOWN", "نمی‌دانم"], ["PREFER_NOT_TO_SAY", "ترجیح می‌دهم نگویم"]] as const;
-const OPTIONAL_FIELDS = [
-  { key: "bloodType", label: "گروه خونی", options: [["", "پاسخ نداده‌ام"], ["A_POSITIVE", "A+"], ["A_NEGATIVE", "A-"], ["B_POSITIVE", "B+"], ["B_NEGATIVE", "B-"], ["AB_POSITIVE", "AB+"], ["AB_NEGATIVE", "AB-"], ["O_POSITIVE", "O+"], ["O_NEGATIVE", "O-"], ["UNKNOWN", "نمی‌دانم"]] },
-  { key: "sleepDurationBand", label: "مدت خواب شبانه", options: [["", "پاسخ نداده‌ام"], ["LESS_THAN_5_HOURS", "کمتر از ۵ ساعت"], ["FROM_5_TO_LESS_THAN_7_HOURS", "۵ تا کمتر از ۷ ساعت"], ["FROM_7_TO_9_HOURS", "۷ تا ۹ ساعت"], ["MORE_THAN_9_HOURS", "بیشتر از ۹ ساعت"], ["UNKNOWN", "نمی‌دانم"]] },
-  { key: "exerciseFrequency", label: "دفعات ورزش", options: [["", "پاسخ نداده‌ام"], ["NONE", "ندارم"], ["ONCE_OR_TWICE_WEEKLY", "هفته‌ای ۱ یا ۲ بار"], ["THREE_OR_FOUR_TIMES_WEEKLY", "هفته‌ای ۳ یا ۴ بار"], ["DAILY", "روزانه"], ["UNKNOWN", "نمی‌دانم"]] },
-  { key: "stressLevel", label: "سطح استرس", options: [["", "پاسخ نداده‌ام"], ["LOW", "کم"], ["MODERATE", "متوسط"], ["HIGH", "زیاد"], ["VERY_HIGH", "خیلی زیاد"], ["UNKNOWN", "نمی‌دانم"]] },
-  { key: "tobaccoUse", label: "مصرف دخانیات", options: [["", "پاسخ نداده‌ام"], ["NEVER", "هرگز"], ["FORMER", "قبلاً"], ["CURRENT", "اکنون"], ["UNKNOWN", "نمی‌دانم"]] },
+type Loaded = Awaited<ReturnType<typeof loadPatientOnboarding>>;
+const steps = ['اطلاعات سلامت', 'سبک زندگی', 'مرور و ثبت'];
+const titles = ['از سلامتتان بگویید', 'کمی از روزمرهٔ شما', 'همه‌چیز آمادهٔ ثبت است'];
+const descriptions = ['سه سؤال کوتاه برای شناخت بهتر وضعیت سلامت شما. اگر از پاسخی مطمئن نیستید، «نمی‌دانم» را انتخاب کنید.', 'این بخش اختیاری است. هرچه می‌دانید بنویسید؛ می‌توانید بدون پاسخ‌دادن هم ادامه دهید.', 'پاسخ‌هایتان را بررسی کنید. بعداً هم می‌توانید اطلاعات سلامت را به‌روز کنید.'];
+const reports = [
+  { key: 'allergyReport', question: 'آیا حساسیت یا آلرژی دارید؟', hint: 'مثلاً حساسیت به دارو، غذا یا مواد دیگر.', label: 'آلرژی', placeholder: 'مثلاً پنی‌سیلین یا بادام‌زمینی' },
+  { key: 'chronicConditionReport', question: 'آیا بیماری زمینه‌ای دارید؟', hint: 'بیماری‌ای که پزشک تشخیص داده یا برای آن پیگیری می‌شوید؛ مثلاً دیابت یا فشار خون.', label: 'بیماری زمینه‌ای', placeholder: 'نام بیماری‌ها، هر مورد در یک خط' },
+  { key: 'currentMedicationReport', question: 'در حال حاضر دارو مصرف می‌کنید؟', hint: 'داروهایی که مرتب مصرف می‌کنید؛ اگر می‌دانید، مقدار مصرف را هم بنویسید.', label: 'داروهای مصرفی', placeholder: 'مثلاً لووتیروکسین، روزانه یک قرص' },
 ] as const;
-const toText = (value: unknown) => typeof value === "string" ? value : "";
-const toNumberText = (value: unknown) => typeof value === "number" ? String(value) : "";
-const toEnum = <T extends string>(value: unknown): "" | T => typeof value === "string" ? value as T : "";
-const declaration = (value: unknown): MedicalDeclaration => {
-  if (!value || typeof value !== "object") return EMPTY_DECLARATION;
-  const candidate = value as { status?: unknown; items?: unknown };
-  return { status: candidate.status === "NONE" || candidate.status === "UNKNOWN" || candidate.status === "PRESENT" ? candidate.status : undefined, items: Array.isArray(candidate.items) ? candidate.items.filter((item): item is string => typeof item === "string") : [] };
-};
-function toDraft(snapshot: MedicalIntake["snapshot"]): IntakeDraft {
-  return { birthDate: toText(snapshot?.birthDate), sexAtBirth: toEnum<IntakeEnum<"sexAtBirth">>(snapshot?.sexAtBirth), heightCm: toNumberText(snapshot?.heightCm), weightKg: toNumberText(snapshot?.weightKg), bloodType: toEnum<IntakeEnum<"bloodType">>(snapshot?.bloodType), sleepDurationBand: toEnum<IntakeEnum<"sleepDurationBand">>(snapshot?.sleepDurationBand), exerciseFrequency: toEnum<IntakeEnum<"exerciseFrequency">>(snapshot?.exerciseFrequency), stressLevel: toEnum<IntakeEnum<"stressLevel">>(snapshot?.stressLevel), tobaccoUse: toEnum<IntakeEnum<"tobaccoUse">>(snapshot?.tobaccoUse), allergyReport: declaration(snapshot?.allergyReport), chronicConditionReport: declaration(snapshot?.chronicConditionReport), currentMedicationReport: declaration(snapshot?.currentMedicationReport) };
+
+function Form({ data, token }: { data: Loaded; token: string }) {
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [draft, setDraft] = useState(() => intakeDraft(data.intake.snapshot, data.entry.birthDate));
+  const [revision, setRevision] = useState(data.intake.currentRevision);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const pending = useRef(false);
+  const field = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => { setDraft(current => ({ ...current, [key]: value })); setError(null); setNotice(null); };
+  const move = (next: number) => {
+    if (busy) return;
+    const issue = next > step ? intakeIssue(draft, step === 0) : null;
+    if (issue) { setError(issue); return; }
+    setStep(next); setError(null); setNotice(null);
+    requestAnimationFrame(() => heading.current?.focus());
+  };
+  const save = async (complete: boolean) => {
+    if (pending.current) return;
+    const issue = intakeIssue(draft, complete);
+    if (issue) { setError(issue); if (complete) setStep(intakeIssue({ ...draft, heightCm: '', weightKg: '' }, true) ? 0 : 1); return; }
+    pending.current = true; setBusy(true); setError(null); setNotice(null);
+    try {
+      const saved = await saveMedicalIntake(token, intakeBody(draft, revision));
+      setRevision(saved.currentRevision);
+      if (complete) { await completeMedicalIntake(token, saved.currentRevision); router.push(new URLSearchParams(window.location.search).get('from') === 'home' ? '/' : '/profile/medical'); }
+      else setNotice('پاسخ‌ها ذخیره شدند؛ هر زمان خواستید ادامه دهید.');
+    } catch (cause) { setError(onboardingErrorMessage(cause)); }
+    finally { pending.current = false; setBusy(false); }
+  };
+  const name = [data.profile.firstName, data.profile.lastName].filter(Boolean).join(' ');
+  const date = draft.birthDate ? new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(draft.birthDate + 'T00:00:00Z')) : 'ثبت نشده';
+  const gender = data.profile.gender === 'FEMALE' ? 'زن' : data.profile.gender === 'MALE' ? 'مرد' : 'ثبت نشده';
+  return <main className={styles.page} dir="rtl">
+    <header className={styles.topbar}><Link href="/" className={styles.back}><ArrowRight size={18} aria-hidden="true" />بازگشت به برنامه</Link><span className={styles.brand}><HeartPulse size={20} aria-hidden="true" />پروندهٔ سلامت</span></header>
+    <div className={styles.layout}>
+      <aside className={styles.sidebar}><span className={styles.eyebrow}>یک قدم برای شناخت بهتر شما</span><h2>سلامت شما،<br />با نگاه به خود شما.</h2><p>پاسخ‌های شما کمک می‌کنند اطلاعات پرونده‌تان کامل‌تر باشد. فقط دربارهٔ وضعیت خودتان پاسخ دهید.</p><ol className={styles.steps} aria-label="مراحل اطلاعات سلامت">{steps.map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} data-active={step === index} data-done={index < step}><span className={styles.stepNumber}>{index < step ? <Check size={16} aria-hidden="true" /> : toP(index + 1)}</span><span>{label}{index === 1 && <small>اختیاری</small>}</span></li>)}</ol><div className={styles.note}><ShieldCheck size={20} aria-hidden="true" /><p>این پاسخ‌ها گزارش خود شما هستند و جایگزین تشخیص و نظر پزشک نیستند.</p></div></aside>
+      <div className={styles.workspace}>
+        <section className={styles.identity} aria-label="اطلاعات ثبت‌شدهٔ شما"><span className={styles.avatar}>{name.slice(0, 1) || 'ش'}</span><div><strong>{name}</strong><p>{date} · {gender}</p><small><CheckCircle2 size={13} aria-hidden="true" />مشخصات ثبت‌نام شما ثبت شده؛ نیازی به ورود دوباره نیست.</small></div><Link href="/profile/edit" aria-label="ویرایش مشخصات فردی" className={styles.edit}><Pencil size={16} aria-hidden="true" /></Link></section>
+        <form className={styles.card} onSubmit={event => { event.preventDefault(); if (step === 2) void save(true); else move(step + 1); }}>
+          <div className={styles.cardHeader}><span className={styles.eyebrow}>مرحلهٔ {toP(step + 1)} از {toP(steps.length)}</span><h1 ref={heading} tabIndex={-1}>{titles[step]}</h1><p>{descriptions[step]}</p><div className={styles.progress} aria-hidden="true">{steps.map((item, index) => <span key={item} data-filled={index <= step} />)}</div></div>
+          <div className={styles.fields}>
+            {error && <p className={styles.error} role="alert">{error}</p>}{notice && <p className={styles.success} role="status">{notice}</p>}
+            {step === 0 && reports.map((item, index) => <MedicalDeclarationField key={item.key} label={toP(index + 1) + '. ' + item.question} description={item.hint} placeholder={item.placeholder} value={draft[item.key]} onChange={value => field(item.key, value)} disabled={busy} />)}
+            {step === 1 && <div className={styles.optional}><div className={styles.measurements}>{([['heightCm', 'قد', 'سانتی‌متر', 30, 300], ['weightKg', 'وزن', 'کیلوگرم', 2, 500]] as const).map(([key, label, unit, min, max]) => <div key={key}><label htmlFor={key}>{label}<small>اختیاری</small></label><div className={styles.unitInput}><input id={key} type="number" inputMode="decimal" min={min} max={max} step={key === 'weightKg' ? '0.01' : '1'} value={draft[key]} placeholder="—" disabled={busy} onChange={event => field(key, event.target.value)} /><span>{unit}</span></div></div>)}</div>{optionalFields.map(item => <div key={item.key}><label htmlFor={item.key}>{item.label}<small>اختیاری</small></label><select id={item.key} value={draft[item.key]} disabled={busy} onChange={event => field(item.key, event.target.value as IntakeDraft[typeof item.key])}>{item.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>)}</div>}
+            {step === 2 && <section className={styles.review} aria-label="مرور پاسخ‌ها"><div className={styles.reviewTitle}><h2>اطلاعات سلامت</h2><button type="button" onClick={() => move(0)} disabled={busy}>ویرایش</button></div><dl>{reports.map(item => <div key={item.key}><dt>{item.label}</dt><dd>{draft[item.key].status === 'NONE' ? 'ندارم' : draft[item.key].status === 'UNKNOWN' ? 'نمی‌دانم' : draft[item.key].items.map(v => v.trim()).filter(Boolean).join('، ')}</dd></div>)}</dl><div className={styles.reviewTitle}><h2>سبک زندگی</h2><button type="button" onClick={() => move(1)} disabled={busy}>ویرایش</button></div><dl>{draft.heightCm && <div><dt>قد</dt><dd>{toP(draft.heightCm)} سانتی‌متر</dd></div>}{draft.weightKg && <div><dt>وزن</dt><dd>{toP(draft.weightKg)} کیلوگرم</dd></div>}{optionalFields.filter(item => draft[item.key]).map(item => <div key={item.key}><dt>{item.label}</dt><dd>{item.options.find(([value]) => value === draft[item.key])?.[1]}</dd></div>)}</dl>{!draft.heightCm && !draft.weightKg && !optionalFields.some(item => draft[item.key]) && <p className={styles.muted}>اطلاعات اختیاری وارد نشده است.</p>}</section>}
+          </div>
+          <footer className={styles.actions}><div>{step > 0 && <button type="button" className={styles.previous} disabled={busy} onClick={() => move(step - 1)}><ArrowRight size={16} aria-hidden="true" />قبلی</button>}<button type="button" className={styles.save} disabled={busy} onClick={() => void save(false)}>ذخیره و ادامه در فرصتی دیگر</button></div><button type="submit" className={styles.primary} disabled={busy}>{busy ? <><LoaderCircle size={17} className={styles.spin} aria-hidden="true" />در حال ذخیره…</> : <>{step === 2 ? 'ثبت اطلاعات سلامت' : step === 1 ? 'ادامه و مرور پاسخ‌ها' : 'ادامه'}<ArrowLeft size={17} aria-hidden="true" /></>}</button></footer>
+        </form>
+      </div>
+    </div>
+  </main>;
 }
-function intakeBody(intake: IntakeDraft, expectedRevision: number): SaveIntakeDraft {
-  const nullable = <T extends string>(value: "" | T): T | null => value || null;
-  const medicalDeclaration = (value: MedicalDeclaration): SaveIntakeDraft["allergyReport"] => value.status ? { status: value.status, items: value.items } : null;
-  return { expectedRevision, birthDate: intake.birthDate || null, sexAtBirth: nullable(intake.sexAtBirth), heightCm: intake.heightCm ? Number(intake.heightCm) : null, weightKg: intake.weightKg ? Number(intake.weightKg) : null, bloodType: nullable(intake.bloodType), sleepDurationBand: nullable(intake.sleepDurationBand), exerciseFrequency: nullable(intake.exerciseFrequency), stressLevel: nullable(intake.stressLevel), tobaccoUse: nullable(intake.tobaccoUse), allergyReport: medicalDeclaration(intake.allergyReport), chronicConditionReport: medicalDeclaration(intake.chronicConditionReport), currentMedicationReport: medicalDeclaration(intake.currentMedicationReport) };
-}
-type ValidationIssue = { step: number; message: string };
-const today = () => new Date().toISOString().slice(0, 10);
-const validEmail = (value: string) => value.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(value.trim());
-const validNumber = (value: string, minimum: number, maximum: number) => value === "" || (Number.isFinite(Number(value)) && Number(value) >= minimum && Number(value) <= maximum);
-const profileIssue = (profile: ProfileDraft): ValidationIssue | null => {
-  if (!profile.firstName.trim() || !profile.lastName.trim()) return { step: 0, message: "نام و نام خانوادگی را کامل کنید." };
-  if (!validEmail(profile.email)) return { step: 0, message: "ایمیل را با قالب معتبر وارد کنید یا خالی بگذارید." };
-  return null;
-};
-const baseIssue = (profile: ProfileDraft, intake: IntakeDraft, requireAll: boolean): ValidationIssue | null => {
-  const profileValidation = profileIssue(profile); if (profileValidation) return profileValidation;
-  if (requireAll && (!intake.birthDate || !intake.sexAtBirth)) return { step: 0, message: "تاریخ تولد و جنس در بدو تولد را کامل کنید." };
-  if (intake.birthDate && intake.birthDate > today()) return { step: 0, message: "تاریخ تولد نمی‌تواند در آینده باشد." };
-  return null;
-};
-const declarationsIssue = (intake: IntakeDraft, requireAll: boolean): ValidationIssue | null => {
-  const declarations = [intake.allergyReport, intake.chronicConditionReport, intake.currentMedicationReport];
-  if (requireAll && declarations.some((item) => !item.status)) return { step: 1, message: "برای آلرژی، بیماری مزمن و داروهای مصرفی یک پاسخ انتخاب کنید." };
-  if (declarations.some((item) => item.status === "PRESENT" && item.items.every((value) => value.trim() === ""))) return { step: 1, message: "مواردی را که گزارش می‌کنید، هر کدام در یک خط وارد کنید." };
-  return null;
-};
-const lifestyleIssue = (intake: IntakeDraft): ValidationIssue | null => {
-  if (!validNumber(intake.heightCm, 30, 300)) return { step: 2, message: "قد باید بین ۳۰ تا ۳۰۰ سانتی‌متر باشد." };
-  if (!validNumber(intake.weightKg, 2, 500)) return { step: 2, message: "وزن باید بین ۲ تا ۵۰۰ کیلوگرم باشد." };
-  return null;
-};
 
 export default function OnboardingPage() {
-  const router = useRouter(); const { authentication } = useAuthSession();
-  const [step, setStep] = useState(0); const [profile, setProfile] = useState<ProfileDraft>({ firstName: "", lastName: "", email: "", cityName: "" }); const [phone, setPhone] = useState<string>(); const [intake, setIntake] = useState<IntakeDraft>(EMPTY_INTAKE); const [policy, setPolicy] = useState<ConsentPolicy | null>(null); const [status, setStatus] = useState<OnboardingStatus | null>(null); const [revision, setRevision] = useState(0); const [accepted, setAccepted] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null);
-  const steps = ["اطلاعات پایه", "اطلاعات خوداظهاری", "سبک زندگی", "رضایت"];
-  const updateIntake = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => setIntake((current) => ({ ...current, [key]: value }));
-  const load = useCallback(async () => { setLoading(true); setError(null); try { const response = await loadPatientOnboarding(authentication.accessToken); setProfile({ firstName: toText(response.profile.firstName), lastName: toText(response.profile.lastName), email: toText(response.profile.email), cityName: toText(response.profile.cityName) }); setPhone(response.profile.phone); setStatus(response.status); setPolicy(response.policy); setAccepted(Boolean(response.policy.acceptedConsentRecordId)); setRevision(response.intake.currentRevision); setIntake(toDraft(response.intake.snapshot)); } catch (cause) { setError(onboardingErrorMessage(cause, "load")); } finally { setLoading(false); } }, [authentication.accessToken]);
-  useEffect(() => { void load(); }, [load]);
-  const showIssue = (issue: ValidationIssue | null) => { if (!issue) return false; setStep(issue.step); setError(issue.message); setNotice(null); return true; };
-  const currentStepIssue = () => step === 0 ? baseIssue(profile, intake, true) : step === 1 ? declarationsIssue(intake, true) : step === 2 ? lifestyleIssue(intake) : !policy?.acceptedConsentRecordId ? { step: 3, message: "ابتدا رضایت را ثبت کنید." } : null;
-  const completionIssue = () => baseIssue(profile, intake, true) ?? declarationsIssue(intake, true) ?? lifestyleIssue(intake) ?? (!policy?.acceptedConsentRecordId ? { step: 3, message: "ابتدا رضایت را ثبت کنید." } : null);
-  const draftIssue = () => baseIssue(profile, intake, false) ?? declarationsIssue(intake, false) ?? lifestyleIssue(intake) ?? (!policy?.acceptedConsentRecordId ? { step: 3, message: "ابتدا رضایت را ثبت کنید." } : null);
-  const continueToNextStep = () => { if (showIssue(currentStepIssue())) return; setError(null); setNotice(null); setStep((current) => Math.min(current + 1, steps.length - 1)); };
-  const save = async (complete = false) => { if (showIssue(complete ? completionIssue() : draftIssue())) return; setSaving(true); setError(null); setNotice(null); try { const savedProfile = await updateSelfProfile(authentication.accessToken, profile); setPhone(savedProfile.phone); const savedIntake = await saveMedicalIntake(authentication.accessToken, intakeBody(intake, revision)); setRevision(savedIntake.currentRevision); if (complete) { const completed = await completeMedicalIntake(authentication.accessToken, savedIntake.currentRevision); setRevision(completed.currentRevision); setStatus((current) => current ? { ...current, onboardingState: "COMPLETE", isComplete: true } : current); router.push("/profile/medical"); } else { setNotice("پیش‌نویس ذخیره شد؛ می‌توانید بعداً ادامه دهید."); } } catch (cause) { setError(onboardingErrorMessage(cause)); } finally { setSaving(false); } };
-  const manageConsent = async (withdraw = false) => { if (!policy) return; setSaving(true); setError(null); setNotice(null); try { if (withdraw) { if (!policy.acceptedConsentRecordId) return; await withdrawConsent(authentication.accessToken, String(policy.acceptedConsentRecordId)); setPolicy((current) => current ? { ...current, acceptedConsentRecordId: null, acceptedAt: null } : current); setStatus((current) => current ? { ...current, onboardingState: "IN_PROGRESS", isComplete: false } : current); setAccepted(false); setNotice("رضایت پس گرفته شد."); } else { const consent = await acceptConsent(authentication.accessToken, policy); setPolicy((current) => current ? { ...current, acceptedConsentRecordId: consent.id, acceptedAt: consent.acceptedAt } : current); setAccepted(true); setNotice("رضایت ثبت شد؛ اطلاعات واردشده حفظ شده‌اند."); } } catch (cause) { setError(onboardingErrorMessage(cause)); } finally { setSaving(false); } };
-  const exitButton = <button type="button" onClick={() => router.push("/")} className="inline-flex items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-muted"><ArrowRight size={16} />بازگشت به برنامه</button>;
-  if (loading) return <main className="min-h-screen bg-[#e8ede8] p-6"><div className="mx-auto mb-4 flex max-w-2xl justify-start">{exitButton}</div><div className="mx-auto max-w-2xl animate-pulse rounded-3xl bg-white p-8 text-center text-sm text-muted-foreground">در حال دریافت پرونده و سیاست رضایت…</div></main>;
-  if (error && !status) return <main className="min-h-screen bg-[#e8ede8] p-6"><div className="mx-auto mb-4 flex max-w-2xl justify-start">{exitButton}</div><div role="alert" className="mx-auto max-w-2xl rounded-3xl bg-white p-8 text-center"><p className="text-sm text-red-600">{error}</p><button type="button" onClick={() => void load()} className="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">تلاش دوباره</button></div></main>;
-  return <main className="min-h-screen bg-[#e8ede8] py-6"><div className="mx-auto w-full max-w-2xl rounded-3xl bg-background shadow-xl"><div className="border-b border-border px-5 py-5"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs font-bold text-primary">پرونده اولیه</p>{exitButton}</div><h1 className="mt-3 text-xl font-bold text-foreground">اطلاعات خوداظهاری بیمار</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">این اطلاعات تشخیص یا واقعیت بالینی تأییدشده نیستند. هر زمان بخواهید می‌توانید به برنامه برگردید و بعداً ادامه دهید.</p>{status && <p className="mt-2 text-xs text-muted-foreground">وضعیت: {status.isComplete ? "تکمیل‌شده" : "در حال تکمیل"}</p>}</div><div className="flex gap-1 px-5 pt-5">{steps.map((label, index) => <button type="button" key={label} onClick={() => { setError(null); setNotice(null); setStep(index); }} className={`h-1.5 flex-1 rounded-full ${index <= step ? "bg-primary" : "bg-muted"}`} aria-label={label} />)}</div><div className="px-5 py-6">{error && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}{notice && <p role="status" className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{notice}</p>}
-      {step === 0 && <section className="space-y-5"><ProfileFields value={profile} onChange={setProfile} phone={phone} /><div><label className="mb-1 block text-xs font-bold text-muted-foreground">تاریخ تولد (میلادی) *</label><input type="date" max={today()} value={intake.birthDate} onChange={(event) => updateIntake("birthDate", event.target.value)} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div><fieldset><legend className="mb-2 text-xs font-bold text-muted-foreground">جنس در بدو تولد *</legend><div className="grid gap-2 sm:grid-cols-2">{SEX_OPTIONS.map(([value, label]) => <button type="button" key={value} onClick={() => updateIntake("sexAtBirth", value)} className={`rounded-xl border px-3 py-3 text-sm font-semibold ${intake.sexAtBirth === value ? "border-primary bg-primary text-white" : "border-border bg-muted"}`}>{label}</button>)}</div></fieldset></section>}
-      {step === 1 && <section className="space-y-4"><MedicalDeclarationField label="آلرژی‌ها *" description="گزارش خود شماست و هشدار آلرژی تأییدشده محسوب نمی‌شود." value={intake.allergyReport} onChange={(value) => updateIntake("allergyReport", value)} /><MedicalDeclarationField label="بیماری‌های مزمن *" description="گزارش خود شماست و تشخیص پزشکی نیست." value={intake.chronicConditionReport} onChange={(value) => updateIntake("chronicConditionReport", value)} /><MedicalDeclarationField label="داروهای مصرفی *" description="گزارش خود شماست و نسخه یا داروی تأییدشده نیست." value={intake.currentMedicationReport} onChange={(value) => updateIntake("currentMedicationReport", value)} /></section>}
-      {step === 2 && <section className="space-y-4"><div className="grid gap-3 sm:grid-cols-2">{([ ["heightCm", "قد (سانتی‌متر)"], ["weightKg", "وزن (کیلوگرم)"] ] as const).map(([key, label]) => <div key={key}><label className="mb-1 block text-xs font-bold text-muted-foreground">{label} (اختیاری)</label><input type="number" min={key === "heightCm" ? 30 : 2} max={key === "heightCm" ? 300 : 500} step={key === "weightKg" ? "0.01" : "1"} value={intake[key]} onChange={(event) => updateIntake(key, event.target.value)} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30" /></div>)}</div>{OPTIONAL_FIELDS.map((field) => <div key={field.key}><label className="mb-1 block text-xs font-bold text-muted-foreground">{field.label} (اختیاری)</label><select value={intake[field.key]} onChange={(event) => updateIntake(field.key, event.target.value as IntakeDraft[typeof field.key])} className="w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30">{field.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>)}</section>}
-      {step === 3 && <ConsentPolicyPanel policy={policy} accepted={accepted} accepting={saving} onAcceptedChange={setAccepted} onAccept={() => void manageConsent()} onWithdraw={() => void manageConsent(true)} />}</div><div className="flex flex-wrap gap-3 border-t border-border px-5 py-4">{step > 0 && <button type="button" disabled={saving} onClick={() => { setError(null); setNotice(null); setStep((current) => current - 1); }} className="rounded-2xl bg-muted px-5 py-3 text-sm font-bold text-foreground disabled:opacity-60">قبلی</button>}{policy?.acceptedConsentRecordId && <button type="button" disabled={saving} onClick={() => void save(false)} className="rounded-2xl border border-primary px-5 py-3 text-sm font-bold text-primary disabled:opacity-60">ذخیره پیش‌نویس</button>}<button type="button" disabled={saving} onClick={() => step === steps.length - 1 ? void save(true) : continueToNextStep()} className="mr-auto inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white disabled:opacity-60">{saving ? "در حال ذخیره…" : step === steps.length - 1 ? "ذخیره و تکمیل" : "ادامه"}<ChevronRight size={16} /></button></div></div></main>;
+  const { authentication } = useAuthSession();
+  const currentToken = useRef(authentication.accessToken);
+  useEffect(() => { currentToken.current = authentication.accessToken; }, [authentication.accessToken]);
+  const [resource, setResource] = useState<{ userId: string; data?: Loaded; error?: string } | null>(null);
+  const [retry, setRetry] = useState(0);
+  useEffect(() => {
+    let ignore = false;
+    const token = currentToken.current;
+    loadPatientOnboarding(token).then(data => { if (!ignore) setResource({ userId: authentication.user.id, data }); }).catch(cause => { if (!ignore) setResource({ userId: authentication.user.id, error: onboardingErrorMessage(cause, 'load') }); });
+    return () => { ignore = true; };
+  }, [authentication.user.id, retry]);
+  const current = resource?.userId === authentication.user.id ? resource : null;
+  if (current?.data) return <Form key={authentication.user.id} data={current.data} token={authentication.accessToken} />;
+  return <main className={styles.loading} dir="rtl"><HeartPulse size={32} aria-hidden="true" /><h1>پروندهٔ سلامت شما</h1>{current?.error ? <><p role="alert">{current.error}</p><button onClick={() => { setResource(null); setRetry(value => value + 1); }}>تلاش دوباره</button><Link href="/">بازگشت به برنامه</Link></> : <p role="status">در حال دریافت اطلاعات ثبت‌شده…</p>}</main>;
 }

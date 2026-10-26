@@ -1,6 +1,6 @@
 # قرارداد پروتکل سداد IPG — نسخه ۱
 
-- وضعیت: `FROZEN_FOR_IMPLEMENTATION — F09-T01; SADAD_GO_LIVE_BLOCKED`
+- وضعیت: `FROZEN_PROTOCOL — LIVE_RUNTIME_CAPABLE; production acceptance pending`
 - مالک freeze: `F09-T01`
 - مالک implementation: `F09-T08`
 - منبع اصلی: راهنمای رسمی سداد ارائه‌شده توسط مالک محصول، با سربرگ نسخه `1.10` و ردیف تاریخچه
@@ -20,10 +20,9 @@
 
 ## وضعیت فعال‌سازی و capability
 
-این قرارداد mapping مستند و مرز fail-closed را freeze می‌کند، نه حق ارسال request واقعی. تا دریافت تأیید
-پذیرندگی، `providerUnit=UNCONFIRMED` است و Sadad نمی‌تواند `enabled` یا `default` شود. بنابراین
-`createPayment`، `parseCallback` و `verifyPayment` فقط portهای قابل‌پیاده‌سازی در `F09-T08` هستند؛ هیچ
-تماس واقعی تا حذف `SADAD_GO_LIVE_BLOCKED` مجاز نیست.
+این قرارداد mapping مستند و مرز fail-closed را freeze می‌کند. مالک محصول در `2026-10-11` اجرای runtime واقعی را
+برای مسیر کنترل‌شدهٔ پذیرش تأیید کرد. deployment فقط با `SADAD_TRANSPORT_MODE=live` کامل اجازه تماس شبکه دارد و
+ADMIN باید provider را جداگانه enabled/default کند؛ در غیر این صورت `SADAD_GO_LIVE_BLOCKED` حفظ می‌شود.
 
 | Capability | وضعیت freeze‌شده |
 |---|---|
@@ -42,10 +41,9 @@
 | network/deployment | `UNCONFIRMED` | static egress IP و HTTPS callback domain ثبت‌شده. |
 | credential/test environment | `UNCONFIRMED` | credential خارج از Git و محیط/روش آزمون تأییدشده. |
 
-تا تکمیل همهٔ این ردیف‌ها، runtime باید با `SADAD_GO_LIVE_BLOCKED` enable/default، attempt واقعی، callback
-runtime و هر request واقعی را رد کند. این gate، catalog، cart، checkout، inventory، persistence provider-neutral
-یا DONE شدن implementation F09-T08 را مسدود نمی‌کند. آزمون پذیرندگی و production sign-off صریحاً به Phase 12
-منتقل شده‌اند.
+mode `live` اظهار عملیاتی deployer دربارهٔ آماده‌بودن ردیف‌های environment است و مسیر تراکنش کنترل‌شده را باز
+می‌کند؛ production sign-off فقط پس از ثبت evidence همین جدول انجام می‌شود. mode ناقص/disabled یا provider غیرفعال
+همچنان attempt واقعی را با `SADAD_GO_LIVE_BLOCKED` رد می‌کند.
 
 ## ترتیب رسمی عملیات
 
@@ -216,6 +214,6 @@ API refund یا دلیل کافی برای ثبت Refund موفق در Mushroom 
 - تست کدهای `0`, `100`, `-1`, `101`، timeout، duplicate callback، mismatch و no-log redaction
 - مانیتور/alert برای create، Verify retry، reconciliation و clock skew
 
-تا تکمیل این گیت‌ها provider فقط به‌صورت `configured-for-review` و `disabled` دیده می‌شود؛ `enabled/default`
-برای پرداخت واقعی یا ایجاد attempt واقعی نمی‌شود. این‌ها مانع DONE شدن F09-T08 نیستند. credential واقعی، PDF، نمونهٔ .NET و callback payload
-در Git، fixture، response، log یا audit metadata قرار نمی‌گیرند.
+این گیت‌ها شرط sign-off نهایی‌اند. runtime صریح `live` همراه با revision رمزنگاری‌شده و enable/default مدیر، مسیر
+پذیرش کنترل‌شده را فعال می‌کند؛ credential واقعی، PDF، نمونهٔ .NET و callback payload در Git، fixture، response،
+log یا audit metadata قرار نمی‌گیرند.

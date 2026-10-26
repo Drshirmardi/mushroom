@@ -16,14 +16,30 @@ PUBLIC_WEB_URL=https://dev.example.com
 PUBLIC_APP_URL=https://dev-app.example.com
 PUBLIC_DASHBOARD_URL=https://dev-dashboard.example.com
 APP_ORIGINS=https://dev.example.com,https://dev-app.example.com,https://dev-dashboard.example.com
+# The same APP_ORIGINS list is normalized to hostnames and passed to Next's
+# allowedDevOrigins for dev assets and the /_next/hmr WebSocket.
 TRUSTED_PROXIES=127.0.0.1/32
-PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
 LOG_LEVEL=debug
+JWT_ACCESS_ISSUER=sabz-zendegi-api
+JWT_ACCESS_AUDIENCE=sabz-zendegi-frontends
+COMMERCE_RESERVATION_TTL_MINUTES=20
+PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_TRANSPORT_MODE=disabled
+SMS_REQUEST_TIMEOUT_MS=5000
+# Keep disabled until the callback, redirect profile, static outbound IP and encrypted merchant credential are ready.
+# Once set to live, the administrator still explicitly enables/defaults Sadad in Dashboard > Settings > Payments.
+SADAD_TRANSPORT_MODE=disabled
+SADAD_REQUEST_TIMEOUT_MS=5000
+SADAD_RETURN_URL=https://dev-api.example.com/v1/payments/providers/sadad/callback
+SADAD_RESULT_URL=https://dev-app.example.com/store/order-success
+# Set exactly the redirect shape confirmed for this merchant: PDF_PURCHASE, PHP_VPG_PURCHASE or DOTNET_PURCHASE_INDEX.
+SADAD_REDIRECT_PROFILE=
 
-API_PORT=127.0.0.1:3203
-WEB_PORT=127.0.0.1:3200
-APP_PORT=127.0.0.1:3201
-DASHBOARD_PORT=127.0.0.1:3202
+API_PORT=127.0.0.1:3303
+WEB_PORT=127.0.0.1:3300
+APP_PORT=127.0.0.1:3301
+DASHBOARD_PORT=127.0.0.1:3302
 
 # Conservative defaults for sharing a host with release environments.
 DEV_POSTGRES_CPUS=0.50
@@ -31,8 +47,28 @@ DEV_POSTGRES_MEMORY=512m
 DEV_API_CPUS=1.00
 DEV_API_MEMORY=1g
 DEV_WEB_CPUS=0.75
-DEV_WEB_MEMORY=768m
 DEV_APP_CPUS=0.75
-DEV_APP_MEMORY=768m
 DEV_DASHBOARD_CPUS=0.75
-DEV_DASHBOARD_MEMORY=768m
+
+# Secret values are intentionally not placed in runtime.env. Create these files under:
+# /home/deploy/mushroom/dev/secrets/{postgres_password,database_url,jwt_access_secret,
+# refresh_token_pepper,otp_pepper,sms_credential_encryption_key,sms_credential_decryption_keys,
+# payment_credential_encryption_key,payment_credential_decryption_keys}
+
+# Application runtime options (credentials stay in secrets/).
+BILLING_BOOKING_HOLD_MINUTES=10
+# Select exactly one: disabled | r2 (Cloudflare) | arvancloud. Production stays disabled.
+PRODUCT_MEDIA_STORAGE_MODE=disabled
+R2_ENDPOINT=
+R2_BUCKET=
+R2_REGION=auto
+R2_REQUEST_TIMEOUT_MS=5000
+# Arvan profile: endpoint must match the bucket region; secrets never go in Git.
+ARVAN_ENDPOINT=
+ARVAN_BUCKET=
+ARVAN_REGION=default
+ARVAN_REQUEST_TIMEOUT_MS=5000
+# secrets/arvan_access_key_id and secrets/arvan_secret_access_key (dev only).
+
+# Required before deploying the ejabberd-only chat branch: merge deploy/ejabberd/env.example
+# into runtime.env and install chat.compose.yaml as described in deploy/ejabberd/README.md.

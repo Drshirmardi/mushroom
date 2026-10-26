@@ -4,13 +4,20 @@ on:
   push:
     branches: [dev]
   workflow_dispatch:
+    inputs:
+      sms_transport_mode:
+        description: Optional SMS transport mode to apply on the shared dev VPS before sync
+        required: false
+        default: unchanged
+        type: choice
+        options: [unchanged, disabled, live]
 
 permissions:
   contents: read
 
 concurrency:
   group: shared-dev-vps
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   sync:
@@ -44,6 +51,18 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/ssh/id"
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
           chmod 600 "$RUNNER_TEMP/ssh/id" "$RUNNER_TEMP/ssh/known_hosts"
+      - name: Apply requested shared-dev SMS runtime mode
+        if: github.event_name == 'workflow_dispatch' && inputs.sms_transport_mode != 'unchanged'
+        env:
+          MODE: ${{ inputs.sms_transport_mode }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY_PATH: ${{ runner.temp }}/ssh/id
+          VPS_KNOWN_HOSTS_PATH: ${{ runner.temp }}/ssh/known_hosts
+        run: |
+          case "$MODE" in live|disabled) ;; *) exit 2 ;; esac
+          node scripts/set-dev-sms-runtime.mjs "$MODE"
       - name: Sync source and verify shared dev
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}

@@ -4,13 +4,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
+import { createTestAccessToken } from './auth-test-support';
 import { createReleaseAdminTestPrincipal, disposeReleaseAdminTestPrincipal, type ReleaseAdminTestPrincipal } from './release-admin-test-support';
 
 describe('admin commerce catalog (PostgreSQL API integration)', () => {
   let app: NestFastifyApplication; let prisma: PrismaService; let adminToken: string; let staffToken: string; let admin: ReleaseAdminTestPrincipal;
   const suffix = randomUUID().slice(0, 8);
   const subjectIds = new Set<string>();
-  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); const tokens = app.get(AccessTokenService); admin = await createReleaseAdminTestPrincipal(prisma, tokens); adminToken = admin.token; staffToken = await tokens.issue({ userId: randomUUID(), sessionId: randomUUID(), roles: ['STAFF'] }); }, 30_000);
+  beforeAll(async () => { app = await createApiApplication(); await app.init(); prisma = app.get(PrismaService); const tokens = app.get(AccessTokenService); admin = await createReleaseAdminTestPrincipal(prisma, tokens); adminToken = admin.token; staffToken = (await createTestAccessToken(prisma, tokens, ['STAFF'])).token; }, 30_000);
   afterAll(async () => { await disposeReleaseAdminTestPrincipal(prisma, admin); await app.close(); });
   afterEach(async () => {
     const products = await prisma.commerceProduct.findMany({ where: { slug: `product-${suffix}` }, select: { id: true } });
@@ -47,6 +48,14 @@ describe('admin commerce catalog (PostgreSQL API integration)', () => {
     expect(inventory.statusCode).toBe(200); expect(inventory.json().onHandQuantity).toBe(9);
     const archived = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(), payload: { status: 'ARCHIVED' } });
     expect(archived.statusCode).toBe(200); expect(archived.json().status).toBe('ARCHIVED');
+    const deniedRestore = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(staffToken), payload: { status: 'DRAFT' } });
+    expect(deniedRestore.statusCode).toBe(403);
+    const directRepublish = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(), payload: { status: 'ACTIVE' } });
+    expect(directRepublish.statusCode).toBe(409); expect(directRepublish.json().code).toBe('COMMERCE_LIFECYCLE_INVALID');
+    const restored = await app.inject({ method: 'PATCH', url: `/v1/admin/commerce/products/${productId}`, headers: headers(), payload: { status: 'DRAFT' } });
+    expect(restored.statusCode).toBe(200);
+    expect(restored.json()).toMatchObject({ id: productId, status: 'DRAFT', skus: [expect.objectContaining({ id: skuId, currentPriceToman: '125000', onHandQuantity: 9 })] });
+    expect((await prisma.commerceProduct.findUniqueOrThrow({ where: { id: productId } })).status).toBe('DRAFT');
     const list = await app.inject({ method: 'GET', url: '/v1/admin/commerce/products?page=1&pageSize=1', headers: headers() });
     expect(list.statusCode).toBe(200); expect(list.json()).toMatchObject({ page: 1, pageSize: 1 });
     const inventoryRecord = await prisma.inventoryItem.findUniqueOrThrow({ where: { skuId }, select: { id: true } });

@@ -10,12 +10,13 @@ export type Authentication = components["schemas"]["AuthenticationResponseDto"];
 export type AuthSessionSnapshot =
   | { status: "checking"; authentication: null }
   | { status: "authenticated"; authentication: Authentication }
-  | { status: "anonymous"; authentication: null };
+  | { status: "anonymous" | "unavailable"; authentication: null };
 
 type ApiClient = ReturnType<typeof createApiClient>;
 type Listener = () => void;
 
 const EXPIRY_SAFETY_WINDOW_MS = 5_000;
+const REFRESH_RETRY_DELAYS_MS = [250, 750, 1_500];
 
 export class AuthSessionManager {
   private snapshot: AuthSessionSnapshot = {
@@ -25,6 +26,7 @@ export class AuthSessionManager {
   private readonly listeners = new Set<Listener>();
   private refreshInFlight: Promise<AuthSessionSnapshot> | null = null;
   private accessTokenExpiresAt = 0;
+  private refreshRetryAfter = 0;
 
   constructor(
     private readonly client: ApiClient,
@@ -42,7 +44,8 @@ export class AuthSessionManager {
   async bootstrap(): Promise<AuthSessionSnapshot> {
     if (
       this.snapshot.status === "authenticated" &&
-      this.now() < this.accessTokenExpiresAt - EXPIRY_SAFETY_WINDOW_MS
+      (this.now() < this.accessTokenExpiresAt - EXPIRY_SAFETY_WINDOW_MS
+        || this.now() < this.refreshRetryAfter)
     ) {
       return this.snapshot;
     }
@@ -75,6 +78,7 @@ export class AuthSessionManager {
       if (!response.ok) return false;
 
       this.accessTokenExpiresAt = 0;
+      this.refreshRetryAfter = 0;
       this.update({ status: "anonymous", authentication: null });
       return true;
     } catch {
@@ -83,24 +87,45 @@ export class AuthSessionManager {
   }
 
   private async performRefresh(): Promise<AuthSessionSnapshot> {
-    this.update({ status: "checking", authentication: null });
-
-    try {
-      const { data } = await withRequestTimeout(
-        this.client.POST("/v1/auth/refresh"),
-        this.refreshTimeoutMs,
-      );
-      if (!data) {
-        this.accessTokenExpiresAt = 0;
-        return this.update({ status: "anonymous", authentication: null });
-      }
-
-      this.accessTokenExpiresAt = this.now() + data.expiresIn * 1_000;
-      return this.update({ status: "authenticated", authentication: data });
-    } catch {
-      this.accessTokenExpiresAt = 0;
-      return this.update({ status: "anonymous", authentication: null });
+    if (this.snapshot.status !== "authenticated") {
+      this.update({ status: "checking", authentication: null });
     }
+
+    for (const delay of [...REFRESH_RETRY_DELAYS_MS, null]) {
+      try {
+        const { data, response } = await withRequestTimeout(
+          this.client.POST("/v1/auth/refresh"),
+          this.refreshTimeoutMs,
+        );
+        if (data) {
+          this.accessTokenExpiresAt = this.now() + data.expiresIn * 1_000;
+          this.refreshRetryAfter = 0;
+          return this.update({ status: "authenticated", authentication: data });
+        }
+        if (response.status === 409 && delay !== null) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+        if (response.status === 401) return this.clear();
+        return this.unavailable();
+      } catch {
+        return this.unavailable();
+      }
+    }
+
+    return this.unavailable();
+  }
+
+  private clear(): AuthSessionSnapshot {
+    this.accessTokenExpiresAt = 0;
+    this.refreshRetryAfter = 0;
+    return this.update({ status: "anonymous", authentication: null });
+  }
+
+  private unavailable(): AuthSessionSnapshot {
+    this.refreshRetryAfter = this.now() + 5_000;
+    if (this.snapshot.status === "authenticated") return this.snapshot;
+    return this.update({ status: "unavailable", authentication: null });
   }
 
   private update(snapshot: AuthSessionSnapshot): AuthSessionSnapshot {

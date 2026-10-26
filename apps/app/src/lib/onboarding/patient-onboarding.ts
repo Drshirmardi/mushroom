@@ -58,26 +58,26 @@ export function loadMedicalIntake(accessToken: string, client: Client = apiClien
 
 export async function loadPatientOnboarding(accessToken: string, client: Client = apiClient) {
   const headers = authorizationHeaders(accessToken);
-  const [profile, status, policy, intake] = await Promise.all([
+  const [profile, entry, intake] = await Promise.all([
     expectData(client.GET("/v1/patients/me", { headers })),
-    expectData(client.GET("/v1/patients/me/onboarding-status", { headers })),
-    expectData(client.GET("/v1/patients/me/consent-policy", { headers })),
+    expectData(client.GET("/v1/patients/me/entry", { headers })),
     expectData(client.GET("/v1/patients/me/medical-intake", { headers })),
   ]);
-  return { profile, status, policy, intake };
+  return { profile, entry, intake };
 }
 
 export function updateSelfProfile(
   accessToken: string,
-  body: components["schemas"]["UpdateSelfProfileDto"],
+  body: Omit<components["schemas"]["UpdateSelfProfileDto"], "gender"> & { gender?: "FEMALE" | "MALE" | "" | null },
   client: Client = apiClient,
 ) {
   const optionalText = (value: string | null | undefined) =>
     typeof value === "string" && value.trim() === "" ? null : value;
-  const normalizedBody = {
+  const normalizedBody: components["schemas"]["UpdateSelfProfileDto"] = {
     ...body,
     email: optionalText(body.email),
     cityName: optionalText(body.cityName),
+    gender: body.gender === "" ? null : body.gender,
   };
   return expectData(client.PATCH("/v1/patients/me", {
     headers: authorizationHeaders(accessToken),

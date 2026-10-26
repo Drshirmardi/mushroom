@@ -11,7 +11,7 @@ import { Faq } from "@/components/sections/Faq";
 
 export default function HomePage() {
     return (
-        <div className="min-h-screen bg-background text-foreground pb-20 md:pb-0">
+        <div className="min-h-screen overflow-x-clip bg-background text-foreground">
             <Header />
             <Hero />
             <Services />

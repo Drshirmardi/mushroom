@@ -1,4 +1,5 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BillingService } from '../billing/billing.service';
 import { createHash } from 'node:crypto';
 
 import { AppointmentStatus, AppointmentStatusHistoryAction, Prisma } from '../../generated/prisma/client';
@@ -25,6 +26,7 @@ export class PatientAppointmentsService {
     private readonly eligibility: PatientBookingEligibilityService,
     private readonly availability: PatientAvailabilityService,
     private readonly reminders: ReminderService,
+    private readonly billing: BillingService,
   ) {}
 
   async create(userId: string, body: CreatePatientAppointmentDto, rawKey: string | string[] | undefined): Promise<AppointmentResult> {
@@ -33,6 +35,8 @@ export class PatientAppointmentsService {
     const requestHash = this.requestHash(body.doctorServiceId, startsAt);
     const existing = await this.prisma.appointment.findUnique({ where: { idempotencyActorUserId_idempotencyKey: { idempotencyActorUserId: userId, idempotencyKey: key } } });
     if (existing) return this.idempotentResult(existing, requestHash);
+    const priced = await this.prisma.doctorService.findUnique({ where: { id: body.doctorServiceId }, select: { priceAmount: true } });
+    if (priced && priced.priceAmount > 0) throw new ConflictException({ code: 'APPOINTMENT_PAYMENT_REQUIRED', message: 'Full payment through a booking intent is required.', details: { nextAction: 'CREATE_APPOINTMENT_BILLING_INTENT' } });
     // These checks use the shared client. Running them from an interactive transaction would
     // pin every pool connection during a concurrent booking burst, preventing the checks from
     // acquiring a connection at all. Capacity itself is rechecked after the transaction lock.
@@ -54,6 +58,7 @@ export class PatientAppointmentsService {
         if (active) throw conflict();
         const now = new Date();
         const hold = await tx.appointmentHold.create({ data: { clinicId: patient.clinicId, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, expiresAt: new Date(now.getTime() + 60_000) } });
+        await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         const created = await tx.appointment.create({
           data: {
             clinicId: patient.clinicId,
@@ -91,12 +96,16 @@ export class PatientAppointmentsService {
     const where = { clinicId: patient.clinicId, patientId: patient.id };
     const [total, items] = await this.prisma.$transaction([
       this.prisma.appointment.count({ where }),
-      this.prisma.appointment.findMany({ where, orderBy: [{ startsAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
+      this.prisma.appointment.findMany({ include: { doctorService: { select: { visitMode: true } } }, where, orderBy: [{ startsAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),
     ]);
-    return { items: items.map((item) => this.response(item)), page: query.page, pageSize: query.pageSize, total };
+    return { items: items.map(({ doctorService, ...item }) => ({ ...this.response(item), visitMode: doctorService.visitMode })), page: query.page, pageSize: query.pageSize, total };
   }
 
-  async get(userId: string, id: string) { return this.response(await this.owned(userId, id)); }
+  async get(userId: string, id: string) {
+    const appointment = await this.owned(userId, id);
+    const offering = await this.prisma.doctorService.findUnique({ where: { id: appointment.doctorServiceId }, select: { visitMode: true } });
+    return { ...this.response(appointment), visitMode: offering?.visitMode };
+  }
 
   async history(userId: string, id: string, query: AppointmentTimelineQueryDto) {
     const appointment = await this.owned(userId, id);
@@ -114,6 +123,7 @@ export class PatientAppointmentsService {
       const appointment = await this.owned(userId, id, tx);
       if ((appointment.status !== AppointmentStatus.PENDING && appointment.status !== AppointmentStatus.CONFIRMED) || appointment.startsAt <= new Date()) throw changeNotAllowed();
       const cancelled = await tx.appointment.update({ where: { id }, data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date(), cancelReason: reason, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.CANCELLED, action: AppointmentStatusHistoryAction.CANCELLED, actorUserId: userId, reason, metadata: {} } } } });
+      await this.billing.cancelAppointment(tx, cancelled.id, { actorUserId: userId, actorSessionId: null, requestId: `appointment-cancel:${id}`, ipAddress: null });
       await this.reminders.cancelAppointment(tx, cancelled.id, 'Appointment cancelled');
       await this.activity(tx, cancelled, 'APPOINTMENT_CANCELLED', { action: AppointmentStatusHistoryAction.CANCELLED });
       return this.response(cancelled);
@@ -133,12 +143,11 @@ export class PatientAppointmentsService {
         const offering = await tx.doctorService.findFirst({ where: { id: body.doctorServiceId, clinicId: appointment.clinicId, isActive: true, publicationStatus: 'PUBLISHED', doctor: { isActive: true, publicationStatus: 'PUBLISHED' }, service: { isActive: true, publicationStatus: 'PUBLISHED' } }, select: { id: true, doctorId: true, durationMinutes: true, priceAmount: true, currency: true } });
         if (!offering || candidate.endsAt.getTime() !== startsAt.getTime() + offering.durationMinutes * 60_000) throw unavailable();
         const now = new Date();
-        const hold = await tx.appointmentHold.create({ data: { clinicId: appointment.clinicId, doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, expiresAt: new Date(now.getTime() + 60_000) } });
+        await this.billing.assertReschedulePrice(tx, id, offering.priceAmount);
         const updated = await tx.appointment.update({ where: { id }, data: { doctorServiceId: offering.id, doctorId: offering.doctorId, startsAt, endsAt: candidate.endsAt, status: AppointmentStatus.PENDING, priceAmount: offering.priceAmount, currency: offering.currency, priceCapturedAt: now, statusHistory: { create: { fromStatus: appointment.status, toStatus: AppointmentStatus.PENDING, action: AppointmentStatusHistoryAction.RESCHEDULED, actorUserId: userId, metadata: { previous: { startsAt: appointment.startsAt.toISOString(), endsAt: appointment.endsAt.toISOString(), priceAmount: appointment.priceAmount, currency: appointment.currency }, current: { startsAt: startsAt.toISOString(), endsAt: candidate.endsAt.toISOString(), priceAmount: offering.priceAmount, currency: offering.currency } } } } } });
         if (appointment.startsAt.getTime() !== updated.startsAt.getTime()) await this.reminders.cancelAppointment(tx, updated.id, 'Appointment rescheduled');
         await this.reminders.appointment(tx, { id: updated.id, clinicId: updated.clinicId, patientId: updated.patientId, recipientId: userId, startsAt: updated.startsAt });
         await this.activity(tx, updated, 'APPOINTMENT_RESCHEDULED', { action: AppointmentStatusHistoryAction.RESCHEDULED });
-        await tx.appointmentHold.update({ where: { id: hold.id }, data: { releasedAt: new Date() } });
         return this.response(updated);
       });
     } catch (error) { if (this.isExclusion(error)) throw conflict(); throw error; }

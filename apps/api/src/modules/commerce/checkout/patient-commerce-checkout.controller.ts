@@ -3,13 +3,14 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse,
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
-import { CheckoutCommerceOrderDto, CommerceAddressDto, CommerceOrderDto, CommerceShippingOptionDto, CreateCommerceAddressDto, PatientCommerceReceiptDto, UpdateCommerceAddressDto } from './commerce-checkout.dto';
+import { CheckoutCommerceOrderDto, CommerceAddressDto, CommerceOrderDto, CommerceShippingOptionDto, CreateCommerceAddressDto, PatientCommerceReceiptDto, UpdateCommerceAddressDto, PreviewCommerceDiscountDto, CommerceDiscountPreviewDto } from './commerce-checkout.dto';
 import { CommerceCheckoutService } from './commerce-checkout.service';
 import { CommerceOrderOperationsService } from '../orders/commerce-order-operations.service';
 
 @ApiTags('Patient Commerce') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @Controller('patients/me/commerce')
 export class PatientCommerceCheckoutController {
   constructor(private readonly commerce: CommerceCheckoutService) {}
+  @Post('discount-preview') @HttpCode(HttpStatus.OK) @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceDiscountPreview', summary: 'Validate and price a cart discount without creating an order or reservation' }) @ApiOkResponse({ type: CommerceDiscountPreviewDto }) previewDiscount(@Req() request: AuthenticatedRequest, @Body() body: PreviewCommerceDiscountDto) { return this.commerce.previewDiscount(request.auth.userId, body.discountCode); }
   @Get('addresses') @RequirePermissions(PERMISSIONS.COMMERCE_READ_SELF) @ApiOperation({ operationId: 'patientCommerceAddressesList', summary: 'List the signed-in patient checkout addresses' }) @ApiOkResponse({ type: CommerceAddressDto, isArray: true }) addresses(@Req() request: AuthenticatedRequest) { return this.commerce.listAddresses(request.auth.userId); }
   @Post('addresses') @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceAddressesCreate', summary: 'Create a signed-in patient checkout address' }) @ApiCreatedResponse({ type: CommerceAddressDto }) createAddress(@Req() request: AuthenticatedRequest, @Body() body: CreateCommerceAddressDto) { return this.commerce.createAddress(request.auth.userId, body); }
   @Patch('addresses/:addressId') @RequirePermissions(PERMISSIONS.COMMERCE_WRITE_SELF) @ApiOperation({ operationId: 'patientCommerceAddressesUpdate', summary: 'Update a signed-in patient checkout address' }) @ApiOkResponse({ type: CommerceAddressDto }) updateAddress(@Req() request: AuthenticatedRequest, @Param('addressId', new ParseUUIDPipe({ version: '4' })) addressId: string, @Body() body: UpdateCommerceAddressDto) { return this.commerce.updateAddress(request.auth.userId, addressId, body); }

@@ -7,7 +7,7 @@ export type PaymentProviderDescriptor = {
   capabilities: Record<PaymentCapability, PaymentCapabilityState>;
 };
 
-export type ProviderCreateInput = { providerOrderId: bigint; commerceAmountToman: bigint; providerAmount: bigint; providerUnit: string; credential: Record<string, string>; returnUrl?: string; redirectProfile?: string };
+export type ProviderCreateInput = { providerOrderId: bigint; commerceAmountToman?: bigint; amountRial?: bigint; providerAmount: bigint; providerUnit: string; credential: Record<string, string>; returnUrl?: string; redirectProfile?: string };
 /** A non-success request has no redirect token. Callers must persist the safe outcome, never invent one. */
 export type ProviderCreateResult = { token?: string; redirectUrl?: string; providerResultCode: string };
 export type ProviderCallback = { providerOrderId: bigint; token: string; resultCode: string };
@@ -18,5 +18,5 @@ export interface PaymentProviderPort {
   readonly descriptor: PaymentProviderDescriptor;
   createPayment(input: ProviderCreateInput): Promise<ProviderCreateResult>;
   parseCallback(input: unknown): ProviderCallback;
-  verifyPayment(input: { token: string; credential: Record<string, string> }): Promise<ProviderVerifyResult>;
+  verifyPayment(input: { token: string; credential: Record<string, string>; providerOrderId?: bigint }): Promise<ProviderVerifyResult>;
 }

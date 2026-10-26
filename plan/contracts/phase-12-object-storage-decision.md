@@ -36,3 +36,7 @@ backup/restore responsibility and environment secret boundary before adding stor
 
 Until then, the Phase 12 storage acceptance is the documented `N/A` decision above; it does not create a deferred
 implementation obligation or alter the independently blocked PostgreSQL recovery and provider gates.
+
+## Scoped development re-entry — 2026-10-14
+
+The product owner explicitly approved Store product images as a new development binary consumer. The historical decision above and its initial-release acceptance remain intact. See [ADR-0015](../decisions/ADR-0015-store-product-media-development.md) and [store-product-media-v1](store-product-media-v1.md). This addendum authorizes only the approved development scope; no production storage activation, real R2 access, medical/chat attachments or frozen release rewrite is authorized.

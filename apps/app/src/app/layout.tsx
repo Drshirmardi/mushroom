@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
-import { SessionGate } from "@/components/auth/session-gate";
+import { SessionProvider } from "@/components/auth/session-gate";
+import { PatientEntryGate } from "@/components/auth/patient-entry-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -19,9 +20,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fa" dir="rtl">
+      <head>
+        <link rel="preload" href="/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <script src="/runtime-config.js" />
+      </head>
       <body className="antialiased">
-        <Script src="/runtime-config.js" strategy="beforeInteractive" />
-        <SessionGate>{children}</SessionGate>
+        <SessionProvider><PatientEntryGate>{children}</PatientEntryGate></SessionProvider>
       </body>
     </html>
   );

@@ -12,6 +12,7 @@ x-node-service: &node-service
     PNPM_HOME: /home/dev/.local/share/pnpm
     NEXT_TELEMETRY_DISABLED: "1"
     TURBO_TELEMETRY_DISABLED: "1"
+    NEXT_ALLOWED_DEV_ORIGINS: "${APP_ORIGINS:?set explicit dev browser origins}"
   volumes: &node-volumes
     - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
     - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
@@ -39,7 +40,7 @@ services:
   bootstrap:
     image: mushroom-dev-runtime:local
     build:
-      context: ../..
+      context: "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}"
       dockerfile: deploy/vps/Dockerfile.dev
     user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
     working_dir: /workspace
@@ -49,11 +50,20 @@ services:
       <<: *node-environment
       DEV_INSTALL_DEPENDENCIES: "${DEV_INSTALL_DEPENDENCIES:-false}"
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
+      DEV_BUILD_API_CLIENT: "${DEV_BUILD_API_CLIENT:-false}"
+      DEV_GENERATE_PRISMA: "${DEV_GENERATE_PRISMA:-false}"
+      DEV_RUN_MIGRATIONS: "${DEV_RUN_MIGRATIONS:-false}"
+      DEV_COMPILE_API: "${DEV_COMPILE_API:-false}"
+      DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
+      DEV_WRITE_RUNTIME_CONFIG: "${DEV_WRITE_RUNTIME_CONFIG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
-    volumes: *node-volumes
+    volumes:
+      - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
+      - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
+      - "${MUSHROOM_ENV_ROOT:?set the dev root}/bootstrap:/run/mushroom-installation"
     secrets: [database_url]
     command: ["bash", "deploy/vps/dev-service.sh", "bootstrap"]
     profiles: [tools]
@@ -61,19 +71,51 @@ services:
   api:
     <<: *node-service
     command: ["bash", "deploy/vps/dev-service.sh", "api"]
+    volumes:
+      - "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}:/workspace"
+      - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
+      - "${MUSHROOM_ENV_ROOT:?set the dev root}/secrets:/run/optional-secrets:ro"
     environment:
       <<: *node-environment
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
+      JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
+      COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"
+      BILLING_BOOKING_HOLD_MINUTES: "${BILLING_BOOKING_HOLD_MINUTES:-10}"
+      PRODUCT_MEDIA_STORAGE_MODE: "${PRODUCT_MEDIA_STORAGE_MODE:-disabled}"
+      R2_ENDPOINT: "${R2_ENDPOINT:-}"
+      R2_BUCKET: "${R2_BUCKET:-}"
+      R2_REGION: "${R2_REGION:-auto}"
+      R2_ACCESS_KEY_ID_FILE: /run/optional-secrets/r2_access_key_id
+      R2_SECRET_ACCESS_KEY_FILE: /run/optional-secrets/r2_secret_access_key
+      R2_REQUEST_TIMEOUT_MS: "${R2_REQUEST_TIMEOUT_MS:-5000}"
+      ARVAN_ENDPOINT: "${ARVAN_ENDPOINT:-}"
+      ARVAN_BUCKET: "${ARVAN_BUCKET:-}"
+      ARVAN_REGION: "${ARVAN_REGION:-default}"
+      ARVAN_ACCESS_KEY_ID_FILE: /run/optional-secrets/arvan_access_key_id
+      ARVAN_SECRET_ACCESS_KEY_FILE: /run/optional-secrets/arvan_secret_access_key
+      ARVAN_REQUEST_TIMEOUT_MS: "${ARVAN_REQUEST_TIMEOUT_MS:-5000}"
       APP_ORIGINS: "${APP_ORIGINS:?set dev browser origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
-      SADAD_TRANSPORT_MODE: disabled
+      SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
+      SMS_TRANSPORT_MODE: "${SMS_TRANSPORT_MODE:-disabled}"
+      SMS_REQUEST_TIMEOUT_MS: "${SMS_REQUEST_TIMEOUT_MS:-5000}"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
+      SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
+      SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
+      SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
+      SADAD_RESULT_URL: "${SADAD_RESULT_URL:-}"
+      SADAD_REDIRECT_PROFILE: "${SADAD_REDIRECT_PROFILE:-}"
     secrets:
       - database_url
       - jwt_access_secret
       - refresh_token_pepper
       - payment_credential_encryption_key
       - payment_credential_decryption_keys
+      - otp_pepper
+      - sms_credential_encryption_key
+      - sms_credential_decryption_keys
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,12 +138,6 @@ services:
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
     ports: ["${WEB_PORT:?set the isolated dev web binding}:3000"]
     cpus: "${DEV_WEB_CPUS:-0.75}"
-    mem_limit: "${DEV_WEB_MEMORY:-768m}"
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
 
   app:
     <<: *node-service
@@ -112,12 +148,6 @@ services:
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
     ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
     cpus: "${DEV_APP_CPUS:-0.75}"
-    mem_limit: "${DEV_APP_MEMORY:-768m}"
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
 
   dashboard:
     <<: *node-service
@@ -129,12 +159,6 @@ services:
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
     ports: ["${DASHBOARD_PORT:?set the isolated dev dashboard binding}:3002"]
     cpus: "${DEV_DASHBOARD_CPUS:-0.75}"
-    mem_limit: "${DEV_DASHBOARD_MEMORY:-768m}"
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
 
 volumes:
   postgres_data:
@@ -152,3 +176,9 @@ secrets:
     file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/payment_credential_encryption_key"
   payment_credential_decryption_keys:
     file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/payment_credential_decryption_keys"
+  otp_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/otp_pepper"
+  sms_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/sms_credential_encryption_key"
+  sms_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/sms_credential_decryption_keys"

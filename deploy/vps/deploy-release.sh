@@ -4,8 +4,8 @@ set -Eeuo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  deploy-release.sh deploy <staging|production-sim> <manifest.json> <compose.yaml> <registry-user> <incoming-dir> <consent-policy.json>
-  deploy-release.sh rollback <staging|production-sim> - <compose.yaml> <registry-user> <incoming-dir> -
+  deploy-release.sh deploy <staging|production-sim|production> <manifest.json> <compose.yaml> <registry-user> <incoming-dir> <consent-policy.json>
+  deploy-release.sh rollback <staging|production-sim|production> - <compose.yaml> <registry-user> <incoming-dir> -
 
 The ephemeral registry token is read from stdin. MUSHROOM_ROOT defaults to $HOME/mushroom.
 EOF
@@ -31,7 +31,7 @@ if [[ $incoming_dir != /* ]]; then
 fi
 
 [[ $action == deploy || $action == rollback ]] || die "action must be deploy or rollback"
-[[ $environment == staging || $environment == production-sim ]] || die "unsupported environment"
+[[ $environment == staging || $environment == production-sim || $environment == production ]] || die "unsupported environment"
 [[ $(id -u) -ne 0 ]] || die "deployment must run as a non-root user"
 [[ $registry_user =~ ^[A-Za-z0-9_.-]+$ || $registry_user =~ ^[A-Za-z0-9_.-]+\[bot\]$ ]] \
   || die "invalid registry user"
@@ -63,9 +63,10 @@ trap cleanup EXIT
 mkdir -p -- "$environment_root" "$state_root" "$releases_root"
 mkdir -- "$lock_dir" 2>/dev/null || die "another deployment is active for $environment"
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
+[[ -f $environment_root/chat.compose.yaml ]] || die 'ejabberd chat.compose.yaml is required; follow deploy/ejabberd/README.md before deploying this branch'
 [[ -f $compose_source ]] || die "versioned compose file is missing"
 if [[ $action == deploy ]]; then
-  [[ -f $consent_policy_source ]] || die "versioned rehearsal consent policy is missing"
+  [[ -f $consent_policy_source ]] || die "environment-approved consent policy is missing"
 fi
 
 env_value() {
@@ -81,26 +82,42 @@ expected_project="mushroom-${environment}"
 [[ $(env_value COMPOSE_PROJECT_NAME) == "$expected_project" ]] || die "Compose project boundary mismatch"
 [[ $(env_value MUSHROOM_ENV_ROOT) == "$environment_root" ]] || die "environment root boundary mismatch"
 
-case $(env_value POSTGRES_DB) in
-  *"${environment//-/_}"*) ;;
-  *) die "database name does not identify $environment" ;;
-esac
+if [[ $environment != production ]]; then
+  case $(env_value POSTGRES_DB) in
+    *"${environment//-/_}"*) ;;
+    *) die "database name does not identify $environment" ;;
+  esac
+fi
 
-other_environment=production-sim
-[[ $environment == staging ]] || other_environment=staging
-other_runtime_env="$base_root/$other_environment/runtime.env"
-[[ -f $other_runtime_env ]] || die "$other_runtime_env is missing; configure both rehearsal environments before deployment"
-for key in COMPOSE_PROJECT_NAME MUSHROOM_ENV_ROOT POSTGRES_DB POSTGRES_USER API_PORT WEB_PORT APP_PORT DASHBOARD_PORT \
-  PUBLIC_API_URL PUBLIC_WEB_URL PUBLIC_APP_URL PUBLIC_DASHBOARD_URL; do
-  current_value=$(env_value "$key")
-  other_value=$(sed -n "s/^${key}=//p" "$other_runtime_env" | tail -n 1)
-  [[ -n $other_value ]] || die "$key is missing from the other environment runtime.env"
-  [[ $current_value != "$other_value" ]] || die "$key crosses the two rehearsal environments"
+for other_environment in dev staging production-sim production; do
+  [[ $environment != "$other_environment" ]] || continue
+  other_runtime_env="$base_root/$other_environment/runtime.env"
+  [[ -f $other_runtime_env ]] || continue
+  for key in COMPOSE_PROJECT_NAME MUSHROOM_ENV_ROOT API_PORT WEB_PORT APP_PORT DASHBOARD_PORT \
+    PUBLIC_API_URL PUBLIC_WEB_URL PUBLIC_APP_URL PUBLIC_DASHBOARD_URL; do
+    current_value=$(env_value "$key")
+    other_value=$(sed -n "s/^${key}=//p" "$other_runtime_env" | tail -n 1)
+    [[ -z $other_value || $current_value != "$other_value" ]] || die "$key crosses environment boundaries"
+  done
+  if [[ $environment != production && $other_environment != production ]]; then
+    for key in POSTGRES_DB POSTGRES_USER; do
+      current_value=$(env_value "$key")
+      other_value=$(sed -n "s/^${key}=//p" "$other_runtime_env" | tail -n 1)
+      [[ -z $other_value || $current_value != "$other_value" ]] || die "$key crosses database environment boundaries"
+    done
+  fi
 done
 
-for secret in postgres_password database_url jwt_access_secret refresh_token_pepper \
-  payment_credential_encryption_key payment_credential_decryption_keys; do
+required_secrets=(database_url jwt_access_secret refresh_token_pepper \
+  otp_pepper sms_credential_encryption_key \
+  payment_credential_encryption_key
+)
+[[ $environment == production ]] || required_secrets+=(postgres_password)
+for secret in "${required_secrets[@]}"; do
   [[ -s "$environment_root/secrets/$secret" ]] || die "required secret file is missing: $secret"
+done
+for secret in sms_credential_decryption_keys payment_credential_decryption_keys; do
+  [[ -f "$environment_root/secrets/$secret" ]] || die "keyring file is missing: $secret"
 done
 
 validate_manifest() {
@@ -137,10 +154,17 @@ release_env_from_manifest() {
 
 compose_for() {
   local release_dir=$1
+  local network_args=()
+  local chat_database_args=()
+  [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
+  [[ ! -f $environment_root/chat.database.yaml ]] || chat_database_args=(--file "$environment_root/chat.database.yaml")
   docker compose \
     --project-name "$expected_project" \
     --env-file "$release_dir/release.env" \
     --file "$release_dir/compose.yaml" \
+    --file "$environment_root/chat.compose.yaml" \
+    "${chat_database_args[@]}" \
+    "${network_args[@]}" \
     "${@:2}"
 }
 
@@ -172,12 +196,15 @@ const { chmodSync, chownSync } = require('node:fs');
 const ownerUid = Number.parseInt(process.env.SECRET_OWNER_UID, 10);
 if (!Number.isSafeInteger(ownerUid) || ownerUid < 1) throw new Error('SECRET_OWNER_UID is invalid');
 for (const name of [
-  'postgres_password',
   'database_url',
   'jwt_access_secret',
   'refresh_token_pepper',
+  'otp_pepper',
+  'sms_credential_encryption_key',
+  'sms_credential_decryption_keys',
   'payment_credential_encryption_key',
   'payment_credential_decryption_keys',
+  ...(process.env.PREPARE_POSTGRES_SECRET === 'true' ? ['postgres_password'] : []),
 ]) {
   const path = `/run/secrets/${name}`;
   chownSync(path, ownerUid, 65532);
@@ -198,6 +225,7 @@ NODE
     --cap-add FOWNER \
     --cap-add DAC_OVERRIDE \
     --env "SECRET_OWNER_UID=$host_uid" \
+    --env "PREPARE_POSTGRES_SECRET=$([[ $environment == production ]] && printf false || printf true)" \
     --mount "type=bind,src=$environment_root/secrets,dst=/run/secrets" \
     --entrypoint /nodejs/bin/node \
     "$api_image" \
@@ -244,7 +272,7 @@ write_state() {
   local old_current=${2:-}
   printf '%s\n' "$new_current" >"$state_root/current.tmp"
   mv -f -- "$state_root/current.tmp" "$state_root/current"
-  if [[ -n $old_current ]]; then
+  if [[ -n $old_current && $old_current != "$new_current" ]]; then
     printf '%s\n' "$old_current" >"$state_root/previous.tmp"
     mv -f -- "$state_root/previous.tmp" "$state_root/previous"
   fi
@@ -283,10 +311,33 @@ release_env_from_manifest "$release_dir/release-manifest.json" "$release_dir/rel
 
 registry_pull "$release_dir"
 prepare_secret_permissions "$release_dir"
+compose_for "$release_dir" run --rm --no-deps \
+  --volume "$release_dir/consent-policy.json:/run/mushroom-consent-policy.json:ro" \
+  --env "MUSHROOM_ENVIRONMENT=$environment" \
+  --env "CONSENT_POLICY_DOCUMENT_FILE=/run/mushroom-consent-policy.json" \
+  api prisma/manage-consent-policy.mjs validate
 
 # The database may start before migration, but application services do not switch until migration succeeds.
-compose_for "$release_dir" up -d postgres
+if [[ $environment != production ]]; then
+  compose_for "$release_dir" up -d postgres
+fi
 compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy
+if [[ -f $environment_root/bootstrap/first-run.json ]]; then
+  # Only this one-time helper receives the first administrator password; normal API startup never does.
+  docker run --rm --user 0:0 --network none --read-only --cap-drop ALL \
+    --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE \
+    --env "SECRET_OWNER_UID=$(id -u)" \
+    --mount "type=bind,src=$environment_root/bootstrap/first-run.json,dst=/run/first-run.json" \
+    --entrypoint /nodejs/bin/node \
+    "$(jq -r '.images.api' "$release_dir/release-manifest.json")" \
+    -e 'const fs=require("node:fs");fs.chownSync("/run/first-run.json",Number(process.env.SECRET_OWNER_UID),65532);fs.chmodSync("/run/first-run.json",0o640);'
+  compose_for "$release_dir" run --rm --no-deps \
+    --volume "$environment_root/bootstrap/first-run.json:/run/mushroom-installation/first-run.json:ro" \
+    --env "MUSHROOM_ENVIRONMENT=$environment" api prisma/bootstrap-installation.mjs
+  : >"$state_root/bootstrap-complete"
+  : >"$environment_root/bootstrap/complete"
+  rm -- "$environment_root/bootstrap/first-run.json"
+fi
 compose_for "$release_dir" run --rm --no-deps \
   --volume "$release_dir/consent-policy.json:/run/mushroom-consent-policy.json:ro" \
   --env "MUSHROOM_ENVIRONMENT=$environment" \

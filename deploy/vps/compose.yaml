@@ -23,15 +23,38 @@ services:
       PORT: "3003"
       HOSTNAME: "0.0.0.0"
       DATABASE_URL_FILE: /run/secrets/database_url
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
+      JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
+      COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"
+      BILLING_BOOKING_HOLD_MINUTES: "${BILLING_BOOKING_HOLD_MINUTES:-10}"
+      PRODUCT_MEDIA_STORAGE_MODE: "${PRODUCT_MEDIA_STORAGE_MODE:-disabled}"
+      R2_ENDPOINT: "${R2_ENDPOINT:-}"
+      R2_BUCKET: "${R2_BUCKET:-}"
+      R2_REGION: "${R2_REGION:-auto}"
+      R2_ACCESS_KEY_ID: ""
+      R2_SECRET_ACCESS_KEY: ""
+      R2_REQUEST_TIMEOUT_MS: "${R2_REQUEST_TIMEOUT_MS:-5000}"
       JWT_ACCESS_SECRET_FILE: /run/secrets/jwt_access_secret
       REFRESH_TOKEN_PEPPER_FILE: /run/secrets/refresh_token_pepper
+      OTP_PEPPER_FILE: /run/secrets/otp_pepper
+      SMS_CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/sms_credential_encryption_key
+      SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION:?set the SMS key version}"
+      SMS_CREDENTIAL_DECRYPTION_KEYS_FILE: /run/secrets/sms_credential_decryption_keys
+      SMS_TRANSPORT_MODE: "${SMS_TRANSPORT_MODE:-disabled}"
+      SMS_REQUEST_TIMEOUT_MS: "${SMS_REQUEST_TIMEOUT_MS:-5000}"
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/payment_credential_encryption_key
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:?set the key version}"
       PAYMENT_CREDENTIAL_DECRYPTION_KEYS_FILE: /run/secrets/payment_credential_decryption_keys
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
       APP_ORIGINS: "${APP_ORIGINS:?set public origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
-      SADAD_TRANSPORT_MODE: disabled
-    secrets: [database_url, jwt_access_secret, refresh_token_pepper, payment_credential_encryption_key, payment_credential_decryption_keys]
+      SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
+      SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
+      SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
+      SADAD_RESULT_URL: "${SADAD_RESULT_URL:-}"
+      SADAD_REDIRECT_PROFILE: "${SADAD_REDIRECT_PROFILE:-}"
+    secrets: [database_url, jwt_access_secret, refresh_token_pepper, otp_pepper, sms_credential_encryption_key, sms_credential_decryption_keys, payment_credential_encryption_key, payment_credential_decryption_keys]
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,6 +125,12 @@ secrets:
     file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/jwt_access_secret"
   refresh_token_pepper:
     file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/refresh_token_pepper"
+  otp_pepper:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/otp_pepper"
+  sms_credential_encryption_key:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/sms_credential_encryption_key"
+  sms_credential_decryption_keys:
+    file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/sms_credential_decryption_keys"
   payment_credential_encryption_key:
     file: "${MUSHROOM_ENV_ROOT:?set the environment root}/secrets/payment_credential_encryption_key"
   payment_credential_decryption_keys:

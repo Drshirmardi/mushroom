@@ -1,6 +1,8 @@
-import { apiBaseUrl } from "@/lib/api";
+import { withRequestTimeout } from "@sabz-zendegi/api-client";
+import { apiBaseUrl, sessionFetch } from "@/lib/api";
 
 export type PatientAppointment = {
+  visitMode?: "ONLINE" | "IN_PERSON";
   id: string;
   clinicId: string;
   patientId: string;
@@ -23,7 +25,7 @@ export class AppointmentRequestError extends Error {
 
 const request = async <T>(accessToken: string, path: string, init?: RequestInit): Promise<T> => {
   try {
-    const response = await fetch(new URL(path, apiBaseUrl), { ...init, headers: { authorization: `Bearer ${accessToken}`, ...(init?.headers ?? {}) } });
+    const response = await withRequestTimeout(sessionFetch(new URL(path, apiBaseUrl), { ...init, cache: "no-store", headers: { authorization: `Bearer ${accessToken}`, ...(init?.headers ?? {}) } }));
     const data: unknown = await response.json().catch(() => null);
     if (response.ok && data) return data as T;
     const code = data && typeof data === "object" && "code" in data && typeof data.code === "string" ? data.code : null;

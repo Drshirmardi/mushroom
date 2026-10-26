@@ -50,7 +50,7 @@ describe("web header session", () => {
         expect(await request.clone().text()).toBe("");
     });
 
-    it("treats an unavailable or invalid refresh cookie as anonymous", async () => {
+    it("treats an invalid refresh cookie as anonymous", async () => {
         const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 401 }));
         const manager = new WebSessionManager(
             createApiClient({ baseUrl: "https://api.example.test", fetch }),
@@ -62,12 +62,13 @@ describe("web header session", () => {
         });
     });
 
-    it("does not leave the header session check pending when refresh stalls", async () => {
+    it("reports an unavailable service instead of showing a false logged-out state", async () => {
         vi.useFakeTimers();
         try {
             const fetch = vi.fn<typeof globalThis.fetch>().mockReturnValue(new Promise<Response>(() => {}));
             const manager = new WebSessionManager(
                 createApiClient({ baseUrl: "https://api.example.test", fetch }),
+                () => 1_000,
                 100,
             );
 
@@ -75,9 +76,33 @@ describe("web header session", () => {
             await vi.advanceTimersByTimeAsync(100);
 
             await expect(bootstrap).resolves.toEqual({
-                status: "anonymous",
+                status: "unavailable",
                 authentication: null,
             });
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it("retries a refresh race after another response updates the shared cookie", async () => {
+        vi.useFakeTimers();
+        try {
+            const fetch = vi.fn<typeof globalThis.fetch>()
+                .mockResolvedValueOnce(jsonResponse({ code: "REFRESH_CONCURRENT_RETRY" }, 409))
+                .mockResolvedValueOnce(jsonResponse(patientAuthentication, 200));
+            const manager = new WebSessionManager(
+                createApiClient({ baseUrl: "https://api.example.test", fetch }),
+                () => 1_000,
+            );
+
+            const bootstrap = manager.bootstrap();
+            await vi.advanceTimersByTimeAsync(250);
+
+            await expect(bootstrap).resolves.toEqual({
+                status: "authenticated",
+                authentication: patientAuthentication,
+            });
+            expect(fetch).toHaveBeenCalledTimes(2);
         } finally {
             vi.useRealTimers();
         }

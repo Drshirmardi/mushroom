@@ -9,6 +9,7 @@ import type { RefreshTokenManager } from '../src/modules/identity/application/po
 import type { PublicAuthRateLimiter } from '../src/modules/identity/application/ports/public-auth-rate-limiter';
 import type { SessionRepository } from '../src/modules/identity/application/ports/session.repository';
 import {
+  ConcurrentRefreshError,
   InvalidRefreshTokenError,
   RefreshRateLimitedError,
   RefreshSessionUseCase,
@@ -216,6 +217,30 @@ describe('session authentication use cases', () => {
       expect(disconnectSession).toHaveBeenCalledTimes(kind === 'REVOKED' ? 1 : 0);
     },
   );
+
+  it('asks the client to retry a harmless concurrent refresh without issuing credentials', async () => {
+    inspectRefresh.mockReturnValue({
+      sessionId: refresh.sessionId,
+      tokenHash: refresh.tokenHash,
+    });
+    rotateRefresh.mockResolvedValue({ kind: 'CONCURRENT_REFRESH' });
+    const useCase = new RefreshSessionUseCase(
+      sessions,
+      refreshTokens,
+      accessTokens,
+      rateLimiter,
+      { disconnectSession },
+      () => now,
+    );
+
+    await expect(useCase.execute({
+      refreshToken: refresh.rawToken,
+      ipAddress: '203.0.113.11',
+      requestId,
+    })).rejects.toEqual(new ConcurrentRefreshError());
+    expect(issueAccess).not.toHaveBeenCalled();
+    expect(disconnectSession).not.toHaveBeenCalled();
+  });
 
   it('stops before session lookup when refresh is rate limited', async () => {
     inspectRefresh.mockReturnValue({

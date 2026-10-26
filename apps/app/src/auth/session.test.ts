@@ -71,7 +71,32 @@ describe("app auth session", () => {
     });
   });
 
-  it("becomes anonymous when refresh stalls", async () => {
+  it("renews an expired access token while preserving the authenticated view", async () => {
+    let now = 1_000;
+    const renewedAuthentication = { ...authentication, accessToken: "renewed-token" };
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(jsonResponse(authentication, 200))
+      .mockResolvedValueOnce(jsonResponse(renewedAuthentication, 200));
+    const manager = new AuthSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+      () => now,
+    );
+
+    await manager.bootstrap();
+    const snapshots: string[] = [];
+    manager.subscribe(() => snapshots.push(manager.getSnapshot().status));
+    now += authentication.expiresIn * 1_000;
+
+    await expect(manager.bootstrap()).resolves.toEqual({
+      status: "authenticated",
+      authentication: renewedAuthentication,
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(snapshots).not.toContain("checking");
+  });
+
+  it("reports a temporary outage without treating the user as logged out", async () => {
     vi.useFakeTimers();
     try {
       const fetch = vi.fn<typeof globalThis.fetch>().mockReturnValue(new Promise<Response>(() => {}));
@@ -85,9 +110,30 @@ describe("app auth session", () => {
       await vi.advanceTimersByTimeAsync(100);
 
       await expect(bootstrap).resolves.toEqual({
-        status: "anonymous",
+        status: "unavailable",
         authentication: null,
       });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("retries a concurrent refresh after the winning response updates the cookie", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetch = vi.fn<typeof globalThis.fetch>()
+        .mockResolvedValueOnce(jsonResponse({ code: "REFRESH_CONCURRENT_RETRY" }, 409))
+        .mockResolvedValueOnce(jsonResponse(authentication, 200));
+      const manager = new AuthSessionManager(
+        createApiClient({ baseUrl: "https://api.example.test", fetch }),
+        () => 1_000,
+      );
+
+      const bootstrap = manager.bootstrap();
+      await vi.advanceTimersByTimeAsync(250);
+
+      await expect(bootstrap).resolves.toEqual({ status: "authenticated", authentication });
+      expect(fetch).toHaveBeenCalledTimes(2);
     } finally {
       vi.useRealTimers();
     }

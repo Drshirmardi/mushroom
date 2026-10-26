@@ -101,4 +101,42 @@ describe("web auth service", () => {
             message: "ارتباط با سرویس برقرار نشد؛ اتصال اینترنت خود را بررسی کنید.",
         });
     });
+
+    it("maps OTP provisioning and idempotency errors", async () => {
+        const expectedMessages = [
+            ["OTP_ACCOUNT_PROVISIONING_UNAVAILABLE", "ساخت حساب در این لحظه ممکن نیست؛ کمی بعد دوباره تلاش کنید."],
+            ["IDEMPOTENCY_KEY_INVALID", "درخواست معتبر نبود؛ صفحه را دوباره بارگذاری و تلاش کنید."],
+        ] as const;
+
+        for (const [code, message] of expectedMessages) {
+            const service = createAuthService(createApiClient({
+                baseUrl: "https://api.example.test",
+                fetch: vi.fn<typeof globalThis.fetch>().mockResolvedValue(response({
+                    code,
+                    message: "Request failed",
+                    requestId: "request-id",
+                    details: {},
+                }, 503)),
+            }));
+
+            await expect(service.login({
+                phone: "+989121234567",
+                password: "safe-password-long",
+                remember: false,
+            })).resolves.toEqual({ ok: false, message });
+        }
+    });
+
+    it("requests and verifies OTP through the credentialed public contract", async () => {
+        const fetch = vi.fn<typeof globalThis.fetch>()
+            .mockResolvedValueOnce(response({ challengeId: "11111111-1111-4111-8111-111111111111", expiresAt: "2026-10-11T10:02:00.000Z", resendAvailableAt: "2026-10-11T10:01:00.000Z", destinationMasked: "+9891***67" }, 201))
+            .mockResolvedValueOnce(response(authentication, 200));
+        const service = createAuthService(createApiClient({ baseUrl: "https://api.example.test", fetch }));
+        const challenge = await service.requestOtp({ phone: "+989121234567", remember: true });
+        expect(challenge.ok).toBe(true);
+        const first = fetch.mock.calls[0]?.[0] as Request;
+        expect(first.headers.get("idempotency-key")).toBeTruthy();
+        await expect(service.verifyOtp("11111111-1111-4111-8111-111111111111", "123456")).resolves.toEqual({ ok: true, roles: ["PATIENT"] });
+        expect((fetch.mock.calls[1]?.[0] as Request).credentials).toBe("include");
+    });
 });

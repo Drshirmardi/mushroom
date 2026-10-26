@@ -1,6 +1,6 @@
 import { apiBaseUrl } from "@/lib/api";
 
-export type DashboardNotification = { id: string; category: "REMINDER" | "TREATMENT" | "CONTENT" | "SYSTEM"; title: string; body: string; readAt: string | null; createdAt: string };
+export type DashboardNotification = { id: string; category: "FINANCIAL" | "REMINDER" | "TREATMENT" | "CONTENT" | "SYSTEM"; title: string; body: string; readAt: string | null; createdAt: string; recipientDisplayName?: string | null };
 export type ContentCategory = { id: string; name: string; slug: string };
 export type DashboardArticle = { id: string; slug: string; title: string; summary: string | null; body: string; categoryId: string; category: ContentCategory; publicationStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED"; publishedAt: string | null; updatedAt: string };
 

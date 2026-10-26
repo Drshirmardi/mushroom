@@ -157,7 +157,7 @@ export class CommerceInventoryService {
   }
 
   private async hasAmbiguousPayment(tx: Transaction, orderId: string) {
-    return (await tx.paymentAttempt.count({ where: { orderId, status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) > 0;
+    return (await tx.paymentAttempt.count({ where: { orderId, status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) > 0 || (await tx.billingGatewayAttempt.count({ where: { intent: { orderId }, status: { in: ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) > 0;
   }
 
   private async cancelExpiredPendingOrder(tx: Transaction, orderId: string, now: Date) {
@@ -167,7 +167,7 @@ export class CommerceInventoryService {
       tx.inventoryReservation.count({ where: { orderId, status: InventoryReservationStatus.ACTIVE } }),
       tx.paymentAttempt.count({ where: { orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } }),
     ]);
-    if (activeReservations || blockingAttempts) return false;
+    if (activeReservations || blockingAttempts || await tx.billingGatewayAttempt.count({ where: { intent: { orderId }, status: { in: ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } })) return false;
     const updated = await tx.commerceOrder.updateMany({ where: { id: order.id, status: 'PENDING_PAYMENT' }, data: { status: 'CANCELLED' } });
     if (updated.count !== 1) return false;
     await tx.auditEvent.create({ data: { action: 'COMMERCE_ORDER_CANCELLED_BY_RESERVATION_EXPIRY', actorUserId: null, actorSessionId: null, subjectType: 'COMMERCE_ORDER', subjectId: order.id, requestId: 'system:inventory-reservation-expiry', ipAddress: null, metadata: { expiredAt: now.toISOString() } } });

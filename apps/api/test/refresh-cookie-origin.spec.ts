@@ -10,6 +10,7 @@ import {
   RefreshCookieService,
 } from '../src/common/auth/refresh-cookie.service';
 import { environmentValidationSchema } from '../src/config/environment.validation';
+import { chatTestEnvironment } from './chat-environment-fixture';
 
 describe('refresh cookie and browser origin policy', () => {
   const expiresAt = new Date('2026-08-23T12:00:00.000Z');
@@ -68,6 +69,7 @@ describe('refresh cookie and browser origin policy', () => {
   it('requires independent access and refresh secrets', () => {
     const sharedSecret = 'shared-secret-value-that-is-long-enough-for-both-config-fields';
     const result = environmentValidationSchema.validate({
+      ...chatTestEnvironment,
       DATABASE_URL: 'postgresql://user:password@localhost:5432/database',
       JWT_ACCESS_SECRET: sharedSecret,
       REFRESH_TOKEN_PEPPER: sharedSecret,
@@ -78,18 +80,22 @@ describe('refresh cookie and browser origin policy', () => {
 
   it('requires explicit trusted proxy addresses in production', () => {
     const base = {
+      ...chatTestEnvironment,
       NODE_ENV: 'production',
       DATABASE_URL: 'postgresql://user:password@localhost:5432/database',
       JWT_ACCESS_SECRET: 'access-secret-that-is-long-enough-for-production-0123456789',
       REFRESH_TOKEN_PEPPER: 'refresh-pepper-that-is-independent-and-long-enough-9876543210',
+      OTP_PEPPER: 'otp-pepper-that-is-independent-and-long-enough-9876543210',
     };
 
     expect(environmentValidationSchema.validate(base).error).toBeDefined();
     expect(environmentValidationSchema.validate({
+      ...chatTestEnvironment,
       ...base,
       TRUSTED_PROXIES: '10.0.0.0/8,192.0.2.10',
     }).error).toBeUndefined();
     expect(environmentValidationSchema.validate({
+      ...chatTestEnvironment,
       ...base,
       TRUSTED_PROXIES: '0.0.0.0/0',
     }).error).toBeDefined();

@@ -4,7 +4,7 @@ import { AppointmentRequestError, cancelPatientAppointment, createPatientAppoint
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.stubGlobal("fetch", fetchMock);
-vi.mock("@/lib/api", () => ({ apiBaseUrl: "https://api.example.test" }));
+vi.mock("@/lib/api", () => ({ apiBaseUrl: "https://api.example.test", sessionFetch: fetchMock }));
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 describe("patient appointment API", () => {

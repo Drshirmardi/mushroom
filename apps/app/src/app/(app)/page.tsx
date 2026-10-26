@@ -1,149 +1,64 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
-import {
-  BookOpen,
-  Calendar,
-  Clock,
-  Leaf,
-  MessageCircle,
-  ShoppingBag,
-} from "lucide-react";
-import ExpertiseSlider from "@/components/home/ExpertiseSlider";
-import HomeSlider from "@/components/home/home-slider";
-import Illnesses from "@/components/home/Bimarilist";
-import { HealthSnapshotCard } from "@/components/home/health-snapshot-card";
-import {
-  SkeletonBox,
-  SkeletonCard,
-  SkeletonProductCard,
-} from "@/components/shared/skeletons";
-import { ARTICLES } from "@/lib/data/articles";
-import { DEFAULT_MEZAJ } from "@/lib/data/mezaj";
-import { NOTIFICATIONS } from "@/lib/data/catalog";
-import { toP } from "@/lib/format";
-import { TAB_ROOT_SCREENS, useScreenNavigation } from "@/lib/navigation";
+import Link from "next/link";
+import { AnimatePresence } from "motion/react";
+import { NotificationSheet } from "@/components/notifications/notification-sheet";
+import { useCallback, useState } from "react";
+import { ArrowLeft, Bell, BookOpen, CalendarDays, ClipboardList, FileHeart, HeartPulse, MessageCircle, ShoppingBag, Users, Wallet } from "lucide-react";
+import { useAuthSession } from "@/components/auth/session-gate";
+import { PatientResourceState } from "@/components/shared/patient-resource-state";
+import { getPatientJourney } from "@/lib/patient-journey-api";
+import { HomeJourney } from "@/components/home/home-journey";
+import { useOptionalPatientEntry } from "@/components/auth/patient-entry-gate";
+import { listPatientArticles, listNotifications } from "@/lib/follow-up-api";
+import { usePatientResource } from "@/lib/use-patient-resource";
+import { OwnedServices } from '@/components/programs/owned-services';
+
+const services = [
+  { href: "/assessment", title: "ارزیابی فردی", description: "شروع آزمون، ادامه و نتایج", icon: ClipboardList },
+  { href: "/assessment/couples", title: "ارزیابی زوجین", description: "اتصال همراه و مراحل مشترک", icon: Users },
+  { href: "/appointments/book", title: "رزرو مشاوره", description: "انتخاب پزشک، خدمت و زمان", icon: CalendarDays },
+  { href: "/programs", title: "برنامه‌های سلامت", description: "آموزشی و اختصاصی", icon: BookOpen },
+];
+const followUps = [
+  { href: "/appointments", title: "نوبت‌های من", icon: CalendarDays },
+  { href: "/treatment", title: "درمان من", icon: HeartPulse },
+  { href: "/chat", title: "گفتگو با پزشک", icon: MessageCircle },
+  { href: "/profile/health-record", title: "پروندهٔ سلامت", icon: FileHeart },
+  { href: "/profile/wallet", title: "کیف پول", icon: Wallet },
+  { href: "/store/orders", title: "سفارش‌های من", icon: ShoppingBag },
+];
 
 export default function HomePage() {
-  const navigateScreen = useScreenNavigation();
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { const t = setTimeout(() => setLoading(false), 1000); return () => clearTimeout(t); }, []);
+  const { authentication } = useAuthSession();
+  const entry = useOptionalPatientEntry();
+  const token = authentication.accessToken;
+  const journey = usePatientResource(useCallback(() => getPatientJourney(token), [token]));
+  const articles = usePatientResource(useCallback(() => listPatientArticles(token), [token]));
+  const notifications = usePatientResource(useCallback(() => listNotifications(token), [token]));
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const unread = notifications.data?.items.some(item => !item.readAt);
 
-  return (
-    <div className="px-4 space-y-5">
-      <HomeSlider />
+  return <div className="home-page" dir="rtl">
+    <header className="home-header">
+      <div><p>همراه سلامت دکتر شیرمردی</p><h1>{entry?.status?.firstName ? `سلام، ${entry.status.firstName}` : 'سلام، خوش آمدید'}</h1></div>
+      <button type="button" onClick={() => setNotificationsOpen(true)} aria-haspopup="dialog" aria-expanded={notificationsOpen} aria-label={unread ? "اعلان‌ها؛ پیام خوانده‌نشده دارید" : "اعلان‌ها"} className="home-icon-link"><Bell size={21} aria-hidden="true" />{unread && <span className="home-unread" />}</button>
+    </header>
 
-      {loading ? (
-        <div className="space-y-3">
-          <SkeletonCard />
-          <div className="grid grid-cols-3 gap-2">{[1, 2, 3].map(i => <SkeletonBox key={i} className="h-20" />)}</div>
-          <SkeletonCard />
-          <div className="grid grid-cols-2 gap-3">{[1, 2].map(i => <SkeletonProductCard key={i} />)}</div>
-        </div>
-      ) : (
-        <>
-          <HealthSnapshotCard mezaj={DEFAULT_MEZAJ} />
+    <HomeJourney key={authentication.user.id} journey={journey} token={token} />
+    <OwnedServices key={`services:${authentication.user.id}`} />
 
-          {/* Treatment progress banner */}
-          <button onClick={() => navigateScreen(TAB_ROOT_SCREENS.treatment)} className="w-full bg-primary rounded-3xl p-5 text-white relative overflow-hidden text-right">
-            <div className="absolute top-0 left-0 w-32 h-32 bg-white/5 rounded-full -translate-x-12 -translate-y-12" />
-            <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full translate-x-8 translate-y-8" />
-            <div className="relative">
-              <div className="flex items-center justify-between mb-3">
-                <div><p className="text-white/70 text-xs mb-0.5">وضعیت درمان</p><h2 className="text-lg font-bold">جلسه {toP(3)} از {toP(10)}</h2></div>
-                <div className="bg-white/20 rounded-2xl px-3 py-1.5"><span className="text-sm font-bold">{toP(35)}٪</span></div>
-              </div>
-              <div className="bg-white/20 rounded-full h-2.5 mb-2">
-                <motion.div className="bg-white rounded-full h-2.5" initial={{ width: 0 }} animate={{ width: "35%" }} transition={{ duration: 1, delay: 0.3 }} />
-              </div>
-              <p className="text-white/70 text-xs">دکتر شیرمردی · مرحله آکوپانکچر درمانی</p>
-            </div>
-          </button>
+    <section className="home-access" aria-labelledby="home-access-title"><div className="home-section-heading"><div><h2 id="home-access-title">دسترسی‌های من</h2><p>نوبت، مراقبت و حساب شما</p></div><span className="home-section-detail" aria-hidden="true"><FileHeart size={21} strokeWidth={1.5} /></span></div><nav aria-label="دسترسی‌های شخصی" className="home-followups">{followUps.map(({ href, title, icon: Icon }) => <Link href={href} key={href}><span className="home-access-icon"><Icon size={24} strokeWidth={1.5} aria-hidden="true" /></span><span>{title}</span></Link>)}</nav></section>
 
-          <ExpertiseSlider />
+    <section aria-labelledby="home-services-title">
+      <div className="home-section-heading"><div><h2 id="home-services-title">خدمات سلامت</h2><p>خدمت مورد نیازتان را انتخاب کنید</p></div></div>
+      <div className="home-services">{services.map(({ href, title, description, icon: Icon }) => <Link key={href} href={href} className="home-service"><span className="home-service-icon"><Icon size={23} strokeWidth={1.5} aria-hidden="true" /></span><h3>{title}</h3><p>{description}</p><ArrowLeft className="home-service-arrow" size={16} strokeWidth={1.5} aria-hidden="true" /></Link>)}</div>
+    </section>
 
-          <Illnesses />
 
-          {/* Health tips */}
-          <div>
-            <h2 className="text-base font-bold text-foreground mb-3">نکته سلامت امروز</h2>
-            <div className="bg-gradient-to-br from-[#e8f4ed] to-[#f0faf4] rounded-2xl border border-primary/10 p-4 flex gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0"><Leaf size={20} className="text-primary" /></div>
-              <div>
-                <p className="text-sm font-bold text-foreground mb-1">نوشیدن آب ولرم در صبح</p>
-                <p className="text-xs text-foreground/70 leading-6">مصرف یک لیوان آب ولرم با چند قطره لیموی تازه در صبح، سیستم گوارش را فعال کرده و متابولیسم را تحریک می‌کند.</p>
-              </div>
-            </div>
-          </div>
+    <Link href="/store" className="home-store"><span className="home-store-icon"><ShoppingBag size={26} aria-hidden="true" /></span><div><h2>فروشگاه سبز زندگی</h2><p>بررسی محصولات، موجودی و قیمت</p></div><ArrowLeft size={19} aria-hidden="true" /></Link>
 
-          {/* Quick actions */}
-          <div>
-            <h2 className="text-base font-bold text-foreground mb-3">دسترسی سریع</h2>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { icon: Calendar, label: "رزرو نوبت", color: "bg-blue-50 text-blue-600", action: () => navigateScreen("BookStep1") },
-                { icon: BookOpen, label: "محتوای آموزشی", color: "bg-purple-50 text-purple-600", action: () => navigateScreen("ArticlesList") },
-                { icon: ShoppingBag, label: "فروشگاه", color: "bg-amber-50 text-amber-600", action: () => navigateScreen("StoreMain") },
-                { icon: MessageCircle, label: "تماس با دکتر", color: "bg-green-50 text-green-600", action: () => navigateScreen("ChatScreen") },
-              ].map(a => (
-                <button key={a.label} onClick={a.action} className="flex flex-col items-center gap-1.5">
-                  <div className={`w-14 h-14 ${a.color} rounded-2xl flex items-center justify-center active:scale-95 transition-transform`}><a.icon size={22} /></div>
-                  <span className="text-[10px] font-semibold text-foreground/70 text-center leading-tight">{a.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <section className="mt-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-500 p-5 text-white shadow-md" dir="rtl">
-            <h2 className="text-sm font-black">محصولات سلامت</h2>
-            <p className="mt-2 text-xs leading-6 text-white/85">فهرست، قیمت و دسترس‌پذیری محصولات مستقیماً از فروشگاه دریافت می‌شود.</p>
-            <button onClick={() => navigateScreen("StoreMain")} className="mt-4 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-red-500">مشاهده فروشگاه</button>
-          </section>
-
-          {/* Latest notifications */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-foreground">اعلان‌های اخیر</h2>
-              <button onClick={() => navigateScreen("NotificationCenter")} className="text-primary text-xs font-semibold">همه</button>
-            </div>
-            <div className="space-y-2">
-              {NOTIFICATIONS.filter(n => !n.read).map(n => (
-                <div key={n.id} className="bg-primary/5 border border-primary/15 rounded-2xl p-3 flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{n.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">{n.desc}</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground flex-shrink-0">{n.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Articles */}
-          <div className="pb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-foreground">مقالات آموزشی</h2>
-              <button onClick={() => navigateScreen("ArticlesList")} className="text-primary text-xs font-semibold">همه مقالات</button>
-            </div>
-            <div className="space-y-3">
-              {ARTICLES.slice(0, 2).map(a => (
-                <button key={a.title} onClick={() => navigateScreen("ArticleDetail", { title: a.title })} className="w-full bg-white rounded-2xl p-3.5 border border-border shadow-sm flex items-center gap-3 text-right">
-                  <div className="w-14 h-14 bg-accent rounded-xl flex-shrink-0 flex items-center justify-center"><BookOpen size={20} className="text-primary" /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-tight mb-1 truncate">{a.title}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] bg-secondary text-primary px-2 py-0.5 rounded-full font-semibold">{a.cat}</span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock size={10} /> {a.time} مطالعه</span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
+      <section className="home-panel" aria-labelledby="home-articles-title"><div className="home-section-heading"><h2 id="home-articles-title">برای آگاهی بیشتر</h2><Link href="/articles">همهٔ مقاله‌ها</Link></div><PatientResourceState {...articles} retry={() => void articles.reload()} />{articles.data?.items.slice(0, 2).map(item => <Link key={item.id} href={`/articles/${encodeURIComponent(item.slug)}`} className="home-content-link"><BookOpen size={20} aria-hidden="true" /><h3>{item.title}</h3><ArrowLeft size={17} aria-hidden="true" /></Link>)}{articles.data?.items.length === 0 && <p className="home-caption">پس از انتشار محتوای آموزشی، مقاله‌ها در این بخش نمایش داده می‌شوند.</p>}</section>
+    <AnimatePresence>{notificationsOpen && <NotificationSheet onClose={() => setNotificationsOpen(false)} onUpdated={() => void notifications.reload()} />}</AnimatePresence>
+  </div>;
 }

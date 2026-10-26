@@ -1,6 +1,7 @@
 import { Injectable, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 
 import { PrismaService } from '../../../database/prisma/prisma.service';
+import type { Prisma } from '../../../generated/prisma/client';
 import {
   PatientDomainError,
   canonicalizePatientText,
@@ -17,6 +18,7 @@ type SelfProfile = {
   lastName: string | null;
   email: string | null;
   cityName: string | null;
+  gender: 'FEMALE' | 'MALE' | null;
   updatedAt: Date | null;
 };
 
@@ -31,9 +33,6 @@ export type SelfOnboardingStatus = ReturnType<typeof evaluateOnboarding> & {
   activeConsentRecordId: string | null;
   updatedAt: Date | null;
 };
-
-const PROFILE_POLICY_KEY = 'MEDICAL_INTAKE_PROCESSING';
-const PROFILE_POLICY_LOCALE = 'fa-IR';
 
 @Injectable()
 export class SelfProfileService {
@@ -60,32 +59,19 @@ export class SelfProfileService {
       lastName: profile.lastName,
       email: profile.email,
       cityName: profile.cityName,
+      gender: profile.gender as SelfProfile['gender'],
       updatedAt: profile.updatedAt,
     };
   }
 
-  async getOnboardingStatus(userId: string): Promise<SelfOnboardingStatus> {
-    const patient = await this.ensurePatientProfile(userId);
-    const [intake, activePolicy, hasConsentDecision] = await Promise.all([
-      this.prisma.patientMedicalIntake.findUnique({
-        where: { patientId: patient.id },
-      }),
-      this.prisma.consentPolicyVersion.findFirst({
-        where: {
-          clinicId: patient.clinicId,
-          policyKey: PROFILE_POLICY_KEY,
-          locale: PROFILE_POLICY_LOCALE,
-          status: 'ACTIVE',
-        },
-        select: { id: true },
-      }),
-      this.prisma.patientConsentRecord.findFirst({
-        where: { patientId: patient.id },
-        select: { id: true },
-      }),
+  async getOnboardingStatus(userId: string, db: Prisma.TransactionClient = this.prisma): Promise<SelfOnboardingStatus> {
+    const patient = await this.ensurePatientProfile(userId, db);
+    const [intake, entry] = await Promise.all([
+      db.patientMedicalIntake.findUnique({ where: { patientId: patient.id } }),
+      db.patientEntry.findUnique({ where: { patientId: patient.id }, select: { birthDate: true } }),
     ]);
     const currentRevision = intake && intake.currentRevisionNumber > 0
-      ? await this.prisma.patientMedicalIntakeRevision.findUnique({
+      ? await db.patientMedicalIntakeRevision.findUnique({
         where: {
           intakeId_revisionNumber: {
             intakeId: intake.id,
@@ -94,32 +80,22 @@ export class SelfProfileService {
         },
       })
       : null;
-    const activeConsent = activePolicy
-      ? await this.prisma.patientConsentRecord.findFirst({
-        where: {
-          patientId: patient.id,
-          policyVersionId: activePolicy.id,
-          withdrawnAt: null,
-        },
-        select: { id: true },
-      })
-      : null;
     const profile = patient.user.userProfile;
     const revisionNumber = intake?.currentRevisionNumber ?? 0;
     const completedRevision = intake?.completedRevisionNumber ?? null;
     const evaluation = evaluateOnboarding({
       firstName: profile?.firstName,
       lastName: profile?.lastName,
-      birthDate: currentRevision?.birthDate?.toISOString().slice(0, 10),
+      birthDate: (currentRevision?.birthDate ?? entry?.birthDate)?.toISOString().slice(0, 10),
       sexAtBirth: currentRevision?.sexAtBirth,
       allergyReport: currentRevision?.allergyReport as never,
       chronicConditionReport: currentRevision?.chronicConditionReport as never,
       currentMedicationReport: currentRevision?.currentMedicationReport as never,
-      activeCurrentConsent: activeConsent !== null,
-      activeConsentRecordId: activeConsent?.id ?? null,
+      activeCurrentConsent: false,
+      activeConsentRecordId: null,
       completedConsentRecordId: currentRevision?.completedConsentRecordId ?? null,
-      hasConsentDecision: hasConsentDecision !== null,
-      consentPolicyAvailable: activePolicy !== null,
+      hasConsentDecision: false,
+      consentPolicyAvailable: false,
       submissionState: intake?.submissionState ?? null,
       currentRevision: revisionNumber,
       completedRevision,
@@ -133,20 +109,20 @@ export class SelfProfileService {
       evaluatedSchemaVersion: intake?.assignedSchemaVersion ?? 1,
       currentRevision: revisionNumber,
       completedRevision,
-      currentPolicyVersionId: activePolicy?.id ?? null,
-      activeConsentRecordId: activeConsent?.id ?? null,
+      currentPolicyVersionId: null,
+      activeConsentRecordId: null,
       updatedAt: this.latestUpdate(profile?.updatedAt ?? null, intake?.updatedAt ?? null),
     };
   }
 
-  private async ensurePatientProfile(userId: string) {
-    const existing = await this.prisma.patientProfile.findUnique({
+  private async ensurePatientProfile(userId: string, db: Prisma.TransactionClient = this.prisma) {
+    const existing = await db.patientProfile.findUnique({
       where: { userId },
       include: { user: { include: { userProfile: true } } },
     });
     if (existing) return existing;
 
-    const clinic = await this.prisma.clinic.findFirst({
+    const clinic = await db.clinic.findFirst({
       where: { status: 'ACTIVE' },
       select: { id: true },
     });
@@ -158,7 +134,7 @@ export class SelfProfileService {
       });
     }
 
-    return this.prisma.patientProfile.upsert({
+    return db.patientProfile.upsert({
       where: { userId },
       create: { userId, clinicId: clinic.id },
       update: {},
@@ -185,6 +161,9 @@ export class SelfProfileService {
       if (input.cityName !== undefined) {
         data.cityName = input.cityName === null ? null : canonicalizePatientText(input.cityName);
       }
+      if (input.gender !== undefined) {
+        data.gender = input.gender;
+      }
       return data;
     } catch (error) {
       if (error instanceof PatientDomainError) {
@@ -208,6 +187,7 @@ export class SelfProfileService {
       lastName: profile?.lastName ?? null,
       email: profile?.email ?? null,
       cityName: profile?.cityName ?? null,
+      gender: (profile?.gender as SelfProfile['gender'] | undefined) ?? null,
       updatedAt: profile?.updatedAt ?? null,
     };
   }

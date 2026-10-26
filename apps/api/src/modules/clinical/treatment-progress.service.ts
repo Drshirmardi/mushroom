@@ -6,6 +6,7 @@ import { ClinicalPermissionService } from '../../common/auth/clinical-permission
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { ClinicalAccessAuditService, type ClinicalAuditContext } from './clinical-access-audit.service';
 import { ClinicalResourceAccessService } from './clinical-resource-access.service';
+import { CustomProgramBoundaryService } from './custom-program-boundary.service';
 
 type ClinicalActor = ClinicalAuditContext & { roles: RoleCode[] };
 type Tx = Prisma.TransactionClient;
@@ -13,7 +14,7 @@ const forbidden = () => new ForbiddenException({ code: 'TREATMENT_PROGRESS_RESOU
 
 @Injectable()
 export class TreatmentProgressService {
-  constructor(private readonly prisma: PrismaService, private readonly access: ClinicalResourceAccessService, private readonly permissions: ClinicalPermissionService, private readonly audit: ClinicalAccessAuditService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: ClinicalResourceAccessService, private readonly permissions: ClinicalPermissionService, private readonly audit: ClinicalAccessAuditService, private readonly customPrograms: CustomProgramBoundaryService) {}
 
   async admin(patientId: string, planId: string, actor: ClinicalActor, cursor?: string, limit = 50) {
     const patient = await this.access.patient(actor.actorUserId, patientId);
@@ -32,6 +33,7 @@ export class TreatmentProgressService {
     return this.prisma.$transaction(async (tx) => {
       const plan = await tx.treatmentPlan.findFirst({ where: { id: planId, patientId, clinicId, ...(patientVisible ? { state: { in: [TreatmentPlanState.ACTIVE, TreatmentPlanState.COMPLETED] } } : {}) }, select: { id: true } });
       if (!plan) throw forbidden();
+      if (patientVisible) await this.customPrograms.patient(tx, plan.id, context); else await this.customPrograms.clinician(tx, plan.id, context);
       const where = { treatmentPlanId: plan.id };
       const [totalTasks, completedTasks, records] = await Promise.all([
         tx.treatmentTask.count({ where: { ...where, state: { not: TreatmentTaskState.CANCELLED } } }),

@@ -1,24 +1,89 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
-import { useAuthSession } from "@/components/auth/session-gate";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { commerceErrorMessage, getCommerceCart, updateCommerceCart, type CommerceCart } from "@/lib/commerce-catalog-api";
-import { formatPrice, toP } from "@/lib/format";
-import { useScreenNavigation } from "@/lib/navigation";
-import { cartTotal, useCartStore } from "@/stores/cart";
+import { AnimatePresence, MotionConfig } from "motion/react";
 
-const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, price: Number(item.sku.currentPriceToman), qty: item.quantity })));
+import { useAuthSession } from "@/components/auth/session-gate";
+import { Button } from "@/components/ui/button";
+import { CartItem, ProductPrice, StoreHeader, StoreState } from "@/components/store/store-ui";
+
+import { commerceErrorMessage, getCommerceCart, updateCommerceCart, type CommerceCart } from "@/lib/commerce-catalog-api";
+
+import { useScreenNavigation } from "@/lib/navigation";
+import { cartTotal, cartTax, cartCount, useCartStore } from "@/stores/cart";
+import { toP } from "@/lib/format";
+import { productImageUrl } from "@/lib/product-image";
+import { useRecentStore } from "@/stores/recently-viewed";
+import { RecentCard } from "@/components/store/recent-card";
+import { StoreCollection } from "@/components/store/store-collection";
+import { ShoppingBag } from "lucide-react";
+
+const cache = (cart: CommerceCart) => useCartStore.getState().replace(cart.items.map((item) => ({ id: item.id, skuId: item.sku.id, productId: item.product.id, name: item.product.title, variantTitle: item.sku.title, price: item.sku.currentPriceToman, tax: item.sku.currentTaxToman, qty: item.quantity, imageUrl: productImageUrl(item.product) })));
 
 export default function CartPage() {
   const { authentication } = useAuthSession(); const router = useRouter(); const navigateScreen = useScreenNavigation();
   const items = useCartStore((state) => state.items); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [busy, setBusy] = useState<string | null>(null);
+  const recent = useRecentStore((state) => state.items);
+  /** Undo window for removals (matches the progress-bar animation in CSS). */
+  const UNDO_MS = 5000;
+  const [removingIds, setRemovingIds] = useState<string[]>([]);
+  const removeTimers = useRef<Map<string, number>>(new Map());
+  const clearRemoveTimer = (skuId: string) => {
+    const timer = removeTimers.current.get(skuId);
+    if (timer !== undefined) { window.clearTimeout(timer); removeTimers.current.delete(skuId); }
+  };
+  useEffect(() => () => {
+    removeTimers.current.forEach((timer) => window.clearTimeout(timer));
+    removeTimers.current.clear();
+  }, []);
   const load = useCallback(async () => { setLoading(true); setError(null); try { cache(await getCommerceCart(authentication.accessToken)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setLoading(false); } }, [authentication.accessToken]);
   useEffect(() => { void load(); }, [load]);
   const change = async (skuId: string, quantity: number) => { setBusy(skuId); setError(null); try { cache(await updateCommerceCart(authentication.accessToken, skuId, quantity)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(null); } };
-  const total = cartTotal(items);
-  return <div><PageHeader title="سبد خرید" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">{loading && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت سبد خرید…</p>}{error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"><p>{error}</p><button type="button" onClick={() => void load()} className="mt-3 font-bold text-primary">تلاش دوباره</button></div>}{!loading && !error && items.length === 0 && <EmptyState icon={ShoppingCart} title="سبد خرید خالی است" desc="محصولات مورد نظر را اضافه کنید." action="رفتن به فروشگاه" onAction={() => router.push("/store")} />}{items.map((item) => <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-sm"><div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-center text-[10px] font-bold text-primary">محصول</div><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-foreground">{item.name}</p><p className="mt-1 text-xs font-bold text-primary">{formatPrice(item.price)} تومان</p></div><div className="flex items-center gap-1.5 rounded-xl bg-muted p-1"><button type="button" disabled={busy === item.skuId} onClick={() => void change(item.skuId, item.qty - 1)} className="flex h-6 w-6 items-center justify-center rounded-lg"><Minus size={12} /></button><span className="w-5 text-center text-xs font-bold">{toP(item.qty)}</span><button type="button" disabled={busy === item.skuId || item.qty >= 100} onClick={() => void change(item.skuId, item.qty + 1)} className="flex h-6 w-6 items-center justify-center rounded-lg"><Plus size={12} /></button></div></div>)}{items.length > 0 && <><div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><div className="flex justify-between text-sm"><span className="text-muted-foreground">جمع کالاها</span><span className="font-black text-primary">{formatPrice(total)} تومان</span></div><p className="mt-3 text-xs text-muted-foreground">هزینه ارسال و مبلغ نهایی در مرحله تکمیل خرید تعیین می‌شود.</p></div><button type="button" onClick={() => navigateScreen("CheckoutScreen")} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white">ادامه و تکمیل خرید</button></>}</div></div>;
+  const requestRemove = (skuId: string) => {
+    clearRemoveTimer(skuId);
+    setRemovingIds((ids) => (ids.includes(skuId) ? ids : [...ids, skuId]));
+    removeTimers.current.set(skuId, window.setTimeout(() => {
+      removeTimers.current.delete(skuId);
+      setRemovingIds((ids) => ids.filter((id) => id !== skuId));
+      void change(skuId, 0);
+    }, UNDO_MS));
+  };
+  const undoRemove = (skuId: string) => { clearRemoveTimer(skuId); setRemovingIds((ids) => ids.filter((id) => id !== skuId)); };
+  const onQty = (skuId: string, quantity: number) => { if (quantity === 0) requestRemove(skuId); else void change(skuId, quantity); };
+  const [emptyVisible, setEmptyVisible] = useState(false);
+  const prevLength = useRef(items.length);
+  useEffect(() => {
+    const wasNonEmpty = prevLength.current > 0;
+    prevLength.current = items.length;
+    if (loading || error || items.length > 0) { setEmptyVisible(false); return; }
+    if (wasNonEmpty) {
+      const timer = window.setTimeout(() => setEmptyVisible(true), 300);
+      return () => window.clearTimeout(timer);
+    }
+    setEmptyVisible(true);
+  }, [loading, error, items.length]);
+  const tax = cartTax(items);
+  const total = cartTotal(items) + tax;
+  return <main className="store-page"><StoreHeader title="سبد خرید" onBack={() => router.back()} />
+    {loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
+    {error && <StoreState title="سبد به‌روزرسانی نشد" description={error} error action="تلاش دوباره" onAction={() => void load()} />}
+    {!loading && !error && emptyVisible && <div className="store-empty">
+      <ShoppingBag size={44} strokeWidth={1.25} className="text-primary" aria-hidden="true" />
+      <h2>سبد خرید شما خالی است!</h2>
+      <p>اگر به فروشگاه سر بزنید، دست‌پر برمی‌گردید.</p>
+      <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>
+    </div>}
+    {!loading && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
+    {!loading && !error && items.length > 0 && <div className="store-cart-bar" aria-label="خلاصهٔ سبد">
+      <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy || removingIds.length > 0} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
+      <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا{tax > BigInt(0) ? "، با مالیات" : ""}</span><ProductPrice amount={total} /></div>
+    </div>}
+    {recent.length > 0 && <>
+      <div className="store-divider" aria-hidden="true" />
+      <StoreCollection title="بازدیدهای اخیر" id="store-recent">
+        {recent.map((item) => <RecentCard key={item.productId} item={item} />)}
+      </StoreCollection>
+    </>}
+  </main>;
 }

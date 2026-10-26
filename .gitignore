@@ -25,6 +25,7 @@ bun.lockb
 yarn.lock
 
 # Environment
+/.local/
 *.local
 .env
 .env.*
@@ -58,3 +59,24 @@ pnpm-debug.log*
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# skills
+
+.agents/skills
+
+# Local agent tooling
+.codex/hooks.json
+.codex/skills/
+skills-lock.json
+
+# Generated Graphify artifacts
+graphify-out/
+
+
+.playwright-mcp
+
+
+
+Archive
+
+data-for

@@ -4,8 +4,12 @@ export type CartItem = {
   skuId: string;
   productId: string;
   name: string;
-  price: number;
+  variantTitle?: string | null;
+  price: string | number;
+  tax?: string | number;
   qty: number;
+  /** Resolved API image URL snapshot; embedded metadata, never an extra request. */
+  imageUrl?: string | null;
 };
 
 type CartState = {
@@ -22,7 +26,10 @@ export const useCartStore = create<CartState>()((set) => ({
 }));
 
 export const cartTotal = (items: CartItem[]) =>
-  items.reduce((sum, c) => sum + c.price * c.qty, 0);
+  items.reduce((sum, c) => sum + BigInt(c.price) * BigInt(c.qty), BigInt(0));
+
+export const cartTax = (items: CartItem[]) =>
+  items.reduce((sum, c) => sum + BigInt(c.tax ?? 0) * BigInt(c.qty), BigInt(0));
 
 export const cartCount = (items: CartItem[]) =>
   items.reduce((sum, c) => sum + c.qty, 0);

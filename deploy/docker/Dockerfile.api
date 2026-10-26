@@ -8,6 +8,7 @@ RUN apt-get update \
   && corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches ./patches
 COPY apps/api/package.json apps/api/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
 

@@ -24,6 +24,8 @@ import { PasswordStrength } from "./PasswordStrength";
 import { AuthSubmitButton } from "./AuthSubmitButton";
 import { AuthSwitchLink } from "./AuthSwitchLink";
 import { AuthErrorAlert } from "./AuthErrorAlert";
+import { OtpAuthForm } from "./OtpAuthForm";
+import { dashboardUrl, resolvePostLoginUrl } from "@/lib/api";
 
 const signupSchema = z
     .object({
@@ -39,7 +41,7 @@ const signupSchema = z
 
 type SignupValues = z.infer<typeof signupSchema>;
 
-export function SignupForm() {
+function PasswordSignupForm() {
     const router = useRouter();
     const [authError, setAuthError] = useState<string | null>(null);
 
@@ -69,13 +71,7 @@ export function SignupForm() {
     };
 
     return (
-        <GlassCard className="p-6 sm:p-8">
-            <div className="mb-8 space-y-2">
-                <h1 className="text-2xl font-bold">ساخت حساب کاربری</h1>
-                <p className="text-sm leading-6 text-muted-foreground">
-                    در کمتر از یک دقیقه به خانواده سلامتی بپیوندید.
-                </p>
-            </div>
+        <div>
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -138,13 +134,20 @@ export function SignupForm() {
                 </form>
             </Form>
 
-            <div className="mt-6">
-                <AuthSwitchLink
-                    question="قبلاً ثبت‌نام کرده‌اید؟"
-                    to="/login"
-                    label="وارد شوید"
-                />
-            </div>
-        </GlassCard>
+        </div>
     );
+}
+
+export function SignupForm() {
+    const [method, setMethod] = useState<"otp" | "password">("otp");
+    const authenticated = (roles: string[]) => window.location.assign(roles.some((role) => ["ADMIN", "DOCTOR", "STAFF"].includes(role)) ? dashboardUrl : resolvePostLoginUrl(null));
+    return <GlassCard className="p-6 sm:p-8">
+        <div className="mb-6 space-y-2"><h1 className="text-2xl font-bold">ساخت حساب کاربری</h1><p className="text-sm leading-6 text-muted-foreground">با کد یک‌بارمصرف وارد شوید؛ اگر حسابی ندارید همان لحظه ساخته می‌شود.</p></div>
+        <div role="tablist" aria-label="روش ثبت‌نام" className="mb-6 grid grid-cols-2 rounded-xl bg-secondary/60 p-1">
+            <button role="tab" aria-selected={method === "otp"} type="button" onClick={() => setMethod("otp")} className={`rounded-lg px-3 py-2 text-sm font-bold ${method === "otp" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"}`}>کد یک‌بارمصرف</button>
+            <button role="tab" aria-selected={method === "password"} type="button" onClick={() => setMethod("password")} className={`rounded-lg px-3 py-2 text-sm font-bold ${method === "password" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"}`}>رمز عبور</button>
+        </div>
+        {method === "otp" ? <OtpAuthForm requireTerms onAuthenticated={authenticated} /> : <PasswordSignupForm />}
+        <div className="mt-6"><AuthSwitchLink question="قبلاً ثبت‌نام کرده‌اید؟" to="/login" label="وارد شوید" /></div>
+    </GlassCard>;
 }

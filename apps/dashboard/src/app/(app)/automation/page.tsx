@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+
+import { DeferredFeaturePage } from "@/components/layout/deferred-feature-page";
 import { pageMetadata } from "@/lib/page-meta";
-import { AutomationPage } from "@/features/automation/automation-page";
 
 export const metadata: Metadata = pageMetadata("automation");
 
 export default function Page() {
-  return <AutomationPage />;
+  return <DeferredFeaturePage title="اتوماسیون" />;
 }

@@ -24,6 +24,7 @@ export class CancelPatientAppointmentDto {
 export class ReschedulePatientAppointmentDto extends CreatePatientAppointmentDto {}
 
 export class PatientAppointmentResponseDto {
+  @ApiPropertyOptional({ enum: ['ONLINE', 'IN_PERSON'] }) visitMode?: string;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) clinicId!: string;
   @ApiProperty({ format: 'uuid' }) patientId!: string;
@@ -31,7 +32,7 @@ export class PatientAppointmentResponseDto {
   @ApiProperty({ format: 'uuid' }) doctorId!: string;
   @ApiProperty({ format: 'date-time' }) startsAt!: Date;
   @ApiProperty({ format: 'date-time' }) endsAt!: Date;
-  @ApiProperty({ enum: ['PENDING'] }) status!: string;
+  @ApiProperty({ enum: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW', 'CANCELLED'] }) status!: string;
   @ApiProperty() priceAmount!: number;
   @ApiProperty({ enum: ['IRR'] }) currency!: string;
   @ApiProperty({ format: 'date-time' }) priceCapturedAt!: Date;

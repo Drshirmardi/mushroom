@@ -72,12 +72,15 @@ describe('Phase 12 migration and application-rollback rehearsal', () => {
 
   it('replays the complete immutable history and reports no pending migration', async () => {
     const migrations = migrationNames();
-    expect(migrations).toHaveLength(32);
+    expect(migrations.length).toBeGreaterThanOrEqual(33);
+    expect(migrations).toEqual(expect.arrayContaining([phaseNineBaseline, ...phaseTenMigrations]));
 
     const deploy = runPrisma(['migrate', 'deploy'], databaseUrlFor(freshDatabase));
     expect(deploy.status, deploy.stderr).toBe(0);
     const status = runPrisma(['migrate', 'status'], databaseUrlFor(freshDatabase));
     expect(status.status, status.stderr).toBe(0);
+    const drift = runPrisma(['migrate', 'diff', '--from-config-datasource', '--to-schema', 'prisma/schema.prisma', '--exit-code'], databaseUrlFor(freshDatabase));
+    expect(drift.status, drift.stdout + drift.stderr).toBe(0);
 
     const client = new Client({ connectionString: databaseUrlFor(freshDatabase) });
     await client.connect();

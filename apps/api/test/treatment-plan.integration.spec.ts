@@ -1,3 +1,4 @@
+import { completeTestPatientEntry, clearTestPatientEntries } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -37,7 +38,7 @@ describe('treatment-plan API (PostgreSQL integration)', () => {
       await prisma.clinicalRolePermission.deleteMany({ where: { role: { code: 'DOCTOR' }, permission: { in: [...createdDoctorPermissions] } } });
       createdDoctorPermissions.clear();
     }
-    await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
+    await clearTestPatientEntries(prisma, { userId: { in: users } }); await prisma.patientProfile.deleteMany({ where: { userId: { in: users } } });
     await prisma.user.deleteMany({ where: { id: { in: users } } });
     userIds.clear();
   });
@@ -55,7 +56,7 @@ describe('treatment-plan API (PostgreSQL integration)', () => {
       prisma.user.create({ data: { phone: `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}` } }),
     ]);
     userIds.add(patientUser.id); userIds.add(clinician.id);
-    const patient = await prisma.patientProfile.create({ data: { userId: patientUser.id, clinicId: clinic.id } });
+    const patient = await prisma.patientProfile.create({ data: { userId: patientUser.id, clinicId: clinic.id } }); await completeTestPatientEntry(prisma, patientUser.id);
     await prisma.userRole.createMany({ data: [{ userId: patientUser.id, roleId: patientRole.id }, { userId: clinician.id, roleId: doctorRole.id }] });
     await prisma.clinicalClinicAccess.create({ data: { userId: clinician.id, clinicId: clinic.id } });
     const requiredPermissions = ['CLINICAL_RECORD_VIEW', 'CLINICAL_RECORD_EDIT'] as const;
@@ -142,7 +143,7 @@ describe('treatment-plan API (PostgreSQL integration)', () => {
     await prisma.clinicalClinicAccess.deleteMany({ where: { userId: clinician.id } });
     const denied = await request('GET', `/v1/admin/patients/${patient.id}/treatment-plans/${plan.id}`, doctorToken);
     expect(denied.statusCode).toBe(403);
-    expect(denied.json()).toMatchObject({ code: 'FORBIDDEN' });
+    expect(denied.json()).toMatchObject({ code: 'CLINICAL_RESOURCE_FORBIDDEN' });
   });
 
   it('declares the F07-T04 routes in runtime OpenAPI without synchronizing the checked-in client', async () => {

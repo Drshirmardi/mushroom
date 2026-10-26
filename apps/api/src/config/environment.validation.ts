@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 
 import * as Joi from 'joi';
+import { productMediaEnvironment } from './product-media.config';
 
 const isHttpOrigin = (value: string): boolean => {
   try {
@@ -76,6 +77,12 @@ const paymentCredentialHistoricalKeyringSchema = Joi.string()
   })
   .messages({ 'any.invalid': 'must be a comma-separated version:canonical-base64-32-byte-key keyring with unique versions' });
 
+const secretPepperSchema = Joi.string()
+  .min(43)
+  .max(256)
+  .pattern(/^[A-Za-z0-9_-]+$/)
+  .messages({ 'string.pattern.base': 'must be an URL-safe secret with at least 256 bits of entropy' });
+
 const sadadReturnUrlSchema = Joi.string()
   .allow('')
   .custom((value, helpers) => {
@@ -87,7 +94,32 @@ const sadadReturnUrlSchema = Joi.string()
   })
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /v1/payments/providers/sadad/callback with no query or fragment' });
 
+const sadadResultUrlSchema = Joi.string()
+  .allow('')
+  .custom((value, helpers) => {
+    if (!value) return value;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && url.pathname === '/store/order-success' && !url.search && !url.hash ? url.toString() : helpers.error('any.invalid');
+    } catch { return helpers.error('any.invalid'); }
+  })
+  .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /store/order-success with no query or fragment' });
+
 export const environmentValidationSchema = Joi.object({
+  EJABBERD_DOMAIN: Joi.string().hostname().lowercase().required(),
+  EJABBERD_WEBSOCKET_URL: Joi.string().when('NODE_ENV', {
+    is: 'development',
+    then: Joi.string().uri({ scheme: ['ws', 'wss'] }).custom((value, helpers) => {
+      const url = new URL(value);
+      return url.protocol === 'wss:' || ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) ? value : helpers.error('any.invalid');
+    }),
+    otherwise: Joi.string().uri({ scheme: ['wss'] }),
+  }).required(),
+  EJABBERD_API_URL: Joi.string().uri({ scheme: ['http', 'https'] }).required(),
+  EJABBERD_POLICY_SECRET: Joi.string().min(43).max(256).pattern(/^[A-Za-z0-9_-]+$/u).invalid(Joi.ref('JWT_ACCESS_SECRET'), Joi.ref('REFRESH_TOKEN_PEPPER')).required(),
+  EJABBERD_JWT_PRIVATE_KEY_FILE: Joi.string().max(4096).required(),
+  EJABBERD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(500).max(5000).default(3000),
+  ...productMediaEnvironment,
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),
@@ -108,12 +140,14 @@ export const environmentValidationSchema = Joi.object({
     })
     .default('http://localhost:3000,http://localhost:3001,http://localhost:3002')
     .messages({ 'any.invalid': 'must be a comma-separated list of HTTP(S) origins' }),
+  PUBLIC_API_URL: Joi.string().custom((value, helpers) => isHttpOrigin(value) && new URL(value).protocol === 'https:' ? new URL(value).toString() : helpers.error('any.invalid')).when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.required(), otherwise: Joi.optional().allow('') }).messages({ 'any.invalid': 'must be a public HTTPS origin with no path, query or fragment' }),
   TRUSTED_PROXIES: Joi.when('NODE_ENV', {
     is: 'production',
     then: trustedProxySchema.required(),
     otherwise: trustedProxySchema.allow('').default(''),
   }),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('info'),
+  BILLING_BOOKING_HOLD_MINUTES: Joi.number().integer().min(1).max(30).default(10),
   COMMERCE_RESERVATION_TTL_MINUTES: Joi.number().integer().min(1).max(1_440).default(20),
   JWT_ACCESS_SECRET: Joi.string()
     .min(43)
@@ -130,12 +164,19 @@ export const environmentValidationSchema = Joi.object({
     .invalid('replace-this-placeholder-with-a-unique-refresh-token-pepper')
     .invalid(Joi.ref('JWT_ACCESS_SECRET'))
     .required(),
-  // Sadad remains disabled here: merchant credentials are encrypted config revisions, never environment values.
-  PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.optional(),
+  OTP_PEPPER: secretPepperSchema.required().invalid(Joi.ref('JWT_ACCESS_SECRET'), Joi.ref('REFRESH_TOKEN_PEPPER')),
+  SMS_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.when('SMS_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
+  SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
+  SMS_CREDENTIAL_DECRYPTION_KEYS: paymentCredentialHistoricalKeyringSchema.optional(),
+  SMS_TRANSPORT_MODE: Joi.string().valid('disabled', 'live').default('disabled'),
+  SMS_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1_000).max(30_000).default(5_000),
+  // Merchant credentials remain encrypted config revisions; live mode contains only deployment/network controls.
+  PAYMENT_CREDENTIAL_ENCRYPTION_KEY: paymentCredentialKeySchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
   PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: Joi.string().trim().min(1).max(64).default('v1'),
   PAYMENT_CREDENTIAL_DECRYPTION_KEYS: paymentCredentialHistoricalKeyringSchema.optional(),
-  SADAD_TRANSPORT_MODE: Joi.string().valid('disabled').default('disabled'),
+  SADAD_TRANSPORT_MODE: Joi.string().valid('disabled', 'live').default('disabled'),
   SADAD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1_000).max(30_000).default(5_000),
-  SADAD_RETURN_URL: sadadReturnUrlSchema.optional(),
-  SADAD_REDIRECT_PROFILE: Joi.string().valid('', 'PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX').default(''),
+  SADAD_RETURN_URL: sadadReturnUrlSchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
+  SADAD_RESULT_URL: sadadResultUrlSchema.when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
+  SADAD_REDIRECT_PROFILE: Joi.string().valid('', 'PDF_PURCHASE', 'PHP_VPG_PURCHASE', 'DOTNET_PURCHASE_INDEX').when('SADAD_TRANSPORT_MODE', { is: 'live', then: Joi.invalid('').required(), otherwise: Joi.string().default('') }),
 }).unknown(true);

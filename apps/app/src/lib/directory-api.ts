@@ -34,8 +34,8 @@ export const getPatientDoctor = (accessToken: string, doctorId: string) => expec
   apiClient.GET("/v1/directory/doctors/{doctorId}", { headers: authorization(accessToken), params: { path: { doctorId } } }),
 );
 
-export const getPatientAvailability = (accessToken: string, doctorServiceId: string, fromDate: string, toDate: string) => expectData<PatientAvailability>(
-  apiClient.GET("/v1/directory/doctor-services/{doctorServiceId}/availability", { headers: authorization(accessToken), params: { path: { doctorServiceId }, query: { fromDate, toDate } } }),
+export const getPatientAvailability = (accessToken: string, doctorServiceId: string, fromDate: string, toDate: string, page = 1) => expectData<PatientAvailability>(
+  apiClient.GET("/v1/directory/doctor-services/{doctorServiceId}/availability", { headers: authorization(accessToken), params: { path: { doctorServiceId }, query: { fromDate, toDate, page, pageSize: 100 } } }),
 );
 
 export function directoryErrorMessage(error: unknown) {

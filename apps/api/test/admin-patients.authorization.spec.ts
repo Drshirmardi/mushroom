@@ -38,7 +38,9 @@ describe('Admin intake correction idempotency contract', () => {
   const serviceForReplay = (payloadHash: string) => {
     const revision = { intakeId: '00000000-0000-4000-8000-000000000011', revisionNumber: 4, revisionState: 'DRAFT', birthDate: null, sexAtBirth: null, heightCm: null, weightKg: null, bloodType: null, allergyReport: null, chronicConditionReport: null, currentMedicationReport: null, sleepDurationBand: null, exerciseFrequency: null, stressLevel: null, tobaccoUse: 'NEVER', recordingMode: 'ADMIN_ON_BEHALF_CORRECTION', payloadHash };
     const tx = {
+      $queryRaw: async () => [{ id: '00000000-0000-4000-8000-000000000013', clinicId: '00000000-0000-4000-8000-000000000012', contentHash: 'a'.repeat(64) }],
       patientProfile: { findUnique: async () => ({ id: '00000000-0000-4000-8000-000000000010', clinicId: '00000000-0000-4000-8000-000000000012', medicalIntake: { id: revision.intakeId, currentRevisionNumber: 4, revisions: [revision] } }) },
+      patientMedicalIntake: { findUnique: async () => ({ id: revision.intakeId, currentRevisionNumber: 4, revisions: [revision] }) },
       consentPolicyVersion: { findFirst: async () => ({ id: '00000000-0000-4000-8000-000000000013' }) },
       patientConsentRecord: { findFirst: async () => ({ id: '00000000-0000-4000-8000-000000000014' }) },
       patientMedicalIntakeRevision: { findFirst: async () => revision },

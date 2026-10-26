@@ -36,6 +36,73 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/health/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HealthController_chatReady"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/challenges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request an authentication OTP challenge */
+        post: operations["authOtpChallengeCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/challenges/{challengeId}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resend an authentication OTP challenge */
+        post: operations["authOtpChallengeResend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/challenges/{challengeId}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify OTP and create an authenticated session */
+        post: operations["authOtpChallengeVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/register": {
         parameters: {
             query?: never;
@@ -224,6 +291,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chat/conversations/{conversationId}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read current conversation readiness and explicit closure state */
+        get: operations["chatConversationAccess"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explicitly close a conversation as its assigned physician or authorized clinic administrator */
+        post: operations["chatConversationClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/conversations/{conversationId}/messages": {
         parameters: {
             query?: never;
@@ -234,8 +335,7 @@ export interface paths {
         /** Read an authorized bounded ascending message history page */
         get: operations["chatConversationHistory"];
         put?: never;
-        /** Persist an idempotent appointment-bound text message */
-        post: operations["chatConversationMessageSend"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -355,6 +455,23 @@ export interface paths {
         get: operations["chatWaitingRoomGet"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/appointments/{appointmentId}/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue an authorized short-lived ejabberd session for one consultation */
+        post: operations["chatAppointmentEngineSessionCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1057,6 +1174,369 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/sms/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminSmsProvidersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSmsProviderRevisionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["adminSmsProviderStateUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSmsProviderConnectionTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/providers/{providerCode}/test-message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminSmsProviderMessageTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sms/otp-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOtpPolicyGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["adminOtpPolicyUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/sms/delivery-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminSmsDeliveryAttemptsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientEntryStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryProfileSave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-entry-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminEntryPolicyGet"];
+        put: operations["adminEntryPolicyUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List owned assessment attempt summaries */
+        get: operations["patientAssessmentHistoryList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/questionnaire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve the exact owned attempt questionnaire, including retired versions */
+        get: operations["patientAssessmentQuestionnaireGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/provenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get recorded result provenance without inventing legacy algorithm identity */
+        get: operations["patientAssessmentProvenanceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published assessments for the patient clinic */
+        get: operations["patientAssessmentsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessments/{assessmentVersionId}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start or resume an assessment submission */
+        post: operations["patientAssessmentSubmissionStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the patient assessment submission */
+        get: operations["patientAssessmentSubmissionGet"];
+        /** Save answers for an in-progress assessment submission */
+        put: operations["patientAssessmentSubmissionSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit an assessment submission exactly once */
+        post: operations["patientAssessmentSubmissionSubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an immutable assessment result */
+        get: operations["patientAssessmentSubmissionResult"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/mezaj": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the latest immutable Mezaj result derived from a completed versioned assessment */
+        get: operations["patientMezajResultGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/booking-eligibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get booking eligibility without using assessment score */
+        get: operations["patientBookingEligibilityGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me": {
         parameters: {
             query?: never;
@@ -1086,6 +1566,1082 @@ export interface paths {
         get: operations["patientGetOnboardingStatus"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-protocols": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List immutable questionnaire candidates without patient data */
+        get: operations["clinicalAssessmentProtocolQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inspect exact questions, scoring and purpose-specific consent before educational protocol review */
+        get: operations["clinicalAssessmentProtocolPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalAssessmentProtocolHistory"];
+        put?: never;
+        /** Append an exact physician protocol review; commercial publication and patient entitlement remain separate */
+        post: operations["clinicalAssessmentProtocolApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-protocols/{assessmentVersionId}/reviews/{reviewId}/withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Append withdrawal of current approval; retain its source and professional evidence */
+        post: operations["clinicalAssessmentProtocolWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-protocols/{assessmentVersionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentProtocolPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-protocols/{assessmentVersionId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentProtocolHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guidance-content/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture existing Article text as an immutable unapproved educational version */
+        post: operations["adminGuidanceContentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guidance-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminGuidanceContentList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guidance-content/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminGuidanceContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guidance-content/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Permanently withdraw a draft; cannot revoke physician-approved content */
+        post: operations["adminGuidanceContentDraftRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/guidance-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalGuidanceContentList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/guidance-content/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalGuidanceContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/guidance-content/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve exact educational snapshot as a qualified scoped physician */
+        post: operations["clinicalGuidanceContentApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/guidance-content/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Permanently revoke educational content; no restoration */
+        post: operations["clinicalGuidanceContentRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/guidance-content/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an approved educational version; no diagnosis or personalized therapeutic diet */
+        get: operations["patientGuidanceContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/journey": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get derived patient Home state and next action */
+        get: operations["patientJourneyGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/billing-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pay as an independently consenting participant for exactly the two owned beneficiaries */
+        post: operations["patientCoupleAssessmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/paid-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read only own engine references and authorized minimal partner completion coordination */
+        get: operations["patientCoupleAssessmentPaidState"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/joint-result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read currently mutually authorized approved joint education; no individual responses or bands */
+        get: operations["patientCoupleJointResultGet"];
+        put?: never;
+        /** Persist exact approved joint education after both private engine completions and mutual consent */
+        post: operations["patientCoupleJointResultGenerate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessment-offerings/{publicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve safe approved configuration references for explicit couple participation; never accept consent or expose pair definitions */
+        get: operations["patientCoupleAssessmentOfferingPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientWalletGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wallet/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientWalletTransactionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wallet/topups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientWalletTopupCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/order-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientOrderBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/appointment-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientAppointmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientBillingIntentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingIntentCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/wallet-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingWalletPay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/gateway-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingGatewayAttemptCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/appointment-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPatientAppointmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPatientWalletGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPatientWalletTransactionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPatientWalletAdjust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPatientWalletStatusSet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingIntentsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/intents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingIntentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingReconciliationList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingSummaryGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/intents/{id}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBillingRefundCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/refunds/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBillingRefundComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/attempts/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBillingAttemptRetry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/attempts/{id}/resolve-failed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve an ambiguous attempt as failed using reviewed non-sensitive evidence; never manually mark a bank payment successful */
+        post: operations["adminBillingAttemptResolveFailed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-link-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the owner-published account-link policy; no medical-processing permission is implied */
+        get: operations["patientCoupleLinkPolicyGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List own minimized couple link history */
+        get: operations["patientCoupleSessionsList"];
+        put?: never;
+        /** Create an adult couple account-link session after independent consent */
+        post: operations["patientCoupleSessionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an owned couple link without partner private identity or answers */
+        get: operations["patientCoupleSessionGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-sessions/{id}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue or deliberately replace a nonexpiring registered-recipient invitation; plaintext secret only once */
+        post: operations["patientCoupleInvitationCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-invitations/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview account-link policy without accepting or consuming the invitation */
+        post: operations["patientCoupleInvitationPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept as the intended adult account; no proxy identity or private response disclosure */
+        post: operations["patientCoupleInvitationAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-sessions/{id}/consent-withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw own linking consent and block future shared access; no purchase cancellation/refund */
+        post: operations["patientCoupleConsentWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List minimized own contexts; detail readiness must be checked separately */
+        get: operations["patientCoupleAssessmentList"];
+        put?: never;
+        /** Create an exact two-person consent context; no payment or processing access */
+        post: operations["patientCoupleAssessmentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Review the exact processing and joint disclosure policies for an owned pair context */
+        get: operations["patientCoupleAssessmentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Independently accept joint disclosure for this exact linked partner and source */
+        post: operations["patientCoupleAssessmentConsentAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/consent-withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finally withdraw own context sharing permission without refund or medical-record deletion */
+        post: operations["patientCoupleAssessmentConsentWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-commercial-publications/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview exact configurable tariff, physician protocol and owner-supplied commercial terms; no checkout activation */
+        get: operations["adminAssessmentCommercialPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-commercial-publications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentCommercialList"];
+        put?: never;
+        /** Publish an immutable configurable tariff; replace previous tariff without changing receipts */
+        post: operations["adminAssessmentCommercialPublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-commercial-publications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentCommercialGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-commercial-publications/{id}/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw tariff from new purchases while retaining prior purchase evidence */
+        post: operations["adminAssessmentCommercialRetire"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/couple-result-protocols/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture a professional-authored joint educational lookup draft */
+        post: operations["adminCoupleResultProtocolCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/couple-result-protocols": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List retained versions; detail readiness must be checked separately */
+        get: operations["adminCoupleResultProtocolList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/couple-result-protocols/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCoupleResultProtocolGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/couple-result-protocols/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCoupleResultProtocolDraftRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/couple-result-protocols": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List retained versions; detail readiness must be checked separately */
+        get: operations["clinicalCoupleResultProtocolList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/couple-result-protocols/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalCoupleResultProtocolGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/couple-result-protocols/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve complete exact joint education and disclosure as a qualified physician */
+        post: operations["clinicalCoupleResultProtocolApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/couple-result-protocols/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clinicalCoupleResultProtocolRevoke"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1265,6 +2821,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/assessments/draft-presets/mizaj": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the unreviewed Mizaj authoring preset; not a patient questionnaire */
+        get: operations["adminAssessmentsMizajDraftPreset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessments/{id}/scoring-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate a synthetic unreviewed draft preview without saving patient answers or results */
+        post: operations["adminAssessmentsScoringPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/assessments": {
         parameters: {
             query?: never;
@@ -1294,7 +2884,8 @@ export interface paths {
         get: operations["adminAssessmentsGet"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Remove an assessment from use while retaining its source and patient results */
+        delete: operations["adminAssessmentsDelete"];
         options?: never;
         head?: never;
         /** Update an assessment draft */
@@ -1421,15 +3012,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/assessments": {
+    "/v1/clinical/appointments/{appointmentId}/assessment-context": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List published assessments for the patient clinic */
-        get: operations["patientAssessmentsList"];
+        /** Read current patient-authorized own summaries for this assigned physician within the consultation window; no raw responses/score */
+        get: operations["assignedAssessmentCareContext"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1438,7 +3029,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/assessments/{assessmentVersionId}/submissions": {
+    "/v1/patients/me/appointments/{appointmentId}/assessment-sharing/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview exact optional disclosure of one own result to the assigned physician; no consent mutation */
+        get: operations["patientAssessmentCarePreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/appointments/{appointmentId}/assessment-sharing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List owned retained appointment-specific sharing consent */
+        get: operations["patientAssessmentCareHistory"];
+        put?: never;
+        /** Explicitly authorize only the exact own educational result/assigned doctor/appointment */
+        post: operations["patientAssessmentCareConsentAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/appointments/{appointmentId}/assessment-sharing/{shareId}/withdrawal": {
         parameters: {
             query?: never;
             header?: never;
@@ -1447,33 +3073,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Start or resume an assessment submission */
-        post: operations["patientAssessmentSubmissionStart"];
+        /** Finally withdraw only this care-sharing permission; retain own result and financial evidence */
+        post: operations["patientAssessmentCareConsentWithdraw"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/assessment-submissions/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the patient assessment submission */
-        get: operations["patientAssessmentSubmissionGet"];
-        /** Save answers for an in-progress assessment submission */
-        put: operations["patientAssessmentSubmissionSave"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/assessment-submissions/{id}/submit": {
+    "/v1/admin/assessment-offerings/versions": {
         parameters: {
             query?: never;
             header?: never;
@@ -1482,23 +3090,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Submit an assessment submission exactly once */
-        post: operations["patientAssessmentSubmissionSubmit"];
+        /** Create an immutable offering draft version; publication remains unavailable */
+        post: operations["adminAssessmentOfferingVersionCreate"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/assessment-submissions/{id}/result": {
+    "/v1/admin/assessment-offerings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get an immutable assessment result */
-        get: operations["patientAssessmentSubmissionResult"];
+        /** List clinic-owned assessment offering draft versions */
+        get: operations["adminAssessmentOfferingsList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1507,15 +3115,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/mezaj": {
+    "/v1/admin/assessment-offerings/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get the latest immutable Mezaj result derived from a completed versioned assessment */
-        get: operations["patientMezajResultGet"];
+        /** Get a clinic-owned offering configuration and missing release gates */
+        get: operations["adminAssessmentOfferingGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1524,17 +3132,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/booking-eligibility": {
+    "/v1/admin/assessment-offerings/{id}/retire": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get booking eligibility without using assessment score */
-        get: operations["patientBookingEligibilityGet"];
+        get?: never;
         put?: never;
-        post?: never;
+        /** Retire a draft idempotently without rewriting its configuration */
+        post: operations["adminAssessmentOfferingRetire"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2026,6 +3634,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/appointments/{appointmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one clinic appointment and display names */
+        get: operations["adminAppointmentDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/appointments/{appointmentId}/history": {
         parameters: {
             query?: never;
@@ -2213,6 +3838,689 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/clinical/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List only current physician assigned visit metadata; no medical or financial payload */
+        get: operations["assignedAppointmentsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/appointments/{appointmentId}/consultation-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read assigned operational visit/encounter/text references and current actions without creating a session */
+        get: operations["assignedConsultationContext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/appointments/{appointmentId}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start only this physician checked-in/queued appointment using the existing atomic visit workflow */
+        post: operations["assignedConsultationStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/appointments/{appointmentId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete only this physician current encounter using the existing atomic visit workflow */
+        post: operations["assignedConsultationComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-definitions/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture immutable unapproved curriculum or professional service specification; no sale or patient therapy */
+        post: operations["adminProgramDefinitionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramDefinitionList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-definitions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramDefinitionGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-definitions/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finally revoke an unapproved draft only */
+        post: operations["adminProgramDefinitionDraftRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/program-definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalProgramDefinitionList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/program-definitions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalProgramDefinitionGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/program-definitions/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve exact curriculum/service and safety; no sale or automatic individualized therapy */
+        post: operations["clinicalProgramDefinitionApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/program-definitions/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clinicalProgramDefinitionRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings/setup/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read saved program price and exact active purchase terms for the current clinic and locale */
+        get: operations["adminProgramOfferingSetup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview exact price/access/terms and clinical prerequisites without publishing or charging */
+        post: operations["adminProgramOfferingPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramOfferingList"];
+        put?: never;
+        /** Publish exact immutable program commercial configuration; no patient entitlement or therapy activation */
+        post: operations["adminProgramOfferingPublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramOfferingGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings/{id}/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramOfferingRetire"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-offerings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramOfferingGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientProgramConsentAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/program-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientProgramBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramPurchasesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-purchases/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramPurchaseGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-access-grants/{id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read only the owned paid or free exact reviewed educational version */
+        get: operations["patientProgramContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-definitions/{id}/mezaj": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramMezajGet"];
+        put: operations["adminProgramMezajSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramRecommendationsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramLibraryList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-offerings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramOfferingGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramRequestsList"];
+        put?: never;
+        post: operations["patientCustomProgramRequestCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramRequestGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests/{requestId}/care-authorizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramCareHistory"];
+        put?: never;
+        post: operations["patientCustomProgramCareAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests/{requestId}/care-authorizations/{id}/withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientCustomProgramCareWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests/{requestId}/billing-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientCustomProgramBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests/{requestId}/delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramDeliveryGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-requests/{requestId}/delivery/versions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramPlanGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/custom-program-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalCustomProgramWorklist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/custom-program-requests/{requestId}/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalCustomProgramContext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/custom-program-requests/{requestId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalCustomProgramPlanHistory"];
+        put?: never;
+        post: operations["clinicalCustomProgramPlanCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/custom-program-requests/{requestId}/versions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalCustomProgramPlanGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/custom-program-requests/{requestId}/versions/{id}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clinicalCustomProgramPlanIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/custom-program-requests/{requestId}/versions/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clinicalCustomProgramPlanRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/health-observations": {
         parameters: {
             query?: never;
@@ -2376,6 +4684,226 @@ export interface paths {
         patch: operations["ContentController_updateBanner"];
         trace?: never;
     };
+    "/v1/admin/content/banners/{bannerId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upload banner media */
+        put: operations["adminContentBannerImageUpload"];
+        post?: never;
+        /** Remove banner media */
+        delete: operations["adminContentBannerImageRemove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/banners/{bannerId}/image/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Serve banner media for admin preview */
+        get: operations["adminContentBannerImagePreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/content/banners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published store banners */
+        get: operations["publicContentBanners"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/content/banners/{bannerId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Serve published banner media */
+        get: operations["publicContentBannerImage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/mezaj/collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all sixteen ordered Mezaj product collections */
+        get: operations["adminCommerceMezajCollectionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/mezaj/assessment-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published Mezaj source versions and their exact bands without patient data */
+        get: operations["adminCommerceMezajVersionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/mezaj/collections/{primary}/{secondary}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace ordered product membership and exact band links using a revision precondition */
+        put: operations["adminCommerceMezajCollectionSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get self-only products for the latest accessible exact ordered Mezaj result; never inferred from title or score */
+        get: operations["patientCommerceRecommendationsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/products/{productId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read draft product content and exact revision approval metadata */
+        get: operations["adminProductContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Save content with revision precondition and invalidate prior approval */
+        patch: operations["adminProductContentUpdate"];
+        trace?: never;
+    };
+    "/v1/admin/commerce/products/{productId}/content/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explicitly approve the exact source-supported content revision */
+        post: operations["adminProductContentApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/products/{productId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCommerceProductImageGet"];
+        put: operations["adminCommerceProductImageUpload"];
+        post?: never;
+        delete: operations["adminCommerceProductImageRemove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/products/{productId}/image/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCommerceProductImagePreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/commerce/products/{productId}/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["commerceProductImageContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/commerce/products": {
         parameters: {
             query?: never;
@@ -2504,7 +5032,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List active commerce products with active SKUs in the patient clinic */
+        /** List active commerce products with active SKUs in the active clinic */
         get: operations["patientCommerceProductsList"];
         put?: never;
         post?: never;
@@ -2521,7 +5049,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get an active commerce product with active SKUs in the patient clinic */
+        /** Get an active commerce product with active SKUs in the active clinic */
         get: operations["patientCommerceProductGet"];
         put?: never;
         post?: never;
@@ -2583,6 +5111,23 @@ export interface paths {
         head?: never;
         /** Update the clinic courier rate without changing historical order snapshots */
         patch: operations["adminCommerceCourierShippingRateUpdate"];
+        trace?: never;
+    };
+    "/v1/patients/me/commerce/discount-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate and price a cart discount without creating an order or reservation */
+        post: operations["patientCommerceDiscountPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/patients/me/commerce/addresses": {
@@ -2742,6 +5287,40 @@ export interface paths {
         patch: operations["adminCommerceDiscountsUpdate"];
         trace?: never;
     };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search secret-free gateway attempts within administrator clinic membership */
+        get: operations["adminPaymentGatewayRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/payment-providers/{providerCode}/requests/{source}/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read safe adapter events for a clinic-owned payment attempt */
+        get: operations["adminPaymentGatewayRequestDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/commerce/payment-providers": {
         parameters: {
             query?: never;
@@ -2836,7 +5415,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Dormant Sadad callback endpoint; transport activation awaits merchant acceptance evidence */
+        /** Validate a Sadad browser callback, Verify server-to-server and redirect to the app result page */
         post: operations["sadadPaymentCallback"];
         delete?: never;
         options?: never;
@@ -2853,6 +5432,40 @@ export interface paths {
         };
         /** List clinic commerce orders */
         get: operations["adminCommerceOrdersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search clinic orders with server pagination */
+        get: operations["adminCommerceOrdersSearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/commerce/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read clinic order items, delivery snapshot and payment operations */
+        get: operations["adminCommerceOrderGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3072,36 +5685,308 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/assessment-guidance/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture exact questionnaire band and approved educational references as a mapping draft */
+        post: operations["adminAssessmentGuidanceCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentGuidanceList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-guidance/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentGuidanceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/assessment-guidance/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Permanently withdraw a draft; cannot revoke physician-approved content */
+        post: operations["adminAssessmentGuidanceDraftRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalAssessmentGuidanceList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-guidance/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clinicalAssessmentGuidanceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-guidance/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve exact educational snapshot as a qualified scoped physician */
+        post: operations["clinicalAssessmentGuidanceApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clinical/assessment-guidance/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Permanently revoke educational content; no restoration */
+        post: operations["clinicalAssessmentGuidanceRevoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assessment-submissions/{id}/guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an approved educational version; no diagnosis or personalized therapeutic diet */
+        get: operations["patientAssessmentGuidanceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientPaidAssessmentOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-offerings/{publicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Review exact price and independent processing/purchase terms before payment */
+        get: operations["patientPaidAssessmentOfferingGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientAssessmentConsentAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-consents/{id}/withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw exact processing consent without deleting history or refunding purchase */
+        post: operations["patientAssessmentProcessingConsentWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/assessment-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientAssessmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientAssessmentPurchasesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-purchases/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientAssessmentPurchaseGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/assessment-access-grants/{id}/submission": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start or resume the same owned engine attempt for one paid grant */
+        post: operations["patientPaidAssessmentStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        RegisterRequestDto: {
-            /** @example 09123456789 */
+        CreateOtpChallengeDto: {
             phone: string;
-            /** @example correct horse battery staple */
-            password: string;
+            /** @default false */
+            remember?: boolean;
         };
-        RegisterResponseDto: {
+        OtpChallengeResponseDto: {
             /** Format: uuid */
-            id: string;
-            /** @example +989123456789 */
-            phone: string;
-            /**
-             * @example [
-             *       "PATIENT"
-             *     ]
-             */
-            roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
-            /** Format: date-time */
-            createdAt: string;
+            challengeId: string;
+            expiresAt: string;
+            resendAvailableAt: string;
+            destinationMasked: string;
         };
         ApiErrorResponseDto: {
             /**
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "CHAT_FORBIDDEN" | "CHAT_APPOINTMENT_NOT_ELIGIBLE" | "CHAT_WINDOW_CLOSED" | "CHAT_BLOCKED" | "CHAT_IDEMPOTENCY_CONFLICT" | "CHAT_CURSOR_INVALID" | "CHAT_CURSOR_FORBIDDEN" | "CHAT_SEQUENCE_INVALID" | "CHAT_TOKEN_EXPIRED" | "CHAT_CONNECTION_LIMITED" | "CHAT_RATE_LIMITED" | "CHAT_MESSAGE_TOO_LONG" | "CHAT_MODERATION_FORBIDDEN" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "INTERNAL_SERVER_ERROR";
+            code: "PATIENT_ENTRY_REQUIRED" | "ENTRY_UNAVAILABLE" | "ENTRY_CONFLICT" | "ENTRY_PROFILE_INVALID" | "CUSTOM_PROGRAM_DELIVERY_NOT_FOUND" | "CUSTOM_PROGRAM_DELIVERY_CONFLICT" | "CUSTOM_PROGRAM_CLINICAL_FORBIDDEN" | "CUSTOM_PROGRAM_PLAN_IMMUTABLE" | "CUSTOM_PROGRAM_NOT_FOUND" | "CUSTOM_PROGRAM_CONFLICT" | "COUPLE_JOINT_RESULT_UNAVAILABLE" | "ASSESSMENT_CARE_NOT_FOUND" | "ASSIGNED_CONSULTATION_NOT_FOUND" | "PROGRAM_DEFINITION_NOT_FOUND" | "PROGRAM_DEFINITION_CONFLICT" | "PROGRAM_DEFINITION_INVALID" | "PROGRAM_RATE_LIMITED" | "PROGRAM_PUBLICATION_NOT_FOUND" | "PROGRAM_PUBLICATION_CONFLICT" | "PROGRAM_PUBLICATION_INVALID" | "ASSESSMENT_CARE_CONFLICT" | "COUPLE_JOINT_RESULT_NOT_READY" | "COUPLE_ASSESSMENT_NOT_FOUND" | "COUPLE_ASSESSMENT_INVALID" | "COUPLE_ASSESSMENT_CONFLICT" | "COUPLE_PROTOCOL_NOT_FOUND" | "COUPLE_PROTOCOL_INVALID" | "COUPLE_PROTOCOL_CONFLICT" | "ASSESSMENT_PURCHASE_NOT_FOUND" | "ASSESSMENT_PURCHASE_INVALID" | "ASSESSMENT_PURCHASE_CONFLICT" | "ASSESSMENT_PAYMENT_REQUIRED" | "ASSESSMENT_ACCESS_UNAVAILABLE" | "ASSESSMENT_REFUND_NOT_ALLOWED" | "ASSESSMENT_PUBLICATION_NOT_FOUND" | "ASSESSMENT_PUBLICATION_CONFLICT" | "ASSESSMENT_PUBLICATION_INVALID" | "ASSESSMENT_PROTOCOL_NOT_FOUND" | "ASSESSMENT_PROTOCOL_CONFLICT" | "ASSESSMENT_PROTOCOL_INVALID" | "ASSESSMENT_GUIDANCE_NOT_FOUND" | "ASSESSMENT_GUIDANCE_INVALID" | "ASSESSMENT_GUIDANCE_CONFLICT" | "GUIDANCE_NOT_FOUND" | "GUIDANCE_CONFLICT" | "GUIDANCE_INVALID" | "COUPLE_SESSION_NOT_FOUND" | "COUPLE_INVITATION_NOT_FOUND" | "COUPLE_INVITATION_UNAVAILABLE" | "COUPLE_PARTICIPANT_INELIGIBLE" | "COUPLE_POLICY_UNAVAILABLE" | "COUPLE_CONSENT_POLICY_CHANGED" | "COUPLE_STATE_CONFLICT" | "COUPLE_RATE_LIMITED" | "ASSESSMENT_OFFERING_NOT_FOUND" | "ASSESSMENT_OFFERING_INVALID" | "ASSESSMENT_OFFERING_CONFLICT" | "WALLET_INSUFFICIENT_FUNDS" | "WALLET_VERSION_CONFLICT" | "WALLET_FROZEN" | "BILLING_INPUT_INVALID" | "BILLING_INTENT_NOT_FOUND" | "BILLING_STATE_CONFLICT" | "BILLING_PAYMENT_PENDING" | "BILLING_HOLD_EXPIRED" | "BILLING_REFUND_EXCEEDS_PAYMENT" | "BILLING_REFUND_REQUIRED" | "BILLING_RATE_LIMITED" | "APPOINTMENT_PAYMENT_REQUIRED" | "APPOINTMENT_REPRICE_REQUIRED" | "COMMERCE_CONTENT_REVISION_CONFLICT" | "COMMERCE_CONTENT_INVALID" | "COMMERCE_CONTENT_SOURCE_REQUIRED" | "COMMERCE_IMAGE_INVALID" | "COMMERCE_IMAGE_TOO_LARGE" | "COMMERCE_IMAGE_BUSY" | "COMMERCE_IMAGE_STORAGE_UNAVAILABLE" | "COMMERCE_IMAGE_REVISION_CONFLICT" | "COMMERCE_IMAGE_OPERATION_PENDING" | "COMMERCE_IMAGE_OPERATION_EXPIRED" | "COMMERCE_IMAGE_NOT_FOUND" | "COMMERCE_IMAGE_RATE_LIMITED" | "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "REFRESH_CONCURRENT_RETRY" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "ASSESSMENT_ANSWERS_INVALID" | "ASSESSMENT_CLINIC_UNAVAILABLE" | "ASSESSMENT_NOT_FOUND" | "ASSESSMENT_STRUCTURE_INVALID" | "ASSESSMENT_PREVIEW_CONFLICT" | "ASSESSMENT_RELEASE_NOT_READY" | "ASSESSMENT_FOLLOW_UP_REQUIRED" | "ASSESSMENT_DELETE_NOT_ALLOWED" | "ASSESSMENT_DELETE_CONFLICT" | "ASSESSMENT_DELETE_REFERENCED" | "ASSESSMENT_SUBMISSION_IMMUTABLE" | "ASSESSMENT_SUBMISSION_REVISION_CONFLICT" | "ASSESSMENT_SUBMISSION_NOT_FOUND" | "ASSESSMENT_VERSION_ALREADY_PUBLISHED" | "ASSESSMENT_VERSION_IMMUTABLE" | "ASSESSMENT_VERSION_NOT_FOUND" | "ASSESSMENT_VERSION_NOT_PUBLISHED" | "AUDIT_QUERY_INVALID" | "CLINICAL_AUDIT_UNAVAILABLE" | "CLINICAL_NOTE_AMENDMENT_REASON_REQUIRED" | "CLINICAL_NOTE_CONTENT_REQUIRED" | "CLINICAL_NOTE_FORBIDDEN" | "CLINICAL_NOTE_PUBLICATION_NOT_ALLOWED" | "CLINICAL_NOTE_REVISION_CONFLICT" | "CLINICAL_NOTE_SIGNING_NOT_ALLOWED" | "CLINICAL_RECONCILIATION_CONTENT_INVALID" | "CLINICAL_RECONCILIATION_FORBIDDEN" | "CLINICAL_RECONCILIATION_SOURCE_INVALID" | "CLINICAL_RECORD_AMENDMENT_REASON_REQUIRED" | "CLINICAL_RECORD_KIND_INVALID" | "CLINICAL_RECORD_REVISION_CONFLICT" | "CLINICAL_RECORD_SIGNING_NOT_ALLOWED" | "CLINICAL_RESOURCE_FORBIDDEN" | "CLINICAL_SUMMARY_FORBIDDEN" | "COMMERCE_REVENUE_RANGE_INVALID" | "CONTENT_CONFLICT" | "CONTENT_INVALID" | "BANNER_NOT_FOUND" | "CONTENT_MEDIA_UNAVAILABLE" | "CONTENT_REVISION_CONFLICT" | "CONTENT_RATE_LIMITED" | "ENCOUNTER_INVALID_TRANSITION" | "HEALTH_OBSERVATION_FORBIDDEN" | "HEALTH_OBSERVATION_INVALID" | "MEZAJ_RESULT_NOT_FOUND" | "NOTIFICATION_NOT_FOUND" | "PAYMENT_ATTEMPT_INVALID" | "PRESCRIPTION_AMENDMENT_REASON_REQUIRED" | "PRESCRIPTION_AUDIT_CONTEXT_REQUIRED" | "PRESCRIPTION_ISSUE_NOT_ALLOWED" | "PRESCRIPTION_MEDICATION_REQUIRED" | "PRESCRIPTION_RESOURCE_FORBIDDEN" | "PRESCRIPTION_REVISION_CONFLICT" | "REQUIRED_ASSESSMENT_VERSION_INVALID" | "REQUIRED_ASSESSMENT_VERSION_MISSING" | "OTP_DISABLED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_ATTEMPTS_EXHAUSTED" | "OTP_RATE_LIMITED" | "OTP_RESEND_COOLDOWN" | "OTP_DELIVERY_UNAVAILABLE" | "OTP_ACCOUNT_PROVISIONING_UNAVAILABLE" | "IDEMPOTENCY_KEY_INVALID" | "SMS_TRANSPORT_DISABLED" | "SMS_PROVIDER_UNAVAILABLE" | "SMS_CREDENTIAL_KEY_UNAVAILABLE" | "SMS_PROVIDER_ACTIVATION_BLOCKED" | "SMS_PROVIDER_CAPABILITY_UNSUPPORTED" | "SMS_PROVIDER_CONFIGURATION_INVALID" | "SMS_PROVIDER_NOT_CONFIGURED" | "SMS_PROVIDER_NOT_FOUND" | "SMS_TEST_RATE_LIMITED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "PAYMENT_CALLBACK_RATE_LIMITED" | "CHAT_FORBIDDEN" | "CHAT_ENGINE_UNAVAILABLE" | "CHAT_APPOINTMENT_NOT_ELIGIBLE" | "CHAT_WINDOW_CLOSED" | "CHAT_BLOCKED" | "CHAT_IDEMPOTENCY_CONFLICT" | "CHAT_CURSOR_INVALID" | "CHAT_CURSOR_FORBIDDEN" | "CHAT_SEQUENCE_INVALID" | "CHAT_TOKEN_EXPIRED" | "CHAT_CONNECTION_LIMITED" | "CHAT_RATE_LIMITED" | "CHAT_MESSAGE_TOO_LONG" | "CHAT_MODERATION_FORBIDDEN" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "PROGRAM_PURCHASE_NOT_FOUND" | "PROGRAM_PURCHASE_CONFLICT" | "PROGRAM_ACCESS_UNAVAILABLE" | "PROGRAM_REFUND_NOT_ALLOWED" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -3111,12 +5996,8 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        LoginRequestDto: {
-            /** @example 09123456789 */
-            phone: string;
-            password: string;
-            /** @default false */
-            remember?: boolean;
+        VerifyOtpChallengeDto: {
+            code: string;
         };
         AuthenticatedUserDto: {
             /** Format: uuid */
@@ -3141,6 +6022,33 @@ export interface components {
             /** @example 600 */
             expiresIn: number;
             user: components["schemas"]["AuthenticatedUserDto"];
+        };
+        RegisterRequestDto: {
+            /** @example 09123456789 */
+            phone: string;
+            /** @example correct horse battery staple */
+            password: string;
+        };
+        RegisterResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example +989123456789 */
+            phone: string;
+            /**
+             * @example [
+             *       "PATIENT"
+             *     ]
+             */
+            roles: ("PATIENT" | "DOCTOR" | "STAFF" | "ADMIN")[];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        LoginRequestDto: {
+            /** @example 09123456789 */
+            phone: string;
+            password: string;
+            /** @default false */
+            remember?: boolean;
         };
         Object: Record<string, never>;
         SessionListItemDto: {
@@ -3230,6 +6138,10 @@ export interface components {
             nextCursor?: string | null;
         };
         ChatConversationResponseDto: {
+            /** Format: date-time */
+            closedAt?: string | null;
+            /** @enum {string} */
+            transport: "ejabberd";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -3242,6 +6154,15 @@ export interface components {
             doctorId: string;
             /** Format: date-time */
             createdAt: string;
+        };
+        ChatAccessResponseDto: {
+            canSend: boolean;
+            readOnlyReason: string | null;
+            /** Format: date-time */
+            opensAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            canClose: boolean;
         };
         ChatMessageResponseDto: {
             /** Format: uuid */
@@ -3260,8 +6181,10 @@ export interface components {
             tombstone?: string;
         };
         ChatHistoryResponseDto: {
+            /** @description Opaque cursor after the newest returned item for incremental recovery. */
+            checkpointCursor: string;
             items: components["schemas"]["ChatMessageResponseDto"][];
-            nextCursor?: Record<string, never>;
+            nextCursor?: string | null;
             highWaterSequence: string;
         };
         ChatVisibilityReconciliationItemDto: {
@@ -3271,19 +6194,11 @@ export interface components {
         };
         ChatVisibilityReconciliationResponseDto: {
             items: components["schemas"]["ChatVisibilityReconciliationItemDto"][];
-            nextCursor?: Record<string, never>;
+            nextCursor?: string | null;
             /** @description Opaque checkpoint to persist after applying this page. */
-            checkpointCursor?: Record<string, never>;
+            checkpointCursor?: string | null;
             /** @description Opaque high-water revision identity. */
-            highWaterRevision?: Record<string, never>;
-        };
-        SendChatMessageDto: {
-            /**
-             * Format: uuid
-             * @description Client-generated idempotency identifier.
-             */
-            clientMessageId: string;
-            body: string;
+            highWaterRevision?: string | null;
         };
         CreateChatReportDto: {
             /** @enum {string} */
@@ -3313,6 +6228,36 @@ export interface components {
             action: "NO_ADDITIONAL_ACTION" | "RESTRICT_MESSAGE" | "RECORD_WARNING" | "CONFIRM_PATIENT_DOCTOR_BLOCK" | "CONFIRM_PATIENT_CLINIC_OPERATOR_BLOCK" | "LIFT_TEMPORARY_BLOCK";
             /** @description Non-sensitive administrative note. */
             safeNote?: string;
+        };
+        EjabberdSessionDto: {
+            canSend: boolean;
+            readOnlyReason: string | null;
+            /** Format: date-time */
+            opensAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            canClose: boolean;
+            /** @enum {string} */
+            transport: "ejabberd";
+            /** Format: uuid */
+            conversationId: string;
+            /** Format: uuid */
+            appointmentId: string;
+            websocketUrl: string;
+            jid: string;
+            /** @description Short-lived XMPP password. Keep in memory; never log or persist. */
+            token: string;
+            /** @enum {string} */
+            resource: "sabz";
+            roomJid: string;
+            /** @enum {string} */
+            senderKind: "PATIENT" | "DOCTOR" | "CLINIC_OPERATOR";
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Authoritative retained history; use its opaque cursor for recovery. */
+            historyUrl: string;
+            /** @description Durable moderation changes must also be reconciled on reconnect. */
+            visibilityUrl: string;
         };
         PatientClinicalItemResponseDto: {
             /** Format: uuid */
@@ -3755,6 +6700,243 @@ export interface components {
             nextCursor?: string | null;
         };
         PreferenceDto: Record<string, never>;
+        SmsProviderFieldDto: {
+            key: string;
+            label: string;
+            help: string;
+            type: string;
+            required: boolean;
+            secret: boolean;
+            defaultValue?: string;
+            placeholder?: string;
+            order: number;
+            maxLength: number;
+        };
+        SmsProviderConfigDto: {
+            code: string;
+            displayName: string;
+            description: string;
+            capabilities: string[];
+            fields: components["schemas"]["SmsProviderFieldDto"][];
+            runtimeAvailable: boolean;
+            enabled: boolean;
+            isDefault: boolean;
+            credentialConfigured: boolean;
+            activeRevisionNumber?: Record<string, never> | null;
+            config: {
+                [key: string]: string;
+            };
+            updatedAt?: Record<string, never> | null;
+        };
+        CreateSmsProviderRevisionDto: {
+            config: {
+                [key: string]: string;
+            };
+            credential?: {
+                [key: string]: string;
+            };
+        };
+        UpdateSmsProviderStateDto: {
+            enabled?: boolean;
+            isDefault?: boolean;
+        };
+        TestSmsDto: {
+            phone: string;
+        };
+        OtpPolicyDto: {
+            id: string;
+            enabled: boolean;
+            codeLength: number;
+            expiresInSeconds: number;
+            resendCooldownSeconds: number;
+            maxVerifyAttempts: number;
+            phoneRequestLimit: number;
+            requestWindowSeconds: number;
+            updatedAt: string;
+        };
+        UpdateOtpPolicyDto: {
+            enabled?: boolean;
+            codeLength?: number;
+            expiresInSeconds?: number;
+            resendCooldownSeconds?: number;
+            maxVerifyAttempts?: number;
+            phoneRequestLimit?: number;
+            requestWindowSeconds?: number;
+        };
+        SmsDeliveryAttemptDto: {
+            id: string;
+            recipientMasked: string;
+            status: string;
+            providerReference?: Record<string, never> | null;
+            errorCategory?: Record<string, never> | null;
+            isTest: boolean;
+            createdAt: string;
+            resolvedAt?: Record<string, never> | null;
+            providerCode?: Record<string, never> | null;
+        };
+        PatientEntryStatusDto: {
+            required: boolean;
+            assessmentRequired: boolean;
+            /** @enum {string} */
+            phase: "PROFILE" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
+            /** Format: uuid */
+            assessmentVersionId: string | null;
+            assessmentTitle: string | null;
+            /** Format: uuid */
+            submissionId: string | null;
+            firstName: string | null;
+            lastName: string | null;
+            /** @enum {string|null} */
+            gender: "FEMALE" | "MALE" | null;
+            /** Format: date */
+            birthDate: string | null;
+        };
+        EntryProfileDto: {
+            firstName: string;
+            lastName: string;
+            /** @enum {string} */
+            gender: "FEMALE" | "MALE";
+            /** Format: date */
+            birthDate: string;
+        };
+        EntryPolicyDto: {
+            enabled: boolean;
+            /** Format: uuid */
+            assessmentVersionId: string | null;
+            assessmentTitle: string | null;
+            revision: number;
+            /** Format: date-time */
+            enforcedFrom: string | null;
+        };
+        EntryPolicyUpdateDto: {
+            enabled: boolean;
+            /** Format: uuid */
+            assessmentVersionId: string | null;
+            expectedRevision: number;
+        };
+        PatientAssessmentHistoryItemDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentKey: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            attemptNumber: number;
+            revision: number;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+            resumeAvailable: boolean;
+        };
+        PatientAssessmentHistoryResponseDto: {
+            items: components["schemas"]["PatientAssessmentHistoryItemDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PatientAssessmentQuestionnaireResponseDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentKey: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            /** @enum {string} */
+            status: "PUBLISHED" | "RETIRED" | "DELETED";
+            contentHash: string;
+            resumeAvailable: boolean;
+            structure: {
+                [key: string]: unknown;
+            };
+        };
+        PatientAssessmentProvenanceResponseDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            questionnaireContentHash: string;
+            /** @enum {string} */
+            provenanceStatus: "RECORDED" | "LEGACY_UNRECORDED";
+            algorithmId: string | null;
+            algorithmVersion: number | null;
+            answerPayloadHash: string | null;
+            /** Format: date-time */
+            completedAt: string;
+        };
+        PatientAssessmentListItemDto: {
+            /** Format: uuid */
+            id: string;
+            assessmentKey: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            structure: {
+                [key: string]: unknown;
+            };
+        };
+        PatientAssessmentListResponseDto: {
+            items: components["schemas"]["PatientAssessmentListItemDto"][];
+        };
+        PatientAssessmentSubmissionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            attemptNumber: number;
+            revision?: number;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            answers: {
+                [key: string]: unknown;
+            };
+            resultSnapshot?: {
+                [key: string]: unknown;
+            } | null;
+            score?: string | null;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+        };
+        SaveAssessmentAnswersDto: {
+            /** @description Optional for legacy clients; protects a changing command from stale answers. */
+            expectedRevision?: number;
+            answers: {
+                [key: string]: unknown;
+            };
+        };
+        SubmitAssessmentDto: {
+            /** @description Optional for legacy clients; protects a changing command from stale answers. */
+            expectedRevision?: number;
+        };
+        MezajResultResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** Format: uuid */
+            assessmentSubmissionId: string;
+            resultBand: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            assessedAt: string;
+        };
+        PatientBookingEligibilityResponseDto: {
+            eligible: boolean;
+            /** @enum {string} */
+            reason: "ELIGIBLE" | "PROFILE_INCOMPLETE" | "MAIN_ASSESSMENT_REQUIRED" | "ASSESSMENT_EXPIRED" | "LATEST_VERSION_REQUIRED";
+            nextAction?: string | null;
+        };
         SelfProfileResponseDto: {
             /** Format: uuid */
             patientId: string;
@@ -3767,6 +6949,8 @@ export interface components {
             /** Format: email */
             email?: string | null;
             cityName?: string | null;
+            /** @enum {string|null} */
+            gender?: "FEMALE" | "MALE" | null;
             /** Format: date-time */
             updatedAt?: string | null;
         };
@@ -3776,6 +6960,8 @@ export interface components {
             /** Format: email */
             email?: string | null;
             cityName?: string | null;
+            /** @enum {string|null} */
+            gender?: "FEMALE" | "MALE" | null;
         };
         OnboardingStatusResponseDto: {
             /** @enum {string} */
@@ -3798,6 +6984,1032 @@ export interface components {
             activeConsentRecordId?: string | null;
             /** Format: date-time */
             updatedAt?: string | null;
+        };
+        ProtocolQueueItemDto: {
+            /** Format: uuid */
+            id: string;
+            assessmentKey: string;
+            versionNumber: number;
+            title: string;
+            locale: string;
+            contentHash: string;
+            status: string;
+            currentReviewNumber: number;
+            /** @enum {string|null} */
+            latestRecordedDecision: "APPROVED" | "WITHDRAWN" | null;
+        };
+        ProtocolQueuePageDto: {
+            items: components["schemas"]["ProtocolQueueItemDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        ProtocolQuestionnaireDto: {
+            /** Format: uuid */
+            id: string;
+            assessmentKey: string;
+            versionNumber: number;
+            title: string;
+            locale: string;
+            contentHash: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "RETIRED";
+            structure: {
+                [key: string]: unknown;
+            };
+        };
+        ProtocolConsentDto: {
+            /** Format: uuid */
+            id: string;
+            versionNumber: number;
+            /** @enum {string} */
+            policyKey: "ASSESSMENT_PROCESSING";
+            locale: string;
+            title: string;
+            body: string;
+            contentHash: string;
+            status: string;
+        };
+        ProtocolReviewResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            reviewNumber: number;
+            /** @enum {string} */
+            decision: "APPROVED" | "WITHDRAWN";
+            questionnaireContentHash: string;
+            algorithmId: string;
+            algorithmVersion: number;
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            consentContentHash: string;
+            protocolHash: string;
+            withdrawalOfId: string | null;
+            withdrawalReason: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ProtocolPreviewResponseDto: {
+            questionnaire: components["schemas"]["ProtocolQuestionnaireDto"];
+            consentPolicy: components["schemas"]["ProtocolConsentDto"] | null;
+            algorithmId: string;
+            algorithmVersion: number;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            protocolHash: string | null;
+            currentReviewNumber: number;
+            latestReview: components["schemas"]["ProtocolReviewResponseDto"] | null;
+            approvalUsable: boolean;
+            blockers: string[];
+        };
+        ProtocolReviewPageDto: {
+            items: components["schemas"]["ProtocolReviewResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        ProtocolApproveDto: {
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            protocolHash: string;
+            expectedReviewNumber: number;
+            /** @enum {boolean} */
+            reviewedQuestionnaireAndScoring: true;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {boolean} */
+            noDiagnosisOrTherapeuticDiet: true;
+        };
+        ProtocolWithdrawalDto: {
+            protocolHash: string;
+            expectedReviewNumber: number;
+            withdrawalReason: string;
+        };
+        GuidanceSourceDto: {
+            label: string;
+            /** Format: uri */
+            url: string;
+            /** @example 2026-10-16 */
+            accessedOn: string;
+            sourceVersion?: string;
+        };
+        GuidanceSafetyDto: {
+            intendedAudience: string;
+            limitations: string;
+            contraindications: string[];
+            seekProfessionalCare: string;
+        };
+        GuidanceContentCreateDto: {
+            /** Format: uuid */
+            articleId: string;
+            /** @example fa-IR */
+            locale: string;
+            /** @enum {string} */
+            kind: "GENERAL_EDUCATION" | "DIETARY_EDUCATION" | "TEMPERAMENT_INTERPRETATION" | "PERSONALITY_DESCRIPTION";
+            provenance: components["schemas"]["GuidanceSourceDto"][];
+            safety: components["schemas"]["GuidanceSafetyDto"];
+        };
+        GuidanceContentResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            articleId: string;
+            versionNumber: number;
+            locale: string;
+            /** @enum {string} */
+            kind: "GENERAL_EDUCATION" | "DIETARY_EDUCATION" | "TEMPERAMENT_INTERPRETATION" | "PERSONALITY_DESCRIPTION";
+            /** @enum {string} */
+            status: "DRAFT" | "APPROVED" | "REVOKED";
+            title: string;
+            summary: string | null;
+            /** @description Plain content; never execute untrusted HTML. */
+            body: string;
+            contentHash: string;
+            provenance: components["schemas"]["GuidanceSourceDto"][];
+            safety: components["schemas"]["GuidanceSafetyDto"];
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            approvedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+        };
+        GuidanceContentPageDto: {
+            items: components["schemas"]["GuidanceContentResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        GuidanceApprovalDto: {
+            contentHash: string;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {boolean} */
+            noDiagnosisOrTherapeuticDiet: true;
+        };
+        JourneySetupStepDto: {
+            /** @enum {string} */
+            code: "PROFILE" | "HEALTH" | "CONFIRM";
+            /** @enum {string} */
+            state: "COMPLETE" | "CURRENT" | "UPCOMING";
+        };
+        JourneyLatestAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** Format: date-time */
+            completedAt: string;
+        };
+        JourneyHomeActionDto: {
+            /** @enum {string} */
+            code: "OPEN_APPOINTMENT" | "COMPLETE_PROFILE" | "CONSENT_UNAVAILABLE" | "REVIEW_CONSENT" | "START_MEDICAL_INTAKE" | "CONTINUE_MEDICAL_INTAKE" | "COMPLETE_ONBOARDING" | "REVIEW_BOOKING_REQUIREMENTS" | "RESUME_ASSESSMENT" | "CONTINUE_PAYMENT" | "VIEW_TREATMENT_PLAN" | "VIEW_ASSESSMENT_RESULT" | "BOOK_CONSULTATION" | "START_PAID_ASSESSMENT" | "OPEN_COUPLE_ASSESSMENT" | "OPEN_PROGRAM" | "OPEN_CUSTOM_PROGRAM_REQUEST" | "OPEN_COUPLE_LINK" | "TRACK_ORDER";
+            /** Format: uuid */
+            resourceId: string | null;
+            title: string | null;
+            /** @description Exact pending payment amount in integer rial */
+            amountRial: string | null;
+            paymentPurpose: string | null;
+        };
+        JourneyHomeDto: {
+            setupSteps: components["schemas"]["JourneySetupStepDto"][];
+            latestAssessment: components["schemas"]["JourneyLatestAssessmentDto"] | null;
+            /** Format: uuid */
+            activeTreatmentPlanId: string | null;
+            /** @description Ordered pending follow-ups, at most one representative per category. Complete lists remain at their existing routes; completed content is not a pending action. */
+            actions: components["schemas"]["JourneyHomeActionDto"][];
+        };
+        JourneyCustomProgramDto: {
+            requestId: string;
+            title: string;
+            intentId: string;
+            paymentState: string;
+            entitled: boolean;
+            currentVersionId: string | null;
+            treatmentPlanId: string | null;
+            bodyAvailable: boolean;
+        };
+        JourneyCustomProgramsDto: {
+            items: components["schemas"]["JourneyCustomProgramDto"][];
+            hasMore: boolean;
+        };
+        JourneyProgramPurchaseDto: {
+            id: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            intentId: string;
+            paymentState: string;
+            accessGrantId: string | null;
+            /** Format: date-time */
+            grantedAt: string | null;
+            /** Format: date-time */
+            endsAt: string | null;
+            accessAvailable: boolean;
+        };
+        JourneyProgramPurchasesDto: {
+            items: components["schemas"]["JourneyProgramPurchaseDto"][];
+            hasMore: boolean;
+        };
+        JourneyCoupleAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            paymentState: string;
+            /** Format: uuid */
+            ownAccessGrantId: string | null;
+            /** Format: uuid */
+            ownSubmissionId: string | null;
+            /** @enum {string|null} */
+            ownAssessmentState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE" | "INVALIDATED" | null;
+            ownStartAvailable: boolean;
+            /** @enum {string} */
+            jointResultState: "AWAITING_PAYMENT" | "SHARING_UNAVAILABLE" | "AWAITING_COMPLETION" | "READY_TO_GENERATE" | "AVAILABLE";
+            /** Format: uuid */
+            jointResultId: string | null;
+        };
+        JourneyCoupleAssessmentsDto: {
+            items: components["schemas"]["JourneyCoupleAssessmentDto"][];
+            hasMore: boolean;
+        };
+        JourneyAssessmentPurchaseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: uuid */
+            intentId: string | null;
+            paymentState: string;
+            /** Format: uuid */
+            accessGrantId: string | null;
+            /** Format: uuid */
+            submissionId: string | null;
+            startAvailable: boolean;
+        };
+        JourneyAssessmentPurchasesDto: {
+            items: components["schemas"]["JourneyAssessmentPurchaseDto"][];
+            hasMore: boolean;
+        };
+        JourneyOnboardingDto: {
+            /** @enum {string} */
+            state: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
+            isComplete: boolean;
+            requiredCount: number;
+            answeredRequiredCount: number;
+            missingFields: string[];
+            blockerCodes: string[];
+            nextAction: string;
+        };
+        JourneyActionDto: {
+            /** @enum {string} */
+            code: "OPEN_APPOINTMENT" | "COMPLETE_PROFILE" | "CONSENT_UNAVAILABLE" | "REVIEW_CONSENT" | "START_MEDICAL_INTAKE" | "CONTINUE_MEDICAL_INTAKE" | "COMPLETE_ONBOARDING" | "REVIEW_BOOKING_REQUIREMENTS" | "RESUME_ASSESSMENT" | "CONTINUE_PAYMENT" | "VIEW_TREATMENT_PLAN" | "VIEW_ASSESSMENT_RESULT" | "BOOK_CONSULTATION" | "START_PAID_ASSESSMENT" | "OPEN_COUPLE_ASSESSMENT" | "OPEN_PROGRAM" | "OPEN_CUSTOM_PROGRAM_REQUEST";
+            /** Format: uuid */
+            resourceId: string | null;
+        };
+        JourneyAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            assessmentKey: string;
+            title: string;
+            versionNumber: number;
+            /** @enum {string} */
+            state: "IN_PROGRESS" | "COMPLETE";
+            revision: number;
+            /** Format: date-time */
+            updatedAt: string;
+            resumeAvailable: boolean;
+            /** @enum {string|null} */
+            resumeBlocker: "VERSION_NOT_PUBLISHED" | "PROCESSING_APPROVAL_UNAVAILABLE" | null;
+        };
+        JourneyAssessmentsDto: {
+            items: components["schemas"]["JourneyAssessmentDto"][];
+            hasMore: boolean;
+        };
+        JourneyAppointmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            status: string;
+            /** @enum {string} */
+            visitMode: "ONLINE" | "IN_PERSON";
+        };
+        JourneyAppointmentsDto: {
+            items: components["schemas"]["JourneyAppointmentDto"][];
+            hasMore: boolean;
+        };
+        JourneyPaymentDto: {
+            /** Format: uuid */
+            id: string;
+            purpose: string;
+            /** @description Integer rial amount, serialized without precision loss */
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: date-time */
+            expiresAt: string | null;
+        };
+        JourneyPaymentsDto: {
+            items: components["schemas"]["JourneyPaymentDto"][];
+            hasMore: boolean;
+        };
+        JourneyOrderDto: {
+            /** Format: uuid */
+            id: string;
+            totalAmountToman: string;
+            /** @enum {string} */
+            currency: "TOMAN";
+        };
+        JourneyOrdersDto: {
+            items: components["schemas"]["JourneyOrderDto"][];
+            hasMore: boolean;
+        };
+        JourneyPlanDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            state: "ACTIVE" | "COMPLETED";
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        JourneyPlansDto: {
+            items: components["schemas"]["JourneyPlanDto"][];
+            hasMore: boolean;
+        };
+        CoupleParticipantSummaryDto: {
+            /** @enum {string} */
+            slot: "INITIATOR" | "PARTNER";
+            isSelf: boolean;
+            /** @enum {string} */
+            consentState: "ACCEPTED" | "REVOKED";
+        };
+        CoupleSessionSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            state: "AWAITING_PARTNER" | "LINKED" | "CONSENT_REVOKED";
+            /** @enum {number} */
+            minimumAgeYears: 18;
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            participants: components["schemas"]["CoupleParticipantSummaryDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /**
+             * @description Account linking grants no medical-processing, payment entitlement or joint-result access
+             * @enum {boolean}
+             */
+            assessmentReady: false;
+        };
+        JourneyCoupleLinksDto: {
+            items: components["schemas"]["CoupleSessionSummaryDto"][];
+            hasMore: boolean;
+        };
+        PatientJourneyResponseDto: {
+            home: components["schemas"]["JourneyHomeDto"];
+            customPrograms: components["schemas"]["JourneyCustomProgramsDto"];
+            programPurchases: components["schemas"]["JourneyProgramPurchasesDto"];
+            coupleAssessments: components["schemas"]["JourneyCoupleAssessmentsDto"];
+            assessmentPurchases: components["schemas"]["JourneyAssessmentPurchasesDto"];
+            /** Format: date-time */
+            evaluatedAt: string;
+            onboarding: components["schemas"]["JourneyOnboardingDto"];
+            bookingEligibility: components["schemas"]["PatientBookingEligibilityResponseDto"];
+            nextAction: components["schemas"]["JourneyActionDto"];
+            assessments: components["schemas"]["JourneyAssessmentsDto"];
+            appointments: components["schemas"]["JourneyAppointmentsDto"];
+            pendingPayments: components["schemas"]["JourneyPaymentsDto"];
+            pendingOrders: components["schemas"]["JourneyOrdersDto"];
+            treatmentPlans: components["schemas"]["JourneyPlansDto"];
+            coupleLinks: components["schemas"]["JourneyCoupleLinksDto"];
+            /** @description Shopping is independent of medical onboarding */
+            storeAvailable: boolean;
+        };
+        CoupleAssessmentBillingIntentDto: {
+            contextHash: string;
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        BillingPaymentMethodDto: {
+            /** @enum {string} */
+            code: "WALLET" | "GATEWAY";
+            available: boolean;
+            balanceRial: string | null;
+        };
+        BillingAttemptStatusDto: {
+            id: string;
+            status: string;
+            reference: string | null;
+            traceNumber: string | null;
+            verifiedAt: string | null;
+        };
+        BillingRefundDto: {
+            id: string;
+            status: string;
+            amountRial: string;
+            completedAt: string | null;
+        };
+        BillingIntentDto: {
+            /**
+             * Format: uuid
+             * @description Present for the PROGRAM target only
+             */
+            programPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the ASSESSMENT target only
+             */
+            assessmentPurchaseId?: string | null;
+            methods?: components["schemas"]["BillingPaymentMethodDto"][];
+            id: string;
+            purpose: string;
+            status: string;
+            method: string | null;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            orderId: string | null;
+            appointmentId: string | null;
+            expiresAt: string | null;
+            paidAt: string | null;
+            createdAt: string;
+            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
+            refunds?: components["schemas"]["BillingRefundDto"][];
+        };
+        CoupleAssessmentPaidStateDto: {
+            /** Format: uuid */
+            coupleAssessmentId: string;
+            /** @enum {string} */
+            paymentState: "UNPAID" | "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
+            /** Format: uuid */
+            ownIntentId: string | null;
+            /** Format: uuid */
+            ownPurchaseId: string | null;
+            /** Format: uuid */
+            ownAccessGrantId: string | null;
+            /** Format: uuid */
+            ownSubmissionId: string | null;
+            /** @enum {string|null} */
+            ownAssessmentState: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE" | "INVALIDATED" | null;
+            ownStartAvailable: boolean;
+            /** @enum {string} */
+            partnerCompletion: "UNAVAILABLE" | "PENDING" | "COMPLETE";
+            /** @enum {string} */
+            jointResultState: "AWAITING_PAYMENT" | "SHARING_UNAVAILABLE" | "AWAITING_COMPLETION" | "READY_TO_GENERATE" | "AVAILABLE";
+            /** Format: uuid */
+            jointResultId: string | null;
+        };
+        CoupleJointResultDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            coupleAssessmentId: string;
+            /** Format: uuid */
+            jointProtocolId: string;
+            /** @enum {string} */
+            algorithmId: "APPROVED_PAIR_LOOKUP";
+            /** @enum {number} */
+            algorithmVersion: 1;
+            contentHash: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            content: components["schemas"]["GuidanceContentResponseDto"][];
+            recommendConsultation: boolean;
+        };
+        CoupleAssessmentOfferingPreviewDto: {
+            /** Format: uuid */
+            publicationId: string;
+            publicationHash: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** Format: uuid */
+            jointProtocolId: string | null;
+            jointProtocolHash: string | null;
+            available: boolean;
+            blockers: string[];
+        };
+        WalletSummaryDto: {
+            patientId: string;
+            /** @enum {string} */
+            currency: "IRR";
+            balanceRial: string;
+            version: number;
+            frozen: boolean;
+            /** Format: date-time */
+            asOf: string;
+        };
+        WalletTransactionDto: {
+            id: string;
+            kind: string;
+            deltaRial: string;
+            balanceAfterRial: string;
+            reference: string;
+            createdAt: string;
+            /** @description ADMIN projection only */
+            actorUserId?: string | null;
+            /** @description ADMIN projection only */
+            actorDisplayName?: string | null;
+            /** @description ADMIN projection only */
+            reason?: string | null;
+            /** @description ADMIN projection only */
+            balanceBeforeRial?: string;
+        };
+        WalletTransactionPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["WalletTransactionDto"][];
+        };
+        WalletAmountDto: {
+            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
+            amountToman: string;
+        };
+        BillingOrderIntentDto: {
+            /** Format: uuid */
+            orderId: string;
+        };
+        BillingAppointmentIntentDto: {
+            /** Format: uuid */
+            doctorServiceId: string;
+            /** Format: date-time */
+            startsAt: string;
+        };
+        BillingGatewayAttemptDto: {
+            id: string;
+            intentId: string;
+            status: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            redirectUrl: string | null;
+        };
+        WalletAdjustmentDto: {
+            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
+            amountToman: string;
+            /** @enum {string} */
+            type: "CREDIT" | "DEBIT" | "SET_BALANCE";
+            expectedVersion: number;
+            reason: string;
+        };
+        WalletAdjustmentResultDto: {
+            patientId: string;
+            currency: string;
+            beforeRial: string;
+            balanceRial: string;
+            deltaRial: string;
+            version: number;
+            journalId: string | null;
+        };
+        WalletStatusDto: {
+            frozen: boolean;
+            expectedVersion: number;
+            reason: string;
+        };
+        WalletStatusResultDto: {
+            frozen: boolean;
+            version: number;
+        };
+        AdminBillingIntentDto: {
+            /**
+             * Format: uuid
+             * @description Present for the PROGRAM target only
+             */
+            programPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the ASSESSMENT target only
+             */
+            assessmentPurchaseId?: string | null;
+            methods?: components["schemas"]["BillingPaymentMethodDto"][];
+            id: string;
+            purpose: string;
+            status: string;
+            method: string | null;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            orderId: string | null;
+            appointmentId: string | null;
+            expiresAt: string | null;
+            paidAt: string | null;
+            createdAt: string;
+            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
+            refunds?: components["schemas"]["BillingRefundDto"][];
+            /** Format: uuid */
+            patientId: string;
+        };
+        BillingIntentPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["AdminBillingIntentDto"][];
+        };
+        BillingReconciliationItemDto: {
+            id: string;
+            status: string;
+            reference: string | null;
+            traceNumber: string | null;
+            verifiedAt: string | null;
+            providerOrderId: string;
+            resultCode: string | null;
+            intentId: string;
+            amountRial: string;
+            createdAt: string;
+        };
+        BillingReconciliationPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["BillingReconciliationItemDto"][];
+        };
+        BillingSummaryDto: {
+            currency: string;
+            asOf: string;
+            walletLiabilityRial: string;
+            gatewayReceivedRial: string;
+            topupReceivedRial: string;
+            orderPaidRial: string;
+            appointmentPaidRial: string;
+            refundedRial: string;
+            administrativeCreditRial: string;
+            administrativeDebitRial: string;
+            ledgerMismatchCount: number;
+            source: string;
+        };
+        BillingRefundRequestDto: {
+            /** @description Exact integer IRR, including service-price remainders smaller than one TOMAN. */
+            amountRial: string;
+            reason: string;
+        };
+        BillingRefundCompleteDto: {
+            evidenceReference: string;
+        };
+        CoupleLinkPolicyDto: {
+            /** Format: uuid */
+            id: string;
+            versionNumber: number;
+            /** @enum {string} */
+            policyKey: "COUPLES_ACCOUNT_LINKING";
+            /** @enum {string} */
+            locale: "fa-IR";
+            title: string;
+            body: string;
+            contentHash: string;
+        };
+        CoupleLinkConsentDto: {
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            /** @enum {boolean} */
+            consentAccepted: true;
+        };
+        CoupleSessionPageDto: {
+            items: components["schemas"]["CoupleSessionSummaryDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CoupleInvitationCreateDto: {
+            /**
+             * Format: uuid
+             * @description Existing self-profile routing address deliberately shared by the recipient; does not authenticate or grant consent
+             */
+            recipientPatientId: string;
+            /** @description Registered recipient mobile; normalized with the existing identity rules and never copied into invitation records */
+            recipientPhone: string;
+        };
+        CoupleInvitationResponseDto: {
+            /** Format: uuid */
+            invitationId: string;
+            /** Format: uuid */
+            sessionId: string;
+            /** @enum {string} */
+            status: "PENDING" | "ACCEPTED" | "REVOKED";
+            /** @description Always null: invitations have no automatic deadline */
+            expiresAt: string | null;
+            /** @description Returned only on first issuance; replay cannot recover the plaintext secret */
+            invitationToken: string | null;
+        };
+        CoupleInvitationTokenDto: {
+            invitationToken: string;
+        };
+        CoupleInvitationPreviewDto: {
+            session: components["schemas"]["CoupleSessionSummaryDto"];
+            policy: components["schemas"]["CoupleLinkPolicyDto"];
+            expiresAt: string | null;
+        };
+        CoupleInvitationAcceptDto: {
+            invitationToken: string;
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            /** @enum {boolean} */
+            consentAccepted: true;
+        };
+        CoupleAssessmentCreateDto: {
+            /** Format: uuid */
+            coupleSessionId: string;
+            /** Format: uuid */
+            publicationId: string;
+            publicationHash: string;
+            /** Format: uuid */
+            jointProtocolId: string;
+            jointProtocolHash: string;
+        };
+        CoupleAssessmentParticipantDto: {
+            /** @enum {string} */
+            slot: "INITIATOR" | "PARTNER";
+            isSelf: boolean;
+            /** @enum {string} */
+            consentState: "PENDING" | "ACCEPTED" | "WITHDRAWN";
+        };
+        CoupleAssessmentOwnConsentDto: {
+            /** Format: uuid */
+            processingConsentRecordId: string | null;
+            /** Format: date-time */
+            acceptedAt: string | null;
+            /** Format: date-time */
+            withdrawnAt: string | null;
+        };
+        CoupleAssessmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            coupleSessionId: string;
+            /** Format: uuid */
+            publicationId: string;
+            /** Format: uuid */
+            jointProtocolId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            contextHash: string;
+            /** Format: date-time */
+            createdAt: string;
+            participants: components["schemas"]["CoupleAssessmentParticipantDto"][];
+            ownConsent: components["schemas"]["CoupleAssessmentOwnConsentDto"];
+            mutualConsentComplete: boolean;
+            blockers: string[];
+        };
+        CoupleAssessmentPageDto: {
+            items: components["schemas"]["CoupleAssessmentDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CoupleAssessmentDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            coupleSessionId: string;
+            /** Format: uuid */
+            publicationId: string;
+            /** Format: uuid */
+            jointProtocolId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            contextHash: string;
+            /** Format: date-time */
+            createdAt: string;
+            participants: components["schemas"]["CoupleAssessmentParticipantDto"][];
+            ownConsent: components["schemas"]["CoupleAssessmentOwnConsentDto"];
+            mutualConsentComplete: boolean;
+            blockers: string[];
+            processingPolicy: components["schemas"]["ProtocolConsentDto"];
+            jointDisclosurePolicy: components["schemas"]["ProtocolConsentDto"];
+        };
+        CoupleAssessmentConsentDto: {
+            contextHash: string;
+            /** Format: uuid */
+            processingConsentRecordId: string;
+            /** @enum {boolean} */
+            jointDisclosureAccepted: true;
+            /** @enum {boolean} */
+            linkedPartnerAcknowledged: true;
+        };
+        OfferingPolicyDraftDto: {
+            minimumAgeYears?: number;
+            quoteTtlSeconds?: number;
+            entitlementValidityDays?: number;
+            invitationTtlHours?: number;
+            refundPolicyRef?: string;
+            /** Format: uuid */
+            consentPolicyVersionId?: string;
+            retentionPolicyRef?: string;
+            resultVisibilityPolicyRef?: string;
+        };
+        CommercialTariffDto: {
+            /** Format: uuid */
+            id: string;
+            offeringKey: string;
+            versionNumber: number;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            title: string;
+            locale: string;
+            /** @enum {string} */
+            status: "DRAFT" | "RETIRED";
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            /** @enum {string|null} */
+            paymentPoint: "PRE_START" | "PRE_RESULT_UNLOCK" | null;
+            amountRial: string | null;
+            /** @enum {string} */
+            currency: "IRR";
+            algorithmId: string | null;
+            algorithmVersion: number | null;
+            policyDraft: components["schemas"]["OfferingPolicyDraftDto"];
+        };
+        CommercialTermsDto: {
+            /** Format: uuid */
+            id: string;
+            versionNumber: number;
+            locale: string;
+            title: string;
+            body: string;
+            contentHash: string;
+            status: string;
+            /** @enum {string} */
+            policyKey: "ASSESSMENT_PURCHASE_TERMS";
+        };
+        CommercialPolicyDto: {
+            /** @enum {number} */
+            schemaVersion: 1;
+            /** @enum {number} */
+            minimumAgeYears: 18;
+            /** @enum {string} */
+            paymentPoint: "PRE_START";
+            /** @enum {boolean} */
+            ordinaryRefunds: false;
+            /** @enum {boolean} */
+            patientCancellation: false;
+            /** @enum {boolean} */
+            invitationAutomaticExpiry: false;
+            /** @enum {boolean} */
+            entitlementAutomaticExpiry: false;
+        };
+        PublicationPreviewDto: {
+            offering: components["schemas"]["CommercialTariffDto"];
+            termsPolicy: components["schemas"]["CommercialTermsDto"];
+            /** Format: uuid */
+            protocolReviewId: string | null;
+            protocolHash: string | null;
+            policy: components["schemas"]["CommercialPolicyDto"];
+            publicationHash: string | null;
+            expectedPublicationNumber: number;
+            configurationReady: boolean;
+            blockers: string[];
+        };
+        PublicationRecordDto: {
+            /** Format: uuid */
+            id: string;
+            offeringKey: string;
+            publicationNumber: number;
+            offering: components["schemas"]["CommercialTariffDto"];
+            /** Format: uuid */
+            protocolReviewId: string;
+            /** Format: uuid */
+            termsPolicyVersionId: string;
+            termsContentHash: string;
+            policy: components["schemas"]["CommercialPolicyDto"];
+            publicationHash: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "RETIRED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            retiredAt: string | null;
+            /** @enum {string|null} */
+            retirementReason: "REPLACED" | "WITHDRAWN" | null;
+        };
+        PublicationPageDto: {
+            items: components["schemas"]["PublicationRecordDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PublishAssessmentOfferingDto: {
+            /** Format: uuid */
+            offeringVersionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId: string;
+            publicationHash: string;
+            expectedPublicationNumber: number;
+            /** @enum {boolean} */
+            reviewedTermsAndRetention: true;
+        };
+        PublicationDetailDto: {
+            /** Format: uuid */
+            id: string;
+            offeringKey: string;
+            publicationNumber: number;
+            offering: components["schemas"]["CommercialTariffDto"];
+            /** Format: uuid */
+            protocolReviewId: string;
+            /** Format: uuid */
+            termsPolicyVersionId: string;
+            termsContentHash: string;
+            policy: components["schemas"]["CommercialPolicyDto"];
+            publicationHash: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "RETIRED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            retiredAt: string | null;
+            /** @enum {string|null} */
+            retirementReason: "REPLACED" | "WITHDRAWN" | null;
+            commercialUsable: boolean;
+            blockers: string[];
+        };
+        CoupleResultPairDto: {
+            firstBandId: string;
+            secondBandId: string;
+            guidanceContentIds: string[];
+            recommendConsultation: boolean;
+        };
+        CoupleResultProtocolCreateDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** Format: uuid */
+            protocolReviewId: string;
+            /** Format: uuid */
+            disclosurePolicyVersionId: string;
+            pairs: components["schemas"]["CoupleResultPairDto"][];
+        };
+        AssessmentGuidanceReferenceDto: {
+            /** Format: uuid */
+            id: string;
+            contentHash: string;
+        };
+        CoupleResultProtocolDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** Format: uuid */
+            protocolReviewId: string;
+            /** Format: uuid */
+            disclosurePolicyVersionId: string;
+            disclosureContentHash: string;
+            questionnaireContentHash: string;
+            versionNumber: number;
+            /** @enum {string} */
+            algorithmId: "APPROVED_PAIR_LOOKUP";
+            /** @enum {number} */
+            algorithmVersion: 1;
+            pairs: components["schemas"]["CoupleResultPairDto"][];
+            contentReferences: components["schemas"]["AssessmentGuidanceReferenceDto"][];
+            contentHash: string;
+            /** @enum {string} */
+            status: "DRAFT" | "APPROVED" | "REVOKED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            approvedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+            usable: boolean;
+            blockers: string[];
+        };
+        CoupleResultProtocolPageDto: {
+            items: components["schemas"]["CoupleResultProtocolDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CoupleResultProtocolApprovalDto: {
+            contentHash: string;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {boolean} */
+            noDiagnosisOrTherapeuticDiet: true;
+            /** @enum {boolean} */
+            reviewedJointDisclosure: true;
         };
         ConsentPolicyResponseDto: {
             /** Format: uuid */
@@ -4018,6 +8230,79 @@ export interface components {
             onboardingComplete: number;
             onboardingIncomplete: number;
         };
+        AssessmentDraftPresetDto: {
+            /** @default MAIN */
+            assessmentKey?: string;
+            /**
+             * @default fa-IR
+             * @enum {string}
+             */
+            locale?: "fa-IR" | "en-US";
+            title: string;
+            structure: {
+                [key: string]: unknown;
+            };
+        };
+        AssessmentScoringPreviewInputDto: {
+            expectedContentHash: string;
+            /**
+             * @description Use synthetic answers only; preview never creates a patient result.
+             * @enum {boolean}
+             */
+            syntheticAnswersOnly: true;
+            answers: {
+                [key: string]: unknown;
+            };
+        };
+        AssessmentDraftResultProfileDto: {
+            id: string;
+            primary: string;
+            secondary: string | null;
+            title: string;
+            summary: string;
+            strengths: string[];
+            attentionPoints: string[];
+            nextStep: string;
+        };
+        AssessmentTieBreakOptionDto: {
+            id: string;
+            title: string;
+            dimensionId: string | null;
+        };
+        AssessmentTieBreakQuestionDto: {
+            id: string;
+            title: string;
+            tiedDimensions: string[];
+            options: components["schemas"]["AssessmentTieBreakOptionDto"][];
+        };
+        AssessmentScoringPreviewDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            questionnaireContentHash: string;
+            /** @enum {string} */
+            algorithmId: "DIMENSION_RANK" | "DIMENSION_TIEBREAK";
+            /** @enum {number} */
+            algorithmVersion: 1;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {string} */
+            reviewState: "UNREVIEWED";
+            /** @enum {string} */
+            status: "INSUFFICIENT_DATA" | "PRIMARY_TIE" | "SECONDARY_TIE" | "SINGLE" | "PAIR" | "FOLLOW_UP_REQUIRED" | "FOLLOW_UP_UNAVAILABLE";
+            scores: {
+                [key: string]: number;
+            };
+            informativeAnswers: number;
+            primary: string | null;
+            secondary: string | null;
+            tiedDimensions: string[];
+            /** @description Unreviewed educational display profile; absent for ties/insufficient evidence. */
+            profile: components["schemas"]["AssessmentDraftResultProfileDto"] | null;
+            /** @description Only the exact server-selected tie-break question; never a second follow-up. */
+            followUp?: components["schemas"]["AssessmentTieBreakQuestionDto"] | null;
+            /** @description Whether the single allowed follow-up has already been answered. */
+            followUpUsed?: boolean;
+        };
         AssessmentVersionResponseDto: {
             /** Format: uuid */
             id: string;
@@ -4031,7 +8316,7 @@ export interface components {
             };
             contentHash: string;
             /** @enum {string} */
-            status: "DRAFT" | "PUBLISHED" | "RETIRED";
+            status: "DRAFT" | "PUBLISHED" | "RETIRED" | "DELETED";
             /** Format: date-time */
             publishedAt?: string | null;
             /** Format: date-time */
@@ -4067,6 +8352,10 @@ export interface components {
             structure?: {
                 [key: string]: unknown;
             };
+        };
+        DeletedAssessmentDto: {
+            /** Format: uuid */
+            id: string;
         };
         BookingAssessmentPolicyResponseDto: {
             /** @enum {string} */
@@ -4126,63 +8415,166 @@ export interface components {
             completed: number;
             completionRate: Record<string, never> | null;
         };
-        PatientAssessmentListItemDto: {
-            /** Format: uuid */
+        AssessmentCareBandDto: {
             id: string;
-            assessmentKey: string;
-            versionNumber: number;
-            locale: string;
             title: string;
-            structure: {
-                [key: string]: unknown;
-            };
+            riskLevel: string;
+            /** @enum {boolean} */
+            requiresReview: false;
         };
-        PatientAssessmentListResponseDto: {
-            items: components["schemas"]["PatientAssessmentListItemDto"][];
+        AssignedAssessmentSummaryDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            title: string;
+            versionNumber: number;
+            /** Format: date-time */
+            completedAt: string;
+            /** @enum {string} */
+            algorithmId: "WEIGHTED_SUM";
+            /** @enum {number} */
+            algorithmVersion: 1;
+            questionnaireContentHash: string;
+            resultBand: components["schemas"]["AssessmentCareBandDto"];
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {boolean} */
+            clinicalFact: false;
+            /** Format: uuid */
+            shareId: string;
         };
-        PatientAssessmentSubmissionResponseDto: {
+        AssignedAssessmentContextDto: {
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: uuid */
+            patientId: string;
+            items: components["schemas"]["AssignedAssessmentSummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AssessmentCareSummaryDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            title: string;
+            versionNumber: number;
+            /** Format: date-time */
+            completedAt: string;
+            /** @enum {string} */
+            algorithmId: "WEIGHTED_SUM";
+            /** @enum {number} */
+            algorithmVersion: 1;
+            questionnaireContentHash: string;
+            resultBand: components["schemas"]["AssessmentCareBandDto"];
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {boolean} */
+            clinicalFact: false;
+        };
+        AssessmentCarePreviewDto: {
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: uuid */
+            assignedDoctorId: string;
+            contextHash: string;
+            source: components["schemas"]["AssessmentCareSummaryDto"];
+            processingPolicy: components["schemas"]["ProtocolConsentDto"];
+            carePolicy: components["schemas"]["ProtocolConsentDto"];
+        };
+        AssessmentCareShareDto: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            assessmentVersionId: string;
-            attemptNumber: number;
+            appointmentId: string;
+            /** Format: uuid */
+            assignedDoctorId: string;
+            /** Format: uuid */
+            submissionId: string;
+            contextHash: string;
+            /** Format: date-time */
+            acceptedAt: string;
+            /** Format: date-time */
+            withdrawnAt: string | null;
+            currentlyAvailable: boolean;
+        };
+        AssessmentCareSharePageDto: {
+            items: components["schemas"]["AssessmentCareShareDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AssessmentCareAcceptDto: {
+            /** Format: uuid */
+            submissionId: string;
+            contextHash: string;
+            /** Format: uuid */
+            processingConsentRecordId: string;
+            /** Format: uuid */
+            carePolicyVersionId: string;
+            carePolicyContentHash: string;
+            /** @enum {boolean} */
+            careSharingAccepted: true;
+        };
+        CreateAssessmentOfferingVersionDto: {
+            offeringKey: string;
             /** @enum {string} */
-            state: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
-            answers: {
-                [key: string]: unknown;
-            };
-            resultSnapshot?: {
-                [key: string]: unknown;
-            } | null;
-            score?: string | null;
-            /** Format: date-time */
-            startedAt: string;
-            /** Format: date-time */
-            completedAt?: string | null;
+            kind: "INDIVIDUAL" | "COUPLES";
+            title: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string|null} */
+            paymentPoint?: "PRE_START" | "PRE_RESULT_UNLOCK" | null;
+            amountRial?: string | null;
+            algorithmId?: string | null;
+            algorithmVersion?: number | null;
+            policyDraft?: components["schemas"]["OfferingPolicyDraftDto"];
         };
-        SaveAssessmentAnswersDto: {
-            answers: {
-                [key: string]: unknown;
-            };
+        AssessmentOfferingReadinessDto: {
+            /** @enum {boolean} */
+            ready: false;
+            blockers: string[];
         };
-        MezajResultResponseDto: {
+        AssessmentOfferingVersionResponseDto: {
             /** Format: uuid */
             id: string;
+            offeringKey: string;
+            versionNumber: number;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            title: string;
+            locale: string;
+            /** @enum {string} */
+            status: "DRAFT" | "RETIRED";
             /** Format: uuid */
             assessmentVersionId: string;
-            /** Format: uuid */
-            assessmentSubmissionId: string;
-            resultBand: {
-                [key: string]: unknown;
-            };
-            /** Format: date-time */
-            assessedAt: string;
-        };
-        PatientBookingEligibilityResponseDto: {
-            eligible: boolean;
             /** @enum {string} */
-            reason: "ELIGIBLE" | "PROFILE_INCOMPLETE" | "MAIN_ASSESSMENT_REQUIRED" | "ASSESSMENT_EXPIRED" | "LATEST_VERSION_REQUIRED";
-            nextAction?: string | null;
+            priceMode: "FREE" | "PAID";
+            /** @enum {string|null} */
+            paymentPoint: "PRE_START" | "PRE_RESULT_UNLOCK" | null;
+            amountRial: string | null;
+            /** @enum {string} */
+            currency: "IRR";
+            algorithmId: string | null;
+            algorithmVersion: number | null;
+            policyDraft: components["schemas"]["OfferingPolicyDraftDto"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            retiredAt: string | null;
+            releaseReadiness: components["schemas"]["AssessmentOfferingReadinessDto"];
+        };
+        AssessmentOfferingPageResponseDto: {
+            items: components["schemas"]["AssessmentOfferingVersionResponseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         ClinicResponseDto: {
             /** Format: uuid */
@@ -4625,6 +9017,8 @@ export interface components {
             startsAt: string;
         };
         PatientAppointmentResponseDto: {
+            /** @enum {string} */
+            visitMode?: "ONLINE" | "IN_PERSON";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -4640,7 +9034,7 @@ export interface components {
             /** Format: date-time */
             endsAt: string;
             /** @enum {string} */
-            status: "PENDING";
+            status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
             priceAmount: number;
             /** @enum {string} */
             currency: "IRR";
@@ -4695,6 +9089,11 @@ export interface components {
             startsAt: string;
         };
         AdminAppointmentResponseDto: {
+            patientDisplayName?: string | null;
+            doctorDisplayName?: string;
+            serviceName?: string;
+            /** @enum {string} */
+            visitMode?: "ONLINE" | "IN_PERSON";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -4845,6 +9244,656 @@ export interface components {
             items: components["schemas"]["AppointmentReportingListItemResponseDto"][];
             nextCursor?: Record<string, never> | null;
         };
+        AssignedAppointmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            patientDisplayName: string | null;
+            /** Format: uuid */
+            doctorServiceId: string;
+            serviceName: string;
+            /** @enum {string} */
+            visitMode: "ONLINE" | "IN_PERSON";
+            /** @enum {string} */
+            status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            /** Format: date-time */
+            startedAt: string | null;
+            /** Format: date-time */
+            completedAt: string | null;
+        };
+        AssignedAppointmentPageDto: {
+            items: components["schemas"]["AssignedAppointmentDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AssignedEncounterDto: {
+            /** Format: uuid */
+            id: string;
+            state: string;
+        };
+        AssignedConsultationContextDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            patientDisplayName: string | null;
+            /** Format: uuid */
+            doctorServiceId: string;
+            serviceName: string;
+            /** @enum {string} */
+            visitMode: "ONLINE" | "IN_PERSON";
+            /** @enum {string} */
+            status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            /** Format: date-time */
+            startedAt: string | null;
+            /** Format: date-time */
+            completedAt: string | null;
+            canStart: boolean;
+            canComplete: boolean;
+            canOpenAssessmentContext: boolean;
+            encounter: components["schemas"]["AssignedEncounterDto"] | null;
+            textConsultationSupported: boolean;
+            /** Format: uuid */
+            conversationId: string | null;
+            /** @enum {boolean} */
+            voiceSupported: false;
+            /** @enum {boolean} */
+            videoSupported: false;
+        };
+        ProgramContentReferenceDto: {
+            /** Format: uuid */
+            id: string;
+            contentHash: string;
+        };
+        ProgramDefinitionCreateDto: {
+            programKey: string;
+            locale: string;
+            /** @enum {string} */
+            kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
+            title: string;
+            summary: string;
+            category: string;
+            /** @description Exact plain educational curriculum or professional service specification; never execute as HTML. */
+            body: string;
+            eligibilityDescription: string;
+            safety: components["schemas"]["GuidanceSafetyDto"];
+            /** @default [] */
+            contentReferences?: components["schemas"]["ProgramContentReferenceDto"][];
+            /** Format: uuid */
+            doctorServiceId?: string;
+        };
+        ProgramServiceSnapshotDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            doctorId: string;
+            /** Format: uuid */
+            serviceId: string;
+            /** @enum {string} */
+            visitMode: "ONLINE" | "IN_PERSON";
+            durationMinutes: number;
+        };
+        ProgramDefinitionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            programKey: string;
+            locale: string;
+            versionNumber: number;
+            /** @enum {string} */
+            kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
+            title: string;
+            summary: string;
+            category: string;
+            body: string;
+            eligibilityDescription: string;
+            safety: components["schemas"]["GuidanceSafetyDto"];
+            contentReferences: components["schemas"]["ProgramContentReferenceDto"][];
+            /** Format: uuid */
+            doctorServiceId: string | null;
+            serviceSnapshot: components["schemas"]["ProgramServiceSnapshotDto"] | null;
+            contentHash: string;
+            /** @enum {string} */
+            status: "DRAFT" | "APPROVED" | "REVOKED";
+            dependenciesReady: boolean;
+            usable: boolean;
+            /** @enum {boolean} */
+            commercialReady: false;
+            educationalOnly: boolean;
+            professionalReviewRequired: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            approvedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+        };
+        ProgramDefinitionPageDto: {
+            items: components["schemas"]["ProgramDefinitionResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        ProgramDefinitionApprovalDto: {
+            contentHash: string;
+            /** @enum {boolean} */
+            reviewedProgramAndSafety: true;
+            /** @enum {boolean} */
+            noAutomaticTherapyActivation: true;
+        };
+        ProgramStaticTermsDto: {
+            title: string;
+            body: string;
+            /** @enum {number} */
+            versionNumber: 1;
+        };
+        ProgramCommercialPolicyDto: {
+            /** @enum {number} */
+            schemaVersion: 1;
+            /** @enum {boolean} */
+            ordinaryRefunds: false;
+            /** @enum {string} */
+            paymentPoint: "PRE_ACCESS_OR_REQUEST";
+        };
+        ProgramPublicationResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            programDefinitionId: string;
+            definitionContentHash: string;
+            programKey: string;
+            locale: string;
+            publicationNumber: number;
+            amountRial: string;
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef: string | null;
+            /** Format: uuid */
+            termsPolicyVersionId: string;
+            termsContentHash: string;
+            policy: components["schemas"]["ProgramCommercialPolicyDto"];
+            publicationHash: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "RETIRED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            retiredAt: string | null;
+            /** @enum {string|null} */
+            retirementReason: "REPLACED" | "MANUAL" | null;
+            configurationReady: boolean;
+            /** @enum {boolean} */
+            checkoutAvailable: false;
+        };
+        ProgramPurchaseTermsDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            policyKey: "PROGRAM_PURCHASE_TERMS" | "READY_PROGRAM_PURCHASE_TERMS";
+            versionNumber: number;
+            locale: string;
+            title: string;
+            body: string;
+            contentHash: string;
+        };
+        ProgramPublicationSetupDto: {
+            defaultTerms: components["schemas"]["ProgramStaticTermsDto"] | null;
+            latestPublication: components["schemas"]["ProgramPublicationResponseDto"] | null;
+            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
+            suggestedRetentionPolicyRef: string | null;
+        };
+        ProgramCommercialConfigDto: {
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+        };
+        ProgramCommercialDefinitionDto: {
+            /** Format: uuid */
+            id: string;
+            programKey: string;
+            locale: string;
+            kind: string;
+            title: string;
+            contentHash: string;
+            status: string;
+            usable: boolean;
+        };
+        ProgramCommercialPreviewDto: {
+            configuration: components["schemas"]["ProgramCommercialConfigDto"];
+            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
+            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
+            policy: components["schemas"]["ProgramCommercialPolicyDto"];
+            publicationHash: string | null;
+            expectedPublicationNumber: number;
+            configurationReady: boolean;
+            blockers: string[];
+            /** @enum {boolean} */
+            checkoutAvailable: false;
+        };
+        PublishProgramOfferingDto: {
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+            publicationHash: string;
+            expectedPublicationNumber: number;
+            /** @enum {boolean} */
+            reviewedTermsAndRetention: true;
+        };
+        ProgramPublicationPageDto: {
+            items: components["schemas"]["ProgramPublicationResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        ProgramTermsDto: {
+            id: string;
+            title: string;
+            body: string;
+            contentHash: string;
+        };
+        ProgramConsentRecordDto: {
+            id: string;
+            policyVersionId: string;
+            contentHash: string;
+            /** Format: date-time */
+            acceptedAt: string;
+        };
+        PatientProgramOfferingDto: {
+            id: string;
+            programDefinitionId: string;
+            versionNumber: number;
+            title: string;
+            summary: string;
+            category: string;
+            locale: string;
+            eligibilityDescription: string;
+            safety: components["schemas"]["GuidanceSafetyDto"];
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "DAYS" | "PERPETUAL";
+            accessDurationDays: number | null;
+            publicationHash: string;
+            /** @enum {boolean} */
+            ordinaryRefunds: false;
+            /** @enum {boolean} */
+            educationalOnly: true;
+            /** @enum {boolean} */
+            availabilityCheckRequired: true;
+            terms: components["schemas"]["ProgramTermsDto"];
+            termsConsent: components["schemas"]["ProgramConsentRecordDto"] | null;
+        };
+        PatientProgramOfferingPageDto: {
+            items: components["schemas"]["PatientProgramOfferingDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ProgramConsentAcceptDto: {
+            /** Format: uuid */
+            policyVersionId: string;
+            contentHash: string;
+            /** @enum {boolean} */
+            accepted: true;
+        };
+        ProgramPurchaseIntentDto: {
+            /** Format: uuid */
+            publicationId: string;
+            publicationHash: string;
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        ProgramGrantDto: {
+            id: string;
+            /** Format: date-time */
+            grantedAt: string;
+            /** Format: date-time */
+            endsAt: string | null;
+            accessAvailable: boolean;
+        };
+        PatientProgramPurchaseDto: {
+            /** @enum {string} */
+            kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
+            customRequestId: string | null;
+            id: string;
+            publicationId: string;
+            programDefinitionId: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: date-time */
+            createdAt: string;
+            intent: components["schemas"]["BillingIntentDto"] | null;
+            grant: components["schemas"]["ProgramGrantDto"] | null;
+        };
+        PatientProgramPurchasePageDto: {
+            items: components["schemas"]["PatientProgramPurchaseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PatientProgramContentDto: {
+            id: string;
+            /** Format: date-time */
+            grantedAt: string;
+            /** Format: date-time */
+            endsAt: string | null;
+            accessAvailable: boolean;
+            purchaseId: string;
+            programDefinitionId: string;
+            versionNumber: number;
+            contentHash: string;
+            title: string;
+            body: string;
+            safety: components["schemas"]["GuidanceSafetyDto"];
+            contentReferences: components["schemas"]["ProgramContentReferenceDto"][];
+            /** @enum {boolean} */
+            educationalOnly: true;
+        };
+        ProgramMezajDto: {
+            programDefinitionId: string;
+            revision: number;
+            enabled: boolean;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            pairs: string[];
+        };
+        SaveProgramMezajDto: {
+            expectedRevision: number;
+            enabled: boolean;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            pairs: string[];
+        };
+        MezajProgramCardDto: {
+            programDefinitionId: string;
+            publicationId: string;
+            title: string;
+            summary: string;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            state: "BUY" | "PENDING" | "OWNED";
+            accessGrantId: string | null;
+            purchaseId: string | null;
+        };
+        MezajProgramRecommendationsDto: {
+            /** @enum {string} */
+            status: "READY" | "NO_RESULT" | "RESULT_UNSUPPORTED" | "REVIEW_REQUIRED" | "NOT_CONFIGURED";
+            /** @enum {string|null} */
+            primary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            /** @enum {string|null} */
+            secondary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            submissionId: string | null;
+            items: components["schemas"]["MezajProgramCardDto"][];
+        };
+        OwnedProgramCardDto: {
+            accessGrantId: string;
+            purchaseId: string;
+            title: string;
+            /** @enum {string} */
+            icon: "book" | "compass" | "leaf" | "sparkles" | "heart";
+            accessAvailable: boolean;
+            /** Format: date-time */
+            endsAt: string | null;
+        };
+        OwnedProgramPageDto: {
+            items: components["schemas"]["OwnedProgramCardDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomProgramPhysicianDto: {
+            id: string;
+            displayName: string;
+        };
+        CustomProgramOfferingDto: {
+            /** @description Own exact current care/terms/price and unused request allow starting checkout. */
+            checkoutAvailable: boolean;
+            /** @description An owned effective issued native plan is currently available; never implies automatic therapy. */
+            clinicalDeliveryAvailable: boolean;
+            blockers: string[];
+            id: string;
+            publicationHash: string;
+            programDefinitionId: string;
+            definitionContentHash: string;
+            title: string;
+            summary: string;
+            category: string;
+            locale: string;
+            eligibilityDescription: string;
+            safety: components["schemas"]["GuidanceSafetyDto"];
+            doctorServiceId: string;
+            physician: components["schemas"]["CustomProgramPhysicianDto"];
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {boolean} */
+            ordinaryRefunds: false;
+            terms: components["schemas"]["ProgramTermsDto"];
+            carePolicy: components["schemas"]["ProgramTermsDto"] | null;
+            requestSupported: boolean;
+        };
+        CustomProgramOfferingPageDto: {
+            items: components["schemas"]["CustomProgramOfferingDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomProgramRequestCreateDto: {
+            /** Format: uuid */
+            publicationId: string;
+            publicationHash: string;
+        };
+        CustomProgramCareDto: {
+            id: string;
+            requestId: string;
+            versionNumber: number;
+            policyVersionId: string;
+            contentHash: string;
+            authorizationHash: string;
+            /** Format: date-time */
+            acceptedAt: string;
+            /** Format: date-time */
+            withdrawnAt: string | null;
+            /** @enum {string|null} */
+            withdrawalReason: "PATIENT_WITHDRAWAL" | "SUPERSEDED" | null;
+            careAuthorized: boolean;
+        };
+        CustomProgramRequestDto: {
+            /** @description Own exact current care/terms/price and unused request allow starting checkout. */
+            checkoutAvailable: boolean;
+            /** @description An owned effective issued native plan is currently available; never implies automatic therapy. */
+            clinicalDeliveryAvailable: boolean;
+            blockers: string[];
+            id: string;
+            publicationId: string;
+            publicationHash: string;
+            programDefinitionId: string;
+            definitionContentHash: string;
+            title: string;
+            doctorServiceId: string;
+            physician: components["schemas"]["CustomProgramPhysicianDto"];
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: date-time */
+            createdAt: string;
+            sourceAvailable: boolean;
+            carePolicy: components["schemas"]["ProgramTermsDto"] | null;
+            careAuthorization: components["schemas"]["CustomProgramCareDto"] | null;
+        };
+        CustomProgramRequestPageDto: {
+            items: components["schemas"]["CustomProgramRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomProgramCarePageDto: {
+            items: components["schemas"]["CustomProgramCareDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomProgramCareAcceptDto: {
+            /** Format: uuid */
+            policyVersionId: string;
+            contentHash: string;
+            /** @enum {boolean} */
+            accepted: true;
+            expectedVersionNumber: number;
+        };
+        CustomProgramBillingDto: {
+            publicationHash: string;
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        CustomPlanVersionDto: {
+            id: string;
+            requestId: string;
+            versionNumber: number;
+            treatmentPlanId: string;
+            contentHash: string;
+            /** @enum {string} */
+            status: "DRAFT" | "ISSUED" | "REVOKED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            issuedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+            current: boolean;
+            bodyAvailable: boolean;
+        };
+        CustomDeliveryStateDto: {
+            requestId: string;
+            entitled: boolean;
+            /** @enum {string} */
+            deliveryState: "UNPAID" | "AWAITING_CARE" | "AWAITING_INTAKE" | "PROFESSIONAL_UNAVAILABLE" | "IN_PREPARATION" | "DELIVERED" | "CLINICALLY_REVOKED";
+            blockers: string[];
+            currentVersion: components["schemas"]["CustomPlanVersionDto"] | null;
+            items: components["schemas"]["CustomPlanVersionDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomPlanDetailDto: {
+            id: string;
+            requestId: string;
+            versionNumber: number;
+            treatmentPlanId: string;
+            contentHash: string;
+            /** @enum {string} */
+            status: "DRAFT" | "ISSUED" | "REVOKED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            issuedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+            current: boolean;
+            bodyAvailable: boolean;
+            plan: components["schemas"]["TreatmentPlanResponseDto"] | null;
+        };
+        CustomClinicalRequestDto: {
+            id: string;
+            patientId: string;
+            patientDisplayName: string | null;
+            title: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CustomClinicalRequestPageDto: {
+            items: components["schemas"]["CustomClinicalRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomIntakeContextDto: {
+            id: string;
+            revisionNumber: number;
+            /** @enum {string} */
+            dataOrigin: "PATIENT_SELF_REPORTED";
+            /** Format: date-time */
+            completedAt: string;
+            snapshot: components["schemas"]["IntakeSnapshotDto"];
+        };
+        CustomClinicalContextDto: {
+            id: string;
+            patientId: string;
+            patientDisplayName: string | null;
+            title: string;
+            /** Format: date-time */
+            createdAt: string;
+            careAuthorizationId: string;
+            intake: components["schemas"]["CustomIntakeContextDto"] | null;
+            latestVersionNumber: number;
+            preparationAvailable: boolean;
+            blockers: string[];
+        };
+        CustomPlanVersionPageDto: {
+            items: components["schemas"]["CustomPlanVersionDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomPlanCreateDto: {
+            /** Format: uuid */
+            careAuthorizationId: string;
+            /** Format: uuid */
+            sourceIntakeRevisionId: string;
+            expectedVersionNumber: number;
+            plan: components["schemas"]["CreateTreatmentPlanDto"];
+        };
+        CustomPlanIssueDto: {
+            contentHash: string;
+            /** @enum {boolean} */
+            reviewedPatientIntakeAndPlan: true;
+            /** @enum {boolean} */
+            noAutomatedTherapy: true;
+        };
+        CustomPlanRevokeDto: {
+            /** @enum {string} */
+            reason: "SAFETY_REVIEW" | "CORRECTION" | "OTHER";
+        };
         CreateHealthObservationDto: {
             /** @enum {string} */
             metric: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
@@ -4902,19 +9951,204 @@ export interface components {
             publicationStatus?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
             cover?: components["schemas"]["MediaDto"];
         };
+        AdminBannerDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            destinationUrl: string | null;
+            contentPath: string | null;
+            /** Format: uuid */
+            clinicId: string;
+            /** @enum {string} */
+            publicationStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+            /** Format: date-time */
+            publishedAt: string | null;
+            mediaObjectKey: string | null;
+            mediaContentType: string | null;
+            mediaSizeBytes: number | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            etag: string;
+        };
+        AdminBannerListDto: {
+            items: components["schemas"]["AdminBannerDto"][];
+        };
         CreateBannerDto: {
             title: string;
-            destinationUrl?: string;
+            destinationUrl?: string | null;
             /** @enum {string} */
             publicationStatus?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
             media?: components["schemas"]["MediaDto"];
         };
         UpdateBannerDto: {
             title?: string;
-            destinationUrl?: string;
+            destinationUrl?: string | null;
             /** @enum {string} */
             publicationStatus?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
             media?: components["schemas"]["MediaDto"];
+        };
+        PublicBannerDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            destinationUrl: string | null;
+            contentPath: string | null;
+        };
+        PublicBannerListDto: {
+            items: components["schemas"]["PublicBannerDto"][];
+        };
+        CommerceMezajProductRefDto: {
+            id: string;
+            title: string;
+        };
+        CommerceMezajSourceRefDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            resultBandId: string;
+            versionTitle: string;
+            versionNumber: number;
+            bandTitle: string;
+        };
+        CommerceMezajCollectionDto: {
+            /** @enum {string} */
+            primary: "damavi" | "safravi" | "balgami" | "sodavi";
+            /** @enum {string} */
+            secondary: "damavi" | "safravi" | "balgami" | "sodavi";
+            revision: number;
+            enabled: boolean;
+            products: components["schemas"]["CommerceMezajProductRefDto"][];
+            sources: components["schemas"]["CommerceMezajSourceRefDto"][];
+        };
+        CommerceMezajBandDto: {
+            id: string;
+            title: string;
+        };
+        CommerceMezajVersionDto: {
+            id: string;
+            title: string;
+            versionNumber: number;
+            locale: string;
+            status: string;
+            resultBands: components["schemas"]["CommerceMezajBandDto"][];
+        };
+        CommerceMezajVersionPageDto: {
+            items: components["schemas"]["CommerceMezajVersionDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        CommerceMezajSourceDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            resultBandId: string;
+        };
+        SaveCommerceMezajDto: {
+            expectedRevision: number;
+            enabled: boolean;
+            productIds: string[];
+            sources: components["schemas"]["CommerceMezajSourceDto"][];
+        };
+        ProductImageDto: {
+            /** Format: uuid */
+            id: string;
+            contentPath: string;
+            /** @enum {string} */
+            mimeType: "image/webp";
+            sizeBytes: number;
+            width: number;
+            height: number;
+            altText: string;
+        };
+        PublicProductContentDto: {
+            brand: string | null;
+            manufacturer: string | null;
+            shortDescription: string | null;
+            description: string | null;
+            ingredients: string | null;
+            usageInstructions: string | null;
+            warnings: string | null;
+            contraindications: string | null;
+            contentRevision: number;
+        };
+        PatientCommerceCategoryDto: {
+            id: string;
+            name: string;
+            slug: string;
+        };
+        PatientCommerceSkuDto: {
+            id: string;
+            code: string;
+            title?: string | null;
+            /** @description Integer TOMAN. */
+            currentPriceToman: string;
+            /** @description Integer TOMAN. */
+            currentTaxToman: string;
+        };
+        PatientCommerceProductDto: {
+            image?: components["schemas"]["ProductImageDto"] | null;
+            id: string;
+            title: string;
+            slug: string;
+            description?: string | null;
+            brand?: string | null;
+            shortDescription?: string | null;
+            /** @description Approved content embedded on detail only; no provenance or approver identity. */
+            content?: components["schemas"]["PublicProductContentDto"] | null;
+            category: components["schemas"]["PatientCommerceCategoryDto"];
+            skus: components["schemas"]["PatientCommerceSkuDto"][];
+        };
+        PatientCommerceRecommendationsDto: {
+            /** @enum {string} */
+            status: "READY" | "NO_RESULT" | "RESULT_UNSUPPORTED" | "REVIEW_REQUIRED" | "NOT_CONFIGURED" | "NO_PRODUCTS";
+            /** @enum {string|null} */
+            primary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            /** @enum {string|null} */
+            secondary: "damavi" | "safravi" | "balgami" | "sodavi" | null;
+            items: components["schemas"]["PatientCommerceProductDto"][];
+        };
+        ProductContentProvenanceDto: {
+            /** @enum {string} */
+            sourceKind: "MANUFACTURER_DOCUMENT" | "PACKAGING" | "SUPPLIER_DOCUMENT" | "OTHER_DOCUMENT";
+            sourceReference: string;
+        };
+        AdminProductContentDto: {
+            brand: string | null;
+            manufacturer: string | null;
+            shortDescription: string | null;
+            description: string | null;
+            ingredients: string | null;
+            usageInstructions: string | null;
+            warnings: string | null;
+            contraindications: string | null;
+            contentRevision: number;
+            /** @enum {string} */
+            status: "LEGACY_UNREVIEWED" | "PENDING_APPROVAL" | "APPROVED";
+            provenance: components["schemas"]["ProductContentProvenanceDto"] | null;
+            approvedContentRevision: number | null;
+            /** Format: date-time */
+            contentApprovedAt: string | null;
+            /** Format: uuid */
+            contentApprovedByUserId: string | null;
+        };
+        ProductContentFieldsDto: {
+            brand?: string | null;
+            manufacturer?: string | null;
+            shortDescription?: string | null;
+            description?: string | null;
+            ingredients?: string | null;
+            usageInstructions?: string | null;
+            warnings?: string | null;
+            contraindications?: string | null;
+        };
+        UpdateProductContentDto: {
+            fields?: components["schemas"]["ProductContentFieldsDto"];
+            provenance?: components["schemas"]["ProductContentProvenanceDto"] | null;
+            expectedContentRevision: number;
+        };
+        ApproveProductContentDto: {
+            expectedContentRevision: number;
         };
         CommerceCategoryResponseDto: {
             id: string;
@@ -4935,10 +10169,12 @@ export interface components {
             reservedQuantity: number;
         };
         CommerceProductResponseDto: {
+            image?: components["schemas"]["ProductImageDto"] | null;
             id: string;
             title: string;
             slug: string;
             description?: string | null;
+            content?: components["schemas"]["AdminProductContentDto"];
             /** @enum {string} */
             status: "DRAFT" | "ACTIVE" | "ARCHIVED";
             category: components["schemas"]["CommerceCategoryResponseDto"];
@@ -4960,12 +10196,17 @@ export interface components {
             slug?: string;
             isActive?: boolean;
         };
+        CreateProductContentDto: {
+            fields?: components["schemas"]["ProductContentFieldsDto"];
+            provenance?: components["schemas"]["ProductContentProvenanceDto"] | null;
+        };
         CreateCommerceProductDto: {
             /** Format: uuid */
             categoryId: string;
             title: string;
             slug: string;
-            description?: string;
+            description?: string | null;
+            content?: components["schemas"]["CreateProductContentDto"];
         };
         UpdateCommerceProductDto: {
             /** Format: uuid */
@@ -4975,6 +10216,7 @@ export interface components {
             description?: string | null;
             /** @enum {string} */
             status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
+            content?: components["schemas"]["UpdateProductContentDto"];
         };
         CreateCommerceSkuDto: {
             code: string;
@@ -5001,28 +10243,6 @@ export interface components {
             skuId: string;
             onHandQuantity: number;
             reservedQuantity: number;
-        };
-        PatientCommerceCategoryDto: {
-            id: string;
-            name: string;
-            slug: string;
-        };
-        PatientCommerceSkuDto: {
-            id: string;
-            code: string;
-            title?: string | null;
-            /** @description Integer TOMAN. */
-            currentPriceToman: string;
-            /** @description Integer TOMAN. */
-            currentTaxToman: string;
-        };
-        PatientCommerceProductDto: {
-            id: string;
-            title: string;
-            slug: string;
-            description?: string | null;
-            category: components["schemas"]["PatientCommerceCategoryDto"];
-            skus: components["schemas"]["PatientCommerceSkuDto"][];
         };
         PatientCommerceProductPageDto: {
             items: components["schemas"]["PatientCommerceProductDto"][];
@@ -5069,6 +10289,15 @@ export interface components {
             /** @description Integer TOMAN. */
             amountToman: number;
             isActive: boolean;
+        };
+        PreviewCommerceDiscountDto: {
+            discountCode: string;
+        };
+        CommerceDiscountPreviewDto: {
+            code: string;
+            subtotalAmountToman: string;
+            taxAmountToman: string;
+            discountAmountToman: string;
         };
         CommerceAddressDto: {
             id: string;
@@ -5128,6 +10357,7 @@ export interface components {
             lineTotalToman: string;
         };
         CommerceOrderDto: {
+            paymentMethod?: string | null;
             /** Format: uuid */
             id: string;
             orderNumber: string;
@@ -5151,6 +10381,8 @@ export interface components {
             createdAt: string;
         };
         PatientCommerceReceiptDto: {
+            /** @enum {string} */
+            method?: "GATEWAY" | "WALLET" | "FREE";
             /** Format: uuid */
             orderId: string;
             orderNumber: string;
@@ -5212,10 +10444,54 @@ export interface components {
             perPatientUsageLimit?: number | null;
             isActive?: boolean;
         };
+        PaymentGatewayRequestDto: {
+            id: string;
+            /** @enum {string} */
+            source: "BILLING" | "COMMERCE";
+            patientId: string;
+            userId: string;
+            phone: string;
+            name: string;
+            purpose: string;
+            intentId: string | null;
+            orderId: string | null;
+            providerOrderId: string;
+            revisionNumber: number;
+            amountRial: string;
+            status: string;
+            resultCode: string | null;
+            reference: string | null;
+            traceNumber: string | null;
+            createdAt: string;
+            updatedAt: string;
+            verifiedAt: string | null;
+        };
+        PaymentGatewayRequestsPageDto: {
+            items: components["schemas"]["PaymentGatewayRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PaymentGatewayTraceDto: {
+            id: string;
+            at: string;
+            stage: string;
+            outcome: string;
+            resultCode: string | null;
+            errorKind: string | null;
+            httpStatus: number | null;
+            durationMs: number;
+        };
+        PaymentGatewayRequestDetailDto: {
+            request: components["schemas"]["PaymentGatewayRequestDto"];
+            events: components["schemas"]["PaymentGatewayTraceDto"][];
+            eventsTruncated: boolean;
+        };
         PaymentProviderConfigDto: {
             code: string;
             displayName: string;
             configured: boolean;
+            activationAvailable: boolean;
             enabled: boolean;
             isDefault: boolean;
             providerUnit: string;
@@ -5226,11 +10502,17 @@ export interface components {
             };
             updatedAt?: string | null;
         };
+        SadadPaymentCredentialDto: {
+            /** @description Sadad merchant identifier issued to the clinic. */
+            merchantId: string;
+            /** @description Sadad terminal identifier issued to the clinic. */
+            terminalId: string;
+            /** @description Sadad Base64 TripleDES terminal key; encrypted at rest and never returned. */
+            terminalKey: string;
+        };
         CreatePaymentProviderRevisionDto: {
-            /** @description Write-only secret values; never returned. */
-            credential?: {
-                [key: string]: string;
-            };
+            /** @description Write-only Sadad credential set; values are encrypted and never returned. */
+            credential: components["schemas"]["SadadPaymentCredentialDto"];
             enable?: boolean;
             isDefault?: boolean;
         };
@@ -5246,6 +10528,15 @@ export interface components {
             commerceAmountToman: string;
             providerAmount?: string | null;
             providerUnit: string;
+            redirectUrl?: string | null;
+        };
+        OrderSearchPageDto: {
+            items: {
+                [key: string]: unknown;
+            }[];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         OrderTransitionDto: {
             /** @enum {string} */
@@ -5351,6 +10642,161 @@ export interface components {
             summary: components["schemas"]["CommerceCustomerCrmSummaryDto"];
             items: components["schemas"]["CommerceCustomerCrmItemDto"][];
         };
+        AssessmentGuidanceCreateDto: {
+            /** Format: uuid */
+            assessmentVersionId: string;
+            resultBandId: string;
+            guidanceContentIds: string[];
+            serviceIds: string[];
+            recommendConsultation: boolean;
+        };
+        AssessmentGuidanceResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            resultBandId: string;
+            versionNumber: number;
+            questionnaireContentHash: string;
+            algorithmId: string;
+            algorithmVersion: number;
+            resultBandSnapshot: {
+                [key: string]: unknown;
+            };
+            contentReferences: components["schemas"]["AssessmentGuidanceReferenceDto"][];
+            serviceReferences: components["schemas"]["PatientServiceDto"][];
+            recommendConsultation: boolean;
+            /** @enum {string} */
+            status: "DRAFT" | "APPROVED" | "REVOKED";
+            contentHash: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            approvedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+        };
+        AssessmentGuidancePageDto: {
+            items: components["schemas"]["AssessmentGuidanceResponseDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        PatientAssessmentGuidanceDto: {
+            /** Format: uuid */
+            submissionId: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            /** @enum {string} */
+            status: "READY" | "PROVENANCE_UNRECORDED" | "PROVENANCE_UNSUPPORTED" | "CLINICAL_REVIEW_REQUIRED" | "NO_APPROVED_MAPPING" | "MAPPING_REVOKED" | "DEPENDENCIES_UNAVAILABLE";
+            mappingId: string | null;
+            mappingVersion: number | null;
+            contentHash: string | null;
+            content: components["schemas"]["GuidanceContentResponseDto"][];
+            services: components["schemas"]["PatientServiceDto"][];
+            recommendConsultation: boolean;
+        };
+        PatientAssessmentOfferingDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            offeringKey: string;
+            publicationNumber: number;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            locale: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            publicationHash: string;
+            /** @enum {boolean} */
+            availabilityCheckRequired: true;
+        };
+        PatientAssessmentOfferingPageDto: {
+            items: components["schemas"]["PatientAssessmentOfferingDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AssessmentConsentRecordDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            policyVersionId: string;
+            contentHash: string;
+            /** Format: date-time */
+            acceptedAt: string;
+            /** Format: date-time */
+            withdrawnAt: string | null;
+        };
+        PatientAssessmentOfferingDetailDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            offeringKey: string;
+            publicationNumber: number;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            locale: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            publicationHash: string;
+            /** @enum {boolean} */
+            availabilityCheckRequired: true;
+            policy: components["schemas"]["CommercialPolicyDto"];
+            processingPolicy: components["schemas"]["ProtocolConsentDto"];
+            termsPolicy: components["schemas"]["CommercialTermsDto"];
+            processingConsent: components["schemas"]["AssessmentConsentRecordDto"] | null;
+            termsConsent: components["schemas"]["AssessmentConsentRecordDto"] | null;
+            purchaseSupported: boolean;
+            blockers: string[];
+        };
+        AssessmentConsentAcceptDto: {
+            /** Format: uuid */
+            policyVersionId: string;
+            contentHash: string;
+            /** @enum {boolean} */
+            accepted: true;
+        };
+        AssessmentPurchaseIntentDto: {
+            /** Format: uuid */
+            publicationId: string;
+            publicationHash: string;
+            /** Format: uuid */
+            processingConsentRecordId: string;
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        AssessmentGrantSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            submissionId: string | null;
+            accessAvailable: boolean;
+            /** Format: date-time */
+            grantedAt: string;
+        };
+        PatientAssessmentPurchaseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            publicationId: string;
+            title: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** Format: date-time */
+            createdAt: string;
+            intent: components["schemas"]["BillingIntentDto"] | null;
+            grants: components["schemas"]["AssessmentGrantSummaryDto"][];
+        };
+        PatientAssessmentPurchasePageDto: {
+            items: components["schemas"]["PatientAssessmentPurchaseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -5391,6 +10837,247 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    HealthController_chatReady: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authOtpChallengeCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOtpChallengeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpChallengeResponseDto"];
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Browser origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Idempotency key is invalid. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP delivery is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    authOtpChallengeResend: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+            };
+            path: {
+                challengeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpChallengeResponseDto"];
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP challenge is invalid. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Browser origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP resend cooldown is active. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP delivery is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    authOtpChallengeVerify: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+            };
+            path: {
+                challengeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyOtpChallengeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    /** @description HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript. */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthenticationResponseDto"];
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP code is invalid or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Browser origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP verification attempts are exhausted. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description OTP account provisioning is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
             };
         };
     };
@@ -5562,6 +11249,15 @@ export interface operations {
             };
             /** @description Browser origin is not allowed. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description A concurrent refresh has updated the browser cookie; retry shortly. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5998,11 +11694,54 @@ export interface operations {
             };
         };
     };
+    chatConversationAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatAccessResponseDto"];
+                };
+            };
+        };
+    };
+    chatConversationClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationResponseDto"];
+                };
+            };
+        };
+    };
     chatConversationHistory: {
         parameters: {
             query?: {
                 /** @description Opaque, versioned server cursor. */
                 cursor?: string;
+                direction?: "after" | "before" | "latest";
                 limit?: components["schemas"]["Object"];
             };
             header?: never;
@@ -6019,31 +11758,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatHistoryResponseDto"];
-                };
-            };
-        };
-    };
-    chatConversationMessageSend: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                conversationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendChatMessageDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatMessageResponseDto"];
                 };
             };
         };
@@ -6207,6 +11921,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    chatAppointmentEngineSessionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EjabberdSessionDto"];
                 };
             };
         };
@@ -7288,6 +13023,592 @@ export interface operations {
             };
         };
     };
+    adminSmsProvidersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsProviderConfigDto"][];
+                };
+            };
+        };
+    };
+    adminSmsProviderRevisionCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSmsProviderRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsProviderConfigDto"];
+                };
+            };
+        };
+    };
+    adminSmsProviderStateUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSmsProviderStateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsProviderConfigDto"];
+                };
+            };
+        };
+    };
+    adminSmsProviderConnectionTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminSmsProviderMessageTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestSmsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminOtpPolicyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpPolicyDto"];
+                };
+            };
+        };
+    };
+    adminOtpPolicyUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOtpPolicyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpPolicyDto"];
+                };
+            };
+        };
+    };
+    adminSmsDeliveryAttemptsList: {
+        parameters: {
+            query?: {
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmsDeliveryAttemptDto"][];
+                };
+            };
+        };
+    };
+    patientEntryStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
+                };
+            };
+        };
+    };
+    patientEntryProfileSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
+                };
+            };
+        };
+    };
+    patientEntryStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
+                };
+            };
+        };
+    };
+    patientEntryComplete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
+                };
+            };
+        };
+    };
+    adminEntryPolicyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryPolicyDto"];
+                };
+            };
+        };
+    };
+    adminEntryPolicyUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryPolicyUpdateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryPolicyDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentHistoryList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentHistoryResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentQuestionnaireGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentQuestionnaireResponseDto"];
+                };
+            };
+            /** @description Owned assessment questionnaire was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentProvenanceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentProvenanceResponseDto"];
+                };
+            };
+            /** @description Owned completed assessment was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentListResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessmentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+            /** @description Assessment was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveAssessmentAnswersDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+            /** @description Assessment revision is stale or the submission is immutable. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionSubmit: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SubmitAssessmentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+            /** @description Assessment revision, completion state or idempotency key conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentSubmissionResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+        };
+    };
+    patientMezajResultGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MezajResultResponseDto"];
+                };
+            };
+        };
+    };
+    patientBookingEligibilityGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientBookingEligibilityResponseDto"];
+                };
+            };
+        };
+    };
     patientGetSelfProfile: {
         parameters: {
             query?: never;
@@ -7403,6 +13724,4371 @@ export interface operations {
             };
             /** @description Patient access is required. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentProtocolQueue: {
+        parameters: {
+            query?: {
+                assessmentKey?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolQueuePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, review revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact supported source and explicit review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentProtocolPreview: {
+        parameters: {
+            query?: {
+                consentPolicyVersionId?: string;
+            };
+            header?: never;
+            path: {
+                assessmentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolPreviewResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, review revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact supported source and explicit review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentProtocolHistory: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                assessmentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolReviewPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, review revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact supported source and explicit review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentProtocolApprove: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                assessmentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProtocolApproveDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolReviewResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, review revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact supported source and explicit review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentProtocolWithdraw: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                assessmentVersionId: string;
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProtocolWithdrawalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolReviewResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, review revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact supported source and explicit review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentProtocolPreview: {
+        parameters: {
+            query?: {
+                consentPolicyVersionId?: string;
+            };
+            header?: never;
+            path: {
+                assessmentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolPreviewResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content manager required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentProtocolHistory: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                assessmentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtocolReviewPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content manager required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminGuidanceContentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuidanceContentCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminGuidanceContentList: {
+        parameters: {
+            query?: {
+                articleId?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminGuidanceContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminGuidanceContentDraftRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalGuidanceContentList: {
+        parameters: {
+            query?: {
+                articleId?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalGuidanceContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalGuidanceContentApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuidanceApprovalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalGuidanceContentRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientGuidanceContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuidanceContentResponseDto"];
+                };
+            };
+            /** @description Invalid identifier. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Approved content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientJourneyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientJourneyResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Sensitive audit is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleAssessmentBillingIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+            /** @description Strict input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or mutually authorized resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Context, payment, completion or approval conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit current configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentPaidState: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentPaidStateDto"];
+                };
+            };
+            /** @description Strict input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or mutually authorized resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Context, payment, completion or approval conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit current configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleJointResultGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleJointResultDto"];
+                };
+            };
+            /** @description Strict input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or mutually authorized resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Context, payment, completion or approval conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit current configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleJointResultGenerate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleJointResultDto"];
+                };
+            };
+            /** @description Strict input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or mutually authorized resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Context, payment, completion or approval conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit current configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentOfferingPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                publicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentOfferingPreviewDto"];
+                };
+            };
+            /** @description Active patient session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Available coupled offering not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientWalletGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletSummaryDto"];
+                };
+            };
+        };
+    };
+    patientWalletTransactionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletTransactionPageDto"];
+                };
+            };
+        };
+    };
+    patientWalletTopupCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletAmountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientOrderBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingOrderIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientAppointmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingIntentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingIntentCancel: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingWalletPay: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingGatewayAttemptCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    adminPatientAppointmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletSummaryDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletTransactionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletTransactionPageDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletAdjust: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletAdjustmentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletAdjustmentResultDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletStatusSet: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletStatusDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletStatusResultDto"];
+                };
+            };
+        };
+    };
+    adminBillingIntentsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                patientId?: string;
+                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM";
+                status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentPageDto"];
+                };
+            };
+        };
+    };
+    adminBillingIntentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBillingIntentDto"];
+                };
+            };
+        };
+    };
+    adminBillingReconciliationList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingReconciliationPageDto"];
+                };
+            };
+        };
+    };
+    adminBillingSummaryGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingSummaryDto"];
+                };
+            };
+        };
+    };
+    adminBillingRefundCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRefundDto"];
+                };
+            };
+        };
+    };
+    adminBillingRefundComplete: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRefundDto"];
+                };
+            };
+        };
+    };
+    adminBillingAttemptRetry: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    adminBillingAttemptResolveFailed: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    patientCoupleLinkPolicyGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleLinkPolicyDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleSessionsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleSessionPageDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleSessionCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleLinkConsentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleSessionSummaryDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleSessionGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleSessionSummaryDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleInvitationCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleInvitationCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleInvitationResponseDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleInvitationPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleInvitationTokenDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleInvitationPreviewDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleInvitationAccept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleInvitationAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleSessionSummaryDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleConsentWithdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleSessionSummaryDto"];
+                };
+            };
+            /** @description Request validation or explicit consent is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An active independent session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned session or intended-recipient invitation was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Session, consent version or idempotency state conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult self-reported birth date or registered recipient is required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description An owner-published account-link policy is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentList: {
+        parameters: {
+            query?: {
+                coupleSessionId?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact context or consent changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit adult consent required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleAssessmentCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact context or consent changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit adult consent required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact context or consent changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit adult consent required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentConsentAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleAssessmentConsentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact context or consent changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit adult consent required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCoupleAssessmentConsentWithdraw: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleAssessmentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact context or consent changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit adult consent required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentCommercialPreview: {
+        parameters: {
+            query: {
+                offeringVersionId: string;
+                termsPolicyVersionId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationPreviewDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, publication revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Complete supported commercial configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentCommercialList: {
+        parameters: {
+            query?: {
+                kind?: "INDIVIDUAL" | "COUPLES";
+                offeringKey?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, publication revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Complete supported commercial configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentCommercialPublish: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishAssessmentOfferingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationRecordDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, publication revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Complete supported commercial configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentCommercialGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, publication revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Complete supported commercial configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentCommercialRetire: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationRecordDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, publication revision or command conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Complete supported commercial configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCoupleResultProtocolCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleResultProtocolCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrative access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCoupleResultProtocolList: {
+        parameters: {
+            query?: {
+                assessmentVersionId?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrative access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCoupleResultProtocolGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrative access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCoupleResultProtocolDraftRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped administrative access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCoupleResultProtocolList: {
+        parameters: {
+            query?: {
+                assessmentVersionId?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit educational review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCoupleResultProtocolGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit educational review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCoupleResultProtocolApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoupleResultProtocolApprovalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit educational review required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCoupleResultProtocolRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoupleResultProtocolDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Protocol unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Explicit educational review required. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7661,7 +18347,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
-            /** @description Current consent is required. */
+            /** @description Patient access is required. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7724,7 +18410,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
-            /** @description Current consent is required. */
+            /** @description Patient access is required. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -8126,9 +18812,103 @@ export interface operations {
             };
         };
     };
-    adminAssessmentsList: {
+    adminAssessmentsMizajDraftPreset: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentDraftPresetDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentsScoringPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentScoringPreviewInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentScoringPreviewDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assessment version was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description The draft changed or is no longer a draft. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Draft structure or synthetic answers are invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentsList: {
+        parameters: {
+            query?: {
+                assessmentKey?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "PUBLISHED" | "RETIRED";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8212,6 +18992,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssessmentVersionResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentsDelete: {
+        parameters: {
+            query: {
+                expectedContentHash: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedAssessmentDto"];
+                };
+            };
+            /** @description Required permission is missing. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assessment was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description The assessment content changed; reload before deleting. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
         };
@@ -8460,11 +19290,16 @@ export interface operations {
             };
         };
     };
-    patientAssessmentsList: {
+    assignedAssessmentCareContext: {
         parameters: {
-            query?: never;
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
             header?: never;
-            path?: never;
+            path: {
+                appointmentId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8474,17 +19309,337 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PatientAssessmentListResponseDto"];
+                    "application/json": components["schemas"]["AssignedAssessmentContextDto"];
+                };
+            };
+            /** @description Validated bounded query required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current live physician session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified physician with explicit current clinical view required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned active appointment context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
         };
     };
-    patientAssessmentSubmissionStart: {
+    patientAssessmentCarePreview: {
         parameters: {
-            query?: never;
+            query: {
+                submissionId: string;
+            };
             header?: never;
             path: {
-                assessmentVersionId: string;
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentCarePreviewDto"];
+                };
+            };
+            /** @description Strict validated input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent patient session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned eligible appointment, source or policy unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact consent/source/assignment or command conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentCareHistory: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentCareSharePageDto"];
+                };
+            };
+            /** @description Strict validated input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent patient session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned eligible appointment, source or policy unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact consent/source/assignment or command conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentCareConsentAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentCareAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentCareShareDto"];
+                };
+            };
+            /** @description Strict validated input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent patient session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned eligible appointment, source or policy unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact consent/source/assignment or command conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentCareConsentWithdraw: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                appointmentId: string;
+                shareId: string;
             };
             cookie?: never;
         };
@@ -8495,11 +19650,65 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                    "application/json": components["schemas"]["AssessmentCareShareDto"];
                 };
             };
-            /** @description Assessment was not found. */
+            /** @description Strict validated input required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active independent patient session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned eligible appointment, source or policy unavailable. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact consent/source/assignment or command conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8509,58 +19718,77 @@ export interface operations {
             };
         };
     };
-    patientAssessmentSubmissionGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
-                };
-            };
-        };
-    };
-    patientAssessmentSubmissionSave: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SaveAssessmentAnswersDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
-                };
-            };
-        };
-    };
-    patientAssessmentSubmissionSubmit: {
+    adminAssessmentOfferingVersionCreate: {
         parameters: {
             query?: never;
             header: {
                 "Idempotency-Key": string;
             };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAssessmentOfferingVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentOfferingVersionResponseDto"];
+                };
+            };
+            /** @description Offering identity or idempotency key conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Draft configuration is inconsistent. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentOfferingsList: {
+        parameters: {
+            query?: {
+                kind?: "INDIVIDUAL" | "COUPLES";
+                offeringKey?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentOfferingPageResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentOfferingGet: {
+        parameters: {
+            query?: never;
+            header?: never;
             path: {
                 id: string;
             };
@@ -8573,12 +19801,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                    "application/json": components["schemas"]["AssessmentOfferingVersionResponseDto"];
                 };
             };
         };
     };
-    patientAssessmentSubmissionResult: {
+    adminAssessmentOfferingRetire: {
         parameters: {
             query?: never;
             header?: never;
@@ -8589,50 +19817,12 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
-                };
-            };
-        };
-    };
-    patientMezajResultGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MezajResultResponseDto"];
-                };
-            };
-        };
-    };
-    patientBookingEligibilityGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PatientBookingEligibilityResponseDto"];
+                    "application/json": components["schemas"]["AssessmentOfferingVersionResponseDto"];
                 };
             };
         };
@@ -8701,8 +19891,8 @@ export interface operations {
         parameters: {
             query?: {
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
                 specialtyId?: string;
@@ -8815,8 +20005,8 @@ export interface operations {
         parameters: {
             query?: {
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
@@ -8928,8 +20118,8 @@ export interface operations {
         parameters: {
             query?: {
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
@@ -9042,8 +20232,8 @@ export interface operations {
             query?: {
                 doctorId?: string;
                 isActive?: boolean;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
                 serviceId?: string;
@@ -9572,8 +20762,8 @@ export interface operations {
         parameters: {
             query: {
                 fromDate: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 toDate: string;
             };
             header?: never;
@@ -9860,6 +21050,27 @@ export interface operations {
             };
         };
     };
+    adminAppointmentDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAppointmentResponseDto"];
+                };
+            };
+        };
+    };
     adminAppointmentsHistory: {
         parameters: {
             query?: {
@@ -10106,6 +21317,3752 @@ export interface operations {
             };
         };
     };
+    assignedAppointmentsList: {
+        parameters: {
+            query?: {
+                from?: string;
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignedAppointmentPageDto"];
+                };
+            };
+            /** @description Strict bounded query or empty mutation body required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active physician session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified physician clinical capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned consultation unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current visit state, window or doctor operation conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    assignedConsultationContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignedConsultationContextDto"];
+                };
+            };
+            /** @description Strict bounded query or empty mutation body required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active physician session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified physician clinical capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned consultation unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current visit state, window or doctor operation conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    assignedConsultationStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignedConsultationContextDto"];
+                };
+            };
+            /** @description Strict bounded query or empty mutation body required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active physician session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified physician clinical capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned consultation unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current visit state, window or doctor operation conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    assignedConsultationComplete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignedConsultationContextDto"];
+                };
+            };
+            /** @description Strict bounded query or empty mutation body required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active physician session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified physician clinical capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned consultation unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current visit state, window or doctor operation conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramDefinitionCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramDefinitionCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current same-clinic administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Command or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent definition/source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramDefinitionList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                programKey?: string;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current same-clinic administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Command or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent definition/source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramDefinitionGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current same-clinic administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Command or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent definition/source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramDefinitionDraftRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current same-clinic administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Command or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent definition/source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalProgramDefinitionList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                programKey?: string;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified same-clinic physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalProgramDefinitionGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified same-clinic physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalProgramDefinitionApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramDefinitionApprovalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified same-clinic physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalProgramDefinitionRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current qualified same-clinic physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program definition unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent source. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramPublicationSetupDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramCommercialConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCommercialPreviewDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                programKey?: string;
+                status?: "ACTIVE" | "RETIRED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramPublicationPageDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingPublish: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishProgramOfferingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramPublicationResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramPublicationResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingRetire: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramPublicationResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramOfferingsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientProgramOfferingPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramOfferingGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientProgramOfferingDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramConsentAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramConsentAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramConsentRecordDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramPurchaseIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramPurchasesList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientProgramPurchasePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramPurchaseGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientProgramPurchaseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientProgramContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientProgramContentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramMezajGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramMezajDto"];
+                };
+            };
+        };
+    };
+    adminProgramMezajSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveProgramMezajDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramMezajDto"];
+                };
+            };
+        };
+    };
+    patientProgramRecommendationsGet: {
+        parameters: {
+            query?: {
+                submissionId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MezajProgramRecommendationsDto"];
+                };
+            };
+        };
+    };
+    patientProgramLibraryList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnedProgramPageDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramOfferingsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramOfferingPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramOfferingGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramOfferingDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramRequestsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramRequestPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramRequestCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomProgramRequestCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramRequestDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramRequestGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramRequestDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramCareHistory: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramCarePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramCareAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomProgramCareAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramCareDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramCareWithdraw: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomProgramCareDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomProgramBillingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned delivery unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Paid care or source changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramDeliveryGet: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDeliveryStateDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned delivery unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Paid care or source changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramPlanGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPlanDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned delivery unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Paid care or source changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramWorklist: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomClinicalRequestPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomClinicalContextDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramPlanHistory: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPlanVersionPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramPlanCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomPlanCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPlanDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramPlanGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPlanDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramPlanIssue: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomPlanIssueDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPlanDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalCustomProgramPlanRevoke: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomPlanRevokeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPlanDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current assigned qualified physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Assigned paid care unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Exact care, intake or version conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Valid Idempotency-Key required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Clinical access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     patientHealthObservationsList: {
         parameters: {
             query?: {
@@ -10346,7 +25303,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBannerListDto"];
+                };
             };
         };
     };
@@ -10367,14 +25326,18 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBannerDto"];
+                };
             };
         };
     };
     ContentController_updateBanner: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "If-Match"?: string;
+            };
             path: {
                 id: string;
             };
@@ -10390,7 +25353,848 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
+                content: {
+                    "application/json": components["schemas"]["AdminBannerDto"];
+                };
+            };
+        };
+    };
+    adminContentBannerImageUpload: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match": string;
+            };
+            path: {
+                bannerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannerDto"];
+                };
+            };
+        };
+    };
+    adminContentBannerImageRemove: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match": string;
+            };
+            path: {
+                bannerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
                 content?: never;
+            };
+        };
+    };
+    adminContentBannerImagePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bannerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    publicContentBanners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBannerListDto"];
+                };
+            };
+        };
+    };
+    publicContentBannerImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bannerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminCommerceMezajCollectionsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceMezajCollectionDto"][];
+                };
+            };
+        };
+    };
+    adminCommerceMezajVersionsList: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceMezajVersionPageDto"];
+                };
+            };
+        };
+    };
+    adminCommerceMezajCollectionSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                primary: "damavi" | "safravi" | "balgami" | "sodavi";
+                secondary: "damavi" | "safravi" | "balgami" | "sodavi";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCommerceMezajDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceMezajCollectionDto"];
+                };
+            };
+        };
+    };
+    patientCommerceRecommendationsGet: {
+        parameters: {
+            query?: {
+                submissionId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCommerceRecommendationsDto"];
+                };
+            };
+        };
+    };
+    adminProductContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductContentDto"];
+                };
+            };
+            /** @description Malformed product identifier or content request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Insufficient permissions. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product not found in the active clinic. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProductContentUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductContentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductContentDto"];
+                };
+            };
+            /** @description Malformed content request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Insufficient permissions. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product not found in the active clinic. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content revision has changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content request exceeds 128 KiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProductContentApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveProductContentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductContentDto"];
+                };
+            };
+            /** @description Malformed approval request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Insufficient permissions. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product not found in the active clinic. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content revision has changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content request exceeds 128 KiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content or its source is missing. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceProductImageGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current metadata or null. ETag is the quoted image UUID or "none". */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductImageDto"] | null;
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description COMMERCE_MANAGE required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product/image is not owned or available. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image request rate exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Storage disabled, unavailable or processing busy. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceProductImageUpload: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "If-Match": string;
+            };
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    altText?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductImageDto"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description COMMERCE_MANAGE required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product/image is not owned or available. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Idempotency conflict, pending or expired operation. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image revision changed. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image exceeds 5 MiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Invalid upload or operation key. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description If-Match required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image request rate exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Storage disabled, unavailable or processing busy. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceProductImageRemove: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "If-Match": string;
+            };
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description COMMERCE_MANAGE required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product/image is not owned or available. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image revision changed. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Invalid operation key. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description If-Match required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image request rate exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Storage disabled, unavailable or processing busy. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminCommerceProductImagePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private preview of the current ready image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description COMMERCE_MANAGE required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product/image is not owned or available. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image request rate exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Storage disabled, unavailable or processing busy. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    commerceProductImageContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                imageId: string;
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No-store current WebP image of a published catalog product. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            /** @description Current published image not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Image request rate exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Storage unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
             };
         };
     };
@@ -10438,6 +26242,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommerceProductResponseDto"];
+                };
+            };
+            /** @description Malformed product/content request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product content exceeds 128 KiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product content is invalid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
         };
@@ -10532,8 +26363,35 @@ export interface operations {
                     "application/json": components["schemas"]["CommerceProductResponseDto"];
                 };
             };
-            /** @description Invalid lifecycle transition. */
+            /** @description Malformed product/content request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Invalid lifecycle transition or stale content revision. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product content exceeds 128 KiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Product content is invalid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10794,6 +26652,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommerceCourierShippingRateDto"];
+                };
+            };
+        };
+    };
+    patientCommerceDiscountPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewCommerceDiscountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommerceDiscountPreviewDto"];
                 };
             };
         };
@@ -11073,6 +26954,57 @@ export interface operations {
             };
         };
     };
+    adminPaymentGatewayRequests: {
+        parameters: {
+            query?: {
+                from?: string;
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
+                until?: string;
+            };
+            header?: never;
+            path: {
+                providerCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestsPageDto"];
+                };
+            };
+        };
+    };
+    adminPaymentGatewayRequestDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attemptId: string;
+                providerCode: string;
+                source: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentGatewayRequestDetailDto"];
+                };
+            };
+        };
+    };
     adminCommercePaymentProvidersList: {
         parameters: {
             query?: never;
@@ -11191,9 +27123,18 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": {
+                    OrderId: string;
+                    Token: string;
+                    ResCode: string;
+                };
+            };
+        };
         responses: {
-            503: {
+            /** @description Callback rate limit exceeded. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11215,6 +27156,54 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    adminCommerceOrdersSearch: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                query?: string;
+                shippingMethod?: "PICKUP" | "COURIER";
+                status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderSearchPageDto"];
+                };
+            };
+        };
+    };
+    adminCommerceOrderGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -11506,6 +27495,1293 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommerceCustomerCrmPageDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentGuidanceCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentGuidanceCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidanceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentGuidanceList: {
+        parameters: {
+            query?: {
+                assessmentVersionId?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidancePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentGuidanceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidanceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentGuidanceDraftRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidanceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Scoped content authority required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash, lifecycle or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentGuidanceList: {
+        parameters: {
+            query?: {
+                assessmentVersionId?: string;
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "APPROVED" | "REVOKED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidancePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentGuidanceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidanceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentGuidanceApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuidanceApprovalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidanceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    clinicalAssessmentGuidanceRevoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentGuidanceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Qualified scoped physician required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Hash or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Inconsistent metadata. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentGuidanceGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentGuidanceDto"];
+                };
+            };
+            /** @description Invalid identifier. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Approved content unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientPaidAssessmentOfferingsList: {
+        parameters: {
+            query?: {
+                kind?: "INDIVIDUAL" | "COUPLES";
+                offeringKey?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentOfferingPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientPaidAssessmentOfferingGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                publicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentOfferingDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentConsentAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentConsentAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentConsentRecordDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentProcessingConsentWithdraw: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentConsentRecordDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentPurchaseIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentPurchasesList: {
+        parameters: {
+            query?: {
+                kind?: "INDIVIDUAL" | "COUPLES";
+                offeringKey?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentPurchasePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientAssessmentPurchaseGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentPurchaseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientPaidAssessmentStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientAssessmentSubmissionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
             };
         };

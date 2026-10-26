@@ -27,6 +27,7 @@ export const createFastifyLoggingOptions = (
     redact: {
       paths: [
         'req.headers.authorization',
+        'req.headers["x-chat-policy-key"]',
         'req.headers.cookie',
         'req.headers["set-cookie"]',
         'res.headers["set-cookie"]',
@@ -34,6 +35,14 @@ export const createFastifyLoggingOptions = (
         'req.body.currentPassword',
         'req.body.newPassword',
         'req.body.token',
+        'req.body.actorJid',
+        'req.body.body',
+        'req.body.invitationToken',
+        'req.body.recipientPhone',
+        'req.body.recipientPatientId',
+        'req.body.provenance',
+        'req.body.safety',
+        'req.body.withdrawalReason',
         'req.body.refreshToken',
         'req.body.accessToken',
       ],

@@ -1033,3 +1033,35 @@ Known limitations:
   - پس از دریافت این تغییر، فرایند dev API در حال اجرا باید یک‌بار restart شود تا Prisma Client جدید تولید و بارگذاری شود.
 Next task:
   - `F02-T01`
+
+## F01-R08 — اجرای همگام runtime config پیش از hydration رابط‌ها
+
+Task ID: F01-R08
+Completed at: 2026-10-09 +03:30
+Agent/Thread: Codex /root
+Changed files:
+  - `apps/web/src/app/layout.tsx`
+  - `apps/app/src/app/layout.tsx`
+  - `apps/dashboard/src/app/layout.tsx`
+  - `scripts/test-runtime-config-loading.mjs`
+  - `plan/STATUS.md`
+  - `plan/logs/phase-01.md`
+Migrations:
+  - ندارد
+Tests run:
+  - contract بارگذاری runtime config برای هر سه frontend → PASS
+  - test وب → PASS (۴ فایل، ۹ تست)
+  - typecheck مستقیم web، app و dashboard به‌صورت سری → PASS
+  - build مستقیم web → PASS
+  - مرورگر محلی: خروج header از skeleton و نمایش «ثبت‌نام/ورود» → PASS
+  - مرورگر محلی: submit فرم login توسط React intercept شد و خطای client-side API نمایش داده شد → PASS
+  - `git diff --check` → PASS
+Result:
+  - `runtime-config.js` دیگر با scheduler داخلی `next/script` بارگذاری نمی‌شود و به‌صورت script بومی و همگام در
+    `<head>`، پیش از body و hydration، اجرا می‌شود → PASS
+  - هر سه frontend پیش از اجرای client bundle به URLهای runtime دسترسی دارند → PASS
+  - fallback بومی مرورگر که فرم را به `POST /login` روی دامنه وب ارسال می‌کرد حذف شد → PASS
+Known limitations:
+  - تأیید روی دامنه‌های عمومی dev به push و تکمیل workflow وابسته است؛ بررسی محلی همان مسیر توسعه را تأیید کرد.
+Next task:
+  - ادامهٔ Phase 12 مطابق batch map، پس از مشاهدهٔ deployment زنده

@@ -1,4 +1,91 @@
+LANDING OTP CONTINUITY (2026-10-26): F12-FE01-WEB01 follow-up DONE/review PASS, sole /root on dev; claim RELEASED. Dismissal/reopen retains the in-memory phone, OTP challenge, partial code and pending request/result. One expiry/resend control waits for expiry and server cooldown. Web types, 25 unit tests, 9 intercepted browser tests (mobile390/desktop1440 continuity plus existing responsive/auth coverage), build, Graphify and diff review PASS. Owner-authorized commit/push; no backend/contract/database change. Evidence: logs/phase-12.md#landing-otp-continuity-and-unified-expiry-2026-10-26. No next batch; broader F12-FE01 remains REWORK.
+
+LANDING OTP PR FOLLOW-UP (2026-10-25): PR #32 was behind newly merged dev PR #31, making the branch non-mergeable and causing overlapping plan-log edits. Merged latest origin/dev into codex/landing-otp-pr, preserved both histories, and retained the OTP implementation. API-client build, web typecheck, all 25 web tests, production build, and diff check PASS after sync. PR CI's only failure is the unrelated API Assessment reliability integration step; GitHub's job-log endpoint failed to return the raw log, so waiting for rerun result before claiming that gate resolved.
+
+LANDING OTP VISUAL CORRECTION (2026-10-25): Same F12-FE01-WEB01 owner follow-up DONE/review PASS, sole /root, claim RELEASED on codex/landing-otp-dialog. White semantic presentation, central phone symbol removed, full-width sheet below768px/centered480px modal from768px. Clipped overlay/viewport eliminate translated-panel transient scrollbars; panel remains scrollable in short viewports with hidden track. Optimized build/TypeScript and7 browser cases PASS, including animation-frame overflow/monotonic motion and320/390/430/480/600/767/768/1440 breakpoint checks. Desktop/mobile screenshots reviewed, Graphify AST refreshed. Evidence logs/phase-12.md#landing-otp-white-sheet-correction-2026-10-25. Auth contracts unchanged; no real SMS/deploy. Owner visual/real-phone acceptance next; broad F12-FE01 remains REWORK, no next batch.
+
+LANDING OTP (2026-10-25): F12-FE01-WEB01 software slice DONE, main /root review PASS, scoped claim RELEASED on codex/landing-otp-dialog. Existing OTP and role/allowlisted next contracts retained; password/register components/services remain dormant. In-place desktop modal/mobile draggable sheet, six-digit owner-reference orbit and server-confirmed success. Web typecheck/build and17 unit tests PASS;6 intercepted Chromium cases PASS including320/390/430/768/1440, short viewport, animation geometry/no overflow, focus/Escape/drag/backdrop, errors/expiry/resend and legacy-route destination/cookie preservation. Graphify AST update PASS with unrelated extractor warnings. Evidence logs/phase-12.md#f12-fe01-web01--in-place-landing-otp. No real SMS/account writes/dependencies/schema/deployment; real-phone keyboard/live-provider and owner visual acceptance remain external. Broad F12-FE01 stays REWORK; no next batch started.
+
+INSTALLER CHAT AUTOMATION (2026-10-24): F12-T02-I06 DONE; INSTALLATION-06 claim released, sole /root review PASS. Local native RSA/Compose/Caddy HTTP and deployment/rollback checks passed; hosted installer workflow40065714815 PASS on implementation2e5d9f1 includes real engine/SQL/retention, API environment, administrator bootstrap and encrypted restore. PR30 targets dev. Next action: owner merge, updated installer transfer/setup-chat and normal shared-dev deploy/manual acceptance. No live VPS mutation or next batch. Evidence: logs/phase-12.md#f12-t02-i06--automated-retained-chat-preparation. Broad F12-FE01 remains REWORK.
+
+WELCOME MOBILE REDESIGN (2026-10-24): same CLIENT-INTEGRATION / F12-FE01, sole /root; scoped review PASS, READY_FOR_OWNER_VISUAL_REVIEW, broader task REWORK/unchecked. Brain imagery removed; compact responsive welcome/profile, real step count, explicit next step, native labeled birth/gender controls and matching assessment/result styles. App types and intercepted browser checks320/390/430/768/1440 PASS: no overflow,44px targets, prefill, error retention and exact demographic payload. Source/desktop/mobile screenshot review PASS. No real profile writes, backend/dependency/migration/deploy/commit. Evidence: logs/phase-12.md#welcome-mobile-redesign-2026-10-24. Owner phone review next; no new batch.
+
+MEZAJ PAID CONTENT (2026-10-24): F12-FE01-MZ01 software slice DONE, sole /root review PASS on codex/mezaj-paid-content; claim released, broader F12-FE01 remains REWORK. Ordered pair/icon configuration, exact11+1/scalar recommendations, result services/products, owned Home library and admin/qualified-physician workspace reuse retained PROGRAM payment/access.47 program/entry/guard tests +28 commerce cases PASS;83 fresh/additive migrations/no drift, API/app/dashboard/SDK types, dashboard ESLint, token validators and320/390/1440 intercepted browser checks PASS. One additive migration prepared, not applied to main/VPS; no real content/terms/recommendation activation or live payment. Evidence: logs/phase-12.md#f12-fe01-mz01--paid-mezaj-services-and-result-products. Next: owner visual review, deployment migration and actual approved content/terms configuration; no new batch.
+
+NOTIFICATION RENDER FIX (2026-10-25): Owner-authorized same F12-FE01 continuation on dev, sole /root; IMPLEMENTED_UNVERIFIED / REWORK. Added missing FINANCIAL type/Wallet icon to dashboard notifications page and panel, plus Bell fallback in both renderers. Owner runtime trace matches this defect; prior branch fix was absent from current dev. Source review complete; execution checks deferred, no commit/DONE. Owner refresh next; evidence phase-12 log.
+
+PROGRAMS PRICING CORRECTION (2026-10-25): F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Saved tariff and active scoped terms read; exact Persian toman input, preserved duration/TTL, explicit retention/terms review, translated blockers and publication/retry/409 states.19 isolated publication tests +3 price tests, API/dashboard types, SDK/lint/tokens and320/390/1440 browser checks PASS; Graphify AST updated. No schema/persistent database/policy activation/push/deployment. Evidence: logs/phase-12.md#programs-pricing-correction-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
+
+STATIC READY SERVICE TERMS (2026-10-25): F12-FE01-MZ01 scoped correction DONE/review PASS on dev, sole /root; claim RELEASED. Fixed owner-approved Persian terms require no manual policy setup; new ready-service publications use permanent account access. Retained consent/payment/ownership and historical/custom contracts preserved. Publication23 + purchase33, final paid-purchase33, API/dashboard/SDK types, responsive pricing320/390/1440 PASS; migration86 applied only to local sabz_zendegi, no drift. Evidence: logs/phase-12.md#ready-service-static-purchase-terms-2026-10-25. Broad F12-FE01 remains REWORK; no next batch/push/VPS/deploy.
+
 # وضعیت زنده اجرای پروژه
+
+
+READY SERVICE RETENTION INPUT REMOVAL (2026-10-25): same F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Reference input/helper/review copy removed; omitted reference accepted as null for ready services, no fabricated policy.21 publication+33 purchase tests, API/dashboard types, SDK/lint/tokens and three pricing browser cases PASS. Migration85 applied to configured local sabz_zendegi, status up to date and schema diff clear. Existing history/custom professional/price/terms/approval/ownership retained. Graphify updated; no VPS/push/deploy. Evidence: logs/phase-12.md#ready-program-retention-input-removal-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
+
+PROGRAMS COMPACT LIST / DIALOG (2026-10-25): same F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED. Compact responsive rows; native editor modal with independent scroll, sticky header, focus cycle/return and guarded Escape/backdrop; exact list scroll and form/price/Mezaj drafts retained. Five workspace browser viewports and three pricing viewports, dashboard types/lint/tokens and screenshots PASS. Graphify AST refreshed. No API/schema/payment/dependencies/DB/push/deploy changes. Evidence: logs/phase-12.md#programs-compact-list-and-editor-dialog-2026-10-25. Broad F12-FE01 remains REWORK; no next batch.
+
+PROGRAM SOURCE REMOVAL (2026-10-25): same F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS, sole /root on dev; claim RELEASED. Source picker/save gate and ready-service source dependencies removed; omitted references accepted; historical metadata preserved.20 definition+19 publication+33 purchase tests, API/dashboard types, SDK/lint/tokens and five responsive source-free creation/scroll cases PASS. Additive84 and pending83 applied to configured local sabz_zendegi at localhost:5432; no content/policy activation/VPS/push/deployment. Custom professional and current service approval/payment authority retained. Evidence: logs/phase-12.md#ready-program-source-removal-2026-10-25. Broader F12-FE01 remains REWORK; no next batch.
+
+PROGRAMS VISUAL/SCROLL CORRECTION (2026-10-25): same F12-FE01-MZ01 owner-authorized software continuation DONE/review PASS on dev, sole /root; claim RELEASED, baseline47d7579. Page-owned scrolling under unchanged dashboard shell, responsive service/editor surfaces, grouped fields and persistent content/Mezaj/price sections. Dashboard types/lint/tokens PASS; real wheel/End and emulated mobile touch reachability PASS375/390/768/1440 and844x390 landscape; pricing browser regression PASS320/390/1440. ui-ux-pro-max/ui-styling applied; Graphify AST refreshed. No backend/schema/dependencies/persistent data/deploy changes. Evidence: logs/phase-12.md#programs-workspace-visual-scroll-correction-2026-10-25; broader F12-FE01 remains REWORK, no next batch.
+
+NOTIFICATION RECIPIENT CONTEXT (2026-10-25): owner-authorized F12-FE01 continuation, sole /root on dev; IMPLEMENTED_UNVERIFIED / REWORK. Admin notification projection adds actual profile recipientDisplayName; dashboard page/header panel show recipient and identify the original patient-directed text. Only selected first/last name exposed; no patient response/data/permission/schema change. Source review complete, execution checks deferred, no commit/DONE. Owner review next; phase-12 log.
+
+PR29 FOLLOW-UP (2026-10-24): Owner-authorized same F12-FE01 continuation on codex/patient-entry-flow, /root coordinator, LOCAL_REVIEW_PASS / hosted 8643f17 wallet fixture failures corrected (wallet15 + product media49 PASS), new hosted PR checks pending; broader task remains REWORK. Scope: repair incomplete API test fixtures and exact account-security gate exceptions; independent self-reported onboarding without consent capture/policy prerequisite; reuse entry demographics, simplify patient UI and reduce unrelated dependencies; remediate Zod audit blocker. Root owns API/domain/migration/OpenAPI/app/tests and plan evidence. Worker /root/zod_security exclusively owns apps/web/package.json and pnpm-lock.yaml; no commit ownership. Expected gates: PostgreSQL regressions/full API suite, frontend/SDK types/tests, browser mobile/desktop, production audit and hosted PR checks. No global clinical-sharing/purchase consent removal, no assessment-policy activation, no new phase/batch.
+
+PATIENT ENTRY CORRECTIVE SLICE (2026-10-24): Same owner-authorized F12-FE01 continuation, sole /root on `codex/patient-entry-flow`; slice READY_FOR_OWNER_TEST. All incomplete accounts must supply name, surname, gender and birth date independently of assessment configuration; assessment cohort/source pinning remains unchanged. Fixed legacy attempt demographic repair, durable profile-only completion, and the rejected profile cutoff. Scheduling type/Swagger pagination blockers corrected. API emit/test types and all three frontend types PASS; isolated PostgreSQL12/12, targeted API11/11, app9/9 and SDK12/12 PASS; four intercepted desktop/mobile browser flows PASS. Actual root `pnpm dev` launched all services; API live/ready/chat and three frontends HTTP200. Both forward migrations deployed to owner-configured primary database after validated backup and populated-clone rehearsal; schema has no drift and patient/profile/submission/result fingerprints unchanged. No real assessment policy activated. Evidence: `logs/phase-12.md#patient-entry-final-correction-and-primary-migration-2026-10-24`; SpecKit package: `specs/011-patient-entry-flow/`. Feature changes remain uncommitted for owner review. Broader F12-FE01 remains REWORK/unchecked; next action is owner's manual entry-flow test, no new batch.
+
+PR28 RELEASE REHEARSAL (2026-10-23): Same F12-FE01-CHAT01, REWORK/unchecked. Hosted b725780 security, installer and all four artifact jobs PASS. Release rehearsal exposed an intermittent SIGPIPE141 in grep|head under pipefail; limited matches within grep and retained every ordering assertion. Disposable Linux non-root deployment/rollback rehearsal PASS. Full hosted verification remains pending; no merge/deployment/DONE or unrelated worktree changes.
+
+PR28 STABILIZATION (2026-10-23): Same CLIENT-INTEGRATION / F12-FE01-CHAT01, sole /root; REWORK/unchecked. Corrective review and local checks PASS in an isolated checkout: API/all frontend types, workspace lint, 349 frontend/SDK tests, 18 PostgreSQL chat-policy/rate/moderation cases and 29 configuration/auth cases. Legacy REST-write fixtures now use the private engine policy; no fallback restored. Next security update passes high/critical audit. PR28 targets dev; complete hosted CI rerun and owner clinical/browser/deployment acceptance remain pending. Ten unrelated original worktree changes preserved. Evidence: logs/phase-12.md#pr28-stabilization-and-verification-2026-10-23.
+
+PR28 CONTRACT FOLLOW-UP (2026-10-23): Hosted e7d2b36 passed security, installer, release contracts and all four artifact build/HTTP/security jobs. Main verification passed lint/types and 517 API tests, then exposed three stale contract/waiting-room assertions. Runtime Swagger metadata and actual exporter/client output synchronized; numeric gateway pagination retained, UUID metadata documented. Updated explicit-closure/preparation tests and 10 targeted contract/waiting-room cases PASS; API clean emit/test types and regenerated SDK12 cases PASS. Full hosted rerun pending; same task remains REWORK/unchecked, no merge/new batch.
+
+PR28 CLINICAL BOUNDARY (2026-10-23): Dependency review found an indirect legacy send in the isolated assigned-consultation suite and an actual branch regression: chat persistence had also removed assigned-physician clinical expiry bounds. Restored the original clinical grace/worklist predicates; chat still closes explicitly. Native-policy consultation fixture and all14 real PostgreSQL consultation/authorization/concurrency cases PASS on a second disposable database; clean API test types PASS. Hosted815a798 passed main pnpm test and reached build; final boundary correction requires its hosted rerun. Same ownership/REWORK, no clinical task completion or merge.
+
+CHAT AREA CHECKPOINT COMMITS (2026-10-23): Owner reports testing/review complete and requested area-separated commits on `codex/chat-ejabberd`. Backend `4acddcf`, patient/dashboard clients `f4d50c9`, consultation workspace `9d90ad9`, local/deployment runtime `4a9f823`. No push/PR. F12-FE01-CHAT01 remains REWORK/unchecked until the complete acceptance record is reconciled; unrelated booking, availability, calendar and settings changes remain unstaged in the worktree.
+
+PATIENT CHAT MOBILE KEYBOARD (2026-10-23): same F12-FE01 / F12-FE01-CHAT01, sole /root continuation, REWORK/unchecked. Patient chat room now follows VisualViewport resize/offset so its composer stays above the mobile keyboard; message region explicitly allows shrinking and scrolling after close. Source review only; no tests/typecheck/lint/build/browser automation/commit. Owner to check on a phone; IMPLEMENTED_UNVERIFIED.
+
+CHAT SASL CORRECTION (2026-10-23): same F12-FE01 / F12-FE01-CHAT01, sole /root continuation, REWORK/unchecked. Reported HTTP101/reconnecting traced to Stanza preferring X-OAUTH2 while native ejabberd JWT expects PLAIN password verification. Shared client disables OAuth mechanisms; engine advertises only PLAIN, local configuration reload succeeded. Ephemeral bridge probe rejected X-OAUTH2 and accepted PLAIN; after reload native engine reports two connected sessions and two occupants in the reported room. Actual patient/physician message delivery and owner acceptance remain pending. No build/tests/browser automation/commit; scoped runtime diagnosis only.
+
+CONSULTATION WORKFLOW (2026-10-23): owner-authorized same F12-FE01 / F12-FE01-CHAT01, sole /root; IMPLEMENTED_UNVERIFIED / REWORK, unchecked. Explicit audited physician/authorized ADMIN chat closure replaces completion/elapsed-time closure;15min preparation retained. Role-aware paginated visits and merged waiting view open one visit workspace with chat/exact encounter notes/existing prescriptions. Existing permissions/consents retained; source/client generation only. Tests/types/lint/build/Swagger parity/browser/delivery and runtime SDK rebuild deferred until owner review; no DB mutation/migration/commit/new batch. Handoff: logs/phase-12.md#consultation-workflow-and-explicit-chat-closure--implemented_unverified-2026-10-23.
+
+EJABBERD LOCAL STARTUP VERIFIED (2026-10-23): same CLIENT-INTEGRATION / F12-FE01, sole /root; scoped F12-FE01-CHAT01 on codex/chat-ejabberd from dev@c54d129, broader task REWORK/unchecked. Latest owner explicitly authorizes fixing and verifying the complete local launch before reporting. Actual pnpm dev cold/repeated start passed: ejabberd+chat PostgreSQL healthy; strict API/shared-client builds passed; API live/ready/chat200, web200, patient /chat200, dashboard /messages200. Native WebSocket features, private-room create/existing-room retry/member add-remove/disposable cleanup PASS;3 targeted regression tests PASS; policy without secret401. Ctrl+C stopped all owned servers/containers, released lock, retained keys/volumes. Fixed mod_muc allowpm option, enabled mod_muc_admin, validated v2 options object, TypeScript union/optional/SDK void return mismatches and nullable Swagger cursors; pinned Stanza browser metadata patch with Docker build inputs; fixed Windows API watcher scope/Turbo noninteractive launch. Offline Swagger exporter works with temporary key; scoped chat contracts match actual output; pre-existing unrelated commerce drift preserved. Frozen lockfile install check PASS. No application migration/seed, manual medical/financial mutation or VPS deployment; no final task commit/push/PR. Full authenticated patient-to-physician delivery, moderation/security matrix and broader acceptance remain pending. Exact evidence: phase-12 log local startup verification, deploy/ejabberd/README.md. No new batch.
+
+Sadad detail 500 correction (2026-10-22): owner reports deployed request detail failures. Same F12-FE01 /root continuation, REWORK/unchecked. Source identifies UNION text ID compared against UUID parameter; corrected detail comparison to text, retaining controller UUID validation and clinic/permission filters. IMPLEMENTED_UNVERIFIED, no server-log/runtime confirmation or tests/build/browser/Graphify executed. Preserve pre-existing patient sheet/profile changes; next: deploy correction and owner retry, then authorized real PostgreSQL regression.
+
+Sadad diagnostics checkpoint (2026-10-22): owner explicitly requests committing this slice on dev before deferred execution checks. Commit is a review checkpoint only; F12-FE01 remains REWORK/unchecked and IMPLEMENTED_UNVERIFIED. No push, final acceptance or next batch authorized.
+
+CLIENT-INTEGRATION Sadad diagnostics IMPLEMENTED_UNVERIFIED (2026-10-22): same active F12-FE01 /root sole writer/reviewer, owner-authorized continuation, REWORK/unchecked. Provider settings request search/filter/server pagination/detail, clinic-authorized commerce+billing read contracts, bounded secret-free adapter REQUEST/CALLBACK/VERIFY events using existing audit storage, additive client source and unexecuted regression sources. Historical saved codes visible; missing historical telemetry not reconstructed. Preserve financial decisions/permissions; no actual payment/provider/configuration changes or migration. Tests/typecheck/lint/build/browser/Graphify remain deferred until owner review. Handoff logs/phase-12.md#sadad-request-diagnostics--implemented-unverified; no DONE/task commit/new batch.
+
+CLIENT-INTEGRATION bottom-sheet handle focus correction (2026-10-22): F12-FE01 /root owner-authorized continuation, scoped review PASS. Shared handle uses grip-only focus indicator and transparent touch highlight; native focus and drag handlers retained. Actual notification sheet at390px: no button rectangle/overflow, keyboard grip indicator2px, Escape dismissal and trigger-focus restoration PASS. Real Safari/iPhone remains unverified; broader task REWORK/unchecked, no commit. Evidence phase-12 log below.
+
+INSTALLATION-05 / F12-T02-I05 DONE (2026-10-22), review PASS/claim RELEASED. New first-admin bootstrap uses input-selected user/clinic IDs to create exactly one clinic membership atomically with account/role/audit. Real PostgreSQL default/new-clinic fixtures with generated phones, concurrent retry, audit rollback, password/revocation preservation PASS. [Evidence](logs/phase-12.md#f12-t02-i05--initial-administrator-clinic-membership). Existing owner-repaired account remains unchanged; no historical access backfill. Next action: future installations use updated checkout; no next roadmap batch started.
+
+DEV-COMPILE-HEAP / F12-T02-CI04 DONE (2026-10-22), software review PASS/claim RELEASED. Compiler-only bootstrap heap640→1536MiB; actual clean full API emit at1536MiB PASS (10.9s), release contracts and dev retry/recovery rehearsal PASS. [Evidence](logs/phase-12.md#f12-t02-ci04--development-api-compiler-heap). Owner MSS test enabled transfer/all migrations; actual VPS startup/capacity still awaiting retry. No next batch started; broader acceptance unchanged.
+
+DEV-SYNC-DIAGNOSTICS / F12-T02-CI03 DONE (2026-10-22), software review PASS/claim RELEASED. Named phase/completion/failure logs, rsync list/progress/stat output and90s I/O idle timeout, SSH keepalives implemented and intercepted success/failure checks PASS. [Evidence](logs/phase-12.md#f12-t02-ci03--make-stalled-source-upload-observable-and-bounded). Actual VPS transfer/deployment incident remains REWORK; root cause unproven. Next action: inspect new dev-sync execution; no next roadmap batch started.
+
+DEV-SSH / F12-T02-CI02 DONE (2026-10-22), review PASS/claim RELEASED. Owner-approved dev commit/push restores real deployment and applies observed successful SSH compatibility options to SSH/rsync. Syntax, intercepted command composition, actionlint and release contracts PASS. [Evidence](logs/phase-12.md#f12-t02-ci02--restore-dev-deployment-with-working-ssh-options). Actual deployment result remains external; next action: inspect automatically triggered shared-dev workflow. No next batch started; broader F12-FE01 remains REWORK.
+
+PR27-CI / F12-T02-CI01 DONE (2026-10-22), claim RELEASED; hosted CI/security, installer and all release artifacts PASS on1827010; owner merged PR27. Local repair/review PASS: lint/types, dashboard build, frontend/client suites, all formerly failing API cases in clean disposable databases, historical migrations and fresh-schema drift. Corrective checkpoint to front updates PR27; Hosted review gate satisfied; prior pending statements below are historical. No agent merge, server data change or provider activation. Broader F12-FE01 remains REWORK. [Evidence](logs/phase-12.md#f12-t02-ci01--pr27-validation-repair).
+
+INSTALLATION-04 / F12-T02-I04 DONE, review PASS, claim RELEASED (2026-10-22), sole Codex /root. Docker host/none null IPAM.Config normalized; overlap/idempotency guards retained; unexpected CLI errors redacted.38 cases:36 PASS/2 existing tool skips; actual local Docker inspect reproduces old failure and corrected allocation/retry PASS. Fresh manager.py/archive ready. [Evidence](logs/phase-12.md#f12-t02-i04--docker-default-network-ipam). No live server change/push; next action: owner replaces manager.py in uploaded bundle and resumes saved installation. F12-FE01 unchanged; no next batch started.
+
+INSTALLATION-03 / F12-T02-I03 DONE, review PASS, claim RELEASED (2026-10-22), sole Codex /root. Nominal VPS RAM preflight tolerates10% below4/2GiB; owner3.8GiB dev passes,2GiB dev still fails; disk guard unchanged.36 installer cases:34 PASS/2 existing tool skips on Ubuntu24.04 WSL. Fresh archive/checksum ready. [Evidence](logs/phase-12.md#f12-t02-i03--nominal-vps-memory-preflight). No live server change/push; next action: owner replaces bundle and resumes saved install. F12-FE01 REWORK unchanged; no next batch started.
+
+INSTALLATION-02 / F12-T02-I02 DONE, review PASS, claim RELEASED (2026-10-21), sole Codex /root. Termius invalid-byte input now retries the same ordinary/hidden prompt; launchers force Python UTF-8 and failures report redacted type/location/errno. All34 tests PASS on disposable Ubuntu24.04, fresh bundle/checksum ready. [Evidence](logs/phase-12.md#f12-t02-i02--terminal-encoding-recovery). No live server change or push; next action: owner transfers the replacement bundle and resumes installation. F12-FE01 stays REWORK; no next task started.
+
+INSTALLATION-01 / F12-T02-I01 DONE, review PASS, claim RELEASED (2026-10-21), sole Codex /root. Standalone Ubuntu 24.04 amd64 installation bundle, environment coverage, independent production CD/manual or opt-in automatic promotion, first-admin bootstrap and encrypted backup/restore manager implemented and locally verified. [Evidence](logs/phase-12.md#f12-t02-i01--standalone-server-installation-and-private-repository-cd). No live server/provider/DNS/GitHub change or push. Existing F12-FE01 stays REWORK/unchecked. Next action: owner-selected clean-VPS installation and F12-T13 operational acceptance; no next batch started.
+
+CLIENT-INTEGRATION owner-requested checkpoint (2026-10-21): all pending initial-entry, Home journey/status, dashboard selection, migrations, generated contracts and verification evidence saved together as one cohesive F12-FE01 checkpoint at explicit owner request. Earlier uncommitted statements below describe historical implementation stages. Focused checks retain their recorded results; existing dashboard type failures and broader acceptance remain outstanding. Overall REWORK/unchecked; no release, policy activation, push or next batch.
+
+CLIENT-INTEGRATION initial entry flow IMPLEMENTED / OWNER REVIEW (2026-10-21): same F12-FE01 /root, prior uncommitted Home work preserved. Separate basic-details→configured free published assessment→result→Home; Persian birth date and minimal ice/glass UI, no medical intake/consent fabricated. New private patient API guard and App root gate, exact bound submission access, saved-answer resume, audited/pinned completion. Assessment dashboard «ورود اولیه» selects source/enables cohort from first activation; old accounts grandfathered, no real activation/source selection performed. Two additive local migrations applied;79 fresh migrations and6 real isolated PostgreSQL scenarios PASS,17 focused units PASS, App/API types PASS; browser-only flow/redirect/focus/mobile-desktop preview PASS. Whole dashboard typecheck has existing unrelated failures (revenue ES2017 BigInt, legacy query metadata and older assessment preview statuses); no new entry UI errors reported. No real medical/financial/user-profile writes or new commit; overall REWORK/unchecked. Evidence Phase12 entry-flow log and ADR0038.
+
+CLIENT-INTEGRATION Home setup/status/actions IMPLEMENTED (2026-10-21): owner continuation after clean checkpoint b93b3be/3103f37/109f243, same F12-FE01 /root. Three server-derived setup steps and matching actual onboarding form/review; successful Home-origin completion returns Home. Hero switches at authoritative isComplete to real latest-result/profile status, pending categories below. Exact payment/resume/grant/active-plan/couple/link selectors independent of historical preview; completed content/top-ups excluded, legacy nextAction retained. Additive generated Journey contract, no migration/real medical/payment write.12 focused units PASS, App types PASS/API type command completed without diagnostics; scoped real + browser-only simulated complete/error/empty/mobile/desktop checks PASS. Full PostgreSQL/clinical/financial acceptance and broad build/regression deferred, task REWORK/unchecked. New implementation uncommitted for owner review. Evidence: Phase12 log Home setup/status/actions.
+
+CLIENT-INTEGRATION shared patient frame (2026-10-21): owner supersedes separate Product480px and Store768px expansion. Same F12-FE01 /root continuation; Home/Store/Product use shared720px cap below1024 and1120px cap from1024. Purchase/cart bars inherit cap; Product retains vertical sticky-image panel. Scoped browser geometry matches at360/768/900/1024/1440; narrow Product scroll/sticky/no horizontal overflow confirmed. Broader task REWORK/unchecked; other tests/build/Graphify deferred, no commit. Evidence Phase12 log.
 
 > این فایل فقط وضعیت فعلی، ownership، blocker و handoff کوتاه را نگه می‌دارد. شواهد taskهای
 > تکمیل‌شده در [`logs/`](logs/README.md) ثبت می‌شوند؛ checklist کامل هر فاز نیز در فایل همان
@@ -6,13 +93,294 @@
 
 ## وضعیت کلی
 
-- آخرین به‌رورسانی: `2026-10-08`
+CLIENT-INTEGRATION operational orders workspace (2026-10-22): explicit owner continuation, same F12-FE01 /root sole writer/reviewer, REWORK/unchecked. IMPLEMENTED_UNVERIFIED; handoff logs/phase-12.md#operational-orders-workspace--implemented-unverified. Dashboard orders feature/API wrapper and relevant regression sources; commerce order read-only search/detail DTO/controller/service and existing billing integration wrappers; exclusive OpenAPI/client source; scoped plan evidence. Contract: keep operational/financial state machines and permissions, server search/pagination, order items/address/payment/refund visibility, in-page confirmations/forms (no browser prompt/confirm), stable idempotency on retries, source-backed allowed actions and separate reconciliation failures. No actual order/payment/refund writes by agent; no dependencies/migrations planned. Owner defers tests/typecheck/lint/build/browser/Graphify until review; no DONE/commit/new batch.
+
+CLIENT-INTEGRATION retained-result assessment deletion (2026-10-21): owner explicitly requires deleting an assessment while preserving patient results. Same F12-FE01 /root REWORK/unchecked. IMPLEMENTED_UNVERIFIED: assessment status/schema/additive migration/client source, admin deletion/list/lifecycle, patient historical questionnaire/resume, local delete UI, focused unexecuted test sources and scoped evidence. ADR0037; local migration20261021120000 applied successfully. Handoff logs/phase-12.md#assessment-delete-with-retained-results--implemented-unverified. Implement terminal DELETED tombstone, retain source/questions/submissions/results/FKs/audit, block new starts/publications; unlink only required booking-policy reference atomically with audit. No actual assessment deletion executed; all tests/types/lint/build/browser/Graphify deferred.
+
+CLIENT-INTEGRATION restore full assessment connections (2026-10-21): owner explicitly rejects removing full offering/connection settings for11+1; same F12-FE01 /root REWORK/unchecked. IMPLEMENTED_UNVERIFIED: assessment-connections.tsx, parent tab label and scoped evidence only. Handoff logs/phase-12.md#restore-full-assessment-settings--implemented-unverified. Restore full form access and retained state, correct11+1 offering engine, retain actual draft-save API and ADMIN ordinary publication without physician approval IDs; explicitly distinguish unsupported11+1 paid activation/band-guidance/couple delivery. No financial/clinical authority migration, no fake compatibility or actual publication. All execution checks remain deferred.
+
+CLIENT-INTEGRATION ADMIN educational11+1 publication (2026-10-21): explicit owner instruction supersedes prior general physician gate; all ordinary11+1 authoring/publication operations belong to existing ADMIN. Same F12-FE01 /root, REWORK/unchecked. IMPLEMENTED_UNVERIFIED: admin publication service/DI, free11+1 access and result provenance, dashboard readiness/connection wording, focused unexecuted regression sources and scoped ADR/status/evidence. ADR0036 records owner approval; handoff logs/phase-12.md#admin-111-publication--implemented-unverified. Preserve existing commercial/paid/legacy physician contracts and retained reviews; no role expansion, fabricated clinical approval or actual publication. Tests/types/lint/build/browser/Graphify deferred.
+
+CLIENT-INTEGRATION assessment connection simplification (2026-10-21): owner asks why complex and reports services.data.filter crash. Same F12-FE01 /root assessment ownership, no other batch; REWORK/unchecked. IMPLEMENTED_UNVERIFIED: assessment-connections.tsx, connection tab wording in assessment page, assessment service wrapper/regression source and scoped plan evidence only. Handoff logs/phase-12.md#assessment-connection-simplification--implemented-unverified. Fix real paginated services contract; hide unsupported schema3 commercial/guidance/couple forms, retain legacy functions behind optional controls, explain physician review accurately. ADR0022 requires physician approval for commercial publication; previous continuation extended this to general11+1, which is a separate product-policy decision and is not silently changed here. No backend authority/deletion/publication change; preserve concurrent Store edits. All tests/types/lint/build/browser/Graphify remain deferred.
+
+CLIENT-INTEGRATION 11+1 publication/runtime (2026-10-21): IMPLEMENTED_UNVERIFIED; handoff logs/phase-12.md#assessment-111-publication-and-small-screen-hold--implemented-unverified. Local additive migration20261021100000 applied successfully; no real review/publication/submission/deletion performed. Physician approval API exists, physician UI does not; actual content and qualified approval remain release prerequisites. Explicit owner continuation after checkpoint commits; same F12-FE01 /root sole writer/reviewer, REWORK/unchecked. IMPLEMENTED: local hold control (stable label width,touch gesture/pointer capture/no-focus-scroll); API versioned domain/admin/protocol/access/patient service/DTO and related existing modules; additive protocol-review compatibility migration; patient assessment wizard/result/wrappers only; dashboard publication readiness; generated OpenAPI single writer; focused test sources and scoped plan evidence. Contract: retain scalar/v2 behavior, enable schema3 publication only after structural completeness and exact qualified physician protocol/active policy approval; no fabricated clinical key/content or actual publication/review/patient write. Authoritative server11+1 decision on saved answers,partial save/resume,at-most-one correct follow-up,immutable idempotent educational result,no fake percentages. Paid/couple release constraints retained. Tests/types/lint/build/browser stay deferred; no new batch/commit/DONE.
+
+CLIENT-INTEGRATION owner pending checkpoint (2026-10-21): pending Store work saved on current front branch as4f5f363 plus this documentation checkpoint, at explicit owner request. Assessment changes already c797d07/0629386/45e24b5. No tests/build/browser or acceptance/push; same F12-FE01 REWORK. Next authorized work: repair narrow-screen hold control and complete real11+1 assessment publication/runtime.
+
+CLIENT-INTEGRATION owner-requested assessment checkpoints committed (2026-10-21): c797d07 API/guarded deletion/migration/OpenAPI;0629386 dashboard modal/hold-to-delete/client. Source/staged/whitespace review only; prior explicit tests/types/lint/build/browser/Graphify deferral preserved. All retained changes saved with evidence in Phase12 log; IMPLEMENTED_UNVERIFIED and full F12-FE01 REWORK/unchecked, no final acceptance/push/new batch.
+
+CLIENT-INTEGRATION assessment hold-to-delete (2026-10-21): IMPLEMENTED_UNVERIFIED; handoff logs/phase-12.md#assessment-hold-to-delete--implemented-unverified. Same F12-FE01 /root sole writer/reviewer. Owner replaces browser deletion confirmation with press-and-hold on delete. Owned: assessment page/new local hold-delete button and focused unexecuted regression source, coordinator status/phase/log. Contract: deliberate continuous primary-pointer or Enter/Space hold1.5s, visible progress; release/leave/cancel/blur/hidden/disabled/unmount cancels; click/hover alone never deletes; one callback per press. Existing API hash/reference/auth protections unchanged, no record deleted. Tests/types/lint/build/browser remain deferred; REWORK/unchecked, no automatic commit.
+
+CLIENT-INTEGRATION assessment delete error routing (2026-10-21): IMPLEMENTED_UNVERIFIED. Central allowlist fixed; scoped read-only database diagnosis found5 archived versions,all with existing submissions (some also Mezaj results). Handoff logs/phase-12.md#assessment-delete-error-routing--implemented-unverified. Same F12-FE01 /root. Owner reports generic409 on delete. Source confirms new delete error codes absent from central allowlist, so HTTP filter replaces them with CONFLICT. Narrow extension to common/errors/api-error.ts and its enum in OpenAPI/generated source, focused filter regression test source, read-only assessment reference diagnosis if needed. Preserve all deletion/reference safeguards and previous changes. No delete attempt or automated execution checks; task REWORK/unchecked.
+
+CLIENT-INTEGRATION archived assessment deletion (2026-10-21): IMPLEMENTED_UNVERIFIED. Local migration20261021090000 applied successfully; no record deleted. Handoff logs/phase-12.md#archived-assessment-deletion--implemented-unverified. Owner explicitly extends deletion to RETIRED versions. Same F12-FE01 /root sole writer/reviewer, REWORK/unchecked; preserve modal/draft-delete changes. Owned: same assessment page/wrapper/API/audit/tests/OpenAPI paths plus a new additive SQL trigger migration and scoped plan handoff. Contract: DRAFT or RETIRED only, exact current hash, clinic/permission/locks/audit, all existing ON DELETE RESTRICT references retained; PUBLISHED remains undeletable and archive is still separate. No record deletion executed by agent. Existing migrations never edited. Tests/types/lint/build/browser remain deferred; migration activation must be accurately reported, no automatic commit/DONE.
+
+CLIENT-INTEGRATION assessment modal/delete (2026-10-20): IMPLEMENTED_UNVERIFIED, owner review pending at http://localhost:3002/assessments; handoff logs/phase-12.md#assessment-modal-and-draft-deletion--implemented-unverified. Same F12-FE01 /root sole writer/reviewer, REWORK/unchecked. Owner requests native modal management over retained assessment list and delete action on main list. Owned paths: assessment page/new dialog/wrapper and focused test sources; API admin controller/DTO/service, audit action, focused auth/deletion tests; exclusive OpenAPI/client generation; coordinator status/phase/log. Contract: DELETE only unreferenced DRAFT with expected current contentHash, clinic/permission/row-lock/audit preserved; published/retired and any referenced version retain history, use existing archive for published. Existing database Restrict/immutability controls reused, no migration/dependency/clinical release change. No real delete executed. Tests/typecheck/lint/build/browser remain deferred; no automatic commit or DONE.
+
+CLIENT-INTEGRATION owner-requested checkpoint commits (2026-10-20): explicit instruction to commit all current changes separately authorizes checkpoint commits before deferred verification; no completed-task acceptance is implied. Shell/Home db6a8fd; product lifecycle13fcc80; product workspace109b7c0; assessment API/contracts f416b72; assessment dashboard ebf93c4; system-design artifacts e9d0282; this documentation commit records status/contract/handoff. F12-FE01 and batch remain REWORK/unchecked, implementation stages IMPLEMENTED_UNVERIFIED. Tests/typecheck/lint/build/browser/Graphify remain deferred, no push. Next action is owner dashboard review, not another task/batch.
+
+CLIENT-INTEGRATION Mizaj 11+1 authoring (2026-10-20): IMPLEMENTED_UNVERIFIED, owner review pending at http://localhost:3002/assessments. Contract/handoff: plan/assessment-mizaj-11plus1.md and logs/phase-12.md#mizaj-111-authoring--implemented-unverified. Owner supersedes prior 11+4 proposal. Same F12-FE01 /root sole writer/reviewer, overall REWORK/unchecked. Implemented dashboard authoring plus real ADMIN draft validation/preview: exactly11 main questions, at most1 targeted follow-up for exact tied candidate set (primary or secondary); no tie means no follow-up; absent/multiway/unresolved cases explicit, no forced clinical certainty. Owned: assessments dashboard feature/wrapper; API domain new versioned draft and existing admin service/DTO; API OpenAPI/generated source single writer; focused unexecuted domain test source; plan status/phase/log and scoped contract note. Existing v1/v2 contracts/versions/release/physician/privacy controls preserved. No patient runtime/release change in this dashboard-first stage, no migration/dependency/Graphify rebuild/agents/final commit. All tests/typecheck/lint/build/browser still deferred for owner review. Clinical question/mapping approval remains required, no invented follow-up content.
+
+CLIENT-INTEGRATION assessment administration (2026-10-20): IMPLEMENTED_UNVERIFIED, awaiting owner review at http://localhost:3002/assessments; source/contract review only, no execution PASS claimed. Handoff: plan/logs/phase-12.md#assessment-administration--implemented-unverified. Explicit owner continuation, same F12-FE01 / CLIENT-INTEGRATION, sole Codex /root writer/reviewer; preserve all shell/store checkpoints. Scope: current /assessments authoring and supported ADMIN assessment APIs, all schema-v1 question types/sections/result bands; preserve/edit bounded schema-v2 draft and exact synthetic preview; real version/policy/results pagination and related offering/protocol/commercial/guidance administration where authorized. Ownership: apps/dashboard/src/features/assessments/**, src/lib/assessment-api.ts and directly related assessment wrapper/test sources; admin-assessments.controller.ts query documentation plus packages/api-client/{openapi.json,src/schema.generated.ts} exclusively for the confirmed missing list-query metadata (source generation only, no API build); coordinator STATUS/Phase12 log/checklist; task-local System Design DOCX from the explicitly invoked retained template. Existing backend behavior is the contract baseline; no clinical algorithm, consent/legal text, physician authority, release gate or patient answer data may be invented or bypassed. No new batch, agents, Graphify rebuild, SpecKit chain or final commit. Tests/typecheck/lint/build/automated browser remain deferred; source/contract and document-only render review allowed. Overall task stays REWORK/unchecked pending owner review/final verification.
+
+CLIENT-INTEGRATION Store product workflow (2026-10-20): IMPLEMENTED_UNVERIFIED, pending owner review at http://localhost:3002/store; source/contract review only. Handoff: plan/logs/phase-12.md#store-product-workflow--implemented-unverified. Explicit owner continuation of same F12-FE01 /root sole-writer batch; stage 1 dashboard remains implemented/unapproved. Scope: image-led grid/list catalog and one product workspace for base fields, existing protected image workflow, editorial content/review and SKU/inventory; restore archived product to DRAFT via existing PATCH contract. Owned paths: apps/dashboard/src/features/store/{store-page,product-catalog,product-content-editor,product-image-editor,product-workspace,product-thumbnail,product-sku-editor}.tsx and directly related catalog helpers/wrappers; apps/api/src/modules/commerce/catalog/admin-commerce-catalog.service.ts (only ARCHIVED→DRAFT lifecycle), directly affected focused test source if needed; coordinator STATUS/Phase12 checklist/log. Existing CSS shell/dashboard work preserved; no schema, generated-client, lockfile or permission changes. Source/contract review only; tests/typecheck/lint/build/browser and graph update remain deferred per owner. F12-FE01 stays REWORK/unchecked; no final commit or other feature batch.
+
+CLIENT-INTEGRATION dashboard archive stage 1 (2026-10-20): explicit owner extension of F12-FE01, same batch and sole Codex /root coordinator/writer; no new batch or delegated work. Status: IMPLEMENTED_UNVERIFIED / awaiting owner visual review, broader F12-FE01 remains REWORK/unchecked. Source/contract review complete for this stage; deferred runtime gates have not run. Preview: http://localhost:3002/dashboard. Handoff: plan/logs/phase-12.md#dashboard-archive-stage-1--implemented-unverified. Owned paths: apps/dashboard/src/app/{layout.tsx,globals.css}, src/components/layout/**, src/components/shared/kpi-card.tsx, src/features/dashboard/**, directly required src/lib/dashboard-home-reporting.ts, public/fonts/vazirmatn/**; coordinator plan/STATUS.md, phases/12-PRODUCTION-HARDENING.md and logs/phase-12.md. Archive is read-only visual reference. Preserve all current navigation/features, operational clinic scope, ADMIN/session/permissions and existing API contracts. No backend/schema/generated client/dependency changes; no products/CRM/orders/messages/settings feature redesign in this stage. Stop after shell + real-data Home preview for owner visual review. Tests, typecheck, lint, build and automated browser verification deferred by owner until implementation and owner review; source/contract review only. No DONE, final task commit or graph rebuild/update. Existing couples work and test-results preserved. Follow-on order: products, CRM, orders (server search/pagination), messages, settings.
+
+CLIENT-INTEGRATION shared glass navigation review PASS (2026-10-20): owner-authorized F12-FE01 shared-dock scope, sole /root. Unified Home/store/profile surface/font/active state,56% ice glass/actual28px blur, centered720px maximum. Browser390/1440 confirms identical computed styles/widths, correct active routes and0 overflow; types/diff/AST update PASS. Prefix order corrected after inspecting emitted CSS. Destinations/badges/product exclusion/focus/safe area/page themes preserved. Evidence Phase12 log; broader task remains REWORK/unchecked,no new batch/final task commit.
+
+CLIENT-INTEGRATION Home integrated redesign READY FOR OWNER VISUAL REVIEW (2026-10-20): previous visual checkpoint superseded by owner request. Same F12-FE01 /root sole writer. Unified ice/blue/teal Home and real glass layers, IRANYekanX400/500, full-width mobile copy/short actions, personal access hub and all lower sections redesigned. Independent activity UI removed; Journey/domain helpers/data retained. Original JPEG already truncates both lateral contours; separate imagegen decorative transparent full-contour PNG prepared, original unchanged/provenance documented. All17 actions ×3 widths,320–1440 layout, keyboard/modal/error/content/profile-isolation checks PASS; types/build and176 tests with external temporary alias config PASS. Full-page reviewed screenshots/evidence: [Phase12 log](logs/phase-12.md#f12-fe01--integrated-home-corrective-visual-review). Unrelated couples work/protected files preserved; full task stays REWORK/unchecked, no new batch/final task commit.
+
+CLIENT-INTEGRATION Home brain-glass checkpoint review PASS (2026-10-20): same F12-FE01 /root sole writer/reviewer. Original owner brain JPEG copied byte-for-byte, no crop/recompression/filter/opacity change; cream matte integrated into Home-only glass/ice surface. Responsive320–1440, all17 Journey actions, loading/error/retry/empty/populated previews, modal focus and profile isolation PASS. Types/production build PASS; default Vitest hits an existing billing alias-resolution failure, temporary external alias config passes176/176 without product/test-config edits. Screenshots and evidence: [Phase12 log](logs/phase-12.md#f12-fe01--home-blue-brain-glass-checkpoint). Unrelated couples edits/protected files preserved. Full F12-FE01 stays REWORK/unchecked; no new batch/final task commit.
+
+CLIENT-INTEGRATION ordered Mezaj commerce (2026-10-20): explicit owner request extends same F12-FE01 sole /root write-set to commerce API/schema/migration/generated client/dashboard/app/tests. Freeze: four canonical codes damavi/safravi/balgami/sodavi, ordered 4×4 including repeats; admin-configured exact published MEZAJ version+band → collection, bounded active product membership and optimistic revisions; self-only audited recommendations from latest accessible valid result, no inference from titles/scores, no clinical scoring change or fabricated assignments. Preserve all existing storefront/profile/wallet work. Task REWORK until PostgreSQL/contract/consumer/browser gates pass.
+
+Ordered Mezaj checkpoint review PASS:74 fresh/additive migrations,28 isolated PostgreSQL API cases/no schema drift, API/test and app/dashboard types, generated contract/client freshness/5 tests, app176 and dashboard152 tests, app46/dashboard32 production builds,14 general-store and6 personalization browser cases PASS. Final dashboard request-state/ref refinements pass targeted ESLint/types and2 desktop/mobile editor regressions; source references fetched in batches. Local sole pending migration deployed; live docs route present. No existing OpenAPI path/schema semantics changed. [Contract/operator setup](commerce-mezaj-v1.md), [finding dispositions](store-design-audit-2026-10-20.md), [evidence](logs/phase-12.md). Real product/source assignments remain intentionally empty for qualified configuration in the new Store tab; no clinical mappings seeded. Full F12-FE01 remains REWORK/unchecked for broader acceptance, no final task commit/new batch.
+
+CLIENT-INTEGRATION full storefront (2026-10-20): owner goal authorizes completing store design/frontend end to end. Same F12-FE01 sole /root write-set extends all store routes/components and necessary shared AppShell/address presentation. Preserve existing edits, no fabricated commerce/clinical data, no schema/provider/financial-rule changes. Work covers audit06–20 and catalog→SKU→cart→delivery→payment/order UI; evidence required per route/state. Full goal active and F12-FE01 REWORK/unchecked.
+
+CLIENT-INTEGRATION store first fixes (2026-10-20): owner authorizes initial audit fixes. Same F12-FE01 sole /root coordinator/writer; scope findings01–05: remove public test offers, guard catalog request ordering/paginate, shared validated delivery selection, native modal BottomSheet and notification wrapper migration. Shared modal consumers included for regression verification. Preserve current profile/wallet edits and protected files; no backend/API/schema/provider changes or real financial writes. Review gate PASS: types/170 tests/build and6 desktop/mobile E2E tests; findings01–05 fixed,06–20 pending. Evidence in store-design-audit-2026-10-20.md. Full task REWORK/unchecked, no final task commit.
+
+CLIENT-INTEGRATION store design audit (2026-10-20): owner explicitly invokes5 design/UI skills for a complete store review. Read-only product-code audit complete:20 prioritized findings (5P1), live320/390/1280 and fully intercepted search/pagination/address/cart/checkout scenarios. Search stale-result overwrite, inaccessible remaining catalog, delivery-state mismatch and modal focus escape reproduced; fake-offer content/desktop width/font inconsistency documented. No purchase/payment/address write, code fix or commit. Existing profile/wallet edits preserved. [Full report](store-design-audit-2026-10-20.md); F12-FE01 remains REWORK/unchecked.
+
+CLIENT-INTEGRATION wallet typography (2026-10-19): owner requests wallet cleanup/font selection. Same F12-FE01 /root wallet UI scope: IRANYekanX400/500 body, IRANSansFaNum400 balance/transaction amounts/topup input/presets, calmer white balance panel and compact hierarchy. Types/23 targeted wallet tests PASS; intercepted browser fonts/large BigInt exactness/320-1280 no overflow/input formatting PASS, no payment writes. Profile preview preserved. Full task REWORK/unchecked.
+
+CLIENT-INTEGRATION profile font sizing (2026-10-19): owner rejects oversized/heavy Yekan preview. Same F12-FE01 profile-only scope: title18px, name16px, menu13px, percentage20px; replace bold/extrabold/semibold with true Medium500 and scope --font-weight-medium:500 because global Medium token was600. Browser computed sizes/500 and320/390/1280 no overflow PASS. Home/global tokens untouched. Full task REWORK/unchecked.
+
+CLIENT-INTEGRATION profile font preview (2026-10-19): owner requests IRANYekanX only on /profile. Same F12-FE01 /root scope; reuse font-iranyekanx utility and remove profile percentage Digikala override. Intercepted browser confirms Yekan heading/menu, both400/500 faces loaded,320/390/1280 no overflow; Home computed family unchanged. No API/auth/other route font changes. Two-line presentation preview plus evidence uncommitted; full task REWORK/unchecked.
+
+CLIENT-INTEGRATION commit handoff (2026-10-19): owner explicitly requested all remaining changes committed in separate related sections.13 implementation/config checkpoints plus documentation handoff; final combined31 files/165 tests and production build PASS, exact staged-path/diff gates PASS. All reviewable current changes are saved locally; full F12-FE01 remains REWORK/unchecked, no remote push/provider activation. Commit/file map and next action: [commit handoff](logs/client-integration-commits-2026-10-19.md). Earlier no-commit notes are historical and superseded by this owner request, not a change to the acceptance gate.
+
+CLIENT-INTEGRATION loading simplification (2026-10-19): owner supersedes previous heart/copy loader. Same F12-FE01 /root scope: removed AppShell timed2.4s SplashScreen plus unused splash store state; pending session now only3 small brand-blue dots, accessible hidden label and reduced-motion. Auth/errors/retry unchanged. Types/7 session tests/build PASS; fully intercepted auth→profile-pending→profile→store confirms1 refresh/no branded splash/no second full-screen loader;503/retry PASS. Full task REWORK/unchecked.
+
+CLIENT-INTEGRATION session presentation (2026-10-19): same F12-FE01 sole /root frontend scope. SessionGate checking/anonymous now has white loading view, heart icon/orbit and friendly Persian copy; real unavailable stays explicit with working retry, no indefinite spinner or auth-policy change. Typecheck and intercepted browser checking→503→retry→checking→503,320/390/1280 and reduced-motion PASS. Evidence: service-screens-verification.md. Full task remains REWORK/unchecked.
+
+CLIENT-INTEGRATION product-rail arrows (2026-10-19): same F12-FE01 sole /root frontend scope. Shared StoreCollection now overlays44px native previous/next buttons at rail edges, only for directions with hidden content; preserves touch/mouse drag and cancels inertia on arrow navigation. Typecheck/diff and live320/390/1280 RTL start/middle/end/Enter/resize plus single-product no-overflow DOM scenario PASS. Evidence: service-screens-verification.md. Full task remains REWORK/unchecked; no final task commit.
+
+CLIENT-INTEGRATION price-font preview (2026-10-19): same F12-FE01 sole /root frontend/assets scope. Downloaded three owner-supplied font URLs unchanged; self-hosted IRANSansFaNum is active for shared price components, IRANYekanX400/500 registered for later use. Browser FontFaceSet load/check all3 PASS; live320/390/1280 prices use requested family without overflow. No pricing/API change; full task remains REWORK/unchecked. Provenance/hashes: apps/app/public/fonts/README.md.
+
+CLIENT-INTEGRATION store refinement (2026-10-19): same F12-FE01 owner/write-set; owner-supplied card structure and white app/catalog/gallery surfaces implemented. Types/165 tests/build PASS; browser320/390/1280 white surfaces/no overflow/44px favorite and detail navigation PASS. Catalog has only currentPriceToman; no invented discounts. Existing offer rail remains display-only TEST_OFFERS, not connected promotions. Evidence: service-screens-verification.md. Full integration stays REWORK; no final task commit.
+
+- آخرین به‌رورسانی: `2026-10-20`
 - Milestone فعال: `Milestone E — Phase 12 IN_PROGRESS`
 - فاز فعال: `Phase 12 — Production Hardening`
 - وضعیت فاز فعال: `IN_PROGRESS`
-- batch فعال: `ندارد`
-- task فعال: `ندارد`
+- batch فعال: CLIENT-INTEGRATION — REWORK; Home slice and targeted verification PASS 2026-10-19, full client acceptance pending; Codex /root sole writer/reviewer, no subagents.
+- task فعال: F12-FE01 — Home and linked service-screen design, notifications and wallet clarification implemented. Latest app types/165 tests/build and scoped browser checks PASS. [Destination design evidence](service-screens-verification.md), [connection limitations](home-client-verification.md). Preserve unrelated .gitignore and protected slider-data.ts/justforcheck.md; full integration remains REWORK/unchecked, no final task commit/new batch.
 - blocker فعال: `F12-T05 BLOCKED — Liara WAL/archive/restore capability evidence is absent.`؛ `F12-T07 BLOCKED — written Liara managed-secret-store/rotation capability evidence is absent.`
+
+## Patient Journey continuous backend execution (2026-10-16)
+
+ASSESSMENT-VERIFICATION (2026-10-19): owner explicitly requested functional checks of individual/couple assessments; this supersedes the earlier test deferral for this scope. Existing client tests/typecheck, read-only live browser checks, fully intercepted synthetic browser scenarios and real PostgreSQL isolated suites executed. Findings/evidence and exact next action: [assessment-verification](assessment-verification.md). Product source unchanged during review; no real patient write/payment/policy publication/provider/production change. Keep F12-FE01 REWORK and continue this batch only; no final task commit.
+
+
+
+CLIENT-INTEGRATION Home guide refinement (2026-10-19): owner rejects the verbose service-process accordion. Remove it, use a direct services heading and a light onboarding action only when the actual initial profile is incomplete; no generic step card or fabricated completion. Same F12-FE01 Home/CSS write-set; types/diff/live390px and incomplete-to-complete browser fixture PASS. No broad test/build repeat; evidence Phase12 log. Full integration stays REWORK/unchecked.
+
+CLIENT-INTEGRATION destination design (2026-10-19): owner authorizes completing user-facing design of Home destinations. Same sole /root F12-FE01 frontend write-set, shared patient service layout and primary assessment/couples/booking/program/appointments/treatment/chat/health-record/orders/articles routes plus relevant detail/header states. Preserve financial/consent/API authority and existing Store/Wallet design, no new dependencies/backend/schema/provider or patient writes. Design slice ready for owner review: app types/165 tests/final build and live/synthetic mobile/desktop navigation/error/populated states PASS. Exact scope: [service-screens-verification](service-screens-verification.md). Full F12-FE01 remains unchecked/REWORK, no final task commit.
+
+CLIENT-INTEGRATION notification sheet (2026-10-19): owner requests Home notification controls open a bottom sheet. Same F12-FE01 frontend write-set; reuse notification center for page/sheet, native modal focus/Escape semantics and refresh unread indicator after successful read complete. Types/build/15 related tests and browser open/read/close/Escape/backdrop/drag/focus checks PASS. Full integration remains REWORK; evidence Phase12 log.
+
+CLIENT-INTEGRATION notification fix (2026-10-19): owner-reported notifications crash caused by missing FINANCIAL category in frontend types/icon/setting labels. Same F12-FE01 frontend scope: shared exhaustive presentation plus runtime fallback, both notification pages and focused regressions complete.15 targeted tests/app types and7-category browser/read/preference scenarios PASS; evidence Phase12 log. No backend/schema/data/financial changes.
+
+CLIENT-INTEGRATION wallet clarification (2026-10-19): owner-reported exact TOPUP payment investigated using read-only local DB lookup (browser tool has a different patient session). Existing TOPUP prohibition on spending the same wallet is correct; improve shared chooser explanation/units/recovery and retain a created top-up reference on gateway error. Same F12-FE01 frontend write-set; no financial/provider/database mutation. Focused18 tests/types/browser fixtures PASS; shared top-up explanation and failed-gateway intent reference fixed, wallet spending for service intents verified with intercepted requests. Evidence Phase12 log. No live financial action or final task commit.
+
+CLIENT-INTEGRATION Home handoff (2026-10-19): Home redesign/real destinations/shared blue patient theme and prior assessment findings corrected. App typecheck,148 tests/28files,production build and targeted live/synthetic browser verification PASS. Exact backend connection matrix and limitations: [home-client-verification](home-client-verification.md). Couple policy still503 (unpublished policy); commercial catalogs empty; real bank and two-account live acceptance pending. Home slice ready for owner review, F12-FE01 remains REWORK/unchecked/no final commit; continue this batch only.
+
+CLIENT-INTEGRATION handoff (2026-10-19): F12-FE01 IN_PROGRESS / implementation prepared for owner review, not accepted. Home/Journey, historical/revision-aware assessment wizard/result/guidance, paid individual purchases, independent couple linking/invitation/consent/shared purchase/joint education, ready/custom programs/care/delivery, shared digital payment routing, real security sessions, appointment-specific assessment sharing and chat appointment selection implemented. Existing onboarding/native clinical/tracking/Store bindings retained; legacy raw appointment/follow-up requests now use session-aware transport. Scope/routes/remaining acceptance: [client-integration](client-integration.md). No automated tests, browser, build, typecheck, live provider or DB operation run; no task commit/DONE. Next action: owner's interface review, then explicitly requested verification/fixes on this same task; do not start a new batch. Historical banner ownership released by already-present commit 7b7bd43.
+
+CLIENT-INTEGRATION claim (2026-10-19): F12-FE01; baseline 7b7bd43; sole Codex /root coordinator/writer/reviewer, no subagents. Owner authorized continuing patient-client implementation across all sections before tests; automated/browser/build/typecheck verification deferred until owner review and subsequent instruction. Frozen inputs: existing checked-in OpenAPI and accepted Patient Journey/assessment/couple/program/wallet contracts. Own apps/app/src client/UI integration, plan/client-integration.md inventory, this STATUS, Phase12 checklist/log. No API/schema/generated contracts/dependencies/provider/deploy/persistent DB changes. Preserve pre-existing .gitignore change, slider-data.ts and justforcheck.md. Static source review during implementation; exact pending validation recorded, no final commit/DONE before acceptance. Prior STORE-BANNER-REVIEW implementation is now committed in 7b7bd43 (verified against Git history); its stale active ownership is released, without claiming new verification.
+
+STORE-BANNER-REVIEW READY_FOR_REVIEW (2026-10-19): F12-T12-R13; baseline6ac21e8 unchanged; sole /root owner/reviewer; main review PASS. Fixed pre-commit R2 overwrite/deletion, missing durable orphan cleanup, stale concurrent mutation, arbitrary storage-key attachment/public read, post-I/O unpublication race, internal URL/null handling, stale-token fetch, unbounded Blob URL cache, upload confirmation/reselection, misleading customer preview and React/lint failures.76 focused tests/types/generated/targeted lint PASS; new localhost55419/store_banner_review_test clone only. All existing changes and corrections remain unstaged/uncommitted under explicit owner request. No new schema/migration/install/browser/live R2/provider/deploy/persistent DB change. Evidence Phase12 log; no new task started while this reviewed batch is held for owner review/commit instruction.
+
+PJ-M01 DONE/review PASS/released (2026-10-18): F12-PJ-M01; sole /root owner/reviewer. Original 11-question/44-option owner CSV preset, 16 unreviewed educational profiles, bounded dimension draft storage and admin synthetic scoring preview; ties/insufficient evidence explicit.65 focused API/domain tests plus client5/API+test/app/dashboard types and generated contracts PASS. Actual PostgreSQL clone only; audit/locking/hash/roles/clinic/v1 regression and legacy-editor downgrade prevention verified. No patient/runtime/payment/schema/clinical release. Evidence Phase12 log; usage plan/mizaj-draft-preview.md. No next frozen/unblocked patient batch; separately define runtime/provenance/SQL/approval integration before patient use.
+
+PJ-M01 CLAIMED (2026-10-18): F12-PJ-M01; baseline front@810e2a5; sole /root writer/reviewer. Dependencies R03/G01/R04 accepted. Own new assessments/domain dimension draft validator/scorer and candidate preset, narrow existing admin assessment service/controller/DTO/audit action, one stable API error, focused domain/actual HTTP tests and exact existing authoring clone guard, narrow CI test inclusion, official OpenAPI/client additive delta and scoped governance/usage/evidence. No schema/migration/patient engine/payment/protocol/source CSV mutation/actual medical approval/frontend/provider/persistent DB. Preserve existing Store/banner/media/.gitignore and generated deltas. Dedicated new disposable PostgreSQL clone only. Required bounded validation/ties/16-profile coverage/exact hash and state/roles/clinic/no answers stored/atomic audit/v1 regression/generated/types review before isolated task commit. Runtime dimension integration is separately scoped; no clinical validity or whole-product completion claim.
+
+PJ-R04 DONE/review PASS/released (2026-10-18): F12-PJ-R04; sole /root owner/reviewer. Actual paid private-context leak reproduced; one SQL relation predicate aligns generic admin patient detail with accepted P02. Two new wallet/engine privacy cases;103 focused API6 files/types/OpenAPI PASS, evidence Phase12 log. Original/accepted/persistent DBs and unrelated user/banner/generated work preserved. No schema/API/default grant changes. Next safe step: actual qualified clinical/owner legal/retention/configuration release and controlled provider acceptance; no further scoped backend batch currently frozen/unblocked. Optional recommendation/result-review expansion needs a separate contract. No whole-backend/frontend/production acceptance claim.
+
+PJ-R04 historical claim (accepted/released 2026-10-18): F12-PJ-R04; baseline front@16b7f70; sole /root writer/reviewer, no subagents. Frozen admin-paid-assessment-projection-v1; enforce existing P02 private-context exclusion, not a new permission policy. Own narrow patients/admin/admin-patients.service.ts assessment relation query, existing assessment-purchase.integration.spec.ts and couple-assessment-paid.integration.spec.ts focused actual-fixture assertions, exact auth-test-support disposable clone name and scoped plan/contract/evidence. New private_admin clone only, original/accepted/persistent DBs and unrelated banner source/generated work preserved. No schema/migration/endpoint/API/default grant/clinical/legal/frontend/provider/push/deploy. Required real wallet/engine individual stages+legacy canary/zero excluded-read audits/withdrawal, independent paid couple participants, own/explicit care/J02/admin/OpenAPI/types regression and main review before isolated commit.
+
+PJ-J02 DONE/review PASS/released (2026-10-18): F12-PJ-J02; sole /root owner/reviewer. Exact native medical purpose/locale/clinic/current hash and transactional read/correction/consistent reporting;18 new PostgreSQL cases,87 distinct focused API11 files/types PASS, evidence Phase12 log. No schema/API/default permission change; unrelated user/banner work and accepted/persistent DBs preserved. Next: separately frozen R04 closes verified paid-context leak in legacy admin patient assessment projection under existing P02 privacy contract.
+
+PJ-J02 historical claim (accepted/released 2026-10-18): F12-PJ-J02; baseline front@953cfb4; sole /root writer/reviewer, no subagents. Frozen admin-medical-consent-purpose-v1; technical correction of verified broad active-policy selectors. Own only patients/admin/admin-patients.service.ts, new scoped real PostgreSQL medical-purpose test, existing admin-patients.authorization.spec.ts mock seam if required, auth-test-support exact named clone, narrow CI test inclusion and scoped plan/contract/evidence. Reuse existing purpose/fa-IR/native consent, evaluation/canonical corrections/audit; no schema/migration/API/permission/default grant/frozen contract change, actual medical/legal data/frontend/live provider/persistent DB/push/deploy. New disposable medical_purpose test/regression clones only; preserve original/accepted proof DBs and unrelated Store/banner generated/source work. Required purpose/locale/clinic/current matching consent, reporting/native completion, current-policy/consent lock races, atomic audit, canonical replay/legacy/tests/types/main review before isolated task commit. No next batch before acceptance.
+
+PJ-PG05 DONE/review PASS/released (2026-10-18): F12-PJ-PG05; sole /root owner/reviewer, no subagents. Shared custom payment and assigned reviewed native delivery;23 new PostgreSQL cases,251 distinct focused API16 files+client5/fresh73/populated132-table preservation/no drift/types PASS. Eight forward-only migrations66–73; real deferred-proof/deadlock/current-medical-policy regressions reproduced and fixed, evidence [Phase12 log](logs/phase-12.md#f12-pj-pg05--shared-paid-custom-right-and-assigned-reviewed-native-delivery). Original/accepted proof/persistent DBs and unrelated banner work preserved. Next: narrow separately frozen admin medical-purpose consent isolation. No whole-backend/clinical/legal/provider/frontend acceptance claim.
+
+PJ-PG05 historical claim (accepted/released 2026-10-18): F12-PJ-PG05; baseline front@4e95ba2; sole /root writer/reviewer, no subagents. Frozen custom-program-native-delivery-v1/ADR-0034; PG01–PG04/shared billing/native clinical accepted. One inseparable financial/native-boundary batch. Own new programs/custom-delivery/** and clinical/custom-program-boundary helper; narrow existing program purchase service/target/module/DTO/readiness and custom request metadata/controller; native TreatmentPlan/Activity/Progress module/use-case bound-only access and task/reminder/audit seams; Home bounded custom metadata/action; Prisma one retained native-version binding/two optional ProgramPurchase FKs/narrow inverses/forward SQL, app/errors/CLI only if directly required, focused real DB/upgrade/CI/native/payment tests, generated API/client and scoped governance/evidence. Single writer shared schema/generated/new disposable clones; original and accepted proof DBs preserved; concurrent Store/banner/.gitignore changes preserved/excluded. Reuse exact request/care/intake/current assigned qualified physician, existing PROGRAM/free/wallet/server Verify/no ordinary refund/captured compensation and native plan/tasks/adherence/derived progress. No new engine/provider/permission/default grant/automatic therapy/actual clinical/legal data/frontend/live provider/persistent DB/push/deploy. Custom charge remains unavailable until all native generic read/write/issue/privacy/financial/SQL/audit/concurrency/legacy/fresh/populated/no-drift/generated/types/main-review gates pass. No next batch before accepted isolated commit.
+
+PJ-PG04 DONE/review PASS/released (2026-10-18): F12-PJ-PG04; baseline front@aa6a46e; sole Codex /root owner/reviewer. Exact named custom request plus consecutive independently scoped care authority, generic consent/WalletCommand aliases/current directory/qualified physician/audit/limiter reused.21 new PostgreSQL cases;216 distinct focused API12 files+client5/fresh65/populated130-table preservation/no drift/official API and consumer types PASS. Actual malformed NULL final-withdrawal tuple reproduced, applied64 preserved and forward65 closes CHECK UNKNOWN. Original63 proof DBs/original60 preserved; new disposable clones only. No custom charge/chart access/native therapy/default grants/actual legal content/frontend/live provider/persistent DB/push/deploy. Existing Store/banner source and generated changes preserved and excluded from isolated PG04 commit. Evidence Phase12 log; next PG05 must protect bound native clinical paths before custom payment activation.
+
+PJ-PG04 CLAIMED (2026-10-18): F12-PJ-PG04; baseline front@aa6a46e; sole Codex /root writer/reviewer, no subagents. Dependencies PG01/PG02/PG03/generic consent/directory accepted; frozen custom-program-request-care-v1/ADR-0033. Own new programs/custom-requests/**, two retained request/care authorization models/narrow inverses/forward migrations, exact-purpose consent CLI/test, app/errors, focused real DB/upgrade/CI and narrow existing test-safety helper allowlist, official API/client and scoped plan/evidence. Single writer schema/generated/new disposable clones; original patient_journey_test60 and current accepted PG03 proof DBs preserved. Reuse named real service/qualified physician/current independent patient/session/generic consent/WalletCommand/audit/limiter. No actual clinical/legal/default capability, medical intake/assessment data access, custom charge, native TreatmentPlan write, frontend/live provider/persistent DB/push/deploy. Required current source/identity/consent/hash/alias/retry/renewal/withdrawal/concurrency/SQL/audit/clock/fresh/populated/no drift/generated/types/main review before independent commit. Follow-up separately claims shared custom payment plus assigned native reviewed TreatmentPlan/tasks/progress delivery; backend source inspection verified existing native mutable/unbound read/write paths that must be protected for bound paid plans before charging.
+
+PJ-PG03 DONE/review PASS/released (2026-10-18): F12-PJ-PG03; baseline front@5fe92e1; sole Codex /root owner/reviewer. READY_EDUCATION only: retained exact terms/purchase/one proved grant, PROGRAM shared free/wallet/server Verify, owned curriculum/period/receipt/Home and no ordinary refund.30 new real PostgreSQL cases plus typed effect case;222 distinct focused API16 files+client5/fresh63/populated128-table preservation/no drift/generated/API/test/consumer types PASS. Existing PG01 lock-race fixture clock corrected without changing assertions; actual audit UUID defect reproduced and forward62 fixed, forward63 exact quote/beneficiary guards. Original journey test DB60/persistent DB preserved; reviewer-required new disposable program/wallet clones only. Exact source/terms/identity/privacy/payment/compensation/audit/races/main review and evidence Phase12 log PASS. No actual clinical/legal/retention data/default capability/custom charge/clinical plan/frontend/live PSP/push/deploy. Unrelated .gitignore preserved/excluded. Next: separately freeze/claim assigned custom professional request and native TreatmentPlan preparation/qualified issue/progress with exact consent and shared payment; no second treatment/payment engine.
+
+PJ-PG03 CLAIMED (2026-10-17): F12-PJ-PG03; baseline front@5fe92e1; sole Codex /root owner/reviewer, no subagents; unrelated .gitignore preserved/excluded. Accepted PG01/PG02/P01/shared wallet/provider software dependencies; actual owner no ordinary program refunds. Frozen ready-program-purchase-access-v1/ADR-0032. Own new programs/purchases/**, two retained models/narrow inverse/FK and additive forward billing constraints; narrow billing target reservation discriminant/create purpose-self/refund/view/filter DTO seams; current Home service/DTO bounded metadata/action; app/errors, focused actual DB/upgrade/CI and legacy target tests, official API/client and scoped governance/evidence. Single writer schema/generated/disposable DB. Reuse generic consent, free/wallet/server Verify, no new engine/permission or clinical record. READY_EDUCATION only; custom charge/delivery remains unsupported until separately accepted. No actual content/legal/retention data/default grant/frontend/live provider/persistent DB/push/deploy. Required identity/quote/terms/payment-to-one-grant/source/expiry/price replacement/no-refund/compensation/direct SQL/audit/fresh/populated/generated/types/old-target/Home/main review before independent commit.
+
+PJ-PG02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-PG02; baseline front@bf5ee45; sole Codex /root owner/reviewer. One immutable ProgramOfferingPublication/migration60, exact clinical/terms references, real custom directory fee, explicit price/access/quote/retention configuration and owner-confirmed no ordinary refunds.18 new PostgreSQL+one CLI purpose case;144 focused API11 files+client5/freshness/build/API/test/consumer types PASS; fresh60/populated59-to60 all127-table preservation/current program and paid readability/no drift. CAS/replacement/final retirement/live identity/source/legal/fee races/audit rollback/clock/SQL/foreign scope/main review PASS; evidence Phase12 log. No patient purchase/entitlement/therapy/actual clinical or legal source/default grant/frontend/provider/persistent DB/push/deploy. Existing .gitignore excluded. Next: separately freeze/claim ready educational program purchase and owned access using existing wallet/server Verify; custom assigned delivery follows separately and must remain unavailable until implemented.
+
+PJ-PG02 CLAIMED (2026-10-17): F12-PJ-PG02; baseline front@bf5ee45; sole Codex /root owner/reviewer, no subagents; unrelated .gitignore preserved/excluded. Dependencies accepted PG01/G01/current directory/owner consent release; owner explicitly no ordinary refund for ready/custom services. Frozen program-commercial-publication-v1/ADR-0031. Own new programs/publication/**, narrow existing ProgramDefinitionModule service export/limiter export if required, one ProgramOfferingPublication/narrow Prisma inverses/forward migration, exact-purpose CLI/test, app/errors, focused real DB/upgrade/CI checks, official API/client and scoped governance/evidence. Single writer schema/generated/disposable DB. No patient purchase/entitlement, payment/provider engine, patient treatment/record access, real clinical/legal/retention data/default grant/frontend/persistent DB/push/deploy. Required exact source/terms/custom price/current identity/canonical retry/consecutive CAS/retirement/immutability/audit/fresh/populated/no drift/generated/types/main review before isolated commit. Subsequent shared purchase/access and assigned custom delivery remain separate serialized tasks.
+
+Owner decision (2026-10-17, explicit reply): ready paid programs and custom physician program services also have no ordinary refund after successful payment. Preserve existing duplicate/late/captured-unfulfillable financial compensation separately; do not infer service-delivery, clinical suitability or actual legal text from this decision.
+
+PJ-PG01 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-PG01; baseline front@af6d637; sole Codex /root owner/reviewer. One immutable ProgramDefinitionVersion/migration59, exact G01 sources/safety, real DoctorService clinical snapshot and qualified physician approval/final revocation.19 new actual PostgreSQL cases;127 focused API10 files+client5/freshness/build/API/test/consumer types PASS; fresh59/populated58-to59 all126-table row preservation/no drift. Real cross-clinic isolation, source-retirement lock race, SQL immutability/audit rollback/rate limit and application-clock skew proof; main review/evidence Phase12 log. No sale/patient program/automatic therapy/actual clinical or legal content/default grant/frontend/provider/persistent DB/push/deploy. Unrelated .gitignore excluded. Next: separately freeze/claim configurable immutable program commercial publication/access duration/exact owner-released terms; then shared financial entitlement and existing TreatmentPlan delivery as distinct scoped tasks. Owner explicitly confirmed no ordinary refund for paid ready/custom services.
+
+PJ-PG01 CLAIMED (2026-10-17): F12-PJ-PG01; baseline front@af6d637; sole Codex /root owner/reviewer, no subagents; unrelated .gitignore preserved/excluded. Depends on accepted G01/G02/current directory/clinical. Frozen program-definition-v1/ADR-0030. Own new programs/definitions/**, one ProgramDefinitionVersion with narrow Prisma inverse relations/forward migration, app/error wiring, focused real DB/upgrade/CI tests, official API/client and scoped governance/evidence. Single writer schema/generated/disposable DB. Reuse G01 authority/safety/approved references and actual DoctorService; no change to frozen G01 patient access or existing TreatmentPlan, no commercial sale/patient data/payment/clinical algorithm/legal data/default capability/frontend/persistent DB/provider/push/deploy. Required real identity/review/source/safety/concurrency/immutability/audit/current dependency/fresh/populated/no drift/generated/types/main review before independent commit. Paid program publication/entitlement and assigned custom delivery remain later serialized batches with actual commercial/service policy release gates.
+
+PJ-D02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-D02; baseline front@e19e64c; Codex /root sole owner/reviewer. Narrow assigned qualified physician worklist/context/start/complete, current live specialty and explicit DOCTOR VIEW/EDIT, existing SIGN qualification, atomic audit and shared doctor-to-appointment locking.14 new real PostgreSQL cases;142 distinct focused API12 files+client5/freshness/build/API/test/consumer types PASS; fresh58 replay/legacy appointment6/no drift, indexed EXPLAIN and main review/evidence Phase12 log. Pre-fix shared same-target retries/worklist omission/unpublished specialty cases reproduced and corrected. No schema/migration/default capability/medical source/frontend/provider/persistent DB/push/deploy. Existing .gitignore excluded. Next: separately freeze/claim reusable versioned ready-program/clinical service definition foundation before any paid program publication or personalized therapy activation; commercial delivery/refund terms remain actual owner-controlled release data.
+
+PJ-D02 review addendum: real test reproduced a still-actionable ongoing visit omitted by the default startsAt lower bound. Owned scope includes frozen assigned-consultation-worklist-window-v1: default query also retains live operational visits by endsAt+4h; explicit from/to remains strict, no eligibility/time-window extension or new persistence.
+
+PJ-D02 CLAIMED (2026-10-17): F12-PJ-D02; baseline front@e19e64c; unrelated .gitignore preserved/excluded; sole Codex /root coordinator/writer/reviewer. Dependencies D01/C04/current clinical/booking/chat accepted; frozen assigned-consultation-operations-v1/ADR-0029. Own new appointments/assigned/**, exact existing AdminAppointmentsService start/complete transaction-aware seams and doctor→appointment locking/re-read, existing module export, bounded ClinicalAccessAuditService.recordMany only, app/errors, focused real DB/CI tests, official generated API/client and scoped plan/contracts/ADR/evidence. Exclusive generated/test DB writer. Strict current assigned qualified DOCTOR plus existing VIEW/EDIT/SIGN, no default grant/APPOINTMENTS_MANAGE expansion/new model/booking/payment/session/chat engine/clinical review/actual medical/legal source/frontend/persistent DB/provider/push/deploy. Required own worklist/context/existing operator state→start/encounter→complete, privacy/full deny/window/current capability/assignment/transactional audit/old admin-vs-assigned concurrency/legacy billing/chat/D01/C04/contracts/types/main review before isolated task commit. Later clinical review/program/service rules and actual release gates remain separate.
+
+PJ-D01 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-D01; baseline front@8870377; Codex /root sole owner/reviewer, no subagents. One retained explicit own source/physician/appointment sharing ledger and final withdrawal/current qualified clinician educational summary, exact-purpose legal release opt-in, migrations57-58.19 new real PostgreSQL cases including actual paid couple nonpayer private care;135 distinct focused API11 files+client5/freshness/build/API/test/consumer types PASS; fresh58/populated56-to58 all124-table preservation/no drift, scoped EXPLAIN/main review/evidence Phase12 log. SQL NULL withdrawal-command defect reproduced before forward58 and fixed without rewriting applied57. No raw response/score/partner/joint disclosure, actual medical/legal/default capability/frontend/provider/persistent DB/push/deploy. Unrelated .gitignore excluded. Next: separately freeze/claim assigned-physician worklist/context and reuse existing start/end/encounter/text consultation lifecycle without blanket appointment management. Clinical review and program/service rules, real legal/clinical/provider release remain separate.
+
+PJ-C04 review seam (2026-10-17): discovery gap found before acceptance. Existing patient catalog exposes active COUPLES tariff but C03 needs jointProtocolId/hash available only to privileged C02 APIs. Owned new paid/** scope now includes read-only patient couple-assessment-offerings/:publicationId via frozen additive couple-assessment-offering-discovery-v1; reuse existing publication/joint readiness and own age/current identity, no private pair definitions or consent/entitlement mutation. Existing frozen contracts remain unchanged.
+
+PJ-C04 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-C04; baseline front@d1edf53; Codex /root sole owner/reviewer, no subagents. Existing shared ASSESSMENT wallet/server Verify now atomically backs two independent engine grants and one retained mutually authorized approved joint education. Safe patient catalog discovery, own-only receipts/Home/paid resume and current clinical/consent privacy boundaries; migrations54-56.30 new real PostgreSQL cases;332 distinct focused API24 files+client5/freshness/build/API/test/consumer types PASS; fresh56/populated53-to56 all123-table preservation/no drift, scoped indexed EXPLAIN and main review/evidence Phase12 log. No actual clinical/legal/permission data seeded or frontend/live PSP/persistent DB/push/deploy. Unrelated .gitignore Archive addition excluded. Next: separately freeze/claim explicit patient-authorized assessment summaries for the assigned clinician/appointment; clinical result review and program/service rules remain separate. Full backend and provider production acceptance not declared complete.
+
+PJ-C03 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-C03; baseline front@b86a501; unrelated .gitignore Archive addition preserved/excluded. Codex /root single owner/coordinator/reviewer; frozen couple-assessment-participation-v1/ADR-0026. Immutable exact context and two participant models/migration53; C01 independently linked adult identities, C02/O03 exact approved configuration, own existing P02 processing acceptance plus pair-specific joint disclosure; final context withdrawal/derived readiness, no implicit old-consent revival. Five self operations/four paths, minimized own/partner status projections, current identity/age/clinic/session and atomic audit; existing limiter/module reuse.16 new real PostgreSQL cases;115 distinct focused API7 files plus client5/freshness/build/types/consumer types PASS; fresh53/populated52-to53 all121-table preservation/no drift. Main review/staged gate, evidence Phase12 log. No charge/grant/private answers/shared result generation/actual medical/legal content/frontend/live provider/persistent DB/push/deploy; C01 and P02 frozen behavior retained. Next candidate: separately freeze/claim shared ASSESSMENT couples purchase, exact two beneficiary proofs, existing individual engine and mutually authorized persisted joint education. Actual clinical/legal/retention/provider acceptance remains external.
+
+PJ-C02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-C02; baseline front@a1de43e; unrelated .gitignore Archive addition preserved/excluded; single Codex /root owner/coordinator/reviewer. Frozen couple-result-protocol-v1/readiness addendum/ADR-0025. Retained CoupleResultProtocolVersion/migration52; exact O02 source/review and owner-managed COUPLES_RESULT_SHARING disclosure, complete physician-curated unordered band-pair mapping to approved G01 education, versioned technical lookup/no fabricated clinical algorithm. Eight administrative/physician paths, strict live same-clinic authority/session, immutable drafts/qualified approval/final revocation, bounded history and fail-closed exact readiness/no old fallback.15 new real PostgreSQL cases;129 focused API8 files plus client5/freshness/build/types/consumer types, fresh52/populated51-to52 all120-table row preservation/no drift PASS. Main review/staged gate, evidence Phase12 log. No actual medical/legal mappings seeded, patient answers/checkout/new engine/provider/frontend/persistent DB/push/deploy. Next: independently consented pair-specific participation session using accepted C01 identities and exact C02/O03 source; then separate shared two-beneficiary financial/access integration. Existing individual checkout remains unchanged and couples checkout remains unsupported until those tasks pass.
+
+PJ-P02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-P02; baseline front@ea263af clean; single Codex /root coordinator/owner/reviewer. Frozen assessment-purchase-access-v1/privacy-retirement addendum/ADR-0024. Two retained purchase/grant models and forward migrations50/51; shared ASSESSMENT BillingTarget/consents/immutable tariff and actual wallet/server-verified bank proof; one owned engine attempt; all result/history/Mezaj/guidance/Home/booking privacy boundaries; legacy null contexts preserved and no future commercial free bypass. No ordinary digital refund/cancellation; independent Store/appointment intact, captured-unfulfillable compensation separate. Verification PASS:23 new real PostgreSQL purchase cases;306 distinct focused API tests28 files plus client5/freshness/build, API/test and App/Dashboard/Web types; fresh51/populated49-to50-to51 preservation/no drift; indexed scoped EXPLAIN; main review/staged gate. Review reproduced/fixed unfinished withdrawn attempt409, paid attempt deletion reset, and legacy resume/publication lock inversion; metadata retained, no applied migration rewritten. API268 paths, all260 retained,259 unchanged path definitions plus additive admin billing purpose enum. Graphify8785 nodes/24072 edges. Evidence phase-12 log. Unrelated .gitignore Archive addition preserved/excluded. No couples checkout/actual medical or legal content/real grant/frontend/live provider/persistent migration/push/deploy. Next candidate: exact physician-approved versioned joint-result protocol and mutual disclosure prerequisite, then separately claim paid couple participation using existing individual engine/shared billing. Actual clinical/legal/retention/provider acceptance stays an external release gate.
+
+PJ-P02 scoped review extension: existing O02 internal clinical-authority locking seam is shared rather than duplicated. New assessment-purchase-privacy-retirement-v1 addendum retains/invalidates unfinished bound attempts atomically with final privacy withdrawal, following a real pre-fix409 reproduction; paid-attempt deletion also blocked so one-grant consumption cannot be reset. Applied migration50 remains unchanged; forward SQL-only51 owns this guard refinement. No new permission/purchase refund/clinical algorithm or legacy null-context behavior introduced.
+
+PJ-O03 DONE/review PASS/claim RELEASED (2026-10-17); F12-PJ-O03; baseline front@4ae6818 clean; Codex /root single owner/coordinator/reviewer. Frozen assessment-commercial-publication-v1/ADR-0023. One retained commercial publication/migration49 references exact configurable O01 draft, qualified O02 protocol, owner-controlled ASSESSMENT_PURCHASE_TERMS and fixed PRE_START/min18/no ordinary refund/cancellation/nonexpiry decisions. Five admin operations/four new paths; price replacement atomically retires old tariff, never overwrites it; explicit final retirement and no old fallback. Old draft contract remains unchanged. Verification PASS:18 new real PostgreSQL cases;227 distinct scoped API cases19 files (one direct-SQL fixture timestamp corrected for observed host/database clock skew, affected18 rerun PASS),client5/freshness/build and API/test/consumer types;fresh49/populated48-to49 all-legacy preservation/no drift;indexed EXPLAIN;main review/staged check. Graphify local AST refresh8647 nodes/23533 edges, existing parser warnings unchanged. Evidence phase-12 log. No patient checkout/entitlement activation, actual clinical/legal text/real grant/frontend/provider/persistent DB/push/deploy. Next candidate: shared BillingIntent assessment purchase/access grants and all result-route checks, preserving old free attempts and Store/appointment behavior; couples checkout separately gated by mutual consent/joint rules.
+
+PJ-O02 DONE/review PASS/claim RELEASED (2026-10-17): F12-PJ-O02; baseline front@76cd380 clean; Codex /root single coordinator/owner/reviewer. Frozen assessment-protocol-review-v1/ADR-0022. One retained append-only exact questionnaire/scoring/ASSESSMENT_PROCESSING consent physician review ledger, seven operations/six new paths, bounded nonpatient source preview/queue/history; explicit withdrawal/review revision/idempotency and current physician authority. Reused G01 authority/SQL, existing engine and unchanged canonical authoring hash. No offering/payment activation or actual clinical/legal text seeded. Verification PASS:19 new PostgreSQL cases;200 focused tests17 files plus8 OpenAPI=208 distinct API tests;client5/freshness/build and API/test/App/Dashboard/Web types;fresh48 replay/populated47-to48 all-legacy preservation/no schema drift; indexed latest-review EXPLAIN; main review/staged check. Dedicated CI port aligned to existing isolated test guards, new suite added; hosted CI not executed locally. Graphify update now succeeded (8554 nodes/23245 edges), superseding earlier launcher limitation for this run; SQL/HCL parser dependencies absent and one existing chat extraction warning, no packages installed. Evidence phase-12 log. Next prerequisite is configurable commercial publication referencing exact draft/protocol/consent, then shared assessment purchase/entitlement and all result-route enforcement under separate claims. Owner decisions PRE_START/no ordinary refunds/min18/no invitation expiry preserved; actual source/legal/retention/joint algorithm remain release data gates.
+
+Owner digital assessment decisions (2026-10-17): successful assessment purchases have no ordinary refunds/cancellation; payment is before starting; results remain stored in the owning account with approved relevant recommendations. Individual/couples assessment prices must be configurable via dashboard administrative APIs, never fixed/hardcoded; preserve per-purchase tariff snapshots when later configurations change. Do not alter independent Store/appointment refund policies or conflate duplicate/late verified financial compensation with an ordinary assessment refund. Digital purchase/release contracts must enforce PRE_START, no ordinary assessment refund and configurable versioned price. Existing legacy free assessments retain their frozen behavior until explicitly scoped digital contexts exist.
+
+PJ-P01 DONE/review PASS/claim RELEASED (2026-10-17); F12-PJ-P01; baseline front@50b3d57 clean; Codex /root single coordinator/owner/reviewer. Frozen billing-target-effects-v1/ADR-0017. Replaced bare reserve/settle IDs with explicit domain effects, strict purpose/UUID projection and explicit prepared columns; existing order/appointment adapters and free/wallet/verified gateway dispatcher updated. Verification PASS:15 real PostgreSQL wallet cases (including new cross-domain rollback/retry and free fulfillment),9 effect cases +28 provider/credential/OpenAPI cases=52 API tests; client5/freshness and API/test types PASS, main review/staged check PASS. No schema/migration/wire/generated/frontend/provider changes; no digital entitlement activation. Evidence phase-12 log. Disposable wallet_test added inside task-owned container; persistent DB untouched. Owner confirmed configurable administrative prices, PRE_START and no ordinary assessment refunds; independent Store/appointment rules remain unchanged. Next prerequisite is qualified review of exact questionnaire/scoring/assessment-processing consent before new paid offering publication, then digital purchase/entitlement/result access enforcement. Existing clinical source data/legal text still supplied by owner, not invented.
+
+PJ-G02 DONE/review PASS/claim RELEASED (2026-10-17); F12-PJ-G02; baseline front@6769078 clean; Codex /root single coordinator/owner/reviewer. Frozen assessment-guidance-v1/ADR-0021. One retained mapping model/migration47, nine APIs, exact questionnaire/hash/band/technical WEIGHTED_SUM identity, ordered approved content and semantic service references; qualified physician approval/final revocation. Own completed patient delivery rejects missing/inconsistent provenance, requiresReview, revoked latest mapping or changed/unavailable dependencies without older fallback; no private answers/score queried or emitted. Reused G01 authority/projections and existing directory visibility/clinical audit. Verification PASS:18 new PostgreSQL cases;187 distinct focused API tests18 files +client5; fresh47/all-populated-legacy preservation/no drift; API/test/client/consumer types; official250-path contracts, all241 old path definitions unchanged; staged whitespace/main review PASS. Evidence phase-12 log. No real clinical content/mappings/grants seeded, scoring/new policy/provider/frontend/persistent DB unchanged. Technical metadata is not scientific validation; new paid publication must add entitlement checks to this route as well as all other result routes. Next candidate: existing shared BillingTarget typed financial effects and digital entitlement extension, with its own contract/claim; no new provider or payment engine. Disposable DB remains task-owned.
+
+PJ-G01 DONE/review PASS/claim RELEASED (2026-10-17); F12-PJ-G01; baseline front@bf64ace clean; Codex /root single coordinator/owner/reviewer. Owner explicitly approved linked active same-clinic physician plus existing clinical-sign permission; ordinary ADMIN cannot approve. Frozen guidance-content-v1/ADR-0021. One retained immutable Article-derived model (migration46), nine admin/physician/self-patient APIs, provenance/safety/hash-bound approval and final revocation. No real health content or grants seeded; old Article publication unchanged and never medical approval. Verification PASS: 18 new PostgreSQL cases;167 distinct focused API tests plus client5, fresh46/45→46 populated all-legacy-table preservation/no drift, API/test/client/consumer types, official241-path contracts (all232 prior retained), main-agent scoped review. Evidence phase-12 log. No live provider/persistent DB/frontend/production acceptance. Earlier generation was temporarily denied because approval-review usage quota was unavailable; resumed with fresh approved execution after explicit user continuation, no bypass. Next eligible candidate: separately freeze/claim exact result-band-to-approved-content/service mapping and patient delivery; technical WEIGHTED_SUM provenance is not clinical validity, actual content/taxonomy/legal/refund/retention remain release gates. Disposable DB remains task-owned.
+
+PJ-C01 pre-release review addendum frozen: couple-account-link-privacy-v1. Registered-phone-only routing would disclose membership through201/422; require the recipient's privately shared existing patient-profile address as well as normalized phone, retain independent authentication+secret acceptance, and redact the address. No public contact lookup/new identity engine. This is part of the same uncommitted C01 privacy acceptance, not a new task or modification of a frozen base contract.
+
+PJ-C01 DONE/review PASS/claim RELEASED; F12-PJ-C01; baseline front@b8cb39d clean; Codex /root single coordinator/owner/reviewer. ADR-0020/couple-account-link-v1 plus frozen pre-release privacy addendum. Delivered three same-clinic link/invitation/consent models (migration45), eight self APIs, explicit independent adult consent and intended-recipient auth, one-time hashed secret/no automatic expiry, final privacy withdrawal and bounded Journey references. Recipient must share its existing profile routing address plus phone; no phone-only membership lookup. No answers/results/entitlement/payment granted; assessmentReady=false. Verification PASS: 21 new PostgreSQL couple cases + prior106 + consent CLI4/security9 =140 API tests, client5; fresh45 replay/44→45 populated legacy preservation, no drift, all225 prior paths plus7 (eight operations), API/test/client/consumer types/freshness and main-agent review. Resolved clock rollback blocking withdrawal with monotonic evidence timestamp and recipient-phone enumeration before release; no migration rewrite. Evidence phase-12 log. Actual owner legal policy not seeded/published; registered-recipient-only and no frontend remain explicit. Disposable DB remains task-owned; persistent/providers unchanged. Next independent scope: versioned educational guidance snapshots/mappings using existing content; proposed qualified reviewer boundary (linked active doctor, clinic scope, existing clinical-sign permission; no ordinary ADMIN approval) is pending owner reply, so approval activation must await that reply. No scientific/clinical definition inferred.
+
+Owner policy decisions received: minimum participant age18; invitations must not automatically expire and remain usable until explicit authenticated acceptance (opening/prefetching a link is not acceptance); purchase cancellation disabled for now. Consent withdrawal/data-access revocation remains separate from purchase cancellation. No blanket refund-denial or scientific algorithm approval is inferred. Next couples identity/invitation foundation must enforce these choices; actual questionnaire/joint algorithm, qualified health content, consent text, refund exceptions/retention remain undefined.
+
+PJ-R03 DONE/review PASS/claim RELEASED; F12-PJ-R03; Codex /root single coordinator/owner/reviewer; baseline front@a8ccc44 clean. Contract assessment-authoring-reliability-v1. Three defects reproduced before fix: unscorable boolean accepted201; eight concurrent creates yielded500 conflicts; audit failure left a persisted draft. Corrected structural scoring validation, consecutive version allocation, row-locked partial/state edits and atomic changed-write audit. Verification PASS: 106 focused API tests (11 new PostgreSQL authoring, 18 validator, 5 existing admin, 72 current assessment/journey/offerings), client5, API/test types, official unchanged225-path export/client freshness and main-agent scoped review. No schema/migration, permissions, scoring semantics, billing, frontend or historical-contract change. Evidence phase-12 log. Next: couple account-link/invitation/consent foundation with approved age18/nonexpiring invitations; paid assessment access, actual clinical algorithms/content and retention/refund exceptions stay separate gates. Disposable database remains task-owned for continued verification.
+
+PJ-O01 DONE/review PASS/claim RELEASED; F12-PJ-O01; baseline front@374394d clean; Codex /root coordinator/owner/reviewer, one agent. ADR-0019 / frozen assessment-offering-drafts-v1. Append-only individual/couples commercial draft versions, immutable questionnaire references, integer prices/payment points, policy configuration and explicit missing release gates. Publication is denied at database/API; no clinical/commercial rule invented. Owned schema/new migration44, new offerings Nest module/wiring/errors, focused offering/upgrade/CI tests, pinned historical R01 upgrade proof, official contracts and scoped plan/evidence. Verification PASS: offering12 plus focused assessment/journey60 =72 API tests; client5; clean44 replay, legacy43→44 populated patient/result/billing/order/wallet preservation, no schema drift, originalR01 upgrade43, API/test/client/consumer types and path preservation (221 existing +4). Scoped main-agent review PASS; evidence phase-12 log. Persistent DB/provider/frontend unchanged; disposable container remains task-owned. Next independent candidate: technical assessment-authoring validation/concurrency/audit correction; digital entitlement/couples/guidance activation still requires actual policy/clinical definitions, requested asynchronously without stopping independent work.
+
+PJ-R02: F12-PJ-R02 DONE/review PASS/claim RELEASED; Codex /root coordinator/owner/reviewer, one agent; baseline front@79badad clean. Dependencies R01/J01 DONE. Frozen additive contract assessment-discovery-v1. Preserved existing owned historic get/save/submit behavior; added missing questionnaire retrieval/discovery and explicit technical provenance, no clinical retirement/eligibility policy change. Owned: assessment patient service/controller/DTO/audit/scoring identity; journey resume projection/test; discovery PostgreSQL tests and CI; official generated contracts; scoped plan/evidence. No schema/migration, frontend, billing or role changes. Verification PASS: 60 focused API tests (10 new discovery, 13 journey, 21 reliability, 3 scoring, 5 assessment authorization, 8 eligibility), client5; API/test/client/consumer types and generated freshness; 218 old API paths preserved plus3. Main-agent scoped review PASS; evidence phase-12 log. Disposable DB remains task-owned for subsequent serialized checks. Next candidate F12-PJ-O01 configurable offering/version/release-readiness foundation; actual price, age, algorithms, clinical review/retention/refund rules remain owner decisions and new publication must fail closed.
+
+Owner explicitly requested nonstop implementation of the remaining backend. This supersedes the prior stop-after-task boundary for this track; tasks remain serialized, independently verified/reviewed/documented/committed. No frontend, production release, live provider or persistent database migration authorization is inferred. Clinical questionnaire weights, result taxonomy and approved content remain undefined; owner described roughly 10–15 questions and possible mixed temperaments, not an approved algorithm. Infrastructure may proceed with new clinical release disabled.
+
+Batch PJ-J01; task F12-PJ-J01; DONE/review PASS/claim RELEASED; coordinator/owner/reviewer Codex /root; one agent; baseline front@82fa9c4, clean. Contract: patient-journey-v1; dependencies R01 and accepted onboarding/booking/billing/clinical modules. Delivered bounded self-only derived Home/Next Action API, repeatable-read composition and atomic sensitive audit, no state table or new clinical/payment rules. Owned paths: new patients/journey module; SelfProfileService and PatientBookingEligibilityService transaction-aware read seams; app.module.ts; focused journey PostgreSQL tests and CI invocation; official generated OpenAPI/client; scoped plan/contract/checklist/log. Prisma schema/migrations and frontend unchanged. Verification: 45 distinct focused API tests (13 new journey, 21 reliability, 8 eligibility, 3 self-profile), client5; API/test/client/consumer types and generated freshness PASS; 217 old paths preserved, one new. Main-agent scoped review PASS; no claim of full clinical/product acceptance. Disposable PostgreSQL remains task-owned for the next serialized verification; persistent DB unchanged. Graphify launcher still fails before execution. Next candidate R02 owned attempt discovery/historical questionnaire/provenance using preserved existing submission behavior, then inactive offerings/clinical release foundation; normal freeze/claim before edits.
+
+## Patient Journey backend — R01 accepted handoff (2026-10-16)
+
+Authority: owner explicitly requested backend implementation after reviewing the patient journey report and comprehensive requirements. The backend-first instruction overrides frontend delivery for this scoped task; whole-product acceptance remains separate. Baseline: front@ebbb2b3, clean working tree. Phase 12 remains active; no closed phase is reopened.
+
+Batch: PJ-R01; Task: F12-PJ-R01; DONE; claim RELEASED; owner/coordinator/reviewer Codex /root; one agent.
+Contract baseline: ADR-0018 and assessment-reliability-v1 additive extension; frozen assessment-booking-v1 remains unchanged.
+Dependencies: accepted Phase 03/08 assessment persistence and API, existing identity/session and Phase 12 test infrastructure; no clinical/provider decision required for this technical correction.
+Owned paths: assessment patient service/controller/DTO and audit action constants; PatientAssessmentSubmission revision field and one new migration; shared error-code allowlist; directly affected assessment tests and new isolated PostgreSQL reliability/upgrade tests; dedicated isolated test step in existing CI; generated OpenAPI/client via official commands; this status, Phase12 checklist/log, new scoped ADR/contract and patient-journey-backend task map.
+Exclusive resources: Prisma/schema/migration, generated OpenAPI/client and disposable PostgreSQL, all single writer. No frontend, billing/provider, lockfile or historical contract writes.
+Verification PASS: three pre-fix defects reproduced; 78 distinct focused API tests (including 21 isolated PostgreSQL reliability cases) and 5 client tests; 43-migration fresh replay/legacy upgrade/duplicate-active refusal and no schema drift; API/test/client/app/dashboard/web types and generated-contract freshness; main-agent diff/security review. All 217 previous API paths retained. Temporary PostgreSQL removed; persistent DB unchanged.
+Evidence: [Phase12 log](logs/phase-12.md#f12-pj-r01--assessment-concurrency-revisions-and-transactional-audit). Legacy revision omission remains serialized last-write-wins; new clients must send expectedRevision for stale-edit protection. Migration must precede runtime activation and refuses existing duplicate active attempts for reviewed resolution. Graphify update remains blocked by the existing uv launcher failure.
+Next candidate: F12-PJ-J01 derived journey API after normal additive DTO/action-contract freeze and claim, within the existing owner implementation authorization. No next task started, honoring the per-task execution boundary. Historical questionnaire resume/review, offerings, couples, guidance and programs are not completed by R01; clinical/product decisions stay explicit.
+
+## Wallet backend — accepted handoff (2026-10-16)
+
+Batch: WAL-BE01; Task: F12-WAL-BE01; Coordinator/owner/reviewer: Codex /root; DONE, claim RELEASED.
+Baseline: front@06780a1; pre-existing frontend edits and proposal preserved. Contract: ADR-0017 and wallet-billing-v1.
+Owner request explicitly covers all backend scope; staged frontend tasks are not started.
+Owned paths: new billing module; Prisma/schema/new migrations/development-admin seed; directly related commerce payment/order/inventory/reporting adapters; appointments and scheduling payment/capacity seams; common auth/errors, configuration; outbox financial handler; API wiring; focused API tests and isolated wallet CI step; generated OpenAPI/client; plan governance/evidence.
+Exclusive: Prisma, OpenAPI/client, auth and disposable PostgreSQL, all single writer. No user frontend edits, persistent DB migration, secrets, live PSP, push or deploy.
+Verification PASS: 42-migration replay/legacy financial upgrade, no schema drift; 70 distinct API tests + 5 client tests; API/test/client/app/dashboard/web typechecks; contract freshness, unchanged old API paths, source review and scoped diff check. Disposable PostgreSQL removed; persistent database unchanged. Graphify launcher remains unavailable.
+Evidence: [Phase 12 log](logs/phase-12.md#f12-wal-be01--shared-wallet-and-prepaid-booking-backend). [Exact API/UI/rollout handoff](contracts/wallet-backend-handoff.md).
+Next eligible wallet work: patient and dashboard integration against the frozen contract, including the result page and prepaid booking flow, under a separate frontend claim. No next task started; backend completion never marks UI, real PSP acceptance or production readiness done.
+
+## Product Details B1B — independent review corrections accepted (2026-10-14)
+
+`F12-PD-B1B-R1 DONE`; batch `PD-B1B-R1` claim RELEASED; owner/coordinator/reviewer Codex /root;
+one agent; baseline front@8ebfdbe, initially clean. Explicit owner continuation covered only conflict
+auto-rebase and unsaved-draft loss during token refresh. Both reproduced before application edits.
+Review PASS WITH FIXES: 409 keeps the old draft/revision and gates save/approve until confirmed
+replacement with current server content; token rotation preserves the draft, product/account keys
+isolate editors and existing session/permission enforcement stays authoritative.
+6 mocked desktop/mobile browser tests, 10 focused unit tests, dashboard typecheck and scoped lint PASS.
+[Evidence and limitations](logs/phase-12.md#f12-pd-b1b-r1--focused-conflict-and-session-review-corrections).
+No backend/schema/DB/generated-client/frozen-contract changes, real backend acceptance, push or deploy.
+Next action is separately authorized real B1B local acceptance after its database prerequisite; this
+review did not apply migrations. B1C/B2 NOT started; no automatic next batch.
+
+## Product Details V1 — B1A backend accepted (2026-10-14)
+
+`F12-PD-B1A DONE`; `PD-B1A` claim RELEASED; coordinator/owner/reviewer Codex /root; one agent.
+Authority: separate owner B1A instruction, G01/e681517, ADR-0016 and frozen content contract 1.0.
+Backend content/provenance/revision/explicit approval, legacy preservation, public projection and
+generated OpenAPI/client accepted. Evidence and exact editor handoff:
+[B1A](logs/phase-12.md#f12-pd-b1a--product-content-backend-foundation).
+37-migration clean replay/legacy upgrade, 62 focused API tests, 5 client tests, schema drift/API/test/
+client/consumer typechecks PASS. Temporary PostgreSQL removed; persistent DB not migrated.
+Next eligible candidate: `F12-PD-B1B`, Dashboard Content Editor, requires its own start instruction
+and fresh normal claim. No B1B/B1C/B2 started; no frontend/source-media/checkout/production changes.
+Graphify update was attempted but the pre-existing uv trampoline is unavailable; API/client freshness passed.
+
+## Product Details V1 — governance accepted (2026-10-14)
+
+`F12-PD-G01 DONE`; documentation-only claim RELEASED; coordinator/reviewer Codex /root.
+Authority/rationale: [ADR-0016](decisions/ADR-0016-store-product-details-v1.md).
+[Version 1.0 contract](contracts/store-product-details-v1.md) freezes B1 revision-bound admin approval,
+legacy visibility and API compatibility; B2 architecture/order integrity gates are accepted but initial
+category definitions and its wire appendix remain owner decisions. [Phase 12 task map](phases/12-PRODUCTION-HARDENING.md#product-details-v1--approved-governance-and-planned-batches-2026-10-14);
+evidence: [G01](logs/phase-12.md#f12-pd-g01--product-details-v1-architecture-approval-and-governance).
+G01 approval alone did not start implementation; the separate accepted B1A instruction above controls.
+B1B depends on accepted B1A; B1C on B1A/B1B; B2 on B1C plus explicit owner definitions/frozen appendix.
+Closed Phase 09, initial-release/media contracts and independent production blockers are unchanged.
+
+## Local R2 acceptance — F12-MEDIA-S01 closed
+
+F12-T06-S1 DONE; owner/coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after local real-storage acceptance and review. One agent; explicit product-owner development-only approval; dependencies R1 (44d472e), R2 (e49e615), frozen wire contract unchanged. Independent production blockers remain intact.
+Real Dashboard/Uppy → NestJS → disposable PostgreSQL → dev-sabz upload, authenticated/public eligibility, replace/remove, ETag, same-key replay, interrupted-response recovery, invalid-file and ownership checks PASS. Three task objects deleted by normal outbox; six cleanup jobs DELIVERED; temporary database/configuration/fixtures removed; owned services stopped. Original persistent database remains at35 migrations without media migration. Evidence: [phase-12 log](logs/phase-12.md#f12-t06-s1--local-real-r2-product-media-acceptance).
+Only governance/evidence files changed; no runtime fixes, schema/wire/source changes, bucket-setting changes or deployment. Privacy controls are owner-attested disabled; unsigned S3 returned400 InvalidArgument, not a claimed403/control-plane audit. Windows Sharp verified; Linux/container, exclusive IAM-policy inspection and production approval remain separate. Next Store slice Phase04C requires separate instruction/claim; not started.
+
+## Store media dashboard handoff — F12-MEDIA-B01B closed
+
+F12-T06-R2 DONE; coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after review and dashboard acceptance. Explicit Phase04B product-owner approval; dependency F12-T06-R1 DONE (44d472e); frozen backend contract unchanged.
+Evidence, version pins and exact Phase04C handoff: [phase-12 log](logs/phase-12.md#f12-t06-r2--dashboard-product-image-uploader).
+Next Store slice: Phase04C / Batch01C customer image integration, requires its separate instruction/claim; not started. No active media paths claimed. No live R2, backend/schema/customer source changes, production activation or deployment. Historical initial-release envelope and independent Phase12 blockers remain unchanged.
+
+## Store media handoff — F12-MEDIA-B01A closed
+
+F12-T06-R1 DONE; coordinator/reviewer Codex /root; claim RELEASED 2026-10-14 after backend acceptance and review. Evidence and exact Batch 01B handoff: [phase-12 log](logs/phase-12.md#f12-t06-r1--store-product-media-backend-foundation).
+Authority: [ADR-0015](decisions/ADR-0015-store-product-media-development.md); [frozen development contract](contracts/store-product-media-v1.md). Historical F12-T06 initial-release N/A, Phase12 state and independent blockers remain unchanged.
+Backend handoff superseded by the accepted dashboard F12-T06-R2 handoff above. Phase04C, live R2, production activation and deployment are not authorized by either completed slice. No backend media paths remain claimed.
+
+## Current Patient UI workspace — owner override 2026-10-13
+
+Active checkout: X:/Git/mushroom; implementation branch: front, based on dev 2bb6f8f and retaining PUI-T01 0a99208 and PUI-T02 2e4e2b0. Previous worktree and port notes below are historical and superseded.
+Authoritative coordination: this checkout's plan/STATUS.md; independent scope: plan/patient-ui.md. No cross-worktree claim procedure is needed for the current single-checkout UI work. Existing eligibility/review/commit gates remain mandatory. No active UI batch; no next task started.
+No dev merge/push; dev reference remains unchanged. Services are stopped. X:/Git/mushroom-patient-ui is inactive and preserved with its existing uncommitted changes; do not execute or implement there.
+
+## Patient UI coordination — PUI-B01 closed
+
+PUI-T01 DONE; PUI-B01 DONE; claim RELEASED on 2026-10-13 after coordinator review and task commit.
+Owner/reviewer: Codex /root — Mushroom Patient App UI conversation.
+Independent plan/evidence: X:/Git/mushroom-patient-ui/plan/patient-ui.md and plan/logs/patient-ui.md.
+Implementation: feat/patient-app-ui; commit 0a99208e57d7d01811b8a990548d5dc947f2810d — feat(PUI-T01): implement patient foundations and Store catalog.
+Verification: app typecheck, 59 tests, staged diff check, actual local API catalog and Playwright mobile/desktop/RTL/font/keyboard/recovery passed. Purchase mutations/payments and complete checkout journey not verified.
+No active Patient UI paths remain claimed; no next batch started. Product detail/cart are a proposal only and require scope/eligibility review before claim.
+For future claims, main dev worktree plan/STATUS.md remains the authoritative local registry; UI worktree STATUS links here. Read authority before writes and stop if inaccessible. This local coordination exception does not authorize changing other dev source or bypassing Phase12 gates.
+Main dev HEAD unchanged. UI code not merged/pushed; Phase12 stays active. Original frontend localhost3001 and API3003 running; UI preview localhost3002/store uses an already-allowed, previously free origin. Dashboard not started; 3002 must be reassigned before a future Dashboard startup.
+## Patient UI coordination — PUI-B02 closed
+
+PUI-T02 DONE; PUI-B02 DONE; claim RELEASED on 2026-10-13 after coordinator review and task commit.
+Owner/reviewer: Codex /root; branch feat/patient-app-ui; worktree X:/Git/mushroom-patient-ui.
+Commit: 2e4e2b06d8ae82d3e53aa6de79c256ed03ce5883 — feat(PUI-T02): unify Store detail cart and favorites UI.
+Scope completed: Product Details + Cart + Favorites; shared Store components and consistent existing bottom navigation.
+Evidence: plan/logs/patient-ui.md in UI worktree; typecheck, 65 tests, diff check, Playwright mobile390x844/desktop1440x900, RTL/keyboard/empty/loading/error/recovery and reversible synthetic cart/favorite operations PASS. Initial memberships and quantities restored. No orders/payments/SMS; complete checkout unverified.
+Runtime now supersedes PUI-B01 ports: Patient UI normal dev localhost3001; existing API3003. Old servers stopped. Main application source unchanged; only this approved coordination file updated.
+No active UI paths claimed. Independent plan and UI STATUS point to this authority. Phase12 unchanged; no push/merge. Next proposed batch: checkout presentation, requires normal eligibility/claim before implementation; not started.
 
 ## پیشرفت کلان
 
@@ -49,6 +417,930 @@
 - [ ] `Deferred` — AI, Bots & Advanced Automation — خارج از roadmap اجرایی فعلی
 
 ## handoff فاز فعال
+
+## آخرین batch تکمیل‌شده — PD-B1C
+
+`F12-PD-B1C DONE` 2026-10-14؛ single agent Muse Spark؛ review gate PASS (scope/contract/tests). شواهد کامل: [phase-12 log](logs/phase-12.md#f12-pd-b1c--customer-product-details-integration). هیچ batch بعدی شروع نشده است (B2 منوط به دستور جدا).
+
+`F12-PD-B1B DONE` 2026-10-14؛ single agent Muse Spark؛ review gate PASS (scope/contract/tests). شواهد کامل: [phase-12 log](logs/phase-12.md#f12-pd-b1b--dashboard-product-content-editor). هیچ batch بعدی شروع نشده است (B1C/B2 منوط به دستور جدا).
+
+## آخرین batch تکمیل‌شده — 04C-B01C
+
+04C-T01 DONE 2026-10-14؛ single agent Muse Spark؛ review gate PASS (scope/discipline/tests). شواهد کامل: [phase-12 log](logs/phase-12.md#04c-t01--customer-store-real-product-image-integration). هیچ batch بعدی شروع نشده است.
+
+```text
+Batch ID: 04C-B01C
+Coordinator/Thread: Muse Spark (single agent, no subagents per task instruction)
+Started at: 2026-10-14 Asia/Tehran
+Phase: Phase 04C — Customer Store real product image integration
+Batch status: IN_PROGRESS
+Contract baseline: plan/contracts/store-product-media-v1.md (frozen); baselines 44d472e / e49e615 / e80573c; S1 handoff plan/logs/phase-12.md#f12-t06-r2
+Coordinator-only files: plan/STATUS.md, plan/logs/phase-12.md (04C entry on completion)
+Tasks:
+  - Task ID: 04C-T01
+    Agent/Thread: Muse Spark (single agent)
+    Status: CLAIMED
+    Depends on: F12-T06-R1 DONE, F12-T06-R2 DONE, F12-T06-S1 DONE; frozen media contract
+    Scope: Customer App image integration only (catalog/detail/cart/wishlist/recent + neutral fallback + Digikala mapping removal + focused tests + Playwright)
+    Owned paths: apps/app/src/components/store/**, apps/app/src/stores/product-images.ts, apps/app/src/app/(public)/store/**, apps/app/src/app/(app)/store/**, apps/app/src/lib/patient-ui.test.ts (or focused new spec), apps/app test config for Playwright scenario
+    Shared/exclusive resource: none (no Prisma, no OpenAPI client, no dashboard, no R2 changes; main local DB migration stays unapplied per instruction)
+    Expected verification: app typecheck, focused vitest, Playwright desktop+mobile mock-API render, git diff --check
+```
+
+## آخرین batch تکمیل‌شده — F01-B06-B-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-12 Asia/Tehran`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `F01-R06-B` / `F01-R06-C` و قرارداد freeze‌شدهٔ `contracts/otp-sms-auth-v1.md`.
+
+- Task ID: `F01-R06-B-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F01-R06-B DONE` و قرارداد OTP/SMS پذیرفته‌شده.
+  - Scope: حفظ کدهای خطای OTP/SMS از فیلتر HTTP، انتشار پاسخ‌های OTP در OpenAPI/client و regression test.
+  - Owned paths: `apps/api/src/common/errors/api-error.ts`، `apps/api/src/modules/identity/presentation/http/auth.controller.ts`، `apps/api/test/**`، `packages/api-client/openapi.json`، `packages/api-client/src/schema.generated.ts`، `apps/web/src/services/auth.ts`، `plan/STATUS.md`، `plan/phases/12-PRODUCTION-HARDENING.md`، `plan/logs/phase-12.md`.
+  - Shared/exclusive resource: API error registry و generated OpenAPI/client، single-writer.
+  - Expected verification: filter regression، API test typecheck، OTP integration در صورت وجود DATABASE_URL، OpenAPI runtime drift/client generation، frontend typecheck/test و `git diff --check`.
+  - Contract: هر کد خطای literal که از API پرتاب می‌شود باید در registry بماند؛ مقدارهای غیرخطا مثل role code وارد enum نمی‌شوند. رفتار fallback برای کد ناشناخته حفظ می‌شود.
+  - Review: PASS — کدهای error literal ثبت شدند؛ OTP error responses در OpenAPI مستند و client بازتولید شد؛ fallback ناشناخته حفظ شد.
+  - Verification: API typecheck، filter/OpenAPI/OTP integration و treatment-plan integration، client test/build و web typecheck/test پاس شدند. اجرای کل API suite شکست‌های مستقل reminders/database fixtures/config داشت که در `plan/logs/phase-12.md` ثبت شده‌اند.
+  - Commit: در این handoff ایجاد می‌شود.
+  - Next eligible work: F12 blockers و ترتیب جاری Phase 12؛ batch جدیدی در این handoff شروع نمی‌شود.
+
+## آخرین batch تکمیل‌شده — F01-B06-C
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `F01-R06-B` commit `492d934` and generated OTP/admin API contract.
+
+- Task ID: `F01-R06-C`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F01-R06-A` and `F01-R06-B DONE`.
+  - Scope: OTP-first/password-secondary web UX, responsive dashboard SMS/provider/policy/log UX, frontend regressions and deployment observation.
+  - Owned paths: `apps/web` auth UI/service/tests, dashboard SMS settings/API/settings integration and final coordinator evidence.
+  - Shared/exclusive resource: generated client is frozen by B; no schema/API change in this task.
+  - Review: PASS — ورود و ثبت‌نام OTP-first هستند، password روش ثانویه و session/redirect موجود را reuse می‌کند؛ داشبورد provider/policy/log را بدون secret read-back مدیریت می‌کند.
+  - Verification: web 13/13، dashboard 75/75، typecheckهای web/dashboard/API، Chrome OTP E2E (2/2) و build webpack هر دو frontend پاس شدند؛ Turbopack در sandbox روی CSS-worker port bind محدود بود.
+  - Deployment: GitHub Action `38173139936` برای commit `23ffeae` در `2026-10-12` PASS شد؛ shared-dev API readiness و `/login` هر دو پاسخ موفق دادند. تا تنظیم runtime live و credential توسط ADMIN، OTP عمداً fail-closed است.
+
+## آخرین batch تکمیل‌شده — F01-B06-B
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: `F01-R06-A` commit `6dc106b` and the frozen OTP/SMS contract.
+
+- Task ID: `F01-R06-B`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: `F01-R06-A DONE`.
+  - Scope: HMAC OTP engine, rate-limit/idempotency/concurrency, passwordless account provisioning, session reuse, public endpoints and generated client.
+  - Owned paths: identity OTP/session code, auth controller/DTOs, OTP integration tests and OpenAPI/generated client.
+  - Shared/exclusive resource: identity session infrastructure and generated API contract are single-writer resources.
+  - Expected verification: API typecheck, PostgreSQL integration including single-use concurrency, password regression and OpenAPI drift.
+  - Review: PASS — OTP code فقط در memory ارسال، verifier به‌صورت HMAC، consume اتمیک و provisioning بدون credential جعلی انجام می‌شود؛ session همان زیرساخت موجود است.
+  - Verification: PostgreSQL integration single-use/concurrency، 18 تست regression رمز/session، API test typecheck و OpenAPI generated-client drift پاس شدند.
+  - Next eligible batch: `F01-B06-C` برای web/dashboard UX و evidence نهایی.
+
+## آخرین batch تکمیل‌شده — F01-B06-A
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: [`contracts/otp-sms-auth-v1.md`](contracts/otp-sms-auth-v1.md), owner-authorized OTP/SMS change control.
+
+- Task ID: `F01-R06-A`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: no active batch; contract frozen by the owner.
+  - Scope: ADR/change control, independent SMS schema/migration, credential encryption/runtime configuration, FarazSMS port/registry and ADMIN provider/policy backend.
+  - Owned paths: `apps/api/prisma/**`, `apps/api/src/modules/communications/sms/**`, API runtime/config/error wiring, deployment env/secret contract, `apps/api/package.json`, lockfile, and coordinator plan files.
+  - Shared/exclusive resource: Prisma, API module wiring, environment contract and lockfile are single-writer resources.
+  - Expected verification: migration replay/generate, SMS unit and admin authorization tests, API typecheck/build, deployment-env contract and `git diff --check`.
+  - Review: PASS — schema، AES-256-GCM keyring، runtime fail-closed، registry واقعی FarazSMS و API صرفاً ADMIN با credential write-only پیاده شدند.
+  - Verification: PostgreSQL 16 migration replay، API typecheck، SMS security tests، release/dev deployment contracts و shell syntax پاس شدند.
+  - Next eligible batch: `F01-B06-B` برای OTP engine و public auth/OpenAPI.
+
+## آخرین batch تکمیل‌شده — F12-B12-R12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: a change to the versioned bootstrap/deployment contract invalidates prior stage state and must
+re-run idempotent migrations plus all generated runtime artifacts before service readiness is accepted.
+
+- Task ID: `F12-T12-R12`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: F12-T12-R11 flag propagation and live refresh `500` evidence after stale migration state.
+  - Scope: include the deployment orchestrator in the runtime fingerprint and make runtime-contract changes reconcile
+    API client, Prisma generation/migrations, API compilation and frontend runtime config.
+  - Owned paths: `deploy/vps/deploy-dev.sh`, dev deployment contract tests, and coordinator plan files.
+  - Shared/exclusive resource: existing versioned migrations may only run via idempotent `prisma migrate deploy`; no
+    schema or application auth contract changes.
+  - Expected verification: dev/release deployment contract suites, shell syntax, `git diff --check`, push, API health
+    and authenticated refresh observation.
+  - Review: PASS — the orchestrator is part of the runtime fingerprint and any runtime-contract change forces the
+    complete idempotent bootstrap reconciliation before all services are recreated and probed.
+  - Verification: dev VPS regression, release pipeline contract, shell syntax and `git diff --check` passed.
+    Post-push migration/refresh observation remains the external acceptance gate.
+
+## آخرین batch تکمیل‌شده — F12-B12-R11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: every build stage selected by `deploy-dev.sh` must be explicitly present in the bootstrap container
+environment; host-shell flags are not assumed to cross the Compose boundary.
+
+- Task ID: `F12-T12-R11`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: F12-T12-R10 artifact fingerprinting and live failure evidence from run `38113797757`.
+  - Scope: pass all selected dependency/client/Prisma/migration/API/runtime-config stages into bootstrap and lock the
+    Compose boundary with a regression contract.
+  - Owned paths: `deploy/vps/compose.dev.yaml`, deployment contract tests, and coordinator plan files.
+  - Shared/exclusive resource: no database schema, application runtime contract, secret value or provider call changes.
+  - Expected verification: deployment contract suites, shell syntax, `git diff --check`, then push and VPS readiness.
+  - Review: PASS — all eight bootstrap controls are now declared at the Compose environment boundary, including the
+    API source fingerprint; the contract suite asserts each mapping independently.
+  - Verification: full release pipeline contract, dev VPS sync regression, shell syntax and `git diff --check` passed.
+    Post-push shared-dev readiness remains the external acceptance observation.
+
+## آخرین batch تکمیل‌شده — F12-B12-R10
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: a shared-dev API artifact is runnable only when its recorded source fingerprint matches the current
+API inputs; a missing or stale artifact must trigger a clean compile before the API container is recreated.
+
+- Task ID: `F12-T12-R10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R9 live Sadad runtime and the existing incremental shared-dev deployment.
+  - Scope: bind the API dist artifact to its source fingerprint, clean stale output before compilation, and add a
+    regression proving a same-source rerun repairs an incoherent artifact rather than starting stale JavaScript.
+  - Owned paths: `deploy/vps/{deploy-dev.sh,dev-service.sh,compose.dev.yaml}`, deployment contract tests, and
+    coordinator plan files.
+  - Shared/exclusive resource: no runtime secret value, database, payment credential or provider call is changed.
+  - Expected verification: shell syntax, dev VPS deployment contract regression, release pipeline contract and
+    `git diff --check`, followed by push and shared-dev readiness observation.
+  - Review: PASS — the API dist directory is cleaned before compilation, receives its source SHA-256 marker only
+    after a successful emit, and any absent/mismatched marker forces compile plus API recreation on a same-source rerun.
+  - Verification: dev VPS sync regression and release pipeline contract checks passed; shell syntax and
+    `git diff --check` passed. Post-push shared-dev readiness remains the external acceptance observation.
+
+## آخرین batch تکمیل‌شده — F12-B12-R9
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: deployment mode proves that the server is permitted to contact Sadad; encrypted provider revisions
+snapshot `RIAL` readiness; an authorized dashboard administrator remains the sole owner of enabled/default state.
+Disabling stops new attempts while callbacks for already-created attempts remain processable.
+Coordinator-only files: Prisma/OpenAPI client, `plan/STATUS.md`, phase checklist/log.
+
+- Task ID: `F12-T12-R9`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Sadad protocol adapter/orchestration, F12-T12-R7 credential contract and F12-T12-R8 adapter controls.
+  - Scope: replace the dormant Sadad runtime with an explicit disabled/live deployment mode; wire real attempt,
+    redirect, callback and Verify orchestration; derive readiness from validated runtime configuration; keep final
+    enable/default and emergency disable in dashboard settings; return a redirect URL to the patient app.
+  - Owned paths: Sadad/payment services, controllers, DTOs/config/module wiring and tests under `apps/api`; payment
+    page/API under `apps/app`; payment settings status under `apps/dashboard`; deployment env/compose documentation;
+    generated OpenAPI/client artifacts; coordinator plan files.
+  - Shared/exclusive resource: OpenAPI/generated client single-writer; no credential values, external payment call,
+    production environment mutation or database migration in the repository task.
+  - Expected verification: config/adapter/unit tests, PostgreSQL integration when available, API/app/dashboard
+    typecheck and focused tests, OpenAPI drift check, disabled-mode regression and `git diff --check`.
+  - Review: PASS — runtime only selects the real bounded HTTPS transport under validated `live` configuration;
+    ADMIN enable/default remains independent, callback/Verify can finish after an administrative disable, and only a
+    matching successful Verify produces the single payment/order/inventory effect. Callback input is allowlisted and
+    rate-limited, unknown/timeout outcomes remain reconciliation-safe, and concurrent attempt reuse keeps one OrderId.
+  - Verification: clean PostgreSQL 16 replayed all `33` migrations and seed; live provider-config integration `1/1`
+    and disabled checkout/payment integration `2/2` passed. API TypeScript plus focused `27/27`, OpenAPI `7/7`, app
+    `52/52`, dashboard `75/75`, generated-client drift/typecheck and `git diff --check` all passed.
+  - External next action: deploy this commit, set the documented non-secret runtime values on the VPS using the exact
+    merchant-confirmed redirect profile, enter/rotate the three credentials in Dashboard, enable/default Sadad, then
+    execute the controlled low-value acceptance transaction. No real credential or Sadad transaction was used here.
+
+## آخرین batch تکمیل‌شده — F12-B12-R8
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-11 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: the dashboard lists the provider registry dynamically, exposes each adapter's code-owned
+configuration and callback guidance, and controls enabled/default state through the existing authorized API. Sadad
+activation remains fail-closed while `goLiveReady=false`; deactivation and credential rotation remain available.
+Coordinator-only files: `plan/STATUS.md`, phase checklist/log.
+
+- Task ID: `F12-T12-R8`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R7 payment credential contract and the Phase 09 provider registry/config API.
+  - Scope: replace the single-form payment editor with adapter cards and a focused adapter detail view; show current
+    public API callback/back-link and provider redirect information; connect enable/disable and default-provider
+    controls to the existing API; preserve stable activation blockers and write-only credential rotation.
+  - Owned paths: `apps/dashboard/src/features/settings/payment-provider-settings.tsx`,
+    `apps/dashboard/src/lib/{api.ts,commerce-payment-provider-api*}`, provider-state service/tests under
+    `apps/api/src/modules/commerce/payments/` and relevant dashboard/API tests; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: no database, migration, API route, OpenAPI, generated client, credential-storage,
+    runtime transport or payment-attempt change.
+  - Expected verification: payment adapter URL/state unit tests, dashboard test/typecheck/lint, responsive read-only
+    browser inspection when environment permits, and `git diff --check`.
+  - Review: PASS — registry results are rendered as adapter cards; the selected adapter exposes environment-specific
+    callback, technical endpoints, write-only credential rotation and state controls. Disabling all adapters provides
+    the payment-wide off action; per-adapter disable also clears stale default state. Enable/default controls remain
+    unavailable when the server reports `goLiveReady=false`.
+  - Verification: dev runtime config confirms `apiUrl=https://dev-api.roxco.ir`, callback helper tests cover dev and
+    staging origins, dashboard TypeScript/ESLint and `75/75` tests across `22` files pass, API test TypeScript and
+    OpenAPI contract `7/7` pass, and `git diff --check` passes. Post-push shared-dev inspection remains external.
+  - External next action: push `dev`, observe deployment, and inspect adapter list/detail at desktop/mobile widths.
+
+## batch تکمیل‌شده — F12-B12-R7
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: every settings entity exposes its accepted lifecycle (create, edit, activate/deactivate and guarded
+delete); Sadad configuration requires write-only `merchantId`, `terminalId` and `terminalKey` as one encrypted revision.
+Coordinator-only files: `plan/STATUS.md`, phase checklist/log, runtime OpenAPI and generated API client.
+
+- Task ID: `F12-T12-R7`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Phase 04 directory/scheduling CRUD, Phase 09 payment credential encryption, and F12-T12-R6.
+  - Scope: connect the existing update/delete endpoints for every dashboard settings category with explicit edit,
+    deactivate and confirmed-delete UX; map dependency conflicts to actionable feedback; define and validate the three
+    Sadad credential fields in backend/OpenAPI/client and replace the ambiguous dashboard secret input.
+  - Owned paths: `apps/dashboard/src/features/settings/**`, `apps/dashboard/src/lib/directory-settings-api*`,
+    `apps/api/src/modules/commerce/payments/**`, relevant API tests, `packages/api-client/{openapi.json,src/schema.generated.ts}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: OpenAPI/generated client single-writer; existing encrypted credential storage is reused;
+    no migration, payment enablement, role or permission change.
+  - Expected verification: API unit/integration and OpenAPI checks, generated-client drift check, dashboard adapter/UI
+    tests, API/dashboard typecheck/lint, desktop/mobile browser inspection, mutation safety review and `git diff --check`.
+  - Review: PASS — تمام رکوردهای directory/scheduling اکنون edit، activate/deactivate و confirmed delete دارند؛
+    delete وابسته با `DIRECTORY_RECORD_IN_USE` به غیرفعال‌سازی هدایت می‌شود. فرم سداد سه فیلد صریح دارد و API
+    همان سه مقدار را اجباری و write-only اعتبارسنجی و در credential revision رمزنگاری می‌کند.
+  - Verification: API test TypeScript، OpenAPI contract `7/7`، generated client build، dashboard TypeScript/ESLint،
+    dashboard `73/73` test در `22` فایل و `git diff --check` پاس شدند. build پیش‌فرض Next در sandbox هنگام bind
+    پردازشگر CSS Turbopack با `Operation not permitted` متوقف شد؛ این محدودیت محیط است و typecheck/lint/test پاس است.
+  - External next action: push `dev` و مشاهدهٔ deployment/browser روی shared dev.
+
+## آخرین batch تکمیل‌شده — F12-B12-R6
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: settings opens as a read-first operational overview; mutations are available only inside an
+explicitly opened, focused editor and remain server-confirmed after submit.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R6`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R4 workflow and F12-T12-R5 pagination corrective.
+  - Scope: replace the always-open settings forms with a compact clinic overview and descriptive category cards;
+    open each editor in an accessible responsive modal/sheet, keep writes behind explicit submit actions, and preserve
+    existing directory/scheduling/payment API behavior and error feedback.
+  - Owned paths: `apps/dashboard/src/features/settings/**`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: no API, database, OpenAPI, generated-client, auth or role change.
+  - Expected verification: focused settings tests, dashboard test/typecheck/lint, responsive browser review on desktop
+    and mobile widths, keyboard dialog behavior, and `git diff --check`.
+  - Review: PASS — the initial route is read-first and contains only server-backed summary/status data plus descriptive
+    category cards; every form is isolated in an explicitly opened editor, draft input is discarded on close, and the
+    responsive dialog owns scroll/focus, Escape/backdrop close and keyboard focus wrapping.
+  - Verification: dashboard `69/69` tests across `21` files, TypeScript, ESLint and `git diff --check` PASS. Desktop
+    and mobile browser inspection remains the post-push shared-dev gate.
+  - External next action: push `dev`, verify the deployment, then inspect the overview and at least one editor at
+    desktop and mobile widths without submitting a mutation.
+
+## آخرین batch تکمیل‌شده — F12-B12-R5
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 18:03 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: every dashboard settings list request must respect the accepted API maximum `pageSize=50`; a
+single invalid list query must not make a valid authenticated settings session appear unavailable.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R5`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed F12-T12-R4 settings workflow and the existing Phase 04 directory/scheduling list contracts.
+  - Scope: align dashboard settings list pagination with the API maximum, add a regression assertion for the emitted
+    queries, and verify the authenticated shared-dev settings route no longer fails with `BAD_REQUEST`.
+  - Owned paths: `apps/dashboard/src/lib/directory-settings-api*`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: generated API client is read-only; no API, database, OpenAPI, auth or role change.
+  - Expected verification: focused adapter test, dashboard test/typecheck/lint, `git diff --check`, then authenticated
+    browser observation after the `dev` deployment.
+  - Review: PASS — all seven paginated directory/scheduling reads now send the API-supported maximum `pageSize=50`;
+    the regression test inspects every emitted list URL, while authentication and authorization contracts are unchanged.
+  - Verification: authenticated shared-dev browser diagnosis reproduced `400 BAD_REQUEST` with
+    `pageSize must not be greater than 50` on all seven list endpoints; focused `7/7` tests, full dashboard `69/69`
+    tests, TypeScript, ESLint and `git diff --check` PASS.
+  - External next action: push `dev`, observe deployment, then repeat the authenticated browser request to confirm all
+    settings reads return `2xx` and the workflow renders server data.
+
+## آخرین batch تکمیل‌شده — F12-B12-R4
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: dashboard settings must express the accepted directory publication prerequisites and keep each
+clinic, doctor, offering, schedule and calendar mutation visibly scoped to its own form.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R4`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Phase 04 directory/scheduling APIs and completed F12-T12-R3 dashboard navigation corrective.
+  - Scope: replace the ambiguous settings form with a guided clinic → specialty/doctor → service/offering → schedule
+    workflow, preserve backend error codes, repair refresh/success state handling, isolate form selections, and add
+    explicit payment-setting feedback without changing API or persistence contracts.
+  - Owned paths: `apps/dashboard/src/features/settings/**`, `apps/dashboard/src/lib/directory-settings-api*`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: existing generated API client is read-only; no API, database, OpenAPI or role change.
+  - Expected verification: focused adapter/workflow regression tests, dashboard test/typecheck/lint, supported build or
+    shared-dev route compilation, responsive source review and `git diff --check`.
+  - Review: PASS — new records follow API publication prerequisites in one guided path; old drafts have explicit
+    repair actions; mutation messages retain stable server error codes; successful writes are re-read before progress
+    changes; independent forms no longer overwrite one another's doctor or date selection.
+  - Verification: dashboard `69/69` tests across `21` files, TypeScript, ESLint, settings contract scan and
+    `git diff --check` PASS. Shared-dev `/settings` compilation remains the post-push build observation because this
+    executor cannot capture Next child-process output during a production build.
+  - External next action: push `dev`, verify the shared-dev workflow and request `/settings` from the live dashboard.
+
+## آخرین batch تکمیل‌شده — F12-B12-R3
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: dashboard navigation and status affordances expose only API-backed operational capabilities;
+empty, loading and failure states remain distinct; the shell remains usable on narrow viewports.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/phases/12-PRODUCTION-HARDENING.md`.
+
+- Task ID: `F12-T12-R3`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed Phase 05–11 dashboard connections and the deferred AI/bot/advanced-automation boundary.
+  - Scope: remove fabricated dashboard badges and mock/deferred navigation, remove false header affordances, expose
+    the real audit route, distinguish patient-list failure from an empty list, resolve the authorized clinic for CRM,
+    replace raw chat UUID entry with an API-backed appointment selector, and add responsive shell navigation.
+  - Owned paths: `apps/dashboard/src/**`; coordinator-only `plan/{STATUS.md,logs/phase-12.md,phases/12-PRODUCTION-HARDENING.md}`.
+  - Shared/exclusive resource: dashboard navigation/session UI only; no API, database, OpenAPI or generated-client change.
+  - Expected verification: focused dashboard regression tests, dashboard typecheck/build, mock/navigation scan,
+    responsive browser inspection where available, and `git diff --check`.
+  - Review: PASS — operational navigation contains only API-backed features, deferred routes fail closed with an
+    explicit unavailable state, CRM/chat no longer require copied UUIDs, health loading/error/empty states are
+    distinct, and the responsive shell exposes an accessible mobile drawer.
+  - Verification: dashboard `66/66` tests, TypeScript, ESLint, route/mock scan and `git diff --check` PASS. The
+    sandbox cannot execute Next's child-process `tsc --showConfig` or Turbopack's internal bind, so production-build
+    verification is deferred to the post-push CI/shared-dev compile; direct TypeScript configuration output is valid.
+  - External next action: push to `dev`, verify the GitHub sync and compile representative dashboard routes on the
+    shared development origin.
+
+## آخرین batch تکمیل‌شده — F12-B02-R23
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: shared-dev frontend watchers keep their original Next development compiler and may use available
+host memory during first-route compilation without a per-container memory ceiling.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R23`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: live app compilation repeatedly restarting under the 768 MiB container limit and a local root-route
+    compile measurement of approximately 1.07 GiB RSS.
+  - Scope: restore the original app Turbopack command and remove only the web/app/dashboard dev memory ceilings.
+  - Owned paths: `deploy/vps/{dev-service.sh,compose.dev.yaml,README.md}`,
+    `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev frontend resource policy only.
+  - Expected verification: original compiler command and absent frontend memory-ceiling contracts, full dev/release
+    deployment checks and `git diff --check`.
+  - Review: PASS — all frontend watchers retain the default Next development command, while their dev Compose
+    services no longer impose a memory cgroup below measured compilation demand.
+  - Verification: shell syntax, full dev VPS simulation, release pipeline contract and `git diff --check` PASS.
+  - External next action: push to `dev` and verify the app root compilation completes with available host RAM.
+
+## آخرین batch تکمیل‌شده — F12-B02-R22
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: the app remains a development watcher with fast source refresh, but its compiler process must stay
+resident after serving the first route.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R22`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R21` and live diagnostics showing Next Turbopack repeatedly exits cleanly after
+    detecting `next.config.ts`, with `RestartCount=16`, `OOM=false` and intermittent successful root responses.
+  - Scope: run only the unstable shared-dev app watcher on Next's webpack development compiler and preserve web and
+    dashboard Turbopack watchers.
+  - Owned paths: `deploy/vps/{dev-service.sh,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev app watcher command only.
+  - Expected verification: service command contract, dev/release deployment checks and `git diff --check`.
+  - Review: PASS — only `apps/app` selects webpack development mode; the existing dev server, bind mount, HMR and
+    isolated web/dashboard commands are preserved.
+  - Verification: shell syntax, full dev VPS simulation, release pipeline contract and `git diff --check` PASS.
+  - External next action: push to `dev` and verify the app watcher remains resident on the shared server.
+
+## آخرین batch تکمیل‌شده — F12-B02-R21
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING`
+Batch status: `DONE`
+Contract baseline: frontend readiness checks must fail within a bounded interval and attempt one safe recovery of a
+stalled Next development watcher before rejecting the synced source.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R21`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R20` and live evidence that `app` accepts a container start but never answers HTTP.
+  - Scope: bound frontend readiness retries, emit diagnostics promptly, clear only the affected derived `.next` cache,
+    recreate that watcher once and verify readiness again.
+  - Owned paths: `deploy/vps/{deploy-dev.sh,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev watcher lifecycle only; no database, secret, API contract or release behavior.
+  - Expected verification: stalled-app recovery simulation, dev/release deployment checks, shell syntax and
+    `git diff --check`.
+  - Review: PASS — a stalled frontend now produces diagnostics promptly, receives one isolated cache reset/recreate,
+    and either becomes ready or fails the deployment within a bounded interval.
+  - Verification: shell syntax, first/unchanged/per-service sync plus stalled-app recovery simulation,
+    `pnpm release:test` and `git diff --check` PASS.
+  - External next action: push to `dev`, observe the shared-dev sync and verify all three public frontend origins.
+
+## آخرین batch تکمیل‌شده — F12-B12-R2
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 Asia/Tehran`
+Phase: `12-PRODUCTION-HARDENING` (public web alert severity corrective)
+Batch status: `DONE`
+Contract baseline: authentication/API failures must be visually destructive and accessible; success, information and
+warning notices must retain distinct semantic colors.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T12-R2`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: existing typed auth error mapping and live theme evidence that `destructive` has no web color token.
+  - Scope: define public-web semantic alert colors and preserve Sonner severity variants without changing auth/API
+    behavior or Persian error mappings.
+  - Owned paths: `apps/web/src/app/globals.css`, `apps/web/src/components/{auth/AuthErrorAlert.tsx,ui/sonner.tsx}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: none.
+  - Expected verification: web tests/typecheck/build, rendered semantic alert colors, accessibility role and
+    `git diff --check`.
+  - Review: PASS — inline auth/API failures now use the destructive red palette and Sonner success, information,
+    warning and error variants keep separate green, blue, amber and red palettes.
+  - Verification: 12 web tests, web typecheck, webpack production build, Chromium computed-style checks for the auth
+    `role=alert` and information toast, plus `git diff --check` PASS.
+  - External next action: push to `dev` and verify the public login error alert after shared-dev sync.
+
+## آخرین batch تکمیل‌شده — F12-B12-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING` (public web visual asset and mobile corrective)
+Batch status: `DONE`
+Contract baseline: public web icons and typography must render from repository dependencies/assets without runtime
+font or icon services; the home page must keep a bounded mobile viewport through and after the footer.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T12-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed public web baseline and live mobile evidence that unresolved Material Symbols render as text
+    and the page wrapper adds blank space below the footer.
+  - Scope: replace font-based generic icons with local component icons, self-host Yekan Bakh typography, correct the
+    mobile footer/page boundary and verify responsive rendering without external asset requests.
+  - Owned paths: `apps/web/**`, root dependency manifests; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: root lockfile only; no API, authentication, database, app, dashboard or deployment
+    behavior change.
+  - Expected verification: focused tests/typecheck/build, mobile/desktop browser layout and asset-request checks,
+    live shared-dev sync and `git diff --check`.
+  - Review: PASS — all generic web icons are typed, tree-shaken Lucide SVG components; Yekan Bakh FaNum is a
+    self-hosted variable font; and the mobile page ends at the footer without the previous trailing padding.
+  - Verification: 12 web tests, web typecheck, supported webpack production build, Chromium at 320/390/768/1440px,
+    same-origin font request/no external icon request, zero horizontal overflow and `git diff --check` PASS.
+  - External verification: GitHub run `38017448280` synced commit `9453128` successfully. Fresh Chromium at 390px on
+    `https://dev.roxco.ir` loaded Yekan Bakh from the same origin, rendered 56 Lucide SVGs and zero Material Symbols,
+    had no failed requests or horizontal overflow, and ended the document at the footer.
+
+## آخرین batch تکمیل‌شده — F12-B02-R20
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-10 UTC`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev browser hydration and fast frontend sync corrective)
+Batch status: `DONE`
+Contract baseline: shared dev remains a bind-mounted Next development runtime without full frontend builds; browser
+hydration, dev-origin authorization and changed-service refresh must be verified after every source sync.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R20`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R19` and live evidence that the public dev page serves HTML while its Next client
+    does not hydrate, leaving the account header in its server-rendered checking state.
+  - Scope: allow explicit remote/LAN Next development origins, fingerprint frontend source independently, restart only
+    changed watcher services without production builds, and add a browser-realistic HMR deployment probe.
+  - Owned paths: `apps/{web,app,dashboard}/next.config.ts`, `deploy/vps/{compose.dev.yaml,deploy-dev.sh,
+    dev-env.example,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}` and a focused dev browser probe;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev frontend watcher lifecycle only; no authentication policy, API runtime,
+    database, secret, staging, production-sim or release artifact change.
+  - Expected verification: config parsing/typechecks, first/unchanged/per-frontend sync simulations, browser hydration
+    probe contract, release/deployment checks and `git diff --check`.
+  - Review: PASS — all three Next 16 development servers receive normalized explicit hostnames, changed frontend
+    source recreates only its own persistent watcher, and deployment requires a public-origin HMR WebSocket `101`
+    after bounded CDN/watcher warm-up retries before it records the synced source as ready.
+  - Verification: focused origin parsing, all frontend typechecks, first/unchanged/dependency/API/per-frontend dev sync
+    simulations, `pnpm release:test`, a live local browser-origin HMR handshake and `git diff --check` PASS.
+  - External verification: GitHub run `38015897226` synced commit `4ef2d24` successfully. A fresh Chromium session on
+    `https://dev.roxco.ir` rendered both login/register controls, observed the expected anonymous refresh `401` and
+    reported no failed browser requests. Existing `APP_ORIGINS` supplied Next's allowlist; no server secret, database,
+    port or Caddy change was required.
+
+## آخرین batch تکمیل‌شده — F12-B02-R19
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev Next warm-up corrective)
+Batch status: `DONE`
+Contract baseline: persistent Next dev watchers must be warmed serially by deployment readiness probes; Docker health
+checks must not concurrently trigger their expensive first route compilation with a shorter timeout.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R19`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R18` and live app logs showing 6–7 second initial Next compilation versus a
+    five-second health/readiness timeout.
+  - Scope: make dev watcher health cadence and sequential readiness timeouts accommodate bounded initial compilation.
+  - Owned paths: `deploy/vps/{compose.dev.yaml,deploy-dev.sh}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`;
+    coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev Next watcher startup only; no API runtime, database, secret, Caddy, staging
+    or production-sim change.
+  - Expected verification: startup timeout/cadence contract, dev/release deployment tests and `git diff --check`.
+  - Review: PASS — Docker no longer concurrently compiles all three Next root routes through healthchecks. The
+    existing deployment probes warm web, app and dashboard serially and allow 30 seconds for their first compile.
+  - Verification: `bash scripts/test-vps-dev.sh`, `pnpm release:test` and targeted `git diff --check` PASS.
+  - External next action: push the corrective to `dev`; a failed probe now also prints restart/OOM state. No server
+    configuration change is required.
+
+## آخرین batch تکمیل‌شده — F12-B02-R18
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev sync serialization corrective)
+Batch status: `DONE`
+Contract baseline: a newly dispatched shared-dev sync must serialize behind an already-running remote sync instead
+of failing immediately, and rsync must preserve the complete server-generated API source directory.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R18`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R17` and live concurrent-sync/rsync warning evidence.
+  - Scope: queue GitHub runs, wait with a bounded timeout for the remote deploy lock before source upload and deploy,
+    and exclude the complete ignored API generated directory from source deletion.
+  - Owned paths: `.github/{workflows/dev-sync.yml,CI.md}`, `scripts/deploy-dev-vps.mjs`, `deploy/vps/deploy-dev.sh`,
+    `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev source sync and deployment lock only; no application, database, secret,
+    Caddy, staging or production-sim change.
+  - Expected verification: lock-contention simulation, generated-directory preservation contract, dev/release tests
+    and `git diff --check`.
+  - Review: PASS — GitHub no longer cancels an in-flight sync, source upload and deployment both wait up to ten
+    minutes for the remote kernel lock, and rsync preserves the complete ignored API generated directory rather than
+    attempting to delete its parent.
+  - Verification: live lock-contention simulation, first/unchanged/dependency/API/frontend dev sync cases,
+    `pnpm release:test` and `git diff --check` PASS.
+  - External next action: push the corrective to `dev`; do not delete `state/deploy.lock`. No server configuration
+    change is required.
+
+## آخرین batch تکمیل‌شده — F12-B02-R17
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev build-context corrective)
+Batch status: `DONE`
+Contract baseline: the dev runtime image must always build from the validated synced workspace, independent of the
+remote shell working directory or Docker Compose project-directory resolution.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R17`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R16` and live failure evidence showing Compose resolved the build context outside
+    the synced workspace.
+  - Scope: anchor the dev image build context to the already validated absolute `DEV_WORKSPACE_PATH` and freeze that
+    contract in release/deployment tests.
+  - Owned paths: `deploy/vps/compose.dev.yaml`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev image build context only; no application, database, secret, Caddy, staging
+    or production-sim change.
+  - Expected verification: rendered Compose context, dev/release deployment tests, `git diff --check`.
+  - Review: PASS — Compose now receives the validated absolute workspace as its build context, so neither the remote
+    login directory nor Compose project-directory semantics can move the Docker build outside the synced source.
+  - Verification: rendered Compose context, `bash scripts/test-vps-dev.sh`, `pnpm release:test` and
+    `git diff --check` PASS.
+  - External next action: push the corrective to `dev`; no server-side runtime.env, secret, database, Caddy or port
+    change is required.
+
+## آخرین batch تکمیل‌شده — F12-B02-R16
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (shared-dev delivery and browser-runtime correctives)
+Batch status: `DONE`
+Contract baseline: Next services remain genuine development servers with bind-mounted source and HMR; the API keeps
+its OOM-safe compile-on-sync runtime. Unchanged bootstrap work must be skipped, and public runtime configuration must
+execute synchronously before hydration in web, app and dashboard.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`, `plan/logs/phase-01.md`.
+
+- Task ID: `F12-T02-R16`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R15` and live healthy/OOM-free API evidence.
+  - Scope: fingerprint API client, Prisma, public config and API emit inputs; run only changed bootstrap stages, avoid
+    API recreation when its emit is unchanged, and reduce fresh-runner rsync retransmission.
+  - Owned paths: `.github/CI.md`, `scripts/deploy-dev-vps.mjs`,
+    `deploy/vps/{deploy-dev.sh,dev-service.sh,README.md}`, `scripts/{test-vps-dev.sh,test-release-pipeline.mjs}`.
+  - Shared/exclusive resource: shared-dev sync lifecycle only; no release, staging, production-sim or product change.
+  - Expected verification: first/dependency/source-only/frontend-only sync simulations, release contracts, syntax and
+    `git diff --check`.
+  - Review: PASS — unchanged/frontend-only syncs skip bootstrap and recreation; API-only changes transpile and
+    recreate only API; dependency/runtime changes retain the full safe path. Generated artifacts persist across rsync.
+  - Verification: `bash scripts/test-vps-dev.sh`, `pnpm release:test`, shell/Node syntax and `git diff --check` PASS.
+
+- Task ID: `F01-R08`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted browser auth/session baseline and live dev evidence that client hydration never attaches.
+  - Scope: load the generated public runtime configuration as a native blocking head script before Next client chunks
+    in web, app and dashboard; cover the shared contract and retain secret-free public values.
+  - Owned paths: `apps/{web,app,dashboard}/src/app/layout.tsx`, `scripts/test-runtime-config-loading.mjs`.
+  - Shared/exclusive resource: browser runtime-config bootstrap only; no auth policy, API or secret change.
+  - Expected verification: runtime-config loading contract, three frontend typechecks, web tests/build, live-browser
+    hydration reproduction locally, and `git diff --check`.
+  - Review: PASS — runtime config now executes synchronously in the document head before any hydratable body content;
+    all three clients retain the same generated secret-free public values and no longer depend on Next's script
+    scheduler to begin hydration.
+  - Verification: runtime-config contract, web tests/build, serial web/app/dashboard typechecks, local browser header
+    hydration and intercepted login submission, and `git diff --check` PASS.
+  - External next action: push both accepted task commits to `dev`; after the workflow completes, verify the public
+    header leaves its account-checking skeleton and login submits to `https://dev-api.roxco.ir/v1/auth/login` rather
+    than navigating with `POST https://dev.roxco.ir/login`.
+
+## آخرین batch تکمیل‌شده — F12-B02-R15
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev API compiler/runtime isolation corrective)
+Contract baseline: every Git sync compiles the API once in the one-shot bootstrap container; the persistent API
+container only runs the emitted application so compiler and runtime memory cannot accumulate under its `1g` cgroup.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R15`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R14` and live cgroup evidence (`oom=2`, `oom_kill=2`, container unhealthy).
+  - Scope: move shared-dev API compilation into bootstrap, leave only the emitted Node runtime in the API container,
+    recreate that runtime once per completed sync, and freeze the separation in deployment tests.
+  - Owned paths: `deploy/vps/{dev-service.sh,deploy-dev.sh}`, `scripts/{test-vps-dev.sh,
+    test-release-pipeline.mjs}`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev API process lifecycle only; no application compiler contract, production
+    runtime, database, secret, Caddy, port, staging or production-sim change.
+  - Expected verification: constrained compiler emission with decorator metadata, dev/release deployment tests,
+    shell syntax and `git diff --check`.
+  - Review: PASS — bootstrap completes migration, optional seed and bounded transpilation before activation; the API
+    container now runs only emitted Node code and source-only syncs recreate only that container.
+  - Verification: constrained `640 MiB` emit with decorator metadata in 111 files, `pnpm release:test`, direct dev
+    VPS contract test, Node/shell syntax and `git diff --check` PASS.
+  - External next action: push this commit to `dev`; the runtime hash change forces recreation and replaces the live
+    compiler-bearing unhealthy API container without any manual Caddy, database, secret or port change.
+
+## آخرین batch تکمیل‌شده — F12-B02-R14
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (low-memory shared-dev API compiler corrective)
+Contract baseline: shared dev retains TypeScript decorator metadata and CI typechecking, but its persistent compiler
+must emit without full semantic/declaration work inside the existing `1g` API container; failed probes must print the
+service state and logs in the workflow.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R14`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R13` and repeated live API reset/restart evidence after the heap-only corrective.
+  - Scope: make the API dev compiler transpile-only without losing decorator metadata, bound it below the previous
+    heap ceiling, and expose API logs automatically when readiness fails.
+  - Owned paths: `apps/api/scripts/dev.mjs`, `apps/api/test/dev-runtime.spec.ts`,
+    `deploy/vps/deploy-dev.sh`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: API development compilation and dev readiness diagnostics only; no production runtime,
+    database, secret, Caddy, port, staging or production-sim change.
+  - Expected verification: constrained transpile with decorator metadata, focused API dev-runtime test, API build,
+    dev/release deployment tests, syntax and `git diff --check`.
+  - Review: PASS — dev `tsc` now skips semantic/declaration work, stays bounded at `640 MiB`, and preserves emitted
+    Nest decorator metadata; CI/full builds retain normal typechecking. A failed health probe now prints service state
+    and the last 200 log lines before exiting.
+  - Verification: clean constrained emit at `640 MiB` with decorator metadata in 111 files, focused API dev-runtime
+    test (3/3), full API build, `pnpm release:test`, Node/shell syntax and `git diff --check` PASS.
+  - External next action: push this commit to `dev` and rerun `Sync shared dev VPS`; no server-side configuration
+    change is required. If readiness still fails, the workflow will now include the actionable API logs.
+
+## آخرین batch تکمیل‌شده — F12-B02-R13
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev API compiler heap corrective)
+Contract baseline: shared dev keeps its existing `1g` API container limit; only the TypeScript compiler subprocess
+receives a larger V8 old-space ceiling so the application runtime and other services are unaffected.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R13`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R12` secret-mount corrective and live logs proving compiler heap exhaustion.
+  - Scope: prevent the shared-dev API compiler from restarting at the container-aware default V8 heap ceiling and
+    add a focused regression assertion.
+  - Owned paths: `apps/api/scripts/dev.mjs`, `apps/api/test/dev-runtime.spec.ts`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: API development compiler process only; no production runtime, container limit,
+    database, secret, staging or production-sim change.
+  - Expected verification: focused API dev-runtime test, API development build, Node syntax and `git diff --check`.
+  - Review: PASS — both TypeScript compiler invocations receive a `768 MiB` V8 old-space ceiling while the Nest
+    runtime and the existing `1g` API container limit remain unchanged.
+  - Verification: focused API dev-runtime test (3/3), API build, Node syntax and `git diff --check` PASS.
+  - External next action: push this commit to `dev` and rerun `Sync shared dev VPS`; no server-side environment,
+    database, secret, Caddy or port change is required.
+
+## آخرین batch تکمیل‌شده — F12-B02-R12
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev lower-case secret mount corrective)
+Contract baseline: Compose mounts lower-case file-secret names while application environment variables remain
+upper-case; shared dev must translate between those names without changing secret files or release environments.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R12`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R11` build-context corrective and the first successful live dev image build.
+  - Scope: make the shared dev secret loader read Compose's lower-case `/run/secrets/*` paths while exporting the
+    existing upper-case API environment variables, and add a regression contract assertion.
+  - Owned paths: `deploy/vps/dev-service.sh`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev file-secret adapter only; no secret value, application contract, database,
+    staging or production-sim change.
+  - Expected verification: dev/release contract suite, VPS behavior simulation, shell syntax and `git diff --check`.
+  - Review: PASS — one shared loader now maps upper-case environment-variable names to Compose's lower-case secret
+    filenames, covering database, JWT, refresh pepper and both payment-key files without changing their values.
+  - Verification: `pnpm release:test`, `bash scripts/test-vps-dev.sh`, `bash -n deploy/vps/dev-service.sh` and
+    `git diff --check` PASS.
+  - External next action: push this commit to `dev`; the existing PostgreSQL volume/container may remain in place and
+    the sync can resume bootstrap without recreating secrets. No batch is started in this handoff.
+
+## آخرین batch تکمیل‌شده — F12-B02-R11
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-09 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (`F12-T02` shared-dev live corrective)
+Batch status: `DONE` (shared-dev build-context and Caddy corrective)
+Contract baseline: shared dev remains isolated on `3300–3303`; Caddy terminates HTTPS; Compose build context must be
+the synced workspace regardless of the deployment user's home path.
+Coordinator-only files: `plan/STATUS.md`, `plan/logs/phase-12.md`.
+
+- Task ID: `F12-T02-R11`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: completed `F12-T02-R10` port corrective and the second live dev-sync failure.
+  - Scope: stop overriding Compose's file-relative project directory so `../..` resolves to the synced workspace,
+    add a regression assertion for the resolved build context, and replace the obsolete Nginx example with the
+    owner-confirmed Caddy virtual hosts on `3300–3303`.
+  - Owned paths: `deploy/vps/{deploy-dev.sh,README.md}`, `scripts/test-release-pipeline.mjs`; coordinator-only
+    `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: shared-dev bootstrap build path and reverse-proxy documentation only; no application,
+    database, secret, staging or production-sim change.
+  - Expected verification: resolved Compose build-context assertion, dev/release contract suite, shell syntax and
+    `git diff --check`.
+  - Review: PASS — removing the unnecessary project-directory override restores Compose's file-relative `../..`
+    resolution to the synced workspace. Caddy documentation now matches the confirmed live proxy and `3300–3303`.
+  - Verification: resolved Compose JSON context equals the repository/workspace root; `pnpm release:test`,
+    `bash scripts/test-vps-dev.sh`, shell syntax and `git diff --check` PASS.
+  - External next action: update the live dev `runtime.env` and Caddy upstreams to `3300–3303`, push this corrective
+    to `dev`, and rerun `Sync shared dev VPS`. No batch is started in this handoff.
+
+## آخرین batch تکمیل‌شده — F12-B15-R1
+
+Coordinator/Thread: `Codex /root`
+Started at: `2026-10-08 +03:30`
+Phase: `12-PRODUCTION-HARDENING` (owner-approved release regression correctives)
+Batch status: `DONE`
+Contract baseline: `ADR-0001` browser session contract, accepted Phase 09 commerce boundary, and the owner-approved
+requirement that product browse/search/detail is public while patient-owned commerce mutations remain authenticated.
+Coordinator-only files: `plan/{STATUS.md,phases/12-PRODUCTION-HARDENING.md,logs/phase-12.md}` and generated OpenAPI/client.
+
+- Task ID: `F01-R05`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted Phase 01 identity/session baseline and Phase 11 ADMIN-only dashboard admission.
+  - Scope: renew the memory-only access token before protected app/dashboard requests, preserve single-flight refresh
+    rotation and absolute session deadlines, and distinguish authentication expiry from real authorization denial.
+  - Owned paths: `packages/api-client/src/index.ts`, focused API-client tests,
+    `apps/app/src/{auth,components/auth,lib/api*}`, `apps/dashboard/src/{auth,components/auth,lib/api*,
+    features/settings/settings-page.tsx}`, and focused frontend tests.
+  - Shared/exclusive resource: API-client request transport and browser refresh-token rotation contract; no API
+    token/session lifetime or role policy change.
+  - Expected verification: expired-token request refresh, concurrent single-flight behavior, refreshed bearer use,
+    refresh failure, 401/403 presentation, app/dashboard tests/typechecks/builds and `git diff --check`.
+  - Review: PASS — protected requests now renew an expired memory-only access token through the existing single-flight
+    refresh session before sending, without changing access/session lifetime or exposing refresh credentials. App and
+    dashboard retain their authenticated view during renewal, and settings distinguish 401 from a real 403 denial.
+
+- Task ID: `F09-T04-R1`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted F09-T04 catalog/cart implementation; independent of F01-R05 implementation.
+  - Scope: make active product browse/search/detail public for the single active release clinic, keep cart/wishlist/
+    checkout/order/payment protected, and prevent protected personalization failures from hiding the public catalog.
+  - Owned paths: `apps/api/src/modules/commerce/catalog/{patient-commerce-catalog.controller.ts,
+    patient-commerce-catalog.service.ts}`, focused API/OpenAPI tests; `apps/app/src/app/**/store/**`, app layouts,
+    `apps/app/src/lib/commerce-catalog-api*`, focused app tests; generated OpenAPI/client.
+  - Shared/exclusive resource: commerce catalog route contract and generated OpenAPI/client; no Prisma change.
+  - Expected verification: anonymous public catalog/detail plus active-clinic filtering, protected patient commerce
+    authorization regression, OpenAPI/client freshness, app/API tests/typechecks/builds and `git diff --check`.
+  - Review: PASS — active-clinic product browse/search/detail is available without a bearer token, while inactive
+    products/categories/SKUs and other clinics stay hidden. Cart, wishlist, address, checkout, order and payment
+    remain protected; a protected personalization failure no longer hides the public catalog.
+  - Verification: disposable PostgreSQL workspace suite (5/5 packages; API 95 files/385 tests, app 12/50,
+    dashboard 18/62, web 4/9, API client 1/5), API/app typechecks and production builds, generated OpenAPI/client
+    freshness, focused anonymous/protected contract checks and `git diff --check` PASS.
+
+- Task ID: `F12-T02-R10`
+  - Agent/Thread: `Codex /root`
+  - Status: `DONE`
+  - Depends on: accepted `F12-T02-R9` shared-dev delivery and live collision evidence from the first dev sync.
+  - Scope: move the documented/default shared-dev host bindings away from the already-reserved production-sim
+    `3200–3203` range to `3300–3303`, retaining the existing fail-closed cross-environment validation.
+  - Owned paths: `deploy/vps/{dev-env.example,README.md}`, `scripts/{test-vps-dev.sh,
+    test-release-pipeline.mjs}`; coordinator-only `plan/{STATUS.md,logs/phase-12.md}`.
+  - Shared/exclusive resource: VPS loopback port allocation only; no container internal port, database, secret,
+    production runtime or application contract change.
+  - Expected verification: simulated collision rejection, dev/release contract suite, exact port-reference scan and
+    `git diff --check`.
+  - Review: PASS — the live blocker was a correct fail-closed boundary check, not a container failure. The dev
+    defaults now use the unreserved `3300–3303` range; production-sim retains `3200–3203`.
+  - Verification: `bash scripts/test-vps-dev.sh`, `pnpm release:test`, exact port-reference scan and
+    `git diff --check` PASS. The behavior test now models both staging (`3100–3103`) and production-sim
+    (`3200–3203`) before accepting the new dev range.
+  - External next action: change only the dev `runtime.env` and the four dev reverse-proxy upstreams to `3300–3303`,
+    then push this corrective and rerun the same `dev` SHA. Do not change production-sim.
+
+- Batch review gate: PASS — all three independently committed tasks have implementation, focused/integration
+  verification and recorded evidence. The active claim is cleared; no new batch is started. `F12-T05` and
+  `F12-T07` remain externally blocked, `F12-T09` remains dependency-gated, and `F12-T11`/`F12-T12` remain
+  unclaimed.
 
 ## آخرین batch تکمیل‌شده — F12-B02-R9
 
@@ -2931,3 +4223,48 @@ snapshot پذیرفته شد؛ شواهد: [`logs/phase-05.md`](logs/phase-05.md
 - فایل `apps/app/src/components/home/slider-data.ts` دارای تغییر محلی از قبل بوده و متعلق به این برنامه نیست.
 - فایل `justforcheck.md` untracked و منبع تحقیق معماری کاربر است.
 - Agentها نباید این دو مورد را بدون درخواست صریح کاربر تغییر، حذف یا reset کنند.
+
+CLIENT-INTEGRATION payment follow-up clarification (2026-10-20): owner reports absent wallet method and apparently retained cancelled Home action. Same active F12-FE01, sole /root; bounded write-set Home payment presentation/helper/tests and wallet pay cancellation feedback/browser regression. Read-only owner browser confirms original TOPUP CANCELLED and Home points to a different intent. Preserve Journey priority, TOPUP financial rules and all unrelated work. No real financial writes, backend/schema changes, new batch or final task commit; full task stays REWORK/unchecked.
+
+CLIENT-INTEGRATION payment follow-up review PASS (2026-10-20): same F12-FE01 /root; original TOPUP confirmed cancelled, Home referenced another intent. Exact purpose/amount/multiple-request context and explicit cancellation/Home feedback added; financial rules/Journey priority preserved. Types,17 focused units and2 desktop/mobile intercepted cancellation/advance cases PASS; screenshots reviewed, no actual financial writes. Full task stays REWORK/unchecked; no final task commit/new batch.
+
+CLIENT-INTEGRATION voluntary top-up correction (2026-10-20): owner explicitly rejects funded wallet still being prompted to recharge. Same F12-FE01 /root sole writer; extend bounded scope to PatientJourneyService selection, its existing integration test and contract clarification, app browser regression and evidence. Freeze: voluntary TOPUP stays discoverable/pending but never becomes the Home next required action; genuine non-TOPUP pending payment remains eligible regardless of balance and independently of capped previews. No automatic cancellation, ledger/provider/schema/auth changes. Full task REWORK/unchecked; no new batch/final task commit.
+
+CLIENT-INTEGRATION optional top-up next-action correction PASS (2026-10-20): same F12-FE01 /root. Journey excludes TOPUP only from next-action selection; pending previews/history and all money retained. Actual service payment selected independently of capped previews. API/test/app types,15 isolated PostgreSQL cases/all74 migrations,2 desktop-mobile intercepted cases PASS; live owner Home now shows assessment result. Disposable clone cleaned up; main DB untouched. Evidence Phase12 log; full task REWORK/unchecked, no final task commit/new batch.
+
+CLIENT-INTEGRATION compact personal access rail (2026-10-20): same F12-FE01 /root sole writer, owner requests horizontal scroll for Home personal-access items when space is narrow. Scope Home-only CSS and responsive browser verification; preserve destinations, shared navigation, all pre-existing changes and protected files. Native RTL scrolling, nonshrinking targets, keyboard focus visibility and no whole-page overflow required. Full task REWORK/unchecked, no new batch/final task commit.
+
+CLIENT-INTEGRATION compact access rail PASS (2026-10-20): same F12-FE01 /root. Home personal-access links scroll horizontally in RTL when narrow, share width on desktop; minimum104px targets/snap/thin scrollbar/focus padding. Browser320–1440, six destinations, keyboard last-item reveal and no page overflow PASS; reviewed mobile screenshots. Home-only CSS; full task remains REWORK/unchecked, no final task commit.
+
+CLIENT-INTEGRATION store header polish (2026-10-20): same F12-FE01 /root sole writer. Owner requests clearer cart icon and responsive search hint. Scope public Store header and Store-only CSS; preserve cart destination/count/search behavior and unrelated changes. Verify compact/desktop text fit, icon and clear interaction. Full task REWORK/unchecked; no new batch/final task commit.
+
+CLIENT-INTEGRATION Store header polish PASS (2026-10-20): same F12-FE01 /root. ShoppingCart replaces basket icon, Store placeholder scales12–15px to search width; input remains readable16px.320/390/768/1440 browser text-fit/icon/destination/clear/no-overflow and types PASS; screenshots reviewed. No data/behavior/shared-input change; full task REWORK/unchecked, no final task commit.
+
+CLIENT-INTEGRATION owner-requested checkpoint commits (2026-10-20): reviewed completed session changes committed in related payment/Home/Store groups at owner's explicit request; broader F12-FE01 remains REWORK/unchecked. Final app34 files/178 tests PASS; previous targeted API/consumer/browser evidence retained in Phase12 log. Existing unrelated couples changes and temporary test-results excluded; no push/deploy or next batch.
+
+CLIENT-INTEGRATION Home-aligned Store design (2026-10-21): explicit owner requests creative Store identity aligned with Home, including product cards. Same F12-FE01 /root sole writer/reviewer. Owned public Store catalog, local Store intro/component/card/shortcuts, catalog-only styling and shell route marker if needed; coordinator plan evidence. Freeze Home ice/teal palette, luminous frosted surfaces, existing Persian fonts/real products/prices/search/cart/wishlist/address/banner/personalization/pagination behavior. No fictional offers, backend/schema/dependencies or actual shopping writes. Owner explicitly defers mid-implementation automated tests and reserves final review; no test/typecheck/build/browser regression runs or completion claim during this preview. Full task REWORK/unchecked, no new batch/automatic commit.
+
+CLIENT-INTEGRATION Home-aligned Store IMPLEMENTED_UNVERIFIED (2026-10-21): ice/teal frosted catalog, new decorative glass intro, integrated search/address, soft shortcut cards, image-led real-product cards with exact SKU details action and matched collection/results/states. Same F12-FE01 /root; scoped styles/shell marker preserve Home and checkout; existing backend/handlers retained. Owner review at /store pending, all test/typecheck/build/browser/Graphify gates deferred per request. Evidence Phase12 log. No fabricated data, real writes or automatic commit; full task REWORK/unchecked.
+
+CLIENT-INTEGRATION Store card dimensions (2026-10-21): source implemented square contain-image wells, consistent title/body/footer and responsive2/3/4 rail widths; owner review pending. Upload standard documented in store-product-image-guide.md from actual5MiB/1600/WebP80 processor. No upload/backend/behavior change or execution checks; same F12-FE01 /root, IMPLEMENTED_UNVERIFIED/REWORK/unchecked.
+
+PR27-CI hosted follow-up: owns scripts/test-installation-{postgres,restore}.mjs readiness probes. Hosted restore failed at createdb after socket readiness; use TCP readiness to exclude the image temporary initdb server. No production installer change.
+
+PR27-CI scope follow-up: owns existing dashboard/e2e/phase-11-access.spec.ts. Browser replay exposed removed account-label/manual clinic controls; assert current authenticated navigation and mock authorized clinic lookup before CRM request. Preserve non-ADMIN/revoked-session no-disclosure/no-protected-request assertions.
+
+LANDING OTP FONT (2026-10-25): Owner-requested follow-up on F12-FE01-WEB01, sole /root, same codex/landing-otp-dialog branch. Landing login dialog scoped to app IRANYekanX Regular/Medium; copied asset hashes match. No tests run for font-only refinement. Evidence: logs/phase-12.md#landing-otp-iranyekanx-font.
+
+LANDING OTP SHABNAM FONT (2026-10-25): Owner-requested F12-FE01-WEB01 typography follow-up on codex/landing-otp-dialog. Dialog now uses Shabnam Regular/Medium/Bold; phone field uses tabular Shabnam Medium digits. License and source recorded. Browser preview confirms font loading and scoped styling. Evidence: logs/phase-12.md#landing-otp-shabnam-typography.
+LANDING OTP NUMBER CLARITY (2026-10-25): Owner feedback prompted a clearer 22px Shabnam Medium number field; browser preview confirms the font and sizing. Graphify refreshed. Evidence: logs/phase-12.md#landing-otp-number-clarity-follow-up.
+LANDING OTP NUMBER WEIGHT (2026-10-25): Phone field now uses Shabnam Bold for its digits per owner request. Evidence: logs/phase-12.md#landing-otp-number-weight-adjustment.
+LANDING OTP COUNTRY FIELD (2026-10-25): Outlined legend field, +98 prefix, Persian placeholder and numeric keypad implemented. Handles local 10-digit input and preserves canonical phone submission; English digits explicitly use Shabnam Bold. Web typecheck and Graphify update PASS. Evidence: logs/phase-12.md#landing-otp-country-code-field.
+LANDING OTP TYPE STANDARD (2026-10-25): Phone legend 14px, +98 prefix 18px, and placeholder/typed number 20px all use Shabnam Medium. Evidence: logs/phase-12.md#landing-otp-typography-standardization.
+LANDING OTP NUMERIC FIELD (2026-10-25): Owner corrective request on F12-FE01-WEB01, same codex/landing-otp-dialog branch. Phone input now strips non-digit characters during typing and paste while accepting ASCII, Persian, and Arabic-Indic digits; Shabnam Medium is explicitly applied to entered digits with default numeric feature substitutions disabled. Web typecheck and git diff check PASS; font cmap confirms all three digit ranges. Graphify AST refreshed with pre-existing extractor warnings. Evidence: logs/phase-12.md#landing-otp-numeric-only-and-shabnam-medium-2026-10-25. Owner visual acceptance remains pending; no real SMS/deploy.
+
+## Object storage provider selection — 2026-10-26
+
+Owner-authorized continuation of CLIENT-INTEGRATION by the existing sole coordinator Codex /root; no parallel worker/new batch. Task F12-FE01-MEDIA01, READY_FOR_OWNER_TEST on codex/object-storage-providers; baseline clean dev. Depends on accepted product-image/banner storage contracts and F12-T06. Frozen contract: one explicitly selected provider per environment (disabled/r2/arvancloud), separate credentials, no automatic fallback or relocation of existing objects; private API-mediated media and production-disabled gate retained. Owned paths: API media adapter/config/tests/smoke script, deployment media wiring/examples/runbook, related plan evidence and generated Graphify output. No schema/OpenAPI/frontend changes. Verification: provider isolation and failure regression, SDK transport roundtrip, API types, deployment checks, Graphify and final diff review. Owner will create Arvan bucket/configure local credentials; real local provider acceptance and dev push/deployment wait for that test. Broader F12-FE01 remains REWORK; no next batch.
+
+MEDIA01 software review PASS: 18 media tests with actual loopback SDK transport, API/source+test types, dev deploy provider/profile/key-rotation regressions, shell syntax, Graphify and diff review. Claim retained for owner bucket/credential setup and real local SDK/dashboard test; no DONE, task commit, push or deployment. Handoff: logs/phase-12.md#object-storage-provider-selection-2026-10-26.
+
+MEDIA01 owner acceptance (2026-10-26): owner reports actual local run and test successful. F12-FE01-MEDIA01 DONE, scoped claim RELEASED; software evidence retained. Task commit now authorized by repository commit gate; no push/deploy. Owner requests next scoped upload-failure recovery correction, to be claimed separately within CLIENT-INTEGRATION.

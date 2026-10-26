@@ -1,0 +1,68 @@
+name: Server installer checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'installation/**'
+      - 'deploy/ejabberd/**'
+      - 'deploy/vps/**'
+      - 'compose.production.example.yaml'
+      - 'scripts/*installation*.mjs'
+      - 'scripts/deploy-vps.mjs'
+      - 'apps/api/prisma/bootstrap-installation.mjs'
+      - 'apps/api/src/config/environment.validation.ts'
+      - '.github/workflows/installation.yml'
+      - '.github/workflows/production*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'installation/**'
+      - 'deploy/ejabberd/**'
+      - 'deploy/vps/**'
+      - 'compose.production.example.yaml'
+      - 'scripts/*installation*.mjs'
+      - 'scripts/deploy-vps.mjs'
+      - 'apps/api/prisma/bootstrap-installation.mjs'
+      - 'apps/api/src/config/environment.validation.ts'
+      - '.github/workflows/installation.yml'
+      - '.github/workflows/production*.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Standard-library installer, environment and package checks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends age caddy
+          python3 -B -m unittest discover -s installation -p 'test_*.py' -v
+          python3 -B installation/manager.py audit-env
+          python3 -B installation/build.py
+          bash -n installation/install.sh
+          bash scripts/test-vps-deploy.sh
+      - name: Real standalone chat engine and retained database rehearsal
+        run: sudo env INSTALLER_CHAT_DOCKER_TEST=1 INSTALLER_TEST_USER="$USER" python3 -B -m unittest discover -s installation -p 'test_chat_docker.py' -v
+      - run: pnpm install --frozen-lockfile
+      - name: Build the actual API used by the first-administrator helper
+        env:
+          DATABASE_URL: postgresql://installer_build:installer_build@127.0.0.1:5432/installer_build?schema=public
+        run: pnpm --filter @sabz-zendegi/api build
+      - name: Runtime environment regression
+        run: pnpm --filter @sabz-zendegi/api exec vitest run test/environment-validation.spec.ts --no-file-parallelism
+      - name: Fresh PostgreSQL first-run and retry behavior
+        run: node scripts/test-installation-postgres.mjs
+      - name: Real PostgreSQL encrypted backup and separate restore drill
+        run: node scripts/test-installation-restore.mjs

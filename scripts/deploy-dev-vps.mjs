@@ -41,23 +41,40 @@ const sshOptions = [
   '-i', process.env.VPS_SSH_KEY_PATH,
   '-o', 'BatchMode=yes',
   '-o', 'IdentitiesOnly=yes',
+  '-o', 'ConnectTimeout=20',
+  '-o', 'ServerAliveInterval=15',
+  '-o', 'ServerAliveCountMax=4',
+  '-o', 'KexAlgorithms=curve25519-sha256',
+  '-o', 'IPQoS=none',
   '-o', 'StrictHostKeyChecking=yes',
   '-o', `UserKnownHostsFile=${process.env.VPS_KNOWN_HOSTS_PATH}`,
 ];
 
-function run(command, args) {
+function run(stage, command, args) {
+  console.log(`[dev deploy] ${stage}: starting`);
   const result = spawnSync(command, args, { cwd: root, encoding: 'utf8', stdio: 'inherit' });
   if (result.error) throw result.error;
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  if (result.status !== 0) {
+    console.error(`[dev deploy] ${stage}: failed (exit ${result.status ?? 'signal'})`);
+    process.exit(result.status ?? 1);
+  }
+  console.log(`[dev deploy] ${stage}: complete`);
 }
 
-run('ssh', [...sshOptions, target, 'install -d -m 700 "$HOME/mushroom/dev" "$HOME/mushroom/dev/workspace" "$HOME/mushroom/dev/cache" "$HOME/mushroom/dev/state"']);
+run('Prepare server directories', 'ssh', [...sshOptions, target, 'install -d -m 700 "$HOME/mushroom/dev" "$HOME/mushroom/dev/workspace" "$HOME/mushroom/dev/cache" "$HOME/mushroom/dev/state"']);
+run('Wait for deployment lock', 'ssh', [...sshOptions, target,
+  'flock -w 600 "$HOME/mushroom/dev/state/deploy.lock" true || { printf "timed out waiting to upload dev source\\n" >&2; exit 1; }',
+]);
 
 const rsyncShell = [
   'ssh', ...sshOptions,
 ].map((part) => `'${part.replaceAll("'", "'\\''")}'`).join(' ');
-run('rsync', [
+run('Upload source', 'rsync', [
   '--archive',
+  '--info=flist2,progress2,stats1',
+  '--outbuf=L',
+  '--timeout=90',
+  '--checksum',
   '--compress',
   '--delete-delay',
   '--delay-updates',
@@ -68,6 +85,10 @@ run('rsync', [
   '--exclude=**/node_modules/',
   '--exclude=**/.next/',
   '--exclude=**/dist/',
+  '--exclude=/apps/api/src/generated/',
+  '--exclude=/apps/web/public/runtime-config.js',
+  '--exclude=/apps/app/public/runtime-config.js',
+  '--exclude=/apps/dashboard/public/runtime-config.js',
   '--exclude=**/.turbo/',
   '--exclude=**/.env',
   '--exclude=**/.env.*',
@@ -78,4 +99,4 @@ run('rsync', [
 ]);
 
 const remoteCommand = `bash "$HOME/mushroom/dev/workspace/deploy/vps/deploy-dev.sh" '${sourceSha}'`;
-run('ssh', [...sshOptions, target, remoteCommand]);
+run('Build and verify shared dev', 'ssh', [...sshOptions, target, remoteCommand]);

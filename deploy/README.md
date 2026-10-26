@@ -1,5 +1,9 @@
 # Provider-neutral deployment
 
+For a new Ubuntu 24.04 server, use the self-contained [server installer](../installation/README.md).
+It prepares dev/staging/real-production settings without cloning the private repository, then produces the
+manual GitHub Secrets/Variables handoff. Production retains external PostgreSQL and separate deployment credentials.
+
 Build four OCI images from repository root: API with `deploy/docker/Dockerfile.api`; each Next app with
 `deploy/docker/Dockerfile.next --build-arg APP=web|app|dashboard`. Promote the tested immutable image digest unchanged.
 

@@ -5,10 +5,10 @@ export function AuthErrorAlert({ message }: { message: string }) {
         <div
             role="alert"
             dir="rtl"
-            className="flex items-start gap-2.5 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3"
+            className="flex items-start gap-2.5 rounded-xl border border-destructive/35 bg-destructive/10 px-4 py-3 text-destructive shadow-sm"
         >
-            <Icon name="error" className="mt-0.5 text-xl text-destructive" />
-            <p className="text-sm font-medium leading-6 text-destructive">{message}</p>
+            <Icon name="error" className="mt-0.5 text-xl" />
+            <p className="text-sm font-semibold leading-6">{message}</p>
         </div>
     );
 }

@@ -129,7 +129,33 @@ describe("dashboard auth session", () => {
     });
   });
 
-  it("becomes anonymous when refresh stalls", async () => {
+  it("renews an expired admin token while preserving the authenticated view", async () => {
+    let now = 1_000;
+    const first = authentication(["ADMIN"]);
+    const renewed = { ...first, accessToken: "renewed-token" };
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(jsonResponse(first, 200))
+      .mockResolvedValueOnce(jsonResponse(renewed, 200));
+    const manager = new DashboardSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+      () => now,
+    );
+
+    await manager.bootstrap();
+    const snapshots: string[] = [];
+    manager.subscribe(() => snapshots.push(manager.getSnapshot().status));
+    now += first.expiresIn * 1_000;
+
+    await expect(manager.bootstrap()).resolves.toEqual({
+      status: "authenticated",
+      authentication: renewed,
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(snapshots).not.toContain("checking");
+  });
+
+  it("reports a temporary outage without treating the user as logged out", async () => {
     vi.useFakeTimers();
     try {
       const fetch = vi.fn<typeof globalThis.fetch>().mockReturnValue(new Promise<Response>(() => {}));
@@ -143,9 +169,31 @@ describe("dashboard auth session", () => {
       await vi.advanceTimersByTimeAsync(100);
 
       await expect(bootstrap).resolves.toEqual({
-        status: "anonymous",
+        status: "unavailable",
         authentication: null,
       });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("retries a concurrent refresh after the browser receives the winning cookie", async () => {
+    vi.useFakeTimers();
+    try {
+      const auth = authentication(["ADMIN"]);
+      const fetch = vi.fn<typeof globalThis.fetch>()
+        .mockResolvedValueOnce(jsonResponse({ code: "REFRESH_CONCURRENT_RETRY" }, 409))
+        .mockResolvedValueOnce(jsonResponse(auth, 200));
+      const manager = new DashboardSessionManager(
+        createApiClient({ baseUrl: "https://api.example.test", fetch }),
+        () => 1_000,
+      );
+
+      const bootstrap = manager.bootstrap();
+      await vi.advanceTimersByTimeAsync(250);
+
+      await expect(bootstrap).resolves.toEqual({ status: "authenticated", authentication: auth });
+      expect(fetch).toHaveBeenCalledTimes(2);
     } finally {
       vi.useRealTimers();
     }

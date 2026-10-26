@@ -1,0 +1,32 @@
+import type { components } from "@sabz-zendegi/api-client";
+import { apiClient } from "./api";
+import { patientAuthorization as auth, patientData as data } from "./patient-request";
+
+type Schema = components["schemas"];
+export const listAssessmentOfferings = (token: string, page = 1, kind?: "INDIVIDUAL" | "COUPLES") => data(apiClient.GET("/v1/patients/me/assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } }));
+export const getAssessmentOffering = (token: string, publicationId: string) => data(apiClient.GET("/v1/patients/me/assessment-offerings/{publicationId}", { headers: auth(token), params: { path: { publicationId } } }));
+export const acceptAssessmentConsent = (token: string, body: Schema["AssessmentConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/assessment-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
+export const withdrawAssessmentConsent = (token: string, id: string, key: string) => data(apiClient.POST("/v1/patients/me/assessment-consents/{id}/withdrawal", { headers: auth(token), params: { path: { id }, header: { "Idempotency-Key": key } } }));
+export const createAssessmentPurchase = (token: string, body: Schema["AssessmentPurchaseIntentDto"], key: string) => data(apiClient.POST("/v1/patients/me/billing/assessment-intents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
+export const listAssessmentPurchases = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/assessment-purchases", { headers: auth(token), params: { query: { page, pageSize: 20 } } }));
+export const getAssessmentPurchase = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/assessment-purchases/{id}", { headers: auth(token), params: { path: { id } } }));
+export const startPaidAssessment = (token: string, id: string) => data(apiClient.POST("/v1/patients/me/assessment-access-grants/{id}/submission", { headers: auth(token), params: { path: { id } } }));
+// These two legacy list contracts describe numeric query parameters as Object; keep the wire values numeric.
+export const listProgramOfferings = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/program-offerings", { headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } }));
+export const getProgramOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
+export const acceptProgramConsent = (token: string, body: Schema["ProgramConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/program-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
+export const createProgramPurchase = (token: string, body: Schema["ProgramPurchaseIntentDto"], key: string) => data(apiClient.POST("/v1/patients/me/billing/program-intents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
+export const listProgramPurchases = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/program-purchases", { headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } }));
+export const getProgramPurchase = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-purchases/{id}", { headers: auth(token), params: { path: { id } } }));
+export const getProgramContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-access-grants/{id}/content", { headers: auth(token), params: { path: { id } } }));
+export const getGuidanceContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/guidance-content/{id}", { headers: auth(token), params: { path: { id } } }));
+export const listCustomOfferings = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/custom-program-offerings", { headers: auth(token), params: { query: { page, pageSize: 20 } } }));
+export const getCustomOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/custom-program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
+export const createCustomRequest = (token: string, body: Schema["CustomProgramRequestCreateDto"], key: string) => data(apiClient.POST("/v1/patients/me/custom-program-requests", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
+export const listCustomRequests = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/custom-program-requests", { headers: auth(token), params: { query: { page, pageSize: 20 } } }));
+export const getCustomRequest = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/custom-program-requests/{id}", { headers: auth(token), params: { path: { id } } }));
+export const acceptCustomCare = (token: string, requestId: string, body: Schema["CustomProgramCareAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/custom-program-requests/{requestId}/care-authorizations", { headers: auth(token), params: { path: { requestId }, header: { "Idempotency-Key": key } }, body }));
+export const withdrawCustomCare = (token: string, requestId: string, id: string, key: string) => data(apiClient.POST("/v1/patients/me/custom-program-requests/{requestId}/care-authorizations/{id}/withdrawal", { headers: auth(token), params: { path: { requestId, id }, header: { "Idempotency-Key": key } } }));
+export const createCustomPurchase = (token: string, requestId: string, body: Schema["CustomProgramBillingDto"], key: string) => data(apiClient.POST("/v1/patients/me/custom-program-requests/{requestId}/billing-intents", { headers: auth(token), params: { path: { requestId }, header: { "Idempotency-Key": key } }, body }));
+export const getCustomDelivery = (token: string, requestId: string, page = 1) => data(apiClient.GET("/v1/patients/me/custom-program-requests/{requestId}/delivery", { headers: auth(token), params: { path: { requestId }, query: { page, pageSize: 20 } } }));
+export const getCustomDeliveryVersion = (token: string, requestId: string, id: string) => data(apiClient.GET("/v1/patients/me/custom-program-requests/{requestId}/delivery/versions/{id}", { headers: auth(token), params: { path: { requestId, id } } }));

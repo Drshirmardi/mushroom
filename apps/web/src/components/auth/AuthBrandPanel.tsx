@@ -22,7 +22,7 @@ const features = [
         title: "همراهی همه‌روزه",
         description: "پشتیبانی و مشاوره کارشناسان در طول مسیر درمان",
     },
-];
+] as const;
 
 export function AuthBrandPanel({ title, highlight, description }: AuthBrandPanelProps) {
     return (

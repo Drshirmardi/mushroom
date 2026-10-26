@@ -1,4 +1,5 @@
 import type { IconType } from "react-icons";
+import type { IconName } from "@/components/shared/Icon";
 
 export interface NavItem {
     label: string;
@@ -12,7 +13,7 @@ export interface SocialLink {
 }
 
 export interface Service {
-    icon: string;
+    icon: IconName;
     title: string;
     short: string;
     desc: string;
@@ -41,12 +42,12 @@ export interface JourneyStep {
     n: string;
     t: string;
     d: string;
-    i: string;
+    i: IconName;
 }
 
 export interface AssessmentStep {
     n: string;
     t: string;
     d: string;
-    icon: string;
+    icon: IconName;
 }

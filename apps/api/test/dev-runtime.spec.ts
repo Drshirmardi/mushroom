@@ -17,6 +17,11 @@ describe('API development runtime', () => {
     expect(packageJson.scripts?.['start:dev']).toBe('node scripts/dev.mjs');
     expect(packageJson.type).toBe('commonjs');
     expect(developmentRunner).toContain("require.resolve('typescript/bin/tsc')");
+    expect(developmentRunner).toContain('DEV_COMPILER_HEAP_MB');
+    expect(developmentRunner).toContain('--max-old-space-size=');
+    expect(developmentRunner).toContain("'--noCheck'");
+    expect(developmentRunner).toContain("'--declaration'");
+    expect(developmentRunner).toContain("'--declarationMap'");
     expect(developmentRunner).toContain("'--watch'");
     expect(developmentRunner).toContain("'dist/main.js'");
     expect(developmentRunner).not.toContain('tsx');

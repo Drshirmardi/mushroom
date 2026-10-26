@@ -1,5 +1,9 @@
 # ساخت image و استقرار Production
 
+برای آماده‌سازی سرور خالی از [نصاب مستقل سرور](../installation/README.md) استفاده کنید. این مسیر تنظیمات، سکرت‌ها،
+دامنه/HTTPS و خروجی اتصال GitHub را آماده می‌کند؛ workflowهای `Deploy production` و `Production rollback`
+از credential مستقل production و PostgreSQL خارجی استفاده می‌کنند. راهنمای دستی زیر برای عملیات روی releaseها است.
+
 > برای انتشار خودکار private GHCR و rehearsal روی VPS، ابتدا
 > [راهنمای CD روی VPS](../deploy/vps/README.md) را اجرا کنید. مراحل دستی این صفحه برای عیب‌یابی، providerهای دیگر و
 > اجرای کنترل‌شدهٔ بدون GitHub Actions معتبرند.
@@ -155,6 +159,9 @@ docker buildx bake --file docker-bake.hcl --pull --load release
     ├── database_url
     ├── jwt_access_secret
     ├── refresh_token_pepper
+    ├── otp_pepper
+    ├── sms_credential_encryption_key
+    ├── sms_credential_decryption_keys
     ├── payment_credential_encryption_key
     └── payment_credential_decryption_keys
 ```
@@ -172,6 +179,10 @@ cd /opt/mushroom
 install -d -m 700 secrets
 chmod 600 secrets/* 2>/dev/null || true
 ```
+
+در مسیر دستی، پیش از اجرای API غیرریشه‌ای، group فایل‌های secret را به GID runtime یعنی `65532` تغییر دهید و
+mode را `640` قرار دهید؛ مالک فایل باید کاربر عملیات باقی بماند. در مسیر نصاب/CD، helper محدودشدهٔ انتشار این کار
+را خودکار انجام می‌دهد. قرار دادن permission روی `644` مجاز نیست.
 
 secretهای واقعی فقط از secret manager یا کانال عملیاتی امن وارد این فایل‌ها می‌شوند. مقدار آن‌ها را در Git، issue،
 release note یا log قرار ندهید.
@@ -193,6 +204,10 @@ PUBLIC_DASHBOARD_URL=https://dashboard.example.com
 APP_ORIGINS=https://example.com,https://app.example.com,https://dashboard.example.com
 TRUSTED_PROXIES=REVERSE_PROXY_IP_OR_CIDR
 PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION=v1
+MUSHROOM_ENVIRONMENT=production
+COMPOSE_PROJECT_NAME=mushroom-production
+MUSHROOM_ENV_ROOT=/opt/mushroom
 
 API_PORT=127.0.0.1:3003
 WEB_PORT=127.0.0.1:3000

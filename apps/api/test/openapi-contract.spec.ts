@@ -32,6 +32,12 @@ const identityOperations = [
   ['/v1/me/change-password', 'post'],
 ] as const;
 
+const otpOperations = [
+  ['/v1/auth/otp/challenges', 'post'],
+  ['/v1/auth/otp/challenges/{challengeId}/resend', 'post'],
+  ['/v1/auth/otp/challenges/{challengeId}/verify', 'post'],
+] as const;
+
 describe('identity OpenAPI contract', () => {
   let app: NestFastifyApplication;
   let document: Record<string, any>;
@@ -78,6 +84,31 @@ describe('identity OpenAPI contract', () => {
         });
       }
     }
+  });
+
+  it('documents OTP error responses and preserves stable OTP error codes', () => {
+    const operations = otpOperations.map(([path, method]) =>
+      document.paths[path][method]);
+
+    for (const operation of operations) {
+      expect(Object.keys(operation.responses).some((status) =>
+        Number(status) >= 400)).toBe(true);
+      for (const [status, response] of Object.entries(operation.responses)) {
+        if (Number(status) < 400) continue;
+        expect(response).toMatchObject({
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ApiErrorResponseDto' },
+            },
+          },
+        });
+      }
+    }
+
+    const codes = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
+    expect(codes).toContain('OTP_INVALID');
+    expect(codes).toContain('OTP_EXPIRED');
+    expect(codes).toContain('SMS_PROVIDER_ACTIVATION_BLOCKED');
   });
 
   it('documents bearer and refresh-cookie security without a refresh request body', () => {
@@ -140,6 +171,14 @@ describe('identity OpenAPI contract', () => {
       .toBe(true);
     expect(schemas.ChangePasswordDto.properties.newPassword.writeOnly)
       .toBe(true);
+    expect(Object.keys(schemas.SadadPaymentCredentialDto.properties)).toEqual([
+      'merchantId',
+      'terminalId',
+      'terminalKey',
+    ]);
+    expect(Object.values(schemas.SadadPaymentCredentialDto.properties).every(
+      (property) => (property as Record<string, unknown>).writeOnly === true,
+    )).toBe(true);
     expect(schemas.AuthenticatedUserDto.properties.roles.items.enum).toEqual([
       'PATIENT',
       'DOCTOR',
@@ -151,11 +190,15 @@ describe('identity OpenAPI contract', () => {
     );
   });
 
-  it('publishes the frozen patient-commerce paths with bearer protection', () => {
+  it('publishes public catalog reads and bearer-protected patient commerce mutations', () => {
     const paths = document.paths;
     for (const [path, method] of [
       ['/v1/commerce/products', 'get'],
       ['/v1/commerce/products/{productId}', 'get'],
+    ]) {
+      expect(paths[path][method].security ?? []).toEqual([]);
+    }
+    for (const [path, method] of [
       ['/v1/patients/me/cart', 'get'],
       ['/v1/patients/me/cart', 'put'],
       ['/v1/patients/me/wishlist', 'get'],
@@ -168,12 +211,20 @@ describe('identity OpenAPI contract', () => {
     expect(document.components.schemas.PatientCommerceSkuDto.properties.currentPriceToman.description).toBe('Integer TOMAN.');
   });
 
-  it('publishes the appointment-bound chat REST contract with bearer protection and stable errors', () => {
+  it('publishes numeric gateway diagnostics pagination', () => {
+    const parameters = document.paths['/v1/admin/commerce/payment-providers/{providerCode}/requests'].get.parameters;
+    for (const name of ['page', 'pageSize']) {
+      expect(parameters.find((parameter: { name: string }) => parameter.name === name).schema.type).toBe('number');
+    }
+  });
+
+  it('publishes protected engine sessions and retained REST reads without the retired send operation', () => {
     const paths = document.paths;
     const chatOperations = [
       ['/v1/chat/appointments/{appointmentId}/conversation', 'get', 'chatAppointmentConversationGet'],
       ['/v1/chat/conversations/{conversationId}/messages', 'get', 'chatConversationHistory'],
-      ['/v1/chat/conversations/{conversationId}/messages', 'post', 'chatConversationMessageSend'],
+      ['/v1/chat/appointments/{appointmentId}/session', 'post', 'chatAppointmentEngineSessionCreate'],
+      ['/v1/chat/conversations/{conversationId}/close', 'post', 'chatConversationClose'],
       ['/v1/chat/messages/{messageId}/reports', 'post', 'chatMessageReportCreate'],
       ['/v1/chat/messages/{messageId}/visibility', 'post', 'chatMessageVisibilityChange'],
       ['/v1/chat/messages/{messageId}/restricted-content', 'get', 'chatRestrictedContentReview'],
@@ -183,10 +234,14 @@ describe('identity OpenAPI contract', () => {
       expect(paths[path][method].operationId).toBe(operationId);
       expect(paths[path][method].security).toEqual([{ bearerAuth: [] }]);
     }
+    expect(paths['/v1/chat/conversations/{conversationId}/messages'].post).toBeUndefined();
+    expect(paths['/v1/chat/ejabberd/policy']).toBeUndefined();
+    expect(document.components.schemas.EjabberdSessionDto.properties.transport.enum).toEqual(['ejabberd']);
+    expect(paths['/v1/chat/appointments/{appointmentId}/session'].post.parameters[0].schema.format).toBe('uuid');
     const errors = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
     expect(errors).toEqual(expect.arrayContaining([
       'CHAT_FORBIDDEN', 'CHAT_BLOCKED', 'CHAT_IDEMPOTENCY_CONFLICT',
-      'CHAT_CURSOR_INVALID', 'CHAT_RATE_LIMITED', 'CHAT_MESSAGE_TOO_LONG',
+      'CHAT_CURSOR_INVALID', 'CHAT_RATE_LIMITED', 'CHAT_MESSAGE_TOO_LONG', 'CHAT_ENGINE_UNAVAILABLE',
     ]));
   });
 });

@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApiClient } from "@sabz-zendegi/api-client";
 
-import { loadConsentPolicy, loadSelfProfile, onboardingErrorMessage, PatientOnboardingRequestError, updateSelfProfile } from "./patient-onboarding";
+import { loadConsentPolicy, loadPatientOnboarding, loadSelfProfile, onboardingErrorMessage, PatientOnboardingRequestError, updateSelfProfile } from "./patient-onboarding";
 
 describe("patient onboarding request errors", () => {
+  it('loads health from profile, entry and intake without requiring policy or journey services', async () => {
+    const get = vi.fn().mockResolvedValue({ data: {}, response: new Response(null, { status: 200 }) });
+    await loadPatientOnboarding('token', { GET: get } as never);
+    expect(get.mock.calls.map(call => call[0])).toEqual(['/v1/patients/me', '/v1/patients/me/entry', '/v1/patients/me/medical-intake']);
+  });
   it("does not misrepresent authorization failures as an empty profile", () => {
     expect(onboardingErrorMessage(new PatientOnboardingRequestError(403, "FORBIDDEN"))).toContain("دسترسی");
   });

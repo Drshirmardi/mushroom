@@ -12,6 +12,13 @@ export function normalizeDigits(value: string): string {
     });
 }
 
+/** نمایش یکدست ارقام تلفن، مستقل از زبان صفحه‌کلید. */
+export function formatPhoneDigits(value: string): string {
+    return normalizeDigits(value)
+        .replace(/\D/g, "")
+        .replace(/[0-9]/g, digit => PERSIAN_DIGITS.charAt(Number(digit)));
+}
+
 /**
  * ورودی شماره موبایل را به شکل استاندارد 09xxxxxxxxx نرمال می‌کند.
  * پیش‌شماره‌های +98 و 0098 و 98 و جداکننده‌های فاصله/خط تیره پشتیبانی می‌شوند.

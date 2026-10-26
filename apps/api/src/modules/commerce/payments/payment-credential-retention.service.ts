@@ -21,6 +21,8 @@ export class PaymentCredentialRetentionService {
       });
       let shredded = 0;
       for (const candidate of candidates) {
+        const needed = await tx.billingGatewayAttempt.count({ where: { revision: { credentialVersionId: candidate.id }, OR: [{ status: { notIn: ['VERIFIED', 'FAILED'] } }, { verifiedAt: { gt: cutoff } }, { updatedAt: { gt: cutoff } }] } });
+        if (needed) continue;
         const updated = await tx.paymentProviderCredentialVersion.updateMany({
           where: { id: candidate.id, status: CredentialVersionStatus.RETIRED },
           data: { status: CredentialVersionStatus.CRYPTO_SHREDDED, encryptedPayload: null, encryptionNonce: null, authenticationTag: null, encryptionKeyVersion: null, cryptoShreddedAt: now },
