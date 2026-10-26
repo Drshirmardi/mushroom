@@ -5,6 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "storage:smoke": "tsx scripts/product-media-smoke.ts",
     "build": "tsc -p tsconfig.build.json",
     "prebuild": "prisma generate",
     "pretypecheck": "prisma generate",

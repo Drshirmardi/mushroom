@@ -76,6 +76,15 @@ case "$command_name" in
     fi
     ;;
   api)
+    if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == arvancloud ]]; then
+      [[ -r $ARVAN_ACCESS_KEY_ID_FILE && -r $ARVAN_SECRET_ACCESS_KEY_FILE ]] || {
+        printf 'Development Arvan credentials are not readable\n' >&2
+        exit 1
+      }
+      ARVAN_ACCESS_KEY_ID=$(<"$ARVAN_ACCESS_KEY_ID_FILE")
+      ARVAN_SECRET_ACCESS_KEY=$(<"$ARVAN_SECRET_ACCESS_KEY_FILE")
+      export ARVAN_ACCESS_KEY_ID ARVAN_SECRET_ACCESS_KEY
+    fi
     if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == r2 ]]; then
       [[ -r $R2_ACCESS_KEY_ID_FILE && -r $R2_SECRET_ACCESS_KEY_FILE ]] || {
         printf 'Development R2 credentials are not readable\n' >&2

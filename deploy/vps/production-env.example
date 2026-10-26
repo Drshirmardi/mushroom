@@ -38,11 +38,18 @@ DASHBOARD_PORT=127.0.0.1:3002
 
 # Application runtime options (credentials stay in secrets/).
 BILLING_BOOKING_HOLD_MINUTES=10
+# Select exactly one: disabled | r2 (Cloudflare) | arvancloud. Production stays disabled.
 PRODUCT_MEDIA_STORAGE_MODE=disabled
 R2_ENDPOINT=
 R2_BUCKET=
 R2_REGION=auto
 R2_REQUEST_TIMEOUT_MS=5000
+# Arvan profile: endpoint must match the bucket region; secrets never go in Git.
+ARVAN_ENDPOINT=
+ARVAN_BUCKET=
+ARVAN_REGION=default
+ARVAN_REQUEST_TIMEOUT_MS=5000
+# secrets/arvan_access_key_id and secrets/arvan_secret_access_key (dev only).
 
 # Required before deploying the ejabberd-only chat branch: merge deploy/ejabberd/env.example
 # into runtime.env and install chat.compose.yaml as described in deploy/ejabberd/README.md.

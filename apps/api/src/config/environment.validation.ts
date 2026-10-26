@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 
 import * as Joi from 'joi';
+import { productMediaEnvironment } from './product-media.config';
 
 const isHttpOrigin = (value: string): boolean => {
   try {
@@ -118,13 +119,7 @@ export const environmentValidationSchema = Joi.object({
   EJABBERD_POLICY_SECRET: Joi.string().min(43).max(256).pattern(/^[A-Za-z0-9_-]+$/u).invalid(Joi.ref('JWT_ACCESS_SECRET'), Joi.ref('REFRESH_TOKEN_PEPPER')).required(),
   EJABBERD_JWT_PRIVATE_KEY_FILE: Joi.string().max(4096).required(),
   EJABBERD_REQUEST_TIMEOUT_MS: Joi.number().integer().min(500).max(5000).default(3000),
-  PRODUCT_MEDIA_STORAGE_MODE: Joi.string().valid('disabled', 'r2').default('disabled').when('NODE_ENV', { is: 'production', then: Joi.valid(Joi.override, 'disabled') }),
-  R2_ENDPOINT: Joi.string().uri({ scheme: ['https'] }).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
-  R2_BUCKET: Joi.string().pattern(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
-  R2_REGION: Joi.string().valid('auto').default('auto'),
-  R2_ACCESS_KEY_ID: Joi.string().trim().min(1).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
-  R2_SECRET_ACCESS_KEY: Joi.string().trim().min(1).when('PRODUCT_MEDIA_STORAGE_MODE', { is: 'r2', then: Joi.required(), otherwise: Joi.optional().allow('') }),
-  R2_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1000).max(10000).default(5000),
+  ...productMediaEnvironment,
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),

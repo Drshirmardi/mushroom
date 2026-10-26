@@ -89,6 +89,12 @@ services:
       R2_ACCESS_KEY_ID_FILE: /run/optional-secrets/r2_access_key_id
       R2_SECRET_ACCESS_KEY_FILE: /run/optional-secrets/r2_secret_access_key
       R2_REQUEST_TIMEOUT_MS: "${R2_REQUEST_TIMEOUT_MS:-5000}"
+      ARVAN_ENDPOINT: "${ARVAN_ENDPOINT:-}"
+      ARVAN_BUCKET: "${ARVAN_BUCKET:-}"
+      ARVAN_REGION: "${ARVAN_REGION:-default}"
+      ARVAN_ACCESS_KEY_ID_FILE: /run/optional-secrets/arvan_access_key_id
+      ARVAN_SECRET_ACCESS_KEY_FILE: /run/optional-secrets/arvan_secret_access_key
+      ARVAN_REQUEST_TIMEOUT_MS: "${ARVAN_REQUEST_TIMEOUT_MS:-5000}"
       APP_ORIGINS: "${APP_ORIGINS:?set dev browser origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"

@@ -5560,3 +5560,42 @@ Changed: Header.tsx, LandingLoginDialog.tsx, LandingOtpForm.tsx, landing-auth.cs
 Verification: web TypeScript PASS; Vitest 6 files/25 tests PASS; production web build PASS; final intercepted Chromium OTP suite 9/9 PASS. Mobile390 and desktop1440 cases cover phone draft, response received while closed, partial code, drag/Escape, no duplicate send on reopening, expiry while closed, unified resend/replacement challenge, and verification completing while closed with successful continuation/focus on reopen. Existing breakpoint320–1440, short viewport, animation overflow, numeric input, error/expired code/cooldown/provider failure, redirects, cookie/destination, keyboard focus and reduced-motion cases remain green. Updated older phone selectors/expectations to the accepted Persian-digit field; mobile drag waits for entrance animation before the gesture. Graphify AST update PASS with pre-existing optional extractor warnings; diff review/check PASS.
 
 Limit: continuity lasts within the current landing-page instance; full navigation/reload starts a new UI instance. All browser service responses are synthetic/intercepted; no live SMS, account, database or deployment action. Next: owner visual/real-device review, no next batch.
+
+## Object storage provider selection (2026-10-26)
+
+Task ID: F12-FE01-MEDIA01
+Status: READY_FOR_OWNER_TEST (unchecked; real local provider acceptance pending)
+Agent/Thread: Codex /root, sole writer/reviewer
+Batch ID: CLIENT-INTEGRATION, owner-authorized scoped continuation; no new batch
+Branch: codex/object-storage-providers (clean dev baseline)
+Reviewed by: Codex /root — software/combined-diff review PASS
+Contract: one active environment-level disabled/r2/arvancloud profile. Existing R2 configuration retained; Arvan uses separate ARVAN_* credentials/bucket, region default, path-style and required-only request checksum. Both private product and banner consumers use the existing port; no automatic fallback, replication or per-object provider routing. Production-disabled gate retained. No schema/OpenAPI/frontend/dependency changes.
+Changed files:
+  - apps/api/src/config/{environment.validation.ts,product-media.config.ts}
+  - apps/api/src/modules/commerce/media/product-image-storage{,.module}.ts
+  - apps/api/test/product-image-{configuration,storage}.spec.ts
+  - apps/api/scripts/product-media-smoke.ts; apps/api/package.json; apps/api/.env.example
+  - deploy/docker/api-entrypoint.mjs
+  - deploy/vps/compose.dev.yaml; deploy/vps/{dev-service,deploy-dev}.sh
+  - deploy/vps/{dev-env,env,production-env}.example
+  - deploy/vps/OBJECT-STORAGE.md; deploy/vps/README.md
+  - scripts/test-vps-dev.sh; scoped plan status/checklist/evidence and Graphify output
+Migrations: none; no database writes performed.
+Tests run:
+  - pnpm --filter @sabz-zendegi/api exec vitest run test/product-image-storage.spec.ts test/product-image-configuration.spec.ts test/product-image-processor.spec.ts --no-file-parallelism -> PASS, 3 files / 18 cases.
+  - Includes actual SDK HTTP PUT/GET/DELETE against temporary loopback server for both providers, selected credential/bucket/signing-region assertions, raw Arvan upload bytes, dormant credentials, disabled defaults, active-profile completeness, production gate, secret-file handoff, safe provider diagnostics/no fallback and retained media validation.
+  - pnpm --filter @sabz-zendegi/api exec tsc --noEmit -> PASS.
+  - pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.test.json --noEmit -> PASS.
+  - bash -n deploy/vps/{dev-service,deploy-dev}.sh -> PASS after preserving LF as required by .gitattributes.
+  - bash scripts/test-vps-dev.sh -> PASS; adds provider switch, Arvan bucket change and key rotation recreation cases; retained existing deploy/recovery/isolation checks.
+  - pnpm --filter @sabz-zendegi/api storage:smoke without --confirm-write -> expected exit1 before loading local credentials or writing any object.
+  - graphify update . -> PASS, 11552 nodes / 33178 edges; pre-existing SQL/Erlang/HCL extractor dependencies and chat parser warnings retained.
+  - git diff --check and combined implementation/config/test/runbook review -> PASS.
+Known limitations / owner setup:
+  - Owner confirmed no Arvan bucket yet. No live Arvan or R2 test, real dashboard upload or remote deployment performed; external compatibility is not claimed from loopback tests.
+  - Owner creates private regional bucket, supplies local apps/api/.env ARVAN_ENDPOINT/BUCKET/REGION/ACCESS_KEY_ID/SECRET_ACCESS_KEY/REQUEST_TIMEOUT_MS and selects PRODUCT_MEDIA_STORAGE_MODE=arvancloud.
+  - Safe next action: run pnpm --filter @sabz-zendegi/api storage:smoke --confirm-write, then restart local API and verify product and banner upload/read/replacement/delete. Command writes one unique diagnostic WebP, verifies exact downloaded bytes and deletes it; reports its key if cleanup fails.
+  - Existing objects/outbox keys do not record provider; any switch with retained media requires a controlled transfer at identical keys and synchronized API/worker config. Runbook covers pause/copy/verify/switch/rollback. No silent split across providers.
+  - Final task commit and dev push wait for owner local acceptance; do not mark DONE or start a next batch. Broader F12-FE01 stays REWORK.
+
+MEDIA01 owner acceptance follow-up (2026-10-26): owner explicitly reports local run/test successful (exact console transcript not supplied). Combined source/config review and recorded automated checks PASS; F12-FE01-MEDIA01 accepted/DONE. Prior pending-owner statements are historical. No remote push/deployment; next owner-requested work is frontend upload failure recovery under a separate scoped task.

@@ -345,3 +345,5 @@ cat "$HOME/mushroom/dev/state/source.sha"
 اگر عمداً volume دیتابیس dev را جداگانه حذف کردید، marker
 `$HOME/mushroom/dev/state/seeded` را نیز پیش از sync بعدی حذف کنید. اسکریپت معمول deployment هیچ database reset،
 down migration یا دست‌کاری state محیط‌های release انجام نمی‌دهد.
+
+راهنمای انتخاب Cloudflare R2 / ArvanCloud، تست محلی و تعویض سرویس: [Object Storage](OBJECT-STORAGE.md).

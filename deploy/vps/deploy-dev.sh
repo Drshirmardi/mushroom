@@ -235,6 +235,10 @@ api_runtime_hash=$(
     'R2_BUCKET -' \
     'R2_REGION auto' \
     'R2_REQUEST_TIMEOUT_MS 5000' \
+    'ARVAN_ENDPOINT -' \
+    'ARVAN_BUCKET -' \
+    'ARVAN_REGION default' \
+    'ARVAN_REQUEST_TIMEOUT_MS 5000' \
     'APP_ORIGINS http://localhost:3000,http://localhost:3001,http://localhost:3002' \
     'TRUSTED_PROXIES 127.0.0.1/32' \
     'PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION v1' \
@@ -250,7 +254,7 @@ api_runtime_hash=$(
     read -r key fallback <<<"$key_and_default"
     printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "$fallback")"
   done
-  for name in r2_access_key_id r2_secret_access_key; do
+  for name in r2_access_key_id r2_secret_access_key arvan_access_key_id arvan_secret_access_key; do
     if [[ -f $environment_root/secrets/$name ]]; then
       printf '%s=' "$name"
       sha256sum "$environment_root/secrets/$name" | cut -d' ' -f1

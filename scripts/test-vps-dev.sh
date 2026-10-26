@@ -207,6 +207,37 @@ run_deploy 7777777777777777777777777777777777777777
 grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
   || fail 'SMS runtime-only change did not recreate the API runtime'
 
+# Explicit selection, profile changes and key rotation must reach the running API.
+cat >>"$dev_root/runtime.env" <<EOF
+PRODUCT_MEDIA_STORAGE_MODE=arvancloud
+ARVAN_ENDPOINT=https://s3.ir-thr-at1.arvanstorage.ir
+ARVAN_BUCKET=synthetic-arvan
+ARVAN_REGION=default
+ARVAN_REQUEST_TIMEOUT_MS=5000
+EOF
+printf 'synthetic-arvan-key' >"$dev_root/secrets/arvan_access_key_id"
+printf 'synthetic-arvan-secret' >"$dev_root/secrets/arvan_secret_access_key"
+: >"$docker_log"
+run_deploy 5555555555555555555555555555555555555555
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Arvan provider selection did not recreate the API runtime'
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'provider-only change unnecessarily ran bootstrap'
+
+sed -i 's/^ARVAN_BUCKET=.*/ARVAN_BUCKET=synthetic-arvan-other/' "$dev_root/runtime.env"
+: >"$docker_log"
+run_deploy 6666666666666666666666666666666666666666
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Arvan profile change did not recreate the API runtime'
+
+printf 'synthetic-arvan-rotated-secret' >"$dev_root/secrets/arvan_secret_access_key"
+: >"$docker_log"
+run_deploy 9999999999999999999999999999999999999999
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Arvan key rotation did not recreate the API runtime'
+! grep -q 'synthetic-arvan-rotated-secret' "$docker_log" \
+  || fail 'Arvan secret leaked into deployment arguments'
+
 printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
 : >"$docker_log"
 run_deploy 8888888888888888888888888888888888888888
