@@ -1,3 +1,4 @@
+import { normalizeSadadCallbackUrl } from '../../../config/sadad-callback-url';
 import { createCipheriv } from 'node:crypto';
 import { Injectable, Optional, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 import type { PaymentProviderPort, ProviderCallback, ProviderCreateInput, ProviderCreateResult, ProviderVerifyResult } from './payment-provider.port';
@@ -181,9 +182,7 @@ const credential = (input: Record<string, string>) => {
 const returnUrl = (value: string | undefined) => {
   if (!value) throw invalid();
   try {
-    const url = new URL(value);
-    if (url.protocol !== 'https:' || url.pathname !== '/v1/payments/providers/sadad/callback' || url.search || url.hash) throw invalid();
-    return url.toString();
+    return normalizeSadadCallbackUrl(value);
   } catch { throw invalid(); }
 };
 

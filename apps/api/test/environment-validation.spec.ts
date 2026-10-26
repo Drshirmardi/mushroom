@@ -18,6 +18,13 @@ describe('production-hardening environment validation', () => {
     expect(live.value).toMatchObject({ SADAD_TRANSPORT_MODE: 'live', SADAD_REDIRECT_PROFILE: 'PHP_VPG_PURCHASE' });
   });
 
+  it('accepts a separate merchant callback domain and rejects embedded credentials', () => {
+    const returnUrl = 'https://drshirmardi.com/v1/payments/providers/sadad/callback';
+    expect(environmentValidationSchema.validate({ ...base, SADAD_RETURN_URL: returnUrl }).value.SADAD_RETURN_URL).toBe(returnUrl);
+    expect(environmentValidationSchema.validate({ ...base, SADAD_RETURN_URL: returnUrl }).error).toBeUndefined();
+    expect(environmentValidationSchema.validate({ ...base, SADAD_RETURN_URL: 'https://user:pass@example.test/v1/payments/providers/sadad/callback' }).error).toBeDefined();
+  });
+
   it('rejects configuration that could be malformed or imply an unreviewed redirect', () => {
     expect(environmentValidationSchema.validate({ ...base, SADAD_TRANSPORT_MODE: 'live' }).error).toBeDefined();
     expect(environmentValidationSchema.validate({ ...base, SADAD_TRANSPORT_MODE: 'live', PUBLIC_API_URL: 'https://dev-api.example.test', SADAD_RETURN_URL: 'https://dev-api.example.test/v1/payments/providers/sadad/callback', SADAD_RESULT_URL: 'https://dev-app.example.test/store/order-success', SADAD_REDIRECT_PROFILE: 'PHP_VPG_PURCHASE' }).error).toBeDefined();

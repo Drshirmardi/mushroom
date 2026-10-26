@@ -218,8 +218,8 @@ web_hash=$(hash_frontend_inputs web)
 app_hash=$(hash_frontend_inputs app)
 dashboard_hash=$(hash_frontend_inputs dashboard)
 public_config_hash=$(
-  for key in PUBLIC_API_URL PUBLIC_WEB_URL PUBLIC_APP_URL PUBLIC_DASHBOARD_URL; do
-    printf '%s=%s\n' "$key" "$(env_value "$key")"
+  for key in PUBLIC_API_URL PUBLIC_WEB_URL PUBLIC_APP_URL PUBLIC_DASHBOARD_URL SADAD_RETURN_URL; do
+    printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "")"
   done | sha256sum | cut -d' ' -f1
 )
 api_runtime_hash=$(

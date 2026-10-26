@@ -31,6 +31,7 @@ SMS_REQUEST_TIMEOUT_MS=5000
 # Once set to live, the administrator still explicitly enables/defaults Sadad in Dashboard > Settings > Payments.
 SADAD_TRANSPORT_MODE=disabled
 SADAD_REQUEST_TIMEOUT_MS=5000
+# SADAD_RETURN_URL may use the registered merchant main domain; proxy its exact callback path to this environment API.
 SADAD_RETURN_URL=https://dev-api.example.com/v1/payments/providers/sadad/callback
 SADAD_RESULT_URL=https://dev-app.example.com/store/order-success
 # Set exactly the redirect shape confirmed for this merchant: PDF_PURCHASE, PHP_VPG_PURCHASE or DOTNET_PURCHASE_INDEX.

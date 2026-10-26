@@ -27,7 +27,7 @@ BUNDLE = Path(__file__).resolve().parent.parent
 BUNDLE_FILES = [
     'installation/install.sh', 'installation/manager.py', 'installation/README.md',
     'deploy/vps/dev-env.example', 'deploy/vps/env.example', 'deploy/vps/production-env.example',
-    'deploy/vps/OBJECT-STORAGE.md',
+    'deploy/vps/OBJECT-STORAGE.md', 'deploy/vps/sadad-callback.caddy.example', 'deploy/sadad-live-runbook.md',
     'deploy/ejabberd/compose.yaml', 'deploy/ejabberd/compose.database.yaml',
     'deploy/ejabberd/env.example', 'deploy/ejabberd/chat.caddy.example', 'deploy/ejabberd/README.md',
     'deploy/ejabberd/Dockerfile', 'deploy/ejabberd/mod_sabz_chat.erl', 'deploy/ejabberd/ejabberd.yml',
@@ -857,7 +857,8 @@ def configure(config, environment=None):
         if values.get('EJABBERD_WEBSOCKET_URL') == previous_api.replace('https:', 'wss:') + '/xmpp-websocket':
             values['EJABBERD_WEBSOCKET_URL'] = values['PUBLIC_API_URL'].replace('https:', 'wss:') + '/xmpp-websocket'
         values['APP_ORIGINS'] = ','.join(values[f'PUBLIC_{key}_URL'] for key in ('WEB', 'APP', 'DASHBOARD'))
-        values['SADAD_RETURN_URL'] = values['PUBLIC_API_URL'] + '/v1/payments/providers/sadad/callback'
+        if not values.get('SADAD_RETURN_URL') or values['SADAD_RETURN_URL'] == previous_api.rstrip('/') + '/v1/payments/providers/sadad/callback':
+            values['SADAD_RETURN_URL'] = values['PUBLIC_API_URL'] + '/v1/payments/providers/sadad/callback'
         values['SADAD_RESULT_URL'] = values['PUBLIC_APP_URL'] + '/store/order-success'
         owner = (root.stat().st_uid, root.stat().st_gid)
         write_media_configuration(root, values, media, owner)

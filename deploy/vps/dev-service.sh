@@ -20,8 +20,10 @@ const values = {
   webUrl: process.env.PUBLIC_WEB_URL || '',
   appUrl: process.env.PUBLIC_APP_URL || '',
   dashboardUrl: process.env.PUBLIC_DASHBOARD_URL || '',
+  sadadReturnUrl: process.env.SADAD_RETURN_URL || '',
 };
 for (const [name, value] of Object.entries(values)) {
+  if (!value && name === 'sadadReturnUrl') continue;
   if (!value) throw new Error(`${name} is required for the shared dev runtime`);
   const url = new URL(value);
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {

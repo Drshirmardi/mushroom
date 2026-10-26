@@ -48,6 +48,7 @@ services:
     cap_drop: [ALL]
     environment:
       <<: *node-environment
+      SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
       DEV_INSTALL_DEPENDENCIES: "${DEV_INSTALL_DEPENDENCIES:-false}"
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
       DEV_BUILD_API_CLIENT: "${DEV_BUILD_API_CLIENT:-false}"

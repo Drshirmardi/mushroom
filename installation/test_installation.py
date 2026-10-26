@@ -235,6 +235,25 @@ class InstallationTests(unittest.TestCase):
         self.assertEqual(manager.load_env(root / 'runtime.env')['LOG_LEVEL'], 'warn')
         self.assertEqual(json.loads((root / 'bootstrap/first-run.json').read_text())['password'], 'first-password')
 
+    def test_reconfigure_preserves_main_domain_callback_and_updates_api_default(self):
+        for custom in (False, True):
+            with self.subTest(custom=custom):
+                spec = self.config['environments']['dev']
+                root = Path(spec['home']) / 'mushroom/dev'
+                manager.write_environment(self.config, 'dev', base=root)
+                values = manager.load_env(root / 'runtime.env')
+                callback = 'https://merchant.example.test/v1/payments/providers/sadad/callback'
+                values['SADAD_RETURN_URL'] = callback if custom else values['PUBLIC_API_URL'] + '/v1/payments/providers/sadad/callback'
+                manager.atomic_write(root / 'runtime.env', ''.join(f'{k}={v}\n' for k, v in values.items()))
+                def answer(label, default='', *args, **kwargs):
+                    return 'new-api.example.test' if label == 'dev api hostname' else default
+                with patch('manager.ask', side_effect=answer), patch('manager.check_dns'), patch('manager.save'), patch('manager.github_handoff'), patch.object(manager.os, 'chown', create=True), redirect_stdout(io.StringIO()):
+                    manager.configure(self.config, 'dev')
+                saved = manager.load_env(root / 'runtime.env')
+                expected = callback if custom else 'https://new-api.example.test/v1/payments/providers/sadad/callback'
+                self.assertEqual(saved['SADAD_RETURN_URL'], expected)
+                self.assertEqual(saved['PUBLIC_API_URL'], 'https://new-api.example.test')
+
     def test_completed_bootstrap_is_not_recreated(self):
         root = self.write('dev')
         (root / 'bootstrap/complete').touch()

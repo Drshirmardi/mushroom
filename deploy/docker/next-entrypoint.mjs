@@ -6,6 +6,7 @@ const values = {
   webUrl: process.env.PUBLIC_WEB_URL || '',
   appUrl: process.env.PUBLIC_APP_URL || '',
   dashboardUrl: process.env.PUBLIC_DASHBOARD_URL || '',
+  sadadReturnUrl: process.env.SADAD_RETURN_URL || '',
 };
 
 for (const [name, value] of Object.entries(values)) {

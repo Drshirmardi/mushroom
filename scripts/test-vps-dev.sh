@@ -325,6 +325,15 @@ wait "$lock_holder"
 ! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
   || fail 'serialized unchanged sync unnecessarily ran bootstrap'
 
+# A callback-only runtime change must refresh the public dashboard config too.
+printf '\nSADAD_RETURN_URL=https://merchant.example.test/v1/payments/providers/sadad/callback\n' >>"$dev_root/runtime.env"
+: >"$docker_log"
+run_deploy a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1
+grep -q 'run --rm --no-deps bootstrap.*config=true' "$docker_log" \
+  || fail 'callback-only change did not regenerate dashboard runtime configuration'
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'callback-only change did not recreate API runtime'
+
 cp "$scratch/mushroom/staging/runtime.env" "$scratch/staging.original"
 sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3303/' "$scratch/staging.original" \
   >"$scratch/mushroom/staging/runtime.env"

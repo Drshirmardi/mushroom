@@ -1,4 +1,5 @@
 import { isIP } from 'node:net';
+import { normalizeSadadCallbackUrl } from './sadad-callback-url';
 
 import * as Joi from 'joi';
 import { productMediaEnvironment } from './product-media.config';
@@ -88,8 +89,7 @@ const sadadReturnUrlSchema = Joi.string()
   .custom((value, helpers) => {
     if (!value) return value;
     try {
-      const url = new URL(value);
-      return url.protocol === 'https:' && url.pathname === '/v1/payments/providers/sadad/callback' && !url.search && !url.hash ? url.toString() : helpers.error('any.invalid');
+      return normalizeSadadCallbackUrl(value);
     } catch { return helpers.error('any.invalid'); }
   })
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /v1/payments/providers/sadad/callback with no query or fragment' });

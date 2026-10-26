@@ -458,3 +458,5 @@ F12-FE01 operational orders workspace (2026-10-22): same owner-authorized /root 
 
 
 F12-FE01-MZ01 owner continuation (2026-10-25): fixed ready-service purchase terms and permanent access scoped review PASS; no manual terms setup. Existing financial/identity/approval authority retained. Publication23/purchase33 plus final paid-purchase33 and responsive pricing3, types/SDK/lint/tokens PASS; local migration86 applied/no drift. Broad F12-FE01 stays REWORK/unchecked. Evidence: logs/phase-12.md#ready-service-static-purchase-terms-2026-10-25. No next batch.
+
+- [x] F12-FE01-PAY01 — Sadad main-domain callback software slice (2026-10-26), CLIENT-INTEGRATION sole /root on dev; review PASS/claim RELEASED. Explicit validated return URL independent of API; exact Caddy POST forwarding, dashboard runtime address and installer preservation. API21/dashboard6, types/lint/build, real Caddy transport, installer35/4 skips, runtime/dev/release contracts and Graphify PASS. Live configuration and owner bank acceptance external. Evidence: ../logs/phase-12.md#sadad-main-domain-callback--2026-10-26. Broad F12-FE01 REWORK; no next batch.

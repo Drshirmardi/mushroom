@@ -5599,3 +5599,66 @@ Known limitations / owner setup:
   - Final task commit and dev push wait for owner local acceptance; do not mark DONE or start a next batch. Broader F12-FE01 stays REWORK.
 
 MEDIA01 owner acceptance follow-up (2026-10-26): owner explicitly reports local run/test successful (exact console transcript not supplied). Combined source/config review and recorded automated checks PASS; F12-FE01-MEDIA01 accepted/DONE. Prior pending-owner statements are historical. No remote push/deployment; next owner-requested work is frontend upload failure recovery under a separate scoped task.
+
+## Sadad main-domain callback — 2026-10-26
+
+Task: F12-FE01-PAY01 — DONE (software). Owner authorized this scoped CLIENT-INTEGRATION continuation on dev, sole coordinator/writer/reviewer Codex /root, and requested one commit for all related changes. Baseline worktree clean. Broader F12-FE01 remains REWORK; no next batch.
+
+### Accepted contract and implementation
+
+- SADAD_RETURN_URL is explicit deployment configuration independent of PUBLIC_API_URL. Shared HTTPS/exact-path validation at startup, runtime and adapter rejects credentials/query/fragment. Existing callback parsing, server Verify, reconciliation and idempotency remain authoritative.
+- Caddy exact-path handle forwards main-domain callback to same-VPS dev API port3303, preserving POST/form/query and backend303/Location; no-store and unchanged other site routes. Cross-host TLS/Host/trusted-proxy and environment-isolation limitations documented.
+- Dashboard shows configured public return URL with old API-origin fallback when unset. Shared-dev bootstrap and immutable dashboard receive it; callback-only changes refresh public config/API. Synchronous runtime script precedes client evaluation; existing appearance script retained.
+- Installer reconfiguration preserves explicit merchant callback while updating old API-derived defaults; portable installer includes snippet/runbook.
+- No schema/migration/OpenAPI/dependency/secret change; no VPS access/deployment/payment/bank-setting mutation.
+
+### Verification and main-agent review
+
+PASS:
+- API targeted payment-live-runtime, environment-validation and sadad-payment-provider.adapter suites: 21 tests.
+- Dashboard payment-provider/runtime-config suites: 6 tests.
+- API source and test TypeScript; dashboard TypeScript, targeted ESLint and optimized build. Generated settings HTML has synchronous runtime-config.js.
+- python scripts/test-sadad-callback-proxy.py: real Docker Caddy exact-path forwarding, encoded POST form/query, repeated delivery,303/Location,no-store and unaffected website routes. Synthetic backend only; container cleaned up.
+- node scripts/test-sadad-runtime-config.mjs: actual immutable entrypoint emits merchant callback and supports disabled empty setting.
+- node scripts/test-runtime-config-loading.mjs: all three apps; prohibition scoped to runtime script, unrelated appearance script permitted.
+- python -m unittest discover -s installation -p test_installation.py: 39 cases,35 pass/4 existing platform-gated skips on Windows. Configure read/write regression verifies merchant override and old-default update.
+- bash scripts/test-vps-dev.sh: includes callback-only public config/API refresh. bash -n for changed shell scripts.
+- node scripts/test-release-pipeline.mjs: release contracts.
+- graphify update .:11579 nodes/33255 edges. Existing SQL/Erlang/HCL extractor and unrelated chat parser warnings. Graph output Git-ignored; not force-staged.
+- Main-agent scoped diff review and git diff --check. Protected files and existing financial authority preserved.
+
+### External acceptance and safe next action
+
+No unresolved software blocker. Live activation/error1023 resolution remains unverified. Apply the Caddy import inside the existing drshirmardi.com site, validate/reload, set dev SADAD_RETURN_URL=https://drshirmardi.com/v1/payments/providers/sadad/callback, deploy and perform owner-authorized payment/cancellation/replay acceptance per deploy/sadad-live-runbook.md. PUBLIC_API_URL stays on dev API. Never send production traffic to dev or share one callback between concurrent environments. No next batch.
+
+### Changed files
+
+- apps/api/.env.example
+- apps/api/src/config/environment.validation.ts
+- apps/api/src/config/sadad-callback-url.ts
+- apps/api/src/modules/commerce/payments/sadad-payment-provider.adapter.ts
+- apps/api/src/modules/commerce/payments/sadad-runtime-config.service.ts
+- apps/api/test/environment-validation.spec.ts
+- apps/api/test/payment-live-runtime.spec.ts
+- apps/dashboard/src/app/layout.tsx
+- apps/dashboard/src/lib/commerce-payment-provider-api.spec.ts
+- apps/dashboard/src/lib/commerce-payment-provider-api.ts
+- deploy/docker/next-entrypoint.mjs
+- deploy/sadad-live-runbook.md
+- deploy/vps/compose.dev.yaml
+- deploy/vps/compose.yaml
+- deploy/vps/deploy-dev.sh
+- deploy/vps/dev-env.example
+- deploy/vps/dev-service.sh
+- deploy/vps/env.example
+- deploy/vps/production-env.example
+- deploy/vps/sadad-callback.caddy.example
+- docs/ENVIRONMENT.md
+- installation/manager.py
+- installation/test_installation.py
+- plan/STATUS.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- scripts/test-runtime-config-loading.mjs
+- scripts/test-sadad-callback-proxy.py
+- scripts/test-sadad-runtime-config.mjs
+- scripts/test-vps-dev.sh
