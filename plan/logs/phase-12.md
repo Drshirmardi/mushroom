@@ -5712,3 +5712,23 @@ Software has no unresolved blocker. One final task commit on dev; no push/deploy
 - plan/phases/12-PRODUCTION-HARDENING.md
 - scripts/test-sadad-browser-start.mjs
 - scripts/test-sadad-callback-proxy.py
+
+## Sadad live callback token casing — 2026-10-26
+
+F12-FE01-PAY03 DONE (software), same CLIENT-INTEGRATION, sole coordinator/writer/reviewer /root on dev. Owner supplied actual POST application/x-www-form-urlencoded callback field names: lowercase token, ResCode, OrderId, plus unrelated SwitchResCode/CSRF/card-hash/wallet fields. Prior parser accepted only Token and reproduced the observed422. No real callback/token/card/session data copied into source, fixtures or logs.
+
+Accepted correction: normalize only the observed token alias to the canonical internal token, retain Token compatibility, and reject conflicting aliases, arrays/repeated parameters, empty/oversized values and existing invalid numeric fields. Equal scalar aliases are accepted. Existing token matching, provider-order/amount checks, server Verify and exactly-once settlement remain unchanged. Browser ResCode0 alone cannot settle money. No schema/migration, dependency, Caddy, environment or frontend behavior change. Protocol contract records owner-provided runtime evidence; runbook explains original-attempt Verify recovery.
+
+OpenAPI/client explicitly require OrderId/ResCode and at least one typed token spelling. Generated callback body remains an intersection with typed alternatives rather than unknown. Regeneration also synchronizes the PAY02 PAYMENT_START_RATE_LIMITED error code already present in runtime source; no new error runtime behavior in this slice.
+
+Verification PASS:
+- payment-provider-contract, sadad-payment-provider.adapter and payment-live-runtime:26 tests, including lowercase/uppercase compatibility and malformed/conflicting/duplicate tokens.
+- Wallet/billing real PostgreSQL:18 tests. Simulated PSP now uses the actual production callback parser. Real HTTP lower-token form with synthetic extra bank fields reaches server Verify then303 to /profile/wallet/payment-result; replay gives one persisted wallet credit. Wrong token409, conflicting aliases422 and repeated token parameters422 cannot credit money. Existing concurrency, ownership, reconciliation and financial tests retained.
+- Dedicated ephemeral Docker PostgreSQL on127.0.0.1:55419/wallet_test, all86 migrations and seed; removed after checks. Original local/VPS DB untouched.
+- API source build/test types; generated SDK build/drift check and12 SDK tests; app/dashboard consumer types.
+- Graphify AST refresh:11604 nodes/33316 edges; existing unsupported SQL/Erlang/HCL and unrelated chat parser warnings. Ignored graph output not force-staged.
+- Main-agent combined diff/contract review and git diff --check. No unresolved software blocker.
+
+One final scoped commit; no push, deployment, live bank call or financial write. Next: deploy API commit; no Caddy/env/migration action. For the existing debited transaction, use administrator billing reconciliation Verify on its original attempt and follow the bank result. Do not initiate another payment or manually force success. Actual bank verification/settlement remains owner acceptance; broad F12-FE01 stays REWORK and no next batch starts.
+
+Changed files: API payment adapter/controller; payment-provider-contract and wallet-billing tests; packages/api-client/openapi.json and src/schema.generated.ts; deploy/sadad-live-runbook.md; plan/contracts/sadad-ipg-v1.md; plan/STATUS.md, phases/12-PRODUCTION-HARDENING.md and this log.

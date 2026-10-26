@@ -13,6 +13,7 @@ import { PaymentProviderRegistry } from '../src/modules/commerce/payments/paymen
 import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments/payment-credential-crypto.service';
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
+import { parseSadadFormCallback } from '../src/modules/commerce/payments/sadad-payment-provider.adapter';
 import { CommerceCheckoutService } from '../src/modules/commerce/checkout/commerce-checkout.service';
 import { OrderBillingTarget } from '../src/modules/commerce/payments/order-billing.target';
 import { PatientAvailabilityService } from '../src/modules/scheduling/patient-availability.service';
@@ -33,7 +34,7 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
   const fake: PaymentProviderPort = {
     descriptor: { code: 'sadad', displayName: 'Synthetic test PSP', capabilities: { createPayment: 'SUPPORTED_WHEN_GO_LIVE_READY', parseCallback: 'SUPPORTED_WHEN_GO_LIVE_READY', verifyPayment: 'SUPPORTED_WHEN_GO_LIVE_READY', sandbox: 'UNSUPPORTED', inquiry: 'UNSUPPORTED', webhook: 'UNSUPPORTED', refund: 'UNSUPPORTED', partialRefund: 'UNSUPPORTED' } },
     async createPayment(input) { creates++; const token = `synthetic-${input.providerOrderId}`; providerRequests.set(token, { amount: input.providerAmount, orderId: input.providerOrderId }); return { providerResultCode: '0', token, redirectUrl: `https://sadad.shaparak.ir/Purchase?Token=${token}` }; },
-    parseCallback(input) { const value = input as Record<string, string>; return { providerOrderId: BigInt(value.OrderId), token: value.Token, resultCode: value.ResCode }; },
+    parseCallback(input) { return parseSadadFormCallback(input as Record<string, unknown>); },
     async verifyPayment({ token }) { if (verifyTimeout) throw new Error('Synthetic timeout'); const input = providerRequests.get(token)!; return { resultCode: '100', providerOrderId: input.orderId, amount: input.amount, referenceId: `reference-${input.orderId}`, traceNumber: `trace-${input.orderId}` }; },
   };
   beforeAll(async () => {
@@ -152,6 +153,30 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const concurrent = await Promise.allSettled([billing.refund(context(), intent.id, '4000', 'Remaining', randomUUID()), billing.refund(context(), intent.id, '4000', 'Remaining', randomUUID())]); expect(concurrent.filter(r => r.status === 'fulfilled')).toHaveLength(1);
     expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe('REFUNDED');
     const other = await patient(); await expect(billing.get(other.userId, intent.id)).rejects.toThrow();
+  });
+
+  it('verifies a lowercase-token VPG form and redirects to the result page with exactly one wallet credit', async () => {
+    const p = await patient();
+    const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '750' }, randomUUID(), context(p.userId));
+    const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    const stored = await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
+    const form = new URLSearchParams({ OrderId: stored.providerOrderId.toString(), token: stored.providerToken!, ResCode: '0', SwitchResCode: '00', __RequestVerificationToken: 'synthetic-csrf', HashedCardNo: 'synthetic-ignored-card-hash', IsWalletPayment: 'false' });
+    const send = (payload: string) => app.inject({ method: 'POST', url: '/v1/payments/providers/sadad/callback', headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://sadad.shaparak.ir' }, payload });
+    const wrong = new URLSearchParams(form); wrong.set('token', 'synthetic-wrong-token');
+    expect((await send(wrong.toString())).statusCode).toBe(409);
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('0');
+    const ambiguous = new URLSearchParams(form); ambiguous.set('Token', 'synthetic-conflicting-token');
+    expect((await send(ambiguous.toString())).statusCode).toBe(422);
+    const repeated = new URLSearchParams(form); repeated.append('token', stored.providerToken!);
+    expect((await send(repeated.toString())).statusCode).toBe(422);
+    for (let replay = 0; replay < 2; replay++) {
+      const response = await send(form.toString());
+      expect(response.statusCode).toBe(303);
+      expect(response.headers.location).toBe(`https://app.example.test/profile/wallet/payment-result?intentId=${intent.id}`);
+    }
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('7500');
+    expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
   });
 
   it('serves the merchant browser page publicly through the real HTTP pipeline', async () => {

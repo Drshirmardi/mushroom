@@ -15,7 +15,7 @@
 | Amount | تأیید مالک محصول بر مبنای مستندات سداد | `RIAL`؛ Mushroom همچنان `TOMAN` است. `providerAmount = commerceAmountToman × 10` فقط در adapter سداد با integer arithmetic، کنترل overflow و snapshot immutable مجاز است. |
 | PaymentRequest/Verify | راهنمای پروتکل | `POST application/json; charset=utf-8`؛ transport فقط پس از رفع gate فعال می‌شود. |
 | LocalDateTime | نمونه رسمی PHP و تصمیم مالک | profile مستند `MM/dd/yyyy h:mm:ss tt` با clock تزریقی و timezone ثابت `Asia/Tehran`؛ وابستگی به locale سیستم ممنوع است. |
-| callback | نمونه رسمی PHP و تصمیم مالک، نه merchant acceptance جاری | HTTP POST Form Data؛ فقط `OrderId`, `Token`, `ResCode` با allowlist و محدودیت اندازه پردازش می‌شوند. PAN، نام دارنده کارت و raw payload ذخیره/log نمی‌شوند. |
+| callback | نمونه رسمی PHP و تصمیم مالک؛ casing واقعی در PAY03 تأیید شد | HTTP POST Form Data؛ فقط `OrderId`, `token`/`Token`, `ResCode` با allowlist و محدودیت اندازه پردازش می‌شوند. PAN، نام دارنده کارت و raw payload ذخیره/log نمی‌شوند. |
 | redirect | PDF، نمونه PHP و نمونه .NET | profiles code-owned: `/Purchase`، `/VPG/Purchase?Token=...` و `/Purchase/Index?token=...`؛ هیچ‌کدام بدون پذیرندگی جاری runtime-active نیست. |
 
 ## وضعیت فعال‌سازی و capability
@@ -120,7 +120,7 @@ ReturnUrl قطعی Mushroom:
 
 ```text
 POST /v1/payments/providers/sadad/callback
-HTTP POST Form Data; allowlist: OrderId, Token, ResCode
+HTTP POST Form Data; allowlist: OrderId, token (or compatible Token), ResCode
 ```
 
 نمونه رسمی PHP و تصمیم مالک، Form Data و casing allowlist را برای پیاده‌سازی dormant مشخص می‌کنند؛ این
@@ -132,7 +132,9 @@ OrderId, HashedCardNo, PrimaryAccNo, SwitchResCode,
 ResCode, CardHolderFullName, Token
 ```
 
-Mushroom فقط `OrderId`, `Token`, `ResCode` و metadata ایمن موردنیاز correlation را پردازش می‌کند.
+Mushroom فقط `OrderId`, `token`/`Token`, `ResCode` و metadata ایمن موردنیاز correlation را پردازش می‌کند.
+
+Runtime acceptance correction (2026-10-26, F12-FE01-PAY03): owner supplied the actual VPG callback request: POST application/x-www-form-urlencoded with lowercase token, OrderId and ResCode. Accept this explicit token alias alongside the documented Token spelling; if both exist they must be identical scalar strings. Duplicate token parameters/arrays, conflicting aliases, empty/oversized tokens and invalid numeric fields remain rejected. Only the token field has this compatibility alias; no generic case-insensitive parsing. SwitchResCode, CSRF, card hashes and wallet indicators remain discarded. Verify still sends the uppercase Token field and independently proves the stored order/amount before settlement. Real callback/token/card/session values are never committed or logged.
 `PrimaryAccNo`, `HashedCardNo`, `CardHolderFullName` و payload کامل نه ذخیره و نه log می‌شوند. قواعد:
 
 - `ResCode=0`: فقط Verify همان attempt آغاز/زمان‌بندی می‌شود.

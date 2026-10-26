@@ -63,6 +63,12 @@ Clicking gateway payment again resumes the same active attempt with its original
 
 Local Chromium tests establish the outgoing Referer behavior; live PSP acceptance and exact merchant whitelist matching still require an authorized bank test. Registering the actual frontend domain remains an alternative if Sadad requires it.
 
+## Live callback token casing (PAY03)
+
+The observed VPG browser callback posts lowercase token with OrderId/ResCode. PAY03 accepts token and the compatible Token spelling, rejects conflicting aliases and duplicated parameters, and ignores unrelated bank/card/CSRF fields. Bank success in the form is only a hint: matching server Verify is still required for a wallet credit or paid order. No Caddy, environment or database migration change is required for this correction; deploy the API commit normally.
+
+For a transaction whose callback was rejected before this fix, do not create/pay a new attempt. Use the existing administrator billing reconciliation Verify action on the original attempt. The bank result determines whether it settles or remains unresolved; do not force success, delete the record or release an uncertain attempt just because money was debited. For fresh acceptance, confirm callback303 to the app result page and exactly one persisted credit/payment on replay. Share only field names/status/requestId when troubleshooting; never tokens, cookies, CSRF values or card hashes.
+
 ## Acceptance transaction
 
 1. Create a low-value real order using an authorized test customer.

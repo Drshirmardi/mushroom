@@ -60,6 +60,19 @@ describe('payment provider contract', () => {
     expect(parseSadadFormCallback({ OrderId: '42', Token: 'synthetic', ResCode: '0', PrimaryAccNo: '603799******0000', CardHolderFullName: 'private' })).toEqual({ providerOrderId: 42n, token: 'synthetic', resultCode: '0' }); expect(() => parseSadadFormCallback({ OrderId: 'not-number', Token: 'synthetic', ResCode: '0' })).toThrow(/protocol input or response is invalid/u);
     expect(() => parseSadadFormCallback({ OrderId: (SADAD_MAX_INT64 + 1n).toString(), Token: 'synthetic', ResCode: '0' })).toThrow(/protocol input or response is invalid/u); expect(() => parseSadadFormCallback({ OrderId: '42', Token: 'synthetic', ResCode: '1'.repeat(32) })).toThrow(/protocol input or response is invalid/u);
   });
+  it('accepts the observed VPG token spelling while rejecting ambiguous or repeated tokens', () => {
+    const expected = { providerOrderId: 42n, token: 'synthetic-token', resultCode: '0' };
+    expect(parseSadadFormCallback({ OrderId: '42', token: 'synthetic-token', ResCode: '0', SwitchResCode: '00', __RequestVerificationToken: 'ignored', HashedCardNo: 'ignored', IsWalletPayment: 'false' })).toEqual(expected);
+    expect(parseSadadFormCallback({ OrderId: '42', token: 'synthetic-token', Token: 'synthetic-token', ResCode: '0' })).toEqual(expected);
+    for (const fields of [
+      { token: 'synthetic-token', Token: 'other-token' },
+      { token: ['synthetic-token', 'other-token'] },
+      { token: 'synthetic-token', Token: '' },
+      { token: 'synthetic-token', Token: null },
+      { token: '' }, { token: 'a'.repeat(513) }, {},
+    ]) expect(() => parseSadadFormCallback({ OrderId: '42', ResCode: '0', ...fields })).toThrow();
+  });
+
   it('records -1, 101 and timeout without creating a financial effect', async () => {
     const updates: unknown[] = []; const service = new PaymentVerificationService({} as never); const tx = { paymentAttempt: { updateMany: async (query: unknown) => { updates.push(query); return { count: 1 }; } } };
     await service.recordNonSuccess(tx as never, { attemptId: 'synthetic', resultCode: '-1', verifiedAt: new Date(0) }); await service.recordNonSuccess(tx as never, { attemptId: 'synthetic', resultCode: '101', verifiedAt: new Date(0) }); await service.recordNonSuccess(tx as never, { attemptId: 'synthetic', resultCode: 'TIMEOUT', verifiedAt: new Date(0) });

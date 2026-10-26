@@ -42,7 +42,14 @@ export class SadadCallbackController {
   @Public()
   @Post('callback')
   @ApiConsumes('application/x-www-form-urlencoded')
-  @ApiBody({ schema: { type: 'object', required: ['OrderId', 'Token', 'ResCode'], properties: { OrderId: { type: 'string' }, Token: { type: 'string' }, ResCode: { type: 'string' } } } })
+  @ApiBody({ schema: {
+    type: 'object', required: ['OrderId', 'ResCode'],
+    properties: { OrderId: { type: 'string' }, ResCode: { type: 'string' } },
+    allOf: [{ anyOf: [
+      { type: 'object', required: ['token'], properties: { token: { type: 'string', description: 'Live VPG callback token; must match Token if both are supplied.' } } },
+      { type: 'object', required: ['Token'], properties: { Token: { type: 'string', description: 'Compatible documented token spelling.' } } },
+    ] }],
+  } })
   @ApiResponse({ status: 429, description: 'Callback rate limit exceeded.' })
   @ApiOperation({ operationId: 'sadadPaymentCallback', summary: 'Validate a Sadad browser callback, Verify server-to-server and redirect to the app result page' })
   async callback(@Body() body: Record<string, unknown>, @Req() request: FastifyRequest, @Res() reply: FastifyReply) {

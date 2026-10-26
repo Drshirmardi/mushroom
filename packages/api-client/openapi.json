@@ -25823,20 +25823,46 @@
                 "type": "object",
                 "required": [
                   "OrderId",
-                  "Token",
                   "ResCode"
                 ],
                 "properties": {
                   "OrderId": {
                     "type": "string"
                   },
-                  "Token": {
-                    "type": "string"
-                  },
                   "ResCode": {
                     "type": "string"
                   }
-                }
+                },
+                "allOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "token"
+                        ],
+                        "properties": {
+                          "token": {
+                            "type": "string",
+                            "description": "Live VPG callback token; must match Token if both are supplied."
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Token"
+                        ],
+                        "properties": {
+                          "Token": {
+                            "type": "string",
+                            "description": "Compatible documented token spelling."
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -28715,6 +28741,7 @@
               "PAYMENT_VERIFICATION_MISMATCH",
               "PAYMENT_RECONCILIATION_REQUIRED",
               "PAYMENT_CALLBACK_RATE_LIMITED",
+              "PAYMENT_START_RATE_LIMITED",
               "CHAT_FORBIDDEN",
               "CHAT_ENGINE_UNAVAILABLE",
               "CHAT_APPOINTMENT_NOT_ELIGIBLE",
