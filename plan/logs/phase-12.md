@@ -5546,3 +5546,17 @@ Verification:
 - Graphify AST refreshed; generated-only Next AGENTS heading restored; review server stopped; final diff reviewed and diff check passed.
 
 Limits/next: no live bank transaction, VPS migration, push or deployment. Owner can restart local API/dashboard and test the actual service price/publication/purchase. Existing content approval and account ownership remain required. No next batch started.
+
+## Landing OTP continuity and unified expiry (2026-10-26)
+
+Task: F12-FE01-WEB01 owner follow-up; sole /root writer/reviewer on current dev, clean baseline 7ab62e8. Owner authorizes frontend-only implementation, commit and push on the current branch. Software review PASS; scoped claim released; broader F12-FE01 remains REWORK.
+
+Closing now hides the lazily loaded native dialog while retaining its mounted form in page memory. Reopening restores the entered phone, current challenge, partial OTP, pending request, error or successful result; close-animation/drag state resets independently. Body scroll locking, viewport listeners, Escape/backdrop/handle dismissal and focus restoration follow visibility. Hidden request completion updates the retained attempt without opening the dialog or stealing focus. No phone/code/session data is persisted to browser storage.
+
+The separate validity text and resend button are one full-width control: readable disabled validity countdown, then resend after both the original expiry and server cooldown. Submission uses the existing resend API and duplicate-request guard; a replacement challenge clears the old code and restarts the countdown from the server response. Absolute deadlines remain authoritative across dismissal and background timer throttling. Backend, SMS delivery and server contracts are unchanged.
+
+Changed: Header.tsx, LandingLoginDialog.tsx, LandingOtpForm.tsx, landing-auth.css, existing OTP browser suite, and plan evidence/checklist.
+
+Verification: web TypeScript PASS; Vitest 6 files/25 tests PASS; production web build PASS; final intercepted Chromium OTP suite 9/9 PASS. Mobile390 and desktop1440 cases cover phone draft, response received while closed, partial code, drag/Escape, no duplicate send on reopening, expiry while closed, unified resend/replacement challenge, and verification completing while closed with successful continuation/focus on reopen. Existing breakpoint320–1440, short viewport, animation overflow, numeric input, error/expired code/cooldown/provider failure, redirects, cookie/destination, keyboard focus and reduced-motion cases remain green. Updated older phone selectors/expectations to the accepted Persian-digit field; mobile drag waits for entrance animation before the gesture. Graphify AST update PASS with pre-existing optional extractor warnings; diff review/check PASS.
+
+Limit: continuity lasts within the current landing-page instance; full navigation/reload starts a new UI instance. All browser service responses are synthetic/intercepted; no live SMS, account, database or deployment action. Next: owner visual/real-device review, no next batch.

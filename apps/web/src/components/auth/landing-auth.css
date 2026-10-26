@@ -85,6 +85,7 @@
 .landing-otp-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: center; margin-top: 12px; }
 .landing-otp-actions button { min-height: 44px; padding: 4px 8px; border: 0; background: transparent; color: var(--auth-green); font-size: 14px; }
 .landing-otp-expiry { flex-basis: 100%; text-align: center; color: var(--auth-muted); font-size: 14px; }
+.landing-otp-actions .landing-otp-expiry:disabled { color: var(--auth-muted); opacity: 1; }
 .landing-otp-success { position: absolute; width: 220px; height: 220px; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.75); opacity: 0; pointer-events: none; transition: opacity 600ms, transform 900ms cubic-bezier(.22, 1, .36, 1); }
 .landing-success-ring { position: absolute; inset: 0; border: 1.5px solid #5cbaa02b; border-radius: 58px; transform: rotate(-9deg); }
 .landing-success-ring.inner { inset: 30px; border-radius: 43px; border-color: #5cbaa042; transform: rotate(9deg); }

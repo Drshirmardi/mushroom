@@ -13,9 +13,9 @@ const sessionManager = new WebSessionManager(apiClient);
 const LandingLoginDialog = dynamic(() => import("@/components/auth/LandingLoginDialog").then(module => module.LandingLoginDialog), { ssr: false });
 
 export function Header() {
-    const [loginOpen, setLoginOpen] = useState(false);
+    const [loginState, setLoginState] = useState<"idle" | "open" | "closed">("idle");
     const closeLogin = useCallback(() => {
-        setLoginOpen(false);
+        setLoginState("closed");
         const url = new URL(window.location.href);
         if (url.searchParams.has("login")) {
             url.searchParams.delete("login");
@@ -31,7 +31,7 @@ export function Header() {
 
     useEffect(() => {
         void sessionManager.bootstrap();
-        if (new URLSearchParams(window.location.search).get("login") === "1") setLoginOpen(true);
+        if (new URLSearchParams(window.location.search).get("login") === "1") setLoginState("open");
     }, []);
 
     return (
@@ -71,20 +71,20 @@ export function Header() {
                             <button
                                 type="button"
                                 aria-haspopup="dialog"
-                                onClick={() => setLoginOpen(true)}
+                                onClick={() => setLoginState("open")}
                                 className="press inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 md:px-5 py-2.5 text-sm font-semibold hover:bg-primary/90 hover:-translate-y-0.5 shadow-soft"
                             >
                                 ورود
                             </button>
                         </>
                     ) : session.status === "unavailable" ? (
-                        <button type="button" aria-haspopup="dialog" onClick={() => setLoginOpen(true)}
+                        <button type="button" aria-haspopup="dialog" onClick={() => setLoginState("open")}
                             className="rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground">ورود</button>
                     ) : (
                         <div aria-label="در حال بررسی حساب کاربری" className="h-10 w-24 animate-pulse rounded-full bg-secondary" />
                     )}
                 </div>
             </div>
-        </header>{loginOpen && <LandingLoginDialog onClose={closeLogin} />}</>
+        </header>{loginState !== "idle" && <LandingLoginDialog open={loginState === "open"} onClose={closeLogin} />}</>
     );
 }

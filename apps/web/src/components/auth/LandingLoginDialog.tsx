@@ -6,7 +6,7 @@ import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { LandingOtpForm } from "./LandingOtpForm";
 import "./landing-auth.css";
 
-export function LandingLoginDialog({ onClose }: { onClose: () => void }) {
+export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const dialog = useRef<HTMLDialogElement>(null);
     const drag = useRef<{ startY: number; moved: boolean } | null>(null);
     const [offset, setOffset] = useState(0);
@@ -14,19 +14,25 @@ export function LandingLoginDialog({ onClose }: { onClose: () => void }) {
     const close = () => setClosing(true);
 
     useEffect(() => {
-        if (!closing) return;
-        const timer = window.setTimeout(onClose,
+        if (!closing || !open) return;
+        const timer = window.setTimeout(() => {
+            onClose();
+            setClosing(false);
+            setOffset(0);
+            drag.current = null;
+        },
             window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220);
         return () => window.clearTimeout(timer);
-    }, [closing, onClose]);
+    }, [closing, open, onClose]);
 
     useEffect(() => {
+        if (!open) return;
         const element = dialog.current!;
         const focused = document.activeElement;
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
         element.showModal();
-        element.querySelector<HTMLInputElement>("input")?.focus();
+        element.querySelector<HTMLElement>("input:not(:disabled), .landing-auth-primary:not(:disabled)")?.focus();
         const viewport = window.visualViewport;
         const updateViewport = () => {
             element.style.setProperty("--auth-viewport-height", `${viewport?.height ?? window.innerHeight}px`);
@@ -42,7 +48,7 @@ export function LandingLoginDialog({ onClose }: { onClose: () => void }) {
             document.body.style.overflow = previousOverflow;
             if (focused instanceof HTMLElement && focused.isConnected) focused.focus();
         };
-    }, []);
+    }, [open]);
 
     function endDrag(event: PointerEvent<HTMLButtonElement>) {
         if (!drag.current) return;
@@ -73,7 +79,7 @@ export function LandingLoginDialog({ onClose }: { onClose: () => void }) {
                     onPointerUp={endDrag} onPointerCancel={() => { drag.current = null; setOffset(0); }}
                     onClick={event => { if (event.detail === 0) close(); }}><span /></button>
                 <button className="landing-auth-close" type="button" aria-label="بستن پنجره ورود" onClick={close}><X size={20} /></button>
-                <LandingOtpForm onAuthenticated={roles => window.location.assign(postAuthenticationUrl(roles, new URLSearchParams(window.location.search).get("next")))} />
+                <LandingOtpForm active={open} onAuthenticated={roles => window.location.assign(postAuthenticationUrl(roles, new URLSearchParams(window.location.search).get("next")))} />
             </div>
         </div>
     </dialog>;

@@ -8,7 +8,8 @@ import { AuthErrorAlert } from "./AuthErrorAlert";
 
 const CODE_LENGTH = 6;
 
-export function LandingOtpForm({ onAuthenticated }: {
+export function LandingOtpForm({ active, onAuthenticated }: {
+    active: boolean;
     onAuthenticated: (roles: string[]) => void;
 }) {
     const [phone, setPhone] = useState("");
@@ -31,13 +32,18 @@ export function LandingOtpForm({ onAuthenticated }: {
     useEffect(() => {
         if (!challenge || roles) return;
         const timer = window.setInterval(() => setNow(Date.now()), 1000);
-        input.current?.focus();
         return () => window.clearInterval(timer);
     }, [challenge, roles]);
-    useEffect(() => { if (roles) continueButton.current?.focus(); }, [roles]);
+    useEffect(() => {
+        if (!active) return;
+        if (roles) continueButton.current?.focus();
+        else if (challenge) input.current?.focus();
+    }, [active, challenge, roles]);
 
-    const seconds = (date: string) => Math.max(0, Math.ceil((Date.parse(date) - now) / 1000));
+    const seconds = (date: string) => Math.max(0, Math.ceil((Date.parse(date) - Math.max(now, Date.now())) / 1000));
     const busy = action !== null;
+    const codeRemaining = challenge ? seconds(challenge.expiresAt) : 0;
+    const resendRemaining = challenge ? Math.max(codeRemaining, seconds(challenge.resendAvailableAt)) : 0;
 
     async function send(resending = false) {
         if (inFlight.current) return;
@@ -48,7 +54,7 @@ export function LandingOtpForm({ onAuthenticated }: {
             phoneInput.current?.focus();
             return;
         }
-        if (resending && (!challenge || seconds(challenge.resendAvailableAt) > 0)) return;
+        if (resending && (!challenge || Math.max(Date.parse(challenge.expiresAt), Date.parse(challenge.resendAvailableAt)) > Date.now())) return;
         inFlight.current = true;
         setAction(resending ? "resend" : "send");
         setError(null);
@@ -161,10 +167,10 @@ export function LandingOtpForm({ onAuthenticated }: {
             {roles ? <button ref={continueButton} type="button" className="landing-auth-primary" onClick={() => onAuthenticated(roles)}>
                 ادامه مسیر <ArrowLeft size={18} />
             </button> : <div className="landing-otp-actions">
-                <span className="landing-otp-expiry">اعتبار کد: {seconds(challenge.expiresAt).toLocaleString("fa-IR")} ثانیه</span>
-                <button type="button" disabled={busy || seconds(challenge.resendAvailableAt) > 0} onClick={() => void send(true)}>
-                    {action === "resend" ? "در حال ارسال…" : seconds(challenge.resendAvailableAt) > 0
-                        ? `ارسال دوباره تا ${seconds(challenge.resendAvailableAt).toLocaleString("fa-IR")} ثانیه` : "ارسال دوباره کد"}
+                <button className="landing-otp-expiry" type="button" disabled={busy || resendRemaining > 0} onClick={() => void send(true)}>
+                    {action === "resend" ? "در حال ارسال…" : codeRemaining > 0
+                        ? `اعتبار کد: ${codeRemaining.toLocaleString("fa-IR")} ثانیه` : resendRemaining > 0
+                            ? `ارسال دوباره تا ${resendRemaining.toLocaleString("fa-IR")} ثانیه` : "ارسال دوباره کد"}
                 </button>
                 <button type="button" disabled={busy} onClick={() => { setChallenge(null); setCode(""); setError(null); window.requestAnimationFrame(() => phoneInput.current?.focus()); }}>
                     ویرایش شماره موبایل
