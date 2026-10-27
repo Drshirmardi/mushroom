@@ -4,7 +4,11 @@ import { createApiClient } from "@sabz-zendegi/api-client";
 import { type Prescription, createPrescription, getTreatmentProgress, issuePrescription, listPrescriptions, listTreatmentPlans, revisePrescription } from "./prescription-treatment-api";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
-vi.stubGlobal("fetch", fetchMock); vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock as typeof fetch }) }));
+vi.stubGlobal("fetch", fetchMock); vi.mock("@/lib/api", () => ({
+  apiBaseUrl: "https://api.example.test",
+  apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock as typeof fetch }),
+  sessionFetch: (input: RequestInfo | URL, init?: RequestInit) => fetchMock(new Request(input, init)),
+}));
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 const prescription: Prescription = { id: "prescription-1", patientId: "patient-1", currentRevision: 2, currentIssuedRevision: null, latestIssuedRevision: null, revision: { id: "revision-2", revisionNumber: 2, previousRevisionId: null, state: "DRAFT", amendmentReasonCategory: null, integrityHash: null, authoredAt: "2026-09-04T00:00:00.000Z", authoredByUserId: "user-1", issuedAt: null, issuedByUserId: null, items: [] } };
 
