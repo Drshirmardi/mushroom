@@ -1,23 +1,18 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Toaster } from "@/components/ui/sonner";
+import { getLocale } from "next-intl/server";
+import { WebExperience } from "@/components/landing/WebExperience";
+import { isLocale, isRtlLocale } from "@/i18n/routing";
 import "./globals.css";
-
-const yekanBakh = localFont({
-    src: "./fonts/yekan-bakh-fanum-variable.woff2",
-    display: "swap",
-    preload: true,
-    variable: "--font-yekan-bakh",
-    weight: "100 900",
-});
+import "@/components/landing/landing.css";
 
 export const metadata: Metadata = {
-    title: "دکتر شیرمردی - مرکز تخصصی طب سوزنی و سلامت هوشمند",
+    metadataBase: new URL(process.env.PUBLIC_WEB_URL || "http://localhost:3000"),
+    title: "دکتر شیرمردی | شناخت مزاج و سبک زندگی",
     description:
-        "مرکز تخصصی طب سوزنی دکتر شیرمردی. درمان دردهای مزمن، خدمات زیبایی، کاهش استرس، بهبود خواب و ارزیابی هوشمند سلامت.",
+        "شناخت مزاج، تغذیه، اصلاح سبک زندگی و خدمات مجموعه دکتر سید ابوالفتح شیرمردی.",
     openGraph: {
-        title: "AcuPremium — دکتر شیرمردی",
-        description: "درمان هدفمند، آرامش پایدار، زندگی سالم‌تر با ترکیب طب سوزنی و فناوری نوین.",
+        title: "دکتر شیرمردی | از شناخت تا مراقبت",
+        description: "شناخت مزاج، تغذیه و اصلاح سبک زندگی با همراهی مجموعه دکتر شیرمردی.",
         type: "website",
     },
     twitter: {
@@ -25,17 +20,20 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
+    const requested = await getLocale();
+    const locale = isLocale(requested) ? requested : "fa";
+    const font = isRtlLocale(locale) ? "IRANYekanX-Regular.woff" : locale === "en" ? "Geist-Variable.woff2" : "NotoSansSC-Variable.woff2";
     return (
-        <html lang="fa" dir="rtl" className={yekanBakh.variable}>
+        <html lang={locale} dir={isRtlLocale(locale) ? "rtl" : "ltr"}>
             <head>
+                <link rel="preload" href={`/fonts/${font}`} as="font" type={isRtlLocale(locale) ? "font/woff" : "font/woff2"} crossOrigin="anonymous" />
                 <script src="/runtime-config.js" />
             </head>
             <body>
-                {children}
-                <Toaster dir="rtl" position="top-center" richColors closeButton />
+                <WebExperience initialLocale={locale}>{children}</WebExperience>
             </body>
         </html>
     );

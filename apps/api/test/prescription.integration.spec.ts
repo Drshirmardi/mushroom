@@ -156,7 +156,7 @@ describe('prescription lifecycle API (PostgreSQL integration)', () => {
     await expect(prescriptions.list(patient.id, actor)).rejects.toMatchObject({ response: { code: 'CLINICAL_RESOURCE_FORBIDDEN' } });
     await prisma.clinicalClinicAccess.create({ data: { userId: actor.actorUserId, clinicId: patient.clinicId } });
     const listed = await prescriptions.list(patient.id, actor, undefined, 1);
-    expect(listed).toEqual({ items: [], nextCursor: null });
+    expect(listed).toEqual({ patientDisplayName: null, items: [], nextCursor: null });
     await expect(prescriptions.get(patient.id, randomUUID(), actor)).rejects.toMatchObject({ response: { code: 'PRESCRIPTION_RESOURCE_FORBIDDEN' } });
   });
 });

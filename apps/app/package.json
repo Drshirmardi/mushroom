@@ -12,6 +12,7 @@
     "clean": "rm -rf .next node_modules"
   },
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.2.1",
     "@sabz-zendegi/api-client": "workspace:*",
     "clsx": "2.1.1",
     "lucide-react": "0.487.0",

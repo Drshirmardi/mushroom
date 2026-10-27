@@ -11,7 +11,7 @@ import { PrescriptionListResponseDto } from './prescription-response.dto';
 export class PatientPrescriptionsController {
   constructor(private readonly prescriptions: PrescriptionService) {}
   @Get() @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'patientPrescriptionsList' })
-  @ApiQuery({ name: 'cursor', required: false, format: 'uuid' }) @ApiOkResponse({ type: PrescriptionListResponseDto })
+  @ApiQuery({ name: 'cursor', type: String, required: false, format: 'uuid' }) @ApiOkResponse({ type: PrescriptionListResponseDto })
   list(@Query('cursor', new ParseUUIDPipe({ version: '4', optional: true })) cursor: string | undefined, @Req() request: AuthenticatedRequest) {
     return this.prescriptions.patientList(request.auth.userId, { actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip, roles: request.auth.roles }, cursor);
   }

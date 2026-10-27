@@ -1,0 +1,252 @@
+{
+  "Meta": {
+    "title": "Dr Shirmardi | Know your temperament, shape your lifestyle",
+    "description": "Start with understanding yourself. Individual and couples temperament assessments, nutrition, lifestyle guidance and online consultations with Dr Seyed Abolfath Shirmardi."
+  },
+  "Common": {
+    "enamadTitle": "eNAMAD electronic trust mark; view the official business profile",
+    "enamadVerify": "Verify eNAMAD",
+    "brand": "Dr Shirmardi",
+    "brandFull": "Dr Seyed Abolfath Shirmardi",
+    "brandSub": "Understanding. Balance. Life.",
+    "login": "Sign in",
+    "dashboard": "My account",
+    "language": "Website language",
+    "menu": "Navigation",
+    "skip": "Skip to main content",
+    "appNotice": "The patient services and account area are currently available in Persian.",
+    "close": "Close sign-in",
+    "dragClose": "Drag down to close sign-in",
+    "checking": "Checking your account",
+    "copyright": "All rights reserved by Dr Shirmardi’s practice.",
+    "contact": "Get in touch",
+    "address": "Second floor, corner of Alley 13, South Hafez Street, Enghelab Square, Shahrekord, Iran",
+    "map": "View on map",
+    "links": "Explore",
+    "footer": "From understanding temperament to nutrition and lifestyle: a personal approach informed by Dr Shirmardi’s experience in Iranian medicine, acupuncture and integrative medicine.",
+    "nav": [
+      "Start",
+      "Your pathways",
+      "Meet the doctor",
+      "Questions"
+    ],
+    "notFoundTitle": "Page not found",
+    "notFoundText": "This page is unavailable or has moved.",
+    "backHome": "Back to home"
+  },
+  "Landing": {
+    "eyebrow": "Better care starts with knowing you",
+    "title": "Know your temperament.",
+    "titleEnd": "Shape your wellbeing.",
+    "intro": "No two bodies are the same. Understand your individual characteristics and make more informed choices about nutrition, lifestyle and care.",
+    "portraitAlt": "Portrait of Dr Seyed Abolfath Shirmardi",
+    "portraitCaption": "With Dr Seyed Abolfath Shirmardi",
+    "portraitSub": "Iranian medicine, acupuncture and integrative care",
+    "experience": "Since 2002",
+    "experienceSub": "Professional practice",
+    "quote": "“Be your own doctor!”",
+    "quoteBy": "In Dr Shirmardi’s words",
+    "explore": "Discover your next step",
+    "pathLabel": "Where would you like to start?",
+    "pathHint": "Choose the pathway that fits your needs",
+    "pathNote": "The individual assessment is your free starting point.",
+    "paths": [
+      {
+        "label": "For yourself",
+        "title": "Start by understanding yourself.",
+        "text": "Explore your primary and secondary temperaments as a starting point for understanding your characteristics, nutrition and lifestyle.",
+        "cta": "Start my assessment"
+      },
+      {
+        "label": "For couples",
+        "title": "Two people. More to understand.",
+        "text": "Explore individual differences before or after marriage, as a starting point for more informed conversation and interaction.",
+        "cta": "Explore couples assessment"
+      },
+      {
+        "label": "Consultation",
+        "title": "Talk through your concerns.",
+        "text": "For concerns that need a closer look, start an online consultation to discuss your circumstances and history.",
+        "cta": "Start an online consultation"
+      }
+    ],
+    "doctorLabel": "Meet the doctor",
+    "doctorTitle": "Clinical experience. A wider view of you.",
+    "doctorText": "This practice brings together temperament-related services, Iranian medicine, acupuncture, modern medicine and the clinical experience of Dr Shirmardi.",
+    "disciplines": [
+      "Iranian medicine",
+      "Acupuncture",
+      "Integrative medicine"
+    ],
+    "journeyLabel": "From understanding to change",
+    "journeyTitle": "Understanding is the beginning.",
+    "journeyEnd": "What matters next is your everyday life.",
+    "journeyText": "You do not need all the answers at the start. Begin with a better understanding of yourself.",
+    "steps": [
+      {
+        "title": "Know your temperament",
+        "text": "Begin with an assessment exploring your primary and secondary temperaments."
+      },
+      {
+        "title": "Understand your characteristics",
+        "text": "Take a closer look at your habits, behavioural patterns and individual characteristics."
+      },
+      {
+        "title": "Choose your next step",
+        "text": "Explore education, nutrition, consultation or specialist services according to your needs."
+      }
+    ],
+    "servicesLabel": "What can you explore here?",
+    "servicesTitle": "Find a pathway that fits you.",
+    "servicesText": "Not every service is necessary for everyone. Understand your circumstances and characteristics first, then choose a relevant next step.",
+    "serviceAction": "Explore this pathway",
+    "serviceTabs": "Service areas",
+    "serviceDetail": "About this pathway",
+    "services": [
+      {
+        "title": "Individual temperament",
+        "subtitle": "Temperament: a key to understanding yourself and others",
+        "text": "Explore your primary and secondary temperaments through Dr Shirmardi’s method, alongside information about personality, strengths and areas for development.",
+        "tags": [
+          "Primary and secondary temperament",
+          "Behaviour",
+          "Self-understanding"
+        ]
+      },
+      {
+        "title": "Nutrition & lifestyle",
+        "subtitle": "What is a better fit for me?",
+        "text": "Explore foods, their temperament-related characteristics and traditional food pairings, with step-by-step learning about everyday habits.",
+        "tags": [
+          "Nutrition",
+          "Food pairings",
+          "Everyday habits"
+        ]
+      },
+      {
+        "title": "Weight management",
+        "subtitle": "One approach does not fit every body",
+        "text": "Explore weight management with attention to nutrition, individual circumstances and temperament-related characteristics.",
+        "tags": [
+          "Weight loss",
+          "Weight gain",
+          "Individual review"
+        ]
+      },
+      {
+        "title": "Skin & hair",
+        "subtitle": "Beauty does not begin only at the surface",
+        "text": "“Lasting beauty is our work; we address both the inside and the outside.” Attention to individual factors alongside external care.",
+        "tags": [
+          "Skin",
+          "Hair",
+          "Personal care"
+        ]
+      },
+      {
+        "title": "Couples temperament",
+        "subtitle": "Understand differences before they become conflict",
+        "text": "Explore individual and temperament-related differences before or after marriage, to encourage more informed conversation.",
+        "tags": [
+          "Before marriage",
+          "After marriage",
+          "Conversation"
+        ]
+      },
+      {
+        "title": "Online consultation",
+        "subtitle": "When you need more than an assessment",
+        "text": "Discuss your concerns directly, share your history and circumstances, and receive guidance based on an individual review.",
+        "tags": [
+          "Online visits",
+          "Personal history",
+          "Consultation"
+        ]
+      }
+    ],
+    "nutritionLabel": "Nutrition, with you in mind",
+    "nutritionTitle": "“Doctor, what should I eat—and what should I avoid?”",
+    "nutritionText": "Many people follow the same general advice for years, despite having different needs. In Dr Shirmardi’s approach, understanding your temperament comes before choosing a corresponding approach to nutrition.",
+    "nutritionCta": "Start with my temperament",
+    "couplesLabel": "For couples",
+    "couplesTitle": "Understand differences before they become conflict.",
+    "couplesText": "A closer look at individual and temperament-related differences before or after marriage. An opportunity for conversation that starts with understanding.",
+    "couplesTags": [
+      "Before marriage",
+      "After marriage"
+    ],
+    "couplesCta": "Start the couples pathway",
+    "couplesArt": "Two perspectives. A chance to understand.",
+    "visitLabel": "The care approach",
+    "visitTitle": "Some concerns need more than one perspective.",
+    "visitText": "Part of Dr Shirmardi’s clinical experience focuses on chronic, multifactorial and treatment-resistant concerns. His approach considers modern medicine, Iranian medicine, acupuncture and complementary methods alongside each person’s circumstances.",
+    "visitPanel": "A multidimensional view of health",
+    "visitChecks": [
+      "Review symptoms and personal history",
+      "Consider temperament and individual characteristics",
+      "Consider different care approaches",
+      "Choose a pathway suited to the individual"
+    ],
+    "visitCta": "Start an online consultation",
+    "shopLabel": "The practice’s products",
+    "shopTitle": "Not every product is right for every body.",
+    "shopText": "Explore natural products and personal care with a better understanding of your needs. If you are unsure where to start, begin with your temperament or ask the practice for guidance.",
+    "shopCta": "Explore the store",
+    "shopSecondary": "Start with my temperament",
+    "faqLabel": "Before you begin",
+    "faqTitle": "A few familiar questions.",
+    "faqs": [
+      {
+        "q": "Where should I start?",
+        "a": "If you are unsure, the individual temperament assessment offers an initial starting point. For concerns that need direct review, you can choose an online consultation."
+      },
+      {
+        "q": "Is the individual assessment free?",
+        "a": "The individual temperament assessment is offered as a free starting point. Conditions and any charges for other services are shown when you choose the service."
+      },
+      {
+        "q": "Can the assessment replace a medical consultation?",
+        "a": "No. It is intended for initial understanding. Reviewing symptoms, making a diagnosis and choosing treatment require an individual assessment by a doctor."
+      },
+      {
+        "q": "Is the couples pathway only for before marriage?",
+        "a": "The pathway explores individual differences both before and after marriage."
+      }
+    ],
+    "assessmentNote": "This assessment offers initial understanding and does not replace medical evaluation or diagnosis."
+  },
+  "Auth": {
+    "title": "Sign in",
+    "verifyTitle": "Verify your number",
+    "successTitle": "Welcome",
+    "phonePrompt": "Enter an Iranian mobile number.",
+    "codePrompt": "Enter the code sent to",
+    "codePromptEnd": "",
+    "successText": "Your mobile number has been verified.",
+    "phoneLabel": "Mobile number",
+    "phonePlaceholder": "0912 345 6789",
+    "sending": "Sending your code…",
+    "send": "Send sign-in code",
+    "secure": "Secure sign-in with a one-time code",
+    "codeLabel": "Six-digit one-time code",
+    "codeHelp": "Enter all six digits. Your code is verified automatically.",
+    "verifying": "Verifying your code…",
+    "redirecting": "Opening your account…",
+    "resending": "Sending…",
+    "validity": "Code valid for {seconds}s",
+    "cooldown": "Resend available in {seconds}s",
+    "resend": "Send a new code",
+    "edit": "Edit mobile number",
+    "errors": {
+      "INVALID_PHONE_NUMBER": "Enter an Iranian mobile number starting with 0, e.g. 09123456789.",
+      "OTP_EXPIRED": "This code has expired. Request a new code.",
+      "OTP_INVALID": "This code is incorrect or has already been used.",
+      "OTP_ATTEMPTS_EXHAUSTED": "No attempts remain. Request a new code.",
+      "OTP_RATE_LIMITED": "Too many code requests. Please try again in a few minutes.",
+      "OTP_RESEND_COOLDOWN": "Please wait before requesting another code.",
+      "NETWORK_ERROR": "Could not connect. Check your internet connection and try again.",
+      "UNAVAILABLE": "The service is temporarily unavailable. Please try again shortly.",
+      "GENERIC": "Something went wrong. Please try again."
+    }
+  }
+}

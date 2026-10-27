@@ -30,6 +30,7 @@ export class AdminTreatmentPlansController {
 
   @Put(':planId/draft')
   @RequirePermissions(PERMISSIONS.CLINICAL_RECORD_EDIT)
+  @ApiParam({ name: 'planId', format: 'uuid' })
   @ApiOperation({ operationId: 'adminTreatmentDraftReplace' })
   @ApiOkResponse({ type: TreatmentPlanResponseDto })
   replaceDraft(@Param('patientId', new ParseUUIDPipe({ version: '4' })) patientId: string, @Param('planId', new ParseUUIDPipe({ version: '4' })) planId: string, @Body() body: ReplaceTreatmentDraftDto, @Req() request: AuthenticatedRequest) { return this.treatmentPlans.replaceDraft(patientId, planId, body, this.actor(request)); }

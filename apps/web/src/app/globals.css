@@ -32,8 +32,8 @@
     --color-warning: var(--warning);
     --color-border: var(--border);
     --color-ring: var(--ring);
-    --font-sans: var(--font-yekan-bakh), Tahoma, Arial, sans-serif;
-    --font-serif: var(--font-yekan-bakh), Tahoma, Arial, sans-serif;
+    --font-sans: var(--web-font), Tahoma, Arial, sans-serif;
+    --font-serif: var(--web-font), Tahoma, Arial, sans-serif;
 }
 
 :root {
@@ -74,7 +74,6 @@
     }
 
     html {
-        direction: rtl;
         scroll-behavior: smooth;
     }
 

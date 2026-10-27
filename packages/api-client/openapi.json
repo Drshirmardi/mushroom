@@ -1773,6 +1773,147 @@
         ]
       }
     },
+    "/v1/admin/appointments/{appointmentId}/care/products": {
+      "get": {
+        "operationId": "visitCareProductsList",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitProductsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Visit care"
+        ]
+      }
+    },
+    "/v1/admin/appointments/{appointmentId}/care/cart-items": {
+      "post": {
+        "operationId": "visitCareCartAdd",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisitCartAddDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitCartResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Visit care"
+        ]
+      }
+    },
+    "/v1/patients/me/prescriptions": {
+      "get": {
+        "operationId": "patientPrescriptionsList",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient prescriptions"
+        ]
+      }
+    },
     "/v1/patients/me/clinical/timeline": {
       "get": {
         "operationId": "patientClinicalTimeline",
@@ -2454,6 +2595,58 @@
       }
     },
     "/v1/admin/patients/{patientId}/prescriptions/{prescriptionId}/revisions": {
+      "get": {
+        "operationId": "adminPrescriptionHistory",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "prescriptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrescriptionHistoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin prescriptions"
+        ]
+      },
       "post": {
         "operationId": "adminPrescriptionsSaveDraft",
         "parameters": [
@@ -2504,57 +2697,6 @@
           }
         ],
         "summary": "Save an append-only prescription draft revision",
-        "tags": [
-          "Admin prescriptions"
-        ]
-      },
-      "get": {
-        "operationId": "adminPrescriptionHistory",
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "prescriptionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "before",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrescriptionHistoryResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "tags": [
           "Admin prescriptions"
         ]
@@ -2693,6 +2835,62 @@
           }
         ],
         "summary": "Create an authorized treatment-plan definition",
+        "tags": [
+          "Admin treatment plans"
+        ]
+      }
+    },
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/draft": {
+      "put": {
+        "operationId": "adminTreatmentDraftReplace",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "planId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceTreatmentDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreatmentPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
         "tags": [
           "Admin treatment plans"
         ]
@@ -28459,197 +28657,6 @@
           "Paid Patient Assessments"
         ]
       }
-    },
-    "/v1/patients/me/prescriptions": {
-      "get": {
-        "operationId": "patientPrescriptionsList",
-        "parameters": [
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrescriptionListResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": [
-          "Patient prescriptions"
-        ]
-      }
-    },
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/draft": {
-      "put": {
-        "operationId": "adminTreatmentDraftReplace",
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "planId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TreatmentPlanResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": [
-          "Admin treatment plans"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplaceTreatmentDraftDto"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/admin/appointments/{appointmentId}/care/products": {
-      "get": {
-        "operationId": "visitCareProductsList",
-        "parameters": [
-          {
-            "name": "appointmentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "query",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "maxLength": 100
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "number",
-              "default": 1
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VisitProductsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": [
-          "Visit care"
-        ]
-      }
-    },
-    "/v1/admin/appointments/{appointmentId}/care/cart-items": {
-      "post": {
-        "operationId": "visitCareCartAdd",
-        "parameters": [
-          {
-            "name": "appointmentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VisitCartResultDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": [
-          "Visit care"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VisitCartAddDto"
-              }
-            }
-          }
-        }
-      }
     }
   },
   "info": {
@@ -29854,6 +29861,277 @@
           "visibilityUrl"
         ]
       },
+      "VisitProductDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceToman": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "skuId",
+          "code",
+          "title",
+          "variant",
+          "priceToman"
+        ]
+      },
+      "VisitProductsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VisitProductDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "VisitCartAddDto": {
+        "type": "object",
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "commandId",
+          "skuId",
+          "quantity"
+        ]
+      },
+      "VisitCartResultDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string"
+          },
+          "addedQuantity": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "skuId",
+          "addedQuantity",
+          "quantity"
+        ]
+      },
+      "PrescriptionItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "number"
+          },
+          "medicationName": {
+            "type": "string"
+          },
+          "doseText": {
+            "type": "string",
+            "nullable": true
+          },
+          "frequencyText": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationText": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "medicationName",
+          "doseText",
+          "frequencyText",
+          "durationText",
+          "instructions"
+        ]
+      },
+      "PrescriptionRevisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "previousRevisionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ISSUED",
+              "VOIDED"
+            ]
+          },
+          "amendmentReasonCategory": {
+            "type": "string",
+            "nullable": true
+          },
+          "integrityHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "authoredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "authoredByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "issuedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "revisionNumber",
+          "previousRevisionId",
+          "state",
+          "amendmentReasonCategory",
+          "integrityHash",
+          "authoredAt",
+          "authoredByUserId",
+          "issuedAt",
+          "issuedByUserId",
+          "items"
+        ]
+      },
+      "PrescriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currentRevision": {
+            "type": "number"
+          },
+          "currentIssuedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "latestIssuedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "revision": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrescriptionRevisionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "currentRevision",
+          "currentIssuedRevision",
+          "latestIssuedRevision",
+          "revision"
+        ]
+      },
+      "PrescriptionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "patientDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionResponseDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "PatientClinicalItemResponseDto": {
         "type": "object",
         "properties": {
@@ -30443,181 +30721,6 @@
           "reviewedContent"
         ]
       },
-      "PrescriptionItemResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "position": {
-            "type": "number"
-          },
-          "medicationName": {
-            "type": "string"
-          },
-          "doseText": {
-            "type": "string",
-            "nullable": true
-          },
-          "frequencyText": {
-            "type": "string",
-            "nullable": true
-          },
-          "durationText": {
-            "type": "string",
-            "nullable": true
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "position",
-          "medicationName",
-          "doseText",
-          "frequencyText",
-          "durationText",
-          "instructions"
-        ]
-      },
-      "PrescriptionRevisionResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "revisionNumber": {
-            "type": "number"
-          },
-          "previousRevisionId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "DRAFT",
-              "ISSUED",
-              "VOIDED"
-            ]
-          },
-          "amendmentReasonCategory": {
-            "type": "string",
-            "nullable": true
-          },
-          "integrityHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "authoredAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "authoredByUserId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "issuedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "issuedByUserId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionItemResponseDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "revisionNumber",
-          "previousRevisionId",
-          "state",
-          "amendmentReasonCategory",
-          "integrityHash",
-          "authoredAt",
-          "authoredByUserId",
-          "issuedAt",
-          "issuedByUserId",
-          "items"
-        ]
-      },
-      "PrescriptionResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "patientId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "currentRevision": {
-            "type": "number"
-          },
-          "currentIssuedRevision": {
-            "type": "number",
-            "nullable": true
-          },
-          "latestIssuedRevision": {
-            "type": "number",
-            "nullable": true
-          },
-          "revision": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PrescriptionRevisionResponseDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "patientId",
-          "currentRevision",
-          "currentIssuedRevision",
-          "latestIssuedRevision",
-          "revision"
-        ]
-      },
-      "PrescriptionListResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionResponseDto"
-            }
-          },
-          "nextCursor": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "patientDisplayName": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "items"
-        ]
-      },
       "PrescriptionItemDto": {
         "type": "object",
         "properties": {
@@ -30660,11 +30763,11 @@
               "$ref": "#/components/schemas/PrescriptionItemDto"
             }
           },
-          "commandId": {
+          "appointmentId": {
             "type": "string",
             "format": "uuid"
           },
-          "appointmentId": {
+          "commandId": {
             "type": "string",
             "format": "uuid"
           }
@@ -30672,6 +30775,25 @@
         "required": [
           "expectedRevision",
           "items"
+        ]
+      },
+      "PrescriptionHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionResponseDto"
+            }
+          },
+          "nextBefore": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextBefore"
         ]
       },
       "SavePrescriptionDraftDto": {
@@ -31037,6 +31159,51 @@
       "CreateTreatmentPlanDto": {
         "type": "object",
         "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "medications": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentMedicationDto"
+            }
+          },
+          "sessionPlans": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentSessionPlanDto"
+            }
+          },
+          "exercisePlans": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExercisePlanDto"
+            }
+          },
+          "nutritionPlans": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NutritionPlanDto"
+            }
+          }
+        }
+      },
+      "ReplaceTreatmentDraftDto": {
+        "type": "object",
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "title": {
             "type": "string",
             "maxLength": 255
@@ -31069,11 +31236,14 @@
               "$ref": "#/components/schemas/NutritionPlanDto"
             }
           },
-          "commandId": {
+          "expectedUpdatedAt": {
             "type": "string",
-            "format": "uuid"
+            "format": "date-time"
           }
-        }
+        },
+        "required": [
+          "expectedUpdatedAt"
+        ]
       },
       "UpdateTreatmentPlanDto": {
         "type": "object",
@@ -46678,169 +46848,6 @@
           "total",
           "page",
           "pageSize"
-        ]
-      },
-      "PrescriptionHistoryResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionResponseDto"
-            }
-          },
-          "nextBefore": {
-            "type": "number",
-            "nullable": true
-          }
-        },
-        "required": [
-          "items",
-          "nextBefore"
-        ]
-      },
-      "ReplaceTreatmentDraftDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "maxLength": 255
-          },
-          "medications": {
-            "maxItems": 100,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TreatmentMedicationDto"
-            }
-          },
-          "sessionPlans": {
-            "maxItems": 100,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TreatmentSessionPlanDto"
-            }
-          },
-          "exercisePlans": {
-            "maxItems": 100,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ExercisePlanDto"
-            }
-          },
-          "nutritionPlans": {
-            "maxItems": 100,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/NutritionPlanDto"
-            }
-          },
-          "commandId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "expectedUpdatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "expectedUpdatedAt"
-        ]
-      },
-      "VisitProductDto": {
-        "type": "object",
-        "properties": {
-          "skuId": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "variant": {
-            "type": "string",
-            "nullable": true
-          },
-          "priceToman": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "skuId",
-          "code",
-          "title",
-          "variant",
-          "priceToman"
-        ]
-      },
-      "VisitProductsDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/VisitProductDto"
-            }
-          },
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ]
-      },
-      "VisitCartAddDto": {
-        "type": "object",
-        "properties": {
-          "commandId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "skuId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "quantity": {
-            "type": "number",
-            "minimum": 1,
-            "maximum": 100
-          }
-        },
-        "required": [
-          "commandId",
-          "skuId",
-          "quantity"
-        ]
-      },
-      "VisitCartResultDto": {
-        "type": "object",
-        "properties": {
-          "skuId": {
-            "type": "string"
-          },
-          "addedQuantity": {
-            "type": "number"
-          },
-          "quantity": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "skuId",
-          "addedQuantity",
-          "quantity"
         ]
       }
     }

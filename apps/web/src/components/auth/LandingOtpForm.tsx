@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { isRtlLocale } from "@/i18n/routing";
 import { ArrowLeft, Check, LoaderCircle, ShieldCheck, Smartphone } from "lucide-react";
 import { formatPhoneDigits, normalizeDigits, normalizePhone, phoneSchema } from "@/lib/validation";
 import { requestOtp, resendOtp, verifyOtp, type OtpChallenge } from "@/services/auth";
@@ -12,6 +14,10 @@ export function LandingOtpForm({ active, onAuthenticated }: {
     active: boolean;
     onAuthenticated: (roles: string[]) => void;
 }) {
+    const t = useTranslations("Auth");
+    const common = useTranslations("Common");
+    const locale = useLocale();
+    const digits = (value: string) => locale === "fa" ? formatPhoneDigits(value) : normalizeDigits(value).replace(/\D/g, "");
     const [phone, setPhone] = useState("");
     const [challenge, setChallenge] = useState<OtpChallenge | null>(null);
     const [code, setCode] = useState("");
@@ -54,7 +60,7 @@ export function LandingOtpForm({ active, onAuthenticated }: {
         const normalizedInput = normalizePhone(phone);
         const submittedPhone = /^9\d{9}$/.test(normalizedInput) ? `0${normalizedInput}` : normalizedInput;
         if (!resending && !phoneSchema.safeParse(submittedPhone).success) {
-            setError("شماره همراه را با صفر وارد کنید؛ نمونه: ۰۹۱۲۳۴۵۶۷۸۹");
+            setError("INVALID_PHONE_NUMBER");
             phoneInput.current?.focus();
             return;
         }
@@ -72,13 +78,13 @@ export function LandingOtpForm({ active, onAuthenticated }: {
         if (result.ok) {
             setCode("");
             setChallenge(result.challenge);
-        } else setError(result.message);
+        } else setError(result.code ?? "GENERIC");
     }
 
     async function verify(value: string) {
         if (inFlight.current || !challenge || value.length !== CODE_LENGTH || roles) return;
         if (seconds(challenge.expiresAt) === 0) {
-            setError("زمان اعتبار کد تمام شده است؛ کد تازه بگیرید.");
+            setError("OTP_EXPIRED");
             return;
         }
         inFlight.current = true;
@@ -95,26 +101,28 @@ export function LandingOtpForm({ active, onAuthenticated }: {
         setAction(null);
         if (result.ok) setRoles([...result.roles]);
         else {
-            setError(result.message);
+            setError(result.code ?? "GENERIC");
             setCode("");
             window.requestAnimationFrame(() => input.current?.focus());
         }
     }
 
+    const errorKey = error && t.has(`errors.${error}`) ? error : error && /DISABLED|UNAVAILABLE|NOT_ALLOWED/.test(error) ? "UNAVAILABLE" : "GENERIC";
+    const errorMessage = error ? t(`errors.${errorKey}`) : "";
     return <div className={`landing-otp ${action === "verify" ? "is-verifying" : ""} ${roles ? "is-success" : ""} ${error ? "has-error" : ""}`}>
         <div className="landing-auth-heading">
-            <h2 id="landing-auth-title">{roles ? "خوش آمدید" : challenge ? "تأیید شماره موبایل" : "ورود"}</h2>
-            <p>{roles ? "شماره موبایل شما با موفقیت تأیید شد." : challenge
-                ? <>کد پیامک‌شده به <b dir="ltr">{challenge.destinationMasked}</b> را وارد کنید.</>
-                : "لطفاً شماره همراه خود را وارد کنید."}</p>
+            <h2 id="landing-auth-title">{roles ? t("successTitle") : challenge ? t("verifyTitle") : t("title")}</h2>
+            <p>{roles ? t("successText") : challenge
+                ? <>{t("codePrompt")} <b dir="ltr">{challenge.destinationMasked}</b> {t("codePromptEnd")}</>
+                : t("phonePrompt")}</p>
         </div>
 
         {!challenge ? <form onSubmit={event => { event.preventDefault(); void send(); }} className="landing-phone-form">
             <fieldset className="landing-phone-field">
-                <legend><label htmlFor="landing-phone">شماره همراه</label></legend>
+                <legend><label htmlFor="landing-phone">{t("phoneLabel")}</label></legend>
                 <div className="landing-phone-control" dir="ltr">
-                    <input ref={phoneInput} id="landing-phone" aria-label="شماره همراه" autoFocus type="tel" inputMode="numeric" autoComplete="tel-national"
-                    dir="ltr" placeholder="۰۹۱۲ ۳۴۵ ۶۷۸۹" pattern="[۰-۹]*" value={phone} disabled={busy}
+                    <input ref={phoneInput} id="landing-phone" aria-label={t("phoneLabel")} autoFocus type="tel" inputMode="numeric" autoComplete="tel-national"
+                    dir="ltr" placeholder={t("phonePlaceholder")} pattern="[0-9۰-۹٠-٩]*" value={digits(phone)} disabled={busy}
                     aria-invalid={Boolean(error)} aria-describedby={error ? "landing-auth-error" : undefined}
                     onKeyDown={event => {
                         if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1
@@ -122,8 +130,8 @@ export function LandingOtpForm({ active, onAuthenticated }: {
                     }}
                     onChange={event => {
                         const field = event.currentTarget;
-                        const value = formatPhoneDigits(field.value);
-                        const caret = formatPhoneDigits(field.value.slice(0, field.selectionStart ?? field.value.length)).length;
+                        const value = normalizeDigits(field.value).replace(/\D/g, "").slice(0, 11);
+                        const caret = normalizeDigits(field.value.slice(0, field.selectionStart ?? field.value.length)).replace(/\D/g, "").length;
                         setPhone(value);
                         if (error) setError(null);
                         window.requestAnimationFrame(() => {
@@ -133,11 +141,12 @@ export function LandingOtpForm({ active, onAuthenticated }: {
                     <Smartphone className="landing-phone-icon" size={20} strokeWidth={1.75} aria-hidden="true" focusable="false" />
                 </div>
             </fieldset>
-            {error && <div id="landing-auth-error"><AuthErrorAlert message={error} /></div>}
+            {error && <div id="landing-auth-error"><AuthErrorAlert message={errorMessage} /></div>}
             <button className="landing-auth-primary" type="submit" disabled={busy || !phone.trim()}>
-                {busy ? <><LoaderCircle className="animate-spin" size={18} /> در حال ارسال کد…</> : <>دریافت کد ورود <ArrowLeft size={18} /></>}
+                {busy ? <><LoaderCircle className="animate-spin" size={18} /> {t("sending")}</> : <>{t("send")} <ArrowLeft className={isRtlLocale(locale) ? "" : "rotate-180"} size={18} /></>}
             </button>
-            <p className="landing-auth-footnote"><ShieldCheck size={16} aria-hidden="true" /> ورود امن با کد یک‌بارمصرف</p>
+            <p className="landing-auth-footnote"><ShieldCheck size={16} aria-hidden="true" /> {t("secure")}</p>
+            {locale !== "fa" && <p className="app-language-note">{common("appNotice")}</p>}
         </form> : <>
             <div className="landing-otp-scene">
                 <div className="landing-otp-orbit" aria-hidden="true" />
@@ -145,11 +154,11 @@ export function LandingOtpForm({ active, onAuthenticated }: {
                     {Array.from({ length: CODE_LENGTH }, (_, index) => <div key={index}
                         style={{ "--digit-index": index } as CSSProperties}
                         className={`landing-otp-digit ${code[index] ? "is-filled" : ""} ${index === Math.min(code.length, CODE_LENGTH - 1) ? "is-active" : ""}`}>
-                        <span key={code[index] || "empty"}>{formatPhoneDigits(code[index] || "")}</span>
+                        <span key={code[index] || "empty"}>{digits(code[index] || "")}</span>
                     </div>)}
                 </div>
                 {!roles && <input ref={input} className="landing-otp-input" type="text" dir="ltr" inputMode="numeric"
-                    autoComplete="one-time-code" aria-label="کد یک‌بارمصرف شش‌رقمی" aria-invalid={Boolean(error)}
+                    autoComplete="one-time-code" aria-label={t("codeLabel")} aria-invalid={Boolean(error)}
                     aria-describedby={error ? "landing-auth-error" : "landing-otp-help"} value={code} disabled={busy}
                     onChange={event => {
                         const value = normalizeDigits(event.target.value).replace(/\D/g, "").slice(0, CODE_LENGTH);
@@ -164,18 +173,18 @@ export function LandingOtpForm({ active, onAuthenticated }: {
                 </div>
             </div>
             <div className="landing-otp-feedback" role="status" aria-live="polite">
-                {roles ? <span className="landing-auth-secure"><ShieldCheck size={18} /> در حال ورود به حساب کاربری…</span>
-                    : action === "verify" ? "در حال تأیید کد…" : <span id="landing-otp-help">کد شش‌رقمی را وارد کنید؛ تأیید به‌صورت خودکار انجام می‌شود.</span>}
+                {roles ? <span className="landing-auth-secure"><ShieldCheck size={18} /> {t("redirecting")}</span>
+                    : action === "verify" ? t("verifying") : <span id="landing-otp-help">{t("codeHelp")}</span>}
             </div>
-            {error && <div id="landing-auth-error"><AuthErrorAlert message={error} /></div>}
+            {error && <div id="landing-auth-error"><AuthErrorAlert message={errorMessage} /></div>}
             {!roles && <div className="landing-otp-actions">
                 <button className="landing-otp-expiry" type="button" disabled={busy || resendRemaining > 0} onClick={() => void send(true)}>
-                    {action === "resend" ? "در حال ارسال…" : codeRemaining > 0
-                        ? `اعتبار کد: ${codeRemaining.toLocaleString("fa-IR")} ثانیه` : resendRemaining > 0
-                            ? `ارسال دوباره تا ${resendRemaining.toLocaleString("fa-IR")} ثانیه` : "ارسال دوباره کد"}
+                    {action === "resend" ? t("resending") : codeRemaining > 0
+                        ? t("validity", { seconds: codeRemaining.toLocaleString(locale) }) : resendRemaining > 0
+                            ? t("cooldown", { seconds: resendRemaining.toLocaleString(locale) }) : t("resend")}
                 </button>
                 <button type="button" disabled={busy} onClick={() => { setChallenge(null); setCode(""); setError(null); window.requestAnimationFrame(() => phoneInput.current?.focus()); }}>
-                    ویرایش شماره موبایل
+                    {t("edit")}
                 </button>
             </div>}
         </>}
