@@ -25,7 +25,7 @@
     pointer-events: none; overflow: clip;
 }
 .landing-auth-panel {
-    font-family: "IRANYekanX", sans-serif;
+    font-family: var(--web-font), sans-serif;
     font-size: 16px; font-weight: 400; line-height: 1.75;
     color-scheme: light;
     --auth-green: var(--primary); --auth-muted: var(--muted-foreground); --digit-width: clamp(34px, 10vw, 48px);
@@ -43,7 +43,7 @@
 .landing-auth-panel button:focus-visible { outline: 2px solid var(--auth-green); outline-offset: 4px; }
 .landing-auth-handle { position: absolute; top: 0; left: calc(50% - 50px); width: 100px; height: 44px; display: grid; place-items: center; touch-action: none; background: transparent; border: 0; }
 .landing-auth-handle span { width: 42px; height: 4px; border-radius: 4px; background: var(--border); }
-.landing-auth-close { position: absolute; top: 14px; left: 14px; inset-inline-start: auto; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--muted-foreground); background: transparent; border: 0; }
+.landing-auth-close { position: absolute; top: 14px; left: 14px; right: auto; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--muted-foreground); background: transparent; border: 0; }
 .landing-auth-close:hover { background: var(--secondary); }
 .landing-auth-heading { text-align: center; }
 .landing-auth-heading h2 { margin: 0; font-family: inherit; font-size: 24px; font-weight: 500; line-height: 1.5; letter-spacing: normal; color: var(--foreground); }

@@ -2,11 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { X } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { LocaleSwitcher } from "@/components/landing/LocaleSwitcher";
 import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { LandingOtpForm } from "./LandingOtpForm";
 import "./landing-auth.css";
 
 export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+    const t = useTranslations("Common");
+    const locale = useLocale();
     const dialog = useRef<HTMLDialogElement>(null);
     const drag = useRef<{ startY: number; moved: boolean } | null>(null);
     const [offset, setOffset] = useState(0);
@@ -50,6 +54,7 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
             element.close();
             document.body.style.overflow = previousOverflow;
             if (focused instanceof HTMLElement && focused.isConnected) focused.focus();
+            else document.querySelector<HTMLElement>(".site-login")?.focus();
         };
     }, [open]);
 
@@ -63,12 +68,12 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
         else { setOffset(0); if (moved) event.preventDefault(); }
     }
 
-    return <dialog ref={dialog} className={`landing-auth-dialog ${closing ? "is-closing" : ""}`} aria-labelledby="landing-auth-title"
+    return <dialog ref={dialog} dir={locale === "fa" ? "rtl" : "ltr"} className={`landing-auth-dialog ${closing ? "is-closing" : ""}`} aria-labelledby="landing-auth-title"
         onCancel={event => { event.preventDefault(); close(); }}>
         <div className="landing-auth-backdrop" aria-hidden="true" onClick={close} />
         <div className="landing-auth-position">
             <div className="landing-auth-panel" style={{ transform: offset ? `translateY(${offset}px)` : undefined }}>
-                <button className="landing-auth-handle" type="button" aria-label="بستن پنجره ورود با کشیدن به پایین"
+                <button className="landing-auth-handle" type="button" aria-label={t("dragClose")}
                     onPointerDown={event => {
                         drag.current = { startY: event.clientY, moved: false };
                         event.currentTarget.setPointerCapture(event.pointerId);
@@ -81,7 +86,8 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
                     }}
                     onPointerUp={endDrag} onPointerCancel={() => { drag.current = null; setOffset(0); }}
                     onClick={event => { if (event.detail === 0) close(); }}><span /></button>
-                <button className="landing-auth-close" type="button" aria-label="بستن پنجره ورود" onClick={close}><X size={20} /></button>
+                <button className="landing-auth-close" type="button" aria-label={t("close")} onClick={close}><X size={20} /></button>
+                <div className="landing-auth-language"><LocaleSwitcher /></div>
                 <LandingOtpForm active={open} onAuthenticated={completeLogin} />
             </div>
         </div>

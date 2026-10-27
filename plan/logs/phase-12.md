@@ -5831,3 +5831,37 @@ Files owned by this slice:
 - plan/logs/phase-12.md (this entry only)
 
 Next: owner visual review of Home with an actual paid unfulfilled order; API and app changes must both be running. No migration/env/Caddy change required. All changes deliberately remain uncommitted per owner instruction.
+
+## Blue multilingual landing — 2026-10-27
+
+Owner-approved F12-FE01 continuation; sole /root, branch codex/landing-content-structure, baseline 15bc0ea. Scope READY_FOR_OWNER_VISUAL_REVIEW / software review PASS; broad phase/task remains REWORK. No commit, push, deployment or subsequent batch.
+
+### Result
+
+Replaced the visible legacy landing with a current app-aligned ice-blue/white presentation: #E9F4FE/#EDF9FC/#F5FBFF, ink #173D59, muted #486B82, action #087C91 and hover #066477. Individual/couples/visit selector and service explorer have native keyboard tab navigation and real existing app destinations. Mobile places the doctor portrait beside the heading in the first view. Original supplied doctor phrases are arranged in doctor/journey/nutrition/couples/consultation sections. Generic store entry, localized questions/contact and metadata remain; no miracle-oil, invented statistics/testimonials or discount feature is rendered. The prior portrait is a temporary reference: no new photograph was provided.
+
+next-intl 4.14.9 provides fa at /, en at /en and Simplified Chinese at /zh-CN, a remembered language choice, localized metadata/hreflang and legacy login/signup redirects preserving next. IRANYekanX 400/500 matches current patient Home/storefront; Geist and dictionary-subset Noto Sans SC are self-hosted with OFL files and a regeneration script. English/Chinese inform visitors that the patient destination is Persian; phone sign-in still requires an Iranian number. The root WebExperience keeps the dialog and OTP state alive while locale routes change. Error codes are carried additively by the web service for translated feedback; backend/API/SMS/cookie/security/role rules are unchanged. Closing after a language change restores focus to the persistent header when the original page button no longer exists.
+
+### Verification and evidence
+
+- Web TypeScript PASS; production Next build PASS, including locale pages, legacy routes and icon.
+- Web Vitest PASS: 7 files / 27 tests, including dictionary/content/error-key parity.
+- Browser suite PASS: 6 scenarios; three SSR locales at 320/390/768/1440, RTL/LTR and actual font families, no horizontal overflow, hero keyboard and service selection, FAQ, numeric filtering, phone and partial OTP retention across languages/dismissal, one request, translated verification errors, expiry control, mobile full-width/desktop 480px dialog, left close button, automatic success navigation, safe next preservation, localized 404 and reduced motion. Focus-return addition rechecked separately PASS. All auth calls were synthetic interceptions; no live SMS/account write.
+- Desktop/mobile screenshots reviewed for all locales; files under the system temporary mushroom-landing-preview directory, including the Persian full-page view. Native in-app preview also reviewed.
+- Main contrast pairs: action/white 4.88:1, ink/ice 10.19:1, muted/ice 5.09:1. Keyboard/reflow checks performed; no claim of a comprehensive WCAG certification or actual-device acceptance.
+- ui-ux-pro-max and design-system guidance applied. Figma MCP created and visually reviewed an editable brand/interaction board (23 text nodes): https://www.figma.com/design/PDSyoFnawEkzug9JKNrE2L?node-id=2-9. This is a review board rather than a full-page Figma reconstruction.
+- Graphify AST refresh PASS with existing optional SQL/Erlang/HCL extractor and unrelated chat parser warnings; diff whitespace review PASS. apps/app, apps/api and shared generated clients unchanged.
+
+Owner visual review and a newly supplied photograph are the next inputs. English/Chinese medical/editorial copy remains reviewable draft content; no remote publication was performed.
+
+### Owner portrait replacement — 2026-10-27
+
+Same landing continuation, sole /root, codex/landing-content-structure. Owner supplied a 1448x1086 RGB PNG and requested replacement at its full resolution with the gray background removed. Built-in image_gen used for a transparent cutout, saved as apps/web/public/images/doctor-portrait.png (1448x1086 RGBA, 757433 bytes; alpha spans 0..255, 1110218 fully transparent pixels). The file is served directly as lossless PNG; no web optimizer or lossy conversion is applied. Hero JSX uses the real dimensions; photo borders, rounded frame and rectangular shadow removed on desktop/mobile so page blue shows through. Existing source portrait and all unrelated changes preserved.
+
+Web TypeScript and three localized browser layout cases PASS (fa/en/zh-CN at 320/390/768/1440). Desktop/mobile and in-app English preview inspected; browser reports naturalWidth=1448, naturalHeight=1086 and complete=true for the new PNG. No new tests, backend changes, commit, push or deployment. Owner visual review remains the next step; older temporary-portrait note above is superseded.
+
+### Landing task commit gate — 2026-10-27
+
+Owner explicitly requested a correct local commit on the existing branch. This supersedes the earlier no-commit instruction for this landing slice only; push/deploy remain unauthorized. Register the approved presentation scope as F12-FE01-WEB02, dependent on completed WEB01 sign-in foundations and the existing blue patient Home/storefront identity. Software slice DONE / sole /root combined review PASS; no incomplete backend roadmap work is marked done and broad F12-FE01 remains REWORK.
+
+Reviewed the complete tracked diff and every untracked path. Scope is apps/web implementation and assets (including local font licenses, regeneration script and full-dimension transparent owner portrait), the next-intl lockfile entries, landing browser configuration/scenarios and this task's plan evidence. No apps/app, apps/api, protected slider-data.ts, justforcheck.md or shared generated client change. Existing type/build evidence retained; 27 web tests and all 6 intercepted browser scenarios rerun against final source immediately before staging and PASS. git diff --check PASS. One final task-level commit: feat(F12-FE01-WEB02): build blue trilingual landing. No next batch, push or deployment.

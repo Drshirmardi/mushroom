@@ -15,10 +15,10 @@ export interface SignupPayload {
 
 export type AuthResult =
     | { ok: true; roles: components["schemas"]["AuthenticationResponseDto"]["user"]["roles"] }
-    | { ok: false; message: string };
+    | { ok: false; message: string; code?: string };
 
 export type OtpChallenge = components["schemas"]["OtpChallengeResponseDto"];
-export type OtpChallengeResult = { ok: true; challenge: OtpChallenge } | { ok: false; message: string };
+export type OtpChallengeResult = { ok: true; challenge: OtpChallenge } | { ok: false; message: string; code?: string };
 
 type ApiClient = ReturnType<typeof createApiClient>;
 type ApiError = components["schemas"]["ApiErrorResponseDto"];
@@ -90,20 +90,20 @@ export function createAuthService(client: ApiClient) {
         async requestOtp(payload: { phone: string; remember: boolean }): Promise<OtpChallengeResult> {
             try {
                 const { data, error } = await client.POST("/v1/auth/otp/challenges", { headers: { "idempotency-key": crypto.randomUUID() }, body: payload });
-                return data ? { ok: true, challenge: data } : { ok: false, message: errorMessage(error) };
-            } catch { return { ok: false, message: errorMessage(undefined) }; }
+                return data ? { ok: true, challenge: data } : { ok: false, code: error?.code ?? "NETWORK_ERROR", message: errorMessage(error) };
+            } catch { return { ok: false, code: "NETWORK_ERROR", message: errorMessage(undefined) }; }
         },
         async resendOtp(challengeId: string): Promise<OtpChallengeResult> {
             try {
                 const { data, error } = await client.POST("/v1/auth/otp/challenges/{challengeId}/resend", { headers: { "idempotency-key": crypto.randomUUID() }, params: { path: { challengeId } } });
-                return data ? { ok: true, challenge: data } : { ok: false, message: errorMessage(error) };
-            } catch { return { ok: false, message: errorMessage(undefined) }; }
+                return data ? { ok: true, challenge: data } : { ok: false, code: error?.code ?? "NETWORK_ERROR", message: errorMessage(error) };
+            } catch { return { ok: false, code: "NETWORK_ERROR", message: errorMessage(undefined) }; }
         },
         async verifyOtp(challengeId: string, code: string): Promise<AuthResult> {
             try {
                 const { data, error } = await client.POST("/v1/auth/otp/challenges/{challengeId}/verify", { params: { path: { challengeId } }, body: { code } });
-                return data ? { ok: true, roles: data.user.roles } : { ok: false, message: errorMessage(error) };
-            } catch { return { ok: false, message: errorMessage(undefined) }; }
+                return data ? { ok: true, roles: data.user.roles } : { ok: false, code: error?.code ?? "NETWORK_ERROR", message: errorMessage(error) };
+            } catch { return { ok: false, code: "NETWORK_ERROR", message: errorMessage(undefined) }; }
         },
     };
 }
