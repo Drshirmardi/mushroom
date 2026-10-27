@@ -2,6 +2,8 @@ import { AssessmentAnswerError } from './assessment-scoring';
 import { AssessmentStructureError } from './assessment-structure-validation';
 
 export const DIMENSION_DRAFT_ALGORITHM = { algorithmId: 'DIMENSION_RANK', algorithmVersion: 1 } as const;
+export const QUESTION_TEXT_MAX_LENGTH = 20_000;
+export const ASSESSMENT_STRUCTURE_MAX_BYTES = 768 * 1024;
 type Dimension = { id: string; title: string };
 type Option = { id: string; title: string; scores: Record<string, number> };
 type Question = { id: string; title: string; type: 'SINGLE_CHOICE'; required: boolean; options: Option[] };
@@ -27,7 +29,7 @@ const integer = (value: unknown, min: number, max: number): number => typeof val
 export function validateDimensionDraft(input: unknown): DimensionDraft {
   const root = object(input);
   fields(root, ['schemaVersion', 'reviewState', 'educationalOnly', 'source', 'scoring', 'sections', 'resultProfiles']);
-  if (root.schemaVersion !== 2 || root.reviewState !== 'UNREVIEWED' || root.educationalOnly !== true || Buffer.byteLength(JSON.stringify(root), 'utf8') > 131072) invalid();
+  if (root.schemaVersion !== 2 || root.reviewState !== 'UNREVIEWED' || root.educationalOnly !== true || Buffer.byteLength(JSON.stringify(root), 'utf8') > ASSESSMENT_STRUCTURE_MAX_BYTES) invalid();
   const source = object(root.source); fields(source, ['kind', 'sha256']);
   if (source.kind !== 'OWNER_CSV' || typeof source.sha256 !== 'string' || !/^[a-f0-9]{64}$/u.test(source.sha256)) invalid();
   const scoring = object(root.scoring); fields(scoring, ['algorithmId', 'algorithmVersion', 'dimensions', 'minInformativeAnswers']);
@@ -39,7 +41,7 @@ export function validateDimensionDraft(input: unknown): DimensionDraft {
     const section = object(rawSection); fields(section, ['id', 'title', 'questions']); unique(id(section.id), ids); text(section.title, 200);
     for (const rawQuestion of list(section.questions, 1, 100)) {
       questionCount++; const question = object(rawQuestion); fields(question, ['id', 'title', 'type', 'required', 'options']);
-      unique(id(question.id), ids); text(question.title, 1000);
+      unique(id(question.id), ids); text(question.title, QUESTION_TEXT_MAX_LENGTH);
       if (question.type !== 'SINGLE_CHOICE' || typeof question.required !== 'boolean') invalid();
       const optionIds = new Set<string>(); let contributes = false;
       for (const rawOption of list(question.options, 2, 10)) {

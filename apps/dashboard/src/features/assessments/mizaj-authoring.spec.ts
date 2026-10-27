@@ -1,8 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { candidateKey, createMizajTieBreakDraft, newFollowUp, tieCases, validateMizajAuthoring, validateMizajPublication } from './mizaj-authoring';
-import { row, rows } from './assessment-authoring';
+import { QUESTION_TEXT_MAX_LENGTH, row, rows, validateAuthoring } from './assessment-authoring';
 
 describe('Mizaj authoring contract', () => {
+  it('accepts long Persian questions and identifies the main or follow-up limit before saving', () => {
+    const dimensions = ['a', 'b', 'c', 'd'].map(id => ({ id, title: id }));
+    const title = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    const followUp = { id: 'followup', title, tiedDimensions: ['a', 'b'], options: ['a', 'b'].map(dimensionId => ({ id: dimensionId, title: 'پاسخ', dimensionId })) };
+    const structure = { schemaVersion: 3, scoring: { dimensions, minInformativeAnswers: 1 }, sections: [{ id: 'main', title: 'بخش', questions: Array.from({ length: 11 }, (_, index) => ({ id: `q${index}`, title, type: 'SINGLE_CHOICE', required: true, options: dimensions.map(dimension => ({ id: dimension.id, title: 'پاسخ', scores: { [dimension.id]: 1 } })) })) }], followUps: [followUp], resultProfiles: [] };
+    expect(validateAuthoring(structure)).toEqual([]);
+    expect(validateMizajAuthoring(structure)).toEqual([]);
+    structure.sections[0]!.questions[0]!.title += 'س';
+    expect(validateAuthoring(structure).some(issue => issue.includes('۲۰٬۰۰۰'))).toBe(true);
+    followUp.title += 'س';
+    expect(validateMizajAuthoring(structure)).toContain('متن سؤال رفع تساوی حداکثر ۲۰٬۰۰۰ نویسه دارد.');
+  });
   it('creates a separate 11+1 draft without mutating or relabeling the original object', () => {
     const source = { schemaVersion: 2, scoring: { algorithmId: 'DIMENSION_RANK', algorithmVersion: 1 }, sections: [], source: { sha256: 'original' } };
     const before = structuredClone(source); const draft = createMizajTieBreakDraft(source);

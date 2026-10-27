@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
 import { previewTieBreakDraft, projectTieBreakQuestionnaire, TIEBREAK_ALGORITHM, validateTieBreakAnswers, validateTieBreakPublication, validateTieBreakDraft, type TieBreakDraft } from '../src/modules/assessments/domain/assessment-tiebreak-draft';
 import { validateAssessmentStructure } from '../src/modules/assessments/domain/assessment-structure-validation';
+import { ASSESSMENT_STRUCTURE_MAX_BYTES, QUESTION_TEXT_MAX_LENGTH, validateDimensionDraft } from '../src/modules/assessments/domain/assessment-dimension-draft';
 
 function draft(): TieBreakDraft {
   const base = structuredClone(MIZAJ_DRAFT_PRESET.structure);
@@ -72,6 +73,40 @@ describe('11 main answers plus at most one exact tie-break draft', () => {
 });
 
 describe('11+1 publication and patient projection', () => {
+  it('accepts long Persian main and follow-up questions through draft, publication and patient projection', () => {
+    const value = draft();
+    const longText = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    for (const section of value.sections) for (const question of section.questions) question.title = longText;
+    for (let first = 0; first < 4; first++) for (let second = first + 1; second < 4; second++) {
+      addQuestion(value, [first, second]);
+      Object.assign(value.followUps.at(-1)!, { id: `long${first}${second}`, title: longText });
+    }
+    expect(Buffer.byteLength(JSON.stringify(value), 'utf8')).toBeGreaterThan(131072);
+    expect(validateTieBreakDraft(value)).toBe(value);
+    expect(validateTieBreakPublication(value)).toBe(value);
+    const payload = answers(value, [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3]);
+    const projection = projectTieBreakQuestionnaire(value, payload);
+    expect(projection.sections.flatMap(section => section.questions)).toHaveLength(12);
+    expect(projection.sections.flatMap(section => section.questions).every(question => question.text === longText)).toBe(true);
+    value.sections[0]!.questions[0]!.title += 'س';
+    expect(() => validateTieBreakDraft(value)).toThrow();
+    value.sections[0]!.questions[0]!.title = longText;
+    value.followUps[0]!.title += 'س';
+    expect(() => validateTieBreakPublication(value)).toThrow();
+  });
+  it('keeps a total byte budget for Persian content and supports long legacy dimension questions', () => {
+    const legacy = structuredClone(MIZAJ_DRAFT_PRESET.structure);
+    for (const question of legacy.sections[0]!.questions) question.title = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    expect(validateDimensionDraft(legacy)).toBe(legacy);
+    const value = draft();
+    for (const ids of [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3], [0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3], [0, 1, 2, 3]]) {
+      addQuestion(value, ids);
+      Object.assign(value.followUps.at(-1)!, { id: `large${value.followUps.length}`, title: 'س'.repeat(QUESTION_TEXT_MAX_LENGTH) });
+    }
+    for (const question of value.sections[0]!.questions) question.title = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    expect(Buffer.byteLength(JSON.stringify(value), 'utf8')).toBeGreaterThan(ASSESSMENT_STRUCTURE_MAX_BYTES);
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
   it('requires all six distinct pair cases before allowing physician publication review', () => {
     const value = draft();
     expect(() => validateTieBreakPublication(value)).toThrow();

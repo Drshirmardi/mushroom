@@ -1,4 +1,4 @@
-import { previewDimensionDraft, validateDimensionDraft, type DimensionDraft, type DimensionPreview } from './assessment-dimension-draft';
+import { ASSESSMENT_STRUCTURE_MAX_BYTES, QUESTION_TEXT_MAX_LENGTH, previewDimensionDraft, validateDimensionDraft, type DimensionDraft, type DimensionPreview } from './assessment-dimension-draft';
 import { AssessmentAnswerError } from './assessment-scoring';
 import { AssessmentStructureError } from './assessment-structure-validation';
 
@@ -33,7 +33,7 @@ function baseDraft(draft: TieBreakDraft): DimensionDraft {
 export function validateTieBreakDraft(input: unknown): TieBreakDraft {
   const root = object(input);
   const followUps = Array.isArray(root.followUps) ? root.followUps : invalid();
-  if (Object.keys(root).length !== 8 || followUps.length > 11 || root.schemaVersion !== 3 || Buffer.byteLength(JSON.stringify(root), 'utf8') > 131072) invalid();
+  if (Object.keys(root).length !== 8 || followUps.length > 11 || root.schemaVersion !== 3 || Buffer.byteLength(JSON.stringify(root), 'utf8') > ASSESSMENT_STRUCTURE_MAX_BYTES) invalid();
   const scoring = object(root.scoring);
   if (scoring.algorithmId !== TIEBREAK_ALGORITHM.algorithmId || scoring.algorithmVersion !== 1) invalid();
   const draft = input as TieBreakDraft;
@@ -50,7 +50,7 @@ export function validateTieBreakDraft(input: unknown): TieBreakDraft {
   for (const raw of followUps) {
     const question = object(raw);
     if (Object.keys(question).length !== 4) invalid();
-    const key = id(question.id); if (ids.has(key)) invalid(); ids.add(key); text(question.title, 1000);
+    const key = id(question.id); if (ids.has(key)) invalid(); ids.add(key); text(question.title, QUESTION_TEXT_MAX_LENGTH);
     const tied = Array.isArray(question.tiedDimensions) ? question.tiedDimensions : invalid();
     const options = Array.isArray(question.options) ? question.options : invalid();
     if (tied.length < 2 || tied.length > 4 || new Set(tied).size !== tied.length || tied.some(value => typeof value !== 'string' || !dimensions.has(value))) invalid();

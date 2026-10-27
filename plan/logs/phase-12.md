@@ -5970,3 +5970,48 @@ Remote verification of35fe034 passed all four production artifacts, release-cont
 Page is now explicitly numeric with the same existing bounds/default, patient cursor remains a typed UUID string, and draft planId retains UUID documentation. Exported OpenAPI from the real application and regenerated SDK rather than patching generated files manually. Reviewed semantic differences: no endpoint, permission, body or response removal; existing runtime empty summaries/order now reflected and page validation metadata accurately documented. The integration expectation includes the nullable name returned by the existing service; forbidden-before-grant and forbidden-resource checks remain exact.
 
 Local verification: nine runtime OpenAPI contract tests PASS; API source/test TypeScript PASS; SDK generation parity/build PASS; dashboard TypeScript PASS; whitespace/semantic diff review PASS. No local PostgreSQL service/container engine available, so prescription integration is pending the next CI run; prior CI proved its sole failing assertion was the added nullable response field. Graphify update requested after final edits. No database/runtime permission/business logic or landing change. This verification commit enables remote integration checks and is not a claim that the broad F12-FE01 task is DONE. No merge/deploy or next batch.
+
+## Long assessment question text — 2026-10-27
+
+Task ID: F12-FE01-MZ02
+Completed at: 2026-10-27 (client date)
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION (existing coordinator continuation)
+Reviewed by: Codex /root, scoped main-agent review PASS
+Status: DONE (software)
+
+Problem: schema2/3 question titles were capped at1000 characters in domain validation and dashboard controls; follow-up client validation used the same cap. Every server structure error maps to the same generic Persian message mentioning six tie cases, so long text could be misreported as incomplete tie-break content. A separate128KiB structure cap could still reject a questionnaire after only lifting individual field limits.
+
+Changed files:
+- apps/api/src/modules/assessments/domain/assessment-dimension-draft.ts
+- apps/api/src/modules/assessments/domain/assessment-tiebreak-draft.ts
+- apps/api/test/assessment-tiebreak-draft.spec.ts
+- apps/dashboard/src/features/assessments/assessment-authoring.ts
+- apps/dashboard/src/features/assessments/assessment-builder.tsx
+- apps/dashboard/src/features/assessments/mizaj-authoring.ts
+- apps/dashboard/src/features/assessments/mizaj-authoring.spec.ts
+- apps/dashboard/src/features/assessments/mizaj-builder.tsx
+- plan/STATUS.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- plan/logs/phase-12.md
+
+Migrations: none; existing JSON storage and object API schemas unchanged; no generated client change needed.
+
+Verification:
+- API: pnpm exec vitest run test/assessment-tiebreak-draft.spec.ts test/assessment-dimension-draft.spec.ts --no-file-parallelism → PASS,54 tests.
+- Dashboard: pnpm exec vitest run src/features/assessments/mizaj-authoring.spec.ts src/features/assessments/assessment-authoring.spec.ts → PASS,11 tests.
+- API: pnpm exec tsc --noEmit → PASS; pnpm exec tsc -p tsconfig.test.json --noEmit → PASS.
+- Dashboard: pnpm exec tsc --noEmit → PASS.
+- Installed Fastify initialConfig.bodyLimit →1048576 bytes; new aggregate domain cap786432 bytes leaves envelope headroom.
+- graphify update . → PASS,11794 nodes; existing SQL/Erlang/HCL extractor dependencies and unrelated chat parsing warning retained. Outputs are ignored by current Git configuration.
+- Scoped combined diff/main review and git diff --check → PASS.
+
+Result:
+- Main/follow-up question text supports20000 UTF-16 code units in both server and dashboard; same capacity for legacy dimension draft editor.
+- Full11-question Persian content plus all6 long pair-case questions passes publication validation above the old128KiB budget; patient projection preserves full question text and selected question12.
+-20001-character main/follow-up questions and aggregate content above768KiB remain rejected. Frontend reports the individual20000-character limit before sending oversized field values.
+- Scoring, answer memberships, option limits, six-case publication requirements, historical versions and user data unchanged.
+- Pre-existing apps/web/src/messages/fa.json preserved and excluded from task staging.
+
+Known limitations: bounded at20000 characters per question and768KiB total, not unlimited. Actual browser/database save and deployed owner acceptance not run; focused validators/projection/types verified. No real assessment write, migration, publication, push or deployment.
+Next task: owner local acceptance with a long question; no next batch started; broader F12-FE01 remains REWORK.

@@ -1,4 +1,4 @@
-import { countQuestions, identifier, row, rows, text, type Row } from './assessment-authoring';
+import { QUESTION_TEXT_MAX_LENGTH, countQuestions, identifier, row, rows, text, type Row } from './assessment-authoring';
 
 export function createMizajTieBreakDraft(source: Row): Row {
   const copy = structuredClone(source);
@@ -41,7 +41,8 @@ export function validateMizajAuthoring(structure: Row): string[] {
     const key = candidateKey(candidates);
     if (candidates.length < 2 || candidates.length > 4 || new Set(candidates).size !== candidates.length || candidates.some(id => !dimensions.includes(id)) || seen.has(key)) issues.push('ترکیب تساوی نامعتبر یا تکراری است.');
     seen.add(key);
-    if (!text(question.id) || ids.has(text(question.id)) || !text(question.title).trim() || text(question.title).length > 1000) issues.push('متن یا شناسهٔ سؤال رفع تساوی کامل نیست.');
+    if (!text(question.id) || ids.has(text(question.id)) || !text(question.title).trim()) issues.push('متن یا شناسهٔ سؤال رفع تساوی کامل نیست.');
+    if (text(question.title).length > QUESTION_TEXT_MAX_LENGTH) issues.push('متن سؤال رفع تساوی حداکثر ۲۰٬۰۰۰ نویسه دارد.');
     ids.add(text(question.id));
     const options = rows(question.options); const optionIds = new Set<string>();
     if (options.length < 2 || options.length > 5) issues.push('سؤال رفع تساوی باید بین دو تا پنج پاسخ داشته باشد.');
