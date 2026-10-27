@@ -217,7 +217,7 @@
     "title": "Sign in",
     "verifyTitle": "Verify your number",
     "successTitle": "Welcome",
-    "phonePrompt": "Enter an Iranian mobile number starting with 0.",
+    "phonePrompt": "Enter an Iranian mobile number.",
     "codePrompt": "Enter the code sent to",
     "codePromptEnd": "",
     "successText": "Your mobile number has been verified.",

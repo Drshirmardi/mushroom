@@ -10,25 +10,27 @@ test.beforeEach(async ({ context }) => {
     await context.route("**/v1/auth/refresh", route => route.fulfill({ status: 401, headers: cors, contentType: "application/json", body: JSON.stringify({ code: "UNAUTHORIZED" }) }));
 });
 
-for (const locale of ["fa", "en", "zh-CN"] as const) {
+for (const locale of ["fa", "en", "zh-CN", "ar"] as const) {
     test(`${locale}: localized SSR, four responsive widths, service navigation and keyboard`, async ({ page, context }) => {
         await context.addCookies([{ name: "NEXT_LOCALE", value: locale, domain: "localhost", path: "/" }]);
         const response = await page.goto(locale === "fa" ? "/" : `/${locale}`);
         expect(response?.status()).toBe(200);
         expect(await response!.text()).toContain(`lang="${locale}"`);
-        await expect(page.locator("html")).toHaveAttribute("dir", locale === "fa" ? "rtl" : "ltr");
+        await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveAttribute("href", "http://localhost:3000/ar");
+        const rtl = locale === "fa" || locale === "ar";
+        await expect(page.locator("html")).toHaveAttribute("dir", rtl ? "rtl" : "ltr");
         for (const width of [320, 390, 768, 1440]) {
             await page.setViewportSize({ width, height: 960 });
             await page.evaluate(() => document.fonts.ready);
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
-            expect(await page.evaluate(() => getComputedStyle(document.documentElement).direction)).toBe(locale === "fa" ? "rtl" : "ltr");
+            expect(await page.evaluate(() => getComputedStyle(document.documentElement).direction)).toBe(rtl ? "rtl" : "ltr");
             await expect(page.locator("h1")).toBeVisible();
             const titleFont = await page.locator("h1").evaluate(element => getComputedStyle(element).fontFamily);
-            expect(titleFont).toContain(locale === "fa" ? "IRANYekanX" : locale === "en" ? "Geist" : "Noto Sans SC");
+            expect(titleFont).toContain(rtl ? "IRANYekanX" : locale === "en" ? "Geist" : "Noto Sans SC");
         }
         const tabs = page.locator(".hero-path-tabs [role=tab]");
         await tabs.nth(0).focus();
-        await page.keyboard.press(locale === "fa" ? "ArrowLeft" : "ArrowRight");
+        await page.keyboard.press(rtl ? "ArrowLeft" : "ArrowRight");
         await expect(tabs.nth(1)).toBeFocused();
         await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
         await expect(page.locator(".hero-path-panel")).toHaveAttribute("id", "hero-panel-1");
@@ -79,7 +81,8 @@ test("mobile/desktop dialogs retain phone and OTP across all locale changes, err
     expect(new URL(page.url()).searchParams.get("next")).toBe("http://localhost:3001/assessment/couples");
     await page.locator("#landing-phone").fill("bad!۰۹۱21234567");
     await expect(page.locator("#landing-phone")).toHaveValue("۰۹۱۲۱۲۳۴۵۶۷");
-    await dialog.getByRole("combobox").selectOption("en");
+    await dialog.locator(".landing-auth-language button").click();
+    await dialog.getByRole("menuitemradio", { name: "English", exact: true }).click();
     await expect(page).toHaveURL(/\/en\?/);
     await expect(dialog).toBeVisible();
     await expect(page.locator("#landing-phone")).toHaveValue("09121234567");
@@ -92,13 +95,20 @@ test("mobile/desktop dialogs retain phone and OTP across all locale changes, err
     await dialog.getByRole("button", { name: "Send sign-in code" }).click();
     await expect(page.locator(".landing-otp-input")).toBeVisible();
     await page.locator(".landing-otp-input").fill("123");
-    await dialog.getByRole("combobox").selectOption("zh-CN");
+    await dialog.locator(".landing-auth-language button").click();
+    await dialog.getByRole("menuitemradio", { name: "简体中文", exact: true }).click();
     await expect(page).toHaveURL(/\/zh-CN\?/);
     await expect(page.locator(".landing-otp-input")).toHaveValue("123");
+    await dialog.locator(".landing-auth-language button").click();
+    await dialog.getByRole("menuitemradio", { name: "العربية", exact: true }).click();
+    await expect(page).toHaveURL(/\/ar\?/);
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(dialog).toHaveAttribute("dir", "rtl");
+    await expect(page.locator(".landing-otp-input")).toHaveValue("123");
     await expect(page.locator(".landing-otp-expiry")).toBeDisabled();
-    await expect(page.locator(".landing-auth-heading h2")).toHaveText("验证手机号码");
+    await expect(page.locator(".landing-auth-heading h2")).toHaveText("تأكيد رقم الهاتف");
     await page.locator(".landing-otp-input").fill("123456");
-    await expect(page.locator("#landing-auth-error")).toContainText("验证码不正确");
+    await expect(page.locator("#landing-auth-error")).toContainText("الرمز غير صحيح");
     expect(await dialog.innerText()).not.toContain("متن فارسی سرور");
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.locator(".landing-auth-panel").evaluate(panel => Promise.all(panel.getAnimations().map(animation => animation.finished)));
@@ -106,7 +116,8 @@ test("mobile/desktop dialogs retain phone and OTP across all locale changes, err
     expect(panel!.width).toBeLessThanOrEqual(480);
     const close = await page.locator(".landing-auth-close").boundingBox();
     expect(close!.x).toBeLessThan(panel!.x + panel!.width / 2);
-    await dialog.getByRole("combobox").selectOption("fa");
+    await dialog.locator(".landing-auth-language button").click();
+    await dialog.getByRole("menuitemradio", { name: "فارسی", exact: true }).click();
     await expect(page.locator("#landing-auth-error")).toContainText("کد واردشده درست نیست");
     await page.locator(".landing-otp-input").fill("123456");
     await expect(page.locator(".landing-otp.is-success")).toBeVisible();
@@ -116,12 +127,65 @@ test("mobile/desktop dialogs retain phone and OTP across all locale changes, err
     expect(verification).toBe(2);
 });
 
+for (const width of [390, 1440]) {
+    test(`login language menu stays interactive in the native dialog at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 960 });
+        await page.goto("/en?login=1");
+        const dialog = page.getByRole("dialog");
+        await expect(dialog).toBeVisible();
+        await page.locator(".landing-auth-panel").evaluate(panel => Promise.all(panel.getAnimations().map(animation => animation.finished)));
+        await page.locator("#landing-phone").fill("09121234567");
+        const trigger = dialog.locator(".landing-auth-language button");
+        await trigger.click();
+        await expect(dialog.getByRole("menu")).toBeVisible();
+        await expect(dialog.getByRole("menuitemradio")).toHaveCount(4);
+        await page.keyboard.press("Escape");
+        await expect(page.getByRole("menu")).not.toBeVisible();
+        await expect(dialog).toBeVisible();
+        await expect(trigger).toBeFocused();
+        await trigger.click();
+        await dialog.getByRole("menuitemradio", { name: "简体中文", exact: true }).click();
+        await expect(page).toHaveURL(/\/zh-CN\?login=1/);
+        await expect(dialog).toBeVisible();
+        await expect(page.locator("#landing-phone")).toHaveValue("09121234567");
+    });
+}
+
 test("legacy routes retain the selected language and safe next destination", async ({ context, page }) => {
     await context.addCookies([{ name: "NEXT_LOCALE", value: "zh-CN", domain: "localhost", path: "/" }]);
     await page.goto("/login?next=" + encodeURIComponent("http://localhost:3001/assessment?resume=1"));
     await expect(page).toHaveURL(/\/zh-CN\/?\?login=1/);
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.locator(".landing-auth-heading h2")).toHaveText("登录");
+    expect(new URL(page.url()).searchParams.get("next")).toBe("http://localhost:3001/assessment?resume=1");
+});
+
+test("Arabic locale persists, localizes fallback pages and accepts Arabic phone digits", async ({ context, page }) => {
+    await context.addCookies([{ name: "NEXT_LOCALE", value: "ar", domain: "localhost", path: "/" }]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page).toHaveURL("http://localhost:3000/ar");
+    await expect(page).toHaveTitle(/الدكتور شيرمردي/);
+    await page.goto("/ar/missing-page");
+    await expect(page.getByRole("heading", { name: "الصفحة غير موجودة" })).toBeVisible();
+    await page.getByRole("link", { name: "العودة إلى الرئيسية" }).click();
+    await expect(page).toHaveURL("http://localhost:3000/ar");
+    await page.goto("/login?next=" + encodeURIComponent("http://localhost:3001/assessment?resume=1"));
+    await expect(page).toHaveURL(/\/ar\/?\?login=1/);
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toHaveAttribute("dir", "rtl");
+    await page.locator(".landing-auth-panel").evaluate(panel => Promise.all(panel.getAnimations().map(animation => animation.finished)));
+    await page.locator("#landing-phone").fill("٠٩١٢١٢٣٤٥٦٧");
+    await expect(page.locator("#landing-phone")).toHaveValue("09121234567");
+    await expect(dialog).toContainText("باللغة الفارسية");
+    await dialog.locator(".landing-auth-language button").click();
+    await expect(dialog.getByRole("menuitemradio", { name: "العربية", exact: true })).toHaveAttribute("aria-checked", "true");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).not.toBeVisible();
+    await page.locator(".site-login").click();
+    await expect(page.locator("#landing-phone")).toHaveValue("09121234567");
     expect(new URL(page.url()).searchParams.get("next")).toBe("http://localhost:3001/assessment?resume=1");
 });
 

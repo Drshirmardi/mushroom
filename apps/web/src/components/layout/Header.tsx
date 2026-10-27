@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
-import { ArrowUpLeft, Menu, ScanFace } from "lucide-react";
+import { ArrowUpLeft, Menu } from "lucide-react";
 import { WebSessionManager, dashboardUrlFor } from "@/auth/web-session";
 import { apiClient, resolvePostLoginUrl } from "@/lib/api";
 import { LocaleSwitcher } from "@/components/landing/LocaleSwitcher";
+import { AnimatedBrandLogo } from "@/components/landing/AnimatedBrandLogo";
 
 const sessionManager = new WebSessionManager(apiClient);
 const LandingLoginDialog = dynamic(() => import("@/components/auth/LandingLoginDialog").then(module => module.LandingLoginDialog), { ssr: false });
@@ -48,7 +49,7 @@ export function Header() {
         <a className="site-skip" href="#main-content">{t("skip")}</a>
         <header className="site-header">
             <Link href={locale === "fa" ? "/" : `/${locale}`} className="site-brand" aria-label={t("brand")}>
-                <span className="site-brand-mark"><ScanFace size={26} strokeWidth={1.4} aria-hidden="true" /></span>
+                <span className="site-brand-mark"><AnimatedBrandLogo /></span>
                 <span><strong>{t("brand")}</strong><small>{t("brandSub")}</small></span>
             </Link>
             <nav className="site-nav" aria-label={t("menu")}>{sections.map((id, i) => <a href={`#${id}`} key={id}>{labels[i]}</a>)}</nav>

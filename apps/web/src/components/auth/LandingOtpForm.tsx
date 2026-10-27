@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { isRtlLocale } from "@/i18n/routing";
 import { ArrowLeft, Check, LoaderCircle, ShieldCheck, Smartphone } from "lucide-react";
 import { formatPhoneDigits, normalizeDigits, normalizePhone, phoneSchema } from "@/lib/validation";
 import { requestOtp, resendOtp, verifyOtp, type OtpChallenge } from "@/services/auth";
@@ -142,7 +143,7 @@ export function LandingOtpForm({ active, onAuthenticated }: {
             </fieldset>
             {error && <div id="landing-auth-error"><AuthErrorAlert message={errorMessage} /></div>}
             <button className="landing-auth-primary" type="submit" disabled={busy || !phone.trim()}>
-                {busy ? <><LoaderCircle className="animate-spin" size={18} /> {t("sending")}</> : <>{t("send")} <ArrowLeft className={locale === "fa" ? "" : "rotate-180"} size={18} /></>}
+                {busy ? <><LoaderCircle className="animate-spin" size={18} /> {t("sending")}</> : <>{t("send")} <ArrowLeft className={isRtlLocale(locale) ? "" : "rotate-180"} size={18} /></>}
             </button>
             <p className="landing-auth-footnote"><ShieldCheck size={16} aria-hidden="true" /> {t("secure")}</p>
             {locale !== "fa" && <p className="app-language-note">{common("appNotice")}</p>}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { isRtlLocale } from "@/i18n/routing";
 import { LocaleSwitcher } from "@/components/landing/LocaleSwitcher";
 import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { LandingOtpForm } from "./LandingOtpForm";
@@ -68,7 +69,7 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
         else { setOffset(0); if (moved) event.preventDefault(); }
     }
 
-    return <dialog ref={dialog} dir={locale === "fa" ? "rtl" : "ltr"} className={`landing-auth-dialog ${closing ? "is-closing" : ""}`} aria-labelledby="landing-auth-title"
+    return <dialog ref={dialog} dir={isRtlLocale(locale) ? "rtl" : "ltr"} className={`landing-auth-dialog ${closing ? "is-closing" : ""}`} aria-labelledby="landing-auth-title"
         onCancel={event => { event.preventDefault(); close(); }}>
         <div className="landing-auth-backdrop" aria-hidden="true" onClick={close} />
         <div className="landing-auth-position">

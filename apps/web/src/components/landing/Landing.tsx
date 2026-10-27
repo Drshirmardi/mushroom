@@ -4,6 +4,7 @@ import { useState, type KeyboardEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronDown, CircleDot, HeartHandshake, Layers3, Leaf, ScanFace, ShieldCheck, ShoppingBag, Sparkles, Stethoscope, Utensils, Weight } from "lucide-react";
 import { appUrl } from "@/lib/api";
+import { isRtlLocale } from "@/i18n/routing";
 
 type Path = { label: string; title: string; text: string; cta: string };
 type Service = { title: string; subtitle: string; text: string; tags: string[] };
@@ -16,7 +17,7 @@ function begin(path: string) {
 }
 
 function ChoiceTabs({ labels, selected, onSelect, id, label, className = "" }: { labels: string[]; selected: number; onSelect: (index: number) => void; id: string; label: string; className?: string }) {
-    const rtl = useLocale() === "fa";
+    const rtl = isRtlLocale(useLocale());
     function navigate(event: KeyboardEvent<HTMLDivElement>) {
         let next = selected;
         if (event.key === "Home") next = 0;
@@ -36,7 +37,7 @@ export function Landing() {
     const t = useTranslations("Landing");
     const common = useTranslations("Common");
     const locale = useLocale();
-    const Arrow = locale === "fa" ? ArrowLeft : ArrowRight;
+    const Arrow = isRtlLocale(locale) ? ArrowLeft : ArrowRight;
     const [path, setPath] = useState(0);
     const [service, setService] = useState(0);
     const paths = t.raw("paths") as Path[];
@@ -56,7 +57,7 @@ export function Landing() {
                     <div className="hero-path-panel" id={`hero-panel-${path}`} role="tabpanel" aria-labelledby={`hero-tab-${path}`}><h2>{paths[path].title}</h2><p>{paths[path].text}</p><div className="path-cta">{action(paths[path].cta, destinations[path])}{path === 0 && <span className="path-free-note"><ShieldCheck size={15} aria-hidden="true" />{t("pathNote")}</span>}</div>{note}</div>
                 </div>
             </div>
-            <figure className="hero-visual"><div className="hero-visual-halo" aria-hidden="true" /><div className="hero-photo"><img src="/images/doctor-portrait.png" alt={t("portraitAlt")} width="1448" height="1086" fetchPriority="high" loading="eager" decoding="async" /></div><div className="hero-experience"><span className="experience-symbol"><Layers3 size={21} strokeWidth={1.5} aria-hidden="true" /></span><div><strong>{t("experience")}</strong><span>{t("experienceSub")}</span></div></div><div className="hero-quote"><span className="hero-quote-mark" aria-hidden="true">“</span><div><span>{t("quoteBy")}</span><p>{t("quote")}</p></div></div><figcaption><strong>{t("portraitCaption")}</strong><span>{t("portraitSub")}</span></figcaption></figure>
+            <figure className="hero-visual"><div className="hero-visual-halo" aria-hidden="true" /><div className="hero-photo"><img src="/images/doctor-portrait-refined.png" alt={t("portraitAlt")} width="1448" height="1086" fetchPriority="high" loading="eager" decoding="async" /></div><div className="hero-experience"><span className="experience-symbol"><Layers3 size={21} strokeWidth={1.5} aria-hidden="true" /></span><div><strong>{t("experience")}</strong><span>{t("experienceSub")}</span></div></div><div className="hero-quote"><span className="hero-quote-mark" aria-hidden="true">“</span><div><span>{t("quoteBy")}</span><p>{t("quote")}</p></div></div><figcaption><strong>{t("portraitCaption")}</strong><span>{t("portraitSub")}</span></figcaption></figure>
             <a className="hero-scroll" href="#journey">{t("explore")}<ArrowDown size={16} aria-hidden="true" /></a>
         </section>
 

@@ -13,6 +13,7 @@
     --border: #c5dfeb; --ring: #086e9b; --card: #fff; --card-foreground: var(--ink-blue);
 }
 html[lang="en"] { --web-font: "Geist Web", sans-serif; }
+html[lang="ar"] { --web-font: "IRANYekanX", sans-serif; }
 html[lang="zh-CN"] { --web-font: "Noto Sans SC Web", "PingFang SC", "Microsoft YaHei", sans-serif; }
 body { font-family: var(--web-font); font-synthesis: none; color: var(--ink-blue); background: var(--ice-25); }
 button, input, select { font: inherit; } button, summary { -webkit-tap-highlight-color: transparent; }
@@ -82,15 +83,42 @@ html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(35px, 3.3vw, 48px); line-hei
 @media (max-width: 480px) {
     .site-header { gap: 7px; padding: 8px; min-height: 62px; border-radius: 15px; }.site-brand { gap: 6px; }.site-brand-mark { width: 30px; height: 34px; background: transparent; border: 0; }.site-brand-mark svg { width: 24px; }.site-brand strong { font-size: 13px; }.site-header-actions { gap: 4px; }.site-language { gap: 0; }.site-language > svg { display: none; }.site-language select { width: 49px; font-size: 11px; padding: 8px 2px; }.site-login { min-height: 40px; font-size: 12px; padding: 8px 10px; }.site-mobile-menu summary { width: 32px; }.landing-main { margin-top: -70px; padding-top: 70px; }.landing-hero { padding-top: 31px; }.site-container { width: calc(100% - 36px); }.hero-copy h1 { font-size: 32px; }.hero-intro { font-size: 14px; }.hero-path-card { padding: 15px; }.path-card-heading { font-size: 12px; }.hero-path-tabs button { font-size: 11px; }.hero-path-panel h2 { font-size: 15px; }.hero-path-panel > p { font-size: 12px; }.landing-button { font-size: 13px; padding-inline: 17px; }.footer-grid { grid-template-columns: 1fr; gap: 24px; }.footer-intro { grid-column: auto; }.footer-grid nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }.footer-grid nav h2 { grid-column: 1 / -1; }.footer-contact > a { font-size: 12px; }.hero-visual figcaption strong { font-size: 12px; }
 }
+.hero-copy > .section-kicker .kicker-dot { position: relative; flex-shrink: 0; }
+.hero-copy > .section-kicker .kicker-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 1px solid currentColor;
+    border-radius: inherit;
+    animation: hero-kicker-pulse 2.8s ease-out infinite;
+}
+@keyframes hero-kicker-pulse {
+    0% { transform: scale(.6); opacity: .5; }
+    70%, 100% { transform: scale(1.65); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-copy > .section-kicker .kicker-dot::after { animation: none; opacity: 0; }
+}
+/* Fade only the portrait and halo; sibling quote cards and caption stay crisp. */
+.hero-photo img {
+    --portrait-fade-start: 86%;
+    -webkit-mask-image: linear-gradient(to bottom, #000 var(--portrait-fade-start), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 var(--portrait-fade-start), transparent 100%);
+}
+.hero-visual-halo {
+    -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 75%, transparent 100%);
+}
 /* Keep the doctor in the first mobile view, beside the headline rather than below the entire picker. */
 @media (max-width: 767px) {
+    .site-mobile-menu { display: none; }
     .landing-hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); column-gap: 16px; row-gap: 18px; }
     .hero-copy { display: contents; }
     .hero-copy > .section-kicker { grid-column: 1 / -1; grid-row: 1; margin: 0; }
     .hero-copy > h1 { grid-column: 1; grid-row: 2; align-self: center; font-size: clamp(23px, 5.5vw, 35px); line-height: 1.65; letter-spacing: -.03em; }
     .hero-visual { grid-column: 2; grid-row: 2; width: 100%; margin: 0; padding: 0; }
     .hero-photo { aspect-ratio: .77; border: 0; border-radius: 0; }
-    .hero-photo img { object-position: 48% center; }
+    .hero-photo img { object-position: 48% center; --portrait-fade-start: 88%; }
     .hero-visual-halo::before { display: none; }
     .hero-visual figcaption, .hero-experience, .hero-quote { display: none; }
     .hero-copy > .hero-intro { grid-column: 1 / -1; grid-row: 3; margin: 2px 0 6px; }
@@ -100,6 +128,29 @@ html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(35px, 3.3vw, 48px); line-hei
     html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(22px, 5.5vw, 34px); line-height: 1.65; }
 }
 .site-header .site-login, .site-header .site-brand, .landing-main .hero-path-tabs button, .landing-auth-language .site-language select { min-height: 44px; }
+.site-brand-mark { width: 64px; height: 36px; flex-shrink: 0; border: 0; border-radius: 0; background: transparent; }
+.site-brand-mark img { display: block; width: 100%; height: auto; }
+.site-brand-mark .navbar-brand-logo { display: block; width: 100%; height: auto; overflow: visible; fill: var(--action-blue); }
+.navbar-logo-part {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+    animation: navbar-logo-assemble 8s cubic-bezier(.22, 1, .36, 1) infinite both;
+}
+.navbar-logo-part:nth-child(2) { animation-delay: 60ms; }
+.navbar-logo-part:nth-child(3) { animation-delay: 120ms; }
+.navbar-logo-part:nth-child(4) { animation-delay: 240ms; }
+.navbar-logo-part:nth-child(5) { animation-delay: 320ms; }
+.navbar-logo-part:nth-child(6) { animation-delay: 400ms; }
+@keyframes navbar-logo-assemble {
+    0%, 100% { transform: translateY(8px) scale(.08); opacity: 0; }
+    10%, 87% { transform: translateY(0) scale(1); opacity: 1; }
+    95% { transform: translateY(8px) scale(.08); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .navbar-logo-part { animation: none; transform: none; opacity: 1; }
+}
+@media (max-width: 767px) { .site-brand-mark { width: 48px; height: 30px; } }
+@media (max-width: 480px) { .site-brand-mark { width: clamp(34px, 9vw, 44px); height: 26px; } }
 .doctor-mobile-quote { display: none; }
 .doctor-disciplines > span::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: var(--action-blue); }
 @media (max-width: 767px) { .doctor-mobile-quote { display: block; color: var(--action-blue); margin-top: 12px; font-size: 15px; line-height: 1.9; } }

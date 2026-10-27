@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { WebExperience } from "@/components/landing/WebExperience";
-import { isLocale } from "@/i18n/routing";
+import { isLocale, isRtlLocale } from "@/i18n/routing";
 import "./globals.css";
 import "@/components/landing/landing.css";
 
@@ -25,11 +25,11 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
     const requested = await getLocale();
     const locale = isLocale(requested) ? requested : "fa";
-    const font = locale === "fa" ? "IRANYekanX-Regular.woff" : locale === "en" ? "Geist-Variable.woff2" : "NotoSansSC-Variable.woff2";
+    const font = isRtlLocale(locale) ? "IRANYekanX-Regular.woff" : locale === "en" ? "Geist-Variable.woff2" : "NotoSansSC-Variable.woff2";
     return (
-        <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
+        <html lang={locale} dir={isRtlLocale(locale) ? "rtl" : "ltr"}>
             <head>
-                <link rel="preload" href={`/fonts/${font}`} as="font" type={locale === "fa" ? "font/woff" : "font/woff2"} crossOrigin="anonymous" />
+                <link rel="preload" href={`/fonts/${font}`} as="font" type={isRtlLocale(locale) ? "font/woff" : "font/woff2"} crossOrigin="anonymous" />
                 <script src="/runtime-config.js" />
             </head>
             <body>

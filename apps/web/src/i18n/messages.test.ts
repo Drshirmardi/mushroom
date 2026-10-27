@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import fa from "../messages/fa.json";
 import en from "../messages/en.json";
 import zh from "../messages/zh-CN.json";
+import ar from "../messages/ar.json";
+import { isRtlLocale, locales } from "./routing";
 
 function leafKeys(value: unknown, path = ""): string[] {
     if (typeof value !== "object" || value === null) return [path];
@@ -9,11 +11,14 @@ function leafKeys(value: unknown, path = ""): string[] {
 }
 
 describe("complete web translations", () => {
-    for (const [locale, messages] of [["en", en], ["zh-CN", zh]] as const) {
+    for (const [locale, messages] of [["en", en], ["zh-CN", zh], ["ar", ar]] as const) {
         it(`${locale} has the same content and error keys as Persian`, () => {
             expect(leafKeys(messages)).toEqual(leafKeys(fa));
             expect(messages.Common.appNotice).toBeTruthy();
             expect(messages.Auth.errors.OTP_INVALID).toBeTruthy();
         });
     }
+    it("uses RTL only for Persian and Arabic", () => {
+        expect(locales.filter(isRtlLocale)).toEqual(["fa", "ar"]);
+    });
 });
