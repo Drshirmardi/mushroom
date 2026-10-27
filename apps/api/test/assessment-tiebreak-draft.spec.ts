@@ -18,6 +18,35 @@ function addQuestion(value: TieBreakDraft, candidates: number[]) {
 }
 
 describe('11 main answers plus at most one exact tie-break draft', () => {
+  it.each(['', ' ', '\n', '\r\n', '\t'])('accepts the pasted owner question with surrounding whitespace %j without changing content', whitespace => {
+    const value = draft(); addQuestion(value, [0, 1]);
+    const sentence = 'آیا میزان علاقمندی شما به خوردن شیرینی بیشتر است یا ترشی؟';
+    value.followUps[0]!.title = `${whitespace}${sentence}${whitespace}`;
+    value.sections[0]!.questions[0]!.title = `${whitespace}${sentence}${whitespace}`;
+    value.followUps[0]!.options[0]!.title = `${whitespace}پاسخ${whitespace}`;
+    value.resultProfiles[0]!.summary = `${whitespace}توضیح نتیجه${whitespace}`;
+    const before = structuredClone(value);
+    expect(validateTieBreakDraft(value)).toEqual(before);
+    expect(value).toEqual(before);
+  });
+  it.each(['', ' ', '\n\t\r\n'])('still rejects blank-only question text %j', title => {
+    const value = draft(); addQuestion(value, [0, 1]);
+    value.followUps[0]!.title = title;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+    value.followUps[0]!.title = 'سؤال';
+    value.sections[0]!.questions[0]!.title = title;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
+  it.each([' ', '\n', '\r\n', '\t'])('keeps whitespace invalid in main and follow-up identifiers %j', whitespace => {
+    const value = draft(); addQuestion(value, [0, 1]);
+    const main = value.sections[0]!.questions[0]!;
+    const before = main.id;
+    main.id += whitespace;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+    main.id = before;
+    value.followUps[0]!.id += whitespace;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
   it('preserves the source draft, requires eleven main questions and cannot use the scalar publisher', () => {
     const value = draft(); const before = structuredClone(value);
     expect(validateTieBreakDraft(value)).toEqual(before);

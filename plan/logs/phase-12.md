@@ -6015,3 +6015,38 @@ Result:
 
 Known limitations: bounded at20000 characters per question and768KiB total, not unlimited. Actual browser/database save and deployed owner acceptance not run; focused validators/projection/types verified. No real assessment write, migration, publication, push or deployment.
 Next task: owner local acceptance with a long question; no next batch started; broader F12-FE01 remains REWORK.
+
+## Assessment pasted text whitespace — 2026-10-27
+
+Task ID: F12-FE01-MZ03
+Completed at: 2026-10-27 (client date)
+Agent/Thread: Codex /root
+Batch ID: CLIENT-INTEGRATION (existing coordinator continuation)
+Reviewed by: Codex /root, scoped main-agent review PASS
+Status: DONE (software)
+Depends on: F12-FE01-MZ02
+
+Reproduction: exact owner sentence «آیا میزان علاقمندی شما به خوردن شیرینی بیشتر است یا ترشی؟» has57 UTF-16 code units and passes current validateTieBreakDraft. Append one space or newline (58 units) and it throws AssessmentStructureError, which the dashboard translates to the misleading general six-case message. This demonstrates an independent whitespace defect, not the field-length limit; the actual failed browser payload was not captured.
+
+Changed files:
+- apps/api/src/modules/assessments/domain/assessment-dimension-draft.ts
+- apps/api/src/modules/assessments/domain/assessment-tiebreak-draft.ts
+- apps/api/test/assessment-tiebreak-draft.spec.ts
+- plan/STATUS.md
+- plan/phases/12-PRODUCTION-HARDENING.md
+- plan/logs/phase-12.md
+
+Fix: display-text validators require nonblank trimmed content instead of requiring exact equality with trimmed content. Preserve exact supplied strings, hashes, internal newlines and immutable historical data. Keep character/aggregate bounds and blank rejection. Explicit identifier trim checks retain canonical IDs, including rejecting a final newline that JavaScript regular-expression dollar anchors otherwise permit.
+
+Verification:
+- New regression cases BEFORE fix:4 expected failures for surrounding space,LF,CRLF and tab; original sentence and blank-only rejection already pass.
+- pnpm exec vitest run test/assessment-tiebreak-draft.spec.ts test/assessment-dimension-draft.spec.ts --no-file-parallelism AFTER fix → PASS,66 tests.
+- Regression cases cover exact owner text in main/follow-up questions, pasted whitespace in options/result summary, preservation without mutation, blank-only rejection, main/follow-up identifier whitespace rejection, existing long-text and aggregate boundaries/scoring/publication/projection cases.
+- pnpm exec tsc --noEmit → PASS.
+- pnpm exec tsc -p tsconfig.test.json --noEmit → PASS.
+- graphify update . → PASS; pre-existing unrelated extractor dependency/chat warnings retained, ignored outputs refreshed.
+- Combined diff/main-agent review and git diff --check → PASS.
+
+Migrations/API schema/client: none; no change to stored format, DTO structure, access, answer mapping or six-case publication requirement.
+Known limitations: actual failed browser payload and database save not inspected; this exact-text-plus-whitespace failure is reproduced and fixed. No real assessment write/publication, persistent data changes, push or deployment. Pre-existing apps/web/src/messages/fa.json preserved/excluded.
+Next task: owner retry in an environment running the updated API; no new batch. Broad F12-FE01 remains REWORK.

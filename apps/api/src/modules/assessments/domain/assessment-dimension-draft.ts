@@ -20,8 +20,8 @@ const invalid = (): never => { throw new AssessmentStructureError('Dimension sco
 const object = (value: unknown): Row => value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Row : invalid();
 const fields = (value: Row, keys: string[]) => { if (Object.keys(value).length !== keys.length || Object.keys(value).some(key => !keys.includes(key))) invalid(); };
 const list = (value: unknown, min: number, max: number): unknown[] => Array.isArray(value) && value.length >= min && value.length <= max ? value : invalid();
-const text = (value: unknown, max: number): string => typeof value === 'string' && value.trim() === value && value.length > 0 && value.length <= max ? value : invalid();
-const id = (value: unknown) => { const result = text(value, 64); if (!/^[A-Za-z][A-Za-z0-9_-]*$/u.test(result) || ['constructor', 'prototype'].includes(result)) invalid(); return result; };
+const text = (value: unknown, max: number): string => typeof value === 'string' && value.trim().length > 0 && value.length <= max ? value : invalid();
+const id = (value: unknown) => { const result = text(value, 64); if (result.trim() !== result || !/^[A-Za-z][A-Za-z0-9_-]*$/u.test(result) || ['constructor', 'prototype'].includes(result)) invalid(); return result; };
 const unique = (value: string, ids: Set<string>) => { if (ids.has(value)) invalid(); ids.add(value); };
 const integer = (value: unknown, min: number, max: number): number => typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max ? value : invalid();
 

@@ -20,8 +20,8 @@ export type TieBreakPreview = Omit<DimensionPreview, 'algorithmId' | 'status'> &
 const invalid = (): never => { throw new AssessmentStructureError('The 11+1 draft structure is invalid.'); };
 const fail = (): never => { throw new AssessmentAnswerError('ASSESSMENT_ANSWERS_INVALID', 'Answer all 11 main questions and only the server-selected follow-up.'); };
 const object = (input: unknown): Record<string, unknown> => input !== null && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, unknown> : invalid();
-const id = (input: unknown): string => typeof input === 'string' && /^[A-Za-z][A-Za-z0-9_-]{0,63}$/u.test(input) && !['constructor', 'prototype'].includes(input) ? input : invalid();
-const text = (input: unknown, max: number) => typeof input === 'string' && input.trim() === input && input.length > 0 && input.length <= max || invalid();
+const id = (input: unknown): string => typeof input === 'string' && input.trim() === input && /^[A-Za-z][A-Za-z0-9_-]{0,63}$/u.test(input) && !['constructor', 'prototype'].includes(input) ? input : invalid();
+const text = (input: unknown, max: number) => typeof input === 'string' && input.trim().length > 0 && input.length <= max || invalid();
 const sameCandidates = (a: string[], b: string[]) => [...a].sort().join(':') === [...b].sort().join(':');
 
 function baseDraft(draft: TieBreakDraft): DimensionDraft {
