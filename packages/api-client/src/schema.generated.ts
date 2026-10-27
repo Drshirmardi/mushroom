@@ -478,6 +478,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/appointments/{appointmentId}/care/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["visitCareProductsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/appointments/{appointmentId}/care/cart-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["visitCareCartAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/prescriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientPrescriptionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/clinical/timeline": {
         parameters: {
             query?: never;
@@ -746,6 +794,22 @@ export interface paths {
         put?: never;
         /** Create an authorized treatment-plan definition */
         post: operations["adminTreatmentPlansCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminTreatmentDraftReplace"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5982,70 +6046,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/prescriptions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["patientPrescriptionsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/draft": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminTreatmentDraftReplace"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/appointments/{appointmentId}/care/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["visitCareProductsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/appointments/{appointmentId}/care/cart-items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["visitCareCartAdd"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6340,6 +6340,77 @@ export interface components {
             /** @description Durable moderation changes must also be reconciled on reconnect. */
             visibilityUrl: string;
         };
+        VisitProductDto: {
+            skuId: string;
+            code: string;
+            title: string;
+            variant: string | null;
+            priceToman: string;
+        };
+        VisitProductsDto: {
+            items: components["schemas"]["VisitProductDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        VisitCartAddDto: {
+            /** Format: uuid */
+            commandId: string;
+            /** Format: uuid */
+            skuId: string;
+            quantity: number;
+        };
+        VisitCartResultDto: {
+            skuId: string;
+            addedQuantity: number;
+            quantity: number;
+        };
+        PrescriptionItemResponseDto: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            medicationName: string;
+            doseText: string | null;
+            frequencyText: string | null;
+            durationText: string | null;
+            instructions: string | null;
+        };
+        PrescriptionRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "ISSUED" | "VOIDED";
+            amendmentReasonCategory: string | null;
+            integrityHash: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            issuedAt: string | null;
+            /** Format: uuid */
+            issuedByUserId: string | null;
+            items: components["schemas"]["PrescriptionItemResponseDto"][];
+        };
+        PrescriptionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            currentRevision: number;
+            currentIssuedRevision: number | null;
+            latestIssuedRevision: number | null;
+            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
+        };
+        PrescriptionListResponseDto: {
+            patientDisplayName?: string | null;
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
+        };
         PatientClinicalItemResponseDto: {
             /** Format: uuid */
             encounterId: string;
@@ -6508,52 +6579,6 @@ export interface components {
             };
             amendmentReasonCategory?: string | null;
         };
-        PrescriptionItemResponseDto: {
-            /** Format: uuid */
-            id: string;
-            position: number;
-            medicationName: string;
-            doseText: string | null;
-            frequencyText: string | null;
-            durationText: string | null;
-            instructions: string | null;
-        };
-        PrescriptionRevisionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            revisionNumber: number;
-            /** Format: uuid */
-            previousRevisionId: string | null;
-            /** @enum {string} */
-            state: "DRAFT" | "ISSUED" | "VOIDED";
-            amendmentReasonCategory: string | null;
-            integrityHash: string | null;
-            /** Format: date-time */
-            authoredAt: string;
-            /** Format: uuid */
-            authoredByUserId: string | null;
-            /** Format: date-time */
-            issuedAt: string | null;
-            /** Format: uuid */
-            issuedByUserId: string | null;
-            items: components["schemas"]["PrescriptionItemResponseDto"][];
-        };
-        PrescriptionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            patientId: string;
-            currentRevision: number;
-            currentIssuedRevision: number | null;
-            latestIssuedRevision: number | null;
-            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
-        };
-        PrescriptionListResponseDto: {
-            items: components["schemas"]["PrescriptionResponseDto"][];
-            /** Format: uuid */
-            nextCursor?: string | null;
-            patientDisplayName?: string | null;
-        };
         PrescriptionItemDto: {
             medicationName: string;
             doseText?: string;
@@ -6565,9 +6590,13 @@ export interface components {
             expectedRevision: number;
             items: components["schemas"]["PrescriptionItemDto"][];
             /** Format: uuid */
-            commandId?: string;
-            /** Format: uuid */
             appointmentId?: string;
+            /** Format: uuid */
+            commandId?: string;
+        };
+        PrescriptionHistoryResponseDto: {
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            nextBefore: number | null;
         };
         SavePrescriptionDraftDto: {
             expectedRevision: number;
@@ -6665,13 +6694,24 @@ export interface components {
             instructions?: string;
         };
         CreateTreatmentPlanDto: {
+            /** Format: uuid */
+            commandId?: string;
             title?: string;
             medications?: components["schemas"]["TreatmentMedicationDto"][];
             sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
             exercisePlans?: components["schemas"]["ExercisePlanDto"][];
             nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+        };
+        ReplaceTreatmentDraftDto: {
             /** Format: uuid */
             commandId?: string;
+            title?: string;
+            medications?: components["schemas"]["TreatmentMedicationDto"][];
+            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
+            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
+            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+            /** Format: date-time */
+            expectedUpdatedAt: string;
         };
         UpdateTreatmentPlanDto: {
             title?: string;
@@ -10885,46 +10925,6 @@ export interface components {
             page: number;
             pageSize: number;
         };
-        PrescriptionHistoryResponseDto: {
-            items: components["schemas"]["PrescriptionResponseDto"][];
-            nextBefore: number | null;
-        };
-        ReplaceTreatmentDraftDto: {
-            title?: string;
-            medications?: components["schemas"]["TreatmentMedicationDto"][];
-            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
-            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
-            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
-            /** Format: uuid */
-            commandId?: string;
-            /** Format: date-time */
-            expectedUpdatedAt: string;
-        };
-        VisitProductDto: {
-            skuId: string;
-            code: string;
-            title: string;
-            variant: string | null;
-            priceToman: string;
-        };
-        VisitProductsDto: {
-            items: components["schemas"]["VisitProductDto"][];
-            page: number;
-            pageSize: number;
-            total: number;
-        };
-        VisitCartAddDto: {
-            /** Format: uuid */
-            commandId: string;
-            /** Format: uuid */
-            skuId: string;
-            quantity: number;
-        };
-        VisitCartResultDto: {
-            skuId: string;
-            addedQuantity: number;
-            quantity: number;
-        };
     };
     responses: never;
     parameters: never;
@@ -12074,6 +12074,76 @@ export interface operations {
             };
         };
     };
+    visitCareProductsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                query?: string;
+            };
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitProductsDto"];
+                };
+            };
+        };
+    };
+    visitCareCartAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitCartAddDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitCartResultDto"];
+                };
+            };
+        };
+    };
+    patientPrescriptionsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
+                };
+            };
+        };
+    };
     patientClinicalTimeline: {
         parameters: {
             query?: never;
@@ -12517,6 +12587,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CreateTreatmentPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
+    adminTreatmentDraftReplace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceTreatmentDraftDto"];
             };
         };
         responses: {
@@ -28966,102 +29062,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    patientPrescriptionsList: {
-        parameters: {
-            query?: {
-                cursor?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
-                };
-            };
-        };
-    };
-    adminTreatmentDraftReplace: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-                planId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReplaceTreatmentDraftDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
-                };
-            };
-        };
-    };
-    visitCareProductsList: {
-        parameters: {
-            query?: {
-                query?: string;
-                page?: number;
-            };
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VisitProductsDto"];
-                };
-            };
-        };
-    };
-    visitCareCartAdd: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                appointmentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VisitCartAddDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VisitCartResultDto"];
                 };
             };
         };
