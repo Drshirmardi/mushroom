@@ -8,6 +8,7 @@ const challengeId = "00000000-0000-4000-8000-000000000321";
 
 test.beforeEach(async ({ context }) => {
     await context.route("**/v1/auth/refresh", route => route.fulfill({ status: 401, headers: cors, contentType: "application/json", body: JSON.stringify({ code: "UNAUTHORIZED" }) }));
+    await context.route("https://trustseal.enamad.ir/logo.aspx?**", route => route.abort());
 });
 
 for (const locale of ["fa", "en", "zh-CN", "ar"] as const) {
@@ -188,6 +189,81 @@ test("Arabic locale persists, localizes fallback pages and accepts Arabic phone 
     await expect(page.locator("#landing-phone")).toHaveValue("09121234567");
     expect(new URL(page.url()).searchParams.get("next")).toBe("http://localhost:3001/assessment?resume=1");
 });
+
+for (const width of [390, 1440]) {
+    for (const outcome of ["success", "failure"] as const) {
+        test(`footer trust seal stays stable on ${outcome} at ${width}px`, async ({ page }) => {
+            let release: (() => void) | undefined;
+            await page.route("https://trustseal.enamad.ir/logo.aspx?**", async route => {
+                await new Promise<void>(resolve => { release = resolve; });
+                if (outcome === "success") await route.fulfill({ path: join(process.cwd(), "apps/web/public/brand/enamad-fallback.png"), contentType: "image/png" });
+                else await route.abort();
+            });
+            await page.setViewportSize({ width, height: 960 });
+            await page.goto("/en");
+            const seal = page.locator(".footer-enamad");
+            await seal.scrollIntoViewIfNeeded();
+            await page.locator(".footer-enamad-fallback").evaluate((image: HTMLImageElement) => image.decode());
+            await expect.poll(() => Boolean(release)).toBe(true);
+            await expect(seal).toHaveAttribute("href", "https://trustseal.enamad.ir/?id=750189&Code=1S4CAYPwv3TxOdNZrWHL0UxywYOkTiSO");
+            await expect(seal).toHaveAttribute("referrerpolicy", "origin");
+            await expect(seal).toHaveAttribute("target", "_blank");
+            await expect(page.locator(".footer-enamad-fallback")).toBeVisible();
+            const before = await seal.boundingBox();
+            release!();
+            if (outcome === "success") {
+                await expect(seal).toHaveAttribute("data-loaded", "true");
+                await expect(page.locator(".footer-enamad-live")).toHaveCSS("opacity", "1");
+                await expect(page.locator(".footer-enamad-fallback")).toBeHidden();
+            } else {
+                await expect(page.locator(".footer-enamad-live")).toHaveCount(0);
+                await expect(page.locator(".footer-enamad-fallback")).toBeVisible();
+            }
+            expect(await seal.boundingBox()).toEqual(before);
+            if (width >= 768) {
+                const intro = await page.locator(".footer-intro").boundingBox();
+                expect(before!.y).toBeGreaterThanOrEqual(intro!.y + intro!.height);
+            } else {
+                const contact = await page.locator(".footer-contact").boundingBox();
+                expect(before!.x).toBeGreaterThanOrEqual(contact!.x + contact!.width);
+            }
+        });
+    }
+}
+
+for (const locale of ["fa", "en", "zh-CN", "ar"]) {
+    test(`${locale}: hero quote types and erases words without resizing, respects reduced motion`, async ({ context, page }) => {
+        await context.addCookies([{ name: "NEXT_LOCALE", value: locale, domain: "localhost", path: "/" }]);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width: 810, height: 960 });
+        await page.goto(locale === "fa" ? "/" : `/${locale}`);
+        const words = page.locator(".word-loop-word");
+        const visible = page.locator('.word-loop-word[data-visible="true"]');
+        const count = await words.count();
+        expect(count).toBeGreaterThan(1);
+        await expect(visible).toHaveCount(count);
+        const accessible = await page.locator(".word-loop-accessible").textContent();
+        await page.clock.install();
+        await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now() + 100)));
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+        await expect(visible).toHaveCount(0);
+        const before = await page.locator(".hero-quote").boundingBox();
+        await page.clock.runFor(310);
+        await expect(visible).toHaveCount(1);
+        await page.clock.runFor(300 * (count - 1));
+        await expect(visible).toHaveCount(count);
+        expect(await page.locator(".hero-quote").boundingBox()).toEqual(before);
+        await page.clock.runFor(3200 + 130 * (count - 1) + 10);
+        await expect(visible).toHaveCount(0);
+        await page.clock.runFor(550);
+        await expect(visible).toHaveCount(1);
+        await expect(page.locator(".word-loop-accessible")).toHaveText(accessible!);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await expect(visible).toHaveCount(count);
+        await page.clock.runFor(10000);
+        await expect(visible).toHaveCount(count);
+    });
+}
 
 test("localized not-found and reduced-motion remain usable", async ({ context, page }) => {
     await context.addCookies([{ name: "NEXT_LOCALE", value: "en", domain: "localhost", path: "/" }]);

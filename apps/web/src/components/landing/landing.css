@@ -16,6 +16,20 @@ html[lang="en"] { --web-font: "Geist Web", sans-serif; }
 html[lang="ar"] { --web-font: "IRANYekanX", sans-serif; }
 html[lang="zh-CN"] { --web-font: "Noto Sans SC Web", "PingFang SC", "Microsoft YaHei", sans-serif; }
 body { font-family: var(--web-font); font-synthesis: none; color: var(--ink-blue); background: var(--ice-25); }
+@media (forced-colors: none) {
+    html { scrollbar-width: thin; scrollbar-color: var(--action-blue) var(--ice-100); }
+    @supports selector(::-webkit-scrollbar) {
+        html { scrollbar-width: auto; scrollbar-color: auto; }
+        html::-webkit-scrollbar { width: 10px; height: 10px; }
+        html::-webkit-scrollbar-track, html::-webkit-scrollbar-corner { background: var(--ice-100); }
+        html::-webkit-scrollbar-thumb {
+            min-height: 40px; border: 2px solid var(--ice-100); border-radius: 999px;
+            background: var(--action-blue);
+        }
+        html::-webkit-scrollbar-thumb:hover { background: var(--action-hover); }
+        html::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+    }
+}
 button, input, select { font: inherit; } button, summary { -webkit-tap-highlight-color: transparent; }
 button, a, select, summary { touch-action: manipulation; }
 :is(a, button, select, summary, [tabindex="0"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
@@ -82,6 +96,15 @@ html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(35px, 3.3vw, 48px); line-hei
 }
 @media (max-width: 480px) {
     .site-header { gap: 7px; padding: 8px; min-height: 62px; border-radius: 15px; }.site-brand { gap: 6px; }.site-brand-mark { width: 30px; height: 34px; background: transparent; border: 0; }.site-brand-mark svg { width: 24px; }.site-brand strong { font-size: 13px; }.site-header-actions { gap: 4px; }.site-language { gap: 0; }.site-language > svg { display: none; }.site-language select { width: 49px; font-size: 11px; padding: 8px 2px; }.site-login { min-height: 40px; font-size: 12px; padding: 8px 10px; }.site-mobile-menu summary { width: 32px; }.landing-main { margin-top: -70px; padding-top: 70px; }.landing-hero { padding-top: 31px; }.site-container { width: calc(100% - 36px); }.hero-copy h1 { font-size: 32px; }.hero-intro { font-size: 14px; }.hero-path-card { padding: 15px; }.path-card-heading { font-size: 12px; }.hero-path-tabs button { font-size: 11px; }.hero-path-panel h2 { font-size: 15px; }.hero-path-panel > p { font-size: 12px; }.landing-button { font-size: 13px; padding-inline: 17px; }.footer-grid { grid-template-columns: 1fr; gap: 24px; }.footer-intro { grid-column: auto; }.footer-grid nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }.footer-grid nav h2 { grid-column: 1 / -1; }.footer-contact > a { font-size: 12px; }.hero-visual figcaption strong { font-size: 12px; }
+}
+.word-loop-stage { display: inline-grid; }
+.word-loop-size, .word-loop-line { grid-area: 1 / 1; }
+.word-loop-size { visibility: hidden; pointer-events: none; }
+.word-loop-word { display: inline-block; white-space: pre; opacity: 0; transform: translateY(3px); transition: opacity 180ms ease, transform 220ms ease; }
+.word-loop-word[data-visible="true"] { opacity: 1; transform: translateY(0); }
+.word-loop-accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+    .word-loop-word { opacity: 1; transform: none; transition: none; }
 }
 .hero-copy > .section-kicker .kicker-dot { position: relative; flex-shrink: 0; }
 .hero-copy > .section-kicker .kicker-dot::after {
@@ -151,6 +174,24 @@ html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(35px, 3.3vw, 48px); line-hei
 }
 @media (max-width: 767px) { .site-brand-mark { width: 48px; height: 30px; } }
 @media (max-width: 480px) { .site-brand-mark { width: clamp(34px, 9vw, 44px); height: 26px; } }
+.footer-grid { grid-template-areas: "intro links contact" "seal links contact"; row-gap: 24px; }
+.footer-intro { grid-area: intro; }
+.footer-grid > nav { grid-area: links; }
+.footer-contact { grid-area: contact; }
+.footer-enamad {
+    grid-area: seal; justify-self: start; align-self: start;
+    display: block; width: 112px;
+}
+.footer-enamad-art { display: block; position: relative; width: 112px; height: 112px; }
+.footer-enamad-art img { display: block; width: 112px; height: 112px; object-fit: contain; }
+.footer-enamad-live { position: absolute; inset: 0; opacity: 0; }
+.footer-enamad[data-loaded="true"] .footer-enamad-live { opacity: 1; }
+.footer-enamad[data-loaded="true"] .footer-enamad-fallback { visibility: hidden; }
+@media (max-width: 767px) {
+    .footer-grid { grid-template-columns: minmax(0, 1fr) 112px; grid-template-areas: "intro intro" "links links" "contact seal"; column-gap: 16px; }
+    .footer-enamad { width: 98px; align-self: center; }
+    .footer-enamad-art, .footer-enamad-art img { width: 98px; height: 98px; }
+}
 .doctor-mobile-quote { display: none; }
 .doctor-disciplines > span::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: var(--action-blue); }
 @media (max-width: 767px) { .doctor-mobile-quote { display: block; color: var(--action-blue); margin-top: 12px; font-size: 15px; line-height: 1.9; } }

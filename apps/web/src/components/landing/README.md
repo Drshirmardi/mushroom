@@ -9,5 +9,6 @@
 - Fonts are self-hosted. Regenerate the Chinese font subset after changing Chinese messages; see `public/fonts/README.md`.
 - `/images/doctor-portrait.png` is the new owner-supplied portrait with its gray background removed to alpha transparency. PNG dimensions remain 1448 x 1086; it is served directly without lossy conversion or an image-optimization downscale. The hero frame is transparent on desktop and mobile.
 - No miracle-oil feature, synthetic clinical metrics, invented testimonials or discount offers are rendered.
+- The hero's `WordLoopQuote` reveals/erases whole words, holds the full quote for 3.2 seconds and reserves space throughout. Add translated phrases to `quoteTexts` in `Landing.tsx` to rotate more quotes. `Intl.Segmenter` preserves Persian/Arabic word joining and segments Chinese without relying on spaces; reduced motion shows the full static text and screen readers receive stable full text.
 - Browser coverage: `pnpm exec playwright test -c playwright.landing.config.ts`; it intercepts auth traffic and never sends real SMS.
 - Editable brand/interaction review: https://www.figma.com/design/PDSyoFnawEkzug9JKNrE2L?node-id=2-9 (review board, not a full-page design export).
