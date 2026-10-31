@@ -9,7 +9,7 @@ export class BillingPageQuery {
 }
 export class BillingAdminQuery extends BillingPageQuery {
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') patientId?: string;
-  @ApiPropertyOptional({ enum: ['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM'] }) @IsOptional() @IsIn(['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM']) purpose?: string;
+  @ApiPropertyOptional({ enum: ['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT'] }) @IsOptional() @IsIn(['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT']) purpose?: string;
   @ApiPropertyOptional({ enum: ['PENDING', 'PAID', 'EXPIRED', 'CANCELLED', 'COMPENSATED'] }) @IsOptional() @IsIn(['PENDING', 'PAID', 'EXPIRED', 'CANCELLED', 'COMPENSATED']) status?: string;
 }
 export class WalletAmountDto {

@@ -15,7 +15,7 @@ export type UpdateAssessmentBody = components["schemas"]["UpdateAssessmentDto"];
 export type UpdateAssessmentPolicyBody = components["schemas"]["UpdateBookingAssessmentPolicyDto"];
 
 export class AssessmentApiError extends Error {
-  constructor(public readonly status: number, public readonly code = "") {
+  constructor(public readonly status: number, public readonly code = "", public readonly details: Record<string, unknown> = {}) {
     super("درخواست ارزیابی با خطا روبه‌رو شد.");
   }
 }
@@ -25,7 +25,7 @@ const authorization = (accessToken: string) => ({ authorization: `Bearer ${acces
 async function dataOrThrow<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   try {
     const { data, error, response } = await withRequestTimeout(request);
-    if (!response.ok || data === undefined) throw new AssessmentApiError(response.status, error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : "");
+    if (!response.ok || data === undefined) throw new AssessmentApiError(response.status, error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : "", error && typeof error === 'object' && 'details' in error && error.details && typeof error.details === 'object' && !Array.isArray(error.details) ? error.details as Record<string, unknown> : {});
     return data;
   } catch (error) {
     if (error instanceof AssessmentApiError) throw error;
@@ -90,6 +90,7 @@ export const previewAssessmentScoring = (token: string, id: string, body: compon
 export function assessmentErrorMessage(error: unknown) {
   if (!(error instanceof AssessmentApiError) || error.status === 0) return "ارتباط با سرور برقرار نشد یا نتیجهٔ درخواست نرسید؛ ورودی‌ها حفظ شده‌اند. پیش از تکرار، وضعیت را بازخوانی کنید.";
   if ([401, 403].includes(error.status)) return "مجوز انجام این عملیات را ندارید یا نشست تمدید نشد.";
+  if (error.code === 'ASSESSMENT_OFFERING_INVALID' && typeof error.details.reason === 'string') return error.details.reason;
   if (error.status === 404) return "نسخه یا مرجع انتخاب‌شده در دسترس نیست.";
   if (["ASSESSMENT_DELETE_NOT_DRAFT", "ASSESSMENT_DELETE_NOT_ALLOWED"].includes(error.code)) return "فقط پیش‌نویس و آزمون بایگانی‌شده قابل حذف‌اند؛ ابتدا نسخهٔ منتشرشده را بایگانی کنید.";
   if (error.code === "ASSESSMENT_DELETE_REFERENCED") return "این آزمون به پاسخ‌ها، نتایج یا اطلاعات دیگری متصل است و قابل حذف نیست؛ سوابق و وابستگی‌ها باید حفظ شوند.";
@@ -128,3 +129,8 @@ export const getCoupleProtocol = (token: string, id: string) => dataOrThrow<Coup
 export const revokeCoupleProtocol = (token: string, id: string) => dataOrThrow<CoupleProtocol>(apiClient.POST("/v1/admin/couple-result-protocols/{id}/revoke", { headers: authorization(token), params: { path: { id } } }));
 export const listGuidanceContent = (token: string, page = 1) => dataOrThrow<components["schemas"]["GuidanceContentPageDto"]>(apiClient.GET("/v1/admin/guidance-content", { headers: authorization(token), params: { query: { page, pageSize: 50 } } }));
 export const listAssessmentServices = (token: string, page = 1) => dataOrThrow<components["schemas"]["DirectoryPageResponseDto"]>(apiClient.GET("/v1/admin/services", { headers: authorization(token), params: { query: { page, pageSize: 20, isActive: true, publicationStatus: "PUBLISHED" } } }));
+
+export const createInlineAssessmentOffering = (token: string, body: components["schemas"]["CreateInlineAssessmentOfferingDto"], key: string) => dataOrThrow<Offering>(apiClient.POST("/v1/admin/assessment-offerings/inline-versions", { headers: authorization(token), params: { header: { "Idempotency-Key": key } }, body }));
+
+export const getAssessmentDistribution = (token: string, id: string) => dataOrThrow<components['schemas']['AssessmentDistributionDto']>(apiClient.GET('/v1/admin/assessments/{id}/distribution', {headers: authorization(token),params:{path:{id}}}));
+export const updateAssessmentDistribution = (token: string, id: string, publiclyAvailable: boolean) => dataOrThrow<components['schemas']['AssessmentDistributionDto']>(apiClient.PATCH('/v1/admin/assessments/{id}/distribution', {headers:authorization(token),params:{path:{id}},body:{publiclyAvailable}}));

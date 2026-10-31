@@ -65,6 +65,7 @@ async function verify(client, policyKey = POLICY_KEY) {
     SELECT id, version_number
     FROM consent_policy_versions
     WHERE clinic_id = $1::uuid
+      AND assessment_offering_version_id IS NULL
       AND policy_key = $2
       AND locale = 'fa-IR'
       AND status = 'ACTIVE'
@@ -83,7 +84,8 @@ async function publish(client, document, releaseRef) {
     const exact = await client.query(`
       SELECT id, title, body, content_hash, status::text
       FROM consent_policy_versions
-      WHERE clinic_id = $1::uuid AND policy_key = $2 AND locale = $3 AND version_number = $4
+      WHERE clinic_id = $1::uuid AND assessment_offering_version_id IS NULL
+      AND policy_key = $2 AND locale = $3 AND version_number = $4
       FOR UPDATE
     `, [clinicId, document.policyKey, document.locale, document.versionNumber]);
     if (exact.rows.length) {
@@ -99,7 +101,8 @@ async function publish(client, document, releaseRef) {
     const current = await client.query(`
       SELECT id, version_number
       FROM consent_policy_versions
-      WHERE clinic_id = $1::uuid AND policy_key = $2 AND locale = $3 AND status = 'ACTIVE'
+      WHERE clinic_id = $1::uuid AND assessment_offering_version_id IS NULL
+      AND policy_key = $2 AND locale = $3 AND status = 'ACTIVE'
       FOR UPDATE
     `, [clinicId, document.policyKey, document.locale]);
     if (current.rows.length > 1) fail('multiple active policies violate the release contract');

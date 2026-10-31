@@ -71,3 +71,8 @@ export function assessmentErrorMessage(error: unknown) {
   if (error.status === 409) return "پاسخ‌ها یا وضعیت آزمون تغییر کرده است. پیش از ادامه، نسخهٔ ذخیره‌شده را دوباره دریافت کنید؛ پاسخ‌های فعلی خودکار جایگزین نمی‌شوند.";
   return "درخواست ارزیابی انجام نشد؛ دوباره تلاش کنید.";
 }
+
+export async function getCurrentMezaj(accessToken:string) {
+  try{return await expectData<components['schemas']['MezajResultResponseDto']>(apiClient.GET('/v1/patients/me/mezaj',{headers:authorization(accessToken),cache:'no-store'}));}
+  catch(error){if(error instanceof AssessmentRequestError&&error.status===404)return null;throw error;}
+}

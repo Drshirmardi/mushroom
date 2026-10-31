@@ -6,6 +6,7 @@
  */
 
 const PURPOSE_LABELS: Record<string, string> = {
+  ENTRY_ASSESSMENT: "آزمون ورود اولیه",
   TOPUP: "شارژ کیف پول",
   ORDER: "پرداخت سفارش",
   APPOINTMENT: "پرداخت نوبت",

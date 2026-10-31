@@ -27,6 +27,7 @@ export class CoupleAssessmentDeliveryService {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(tx, ctx), publication = await this.publications.currentPublication(tx, patient.clinicId, id);
       if (!publication || publication.offeringVersion.kind !== 'COUPLES') throw new NotFoundException({ code: 'ASSESSMENT_PURCHASE_NOT_FOUND', message: 'Available coupled offering not found.', details: {} });
+      if(!(await tx.$queryRaw<{visible:boolean}[]>(Prisma.sql`SELECT assessment_publicly_available(${publication.offeringVersion.assessmentVersionId}::uuid) AS visible`))[0]?.visible)throw missing();
       const joint = await this.jointProtocols.usable(tx, patient.clinicId, publication.offeringVersion.assessmentVersionId);
       const [age] = await tx.$queryRaw<{ adult: boolean }[]>(Prisma.sql`SELECT couple_patient_is_adult(${patient.id}::uuid) AS adult`);
       const blockers = [...(!age?.adult ? ['ADULT_BIRTH_DATE_REQUIRED'] : []), ...(!joint || joint.protocolReviewId !== publication.protocolReviewId ? ['JOINT_CONFIGURATION_UNAVAILABLE'] : [])];

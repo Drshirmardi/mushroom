@@ -12,6 +12,7 @@ import { HomeJourney } from "@/components/home/home-journey";
 import { useOptionalPatientEntry } from "@/components/auth/patient-entry-gate";
 import { listPatientArticles, listNotifications } from "@/lib/follow-up-api";
 import { usePatientResource } from "@/lib/use-patient-resource";
+import { resumeEntry } from '@/lib/patient-entry-api';
 import { OwnedServices } from '@/components/programs/owned-services';
 
 const services = [
@@ -37,6 +38,7 @@ export default function HomePage() {
   const articles = usePatientResource(useCallback(() => listPatientArticles(token), [token]));
   const notifications = usePatientResource(useCallback(() => listNotifications(token), [token]));
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [entryBusy,setEntryBusy]=useState(false),[entryError,setEntryError]=useState('');
   const unread = notifications.data?.items.some(item => !item.readAt);
 
   return <div className="home-page" dir="rtl">
@@ -45,6 +47,7 @@ export default function HomePage() {
       <button type="button" onClick={() => setNotificationsOpen(true)} aria-haspopup="dialog" aria-expanded={notificationsOpen} aria-label={unread ? "اعلان‌ها؛ پیام خوانده‌نشده دارید" : "اعلان‌ها"} className="home-icon-link"><Bell size={21} aria-hidden="true" />{unread && <span className="home-unread" />}</button>
     </header>
 
+    {entry?.status?.reminder&&<section className="home-panel"><h2>آزمون ورود اولیهٔ شما هنوز کامل نشده است</h2><p>{entry.status.assessmentTitle}</p><button className="entry-primary" disabled={entryBusy} onClick={async()=>{setEntryBusy(true);setEntryError('');try{await resumeEntry(token);window.location.assign('/welcome');}catch{setEntryError('بازگشت به آزمون انجام نشد؛ دوباره تلاش کنید.');setEntryBusy(false);}}}>ادامهٔ آزمون من</button>{entryError&&<p role="alert">{entryError}</p>}</section>}
     <HomeJourney key={authentication.user.id} journey={journey} token={token} />
     <OwnedServices key={`services:${authentication.user.id}`} />
 

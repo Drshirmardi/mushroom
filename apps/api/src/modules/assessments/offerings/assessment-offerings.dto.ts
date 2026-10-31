@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class OfferingPolicyDraftDto {
   @ApiPropertyOptional({ type: 'integer', minimum: 0, maximum: 120 }) @IsOptional() @IsInt() @Min(0) @Max(120) minimumAgeYears?: number;
@@ -32,10 +32,13 @@ export class AssessmentOfferingListQueryDto {
   @ApiPropertyOptional({ enum: ['INDIVIDUAL', 'COUPLES'] }) @IsOptional() @IsIn(['INDIVIDUAL', 'COUPLES']) kind?: 'INDIVIDUAL' | 'COUPLES';
 }
 export class AssessmentOfferingReadinessDto {
-  @ApiProperty({ enum: [false] }) ready!: false;
+  @ApiProperty() ready!: boolean;
   @ApiProperty({ type: [String] }) blockers!: string[];
 }
 export class AssessmentOfferingVersionResponseDto {
+  @ApiPropertyOptional({ type: String, format: "uuid", nullable: true }) adminPublicationId?: string | null;
+  @ApiPropertyOptional({ enum: ["ADMIN_PUBLISHED"], nullable: true }) publicationAuthority?: "ADMIN_PUBLISHED" | null;
+  @ApiPropertyOptional({ type: () => AssessmentOfferingTextsDto, nullable: true }) authoringTexts?: AssessmentOfferingTextsDto | null;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() offeringKey!: string;
   @ApiProperty() versionNumber!: number;
@@ -60,4 +63,27 @@ export class AssessmentOfferingPageResponseDto {
   @ApiProperty() total!: number;
   @ApiProperty() page!: number;
   @ApiProperty() pageSize!: number;
+}
+
+export class AssessmentCouplePairTextDto {
+  @ApiProperty({ maxLength: 100 }) @IsString() @Length(1, 100) @Matches(/^\S+$/u) firstProfileId!: string;
+  @ApiProperty({ maxLength: 100 }) @IsString() @Length(1, 100) @Matches(/^\S+$/u) secondProfileId!: string;
+  @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) text!: string;
+}
+export class AssessmentOfferingTextsDto {
+  @ApiPropertyOptional({ type: [AssessmentCouplePairTextDto], maxItems: 136 }) @IsOptional() @IsArray() @ArrayMaxSize(136) @ValidateNested({ each: true }) @Type(() => AssessmentCouplePairTextDto) pairTexts?: AssessmentCouplePairTextDto[];
+  @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) processing!: string;
+  @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) retention!: string;
+  @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) visibility!: string;
+  @ApiPropertyOptional({ maxLength: 20000 }) @IsOptional() @IsString() @MaxLength(20000) terms?: string;
+  @ApiPropertyOptional({ maxLength: 20000 }) @IsOptional() @IsString() @MaxLength(20000) disclosure?: string;
+}
+export class CreateInlineAssessmentOfferingDto {
+  @ApiPropertyOptional({ pattern: "^[a-f0-9]{64}$" }) @IsOptional() @IsString() @Matches(/^[a-f0-9]{64}$/u) expectedQuestionnaireHash?: string;
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') assessmentVersionId!: string;
+  @ApiProperty({ maxLength: 255 }) @IsString() @Length(1, 255) @Matches(/\S/u) title!: string;
+  @ApiProperty({ enum: ['INDIVIDUAL', 'COUPLES'] }) @IsIn(['INDIVIDUAL', 'COUPLES']) kind!: 'INDIVIDUAL' | 'COUPLES';
+  @ApiProperty({ enum: ['FREE', 'PAID'] }) @IsIn(['FREE', 'PAID']) priceMode!: 'FREE' | 'PAID';
+  @ApiPropertyOptional({ type: String }) @IsOptional() @IsString() @Matches(/^[1-9][0-9]{0,18}$/u) amountRial?: string;
+  @ApiProperty({ type: AssessmentOfferingTextsDto }) @IsObject() @ValidateNested() @Type(() => AssessmentOfferingTextsDto) texts!: AssessmentOfferingTextsDto;
 }

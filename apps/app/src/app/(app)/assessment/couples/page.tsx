@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EducationalCoupleHistory } from "@/components/assessments/educational-couples";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, ClipboardList, Clock3, HeartHandshake, Mail, RefreshCw, ShieldCheck, UserPlus, Users } from "lucide-react";
@@ -113,6 +114,7 @@ function CouplesHub() {
       </div>
     </section>}
 
+    <EducationalCoupleHistory token={token} />
     <details className={styles.help} onToggle={event => setIdentityOpen(event.currentTarget.open)}><summary>شناسه من برای دعوت کجاست؟</summary><p>اگر همراهت می‌خواهد دعوتت کند، شناسه بیمار خودت و شماره موبایلی که با آن ثبت‌نام کرده‌ای را فقط برای او بفرست.</p>{identityOpen && <InvitationIdentity token={token} />}</details>
     <aside className={styles.privacy}><ShieldCheck size={20} aria-hidden="true" /><p>پاسخ‌ها و نتیجه فردی‌ات خصوصی می‌مانند. اتصال حساب‌ها اجازه دیدن آن‌ها را به همراه نمی‌دهد؛ نتیجه مشترک به رضایت جداگانه هر دو نفر نیاز دارد.</p></aside>
   </main>;

@@ -1,10 +1,51 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Equals, IsUUID, Matches } from 'class-validator';
 import { BillingIntentDto } from '../../billing/billing.dto';
 import { CommercialPolicyDto, CommercialTermsDto, PublicationListQueryDto } from '../publication/assessment-publication.dto';
 import { ProtocolConsentDto } from '../protocol/assessment-protocol.dto';
 
 export class AssessmentPurchasePageQueryDto extends PublicationListQueryDto {}
+export class AssessmentFreeAccessDto {
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') publicationId!: string;
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') processingConsentRecordId!: string;
+}
+export class AssessmentFreeGrantDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ enum: ['FREE'] }) accessMode!: 'FREE';
+  @ApiProperty({ format: 'uuid' }) publicationId!: string;
+  @ApiProperty({ format: 'date-time' }) grantedAt!: Date;
+}
+export class EducationalAssessmentOfferingDto {
+  @ApiProperty() publicationHash!: string;
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ format: 'uuid' }) offeringVersionId!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty({ enum: ['INDIVIDUAL', 'COUPLES'] }) kind!: string;
+  @ApiProperty({ enum: ['FREE', 'PAID'] }) priceMode!: string;
+  @ApiProperty({ type: String, nullable: true }) amountRial!: string | null;
+  @ApiProperty() currency!: string;
+  @ApiProperty({ type: String, nullable: true }) algorithmId!: string | null;
+  @ApiProperty({ type: Number, nullable: true }) algorithmVersion!: number | null;
+  @ApiProperty({ enum: ['ADMIN_PUBLISHED'] }) publicationAuthority!: 'ADMIN_PUBLISHED';
+}
+export class EducationalAssessmentOfferingDetailDto extends EducationalAssessmentOfferingDto {
+  @ApiPropertyOptional() publicPurchaseAvailable?: boolean;
+  @ApiPropertyOptional({type:String,nullable:true,format:'uuid'}) pendingIntentId?: string|null;
+  @ApiProperty({ type: CommercialTermsDto, nullable: true }) termsPolicy!: CommercialTermsDto | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) termsConsentId!: string | null;
+  @ApiProperty({ type: ProtocolConsentDto, nullable: true }) processingPolicy!: ProtocolConsentDto | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) processingConsentId!: string | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) accessGrantId!: string | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) submissionId!: string | null;
+  @ApiProperty() accessSupported!: boolean;
+  @ApiProperty({ type: [String] }) blockers!: string[];
+}
+export class EducationalAssessmentOfferingPageDto {
+  @ApiProperty({ type: [EducationalAssessmentOfferingDto] }) items!: EducationalAssessmentOfferingDto[];
+  @ApiProperty() total!: number;
+  @ApiProperty() page!: number;
+  @ApiProperty() pageSize!: number;
+}
 export class AssessmentPurchaseIntentDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') publicationId!: string;
   @ApiProperty({ pattern: '^[a-f0-9]{64}$' }) @Matches(/^[a-f0-9]{64}$/u) publicationHash!: string;
@@ -57,6 +98,8 @@ export class AssessmentGrantSummaryDto {
   @ApiProperty({ format: 'date-time' }) grantedAt!: Date;
 }
 export class PatientAssessmentPurchaseDto {
+  @ApiProperty({ description: 'Owned consent and conditions page for the exact publication authority.' }) managementHref!: string;
+  @ApiProperty({ enum: ['PAID'] }) accessMode!: 'PAID';
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) publicationId!: string;
   @ApiProperty() title!: string;

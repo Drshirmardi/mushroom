@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -6,6 +6,8 @@ import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { Prisma } from '../src/generated/prisma/client';
+import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
+import { canonicalAssessmentJson } from '../src/modules/assessments/domain/assessment-canonical-json';
 import { createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment offering drafts (isolated PostgreSQL)', () => {
@@ -25,12 +27,83 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
   afterAll(async () => { await app?.close(); });
   async function actor(role: string, membership = false) {
     const auth = await createTestAccessToken(db, app.get(AccessTokenService), [role]);
+    const record = await db.role.upsert({ where: { code: role as 'ADMIN' | 'DOCTOR' | 'PATIENT' }, create: { code: role as 'ADMIN' | 'DOCTOR' | 'PATIENT' }, update: {} });
+    await db.userRole.create({ data: { userId: auth.userId, roleId: record.id } });
     if (membership) await db.clinicalClinicAccess.create({ data: { userId: auth.userId, clinicId } });
     return auth;
   }
   async function questionnaire(options: { clinicId?: string; key?: string; locale?: string; draft?: boolean } = {}) {
     return db.assessmentVersion.create({ data: { clinicId: options.clinicId ?? clinicId, assessmentKey: options.key ?? 'MEZAJ', locale: options.locale ?? `x-${randomUUID().slice(0, 8)}`, versionNumber: 1, title: 'Synthetic offering questionnaire', contentHash: 'a'.repeat(64), structure: { schemaVersion: 1, sections: [] }, status: options.draft ? 'DRAFT' : 'PUBLISHED', ...(options.draft ? {} : { publishedAt: new Date() }) } });
   }
+  it.each(['INDIVIDUAL', 'COUPLES'])('inline offering saves all modes with owned documents and retry safety: %s', async kind => {
+    const structure = { schemaVersion: 1, sections: [{ id: 'main', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 1, falseScore: 0 }] }] };
+    const source = await db.assessmentVersion.create({ data: { clinicId, assessmentKey: `INLINE_${randomUUID()}`, locale: 'fa-IR', versionNumber: 1, title: 'Synthetic inline', contentHash: 'a'.repeat(64), structure, status: 'PUBLISHED', publishedAt: new Date() } });
+    for (const priceMode of ['FREE', 'PAID']) {
+      const payload = { assessmentVersionId: source.id, title: 'Synthetic inline', kind, priceMode, ...(priceMode === 'PAID' ? { amountRial: '100000' } : {}), texts: { processing: 'رضایت پردازش', retention: 'نگهداری سوابق', visibility: 'نمایش به صاحب حساب', terms: 'شرایط خرید', disclosure: 'اشتراک نتیجه با رضایت مستقل' } };
+      const key = randomUUID();
+      const response = await request('POST', '/inline-versions', payload, key);
+      expect(response.statusCode, response.body).toBe(201);
+      const row = response.json();
+      expect(row.algorithmId).toBe('WEIGHTED_SUM');
+      expect(row.publicationAuthority).toBe('ADMIN_PUBLISHED');
+      expect(row.releaseReadiness).toEqual({ ready: true, blockers: [] });
+      const publication = await db.assessmentAdminPublication.findUniqueOrThrow({ where: { offeringVersionId: row.id } });
+      expect(publication.publishedByUserId).toBe(admin.userId);
+      expect(publication.status).toBe('ACTIVE');
+      await expect(db.assessmentAdminPublication.update({ where: { id: publication.id }, data: { questionnaireContentHash: 'b'.repeat(64) } })).rejects.toThrow(/immutable/);
+      await expect(db.assessmentAdminPublication.delete({ where: { id: publication.id } })).rejects.toThrow(/retained/);
+      expect(row.offeringKey).toMatch(/^AUTO_/);
+      const documents = await db.consentPolicyVersion.findMany({ where: { assessmentOfferingVersionId: row.id } });
+      expect(documents).toHaveLength(1 + Number(priceMode === 'PAID') + Number(kind === 'COUPLES'));
+      expect(documents.every(document => document.status === 'ACTIVE' && document.clinicId === clinicId)).toBe(true);
+      const replay = await request('POST', '/inline-versions', payload, key);
+      expect(replay.statusCode).toBe(201); expect(replay.json().id).toBe(row.id);
+      expect((await request('POST', '/inline-versions', { ...payload, title: 'Changed' }, key)).statusCode).toBe(409);
+    }
+  });
+  it('inline draft publication rolls back documents and source on failure and replays a concurrent retry', async () => {
+    const who = await actor('ADMIN', true);
+    const source = await db.assessmentVersion.create({ data: { clinicId, assessmentKey: `ATOMIC_${randomUUID()}`, locale: 'fa-IR', versionNumber: 1, title: 'Synthetic draft', contentHash: 'a'.repeat(64), structure: { schemaVersion: 1, sections: [{ id: 's', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 1, falseScore: 0 }] }] } } });
+    const payload = { assessmentVersionId: source.id, expectedQuestionnaireHash: source.contentHash, title: 'Synthetic atomic', kind: 'INDIVIDUAL', priceMode: 'FREE', texts: { processing: 'پردازش', retention: 'نگهداری', visibility: 'نمایش' } };
+    expect((await request('POST', '/inline-versions', { ...payload, expectedQuestionnaireHash: 'b'.repeat(64) }, randomUUID(), who)).statusCode).toBe(409);
+    if (!/^[a-f0-9-]{36}$/.test(who.userId)) throw new Error('Synthetic UUID required');
+    await db.$executeRawUnsafe(`CREATE FUNCTION inline_offering_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.actor_user_id='${who.userId}'::uuid AND NEW.action='CONSENT_POLICY_PUBLISHED' THEN RAISE EXCEPTION 'synthetic inline failure'; END IF; RETURN NEW; END $$`);
+    await db.$executeRaw(Prisma.sql`CREATE TRIGGER inline_offering_audit_fail BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION inline_offering_audit_fail()`);
+    try {
+      expect((await request('POST', '/inline-versions', payload, randomUUID(), who)).statusCode).toBe(500);
+      expect((await db.assessmentVersion.findUniqueOrThrow({ where: { id: source.id } })).status).toBe('DRAFT');
+      expect(await db.assessmentOfferingVersion.count({ where: { assessmentVersionId: source.id } })).toBe(0);
+      expect(await db.consentPolicyVersion.count({ where: { publishedByUserId: who.userId } })).toBe(0);
+    } finally {
+      await db.$executeRaw(Prisma.sql`DROP TRIGGER inline_offering_audit_fail ON audit_events`);
+      await db.$executeRaw(Prisma.sql`DROP FUNCTION inline_offering_audit_fail()`);
+    }
+    const key = randomUUID();
+    const responses = await Promise.all([request('POST', '/inline-versions', payload, key, who), request('POST', '/inline-versions', payload, key, who)]);
+    expect(responses.map(r => r.statusCode)).toEqual([201, 201]);
+    expect(responses[0].json().id).toBe(responses[1].json().id);
+    expect(responses[0].json().authoringTexts).toEqual(payload.texts);
+    expect((await db.assessmentVersion.findUniqueOrThrow({ where: { id: source.id } })).status).toBe('PUBLISHED');
+    expect(await db.assessmentOfferingVersion.count({ where: { assessmentVersionId: source.id } })).toBe(1);
+  });
+  it.each([1, 2])('inline 11+1 version %s publishes drafts and stores every offering mode', async algorithmVersion => {
+    const base = structuredClone(MIZAJ_DRAFT_PRESET.structure);
+    const dimensions = base.scoring.dimensions;
+    const followUps = dimensions.flatMap((a, first) => dimensions.slice(first + 1).map(b => ({ id: `tie_${a.id}_${b.id}`, title: 'Synthetic distinction', tiedDimensions: [a.id, b.id], options: [a, b].map(dimension => ({ id: `o_${dimension.id}`, title: dimension.title, dimensionId: dimension.id })) })));
+    const structure = { ...base, schemaVersion: 3, scoring: { ...base.scoring, algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion }, followUps };
+    for (const kind of ['INDIVIDUAL', 'COUPLES']) for (const priceMode of ['FREE', 'PAID']) {
+      const contentHash = createHash('sha256').update(canonicalAssessmentJson(structure)).digest('hex');
+      const source = await db.assessmentVersion.create({ data: { clinicId, assessmentKey: `MZ_${randomUUID()}`, locale: 'fa-IR', versionNumber: 1, title: 'Synthetic Mizaj', structure, contentHash } });
+      const payload = { assessmentVersionId: source.id, expectedQuestionnaireHash: contentHash, title: 'Synthetic Mizaj offering', kind, priceMode, ...(priceMode === 'PAID' ? { amountRial: '100000' } : {}), texts: { processing: 'پردازش', retention: 'نگهداری', visibility: 'نمایش', terms: 'شرایط', disclosure: 'اشتراک' } };
+      const result = await request('POST', '/inline-versions', payload);
+      expect(result.statusCode, result.body).toBe(201);
+      expect((await db.assessmentAdminPublication.findUniqueOrThrow({ where: { offeringVersionId: result.json().id } })).publishedByUserId).toBe(admin.userId);
+      expect(result.json().algorithmId).toBe('DIMENSION_TIEBREAK'); expect(result.json().algorithmVersion).toBe(algorithmVersion);
+      expect(result.json().authoringTexts).toEqual(payload.texts);
+      expect((await db.assessmentVersion.findUniqueOrThrow({ where: { id: source.id } })).publishedByUserId).toBe(admin.userId);
+      expect(await db.assessmentProtocolReview.count({ where: { assessmentVersionId: source.id } })).toBe(0);
+    }
+  });
   const body = () => ({ offeringKey: `TEST_${randomUUID().replaceAll('-', '').toUpperCase()}`, kind: 'INDIVIDUAL', title: 'Synthetic individual offering', assessmentVersionId: sourceId, priceMode: 'FREE', currency: 'IRR' });
   const request = (method: 'GET' | 'POST', path = '', payload?: object, key: string | undefined = randomUUID(), who = admin) => app.inject({ method, url: `/v1/admin/assessment-offerings${path}`, headers: { authorization: `Bearer ${who.token}`, origin: 'http://localhost:3000', ...(key ? { 'idempotency-key': key } : {}), ...(payload ? { 'content-type': 'application/json' } : {}) }, ...(payload ? { payload: JSON.stringify(payload) } : {}) });
   async function create(payload = body()) { const response = await request('POST', '/versions', payload); expect(response.statusCode).toBe(201); return response.json() as { id: string; offeringKey: string; versionNumber: number }; }
@@ -104,11 +177,11 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     await expect(db.assessmentOfferingVersion.delete({ where: { id: item.id } })).rejects.toThrow(/retained/);
     await expect(db.assessmentOfferingVersion.update({ where: { id: item.id }, data: { status: 'PUBLISHED' } })).rejects.toThrow();
     const row = await db.assessmentOfferingVersion.findUniqueOrThrow({ where: { id: item.id } });
-    await expect(db.assessmentOfferingVersion.create({ data: { ...row, policyDraft: {}, id: randomUUID(), versionNumber: 3, idempotencyKey: randomUUID() } })).rejects.toThrow(/consecutive/);
-    await expect(db.assessmentOfferingVersion.create({ data: { ...row, policyDraft: {}, id: randomUUID(), offeringKey: `BAD_${randomUUID().replaceAll('-', '').toUpperCase()}`, versionNumber: 1, amountRial: null, idempotencyKey: randomUUID() } })).rejects.toThrow();
-    await expect(db.assessmentOfferingVersion.create({ data: { ...row, policyDraft: {}, id: randomUUID(), versionNumber: 2, kind: 'COUPLES', idempotencyKey: randomUUID() } })).rejects.toThrow(/stable/);
+    await expect(db.assessmentOfferingVersion.create({ data: { ...row, authoringTexts: Prisma.DbNull, policyDraft: {}, id: randomUUID(), versionNumber: 3, idempotencyKey: randomUUID() } })).rejects.toThrow(/consecutive/);
+    await expect(db.assessmentOfferingVersion.create({ data: { ...row, authoringTexts: Prisma.DbNull, policyDraft: {}, id: randomUUID(), offeringKey: `BAD_${randomUUID().replaceAll('-', '').toUpperCase()}`, versionNumber: 1, amountRial: null, idempotencyKey: randomUUID() } })).rejects.toThrow();
+    await expect(db.assessmentOfferingVersion.create({ data: { ...row, authoringTexts: Prisma.DbNull, policyDraft: {}, id: randomUUID(), versionNumber: 2, kind: 'COUPLES', idempotencyKey: randomUUID() } })).rejects.toThrow(/stable/);
     const other = await db.clinic.create({ data: { name: 'Synthetic SQL scope', status: 'INACTIVE' } }); const foreign = await questionnaire({ clinicId: other.id });
-    await expect(db.assessmentOfferingVersion.create({ data: { ...row, policyDraft: {}, id: randomUUID(), offeringKey: `SCOPE_${randomUUID().replaceAll('-', '').toUpperCase()}`, assessmentVersionId: foreign.id, locale: foreign.locale, idempotencyKey: randomUUID() } })).rejects.toThrow(/same-clinic/);
+    await expect(db.assessmentOfferingVersion.create({ data: { ...row, authoringTexts: Prisma.DbNull, policyDraft: {}, id: randomUUID(), offeringKey: `SCOPE_${randomUUID().replaceAll('-', '').toUpperCase()}`, assessmentVersionId: foreign.id, locale: foreign.locale, idempotencyKey: randomUUID() } })).rejects.toThrow(/same-clinic/);
   });
   it('rolls back creation/retirement and fails reads when their audit fails', async () => {
     const isolated = await actor('ADMIN', true); const payload = body(); const opened = await request('POST', '/versions', payload, randomUUID(), isolated); const id = opened.json().id;

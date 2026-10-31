@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Activity,
   Bell,
@@ -23,6 +23,17 @@ import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceAddresses, type CommerceAddress } from "@/lib/commerce-catalog-api";
 import { toP } from "@/lib/format";
 import { loadOnboardingStatus, loadSelfProfile, onboardingErrorMessage, type OnboardingStatus, type SelfProfile } from "@/lib/onboarding/patient-onboarding";
+
+import { getCurrentMezaj } from '@/lib/assessment-api';
+import { usePatientResource } from '@/lib/use-patient-resource';
+
+function CurrentMezajCard({token}:{token:string}){
+ const resource=usePatientResource(useCallback(()=>getCurrentMezaj(token),[token]));
+ const band=resource.data?.resultBand;
+ const title=typeof band?.title==='string'?band.title:'نتیجهٔ ثبت‌شده';
+ const router=useRouter();
+ return <section aria-label="مزاج فعلی من" className="rounded-2xl border border-border bg-white p-4 space-y-2"><h2 className="text-sm font-medium">مزاج فعلی من</h2>{resource.data?<><p className="font-medium text-primary">{title}</p><p className="text-xs text-muted-foreground">بر اساس آخرین نتیجهٔ معتبر آزمون شما</p><button className="text-sm text-primary" onClick={()=>router.push(`/assessment/result?submissionId=${resource.data!.assessmentSubmissionId}`)}>مشاهدهٔ نتیجهٔ آزمون</button></>:resource.loading?<p role="status" className="text-xs">در حال دریافت نتیجه…</p>:resource.error?<button onClick={()=>void resource.reload()} className="text-xs text-primary">دریافت دوبارهٔ نتیجه</button>:<p className="text-xs text-muted-foreground">هنوز نتیجهٔ معتبر آزمون مزاج ثبت نشده است.</p>}</section>;
+}
 
 /**
  * Icon-chip tones: blue family first (page accent), amber only for wallet
@@ -128,7 +139,7 @@ export default function ProfilePage() {
             <button type="button" aria-label="ویرایش پروفایل" onClick={() => router.push("/profile/edit")} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-transparent text-foreground transition-all hover:text-blue-700 active:scale-95"><Edit2 size={19} strokeWidth={2.5} aria-hidden="true" /></button>
           </div>
         </section>
-        <section aria-label="وضعیت پرونده پزشکی">
+        <CurrentMezajCard key={authentication.user.id} token={authentication.accessToken}/><section aria-label="وضعیت پرونده پزشکی">
           <button type="button" onClick={() => router.push("/profile/medical")} className="block w-full cursor-pointer rounded-2xl border border-border bg-white p-4 text-right shadow-sm transition-all hover:bg-muted/40 active:scale-[0.99] active:bg-muted">
             <span className="flex items-center gap-3">
               <span className="rounded-xl bg-blue-50 p-2 text-blue-700"><FileText size={18} aria-hidden="true" /></span>

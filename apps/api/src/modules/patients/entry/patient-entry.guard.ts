@@ -7,7 +7,7 @@ export function entryRequestAllowed(method: string, path: string, submissionId: 
   if (['GET', 'PATCH'].includes(method) && path === '/v1/me') return true;
   if (method === 'POST' && path === '/v1/me/change-password') return true;
   if (method === 'GET' && path === '/v1/patients/me/entry') return true;
-  if (method === 'POST' && ['profile', 'start', 'complete'].some(action => path === `/v1/patients/me/entry/${action}`)) return true;
+  if (method === 'POST' && ['profile', 'start', 'complete', 'payment', 'defer', 'resume'].some(action => path === `/v1/patients/me/entry/${action}`)) return true;
   if (!submissionId) return false;
   const root = `/v1/assessment-submissions/${submissionId.toLowerCase()}`;
   const normalized = path.toLowerCase();
@@ -25,6 +25,7 @@ export class PatientEntryGuard implements CanActivate {
     const path = new URL(request.url ?? '/', 'http://internal').pathname; const method = request.method ?? 'GET';
     if (entryRequestAllowed(method, path, null)) return true;
     const status = await this.entry.status(auth.userId);
+    if(status.intentId){const root=`/v1/patients/me/billing/intents/${status.intentId}`;if(method==='GET'&&path===root||method==='POST'&&['wallet-payment','gateway-attempts','cancel'].some(action=>path===`${root}/${action}`))return true;}
     const querySubmission = new URL(request.url ?? '/', 'http://internal').searchParams.get('submissionId');
     if (method === 'GET' && status.phase === 'RESULT' && status.submissionId && querySubmission?.toLowerCase() === status.submissionId.toLowerCase() && ['/v1/patients/me/program-recommendations', '/v1/patients/me/commerce/recommendations'].includes(path)) return true;
     if (!status.required || entryRequestAllowed(method, path, status.submissionId)) return true;

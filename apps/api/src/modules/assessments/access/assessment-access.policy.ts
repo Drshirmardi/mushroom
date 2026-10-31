@@ -1,8 +1,13 @@
 import { Prisma } from '../../../generated/prisma/client';
 
-// Null contexts are grandfathered; SQL prevents new free inserts for commercially governed sources.
+export const ownedAssessmentGrantWhere: Prisma.AssessmentAccessGrantWhereInput = {
+  processingConsent: { withdrawnAt: null },
+  OR: [{ purchase: { intent: { purpose: 'ASSESSMENT', status: 'PAID' } } }, { purchaseId: null, method: 'FREE', freeAdminPublicationId: { not: null } }],
+};
+
+// Null contexts are grandfathered; SQL prevents new unentitled inserts for governed sources.
 export const accessibleAssessmentWhere: Prisma.PatientAssessmentSubmissionWhereInput = {
-  OR: [{ accessGrantId: null }, { accessGrant: { patient: { clinic: { status: 'ACTIVE' }, user: { status: 'ACTIVE', roles: { some: { role: { code: 'PATIENT' } } } } }, processingConsent: { withdrawnAt: null }, purchase: { intent: { purpose: 'ASSESSMENT', status: 'PAID' } } } }],
+  OR: [{ accessGrantId: null }, { accessGrant: { ...ownedAssessmentGrantWhere, patient: { clinic: { status: 'ACTIVE' }, user: { status: 'ACTIVE', roles: { some: { role: { code: 'PATIENT' } } } } } } }],
 };
 
 export async function processableAssessmentGrants(tx: Prisma.TransactionClient, ids: string[]) {

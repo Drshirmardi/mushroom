@@ -26,6 +26,20 @@ const cleanText = (value: string) => value.trim().replace(/\s+/g, ' ');
 export class AdminAssessmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async distribution(id: string) {
+    await this.version(id);
+    const [row] = await this.prisma.$queryRaw<{ publiclyAvailable: boolean }[]>(Prisma.sql`SELECT assessment_publicly_available(${id}::uuid) AS "publiclyAvailable"`);
+    return row!;
+  }
+  async updateDistribution(id: string, publiclyAvailable: boolean, context: AuditContext) {
+    return this.prisma.$transaction(async tx => {
+      await this.version(id, tx, true);
+      await tx.$executeRaw(Prisma.sql`INSERT INTO assessment_distribution_settings(assessment_version_id,publicly_available) VALUES(${id}::uuid,${publiclyAvailable}) ON CONFLICT(assessment_version_id) DO UPDATE SET publicly_available=EXCLUDED.publicly_available,updated_at=CURRENT_TIMESTAMP`);
+      await tx.auditEvent.create({ data: { action: 'ASSESSMENT_DISTRIBUTION_UPDATED', actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'ASSESSMENT_VERSION', subjectId: id, requestId: context.requestId, ipAddress: context.ipAddress, metadata: { publiclyAvailable } } });
+      return { publiclyAvailable };
+    });
+  }
+
   async list(query: AssessmentListQueryDto) {
     const clinic = await this.clinic();
     const where: Prisma.AssessmentVersionWhereInput = {

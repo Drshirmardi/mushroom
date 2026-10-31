@@ -1,0 +1,4 @@
+BEGIN;
+DROP INDEX educational_couple_link_publication_key;
+CREATE INDEX educational_couple_link_publication_idx ON educational_couple_sessions(couple_session_id,publication_id,created_at);
+COMMIT;

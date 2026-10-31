@@ -4575,6 +4575,96 @@
         ]
       }
     },
+    "/v1/patients/me/entry/payment": {
+      "post": {
+        "operationId": "patientEntryPayment",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/patients/me/entry/defer": {
+      "post": {
+        "operationId": "patientEntryDefer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
+    "/v1/patients/me/entry/resume": {
+      "post": {
+        "operationId": "patientEntryResume",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEntryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Patient Entry"
+        ]
+      }
+    },
     "/v1/patients/me/entry/complete": {
       "post": {
         "operationId": "patientEntryComplete",
@@ -7026,602 +7116,6 @@
         ]
       }
     },
-    "/v1/patients/me/journey": {
-      "get": {
-        "operationId": "patientJourneyGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientJourneyResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Patient profile was not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Sensitive audit is unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get derived patient Home state and next action",
-        "tags": [
-          "Patient Journey"
-        ]
-      }
-    },
-    "/v1/patients/me/couple-assessments/{id}/billing-intents": {
-      "post": {
-        "operationId": "patientCoupleAssessmentBillingIntentCreate",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CoupleAssessmentBillingIntentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BillingIntentDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Strict input required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active independent session required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Owned or mutually authorized resource unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Context, payment, completion or approval conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Explicit current configuration required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Authenticated request limit exceeded.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Pay as an independently consenting participant for exactly the two owned beneficiaries",
-        "tags": [
-          "Paid Couple Assessments"
-        ]
-      }
-    },
-    "/v1/patients/me/couple-assessments/{id}/paid-state": {
-      "get": {
-        "operationId": "patientCoupleAssessmentPaidState",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CoupleAssessmentPaidStateDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Strict input required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active independent session required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Owned or mutually authorized resource unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Context, payment, completion or approval conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Explicit current configuration required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Authenticated request limit exceeded.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Read only own engine references and authorized minimal partner completion coordination",
-        "tags": [
-          "Paid Couple Assessments"
-        ]
-      }
-    },
-    "/v1/patients/me/couple-assessments/{id}/joint-result": {
-      "post": {
-        "operationId": "patientCoupleJointResultGenerate",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CoupleJointResultDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Strict input required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active independent session required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Owned or mutually authorized resource unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Context, payment, completion or approval conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Explicit current configuration required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Authenticated request limit exceeded.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Persist exact approved joint education after both private engine completions and mutual consent",
-        "tags": [
-          "Paid Couple Assessments"
-        ]
-      },
-      "get": {
-        "operationId": "patientCoupleJointResultGet",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CoupleJointResultDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Strict input required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active independent session required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Owned or mutually authorized resource unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Context, payment, completion or approval conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Explicit current configuration required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Authenticated request limit exceeded.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Read currently mutually authorized approved joint education; no individual responses or bands",
-        "tags": [
-          "Paid Couple Assessments"
-        ]
-      }
-    },
-    "/v1/patients/me/couple-assessment-offerings/{publicationId}": {
-      "get": {
-        "operationId": "patientCoupleAssessmentOfferingPreview",
-        "parameters": [
-          {
-            "name": "publicationId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CoupleAssessmentOfferingPreviewDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Active patient session required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Patient self access required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Available coupled offering not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Authenticated request limit exceeded.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Resolve safe approved configuration references for explicit couple participation; never accept consent or expose pair definitions",
-        "tags": [
-          "Paid Couple Assessments"
-        ]
-      }
-    },
     "/v1/patients/me/wallet": {
       "get": {
         "operationId": "patientWalletGet",
@@ -8394,7 +7888,8 @@
                 "ORDER",
                 "APPOINTMENT",
                 "ASSESSMENT",
-                "PROGRAM"
+                "PROGRAM",
+                "ENTRY_ASSESSMENT"
               ]
             }
           },
@@ -8790,6 +8285,602 @@
         "summary": "Resolve an ambiguous attempt as failed using reviewed non-sensitive evidence; never manually mark a bank payment successful",
         "tags": [
           "Admin Billing Operations"
+        ]
+      }
+    },
+    "/v1/patients/me/journey": {
+      "get": {
+        "operationId": "patientJourneyGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientJourneyResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sensitive audit is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get derived patient Home state and next action",
+        "tags": [
+          "Patient Journey"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-assessments/{id}/billing-intents": {
+      "post": {
+        "operationId": "patientCoupleAssessmentBillingIntentCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoupleAssessmentBillingIntentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or mutually authorized resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Context, payment, completion or approval conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Explicit current configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Pay as an independently consenting participant for exactly the two owned beneficiaries",
+        "tags": [
+          "Paid Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-assessments/{id}/paid-state": {
+      "get": {
+        "operationId": "patientCoupleAssessmentPaidState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleAssessmentPaidStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or mutually authorized resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Context, payment, completion or approval conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Explicit current configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read only own engine references and authorized minimal partner completion coordination",
+        "tags": [
+          "Paid Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-assessments/{id}/joint-result": {
+      "post": {
+        "operationId": "patientCoupleJointResultGenerate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleJointResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or mutually authorized resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Context, payment, completion or approval conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Explicit current configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Persist exact approved joint education after both private engine completions and mutual consent",
+        "tags": [
+          "Paid Couple Assessments"
+        ]
+      },
+      "get": {
+        "operationId": "patientCoupleJointResultGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleJointResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active independent session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or mutually authorized resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Context, payment, completion or approval conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Explicit current configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read currently mutually authorized approved joint education; no individual responses or bands",
+        "tags": [
+          "Paid Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/couple-assessment-offerings/{publicationId}": {
+      "get": {
+        "operationId": "patientCoupleAssessmentOfferingPreview",
+        "parameters": [
+          {
+            "name": "publicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoupleAssessmentOfferingPreviewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active patient session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Available coupled offering not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Resolve safe approved configuration references for explicit couple participation; never accept consent or expose pair definitions",
+        "tags": [
+          "Paid Couple Assessments"
         ]
       }
     },
@@ -12721,6 +12812,88 @@
         ]
       }
     },
+    "/v1/admin/assessments/{id}/distribution": {
+      "get": {
+        "operationId": "adminAssessmentDistributionGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentDistributionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Assessments"
+        ]
+      },
+      "patch": {
+        "operationId": "adminAssessmentDistributionUpdate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentDistributionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentDistributionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Assessments"
+        ]
+      }
+    },
     "/v1/admin/assessments/draft-presets/mizaj": {
       "get": {
         "operationId": "adminAssessmentsMizajDraftPreset",
@@ -14219,6 +14392,53 @@
           }
         ],
         "summary": "Create an immutable offering draft version; publication remains unavailable",
+        "tags": [
+          "Assessment Offering Drafts"
+        ]
+      }
+    },
+    "/v1/admin/assessment-offerings/inline-versions": {
+      "post": {
+        "operationId": "adminAssessmentInlineOfferingCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInlineAssessmentOfferingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOfferingVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Atomically save offering and its inline purpose-specific documents; does not activate purchases",
         "tags": [
           "Assessment Offering Drafts"
         ]
@@ -27788,6 +28008,340 @@
         ]
       }
     },
+    "/v1/patients/me/educational-assessment-offerings": {
+      "get": {
+        "operationId": "patientEducationalAssessmentOfferingsList",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "COUPLES"
+              ]
+            }
+          },
+          {
+            "name": "offeringKey",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalAssessmentOfferingPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-assessment-offerings/{id}": {
+      "get": {
+        "operationId": "patientEducationalAssessmentOfferingGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalAssessmentOfferingDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-assessment-access": {
+      "post": {
+        "operationId": "patientEducationalAssessmentFreeAccessCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentFreeAccessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentFreeGrantDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned or available assessment resource unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Purchase, consent or source conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Adult supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Claim owned free access with exact scoped acceptance; creates no financial records",
+        "tags": [
+          "Paid Patient Assessments"
+        ]
+      }
+    },
     "/v1/patients/me/assessment-offerings": {
       "get": {
         "operationId": "patientPaidAssessmentOfferingsList",
@@ -28655,6 +29209,783 @@
         "summary": "Start or resume the same owned engine attempt for one paid grant",
         "tags": [
           "Paid Patient Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments": {
+      "post": {
+        "operationId": "patientEducationalCoupleCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EducationalCoupleCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalCoupleDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      },
+      "get": {
+        "operationId": "patientEducationalCouplesList",
+        "parameters": [
+          {
+            "name": "coupleSessionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalCouplePageDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments/{id}": {
+      "get": {
+        "operationId": "patientEducationalCoupleGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalCoupleDetailDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments/{id}/consent": {
+      "post": {
+        "operationId": "patientEducationalCoupleAccept",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EducationalCoupleAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalCoupleDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments/{id}/sharing-withdrawal": {
+      "post": {
+        "operationId": "patientEducationalCoupleSharingWithdraw",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalCoupleDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments/{id}/free-access": {
+      "post": {
+        "operationId": "patientEducationalCoupleFreeAccessCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentFreeGrantDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments/{id}/billing-intents": {
+      "post": {
+        "operationId": "patientEducationalCoupleBillingCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EducationalCoupleBillingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
+        ]
+      }
+    },
+    "/v1/patients/me/educational-couple-assessments/{id}/result": {
+      "get": {
+        "operationId": "patientEducationalCoupleResult",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EducationalCoupleResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned educational couple context unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Independent acceptance or exact context conflicts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Required private access audit unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Educational Couple Assessments"
         ]
       }
     }
@@ -31882,6 +33213,22 @@
       "PatientEntryStatusDto": {
         "type": "object",
         "properties": {
+          "amountRial": {
+            "type": "string"
+          },
+          "allowDeferral": {
+            "type": "boolean"
+          },
+          "reminder": {
+            "type": "boolean"
+          },
+          "intentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "introduction": {
+            "type": "string"
+          },
           "required": {
             "type": "boolean"
           },
@@ -31892,6 +33239,7 @@
             "type": "string",
             "enum": [
               "PROFILE",
+              "PAYMENT",
               "ASSESSMENT",
               "RESULT",
               "COMPLETE",
@@ -31977,9 +33325,186 @@
           "birthDate"
         ]
       },
+      "BillingPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "WALLET",
+              "GATEWAY"
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "balanceRial": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "code",
+          "available",
+          "balanceRial"
+        ]
+      },
+      "BillingAttemptStatusDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reference",
+          "traceNumber",
+          "verifiedAt"
+        ]
+      },
+      "BillingRefundDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "amountRial",
+          "completedAt"
+        ]
+      },
+      "BillingIntentDto": {
+        "type": "object",
+        "properties": {
+          "programPurchaseId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the PROGRAM target only"
+          },
+          "assessmentPurchaseId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the ASSESSMENT target only"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingPaymentMethodDto"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingAttemptStatusDto"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingRefundDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "status",
+          "method",
+          "amountRial",
+          "currency",
+          "orderId",
+          "appointmentId",
+          "expiresAt",
+          "paidAt",
+          "createdAt"
+        ]
+      },
       "EntryPolicyDto": {
         "type": "object",
         "properties": {
+          "amountRial": {
+            "type": "string"
+          },
+          "allowDeferral": {
+            "type": "boolean"
+          },
+          "introduction": {
+            "type": "string",
+            "nullable": true
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -32012,6 +33537,17 @@
       "EntryPolicyUpdateDto": {
         "type": "object",
         "properties": {
+          "amountRial": {
+            "type": "string"
+          },
+          "allowDeferral": {
+            "type": "boolean"
+          },
+          "introduction": {
+            "type": "string",
+            "maxLength": 20000,
+            "nullable": true
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -33226,6 +34762,577 @@
           "noDiagnosisOrTherapeuticDiet"
         ]
       },
+      "WalletSummaryDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "balanceRial": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "frozen": {
+            "type": "boolean"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "patientId",
+          "currency",
+          "balanceRial",
+          "version",
+          "frozen",
+          "asOf"
+        ]
+      },
+      "WalletTransactionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "deltaRial": {
+            "type": "string"
+          },
+          "balanceAfterRial": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ADMIN projection only"
+          },
+          "actorDisplayName": {
+            "type": "string",
+            "nullable": true,
+            "description": "ADMIN projection only"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "ADMIN projection only"
+          },
+          "balanceBeforeRial": {
+            "type": "string",
+            "description": "ADMIN projection only"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "deltaRial",
+          "balanceAfterRial",
+          "reference",
+          "createdAt"
+        ]
+      },
+      "WalletTransactionPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletTransactionDto"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "items"
+        ]
+      },
+      "WalletAmountDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "string",
+            "description": "Integer TOMAN; normalized Persian and Arabic digits accepted."
+          }
+        },
+        "required": [
+          "amountToman"
+        ]
+      },
+      "BillingOrderIntentDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "orderId"
+        ]
+      },
+      "BillingAppointmentIntentDto": {
+        "type": "object",
+        "properties": {
+          "doctorServiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "doctorServiceId",
+          "startsAt"
+        ]
+      },
+      "BillingGatewayAttemptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "redirectUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "intentId",
+          "status",
+          "amountRial",
+          "currency",
+          "redirectUrl"
+        ]
+      },
+      "WalletAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "amountToman": {
+            "type": "string",
+            "description": "Integer TOMAN; normalized Persian and Arabic digits accepted."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CREDIT",
+              "DEBIT",
+              "SET_BALANCE"
+            ]
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "amountToman",
+          "type",
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "WalletAdjustmentResultDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "beforeRial": {
+            "type": "string"
+          },
+          "balanceRial": {
+            "type": "string"
+          },
+          "deltaRial": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "journalId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "patientId",
+          "currency",
+          "beforeRial",
+          "balanceRial",
+          "deltaRial",
+          "version",
+          "journalId"
+        ]
+      },
+      "WalletStatusDto": {
+        "type": "object",
+        "properties": {
+          "frozen": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "frozen",
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "WalletStatusResultDto": {
+        "type": "object",
+        "properties": {
+          "frozen": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "frozen",
+          "version"
+        ]
+      },
+      "AdminBillingIntentDto": {
+        "type": "object",
+        "properties": {
+          "programPurchaseId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the PROGRAM target only"
+          },
+          "assessmentPurchaseId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the ASSESSMENT target only"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingPaymentMethodDto"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingAttemptStatusDto"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingRefundDto"
+            }
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "status",
+          "method",
+          "amountRial",
+          "currency",
+          "orderId",
+          "appointmentId",
+          "expiresAt",
+          "paidAt",
+          "createdAt",
+          "patientId"
+        ]
+      },
+      "BillingIntentPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminBillingIntentDto"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "items"
+        ]
+      },
+      "BillingReconciliationItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerOrderId": {
+            "type": "string"
+          },
+          "resultCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reference",
+          "traceNumber",
+          "verifiedAt",
+          "providerOrderId",
+          "resultCode",
+          "intentId",
+          "amountRial",
+          "createdAt"
+        ]
+      },
+      "BillingReconciliationPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingReconciliationItemDto"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "items"
+        ]
+      },
+      "BillingSummaryDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "asOf": {
+            "type": "string"
+          },
+          "walletLiabilityRial": {
+            "type": "string"
+          },
+          "gatewayReceivedRial": {
+            "type": "string"
+          },
+          "topupReceivedRial": {
+            "type": "string"
+          },
+          "orderPaidRial": {
+            "type": "string"
+          },
+          "appointmentPaidRial": {
+            "type": "string"
+          },
+          "refundedRial": {
+            "type": "string"
+          },
+          "administrativeCreditRial": {
+            "type": "string"
+          },
+          "administrativeDebitRial": {
+            "type": "string"
+          },
+          "ledgerMismatchCount": {
+            "type": "number"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "asOf",
+          "walletLiabilityRial",
+          "gatewayReceivedRial",
+          "topupReceivedRial",
+          "orderPaidRial",
+          "appointmentPaidRial",
+          "refundedRial",
+          "administrativeCreditRial",
+          "administrativeDebitRial",
+          "ledgerMismatchCount",
+          "source"
+        ]
+      },
+      "BillingRefundRequestDto": {
+        "type": "object",
+        "properties": {
+          "amountRial": {
+            "type": "string",
+            "description": "Exact integer IRR, including service-price remainders smaller than one TOMAN."
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "amountRial",
+          "reason"
+        ]
+      },
+      "BillingRefundCompleteDto": {
+        "type": "object",
+        "properties": {
+          "evidenceReference": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "evidenceReference"
+        ]
+      },
       "JourneySetupStepDto": {
         "type": "object",
         "properties": {
@@ -34203,173 +36310,6 @@
           "termsConsentRecordId"
         ]
       },
-      "BillingPaymentMethodDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "enum": [
-              "WALLET",
-              "GATEWAY"
-            ]
-          },
-          "available": {
-            "type": "boolean"
-          },
-          "balanceRial": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "code",
-          "available",
-          "balanceRial"
-        ]
-      },
-      "BillingAttemptStatusDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "reference": {
-            "type": "string",
-            "nullable": true
-          },
-          "traceNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "verifiedAt": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "reference",
-          "traceNumber",
-          "verifiedAt"
-        ]
-      },
-      "BillingRefundDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "completedAt": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "amountRial",
-          "completedAt"
-        ]
-      },
-      "BillingIntentDto": {
-        "type": "object",
-        "properties": {
-          "programPurchaseId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "description": "Present for the PROGRAM target only"
-          },
-          "assessmentPurchaseId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "description": "Present for the ASSESSMENT target only"
-          },
-          "methods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingPaymentMethodDto"
-            }
-          },
-          "id": {
-            "type": "string"
-          },
-          "purpose": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "method": {
-            "type": "string",
-            "nullable": true
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "orderId": {
-            "type": "string",
-            "nullable": true
-          },
-          "appointmentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "paidAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "attempts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingAttemptStatusDto"
-            }
-          },
-          "refunds": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingRefundDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "purpose",
-          "status",
-          "method",
-          "amountRial",
-          "currency",
-          "orderId",
-          "appointmentId",
-          "expiresAt",
-          "paidAt",
-          "createdAt"
-        ]
-      },
       "CoupleAssessmentPaidStateDto": {
         "type": "object",
         "properties": {
@@ -34578,577 +36518,6 @@
           "jointProtocolHash",
           "available",
           "blockers"
-        ]
-      },
-      "WalletSummaryDto": {
-        "type": "object",
-        "properties": {
-          "patientId": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "balanceRial": {
-            "type": "string"
-          },
-          "version": {
-            "type": "number"
-          },
-          "frozen": {
-            "type": "boolean"
-          },
-          "asOf": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "patientId",
-          "currency",
-          "balanceRial",
-          "version",
-          "frozen",
-          "asOf"
-        ]
-      },
-      "WalletTransactionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "kind": {
-            "type": "string"
-          },
-          "deltaRial": {
-            "type": "string"
-          },
-          "balanceAfterRial": {
-            "type": "string"
-          },
-          "reference": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "actorUserId": {
-            "type": "string",
-            "nullable": true,
-            "description": "ADMIN projection only"
-          },
-          "actorDisplayName": {
-            "type": "string",
-            "nullable": true,
-            "description": "ADMIN projection only"
-          },
-          "reason": {
-            "type": "string",
-            "nullable": true,
-            "description": "ADMIN projection only"
-          },
-          "balanceBeforeRial": {
-            "type": "string",
-            "description": "ADMIN projection only"
-          }
-        },
-        "required": [
-          "id",
-          "kind",
-          "deltaRial",
-          "balanceAfterRial",
-          "reference",
-          "createdAt"
-        ]
-      },
-      "WalletTransactionPageDto": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WalletTransactionDto"
-            }
-          }
-        },
-        "required": [
-          "page",
-          "pageSize",
-          "total",
-          "items"
-        ]
-      },
-      "WalletAmountDto": {
-        "type": "object",
-        "properties": {
-          "amountToman": {
-            "type": "string",
-            "description": "Integer TOMAN; normalized Persian and Arabic digits accepted."
-          }
-        },
-        "required": [
-          "amountToman"
-        ]
-      },
-      "BillingOrderIntentDto": {
-        "type": "object",
-        "properties": {
-          "orderId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "orderId"
-        ]
-      },
-      "BillingAppointmentIntentDto": {
-        "type": "object",
-        "properties": {
-          "doctorServiceId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "doctorServiceId",
-          "startsAt"
-        ]
-      },
-      "BillingGatewayAttemptDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "intentId": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "redirectUrl": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "intentId",
-          "status",
-          "amountRial",
-          "currency",
-          "redirectUrl"
-        ]
-      },
-      "WalletAdjustmentDto": {
-        "type": "object",
-        "properties": {
-          "amountToman": {
-            "type": "string",
-            "description": "Integer TOMAN; normalized Persian and Arabic digits accepted."
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CREDIT",
-              "DEBIT",
-              "SET_BALANCE"
-            ]
-          },
-          "expectedVersion": {
-            "type": "number",
-            "minimum": 0
-          },
-          "reason": {
-            "type": "string",
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "amountToman",
-          "type",
-          "expectedVersion",
-          "reason"
-        ]
-      },
-      "WalletAdjustmentResultDto": {
-        "type": "object",
-        "properties": {
-          "patientId": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string"
-          },
-          "beforeRial": {
-            "type": "string"
-          },
-          "balanceRial": {
-            "type": "string"
-          },
-          "deltaRial": {
-            "type": "string"
-          },
-          "version": {
-            "type": "number"
-          },
-          "journalId": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "patientId",
-          "currency",
-          "beforeRial",
-          "balanceRial",
-          "deltaRial",
-          "version",
-          "journalId"
-        ]
-      },
-      "WalletStatusDto": {
-        "type": "object",
-        "properties": {
-          "frozen": {
-            "type": "boolean"
-          },
-          "expectedVersion": {
-            "type": "number",
-            "minimum": 0
-          },
-          "reason": {
-            "type": "string",
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "frozen",
-          "expectedVersion",
-          "reason"
-        ]
-      },
-      "WalletStatusResultDto": {
-        "type": "object",
-        "properties": {
-          "frozen": {
-            "type": "boolean"
-          },
-          "version": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "frozen",
-          "version"
-        ]
-      },
-      "AdminBillingIntentDto": {
-        "type": "object",
-        "properties": {
-          "programPurchaseId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "description": "Present for the PROGRAM target only"
-          },
-          "assessmentPurchaseId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "description": "Present for the ASSESSMENT target only"
-          },
-          "methods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingPaymentMethodDto"
-            }
-          },
-          "id": {
-            "type": "string"
-          },
-          "purpose": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "method": {
-            "type": "string",
-            "nullable": true
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "orderId": {
-            "type": "string",
-            "nullable": true
-          },
-          "appointmentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "paidAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "attempts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingAttemptStatusDto"
-            }
-          },
-          "refunds": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingRefundDto"
-            }
-          },
-          "patientId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "id",
-          "purpose",
-          "status",
-          "method",
-          "amountRial",
-          "currency",
-          "orderId",
-          "appointmentId",
-          "expiresAt",
-          "paidAt",
-          "createdAt",
-          "patientId"
-        ]
-      },
-      "BillingIntentPageDto": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminBillingIntentDto"
-            }
-          }
-        },
-        "required": [
-          "page",
-          "pageSize",
-          "total",
-          "items"
-        ]
-      },
-      "BillingReconciliationItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "reference": {
-            "type": "string",
-            "nullable": true
-          },
-          "traceNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "verifiedAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "providerOrderId": {
-            "type": "string"
-          },
-          "resultCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "intentId": {
-            "type": "string"
-          },
-          "amountRial": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "reference",
-          "traceNumber",
-          "verifiedAt",
-          "providerOrderId",
-          "resultCode",
-          "intentId",
-          "amountRial",
-          "createdAt"
-        ]
-      },
-      "BillingReconciliationPageDto": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number"
-          },
-          "pageSize": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillingReconciliationItemDto"
-            }
-          }
-        },
-        "required": [
-          "page",
-          "pageSize",
-          "total",
-          "items"
-        ]
-      },
-      "BillingSummaryDto": {
-        "type": "object",
-        "properties": {
-          "currency": {
-            "type": "string"
-          },
-          "asOf": {
-            "type": "string"
-          },
-          "walletLiabilityRial": {
-            "type": "string"
-          },
-          "gatewayReceivedRial": {
-            "type": "string"
-          },
-          "topupReceivedRial": {
-            "type": "string"
-          },
-          "orderPaidRial": {
-            "type": "string"
-          },
-          "appointmentPaidRial": {
-            "type": "string"
-          },
-          "refundedRial": {
-            "type": "string"
-          },
-          "administrativeCreditRial": {
-            "type": "string"
-          },
-          "administrativeDebitRial": {
-            "type": "string"
-          },
-          "ledgerMismatchCount": {
-            "type": "number"
-          },
-          "source": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "currency",
-          "asOf",
-          "walletLiabilityRial",
-          "gatewayReceivedRial",
-          "topupReceivedRial",
-          "orderPaidRial",
-          "appointmentPaidRial",
-          "refundedRial",
-          "administrativeCreditRial",
-          "administrativeDebitRial",
-          "ledgerMismatchCount",
-          "source"
-        ]
-      },
-      "BillingRefundRequestDto": {
-        "type": "object",
-        "properties": {
-          "amountRial": {
-            "type": "string",
-            "description": "Exact integer IRR, including service-price remainders smaller than one TOMAN."
-          },
-          "reason": {
-            "type": "string",
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "amountRial",
-          "reason"
-        ]
-      },
-      "BillingRefundCompleteDto": {
-        "type": "object",
-        "properties": {
-          "evidenceReference": {
-            "type": "string",
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "evidenceReference"
         ]
       },
       "CoupleLinkPolicyDto": {
@@ -35665,6 +37034,65 @@
           "linkedPartnerAcknowledged"
         ]
       },
+      "AssessmentCouplePairTextDto": {
+        "type": "object",
+        "properties": {
+          "firstProfileId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "secondProfileId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "firstProfileId",
+          "secondProfileId",
+          "text"
+        ]
+      },
+      "AssessmentOfferingTextsDto": {
+        "type": "object",
+        "properties": {
+          "pairTexts": {
+            "maxItems": 136,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssessmentCouplePairTextDto"
+            }
+          },
+          "processing": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "retention": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "visibility": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "terms": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "disclosure": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "processing",
+          "retention",
+          "visibility"
+        ]
+      },
       "OfferingPolicyDraftDto": {
         "type": "object",
         "properties": {
@@ -35709,6 +37137,27 @@
       "CommercialTariffDto": {
         "type": "object",
         "properties": {
+          "adminPublicationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "publicationAuthority": {
+            "type": "string",
+            "enum": [
+              "ADMIN_PUBLISHED"
+            ],
+            "nullable": true
+          },
+          "authoringTexts": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentOfferingTextsDto"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -37306,6 +38755,17 @@
           "onboardingIncomplete"
         ]
       },
+      "AssessmentDistributionDto": {
+        "type": "object",
+        "properties": {
+          "publiclyAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "publiclyAvailable"
+        ]
+      },
       "AssessmentDraftPresetDto": {
         "type": "object",
         "properties": {
@@ -38359,10 +39819,7 @@
         "type": "object",
         "properties": {
           "ready": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
+            "type": "boolean"
           },
           "blockers": {
             "type": "array",
@@ -38379,6 +39836,27 @@
       "AssessmentOfferingVersionResponseDto": {
         "type": "object",
         "properties": {
+          "adminPublicationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "publicationAuthority": {
+            "type": "string",
+            "enum": [
+              "ADMIN_PUBLISHED"
+            ],
+            "nullable": true
+          },
+          "authoringTexts": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentOfferingTextsDto"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -38481,6 +39959,50 @@
           "createdAt",
           "retiredAt",
           "releaseReadiness"
+        ]
+      },
+      "CreateInlineAssessmentOfferingDto": {
+        "type": "object",
+        "properties": {
+          "expectedQuestionnaireHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "assessmentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "texts": {
+            "$ref": "#/components/schemas/AssessmentOfferingTextsDto"
+          }
+        },
+        "required": [
+          "assessmentVersionId",
+          "title",
+          "kind",
+          "priceMode",
+          "texts"
         ]
       },
       "AssessmentOfferingPageResponseDto": {
@@ -46476,6 +47998,275 @@
           "recommendConsultation"
         ]
       },
+      "EducationalAssessmentOfferingDto": {
+        "type": "object",
+        "properties": {
+          "publicationHash": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offeringVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "algorithmId": {
+            "type": "string",
+            "nullable": true
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "publicationAuthority": {
+            "type": "string",
+            "enum": [
+              "ADMIN_PUBLISHED"
+            ]
+          }
+        },
+        "required": [
+          "publicationHash",
+          "id",
+          "offeringVersionId",
+          "title",
+          "kind",
+          "priceMode",
+          "amountRial",
+          "currency",
+          "algorithmId",
+          "algorithmVersion",
+          "publicationAuthority"
+        ]
+      },
+      "EducationalAssessmentOfferingPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EducationalAssessmentOfferingDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "EducationalAssessmentOfferingDetailDto": {
+        "type": "object",
+        "properties": {
+          "publicationHash": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offeringVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "COUPLES"
+            ]
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "amountRial": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "algorithmId": {
+            "type": "string",
+            "nullable": true
+          },
+          "algorithmVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "publicationAuthority": {
+            "type": "string",
+            "enum": [
+              "ADMIN_PUBLISHED"
+            ]
+          },
+          "publicPurchaseAvailable": {
+            "type": "boolean"
+          },
+          "pendingIntentId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "termsPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommercialTermsDto"
+              }
+            ]
+          },
+          "termsConsentId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "processingPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProtocolConsentDto"
+              }
+            ]
+          },
+          "processingConsentId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "accessGrantId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "submissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "accessSupported": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "publicationHash",
+          "id",
+          "offeringVersionId",
+          "title",
+          "kind",
+          "priceMode",
+          "amountRial",
+          "currency",
+          "algorithmId",
+          "algorithmVersion",
+          "publicationAuthority",
+          "termsPolicy",
+          "termsConsentId",
+          "processingPolicy",
+          "processingConsentId",
+          "accessGrantId",
+          "submissionId",
+          "accessSupported",
+          "blockers"
+        ]
+      },
+      "AssessmentFreeAccessDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "processingConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "publicationId",
+          "processingConsentRecordId"
+        ]
+      },
+      "AssessmentFreeGrantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "FREE"
+            ]
+          },
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "grantedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "accessMode",
+          "publicationId",
+          "grantedAt"
+        ]
+      },
       "PatientAssessmentOfferingDto": {
         "type": "object",
         "properties": {
@@ -46774,6 +48565,16 @@
       "PatientAssessmentPurchaseDto": {
         "type": "object",
         "properties": {
+          "managementHref": {
+            "type": "string",
+            "description": "Owned consent and conditions page for the exact publication authority."
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "PAID"
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -46815,6 +48616,8 @@
           }
         },
         "required": [
+          "managementHref",
+          "accessMode",
           "id",
           "publicationId",
           "title",
@@ -46849,6 +48652,348 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "EducationalCoupleCreateDto": {
+        "type": "object",
+        "properties": {
+          "coupleSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "coupleSessionId",
+          "publicationId",
+          "publicationHash"
+        ]
+      },
+      "EducationalCoupleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "coupleSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contextHash": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleAssessmentParticipantDto"
+            }
+          },
+          "ownAccessGrantId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "ownSubmissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "ownProcessingConsentRecordId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "mutualConsentComplete": {
+            "type": "boolean"
+          },
+          "jointResultAvailable": {
+            "type": "boolean"
+          },
+          "newAccessAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "coupleSessionId",
+          "publicationId",
+          "contextHash",
+          "title",
+          "priceMode",
+          "amountRial",
+          "currency",
+          "participants",
+          "ownAccessGrantId",
+          "ownSubmissionId",
+          "ownProcessingConsentRecordId",
+          "mutualConsentComplete",
+          "jointResultAvailable",
+          "newAccessAvailable"
+        ]
+      },
+      "EducationalCouplePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EducationalCoupleDto"
+            }
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "EducationalCoupleDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "coupleSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contextHash": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "priceMode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoupleAssessmentParticipantDto"
+            }
+          },
+          "ownAccessGrantId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "ownSubmissionId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "ownProcessingConsentRecordId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "mutualConsentComplete": {
+            "type": "boolean"
+          },
+          "jointResultAvailable": {
+            "type": "boolean"
+          },
+          "newAccessAvailable": {
+            "type": "boolean"
+          },
+          "ownPendingIntentId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "paymentPending": {
+            "type": "boolean"
+          },
+          "termsPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommercialTermsDto"
+              }
+            ]
+          },
+          "processingPolicy": {
+            "$ref": "#/components/schemas/ProtocolConsentDto"
+          },
+          "disclosurePolicy": {
+            "$ref": "#/components/schemas/ProtocolConsentDto"
+          }
+        },
+        "required": [
+          "id",
+          "coupleSessionId",
+          "publicationId",
+          "contextHash",
+          "title",
+          "priceMode",
+          "amountRial",
+          "currency",
+          "participants",
+          "ownAccessGrantId",
+          "ownSubmissionId",
+          "ownProcessingConsentRecordId",
+          "mutualConsentComplete",
+          "jointResultAvailable",
+          "newAccessAvailable",
+          "ownPendingIntentId",
+          "paymentPending",
+          "termsPolicy",
+          "processingPolicy",
+          "disclosurePolicy"
+        ]
+      },
+      "EducationalCoupleAcceptDto": {
+        "type": "object",
+        "properties": {
+          "contextHash": {
+            "type": "string"
+          },
+          "processingConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "disclosureContentHash": {
+            "type": "string"
+          },
+          "disclosureAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "linkedPartnerAcknowledged": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "contextHash",
+          "processingConsentRecordId",
+          "disclosureContentHash",
+          "disclosureAccepted",
+          "linkedPartnerAcknowledged"
+        ]
+      },
+      "EducationalCoupleBillingDto": {
+        "type": "object",
+        "properties": {
+          "contextHash": {
+            "type": "string"
+          },
+          "termsConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "contextHash",
+          "termsConsentRecordId"
+        ]
+      },
+      "EducationalCoupleIndividualResultDto": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "string",
+            "enum": [
+              "INITIATOR",
+              "PARTNER"
+            ]
+          },
+          "isSelf": {
+            "type": "boolean"
+          },
+          "resultSnapshot": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "slot",
+          "isSelf",
+          "resultSnapshot"
+        ]
+      },
+      "EducationalCoupleResultDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EducationalCoupleIndividualResultDto"
+            }
+          },
+          "jointText": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "results",
+          "jointText"
         ]
       }
     }

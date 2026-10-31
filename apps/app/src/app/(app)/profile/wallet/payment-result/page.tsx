@@ -54,6 +54,8 @@ function PaymentResult() {
       ? { href: `/store/order-tracking?orderId=${encodeURIComponent(intent.orderId)}`, label: "پیگیری سفارش" }
       : intent.purpose === "APPOINTMENT"
         ? { href: "/appointments", label: "مشاهدهٔ نوبت‌ها" }
+        : intent.purpose === "ENTRY_ASSESSMENT"
+          ? {href:"/welcome",label:"ادامهٔ آزمون ورود اولیه"}
         : intent.purpose === "ASSESSMENT"
           ? { href: intent.assessmentPurchaseId ? `/assessment/purchases/${encodeURIComponent(intent.assessmentPurchaseId)}` : "/assessment/couples", label: "پیگیری ارزیابی و دسترسی" }
         : intent.purpose === "PROGRAM"

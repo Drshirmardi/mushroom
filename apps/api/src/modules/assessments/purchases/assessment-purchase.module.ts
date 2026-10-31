@@ -9,5 +9,11 @@ import { AssessmentBillingTarget } from './assessment-billing.target';
 import { AssessmentPurchaseService } from './assessment-purchase.service';
 import { AssessmentPurchaseController } from './assessment-purchase.controller';
 import { CoupleAssessmentPaidModule } from '../couples/paid/couple-assessment-paid.module';
-@Module({ imports: [BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule], controllers: [AssessmentPurchaseController], providers: [AssessmentPurchaseService, AssessmentBillingTarget] })
+import { AssessmentAccessModule } from '../access/assessment-access.module';
+import { AssessmentEducationalAccessService } from './assessment-educational-access.service';
+import { AssessmentAdminPurchaseService } from './assessment-admin-purchase.service';
+import { EducationalCoupleService } from '../couples/educational/educational-couple.service';
+import { EducationalCoupleController } from '../couples/educational/educational-couple.controller';
+import { ClinicalModule } from '../../clinical/clinical.module';
+@Module({ imports: [BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule, AssessmentAccessModule, ClinicalModule], controllers: [AssessmentPurchaseController, EducationalCoupleController], providers: [AssessmentPurchaseService, AssessmentEducationalAccessService, AssessmentAdminPurchaseService, AssessmentBillingTarget, EducationalCoupleService] })
 export class AssessmentPurchaseModule {}

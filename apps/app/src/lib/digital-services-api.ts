@@ -3,6 +3,9 @@ import { apiClient } from "./api";
 import { patientAuthorization as auth, patientData as data } from "./patient-request";
 
 type Schema = components["schemas"];
+export const listEducationalAssessmentOfferings = (token: string, page = 1, kind: "INDIVIDUAL" | "COUPLES" = "INDIVIDUAL") => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } }));
+export const getEducationalAssessmentOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
+export const claimFreeAssessmentAccess = (token: string, body: Schema["AssessmentFreeAccessDto"], key: string) => data(apiClient.POST("/v1/patients/me/educational-assessment-access", { headers: auth(token), params: { header: { 'Idempotency-Key': key } }, body }));
 export const listAssessmentOfferings = (token: string, page = 1, kind?: "INDIVIDUAL" | "COUPLES") => data(apiClient.GET("/v1/patients/me/assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } }));
 export const getAssessmentOffering = (token: string, publicationId: string) => data(apiClient.GET("/v1/patients/me/assessment-offerings/{publicationId}", { headers: auth(token), params: { path: { publicationId } } }));
 export const acceptAssessmentConsent = (token: string, body: Schema["AssessmentConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/assessment-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));

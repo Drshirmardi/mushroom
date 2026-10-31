@@ -7,7 +7,7 @@ import { ServicePage, ServiceSection, ServiceEmpty, ServiceTabs } from "@/compon
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { PatientPagination } from "@/components/shared/patient-pagination";
 import { listPublishedAssessments, listAssessmentHistory } from "@/lib/assessment-api";
-import { listAssessmentOfferings, listAssessmentPurchases } from "@/lib/digital-services-api";
+import { listAssessmentOfferings, listAssessmentPurchases, listEducationalAssessmentOfferings } from "@/lib/digital-services-api";
 import { usePatientResource } from "@/lib/use-patient-resource";
 import { formatRial } from "@/lib/wallet-money";
 import { groupAssessmentCatalog } from "@/lib/assessment-catalog";
@@ -24,9 +24,16 @@ export default function AssessmentPage() {
   const published = usePatientResource(useCallback(() => listPublishedAssessments(token), [token]));
   const offerings = usePatientResource(useCallback(() => listAssessmentOfferings(token, offerPage), [token, offerPage]));
   const purchases = usePatientResource(useCallback(() => listAssessmentPurchases(token, purchasePage), [token, purchasePage]));
+  const [educationalPage, setEducationalPage] = useState(1);
+  const educational = usePatientResource(useCallback(() => listEducationalAssessmentOfferings(token, educationalPage), [token, educationalPage]));
   return <ServicePage title="ارزیابی سلامت" description="آزمون مناسب را انتخاب کنید یا پاسخ‌های قبلی و نتیجهٔ ارزیابی خود را ببینید." icon={ClipboardList}>
     <ServiceTabs<View> value={view} onChange={changeView} options={[{value:"start",label:"آزمون جدید"},{value:"history",label:"سوابق و نتایج"},{value:"purchases",label:"خریدهای من"}]} />
     {view === "start" && <>
+      <ServiceSection title="ارزیابی‌های آموزشی" description="شرایط هر آزمون را بخوانید و با رضایت خود شروع کنید.">
+        <PatientResourceState {...educational} retry={() => void educational.reload()} />
+        {educational.data?.items.map(item => <Link key={item.id} href={`/assessment/educational/${item.id}`} className="service-card"><h3>{item.title}</h3><strong className="service-price">{item.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(item.amountRial ?? '0'))} تومان`}</strong><span className="service-text-action">شرایط و شروع ارزیابی<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
+        {educational.data && <PatientPagination page={educationalPage} total={educational.data.total} onChange={setEducationalPage} />}
+      </ServiceSection>
       <ServiceSection title="آزمون‌های کلینیک" description="پیش از شروع، توضیحات و شرایط آزمون را بررسی کنید.">
         <PatientResourceState {...published} retry={() => void published.reload()} />
         {published.data && groupAssessmentCatalog(published.data.items).map(group => group.versions.length === 1 ? <Link key={group.key} href={`/assessment/${group.versions[0].id}`} className="service-card"><h3>{group.title}</h3><span className="service-text-action">شروع یا ادامهٔ آزمون<ArrowLeft size={17} aria-hidden="true" /></span></Link> : <article className="service-card" key={group.key}><h3>{group.title}</h3><p>{toP(group.versions.length)} نسخهٔ منتشرشده برای این آزمون در دسترس است. نسخهٔ موردنظر خود را انتخاب کنید؛ پاسخ‌های قبلی از بخش «سوابق و نتایج» ادامه داده می‌شوند.</p><details className="service-disclosure mt-2"><summary>انتخاب نسخهٔ آزمون</summary><div className="service-stack">{group.versions.map(item => <Link key={item.id} href={`/assessment/${item.id}`} className="service-catalog-version"><span>نسخهٔ {toP(item.versionNumber)}</span><ArrowLeft size={17} aria-hidden="true" /></Link>)}</div></details></article>)}

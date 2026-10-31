@@ -1,3 +1,4 @@
+import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
@@ -35,6 +36,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('paid individ
     Logger.overrideLogger(['error']); app=await createApiApplication();await app.init();db=app.get(PrismaService);wallet=app.get(WalletService);billing=app.get(BillingService);gateway=app.get(BillingGatewayService);clinicId=(await db.clinic.findFirstOrThrow({where:{status:'ACTIVE'}})).id;
     doctorRole=(await db.role.findUniqueOrThrow({where:{code:'DOCTOR'}})).id;originalDoctorGrant=!!await db.clinicalRolePermission.findUnique({where:{roleId_permission:{roleId:doctorRole,permission:'CLINICAL_RECORD_SIGN'}}});await db.clinicalRolePermission.upsert({where:{roleId_permission:{roleId:doctorRole,permission:'CLINICAL_RECORD_SIGN'}},create:{roleId:doctorRole,permission:'CLINICAL_RECORD_SIGN'},update:{}});
     admin=await actor('ADMIN');doctor=await actor('DOCTOR');
+    if(!await db.consentPolicyVersion.count({where:{clinicId,policyKey:'MEDICAL_INTAKE_PROCESSING',locale:'fa-IR',status:'ACTIVE'}})) await policy('MEDICAL_INTAKE_PROCESSING');
     app.get(PaymentProviderRegistry).register(fake); const runtime=app.get(SadadRuntimeConfigService);vi.spyOn(runtime,'settings').mockReturnValue({returnUrl:'https://api.example.test/v1/payments/providers/sadad/callback',resultUrl:'https://app.example.test/profile/wallet/payment-result',redirectProfile:'PHP_VPG_PURCHASE',timeoutMs:1000});vi.spyOn(runtime,'live','get').mockReturnValue(true);
     const encrypted=app.get(PaymentCredentialCryptoService).encrypt({merchantId:'synthetic',terminalId:'123',terminalKey:Buffer.alloc(24,7).toString('base64')});
     providerConfig=await db.paymentProviderConfig.findUnique({where:{clinicId_providerCode:{clinicId,providerCode:'sadad'}},select:{id:true,enabled:true,isDefault:true,goLiveReady:true,activeRevisionId:true}});
@@ -54,7 +56,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('paid individ
     await db.patientMedicalIntakeRevision.create({data:{intakeId:intake.id,revisionNumber:1,assignedSchemaVersion:1,revisionState:complete?'COMPLETE':'DRAFT',birthDate:birthDate?new Date(birthDate):null,recordingMode:'PATIENT_ENTRY',reportedPatientId:profile.id,payloadHash:'a'.repeat(64),...(complete?{sexAtBirth:'FEMALE' as const,allergyReport:{status:'NONE',items:[]},chronicConditionReport:{status:'UNKNOWN',items:[]},currentMedicationReport:{status:'NONE',items:[]},completedAt:new Date(),completedConsentRecordId:consentId,mutationOperation:'COMPLETE',mutationKey:randomUUID()}:{})}});return {...a,profile};}
   const ctx=(a=admin)=>({actorUserId:a.userId,actorSessionId:a.sessionId,requestId:`assessment-purchase:${randomUUID()}`,ipAddress:'127.0.0.1'});
   const req=(method:'GET'|'POST'|'PUT',path:string,a=admin,payload?:object,key:string|null=randomUUID())=>app.inject({method,url:`/v1/${path}`,headers:{authorization:`Bearer ${a.token}`,origin:'http://localhost:3000',...(key?{'idempotency-key':key}:{}),...(payload?{'content-type':'application/json'}:{})},...(payload?{payload:JSON.stringify(payload)}:{})});
-  async function policy(purpose:string,locale='fa-IR'){await db.consentPolicyVersion.updateMany({where:{clinicId,policyKey:purpose,locale,status:'ACTIVE'},data:{status:'RETIRED',retiredAt:new Date()}});const last=await db.consentPolicyVersion.findFirst({where:{clinicId,policyKey:purpose,locale},orderBy:{versionNumber:'desc'}});const body='Synthetic paid assessment fixture only. Not approved clinical or legal text.';return db.consentPolicyVersion.create({data:{clinicId,policyKey:purpose,locale,versionNumber:(last?.versionNumber??0)+1,title:'Synthetic',body,contentHash:createHash('sha256').update(body).digest('hex'),status:'ACTIVE',activatedAt:new Date()}});}
+  async function policy(purpose:string,locale='fa-IR'){await db.consentPolicyVersion.updateMany({where:{clinicId,policyKey:purpose,locale,assessmentOfferingVersionId:null,status:'ACTIVE'},data:{status:'RETIRED',retiredAt:new Date()}});const last=await db.consentPolicyVersion.findFirst({where:{clinicId,policyKey:purpose,locale},orderBy:{versionNumber:'desc'}});const body='Synthetic paid assessment fixture only. Not approved clinical or legal text.';return db.consentPolicyVersion.create({data:{clinicId,policyKey:purpose,locale,versionNumber:(last?.versionNumber??0)+1,title:'Synthetic',body,contentHash:createHash('sha256').update(body).digest('hex'),status:'ACTIVE',activatedAt:new Date()}});}
   async function configured(kind:'INDIVIDUAL'|'COUPLES'='INDIVIDUAL',requiresReview=false,mezaj=false,beforeRelease?:(id:string)=>Promise<void>){
     const locale=mezaj?'fa-'+randomUUID().slice(0,6):'fa-IR';const processing=await policy('ASSESSMENT_PROCESSING',locale),terms=await policy('ASSESSMENT_PURCHASE_TERMS',locale);const structure={schemaVersion:1,sections:[{id:'one',questions:[{id:'q',type:'BOOLEAN',required:true,trueScore:1,falseScore:0}]}],resultBands:[{id:'synthetic',title:'Synthetic education only',minInclusive:0,maxExclusive:2,riskLevel:'NONE',requiresReview}]};
     // Imported synthetic historical locale keeps the repository's one-published MEZAJ family intact.
@@ -228,4 +230,45 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('paid individ
     const second=await req('POST','patients/me/billing/assessment-intents',p,body);expect(second.statusCode,second.body).toBe(201);expect((await db.patientAssessmentSubmission.findUniqueOrThrow({where:{id:oldId}}))).toMatchObject({state:'INVALIDATED',answers:{q:true},accessGrantId:first.grant.id});
     expect((await req('POST',`patients/me/assessment-access-grants/${first.grant.id}/submission`,p)).statusCode).toBe(404);expect((await req('POST',`patients/me/billing/intents/${second.json().id}/wallet-payment`,p)).statusCode).toBe(201);const grant=await db.assessmentAccessGrant.findFirstOrThrow({where:{purchaseId:second.json().assessmentPurchaseId}});const r=await req('POST',`patients/me/assessment-access-grants/${grant.id}/submission`,p);expect(r.statusCode,r.body).toBe(201);expect(r.json().id).not.toBe(oldId);expect(await db.patientAssessmentSubmission.count({where:{patientId:p.profile.id,assessmentVersionId:f.version.id}})).toBe(2);
   });
+  it.each([[1,'WALLET'],[2,'WALLET'],[1,'GATEWAY'],[2,'GATEWAY'],[1,'FAILED_GATEWAY'],[2,'FAILED_GATEWAY'],[1,'WITHDRAWN'],[2,'WITHDRAWN']] as const)('ADMIN 11+1 v%s uses real %s billing and private engine results without physician evidence', async (algorithmVersion,method)=>{
+    const base=structuredClone(MIZAJ_DRAFT_PRESET.structure), dimensions=base.scoring.dimensions;
+    const structure={...base,schemaVersion:3,scoring:{...base.scoring,algorithmId:'DIMENSION_TIEBREAK',algorithmVersion},followUps:dimensions.flatMap((a,i)=>dimensions.slice(i+1).map(b=>({id:`tie_${a.id}_${b.id}`,title:'Synthetic distinction',tiedDimensions:[a.id,b.id],options:[a,b].map(d=>({id:`o_${d.id}`,title:d.title,dimensionId:d.id}))})))};
+    const sourceResponse=await req('POST','admin/assessments',admin,{assessmentKey:`ADMIN_${randomUUID()}`,locale:'fa-IR',title:'Synthetic ADMIN paid',structure});expect(sourceResponse.statusCode,sourceResponse.body).toBe(201);const source=sourceResponse.json();
+    const released=await req('POST','admin/assessment-offerings/inline-versions',admin,{assessmentVersionId:source.id,expectedQuestionnaireHash:source.contentHash,title:source.title,kind:'INDIVIDUAL',priceMode:'PAID',amountRial:'250000',texts:{processing:'Processing synthetic',retention:'Retention synthetic',visibility:'Private synthetic',terms:'Purchase synthetic'}});
+    expect(released.statusCode,released.body).toBe(201);const publicationId=released.json().adminPublicationId;
+    const p=await patient(),other=await patient();
+    const detail=await req('GET',`patients/me/educational-assessment-offerings/${publicationId}`,p);expect(detail.statusCode,detail.body).toBe(200);expect(detail.json().accessSupported).toBe(true);
+    const d=detail.json(),records=[];
+    for(const policy of[d.processingPolicy,d.termsPolicy]){const r=await req('POST','patients/me/assessment-consents',p,{policyVersionId:policy.id,contentHash:policy.contentHash,accepted:true});expect(r.statusCode,r.body).toBe(201);records.push(r.json().id);}
+    const body={publicationId,publicationHash:d.publicationHash,processingConsentRecordId:records[0],termsConsentRecordId:records[1]};
+    expect((await req('POST','patients/me/billing/assessment-intents',p,{...body,publicationHash:'f'.repeat(64)})).statusCode).toBe(409);
+    expect((await req('POST','patients/me/billing/assessment-intents',p,{...body,termsConsentRecordId:records[0]})).statusCode).toBe(409);
+    const command=randomUUID(),requests=await Promise.all([req('POST','patients/me/billing/assessment-intents',p,body,command),req('POST','patients/me/billing/assessment-intents',p,body,command)]);
+    expect(requests.map(r=>r.statusCode),requests.map(r=>r.body).join('\n')).toEqual([201,201]);expect(requests[0].json().id).toBe(requests[1].json().id);
+    const i=requests[0].json();expect(await db.assessmentAccessGrant.count({where:{purchaseId:i.assessmentPurchaseId}})).toBe(0);
+    expect((await req('POST',`assessments/${source.id}/submissions`,p)).statusCode).toBe(409);
+    const purchase=await db.assessmentPurchase.findUniqueOrThrow({where:{id:i.assessmentPurchaseId}});expect(purchase.publicationId).toBeNull();expect(purchase.adminPublicationId).toBe(publicationId);
+    if(method==='WALLET'){await fund(p);const payKey=randomUUID();const pays=await Promise.all([req('POST',`patients/me/billing/intents/${i.id}/wallet-payment`,p,undefined,payKey),req('POST',`patients/me/billing/intents/${i.id}/wallet-payment`,p,undefined,payKey)]);expect(pays.map(r=>r.statusCode),pays.map(r=>r.body).join('\n')).toEqual([201,201]);expect((await wallet.summary(p.profile)).balanceRial).toBe('750000');}
+    else{
+      const a=await gateway.create(p.userId,i.id,randomUUID(),ctx(p));
+      if(method==='FAILED_GATEWAY'){
+        try{providerState.mode='FAILED';await gateway.verify(a.id);await gateway.verify(a.id);expect((await billing.get(p.userId,i.id)).status).toBe('PENDING');expect(await db.assessmentAccessGrant.count({where:{purchaseId:i.assessmentPurchaseId}})).toBe(0);}finally{providerState.mode='SUCCESS';}return;
+      }
+      if(method==='WITHDRAWN'){
+        expect((await req('POST',`patients/me/assessment-consents/${records[0]}/withdrawal`,p)).statusCode).toBe(201);
+        await gateway.verify(a.id);await gateway.verify(a.id);expect((await billing.get(p.userId,i.id)).status).toBe('COMPENSATED');expect(await db.assessmentAccessGrant.count({where:{purchaseId:i.assessmentPurchaseId}})).toBe(0);expect((await wallet.summary(p.profile)).balanceRial).toBe('250000');return;
+      }
+      await Promise.all([gateway.verify(a.id),gateway.verify(a.id)]);expect((await billing.get(p.userId,i.id)).status).toBe('PAID');
+    }
+    const grants=await db.assessmentAccessGrant.findMany({where:{purchaseId:i.assessmentPurchaseId}});expect(grants).toHaveLength(1);expect(grants[0]!.method).toBe(method);
+    expect((await req('POST',`patients/me/assessment-access-grants/${grants[0]!.id}/submission`,other)).statusCode).toBe(404);
+    const started=await req('POST',`patients/me/assessment-access-grants/${grants[0]!.id}/submission`,p);expect(started.statusCode,started.body).toBe(201);const id=started.json().id;
+    const answers=Object.fromEntries(structure.sections.flatMap(s=>s.questions.map(q=>[q.id,q.options[0]!.id])));
+    const saved=await req('PUT',`assessment-submissions/${id}`,p,{answers,expectedRevision:started.json().revision});expect(saved.statusCode,saved.body).toBe(200);
+    const completed=await req('POST',`assessment-submissions/${id}/submit`,p,{expectedRevision:saved.json().revision});expect(completed.statusCode,completed.body).toBe(201);expect(completed.json().resultSnapshot.algorithmVersion).toBe(algorithmVersion);
+    expect((await req('GET',`assessment-submissions/${id}/result`,p)).statusCode).toBe(200);expect((await req('GET',`assessment-submissions/${id}/result`,other)).statusCode).toBe(404);
+    const receipt=await req('GET',`patients/me/assessment-purchases/${purchase.id}`,p);expect(receipt.statusCode,receipt.body).toBe(200);expect(receipt.json().publicationId).toBe(publicationId);
+    expect(await db.assessmentProtocolReview.count({where:{assessmentVersionId:source.id}})).toBe(0);
+  });
+
 });
