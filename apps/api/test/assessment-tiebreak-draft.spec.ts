@@ -175,3 +175,51 @@ describe('11+1 publication and patient projection', () => {
     expect(() => projectTieBreakQuestionnaire(value, { ...noTie, clarify: 'choice0' })).toThrow();
   });
 });
+
+
+describe('version two secondary elimination', () => {
+  function fixture() {
+    const value = draft(); value.scoring.algorithmVersion = 2;
+    const ids = value.scoring.dimensions.map(item => item.id);
+    const last = value.sections.flatMap(section => section.questions)[10]!;
+    last.options[0]!.scores = {};
+    value.followUps = [{ id: 'firstTie', title: 'First synthetic question', tiedDimensions: ids.slice(1), options: [
+      { id: 'yes', title: 'Direct', dimensionId: ids[1]! }, { id: 'no', title: 'Continue', dimensionId: null },
+    ], steps: [{ id: 'secondTie', title: 'Second synthetic question', tiedDimensions: ids.slice(2), options: [
+      { id: 'left', title: 'Left', dimensionId: ids[2]! }, { id: 'right', title: 'Right', dimensionId: ids[3]! },
+    ] }] }];
+    return { value, ids, payload: answers(value, [0,0,0,0,1,1,2,2,3,3,0]) };
+  }
+  it('finishes immediately or asks exactly the next question while preserving counts and primary', () => {
+    const { value, ids, payload } = fixture();
+    expect(previewTieBreakDraft(value, payload).followUp?.id).toBe('firstTie');
+    expect(previewTieBreakDraft(value, { ...payload, firstTie: 'yes' })).toMatchObject({ status: 'PAIR', primary: ids[0], secondary: ids[1], algorithmVersion: 2 });
+    expect(previewTieBreakDraft(value, { ...payload, firstTie: 'no' }).followUp?.id).toBe('secondTie');
+    const complete = previewTieBreakDraft(value, { ...payload, firstTie: 'no', secondTie: 'right' });
+    expect(complete).toMatchObject({ status: 'PAIR', primary: ids[0], secondary: ids[3] });
+    expect(complete.scores).toEqual(previewTieBreakDraft(value, payload).scores);
+    expect(projectTieBreakQuestionnaire(value, { ...payload, firstTie: 'no' }).sections.flatMap(section => section.questions).map(item => item.id)).toContain('secondTie');
+    expect(() => previewTieBreakDraft(value, { ...payload, secondTie: 'left' })).toThrow();
+    expect(() => previewTieBreakDraft(value, { ...payload, firstTie: 'yes', secondTie: 'left' })).toThrow();
+  });
+  it('rejects incomplete chains, repeated question ids, and wrong remaining candidates', () => {
+    const { value } = fixture();
+    const bad = structuredClone(value); bad.followUps[0]!.steps = [];
+    expect(() => validateTieBreakDraft(bad)).toThrow();
+    value.followUps[0]!.steps![0]!.id = 'firstTie';
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
+});
+
+
+describe('four-candidate authoring path', () => {
+  it('accepts three elimination questions and rejects a nonshrinking step', () => {
+    const value = draft(); value.scoring.algorithmVersion = 2;
+    const ids = value.scoring.dimensions.map(item => item.id);
+    const nodes = ids.slice(0,-1).map((dimensionId,index) => ({ id: `step${index}`, title: 'Synthetic', tiedDimensions: ids.slice(index), options: [{ id: 'yes', title: 'Direct', dimensionId }, { id: 'no', title: 'Other', dimensionId: index === 2 ? ids[3]! : null }] }));
+    value.followUps = [{ ...nodes[0]!, steps: nodes.slice(1) }];
+    expect(validateTieBreakDraft(value)).toEqual(value);
+    value.followUps[0]!.steps![0]!.tiedDimensions = ids;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
+});

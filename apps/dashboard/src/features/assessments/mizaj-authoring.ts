@@ -51,7 +51,19 @@ export function validateMizajAuthoring(structure: Row): string[] {
       optionIds.add(text(option.id));
       if (option.dimensionId !== null && !candidates.includes(text(option.dimensionId))) issues.push('پاسخ رفع تساوی باید به یکی از همان گرایش‌ها مربوط باشد یا بدون تفکیک باشد.');
     }
-    if (candidates.some(id => !options.some(option => option.dimensionId === id))) issues.push('برای هر گرایش در ترکیب تساوی، حداقل یک پاسخ مرتبط لازم است.');
+    if (!Array.isArray(question.steps) && candidates.some(id => !options.some(option => option.dimensionId === id))) issues.push('برای هر گرایش در ترکیب تساوی، حداقل یک پاسخ مرتبط لازم است.');
+  }
+  for (const question of followUps) if (Array.isArray(question.steps)) {
+    const candidates = question.tiedDimensions as string[];
+    if (row(structure.scoring).algorithmVersion !== 2 || candidates.length < 3 || question.steps.length !== candidates.length - 2) issues.push('مسیر مرحله‌ای باید با تعداد گرایش‌ها و نسخهٔ آزمون هماهنگ باشد.');
+    let remaining = [...candidates];
+    for (const [index, step] of [question, ...rows(question.steps)].entries()) {
+      if (!text(step.title).trim() || text(step.title).length > QUESTION_TEXT_MAX_LENGTH || rows(step.options).some(option => !text(option.title).trim() || text(option.title).length > 1500)) issues.push('متن تمام سؤال‌ها و پاسخ‌های مسیر مرحله‌ای را کامل کنید.');
+      const options = rows(step.options), decisive = options.filter(option => option.dimensionId !== null);
+      if (candidateKey(Array.isArray(step.tiedDimensions) ? step.tiedDimensions as string[] : []) !== candidateKey(remaining) || options.length !== 2 || decisive.length !== (remaining.length === 2 ? 2 : 1) || decisive.some(option => !remaining.includes(text(option.dimensionId)))) issues.push('هر مرحله باید یک گرایش را تعیین کند یا به گرایش‌های باقی‌مانده برسد.');
+      if (index > 0) { if (!text(step.id) || ids.has(text(step.id))) issues.push('شناسهٔ سؤال‌های مسیر مرحله‌ای باید یکتا باشد.'); ids.add(text(step.id)); }
+      remaining = remaining.filter(id => !decisive.some(option => option.dimensionId === id));
+    }
   }
   return [...new Set(issues)];
 }

@@ -17,7 +17,7 @@ export function dimensionRecommendationPair(source: { structure: unknown; conten
   const snapshot = object(raw);
   try {
     const structure = snapshot.algorithmId === 'DIMENSION_TIEBREAK' ? validateTieBreakDraft(source.structure) : snapshot.algorithmId === 'DIMENSION_RANK' ? validateDimensionDraft(source.structure) : null;
-    if (!structure || snapshot.algorithmVersion !== 1 || snapshot.reviewState !== 'ADMIN_PUBLISHED' || snapshot.questionnaireContentHash !== source.contentHash || !/^[a-f0-9]{64}$/.test(payloadHash ?? '') || snapshot.answerPayloadHash !== payloadHash || !['PAIR', 'SINGLE'].includes(String(snapshot.status))) return null;
+    if (!structure || snapshot.algorithmVersion !== structure.scoring.algorithmVersion || snapshot.reviewState !== 'ADMIN_PUBLISHED' || snapshot.questionnaireContentHash !== source.contentHash || !/^[a-f0-9]{64}$/.test(payloadHash ?? '') || snapshot.answerPayloadHash !== payloadHash || !['PAIR', 'SINGLE'].includes(String(snapshot.status))) return null;
     const primary = snapshot.primary, secondary = snapshot.status === 'SINGLE' && snapshot.secondary === null ? primary : snapshot.secondary;
     if (!canonicalDimension(primary) || !canonicalDimension(secondary)) return null;
     const profile = structure.resultProfiles.find(item => item.primary === primary && item.secondary === snapshot.secondary);

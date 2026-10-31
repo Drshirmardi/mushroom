@@ -3,7 +3,7 @@ import { TIEBREAK_ALGORITHM, validateTieBreakPublication } from './assessment-ti
 import { validateAssessmentStructure } from './assessment-structure-validation';
 
 export const isTieBreakStructure = (value: unknown): boolean => value !== null && typeof value === 'object' && (value as { schemaVersion?: unknown }).schemaVersion === 3;
-export const assessmentAlgorithm = (value: unknown) => isTieBreakStructure(value) ? TIEBREAK_ALGORITHM : ASSESSMENT_SCORING_IDENTITY;
+export const assessmentAlgorithm = (value: unknown) => isTieBreakStructure(value) ? { ...TIEBREAK_ALGORITHM, algorithmVersion: (value as { scoring: { algorithmVersion: number } }).scoring.algorithmVersion } : ASSESSMENT_SCORING_IDENTITY;
 export function validatePublishableAssessment(value: unknown) {
   if (isTieBreakStructure(value)) validateTieBreakPublication(value);
   else validateAssessmentStructure(value, true);

@@ -88,6 +88,50 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
     expect((await req('GET', `assessment-submissions/${attempt.id}/result`, patient)).statusCode).toBe(200);
   });
 
+  it('persists version-two secondary elimination, resume and idempotent completion without changing primary or main scores', async () => {
+    const base = structuredClone(MIZAJ_DRAFT_PRESET.structure);
+    const ids = base.scoring.dimensions.map(item => item.id);
+    const questions = base.sections.flatMap(section => section.questions);
+    for (const question of questions) question.options.forEach((option, index) => { option.scores = { [ids[index]!]: 1 }; });
+    questions[10]!.options[0]!.scores = {};
+    const definition: TieBreakDraft = { ...base, schemaVersion: 3, scoring: { ...base.scoring, algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion: 2, minInformativeAnswers: 1 }, followUps: [] };
+    for (let a = 0; a < 4; a++) for (let b = a + 1; b < 4; b++) definition.followUps.push({ id: `pair${a}${b}`, title: 'Synthetic pair', tiedDimensions: [ids[a]!, ids[b]!], options: [a,b].map(index => ({ id: `pick${index}`, title: 'Synthetic', dimensionId: ids[index]! })) });
+    definition.followUps.push({ id: 'firstTie', title: 'Synthetic first', tiedDimensions: ids.slice(1), options: [{ id: 'yes', title: 'Direct', dimensionId: ids[1]! }, { id: 'no', title: 'Continue', dimensionId: null }], steps: [{ id: 'lastTie', title: 'Synthetic second', tiedDimensions: ids.slice(2), options: [{ id: 'left', title: 'Left', dimensionId: ids[2]! }, { id: 'right', title: 'Right', dimensionId: ids[3]! }] }] });
+    const created = await req('POST', 'admin/assessments', admin, { assessmentKey: `TEST_${randomUUID()}`, locale: 'fa-IR', title: 'Synthetic sequential fixture', structure: definition });
+    expect(created.statusCode).toBe(201); const sourceId = created.json().id as string;
+    expect((await req('POST', `admin/assessments/${sourceId}/publish`, admin)).statusCode).toBe(201);
+    const patient = await actor('PATIENT'); await createCompleteTestPatient(db, { data: { userId: patient.userId, clinicId } });
+    const indices = [0,0,0,0,1,1,2,2,3,3,0];
+    const main = Object.fromEntries(questions.map((question, index) => [question.id, question.options[indices[index]!]!.id]));
+    for (const direct of [true, false]) {
+      const start = await req('POST', `assessments/${sourceId}/submissions`, patient); expect(start.statusCode).toBe(201); const attempt = start.json();
+      const path = `assessment-submissions/${attempt.id}`;
+      const save = (answers: object, revision: number) => req('PUT', path, patient, { answers, expectedRevision: revision });
+      const saved = await save(main, attempt.revision); expect(saved.statusCode).toBe(200);
+      expect((await req('POST', `${path}/submit`, patient, { expectedRevision: saved.json().revision })).json().code).toBe('ASSESSMENT_FOLLOW_UP_REQUIRED');
+      const offPath = await save({ ...main, lastTie: 'right' }, saved.json().revision); expect(offPath.statusCode).toBe(422);
+      let final = await save({ ...main, firstTie: direct ? 'yes' : 'no' }, saved.json().revision); expect(final.statusCode).toBe(200);
+      if (!direct) {
+        expect((await req('GET', path, patient)).json().answers.firstTie).toBe('no');
+        const projected = (await req('GET', `${path}/questionnaire`, patient)).json().structure;
+        expect(projected).not.toHaveProperty('scoring'); expect(projected).not.toHaveProperty('followUps');
+        const visible = projected.sections.flatMap((section: { questions: { id: string; options: object[] }[] }) => section.questions);
+        expect(visible.map((q: { id: string }) => q.id).slice(-2)).toEqual(['firstTie', 'lastTie']);
+        expect(visible.at(-1).options[0]).not.toHaveProperty('dimensionId');
+        expect((await req('POST', `${path}/submit`, patient, { expectedRevision: final.json().revision })).json().code).toBe('ASSESSMENT_FOLLOW_UP_REQUIRED');
+        final = await save({ ...main, firstTie: 'no', lastTie: 'right' }, final.json().revision); expect(final.statusCode).toBe(200);
+      }
+      const key = randomUUID(), body = { expectedRevision: final.json().revision };
+      const complete = await req('POST', `${path}/submit`, patient, body, key); expect(complete.statusCode).toBe(201);
+      const snapshot = complete.json().resultSnapshot;
+      expect(snapshot).toMatchObject({ algorithmVersion: 2, status: 'PAIR', primary: ids[0], secondary: direct ? ids[1] : ids[3], scores: { [ids[0]!]: 4, [ids[1]!]: 2, [ids[2]!]: 2, [ids[3]!]: 2 } });
+      expect((await req('POST', `${path}/submit`, patient, body, key)).json()).toEqual(complete.json());
+      const persisted = await db.patientAssessmentSubmission.findUniqueOrThrow({ where: { id: attempt.id } });
+      expect(persisted.state).toBe('COMPLETE'); expect(persisted.resultSnapshot).toEqual(snapshot);
+      expect((await req('GET', `${path}/result`, patient)).json().resultSnapshot).toEqual(snapshot);
+    }
+  });
+
   it('exposes exact source with explicit missing consent/review blockers and no fabricated policy',async()=>{
     const v=await source(); const r=await preview(v.id); expect(r.statusCode).toBe(200); expect(r.json()).toMatchObject({consentPolicy:null,protocolHash:null,currentReviewNumber:0,approvalUsable:false,educationalOnly:true}); expect(r.json().blockers).toContain('ASSESSMENT_PROCESSING_CONSENT_MISSING'); expect(await usable(v.id)).toBeNull();
   });

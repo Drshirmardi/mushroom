@@ -31,6 +31,25 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('Mizaj draft 
   const body = (hash: string) => ({ expectedContentHash: hash, syntheticAnswersOnly: true, answers: answers() });
   const preview = (row: { id: string; contentHash: string }) => request('POST', `/${row.id}/scoring-preview`, body(row.contentHash));
 
+  it('persists a version-two secondary path and chooses only the permitted next question over HTTP', async () => {
+    const base = candidate(); const structure = base.structure;
+    const dimensions = structure.scoring.dimensions.map(item => item.id);
+    const questions = structure.sections.flatMap(section => section.questions);
+    for (const question of questions) question.options.forEach((option, index) => { option.scores = { [dimensions[index]!]: 1 }; });
+    questions[10]!.options[0]!.scores = {};
+    const root = { id: 'tieFirst', title: 'Synthetic first', tiedDimensions: dimensions.slice(1), options: [{ id: 'yes', title: 'Direct', dimensionId: dimensions[1]! }, { id: 'no', title: 'Next', dimensionId: null }], steps: [{ id: 'tieLast', title: 'Synthetic last', tiedDimensions: dimensions.slice(2), options: [{ id: 'left', title: 'Left', dimensionId: dimensions[2]! }, { id: 'right', title: 'Right', dimensionId: dimensions[3]! }] }] };
+    const created = await request('POST', '', { ...base, structure: { ...structure, schemaVersion: 3, scoring: { ...structure.scoring, algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion: 2, minInformativeAnswers: 1 }, followUps: [root] } });
+    expect(created.statusCode).toBe(201);
+    const saved = created.json();
+    const selection = [0,0,0,0,1,1,2,2,3,3,0];
+    const main = Object.fromEntries(questions.map((question, index) => [question.id, question.options[selection[index]!]!.id]));
+    const evaluate = (answers: object) => request('POST', `/${saved.id}/scoring-preview`, { expectedContentHash: saved.contentHash, syntheticAnswersOnly: true, answers });
+    expect((await evaluate(main)).json()).toMatchObject({ algorithmVersion: 2, status: 'FOLLOW_UP_REQUIRED', primary: dimensions[0], followUp: { id: root.id } });
+    expect((await evaluate({ ...main, tieFirst: 'no' })).json()).toMatchObject({ status: 'FOLLOW_UP_REQUIRED', followUp: { id: 'tieLast' } });
+    expect((await evaluate({ ...main, tieFirst: 'no', tieLast: 'right' })).json()).toMatchObject({ status: 'PAIR', primary: dimensions[0], secondary: dimensions[3] });
+    expect((await evaluate({ ...main, tieFirst: 'yes', tieLast: 'right' })).statusCode).toBe(422);
+  });
+
   it('serves a clone of the full unreviewed preset without saving an assessment', async () => {
     const count = await db.assessmentVersion.count(); const r = await request('GET', '/draft-presets/mizaj');
     expect(r.statusCode).toBe(200); expect(r.headers['cache-control']).toBe('no-store'); expect(r.json()).toEqual(MIZAJ_DRAFT_PRESET);

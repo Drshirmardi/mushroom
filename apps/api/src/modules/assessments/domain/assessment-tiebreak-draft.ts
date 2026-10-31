@@ -4,15 +4,15 @@ import { AssessmentStructureError } from './assessment-structure-validation';
 
 export const TIEBREAK_ALGORITHM = { algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion: 1 } as const;
 export type TieBreakQuestion = {
-  id: string; title: string; tiedDimensions: string[];
+  id: string; title: string; tiedDimensions: string[]; steps?: TieBreakQuestion[];
   options: { id: string; title: string; dimensionId: string | null }[];
 };
 export type TieBreakDraft = Omit<DimensionDraft, 'schemaVersion' | 'scoring'> & {
   schemaVersion: 3;
-  scoring: Omit<DimensionDraft['scoring'], 'algorithmId' | 'algorithmVersion'> & typeof TIEBREAK_ALGORITHM;
+  scoring: Omit<DimensionDraft['scoring'], 'algorithmId' | 'algorithmVersion'> & Omit<typeof TIEBREAK_ALGORITHM, 'algorithmVersion'> & { algorithmVersion: 1 | 2 };
   followUps: TieBreakQuestion[];
 };
-export type TieBreakPreview = Omit<DimensionPreview, 'algorithmId' | 'status'> & typeof TIEBREAK_ALGORITHM & {
+export type TieBreakPreview = Omit<DimensionPreview, 'algorithmId' | 'algorithmVersion' | 'status'> & { algorithmId: 'DIMENSION_TIEBREAK'; algorithmVersion: 1 | 2 } & {
   status: DimensionPreview['status'] | 'FOLLOW_UP_REQUIRED' | 'FOLLOW_UP_UNAVAILABLE';
   followUp: TieBreakQuestion | null; followUpUsed: boolean;
 };
@@ -35,7 +35,7 @@ export function validateTieBreakDraft(input: unknown): TieBreakDraft {
   const followUps = Array.isArray(root.followUps) ? root.followUps : invalid();
   if (Object.keys(root).length !== 8 || followUps.length > 11 || root.schemaVersion !== 3 || Buffer.byteLength(JSON.stringify(root), 'utf8') > ASSESSMENT_STRUCTURE_MAX_BYTES) invalid();
   const scoring = object(root.scoring);
-  if (scoring.algorithmId !== TIEBREAK_ALGORITHM.algorithmId || scoring.algorithmVersion !== 1) invalid();
+  if (scoring.algorithmId !== TIEBREAK_ALGORITHM.algorithmId || (scoring.algorithmVersion !== 1 && scoring.algorithmVersion !== 2)) invalid();
   const draft = input as TieBreakDraft;
   const base = validateDimensionDraft(baseDraft(draft));
   const dimensions = new Set(base.scoring.dimensions.map(dimension => dimension.id));
@@ -49,7 +49,7 @@ export function validateTieBreakDraft(input: unknown): TieBreakDraft {
   const cases = new Set<string>();
   for (const raw of followUps) {
     const question = object(raw);
-    if (Object.keys(question).length !== 4) invalid();
+    if (Object.keys(question).length !== (question.steps === undefined ? 4 : 5)) invalid();
     const key = id(question.id); if (ids.has(key)) invalid(); ids.add(key); text(question.title, QUESTION_TEXT_MAX_LENGTH);
     const tied = Array.isArray(question.tiedDimensions) ? question.tiedDimensions : invalid();
     const options = Array.isArray(question.options) ? question.options : invalid();
@@ -67,7 +67,22 @@ export function validateTieBreakDraft(input: unknown): TieBreakDraft {
         represented.add(dimensionId);
       }
     }
-    if (represented.size !== tied.length) invalid();
+    if (question.steps !== undefined) {
+      if (tied.length < 3 || scoring.algorithmVersion !== 2 || !Array.isArray(question.steps) || question.steps.length !== tied.length - 2 || options.length !== 2 || represented.size !== 1 || options.filter(raw => object(raw).dimensionId === null).length !== 1) invalid();
+      let remaining = tied.filter(value => !represented.has(String(value)));
+      for (const rawStep of question.steps as unknown[]) {
+        const step = object(rawStep);
+        if (step.steps !== undefined || !Array.isArray(step.tiedDimensions) || !sameCandidates(step.tiedDimensions as string[], remaining)) invalid();
+        const stepOptions = Array.isArray(step.options) ? step.options.map(object) : invalid();
+        const decisive = stepOptions.filter(option => option.dimensionId !== null);
+        if (stepOptions.length !== 2 || decisive.length !== (remaining.length === 2 ? 2 : 1)) invalid();
+        // Reuse all text/identifier/membership checks without requiring full coverage on an intermediate step.
+        const validationStep = { ...step, options: [...stepOptions, ...remaining.filter(value => !decisive.some(option => option.dimensionId === value)).map((dimensionId, index) => ({ id: `validation${index}${stepOptions.map(option => String(option.id)).join('').length}`, title: 'validation', dimensionId }))] };
+        validateTieBreakDraft({ ...draft, followUps: [validationStep] });
+        const stepId = id(step.id); if (ids.has(stepId)) invalid(); ids.add(stepId);
+        if (remaining.length > 2) remaining = remaining.filter(value => !decisive.some(option => option.dimensionId === value));
+      }
+    } else if (represented.size !== tied.length) invalid();
   }
   return draft;
 }
@@ -80,7 +95,7 @@ export function previewTieBreakDraft(input: unknown, rawAnswers: unknown): TieBr
   const mainIds = new Set(draft.sections.flatMap(section => section.questions.map(question => question.id)));
   const mainAnswers = Object.fromEntries(Object.entries(answers).filter(([key]) => mainIds.has(key)));
   const base = previewDimensionDraft(baseDraft(draft), mainAnswers);
-  const result: TieBreakPreview = { ...base, ...TIEBREAK_ALGORITHM, followUp: null, followUpUsed: false };
+  const result: TieBreakPreview = { ...base, ...TIEBREAK_ALGORITHM, algorithmVersion: draft.scoring.algorithmVersion, followUp: null, followUpUsed: false };
   const extras = Object.keys(answers).filter(key => !mainIds.has(key));
   if (base.status !== 'PRIMARY_TIE' && base.status !== 'SECONDARY_TIE') {
     if (extras.length) fail();
@@ -90,6 +105,24 @@ export function previewTieBreakDraft(input: unknown, rawAnswers: unknown): TieBr
   if (!question) {
     if (extras.length) fail();
     return { ...result, status: 'FOLLOW_UP_UNAVAILABLE' };
+  }
+  if (draft.scoring.algorithmVersion === 2 && base.status === 'SECONDARY_TIE' && question.steps) {
+    const path = [question, ...question.steps];
+    const allowed = new Set<string>();
+    for (const current of path) {
+      allowed.add(current.id);
+      if (!Object.prototype.hasOwnProperty.call(answers, current.id)) {
+        if (extras.some(key => !allowed.has(key))) fail();
+        return { ...result, algorithmVersion: 2, status: 'FOLLOW_UP_REQUIRED', followUp: current, followUpUsed: allowed.size > 1 } as TieBreakPreview;
+      }
+      const selected = current.options.find(option => option.id === answers[current.id]) ?? fail();
+      if (selected.dimensionId !== null) {
+        if (extras.some(key => !allowed.has(key))) fail();
+        return { ...result, algorithmVersion: 2, status: 'PAIR', secondary: selected.dimensionId, tiedDimensions: [], followUpUsed: true,
+          profile: draft.resultProfiles.find(profile => profile.primary === result.primary && profile.secondary === selected.dimensionId) ?? null } as TieBreakPreview;
+      }
+    }
+    return fail();
   }
   if (extras.some(key => key !== question.id) || extras.length > 1) fail();
   if (!Object.prototype.hasOwnProperty.call(answers, question.id)) return { ...result, status: 'FOLLOW_UP_REQUIRED', followUp: question };
@@ -145,11 +178,15 @@ export function projectTieBreakQuestionnaire(input: unknown, rawAnswers: unknown
   const mainIds = new Set(questions.map(question => question.id));
   const mainAnswers = Object.fromEntries(Object.entries(answers).filter(([id]) => mainIds.has(id)));
   const selected = Object.keys(mainAnswers).length === 11 ? previewTieBreakDraft(draft, mainAnswers).followUp : null;
+  const visible = selected ? [selected] : [];
+  if (selected?.steps && draft.scoring.algorithmVersion === 2 && previewDimensionDraft(baseDraft(draft), mainAnswers).status === 'SECONDARY_TIE') {
+    for (const next of selected.steps) { const previous = visible[visible.length - 1]!; if (!previous.options.some(option => option.id === answers[previous.id] && option.dimensionId === null)) break; visible.push(next); }
+  }
   const sections = draft.sections.map(section => ({ id: section.id, title: section.title, questions: section.questions.map(question => ({
     id: question.id, text: question.title, type: question.type, required: true, phase: 'MAIN',
     options: question.options.map(option => ({ id: option.id, label: option.title })),
   })) }));
-  if (selected) sections[sections.length - 1]!.questions.push({
+  for (const selected of visible) sections[sections.length - 1]!.questions.push({
     id: selected.id, text: selected.title, type: 'SINGLE_CHOICE', required: true, phase: 'FOLLOW_UP',
     options: selected.options.map(option => ({ id: option.id, label: option.title })),
   });

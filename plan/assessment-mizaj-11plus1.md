@@ -50,3 +50,16 @@ Local migration20261021100000 successfully deployed after loopback-only target a
 ## Owner correction — ADMIN workflow,2026-10-21
 
 Supersedes the preceding general/free11+1 physician-approval requirement: owner explicitly requires ADMIN to perform all ordinary assessment authoring, preview and publication stages. ADR0036 records the decision. Complete11main/16profile/6pair structural validation remains; physician protocol review/processing-policy reference no longer blocks publication or free patient progression. Result provenance is ADMIN_PUBLISHED, not physician-reviewed; existing published-version/hash/idempotency history remains. Existing commercial/paid/couple contracts are separate and unchanged. Readiness and11+1 settings reflect this policy. Source-only implementation; owner review and all deferred checks remain pending.
+
+
+## Secondary elimination version 2 — 2026-10-30
+
+Owner-approved MZ04 adds scoring.algorithmVersion=2 within schemaVersion3. Published v1 definitions and owned attempts are not converted. A draft is explicitly upgraded when its ADMIN creates an elimination path. Existing standalone followUps retain their behavior. Each multiway root may have an ordered `steps` array: n candidates require n-1 questions, each with two authored options. A direct dimension ends secondary selection; a null dimension removes that question's direct candidate and selects the next step. The last step has two distinct direct outcomes. Candidate sets shrink exactly; ids are unique across all main/root/step questions. Root/step text and membership limits remain enforced. This path applies only to SECONDARY_TIE and retains primary and main scores. Existing primary-tie behavior is retained. With four dimensions, a known primary leaves at most three secondary candidates; four-candidate paths are structurally supported and tested, but cannot arise as a four-way secondary tie under the current four-dimension model.
+
+Server projection exposes only visited follow-up questions plus the next allowed question. Revision-protected answers, path validation and idempotent submission remain authoritative. The simulator retains prior path answers; the patient wizard discovers the first unanswered server question rather than indexing one fixed follow-up. Editing an earlier answer removes dependent later answers.
+
+Patient and simulator charts display main-score shares in tenths of a percent, using largest-remainder rounding to exactly100%; zero dimensions remain in the legend. Zero evidence yields a message instead of a chart. Follow-up answers never alter these shares. This is response composition, not measured diagnostic confidence.
+
+Implementation and focused checks recorded in phase-12 log. PostgreSQL and complete patient-browser gates remain pending; not DONE or committed.
+
+MZ04 acceptance follow-up2026-10-30: PostgreSQL gate now PASS on disposable postgres16 Docker instance. Three focused HTTP tests prove version2 preview, persisted direct/two-step patient completion/resume/privacy/guards/replay and legacy compatibility. Prior pending PostgreSQL statement superseded. Scoped task DONE/review PASS; owner explicitly requests no commit. See phase12 MZ04 PostgreSQL acceptance.

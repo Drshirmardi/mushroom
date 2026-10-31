@@ -37443,7 +37443,7 @@
           },
           "title": {
             "type": "string",
-            "maxLength": 1000
+            "maxLength": 20000
           },
           "tiedDimensions": {
             "minItems": 2,
@@ -37490,7 +37490,8 @@
           "algorithmVersion": {
             "type": "number",
             "enum": [
-              1
+              1,
+              2
             ]
           },
           "educationalOnly": {
@@ -37555,7 +37556,7 @@
           },
           "followUp": {
             "nullable": true,
-            "description": "Only the exact server-selected tie-break question; never a second follow-up.",
+            "description": "Only the next server-selected question on the permitted path.",
             "type": "object",
             "allOf": [
               {
@@ -37565,7 +37566,7 @@
           },
           "followUpUsed": {
             "type": "boolean",
-            "description": "Whether the single allowed follow-up has already been answered."
+            "description": "Whether any permitted follow-up has been answered."
           }
         },
         "required": [

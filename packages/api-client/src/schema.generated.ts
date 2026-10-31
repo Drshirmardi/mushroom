@@ -8410,7 +8410,7 @@ export interface components {
             /** @enum {string} */
             algorithmId: "DIMENSION_RANK" | "DIMENSION_TIEBREAK";
             /** @enum {number} */
-            algorithmVersion: 1;
+            algorithmVersion: 1 | 2;
             /** @enum {boolean} */
             educationalOnly: true;
             /** @enum {string} */
@@ -8426,9 +8426,9 @@ export interface components {
             tiedDimensions: string[];
             /** @description Unreviewed educational display profile; absent for ties/insufficient evidence. */
             profile: components["schemas"]["AssessmentDraftResultProfileDto"] | null;
-            /** @description Only the exact server-selected tie-break question; never a second follow-up. */
+            /** @description Only the next server-selected question on the permitted path. */
             followUp?: components["schemas"]["AssessmentTieBreakQuestionDto"] | null;
-            /** @description Whether the single allowed follow-up has already been answered. */
+            /** @description Whether any permitted follow-up has been answered. */
             followUpUsed?: boolean;
         };
         AssessmentVersionResponseDto: {
