@@ -494,7 +494,7 @@ WEB02 footer/motion acceptance (2026-10-27): owner approved the local commit of 
 ## MZ06 — Marriage service (owner approved2026-11-01)
 
 - [x] F12-FE01-MZ06-C01 — Accepted ADR0047, marriage-service-v1 and user-flow diagram; documentation review PASS2026-11-02. Evidence: phase12 log MZ06-C01 contract and user-flow review.
-- [ ] F12-FE01-MZ06-C02 — Versioned roles/eligibility, dashboard authoring and role-aware interpretation.
+- [x] F12-FE01-MZ06-C02 — Versioned marriage roles, adult eligibility configuration and ordered interpretation authoring. Review PASS2026-11-02; evidence in phase12 MZ06-C02 accepted software.
 - [ ] F12-FE01-MZ06-C03 — Phone-bound request, account/no-account join, app flow and privacy.
 - [ ] F12-FE01-MZ06-C04 — Separate durable invitation SMS and sender controls.
 - [ ] F12-FE01-MZ06-C05 — Existing payment/access integration, migrations and full targeted acceptance.

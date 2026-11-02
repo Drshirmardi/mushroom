@@ -8196,6 +8196,7 @@ export interface components {
             text: string;
         };
         AssessmentOfferingTextsDto: {
+            marriage?: components["schemas"]["MarriageDefinitionDto"];
             pairTexts?: components["schemas"]["AssessmentCouplePairTextDto"][];
             processing: string;
             retention: string;
@@ -11387,6 +11388,21 @@ export interface components {
         EducationalCoupleResultDto: {
             results: components["schemas"]["EducationalCoupleIndividualResultDto"][];
             jointText: string | null;
+        };
+        MarriageRoleDto: {
+            /** @enum {string} */
+            id: "FIRST" | "SECOND";
+            title: string;
+            genders: ("MALE" | "FEMALE")[];
+            minimumAgeYears: number;
+        };
+        MarriageDefinitionDto: {
+            /** @enum {number} */
+            version: 1;
+            /** @enum {string} */
+            purpose: "MARRIAGE";
+            roles: components["schemas"]["MarriageRoleDto"][];
+            genericJointText: string;
         };
     };
     responses: never;

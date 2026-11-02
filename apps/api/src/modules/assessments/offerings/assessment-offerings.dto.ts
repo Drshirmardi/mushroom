@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsArray, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class OfferingPolicyDraftDto {
   @ApiPropertyOptional({ type: 'integer', minimum: 0, maximum: 120 }) @IsOptional() @IsInt() @Min(0) @Max(120) minimumAgeYears?: number;
@@ -70,8 +70,21 @@ export class AssessmentCouplePairTextDto {
   @ApiProperty({ maxLength: 100 }) @IsString() @Length(1, 100) @Matches(/^\S+$/u) secondProfileId!: string;
   @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) text!: string;
 }
+export class MarriageRoleDto {
+  @ApiProperty({ enum: ['FIRST','SECOND'] }) @IsIn(['FIRST','SECOND']) id!: 'FIRST' | 'SECOND';
+  @ApiProperty({ maxLength: 100 }) @IsString() @Length(1,100) @Matches(/\S/u) title!: string;
+  @ApiProperty({ type: [String], enum: ['MALE','FEMALE'], minItems: 1, maxItems: 2 }) @IsArray() @ArrayMinSize(1) @ArrayMaxSize(2) @ArrayUnique() @IsIn(['MALE','FEMALE'], { each: true }) genders!: ('MALE'|'FEMALE')[];
+  @ApiProperty({ minimum: 18, maximum: 120 }) @IsInt() @Min(18) @Max(120) minimumAgeYears!: number;
+}
+export class MarriageDefinitionDto {
+  @ApiProperty({ enum: [1] }) @IsIn([1]) version!: 1;
+  @ApiProperty({ enum: ['MARRIAGE'] }) @IsIn(['MARRIAGE']) purpose!: 'MARRIAGE';
+  @ApiProperty({ type: [MarriageRoleDto], minItems: 2, maxItems: 2 }) @IsArray() @ArrayMinSize(2) @ArrayMaxSize(2) @ValidateNested({ each: true }) @Type(() => MarriageRoleDto) roles!: MarriageRoleDto[];
+  @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1,20000) @Matches(/\S/u) genericJointText!: string;
+}
 export class AssessmentOfferingTextsDto {
-  @ApiPropertyOptional({ type: [AssessmentCouplePairTextDto], maxItems: 136 }) @IsOptional() @IsArray() @ArrayMaxSize(136) @ValidateNested({ each: true }) @Type(() => AssessmentCouplePairTextDto) pairTexts?: AssessmentCouplePairTextDto[];
+  @ApiPropertyOptional({ type: MarriageDefinitionDto }) @IsOptional() @IsObject() @ValidateNested() @Type(() => MarriageDefinitionDto) marriage?: MarriageDefinitionDto;
+  @ApiPropertyOptional({ type: [AssessmentCouplePairTextDto], maxItems: 256 }) @IsOptional() @IsArray() @ArrayMaxSize(256) @ValidateNested({ each: true }) @Type(() => AssessmentCouplePairTextDto) pairTexts?: AssessmentCouplePairTextDto[];
   @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) processing!: string;
   @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) retention!: string;
   @ApiProperty({ maxLength: 20000 }) @IsString() @Length(1, 20000) @Matches(/\S/u) visibility!: string;

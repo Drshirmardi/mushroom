@@ -1,3 +1,4 @@
+import { validateMarriageDefinition } from '../domain/marriage-service';
 import { createHash, randomUUID } from 'node:crypto';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
@@ -65,6 +66,7 @@ export class AssessmentOfferingsService {
     if (body.priceMode === 'PAID' && !body.texts.terms?.trim()) throw invalidField('texts.terms', 'متن شرایط خرید برای عرضهٔ پرداختی لازم است.');
     if (body.priceMode === 'FREE' && body.amountRial !== undefined) throw invalidField('amountRial', 'عرضهٔ رایگان نباید مبلغ پرداخت داشته باشد.');
     if (body.kind === 'COUPLES' && !body.texts.disclosure?.trim()) throw invalidField('texts.disclosure', 'متن رضایت اشتراک نتیجه برای عرضهٔ زوجین لازم است.');
+    if (body.texts.marriage) { validateMarriageDefinition(body.texts.marriage, body.kind); if (body.priceMode !== 'PAID') throw invalidField('priceMode', 'خدمت عمومی ازدواج از مسیر پرداخت مستقل استفاده می‌کند.'); }
     const payloadHash = createHash('sha256').update(canonical(body)).digest('hex');
     return this.prisma.$transaction(async tx => {
       const clinic = await this.clinic(tx, ctx.actorUserId);
@@ -85,7 +87,7 @@ export class AssessmentOfferingsService {
       const profiles = new Set(((source.structure as { resultProfiles?: { id: string }[] }).resultProfiles ?? []).map(profile => profile.id));
       const pairs = new Set<string>();
       for (const [index, pair] of (body.texts.pairTexts ?? []).entries()) {
-        const identity = JSON.stringify([pair.firstProfileId, pair.secondProfileId].sort());
+        const identity = JSON.stringify(body.texts.marriage ? [pair.firstProfileId, pair.secondProfileId] : [pair.firstProfileId, pair.secondProfileId].sort());
         if (body.kind !== 'COUPLES' || !profiles.has(pair.firstProfileId) || !profiles.has(pair.secondProfileId) || pairs.has(identity)) throw invalidField(`texts.pairTexts.${index}`, `ترکیب ${index + 1}: دو نتیجهٔ موجود در همین پرسشنامه را انتخاب کنید؛ هر ترکیب فقط یک متن مشترک دارد.`);
         pairs.add(identity);
       }

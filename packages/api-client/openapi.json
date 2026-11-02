@@ -37059,8 +37059,11 @@
       "AssessmentOfferingTextsDto": {
         "type": "object",
         "properties": {
+          "marriage": {
+            "$ref": "#/components/schemas/MarriageDefinitionDto"
+          },
           "pairTexts": {
-            "maxItems": 136,
+            "maxItems": 256,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AssessmentCouplePairTextDto"
@@ -48994,6 +48997,80 @@
         "required": [
           "results",
           "jointText"
+        ]
+      },
+      "MarriageRoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "FIRST",
+              "SECOND"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "genders": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "enum": [
+                "MALE",
+                "FEMALE"
+              ]
+            }
+          },
+          "minimumAgeYears": {
+            "type": "number",
+            "minimum": 18,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "genders",
+          "minimumAgeYears"
+        ]
+      },
+      "MarriageDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "MARRIAGE"
+            ]
+          },
+          "roles": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarriageRoleDto"
+            }
+          },
+          "genericJointText": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "version",
+          "purpose",
+          "roles",
+          "genericJointText"
         ]
       }
     }

@@ -6222,3 +6222,16 @@ Operational boundaries: no manual server/database operation performed. Dev rollo
 Task F12-FE01-MZ06-C01 DONE;2026-11-02, sole /root documentation review PASS. Owner explicitly requests the flow and correct task-isolated commits, superseding previous no-commit instruction; no push/deploy authorized. Accepted artifacts: ADR0047, marriage-service-v1 and marriage-service-flow.md. Review checks: two adult semantic roles, per-service gender/age predicates, independent fresh attempts, verified-phone-only acceptance with and without an existing account, independent consent, one payment/two beneficiaries, ordered specific/fallback interpretation, cancellation/replacement, explicit SMS and provider-acceptance distinction, historical compatibility and privacy are consistent with the approved plan. Mermaid nodes/edges reviewed. No runtime tests needed for this documentation-only task.
 
 C02–C05 code remains uncommitted and unchecked: existing PostgreSQL evidence is not a substitute for pending SMS, browser, populated-upgrade and final review gates. Installer/ADR0046/AGENTS/fa.json and unrelated governance hunks are excluded from the task commit. Shared plan files are staged from HEAD plus only this task's routing/evidence to preserve all unrelated worktree edits. No new implementation batch started. Next action remains completion of the active MZ06 implementation gates, not publishing or committing unfinished code.
+
+## MZ06-C02 — Accepted software
+
+Task ID: F12-FE01-MZ06-C02
+Date: 2026-11-02
+Coordinator/reviewer: Codex /root, sole writer; same owner-authorized MZ06 serialized batch.
+Status: DONE (software); scoped review PASS.
+
+Immutable offering JSON now carries two adult semantic roles, editable genders/minimum ages and required generic interpretation; marriage pair identities stay ordered while historical offers retain symmetry. Existing dashboard offering editor handles creation/readback/copy-to-new-version. Runtime interpretation remains the dependent C05 integration boundary; this serialization avoids coupling the authoring commit to request storage. No separate engine or automatic conversion.
+
+Verification: Three domain boundaries and the complete offering HTTP/PostgreSQL suite PASS within the 58-test final review; dashboard390/1440 real-browser authoring with intercepted HTTP verifies emitted roles, age21 and fallback. Dashboard types/build/scoped ESLint and generated-client checks PASS.
+
+Commit boundary: only task-owned source/tests/generated artifacts and these acceptance records. Existing installer/ADR0046/AGENTS/fa.json remain outside the index. No primary migration, extra real SMS or manual deployment. Owner explicitly authorizes task commits and origin/dev push; live invitation pattern approval and actual carrier receipt are operational acceptance, deferred by owner.
