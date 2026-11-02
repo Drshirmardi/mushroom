@@ -6248,3 +6248,16 @@ Phone-only requests work before the recipient exists; encrypted/HMAC-bound ident
 Verification: HTTP/PostgreSQL existing/future-account, no phantom account, wrong phone, minor/gender refusal, corrected profile, concurrent acceptance/replay and replacement PASS. Actual production-built app plus disposable API/PostgreSQL browser create and second-account acceptance PASS. Intercepted390/1440 UI save/reload/replace/cancel/history and entry/login return PASS. OTP persistence and ownership-proof checks PASS; source/test/app types and app build PASS. Populated migration preserves143 old tables (17 populated); final schema drift zero.
 
 Commit boundary: only task-owned source/tests/generated artifacts and these acceptance records. Existing installer/ADR0046/AGENTS/fa.json remain outside the index. No primary migration, extra real SMS or manual deployment. Owner explicitly authorizes task commits and origin/dev push; live invitation pattern approval and actual carrier receipt are operational acceptance, deferred by owner.
+
+## MZ06-C04 — Accepted software
+
+Task ID: F12-FE01-MZ06-C04
+Date: 2026-11-02
+Coordinator/reviewer: Codex /root, sole writer; same owner-authorized MZ06 serialized batch.
+Status: DONE (software); scoped review PASS.
+
+Existing Faraz adapter now supports explicit raw text or an independently configured invitation pattern, never changing OTP pattern. Durable pinned-revision queue, explicit send UI,60s/3/10/5 limits, claim leases and terminal uncertainty prevent hidden replay. Production/dev API receive PUBLIC_APP_URL. Approved invitation pattern takes variable link and may use a generic invitation text; no provider configuration was changed automatically.
+
+Verification: Actual SDK/loopback12 transport+OTP cases and4 actual PostgreSQL/SDK queue cases PASS: concurrent replay, cooldown/quota, cancel/crash recovery, revision pin, late queue claim, independent PATTERN payload and retained OTP. Compose YAML/API-origin wiring PASS. One prior authorized raw test was accepted26604507 but pending-approval/not-started with zero delivery; user explicitly defers approved pattern and carrier acceptance. This task is software-complete, not live-delivery accepted.
+
+Commit boundary: only task-owned source/tests/generated artifacts and these acceptance records. Existing installer/ADR0046/AGENTS/fa.json remain outside the index. No primary migration, extra real SMS or manual deployment. Owner explicitly authorizes task commits and origin/dev push; live invitation pattern approval and actual carrier receipt are operational acceptance, deferred by owner.

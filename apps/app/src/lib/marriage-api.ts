@@ -9,5 +9,6 @@ export const getMarriageRequest = (token: string,id: string) => data(apiClient.G
 export const listMarriageRequests = (token: string,page = 1) => data(apiClient.GET('/v1/patients/me/marriage-requests', { headers: auth(token), params: { query: { page, pageSize: 20 } } }));
 export const acceptMarriageRequest = (token: string,id: string,body: components['schemas']['MarriageRequestAcceptDto']) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/accept', { headers: auth(token), params: { path: { id } }, body }));
 export const cancelMarriageRequest = (token: string,id: string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/cancel', { headers: auth(token), params: { path: { id } } }));
+export const sendMarriageSms = (token: string,id: string,key: string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/sms', { headers: auth(token), params: { path: { id }, header: { 'Idempotency-Key': key } } }));
 
 export const replaceMarriageRequest = (token:string,id:string,body:components['schemas']['MarriageRequestCreateDto'],key:string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/replace', { headers:auth(token),params:{path:{id},header:{'Idempotency-Key':key}},body }));

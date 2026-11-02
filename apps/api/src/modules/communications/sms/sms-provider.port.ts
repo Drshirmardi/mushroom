@@ -1,4 +1,4 @@
-export type SmsCapability = 'PATTERN_SEND' | 'CONNECTION_TEST';
+export type SmsCapability = 'PATTERN_SEND' | 'TEXT_SEND' | 'CONNECTION_TEST';
 
 export type SmsFieldDescriptor = {
   key: string;
@@ -35,5 +35,11 @@ export abstract class SmsProviderPort {
     config: Record<string, string>;
     recipient: string;
     attributes: Record<string, string>;
+  }): Promise<SmsProviderResult>;
+  abstract sendText(input: {
+    credential: Record<string, string>;
+    recipient: string;
+    text: string;
+    senderLine: string;
   }): Promise<SmsProviderResult>;
 }

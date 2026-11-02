@@ -1664,6 +1664,7 @@ model SmsProviderCredentialVersion {
 }
 
 model SmsProviderConfigRevision {
+  marriageDeliveries MarriageInvitationDelivery[]
   id                  String                        @id @default(uuid()) @db.Uuid
   configId            String                        @map("config_id") @db.Uuid
   revisionNumber      Int                           @map("revision_number")
@@ -4092,6 +4093,9 @@ model MarriageServiceRequest {
   @@map("marriage_service_requests")
 }
 model MarriageInvitationDelivery {
+  startedAt DateTime? @map("started_at") @db.Timestamptz(3)
+  providerRevisionId String? @map("provider_revision_id") @db.Uuid
+  providerRevision SmsProviderConfigRevision? @relation(fields: [providerRevisionId], references: [id], onDelete: Restrict)
   id String @id @default(uuid()) @db.Uuid
   requestId String @map("request_id") @db.Uuid
   idempotencyKey String @map("idempotency_key") @db.VarChar(200)

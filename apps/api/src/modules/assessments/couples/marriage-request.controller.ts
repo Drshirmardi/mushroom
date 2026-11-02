@@ -7,12 +7,13 @@ import { CoupleLinkRateGuard } from './couple-link.controller';
 import { CoupleSessionListQueryDto } from './couple-link.dto';
 import { MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestDto, MarriageRequestPageDto, MarriageSettingsDto } from './marriage-request.dto';
 import { MarriageRequestService } from './marriage-request.service';
+import { MarriageSmsService } from './marriage-sms.service';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
 @ApiTags('Marriage Services') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @RequirePermissions(PERMISSIONS.ASSESSMENTS_READ_SELF)
 @UseGuards(CoupleLinkRateGuard) @Controller('patients/me/marriage-requests')
 export class MarriageRequestController {
-  constructor(private readonly requests: MarriageRequestService) {}
+  constructor(private readonly requests: MarriageRequestService, private readonly sms: MarriageSmsService) {}
   @Header('Cache-Control','private, no-store') @Get('settings/:id') @ApiOperation({ operationId: 'patientMarriageSettings' }) @ApiOkResponse({ type: MarriageSettingsDto })
   settings(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.settings(id,context(r)); }
   @Header('Cache-Control','private, no-store') @Get() @ApiOperation({ operationId: 'patientMarriageRequestsList' }) @ApiOkResponse({ type: MarriageRequestPageDto })
@@ -27,4 +28,6 @@ export class MarriageRequestController {
   replace(@Param('id',uuid()) id:string,@Body() body:MarriageRequestCreateDto,@Headers('idempotency-key') key:string|undefined,@Req() r:AuthenticatedRequest) { return this.requests.replace(id,body,key,context(r)); }
   @Header('Cache-Control','private, no-store') @Post(':id/cancel') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId:'patientMarriageRequestCancel' }) @ApiCreatedResponse({ type: MarriageRequestDto })
   cancel(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.cancel(id,context(r)); }
+  @Header('Cache-Control','private, no-store') @Post(':id/sms') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiHeader({ name:'Idempotency-Key',required:true }) @ApiOperation({ operationId:'patientMarriageInvitationSms' }) @ApiCreatedResponse({ type: MarriageRequestDto })
+  send(@Param('id',uuid()) id:string,@Headers('idempotency-key') key:string|undefined,@Req() r:AuthenticatedRequest) { return this.sms.enqueue(id,key,context(r)); }
 }

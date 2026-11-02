@@ -496,7 +496,7 @@ WEB02 footer/motion acceptance (2026-10-27): owner approved the local commit of 
 - [x] F12-FE01-MZ06-C01 — Accepted ADR0047, marriage-service-v1 and user-flow diagram; documentation review PASS2026-11-02. Evidence: phase12 log MZ06-C01 contract and user-flow review.
 - [x] F12-FE01-MZ06-C02 — Versioned marriage roles, adult eligibility configuration and ordered interpretation authoring. Review PASS2026-11-02; evidence in phase12 MZ06-C02 accepted software.
 - [x] F12-FE01-MZ06-C03 — Phone-bound requests, verified account/no-account acceptance, privacy and app continuation. Review PASS2026-11-02; evidence in phase12 MZ06-C03 accepted software.
-- [ ] F12-FE01-MZ06-C04 — Separate durable invitation SMS and sender controls.
+- [x] F12-FE01-MZ06-C04 — Independent durable invitation SMS, existing adapter, explicit sender controls; software complete, live pattern/receipt deferred. Review PASS2026-11-02; evidence in phase12 MZ06-C04 accepted software.
 - [ ] F12-FE01-MZ06-C05 — Existing payment/access integration, migrations and full targeted acceptance.
 
 Sole /root ownership; schema/contracts serialized. C01 accepted independently; C02–C05 remain active and uncommitted until their gates pass. Owner authorizes independent completed-task commits2026-11-02; no push/deploy. Preserve unrelated installer/user changes.

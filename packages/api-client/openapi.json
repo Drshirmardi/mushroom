@@ -28310,6 +28310,50 @@
         ]
       }
     },
+    "/v1/patients/me/marriage-requests/{id}/sms": {
+      "post": {
+        "operationId": "patientMarriageInvitationSms",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
     "/v1/patients/me/educational-assessment-offerings": {
       "get": {
         "operationId": "patientEducationalAssessmentOfferingsList",

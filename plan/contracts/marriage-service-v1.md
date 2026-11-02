@@ -9,3 +9,12 @@ Both link copy and explicit SMS send are supported. Durable invitation-specific 
 Implementation tasks serialized C01 contracts, C02 offering config/dashboard/result, C03 phone request/app/acceptance, C04 durable SMS, C05 integration/acceptance. Nothing marked DONE until its slice passes review. Owner now authorizes task-isolated staging/commits after each acceptance gate (2026-11-02); no push/deploy.
 
 User flow: [marriage-service-flow.md](marriage-service-flow.md).
+
+
+## SMS transport review — 2026-11-02
+
+Owner explicitly requests raw text using the installed farazsms1.1.0 adapter. Add TEXT_SEND/sendSimple alongside existing PATTERN_SEND, without changing OTP pattern configuration. Invitation-only non-secret settings: invitationMode=TEXT|PATTERN, invitationSenderLine for TEXT, invitationPatternCode for PATTERN. With no explicit mode, existing invitationPatternCode retains PATTERN behavior; TEXT requires an explicit configured sender line. Message content is constructed on the server from the service label and verified-origin invitation locator, never arbitrary patient text. PUBLIC_APP_URL must be an HTTP(S) origin without credentials/path/query/fragment, HTTPS in production. Missing/invalid configuration rejects enqueue while preserving link sharing.
+
+Each queued delivery pins provider revision/credential identity and records startedAt when claimed. CreatedAt is not a lease clock. Terminal statuses cannot be replayed or rewritten; a crashed SENDING attempt becomes UNKNOWN without retransmission. Adapter uses SDK helpers with abortable, HTTP-status-aware transport; empty/malformed/unacknowledged responses are UNKNOWN, explicit rejection FAILED, provider acknowledgment ACCEPTED only. No carrier delivery inference.
+
+One owner-authorized raw connection test was actually submitted using the accessible SDK-default sender line; provider reference26604507. Owner reported no arrival. Read-only provider reports show request pending-approval, item not-started, sent_count=0 and delivered_count=0. API connection/raw submission are verified; carrier delivery is NOT verified. Raw sending on this actual request requires provider approval; do not silently resend or switch lines. Approved invitation patterns remain an independent alternative. No real invitation/profile/account was fabricated for the live transport proof.
