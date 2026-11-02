@@ -71,6 +71,21 @@ export class MarriageRequestService {
     return this.prisma.$transaction(async tx => { const { patient, row } = await this.owned(tx, id, ctx); await this.audit(tx, 'MARRIAGE_REQUEST_READ', id, ctx); return this.project(tx, row, patient.id, ctx); });
   }
 
+  async review(id: string, ctx: Context) {
+    return this.prisma.$transaction(async tx => {
+      const { row, patient } = await this.owned(tx,id,ctx,true);
+      if (row.initiatorPatientId === patient.id) throw missing();
+      if (row.status !== 'PENDING') return this.project(tx,row,patient.id,ctx);
+      const source = await this.source(tx,row.publicationId,row.clinicId,true);
+      const definition = marriageDefinition(source.offeringVersion.authoringTexts)!;
+      const recipientRole = definition.roles.find(role => role.id !== row.initiatorRole)!;
+      const eligible = (await this.eligible(tx,patient.id,definition)).includes(recipientRole.id) && (await this.eligible(tx,row.initiatorPatientId,definition)).includes(row.initiatorRole);
+      const next = await tx.marriageServiceRequest.update({where:{id},data:{recipientIneligible:!eligible}});
+      await this.audit(tx,'MARRIAGE_CONDITIONS_REVIEWED',id,ctx);
+      return this.project(tx,next,patient.id,ctx);
+    });
+  }
+
   async accept(id: string, body: MarriageRequestAcceptDto, ctx: Context) {
     return this.prisma.$transaction(async tx => {
       const { row, patient } = await this.owned(tx, id, ctx, true);

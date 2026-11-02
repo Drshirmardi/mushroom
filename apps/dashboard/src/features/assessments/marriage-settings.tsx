@@ -4,7 +4,7 @@ import { TextField } from './assessment-builder';
 type Definition = components['schemas']['MarriageDefinitionDto'];
 export function MarriageSettings({ value, onChange, disabled }: { value: Definition|null; onChange: (value: Definition|null) => void; disabled: boolean }) {
   return <fieldset disabled={disabled} className="space-y-4 rounded-xl border border-border p-4"><legend className="px-2 text-sm font-semibold">شرایط خدمت ازدواج</legend>
-    <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={!!value} onChange={event => onChange(event.target.checked ? { version: 1, purpose: 'MARRIAGE', roles: [{ id: 'FIRST', title: 'آقا', genders: ['MALE'], minimumAgeYears: 18 }, { id: 'SECOND', title: 'خانم', genders: ['FEMALE'], minimumAgeYears: 18 }], genericJointText: '' } : null)} />دعوت با شماره همراه و بررسی شرایط این خدمت</label>
+    <p className="text-sm leading-7">دعوت با شماره همراه؛ خدمت شناخت پیش از ازدواج با شرایط مستقل دو نفر</p>
     {value && <><p className="text-xs leading-7 text-muted-foreground">این تنظیمات در نسخهٔ منتشرشده ثابت می‌شوند. نقش‌ها مستقل از این هستند که چه کسی دعوت می‌فرستد. هر درخواست آزمون مستقل دارد؛ افراد زیر ۱۸ سال پشتیبانی نمی‌شوند.</p>
       <div className="grid gap-4 sm:grid-cols-2">{value.roles.map((role, index) => {
         const patch = (changes: Partial<typeof role>) => onChange({ ...value, roles: value.roles.map((item, i) => i === index ? { ...item, ...changes } : item) });

@@ -1,10 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Equals, IsUUID, Matches } from 'class-validator';
+import { Equals, IsUUID, Matches, IsOptional, IsIn } from 'class-validator';
 import { BillingIntentDto } from '../../billing/billing.dto';
 import { CommercialPolicyDto, CommercialTermsDto, PublicationListQueryDto } from '../publication/assessment-publication.dto';
 import { ProtocolConsentDto } from '../protocol/assessment-protocol.dto';
 
-export class AssessmentPurchasePageQueryDto extends PublicationListQueryDto {}
+export class AssessmentPurchasePageQueryDto extends PublicationListQueryDto { @ApiPropertyOptional({ enum: ['MARRIAGE'] }) @IsOptional() @IsIn(['MARRIAGE']) servicePurpose?: 'MARRIAGE'; }
 export class AssessmentFreeAccessDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') publicationId!: string;
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') processingConsentRecordId!: string;

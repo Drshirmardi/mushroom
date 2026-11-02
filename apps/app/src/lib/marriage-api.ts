@@ -12,3 +12,5 @@ export const cancelMarriageRequest = (token: string,id: string) => data(apiClien
 export const sendMarriageSms = (token: string,id: string,key: string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/sms', { headers: auth(token), params: { path: { id }, header: { 'Idempotency-Key': key } } }));
 
 export const replaceMarriageRequest = (token:string,id:string,body:components['schemas']['MarriageRequestCreateDto'],key:string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/replace', { headers:auth(token),params:{path:{id},header:{'Idempotency-Key':key}},body }));
+
+export const reviewMarriageRequest = (token:string,id:string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/review',{headers:auth(token),params:{path:{id}}}));

@@ -49,13 +49,15 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     const created=await http(sender,'POST','',body,key); expect(created.statusCode,created.body).toBe(201); expect(await db.user.count()).toBe(before); let id=created.json().id;
     expect(created.json()).not.toHaveProperty('recipientHash'); expect(created.json()).not.toHaveProperty('recipientPatientId');
     expect((await http(sender,'POST','',body,key)).json().id).toBe(id);
+    const catalog=await app.inject({method:'GET',url:'/v1/patients/me/educational-assessment-offerings?kind=COUPLES&servicePurpose=MARRIAGE&pageSize=1',headers:{authorization:`Bearer ${sender.token}`}});expect(catalog.statusCode,catalog.body).toBe(200);expect(catalog.json().items).toHaveLength(1);expect(catalog.json().items[0].servicePurpose).toBe('MARRIAGE');
     const oldId=id,replacementKey=randomUUID();const replacement=await http(sender,'POST',`/${oldId}/replace`,body,replacementKey);expect(replacement.statusCode,replacement.body).toBe(201);id=replacement.json().id;expect(id).not.toBe(oldId);expect((await http(sender,'GET',`/${oldId}`)).json().status).toBe('REPLACED');expect((await http(sender,'POST',`/${oldId}/replace`,body,replacementKey)).json().id).toBe(id);
     const user=await db.user.create({data:{phone}});const receiver=await createTestAccessToken(db,app.get(AccessTokenService),['PATIENT'],user.id);await db.userRole.create({data:{userId:user.id,roleId:(await db.role.findUniqueOrThrow({where:{code:'PATIENT'}})).id}});await createCompleteTestPatient(db,{data:{userId:user.id,clinicId}});
     expect((await http(receiver,'GET',`/${id}`)).statusCode).toBe(404);
     await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:phone}});
     const accept={consentPolicyVersionId:policy.id,consentAccepted:true};
     await db.userProfile.update({where:{userId:user.id},data:{gender:'MALE'}});
-    const ineligible=await http(receiver,'POST',`/${id}/accept`,accept);expect(ineligible.statusCode,ineligible.body).toBe(201);expect(ineligible.json().eligibilityNotConfirmed).toBe(true);expect(ineligible.json().educationalId).toBeNull();expect(ineligible.json().ownIneligibilityReason).toBe('GENDER_NOT_ALLOWED');const privateView=(await http(sender,'GET',`/${id}`)).json();expect(privateView.ownIneligibilityReason).toBeNull();expect(privateView).not.toHaveProperty('recipientGender');
+    const ineligible=await http(receiver,'POST',`/${id}/review`);expect(ineligible.statusCode,ineligible.body).toBe(201);expect(ineligible.json().eligibilityNotConfirmed).toBe(true);expect(ineligible.json().educationalId).toBeNull();expect(ineligible.json().ownIneligibilityReason).toBe('GENDER_NOT_ALLOWED');const privateView=(await http(sender,'GET',`/${id}`)).json();expect(privateView.ownIneligibilityReason).toBeNull();expect(privateView).not.toHaveProperty('recipientGender');
+    expect((await http(sender,'POST',`/${id}/review`)).statusCode).toBe(404);expect((await http(sender,'GET',`/${id}`)).json().eligibilityNotConfirmed).toBe(true);
     await db.userProfile.update({where:{userId:user.id},data:{gender:'FEMALE'}});
     const patientId=(await db.patientProfile.findUniqueOrThrow({where:{userId:user.id}})).id;
     await db.patientEntry.update({where:{patientId},data:{birthDate:new Date('2015-01-01')}});

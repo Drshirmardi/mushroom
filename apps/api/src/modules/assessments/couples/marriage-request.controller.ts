@@ -22,6 +22,8 @@ export class MarriageRequestController {
   create(@Body() body:MarriageRequestCreateDto,@Headers('idempotency-key') key:string|undefined,@Req() r:AuthenticatedRequest) { return this.requests.create(body,key,context(r)); }
   @Header('Cache-Control','private, no-store') @Get(':id') @ApiOperation({ operationId:'patientMarriageRequestGet' }) @ApiOkResponse({ type: MarriageRequestDto })
   get(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.get(id,context(r)); }
+  @Header('Cache-Control','private, no-store') @Post(':id/review') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId:'patientMarriageRequestReview' }) @ApiCreatedResponse({ type: MarriageRequestDto })
+  review(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.review(id,context(r)); }
   @Header('Cache-Control','private, no-store') @Post(':id/accept') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId:'patientMarriageRequestAccept' }) @ApiCreatedResponse({ type: MarriageRequestDto })
   accept(@Param('id',uuid()) id:string,@Body() body:MarriageRequestAcceptDto,@Req() r:AuthenticatedRequest) { return this.requests.accept(id,body,context(r)); }
   @Header('Cache-Control','private, no-store') @Post(':id/replace') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiHeader({ name:'Idempotency-Key',required:true }) @ApiOperation({ operationId:'patientMarriageRequestReplace' }) @ApiCreatedResponse({ type: MarriageRequestDto })

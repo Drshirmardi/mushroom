@@ -500,3 +500,5 @@ WEB02 footer/motion acceptance (2026-10-27): owner approved the local commit of 
 - [x] F12-FE01-MZ06-C05 — Payment/access and role-aware shared result integrated; migrations, compatibility and targeted final acceptance complete (software). Review PASS2026-11-02; evidence in phase12 MZ06-C05 accepted software.
 
 Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner authorizes task-isolated commits and origin/dev push2026-11-02. Pattern approval/live carrier receipt are explicitly deferred operational acceptance. No primary migration, manual deployment or next batch. Preserve unrelated installer/user changes.
+
+- [x] F12-FE01-MZ07 — Service-first couples entry, telephone invitation UX, legacy links, dashboard defaults and eligibility review; software review PASS2026-11-02. Evidence: phase12 MZ07 log.

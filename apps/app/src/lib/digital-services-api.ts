@@ -3,7 +3,7 @@ import { apiClient } from "./api";
 import { patientAuthorization as auth, patientData as data } from "./patient-request";
 
 type Schema = components["schemas"];
-export const listEducationalAssessmentOfferings = (token: string, page = 1, kind: "INDIVIDUAL" | "COUPLES" = "INDIVIDUAL") => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } }));
+export const listEducationalAssessmentOfferings = (token: string, page = 1, kind: "INDIVIDUAL" | "COUPLES" = "INDIVIDUAL", servicePurpose?: "MARRIAGE") => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind, servicePurpose } } }));
 export const getEducationalAssessmentOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const claimFreeAssessmentAccess = (token: string, body: Schema["AssessmentFreeAccessDto"], key: string) => data(apiClient.POST("/v1/patients/me/educational-assessment-access", { headers: auth(token), params: { header: { 'Idempotency-Key': key } }, body }));
 export const listAssessmentOfferings = (token: string, page = 1, kind?: "INDIVIDUAL" | "COUPLES") => data(apiClient.GET("/v1/patients/me/assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } }));
