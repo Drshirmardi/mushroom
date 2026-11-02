@@ -8,8 +8,8 @@ import { QUESTION_TEXT_MAX_LENGTH, identifier, label, move, newQuestion, questio
 
 const field = "min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm disabled:opacity-60";
 
-export function TextField({ title, value, onChange, multiline = false, maxLength }: { title: string; value: unknown; onChange: (value: string) => void; multiline?: boolean; maxLength?: number }) {
-  return <label className="block min-w-0 space-y-1.5 text-xs"><span>{title}</span>{multiline ? <textarea rows={3} className={field} value={text(value)} maxLength={maxLength} onChange={event => onChange(event.target.value)} /> : <input className={field} value={text(value)} maxLength={maxLength} onChange={event => onChange(event.target.value)} />}</label>;
+export function TextField({ title, value, onChange, multiline = false, maxLength, id, error }: { id?: string; error?: string; title: string; value: unknown; onChange: (value: string) => void; multiline?: boolean; maxLength?: number }) {
+  return <label className="block min-w-0 space-y-1.5 text-xs"><span>{title}</span>{multiline ? <textarea id={id} aria-invalid={!!error} aria-describedby={error && id ? `${id}-error` : undefined} rows={3} className={field} value={text(value)} maxLength={maxLength} onChange={event => onChange(event.target.value)} /> : <input id={id} aria-invalid={!!error} aria-describedby={error && id ? `${id}-error` : undefined} className={field} value={text(value)} maxLength={maxLength} onChange={event => onChange(event.target.value)} />}{error && <span id={id ? `${id}-error` : undefined} className="block text-destructive">{error}</span>}</label>;
 }
 
 function NumericField({ title, value, onChange, optional = false, min, max, integer = false }: { title: string; value: unknown; onChange: (value: number | undefined) => void; optional?: boolean; min?: number; max?: number; integer?: boolean }) {

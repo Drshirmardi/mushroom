@@ -502,3 +502,5 @@ WEB02 footer/motion acceptance (2026-10-27): owner approved the local commit of 
 Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner authorizes task-isolated commits and origin/dev push2026-11-02. Pattern approval/live carrier receipt are explicitly deferred operational acceptance. No primary migration, manual deployment or next batch. Preserve unrelated installer/user changes.
 
 - [x] F12-FE01-MZ07 — Service-first couples entry, telephone invitation UX, legacy links, dashboard defaults and eligibility review; software review PASS2026-11-02. Evidence: phase12 MZ07 log.
+
+- [x] F12-FE01-MZ08 — Nullable age draft and actionable publication validation; save-to-offering focus, targeted12 validation/render tests/types/lint PASS2026-11-02. Evidence: phase12 MZ08.
