@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Equals, IsUUID, Matches } from 'class-validator';
 import { CoupleAssessmentQueryDto, CoupleAssessmentParticipantDto } from '../participation/couple-assessment.dto';
 import { ProtocolConsentDto } from '../../protocol/assessment-protocol.dto';
@@ -52,6 +52,8 @@ export class EducationalCouplePageDto {
   @ApiProperty() total!: number;
 }
 export class EducationalCoupleIndividualResultDto {
+  @ApiPropertyOptional({ enum: ['FIRST','SECOND'] }) roleId?: string;
+  @ApiPropertyOptional() roleTitle?: string;
   @ApiProperty({ enum: ['INITIATOR', 'PARTNER'] }) slot!: string;
   @ApiProperty() isSelf!: boolean;
   @ApiProperty({ type: 'object', additionalProperties: true }) resultSnapshot!: Record<string, unknown>;

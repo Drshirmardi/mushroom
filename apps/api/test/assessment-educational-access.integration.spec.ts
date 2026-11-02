@@ -39,14 +39,14 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
   function request(who: Awaited<ReturnType<typeof actor>>, method: 'GET' | 'POST' | 'PUT', path: string, payload?: object, key = randomUUID()) {
     return app.inject({ method, url: `/v1${path}`, headers: { authorization: `Bearer ${who.token}`, origin: 'http://localhost:3000', 'idempotency-key': key, ...(payload ? { 'content-type': 'application/json' } : {}) }, ...(payload ? { payload: JSON.stringify(payload) } : {}) });
   }
-  async function offering(algorithmVersion = 1, priceMode = 'FREE', kind = 'INDIVIDUAL', pairText = false) {
+  async function offering(algorithmVersion = 1, priceMode = 'FREE', kind = 'INDIVIDUAL', pairText = false, marriage = false) {
     const base = structuredClone(MIZAJ_DRAFT_PRESET.structure), dimensions = base.scoring.dimensions;
     const structure = { ...base, schemaVersion: 3, scoring: { ...base.scoring, algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion }, followUps: dimensions.flatMap((a, i) => dimensions.slice(i + 1).map(b => ({ id: `tie_${a.id}_${b.id}`, title: 'Synthetic distinction', tiedDimensions: [a.id, b.id], options: [a, b].map(d => ({ id: `o_${d.id}`, title: d.title, dimensionId: d.id })) }))) };
     const createdSource = await request(admin, 'POST', '/admin/assessments', { assessmentKey: `FREE_${randomUUID()}`, locale: 'fa-IR', title: 'Synthetic free Mizaj', structure });
     expect(createdSource.statusCode, createdSource.body).toBe(201);
     const source = createdSource.json();
     const profile = pairText ? previewTieBreakDraft(structure as unknown as TieBreakDraft, Object.fromEntries(structure.sections.flatMap(section => section.questions.map(q => [q.id, q.options[0]!.id])))).profile : null;
-    const created = await request(admin, 'POST', '/admin/assessment-offerings/inline-versions', { assessmentVersionId: source.id, expectedQuestionnaireHash: source.contentHash, title: source.title, kind, priceMode, ...(priceMode === 'PAID' ? { amountRial: '100000' } : {}), texts: { processing: 'پردازش', retention: 'نگهداری', visibility: 'نمایش', terms: 'خرید', disclosure: 'اشتراک مستقل', ...(profile ? { pairTexts: [{ firstProfileId: profile.id, secondProfileId: profile.id, text: 'متن مشترک اختیاری همین ترکیب' }] } : {}) } });
+    const created = await request(admin, 'POST', '/admin/assessment-offerings/inline-versions', { assessmentVersionId: source.id, expectedQuestionnaireHash: source.contentHash, title: source.title, kind, priceMode, ...(priceMode === 'PAID' ? { amountRial: '100000' } : {}), texts: { ...(marriage ? { marriage: { version:1,purpose:'MARRIAGE',roles:[{id:'FIRST',title:'Woman',genders:['FEMALE'],minimumAgeYears:18},{id:'SECOND',title:'Man',genders:['MALE'],minimumAgeYears:18}],genericJointText:'Synthetic role-aware fallback' } } : {}), processing: 'پردازش', retention: 'نگهداری', visibility: 'نمایش', terms: 'خرید', disclosure: 'اشتراک مستقل', ...(profile ? { pairTexts: [{ firstProfileId: profile.id, secondProfileId: profile.id, text: 'متن مشترک اختیاری همین ترکیب' }] } : {}) } });
     expect(created.statusCode, created.body).toBe(201);
     const policy = await db.consentPolicyVersion.findFirstOrThrow({ where: { assessmentOfferingVersionId: created.json().id, policyKey: 'ASSESSMENT_PROCESSING' } });
     return { source, structure, row: created.json(), policy };
@@ -82,6 +82,58 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     const accepted=await request(b,'POST','/patients/me/couple-invitations/accept',{...consent,invitationToken:invited.json().invitationToken});expect(accepted.statusCode,accepted.body).toBe(201);
     return {a,b,id};
   }
+  it('marriage request completes two real independent assessments with one wallet payment and role-aware fallback', async () => {
+    const algorithmVersion=2,offer=await offering(2,'PAID','COUPLES',false,true);
+    const a=await patient(),b=await patient(),stranger=await patient();
+    await db.userProfile.update({where:{userId:a.userId},data:{gender:'MALE'}});
+    const peer=await db.user.findUniqueOrThrow({where:{id:b.userId}});await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:peer.phone}});
+    const linking=await request(a,'GET','/patients/me/couple-link-policy');expect(linking.statusCode,linking.body).toBe(200);
+    const invited=await request(a,'POST','/patients/me/marriage-requests',{publicationId:offer.row.adminPublicationId,initiatorRole:'SECOND',recipientPhone:peer.phone,consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(invited.statusCode,invited.body).toBe(201);
+    const accepted=await request(b,'POST',`/patients/me/marriage-requests/${invited.json().id}/accept`,{consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(accepted.statusCode,accepted.body).toBe(201);
+    const id=accepted.json().educationalId as string,base='/patients/me/educational-couple-assessments',pair={a,b};
+    const pub=await request(a,'GET',`/patients/me/educational-assessment-offerings/${offer.row.adminPublicationId}`);expect(pub.statusCode,pub.body).toBe(200);
+    const history=await request(pair.a,'GET',base);expect(history.statusCode,history.body).toBe(200);expect(history.json().items.some((item:{id:string})=>item.id===id)).toBe(true);
+    expect((await request(stranger,'GET',`${base}/${id}`)).statusCode).toBe(404);
+    expect((await request(pair.a,'GET',`${base}/${id}/result`)).statusCode).toBe(404);
+    const detail=await request(pair.a,'GET',`${base}/${id}`);expect(detail.statusCode,detail.body).toBe(200);const d=detail.json();
+    const aConsent=await accept(pair.a,offer), bConsent=await accept(pair.b,offer);
+    const agreement=(processingConsentRecordId:string)=>({contextHash:d.contextHash,processingConsentRecordId,disclosureContentHash:d.disclosurePolicy.contentHash,disclosureAccepted:true,linkedPartnerAcknowledged:true});
+    expect((await request(pair.b,'POST',`${base}/${id}/consent`,agreement(aConsent))).statusCode).toBe(409);
+    const first=await request(pair.a,'POST',`${base}/${id}/consent`,agreement(aConsent));expect(first.statusCode,first.body).toBe(201);expect(first.json().mutualConsentComplete).toBe(false);
+    expect((await request(pair.a,'POST',`${base}/${id}/free-access`)).statusCode).toBe(409);
+    const second=await request(pair.b,'POST',`${base}/${id}/consent`,agreement(bConsent));expect(second.statusCode,second.body).toBe(201);expect(second.json().mutualConsentComplete).toBe(true);
+    let grantIds:string[];
+    {
+      expect((await request(pair.a,'POST',`${base}/${id}/free-access`)).statusCode).toBe(409);
+      const terms=pub.json().termsPolicy, acceptedTerms=await request(pair.a,'POST','/patients/me/assessment-consents',{policyVersionId:terms.id,contentHash:terms.contentHash,accepted:true});expect(acceptedTerms.statusCode,acceptedTerms.body).toBe(201);
+      const key=randomUUID(), body={contextHash:d.contextHash,termsConsentRecordId:acceptedTerms.json().id};
+      const intents=await Promise.all([request(pair.a,'POST',`${base}/${id}/billing-intents`,body,key),request(pair.a,'POST',`${base}/${id}/billing-intents`,body,key)]);expect(intents.map(r=>r.statusCode),intents.map(r=>r.body).join('\n')).toEqual([201,201]);expect(intents[0].json().id).toBe(intents[1].json().id);const intent=intents[0].json();
+      const receipt=await request(pair.a,'GET',`/patients/me/assessment-purchases/${intent.assessmentPurchaseId}`);expect(receipt.statusCode,receipt.body).toBe(200);expect(receipt.json().managementHref).toBe(`/assessment/couples/educational/${id}`);
+      expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(0);
+      const wallet=app.get(WalletService), balance=await wallet.summary(pair.a.profile);
+      await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},pair.a.profile.id,{type:'CREDIT',amountToman:'100000',expectedVersion:balance.version,reason:'Synthetic educational couple fixture'},randomUUID());
+      const payKey=randomUUID(),pays=await Promise.all([request(pair.a,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey),request(pair.a,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey)]);expect(pays.map(r=>r.statusCode),pays.map(r=>r.body).join('\n')).toEqual([201,201]);
+      expect((await wallet.summary(pair.a.profile)).balanceRial).toBe('900000');expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(2);
+      grantIds=[];for(const who of [pair.a,pair.b]){const state=await request(who,'GET',`${base}/${id}`);expect(state.statusCode,state.body).toBe(200);grantIds.push(state.json().ownAccessGrantId);}
+    }
+    const submissions=[];
+    for(const [index,who] of [pair.a,pair.b].entries()){
+      const grant=grantIds[index];
+      const started=await request(who,'POST',`/patients/me/assessment-access-grants/${grant}/submission`);expect(started.statusCode,started.body).toBe(201);const sid=started.json().id;
+      const answers=Object.fromEntries(offer.structure.sections.flatMap(s=>s.questions.map(q=>[q.id,q.options[0]!.id])));
+      const saved=await request(who,'PUT',`/assessment-submissions/${sid}`,{answers,expectedRevision:started.json().revision});expect(saved.statusCode,saved.body).toBe(200);
+      const completed=await request(who,'POST',`/assessment-submissions/${sid}/submit`,{expectedRevision:saved.json().revision});expect(completed.statusCode,completed.body).toBe(201);submissions.push(sid);
+      if(index===0)expect((await request(who,'GET',`${base}/${id}/result`)).statusCode).toBe(404);
+    }
+    const joint=await request(pair.a,'GET',`${base}/${id}/result`);expect(joint.statusCode,joint.body).toBe(200);expect(joint.json().results).toHaveLength(2);expect(joint.json().jointText).toBe('Synthetic role-aware fallback');
+    for(const result of joint.json().results){expect(result.resultSnapshot.algorithmVersion).toBe(algorithmVersion);expect(result.resultSnapshot.scores).toBeTruthy();expect(result.resultSnapshot.answers).toBeUndefined();}
+    for(const privateValue of [pair.a.profile.id,pair.b.profile.id,'compatibilityScore','answerPayloadHash']) expect(joint.body).not.toContain(privateValue);
+
+    expect(joint.json().results.map((result:{roleId:string;isSelf:boolean})=>[result.roleId,result.isSelf])).toEqual([['FIRST',false],['SECOND',true]]);
+    const withdrawal=await request(pair.a,'POST',`${base}/${id}/sharing-withdrawal`);expect(withdrawal.statusCode,withdrawal.body).toBe(201);
+    expect((await request(pair.b,'GET',`${base}/${id}/result`)).statusCode).toBe(404);
+  }, 30000);
+
   it.each([[1,'PAID'],[2,'PAID']] as [number,string][])('couple v%s %s retains two real charts and independent disclosure without a complete text matrix',async (algorithmVersion,priceMode)=>{
     const offer=await offering(algorithmVersion,priceMode,'COUPLES',algorithmVersion===2),pair=await linkedPair(),stranger=await patient();
     const pub=await request(pair.a,'GET',`/patients/me/educational-assessment-offerings/${offer.row.adminPublicationId}`);expect(pub.statusCode,pub.body).toBe(200);

@@ -497,6 +497,6 @@ WEB02 footer/motion acceptance (2026-10-27): owner approved the local commit of 
 - [x] F12-FE01-MZ06-C02 — Versioned marriage roles, adult eligibility configuration and ordered interpretation authoring. Review PASS2026-11-02; evidence in phase12 MZ06-C02 accepted software.
 - [x] F12-FE01-MZ06-C03 — Phone-bound requests, verified account/no-account acceptance, privacy and app continuation. Review PASS2026-11-02; evidence in phase12 MZ06-C03 accepted software.
 - [x] F12-FE01-MZ06-C04 — Independent durable invitation SMS, existing adapter, explicit sender controls; software complete, live pattern/receipt deferred. Review PASS2026-11-02; evidence in phase12 MZ06-C04 accepted software.
-- [ ] F12-FE01-MZ06-C05 — Existing payment/access integration, migrations and full targeted acceptance.
+- [x] F12-FE01-MZ06-C05 — Payment/access and role-aware shared result integrated; migrations, compatibility and targeted final acceptance complete (software). Review PASS2026-11-02; evidence in phase12 MZ06-C05 accepted software.
 
-Sole /root ownership; schema/contracts serialized. C01 accepted independently; C02–C05 remain active and uncommitted until their gates pass. Owner authorizes independent completed-task commits2026-11-02; no push/deploy. Preserve unrelated installer/user changes.
+Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner authorizes task-isolated commits and origin/dev push2026-11-02. Pattern approval/live carrier receipt are explicitly deferred operational acceptance. No primary migration, manual deployment or next batch. Preserve unrelated installer/user changes.

@@ -49596,6 +49596,16 @@
       "EducationalCoupleIndividualResultDto": {
         "type": "object",
         "properties": {
+          "roleId": {
+            "type": "string",
+            "enum": [
+              "FIRST",
+              "SECOND"
+            ]
+          },
+          "roleTitle": {
+            "type": "string"
+          },
           "slot": {
             "type": "string",
             "enum": [

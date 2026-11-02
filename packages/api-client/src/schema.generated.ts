@@ -11564,6 +11564,9 @@ export interface components {
         };
         EducationalCoupleIndividualResultDto: {
             /** @enum {string} */
+            roleId?: "FIRST" | "SECOND";
+            roleTitle?: string;
+            /** @enum {string} */
             slot: "INITIATOR" | "PARTNER";
             isSelf: boolean;
             resultSnapshot: {

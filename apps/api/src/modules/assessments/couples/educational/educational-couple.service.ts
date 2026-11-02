@@ -139,6 +139,18 @@ export class EducationalCoupleService {
       const pair = profiles.every(Boolean) ? texts.find(t => JSON.stringify([t.firstProfileId,t.secondProfileId].sort()) === JSON.stringify([...profiles].sort())) : null;
       await this.clinicalAudit.recordMany(row.participants.map(p => ({ clinicId: row.clinicId, patientId: p.patientId, action: 'READ' as const, resourceType: 'EDUCATIONAL_COUPLE_RESULT', resourceId: row.id, resourceRevisionId: p.accessGrant!.submission!.id, metadata: {} })), ctx, tx);
       await this.audit(tx, 'COUPLE_JOINT_RESULT_READ', id, ctx);
+      const definition = marriageDefinition(row.publication.offeringVersion.authoringTexts);
+      if (definition) {
+        const request = await tx.marriageServiceRequest.findUnique({ where: { educationalId: row.id } });
+        if (!request || request.status !== 'ACCEPTED') throw missing();
+        const firstPatient = request.initiatorRole === 'FIRST' ? request.initiatorPatientId : request.recipientPatientId;
+        const roleOf = (index: number) => row.participants[index]!.patientId === firstPatient ? 'FIRST' : 'SECOND';
+        const ordered = projected.map((result, index) => ({ ...result, roleId: roleOf(index), roleTitle: definition.roles.find(role => role.id === roleOf(index))!.title })).sort((a,b) => a.roleId.localeCompare(b.roleId));
+        const profileIds = ordered.map(result => (result.resultSnapshot.profile as { id?: string }|null)?.id);
+        const specific = profileIds.every(Boolean) ? texts.find(text => text.firstProfileId === profileIds[0] && text.secondProfileId === profileIds[1]) : null;
+        const resolved = ordered.every(result => ['PAIR','SINGLE'].includes(String(result.resultSnapshot.status)) || !!result.resultSnapshot.resultBand && !result.resultSnapshot.status);
+        return { results: ordered, jointText: resolved ? specific?.text ?? definition.genericJointText : null };
+      }
       return { results: projected, jointText: pair?.text ?? null };
     });
   }
