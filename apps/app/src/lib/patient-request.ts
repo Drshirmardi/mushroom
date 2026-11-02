@@ -1,7 +1,7 @@
 import { withRequestTimeout } from "@sabz-zendegi/api-client";
 
 export class PatientRequestError extends Error {
-  constructor(public readonly status: number, public readonly code: string | null) {
+  constructor(public readonly status: number, public readonly code: string | null, public readonly retryAfterMs = 0) {
     super(code ?? "PATIENT_REQUEST_FAILED");
   }
 }
@@ -11,7 +11,7 @@ export async function patientData<T>(request: Promise<{ data?: T; error?: unknow
     const { data, error, response } = await withRequestTimeout(request);
     if (response.ok && data !== undefined) return data;
     const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
-    throw new PatientRequestError(response.status, code);
+    throw new PatientRequestError(response.status, code, retryAfterMs(response.headers.get("Retry-After")));
   } catch (error) {
     if (error instanceof PatientRequestError) throw error;
     throw new PatientRequestError(0, null);
@@ -25,7 +25,7 @@ export async function patientEmpty(request: Promise<{ error?: unknown; response:
     const { response, error } = await withRequestTimeout(request);
     if (response.ok) return;
     const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
-    throw new PatientRequestError(response.status, code);
+    throw new PatientRequestError(response.status, code, retryAfterMs(response.headers.get("Retry-After")));
   } catch (error) {
     if (error instanceof PatientRequestError) throw error;
     throw new PatientRequestError(0, null);
@@ -43,4 +43,12 @@ export function patientErrorMessage(error: unknown): string {
   if (status === 429) return "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کنید.";
   if (status === 400 || status === 422) return "اطلاعات و شرایط لازم را بررسی کنید؛ این درخواست در وضعیت فعلی قابل انجام نیست.";
   return "درخواست انجام نشد؛ دوباره تلاش کنید.";
+}
+
+export function retryAfterMs(value: string | null, now = Date.now()): number {
+  if (!value) return 0;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(value);
+  return Number.isFinite(date) ? Math.max(0, date - now) : 0;
 }

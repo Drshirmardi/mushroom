@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HeartHandshake } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
@@ -10,6 +10,7 @@ import { PatientPagination } from '@/components/shared/patient-pagination';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { patientErrorMessage } from '@/lib/patient-request';
 import { listEducationalAssessmentOfferings } from '@/lib/digital-services-api';
+import { marriageRequestLoader } from '@/lib/marriage-request-loader';
 import { marriageLoginUrl } from '@/lib/api';
 import { formatRial } from '@/lib/wallet-money';
 import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
@@ -35,13 +36,23 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
 
 export function MarriageRequestView({ id }: { id: string }) {
   const { authentication,logout } = useAuthSession(); const token = authentication.accessToken;
-  const resource = usePatientResource(useCallback(() => getMarriageRequest(token,id),[token,id]));
+  const scope = `${id}:${authentication.user.id}`;
+  const loader = useMemo(() => {
+    const requestId = scope.split(':')[0];
+    return marriageRequestLoader(token => getMarriageRequest(token!,requestId), token => reviewMarriageRequest(token!,requestId));
+  }, [scope]);
+  const resource = usePatientResource(useCallback(() => loader.load(token),[loader,token]));
+  const refresh = resource.refresh;
   const [accepted,setAccepted] = useState(false), [busy,setBusy] = useState(false), [error,setError] = useState(''), [notice,setNotice] = useState('');
   const lock = useRef(false), smsKey = useRef<string|null>(null), data = resource.data;
-  useEffect(() => { const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void resource.reload(); },15000); return () => clearInterval(timer); },[resource.reload]);
-  useEffect(() => { if (data && !data.isInitiator && data.status === 'PENDING') void reviewMarriageRequest(token,id).then(() => resource.reload()).catch(() => setError('بررسی شرایط انجام نشد؛ صفحه را دوباره دریافت کنید.')); }, [token,id,data?.isInitiator,data?.status,resource.reload]);
-  const run = async (action: () => Promise<unknown>) => { if (lock.current) return; lock.current = true; setBusy(true); setError(''); try { await action(); await resource.reload(); } catch (cause) { setError(patientErrorMessage(cause)); } finally { lock.current = false; setBusy(false); } };
-  return <ServicePage title={data?.service.title ?? 'دعوت خدمت ازدواج'} description="دعوت فقط با حساب و شماره تأییدشده خودت قابل پذیرش است." icon={HeartHandshake} backHref="/assessment/marriage" backLabel="درخواست‌های من"><div className="service-detail space-y-4"><PatientResourceState {...resource} retry={() => void resource.reload()} />{resource.error && <div className="space-y-3"><p className="text-sm leading-7">با همان شماره‌ای که دعوت برایش ساخته شده، با کد پیامکی وارد شو. بازکردن لینک به‌تنهایی اجازهٔ پذیرش نمی‌دهد.</p><button className={secondary} onClick={() => void (async () => { if (await logout()) window.location.assign(marriageLoginUrl()); })()}>ورود دوباره با شماره دعوت‌شده</button></div>}{data && <>
+  useEffect(() => {
+    if (data?.status !== 'PENDING') return;
+    const timer = window.setInterval(() => { if (!lock.current && document.visibilityState === 'visible' && navigator.onLine) void refresh(); },30000);
+    return () => window.clearInterval(timer);
+  },[data?.status,refresh]);
+  const retry = () => { loader.reviewAgain(); void resource.refresh(); };
+  const run = async (action: () => Promise<unknown>) => { if (lock.current) return; lock.current = true; setBusy(true); setError(''); try { if (loader.pending) await loader.pending.catch(() => null); await action(); loader.mutationSucceeded(); await resource.refresh(); } catch (cause) { setError(patientErrorMessage(cause)); } finally { lock.current = false; setBusy(false); } };
+  return <ServicePage title={data?.service.title ?? 'دعوت خدمت ازدواج'} description="دعوت فقط با حساب و شماره تأییدشده خودت قابل پذیرش است." icon={HeartHandshake} backHref="/assessment/marriage" backLabel="درخواست‌های من"><div className="service-detail space-y-4"><PatientResourceState {...resource} retry={retry} />{resource.error && !data && <div className="space-y-3"><p className="text-sm leading-7">با همان شماره‌ای که دعوت برایش ساخته شده، با کد پیامکی وارد شو. بازکردن لینک به‌تنهایی اجازهٔ پذیرش نمی‌دهد.</p><button className={secondary} onClick={() => void (async () => { if (await logout()) window.location.assign(marriageLoginUrl()); })()}>ورود دوباره با شماره دعوت‌شده</button></div>}{data && <>
     <section className="service-card space-y-3"><h2>{statuses[data.status]}</h2>{!data.isInitiator && data.initiatorName && <p>دعوت‌کننده: {data.initiatorName}</p>}<p>نقش شما: {data.service.definition.roles.find(role => role.id === data.ownRole)?.title}</p>{data.service.definition.roles.map(role => <p key={role.id} className="text-sm leading-7">{role.title}: حداقل {role.minimumAgeYears.toLocaleString('fa-IR')} سال؛ {role.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}</p>)}<p>{formatRial(BigInt(data.service.amountRial))} تومان برای هر دو نفر</p></section>
     {data.eligibilityNotConfirmed && <p role="status" className="service-card">شرایط شرکت در این خدمت هنوز تأیید نشده است.</p>}
     {!data.ownEligible && <div className="service-card space-y-3"><p>{ineligibility[data.ownIneligibilityReason ?? ''] ?? 'اطلاعات خودت را تکمیل کن یا شرایط نقش خودت را بررسی کن.'}</p><Link href={`/profile/edit?returnTo=${encodeURIComponent(data.invitationPath)}`} className={secondary}>مشخصات من</Link></div>}

@@ -504,3 +504,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ07 — Service-first couples entry, telephone invitation UX, legacy links, dashboard defaults and eligibility review; software review PASS2026-11-02. Evidence: phase12 MZ07 log.
 
 - [x] F12-FE01-MZ08 — Nullable age draft and actionable publication validation; save-to-offering focus, targeted12 validation/render tests/types/lint PASS2026-11-02. Evidence: phase12 MZ08.
+
+- [x] F12-FE01-MZ09 — Bounded invitation review/polling and recoverable read errors; 10 targeted tests, app types/scoped lint and intercepted browser lifecycle PASS2026-11-03. Evidence: phase12 MZ09.

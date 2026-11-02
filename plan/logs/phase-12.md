@@ -6320,3 +6320,20 @@ Verification: one expanded actual HTTP/PostgreSQL phone-request integration PASS
 Changed dashboard MarriageSettings, InlineOfferingForm, optional TextField error metadata, assessment save/configure focus, plus offering-validation helper and tests. New UI-only MarriageDraft uses number|null ages; NaN becomes null, renders empty, never defaults to0/18. Shared validation drives issue summary, inline accessible field errors, disabled publication and submit guard; numeric payload conversion rejects incomplete roles. Individual offerings ignore marriage fields. Title/price/required texts/role constraints/pair texts and unsaved questionnaire all yield explicit reasons. Save label clarifies questionnaire-only persistence; focus/scroll waits for dynamically loaded offering heading. Existing same-version component identity preserves entered offering state.
 
 Checks:12 targeted Vitest cases PASS (clear/re-enter, invalid/fractional/out-of-range age, required fields, max price, pair text, individual compatibility, actual React field render without console errors and actual form button enabled/disabled); dashboard TypeScript and scoped ESLint PASS. Graphify and staged diff review PASS. Same-version preservation and deferred focus reviewed in source; no live browser publication or full-suite run claimed. No API/schema/migration/DB changes. Unrelated installer/ADR0046/AGENTS/fa.json and existing governance hunks excluded. One task commit and origin/dev push authorized; next action: owner checks deployed dashboard form.
+
+## F12-FE01-MZ09 — Invitation refresh loop — 2026-11-03
+
+Task: F12-FE01-MZ09; sole coordinator/reviewer Codex /root; single-task batch review PASS, claim RELEASED.
+
+Implementation: one single-flight loader per user/request, initial recipient review only once; explicit retry permits re-review; quiet refresh retains prior private data while surfacing recoverable errors. Pending-only visible/online polling every30s, paused during commands, stopped at terminal state. GET/review cooldown honors Retry-After with60s minimum on429 and30s network cooldown. Commands wait for in-flight reads; successful mutation clears read cooldown before refreshing its outcome. No backend limit raised, no DB/API contract/migration.
+
+Changed paths: marriage-service.tsx, use-patient-resource.ts, patient-request.ts, marriage-request-loader.ts and its spec, e2e/marriage-request-polling.browser.js.
+
+Verification:
+- app Vitest marriage-request-loader.spec.ts:10 PASS (deduplication, one review, initiator/terminal exclusions, numeric/date Retry-After, cooldown, explicit review retry, mutation recovery).
+- app tsc --noEmit:PASS; changed source/spec ESLint using existing dashboard toolchain from app cwd:PASS.
+- Playwright CLI against local Next3017 with intercepted APIs and controlled time:PASS; checkbox retained through polling and429, no review loop, bounded reads, cooldown honored, acceptance displayed, terminal polling stopped. Test exposed mutation/read cooldown interaction, fixed and browser rerun PASS. No live recipient action/SMS/payment or PostgreSQL exercise in this frontend-only task.
+- Expected deliberate429 browser resource error and development unused-font warning observed; no pageerror. This is scoped functional proof, not a complete UX-audit verdict.
+- Graphify AST refresh completed (existing missing SQL/Erlang/HCL parsers and template warnings); no full test suite run.
+
+Next: MZ10 invitation-scoped entry and server access boundary; then MZ11 responsive journey. Neither task implemented in this commit. Unrelated installer/AGENTS/web changes preserved.

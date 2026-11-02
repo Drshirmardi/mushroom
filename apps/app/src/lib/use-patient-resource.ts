@@ -18,7 +18,7 @@ export function usePatientResource<T>(load: () => Promise<T>) {
       if (request === generation.current) setSnapshot({ load, data, error: null, loading: false });
       return request === generation.current ? data : null;
     } catch (error) {
-      if (request === generation.current && !quiet) setSnapshot({ load, data: null, error: patientErrorMessage(error), loading: false });
+      if (request === generation.current) setSnapshot(previous => ({ load, data: quiet && previous?.load === load ? previous.data : null, error: patientErrorMessage(error), loading: false }));
       return null;
     } finally {
       if (request === generation.current) refreshing.current = false;
