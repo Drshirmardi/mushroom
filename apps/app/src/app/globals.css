@@ -1429,12 +1429,12 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
 .entry-start > .entry-primary, .entry-unavailable > .entry-primary { margin-top: 24px; }
 .entry-quiz-heading { margin-bottom: 24px; }
 .entry-quiz-heading h1 { font-size: clamp(22px, 4vw, 30px); }
-.entry-card--quiz { max-width: 760px; margin-inline: auto; }
-.entry-card--quiz > div > .px-4 { padding-inline: 0; }
-.entry-card--quiz fieldset button { min-height: 52px; background-color: #fafcfb; border-color: var(--entry-line); line-height: 26px; overflow-wrap: anywhere; }
-.entry-card--quiz fieldset button[aria-pressed="true"] { border-color: var(--entry-action); background-color: #e6f2ec; box-shadow: inset -3px 0 0 var(--entry-action); }
-.entry-card--quiz .rounded-3xl { padding: 16px; border-radius: 16px; background: #f8fbf9; }
-.entry-card--quiz :is(input, textarea) { font-size: 16px; }
+.entry-card--quiz { max-width: 760px; margin-inline: auto; min-width: 0; }
+.entry-screen--quiz .entry-container { max-width: 760px; }
+.entry-screen--quiz .entry-header { margin-bottom: 16px; }
+.entry-screen--quiz .entry-quiz-heading { margin-bottom: 8px; }
+.entry-screen--quiz .entry-quiz-heading h1 { font-size: clamp(18px, 4vw, 24px); }
+.entry-card--quiz > div > div { padding-inline: 0; }
 .entry-result { display: grid; gap: 22px; max-width: 620px; margin-inline: auto; }
 .entry-result-heading { text-align: center; }
 .entry-result-heading .entry-eyebrow { justify-content: center; }

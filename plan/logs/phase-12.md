@@ -6360,3 +6360,23 @@ Verification:
 Changed areas: API entry/requests/contracts; patient app entry/navigation/payment/assessment context; web invitation login; generated SDK; scoped tests and this evidence. No dashboard, schema, pricing, scoring or OTP transport changes.
 
 Next eligible task: F12-FE01-MZ11 responsive assessment presentation and adjacent UI refinement. Not implemented by this commit. Commit/push to dev authorized by owner plan; no manual deployment.
+
+
+## F12-FE01-MZ11 — Responsive assessment journey
+
+Date: 2026-11-03. Owner/reviewer: sole `/root`. Depends on accepted MZ09/MZ10. Review gate PASS; claim RELEASED. Scope is the approved assessment journey, not certification of the whole app.
+
+- Removed welcome stepper only during answering and the outer questionnaire card; one fluid reading surface retains question count/progress. Independent alphabet-labelled cards use pressed state, checkmark, touch targets and visible focus. Long questions/options scroll naturally; actions remain in normal flow.
+- Each account/attempt remounts private questionnaire state. Question changes focus the heading; a synchronous operation lock prevents double writes. Adaptive follow-ups say save/continue until server resolution; scoring/path selection remains server-owned. Back, downstream clearing, explicit reload/conflict recovery and save/resume retain existing semantics.
+- Long consent is full natural-flow text with explicit independent checkbox; missing-profile invitation has a primary completion action and no premature acceptance block. Generic result chart is present in welcome; long legend labels wrap and zero dimensions remain visible. Prefix offsets are pure; percentages unchanged.
+
+Verification (targeted only):
+
+- `pnpm --dir apps/app exec tsc --noEmit` PASS. Scoped ESLint of the five changed TSX files PASS with zero errors/warnings. `pnpm --dir apps/app run build` PASS.
+- `pnpm --dir apps/app exec vitest run src/components/assessments/mizaj-chart.spec.ts`: 2 PASS, percentage rounding and zero input.
+- `PATIENT_APP_TEST_URL=http://127.0.0.1:3017 AXE_SOURCE=<local axe4.14 bundle> node apps/app/e2e/assessment-ux.browser.mjs`: all four scenarios PASS. Questionnaire/consent widths320,375,414,768,1024,1280,1440; result375/1440; no horizontal overflow. Five input types, required error, back/retained selection, duplicate-click one write/final submission, saved reload/exit and result verified. Consent review remained one request; checkbox gates acceptance. Zero scores render no chart. Keyboard focus/200% text at320 PASS. Console/page errors zero; axe Critical/Serious zero on scoped pages.
+- `PATIENT_APP_TEST_URL=http://127.0.0.1:3017 node apps/app/e2e/mizaj-sequential.browser.mjs`: PASS320/390/1440, actual server domain projection/validation helpers behind intercepted HTTP; sequential and direct follow-up, primary preservation, back/reload, downstream clearing, one final submit. Continuation browser selector follows the clearer profile CTA.
+- Visual inspection: local screenshots `.local/mz11-quiz-375.png`, `mz11-quiz-1440.png`, `mz11-result-375.png`; responsive result and long labels legible. `.local/mz11-browser-final.log` records all four PASS summaries. These are isolated local intercepted-HTTP browser fixtures, not live-account/carrier/bank acceptance. No new DB boundary: MZ10 PostgreSQL evidence remains the access/payment gate.
+- Graphify AST update completed with existing missing SQL/Erlang/HCL parser and extraction/community-label warnings; no paid LLM relabel requested. Diff review preserves unrelated installer/AGENTS/fa changes. No schema/API/pricing/score changes; no real SMS/payment or manual deployment.
+
+Accepted task-level commit/push to `dev` authorized by user. MZ09-MZ11 requested software scope complete; broader F12-FE01 remains REWORK. No next batch selected.

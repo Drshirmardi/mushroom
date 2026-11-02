@@ -30,9 +30,9 @@ try {for(const width of [320,390,1440]) {
  if(path==='/v1/assessment-submissions/'+id || path.endsWith('/result'))return send(submission);
  if(path.endsWith('/guidance'))return send({status:'UNAVAILABLE',content:[],services:[]});
  return send({items:[],total:0,unreadCount:0});});
- const url='http://localhost:3001/assessment/resume?submissionId='+id;
+ const url=(process.env.PATIENT_APP_TEST_URL || 'http://localhost:3001')+'/assessment/resume?submissionId='+id;
  await page.goto(url);await page.getByText('سؤال اول آزمایشی',{exact:true}).waitFor();
- await page.getByRole('button',{name:/ادامه به سؤال دوم/}).click();await page.getByRole('button',{name:'ثبت نهایی و مشاهده نتیجه',exact:true}).click();
+ await page.getByRole('button',{name:/ادامه به سؤال دوم/}).click();await page.getByRole('button',{name:'ذخیره و ادامه',exact:true}).click();
  await page.getByText('سؤال دوم آزمایشی',{exact:true}).waitFor();assert.equal(submitted,0);
  await page.reload();await page.getByText('سؤال دوم آزمایشی',{exact:true}).waitFor();
  await page.getByRole('button',{name:'بازگشت',exact:true}).click();await page.getByText('سؤال اول آزمایشی',{exact:true}).waitFor();
