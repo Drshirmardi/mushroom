@@ -1,3 +1,4 @@
+import { MarriageEntryAccess } from './marriage-entry-access';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { PatientEntryService } from './patient-entry.service';
@@ -17,7 +18,7 @@ export function entryRequestAllowed(method: string, path: string, submissionId: 
 }
 @Injectable()
 export class PatientEntryGuard implements CanActivate {
-  constructor(private readonly entry: PatientEntryService) {}
+  constructor(private readonly entry: PatientEntryService, private readonly marriage: MarriageEntryAccess) {}
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Partial<AuthenticatedRequest>>();
     const auth = request.auth;
@@ -29,6 +30,7 @@ export class PatientEntryGuard implements CanActivate {
     const querySubmission = new URL(request.url ?? '/', 'http://internal').searchParams.get('submissionId');
     if (method === 'GET' && status.phase === 'RESULT' && status.submissionId && querySubmission?.toLowerCase() === status.submissionId.toLowerCase() && ['/v1/patients/me/program-recommendations', '/v1/patients/me/commerce/recommendations'].includes(path)) return true;
     if (!status.required || entryRequestAllowed(method, path, status.submissionId)) return true;
+    if (await this.marriage.allows(request, path, method)) return true;
     throw new ForbiddenException({ code: 'PATIENT_ENTRY_REQUIRED', message: 'Complete initial entry before continuing.', details: {} });
   }
 }

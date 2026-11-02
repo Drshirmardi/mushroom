@@ -22,7 +22,12 @@ export class MarriageSettingsDto {
   @ApiProperty({ type: [String] }) eligibleRoles!: string[];
   @ApiProperty({ type: CoupleLinkPolicyDto }) linkingPolicy!: CoupleLinkPolicyDto;
 }
+export class MarriageContinuationDto {
+  @ApiProperty() profileRequired!: boolean;
+  @ApiProperty() nextPath!: string;
+}
 export class MarriageRequestDto {
+  @ApiProperty({ type: MarriageContinuationDto }) continuation!: MarriageContinuationDto;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: ['PENDING','ACCEPTED','CANCELLED','REPLACED'] }) status!: string;
   @ApiProperty() isInitiator!: boolean;

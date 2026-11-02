@@ -11267,7 +11267,12 @@ export interface components {
             eligibleRoles: string[];
             linkingPolicy: components["schemas"]["CoupleLinkPolicyDto"];
         };
+        MarriageContinuationDto: {
+            profileRequired: boolean;
+            nextPath: string;
+        };
         MarriageRequestDto: {
+            continuation: components["schemas"]["MarriageContinuationDto"];
             /** Format: uuid */
             id: string;
             /** @enum {string} */
@@ -11605,7 +11610,10 @@ export interface operations {
     HealthController_live: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11622,7 +11630,10 @@ export interface operations {
     HealthController_ready: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11639,7 +11650,10 @@ export interface operations {
     HealthController_chatReady: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11659,6 +11673,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11730,6 +11746,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 challengeId: string;
@@ -11808,6 +11826,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 challengeId: string;
@@ -11883,6 +11903,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11954,6 +11976,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -12018,6 +12042,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -12078,6 +12104,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -12119,6 +12147,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -12160,7 +12190,10 @@ export interface operations {
                 limit?: components["schemas"]["Object"];
                 page?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12209,6 +12242,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -12258,7 +12293,10 @@ export interface operations {
     accountGetCurrent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12298,6 +12336,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -12369,6 +12409,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -12444,7 +12486,10 @@ export interface operations {
                 /** @description Asia/Tehran local date. */
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12463,7 +12508,10 @@ export interface operations {
     chatAppointmentConversationGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12493,7 +12541,10 @@ export interface operations {
     chatConversationAccess: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -12514,7 +12565,10 @@ export interface operations {
     chatConversationClose: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -12540,7 +12594,10 @@ export interface operations {
                 direction?: "after" | "before" | "latest";
                 limit?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -12565,7 +12622,10 @@ export interface operations {
                 cursor?: string;
                 limit?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -12586,7 +12646,10 @@ export interface operations {
     chatMessageReportCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 messageId: string;
             };
@@ -12611,7 +12674,10 @@ export interface operations {
     chatConversationReportsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -12632,7 +12698,10 @@ export interface operations {
     chatMessageVisibilityChange: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 messageId: string;
             };
@@ -12657,7 +12726,10 @@ export interface operations {
     chatRestrictedContentReview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 messageId: string;
             };
@@ -12678,7 +12750,10 @@ export interface operations {
     chatReportResolve: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 reportId: string;
             };
@@ -12703,7 +12778,10 @@ export interface operations {
     chatWaitingRoomGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12724,7 +12802,10 @@ export interface operations {
     chatAppointmentEngineSessionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12748,7 +12829,10 @@ export interface operations {
                 page?: number;
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12769,7 +12853,10 @@ export interface operations {
     visitCareCartAdd: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12796,7 +12883,10 @@ export interface operations {
             query?: {
                 cursor?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12815,7 +12905,10 @@ export interface operations {
     patientClinicalTimeline: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12834,7 +12927,10 @@ export interface operations {
     patientClinicalHistory: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12853,7 +12949,10 @@ export interface operations {
     patientClinicalAppointmentSummary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12874,7 +12973,10 @@ export interface operations {
     adminClinicalWorkspaceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12895,7 +12997,10 @@ export interface operations {
     adminClinicalWorkspaceCreateNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 encounterId: string;
                 patientId: string;
@@ -12921,7 +13026,10 @@ export interface operations {
     adminClinicalWorkspaceSaveNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 noteId: string;
                 patientId: string;
@@ -12947,7 +13055,10 @@ export interface operations {
     adminClinicalWorkspaceSignNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 noteId: string;
                 patientId: string;
@@ -12973,7 +13084,10 @@ export interface operations {
     adminClinicalWorkspacePublishNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 noteId: string;
                 patientId: string;
@@ -12999,7 +13113,10 @@ export interface operations {
     adminClinicalWorkspaceReconcileRecord: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -13024,7 +13141,10 @@ export interface operations {
     adminClinicalWorkspaceReviseRecord: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
                 patientId: string;
@@ -13051,7 +13171,10 @@ export interface operations {
     adminClinicalWorkspaceSignRecord: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
                 patientId: string;
@@ -13081,7 +13204,10 @@ export interface operations {
                 cursor?: unknown;
                 limit?: unknown;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -13102,7 +13228,10 @@ export interface operations {
     adminPrescriptionsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -13127,7 +13256,10 @@ export interface operations {
     adminPrescriptionsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -13151,7 +13283,10 @@ export interface operations {
             query?: {
                 before?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -13173,7 +13308,10 @@ export interface operations {
     adminPrescriptionsSaveDraft: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -13199,7 +13337,10 @@ export interface operations {
     adminPrescriptionsIssue: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -13225,7 +13366,10 @@ export interface operations {
     adminTreatmentPlansList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -13246,7 +13390,10 @@ export interface operations {
     adminTreatmentPlansCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -13271,7 +13418,10 @@ export interface operations {
     adminTreatmentDraftReplace: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13297,7 +13447,10 @@ export interface operations {
     adminTreatmentPlansGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13319,7 +13472,10 @@ export interface operations {
     adminTreatmentPlansUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13345,7 +13501,10 @@ export interface operations {
     adminTreatmentPlanMedicationsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13371,7 +13530,10 @@ export interface operations {
     adminTreatmentPlanMedicationsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 medicationId: string;
                 patientId: string;
@@ -13398,7 +13560,10 @@ export interface operations {
     adminTreatmentPlanSessionsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13424,7 +13589,10 @@ export interface operations {
     adminTreatmentPlanSessionsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13451,7 +13619,10 @@ export interface operations {
     adminTreatmentPlanExercisesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13477,7 +13648,10 @@ export interface operations {
     adminTreatmentPlanExercisesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exerciseId: string;
                 patientId: string;
@@ -13504,7 +13678,10 @@ export interface operations {
     adminTreatmentPlanNutritionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13530,7 +13707,10 @@ export interface operations {
     adminTreatmentPlanNutritionUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 nutritionId: string;
                 patientId: string;
@@ -13561,7 +13741,10 @@ export interface operations {
                 from?: string;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13580,7 +13763,10 @@ export interface operations {
     patientTreatmentPlansList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13599,7 +13785,10 @@ export interface operations {
     patientTreatmentPlansGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 planId: string;
             };
@@ -13620,7 +13809,10 @@ export interface operations {
     adminTreatmentTasksList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13642,7 +13834,10 @@ export interface operations {
     adminTreatmentTasksCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13668,7 +13863,10 @@ export interface operations {
     adminTreatmentTasksReschedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13695,7 +13893,10 @@ export interface operations {
     adminTreatmentTasksCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13718,7 +13919,10 @@ export interface operations {
     patientTreatmentTasksList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13737,7 +13941,10 @@ export interface operations {
     patientTreatmentTasksComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 taskId: string;
             };
@@ -13760,6 +13967,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 medicationId: string;
@@ -13788,7 +13997,10 @@ export interface operations {
                 cursor?: unknown;
                 limit?: unknown;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -13813,7 +14025,10 @@ export interface operations {
                 cursor?: unknown;
                 limit?: unknown;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 planId: string;
             };
@@ -13834,7 +14049,10 @@ export interface operations {
     patientNotificationsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13851,7 +14069,10 @@ export interface operations {
     NotificationsController_read: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13870,7 +14091,10 @@ export interface operations {
     NotificationsController_all: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13887,7 +14111,10 @@ export interface operations {
     NotificationsController_preferences: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13904,7 +14131,10 @@ export interface operations {
     NotificationsController_preference: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13925,7 +14155,10 @@ export interface operations {
     adminNotificationsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13942,7 +14175,10 @@ export interface operations {
     adminSmsProvidersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13961,7 +14197,10 @@ export interface operations {
     adminSmsProviderRevisionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -13986,7 +14225,10 @@ export interface operations {
     adminSmsProviderStateUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -14011,7 +14253,10 @@ export interface operations {
     adminSmsProviderConnectionTest: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -14030,7 +14275,10 @@ export interface operations {
     adminSmsProviderMessageTest: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -14053,7 +14301,10 @@ export interface operations {
     adminOtpPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14072,7 +14323,10 @@ export interface operations {
     adminOtpPolicyUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14097,7 +14351,10 @@ export interface operations {
             query?: {
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14116,7 +14373,10 @@ export interface operations {
     patientEntryStatus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14135,7 +14395,10 @@ export interface operations {
     patientEntryProfileSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14158,7 +14421,10 @@ export interface operations {
     patientEntryStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14179,6 +14445,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -14198,7 +14466,10 @@ export interface operations {
     patientEntryDefer: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14217,7 +14488,10 @@ export interface operations {
     patientEntryResume: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14236,7 +14510,10 @@ export interface operations {
     patientEntryComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14255,7 +14532,10 @@ export interface operations {
     adminEntryPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14274,7 +14554,10 @@ export interface operations {
     adminEntryPolicyUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14301,7 +14584,10 @@ export interface operations {
                 pageSize?: number;
                 state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14320,7 +14606,10 @@ export interface operations {
     patientAssessmentQuestionnaireGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14350,7 +14639,10 @@ export interface operations {
     patientAssessmentProvenanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14380,7 +14672,10 @@ export interface operations {
     patientAssessmentsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14399,7 +14694,10 @@ export interface operations {
     patientAssessmentSubmissionStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -14429,7 +14727,10 @@ export interface operations {
     patientAssessmentSubmissionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14450,7 +14751,10 @@ export interface operations {
     patientAssessmentSubmissionSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14486,6 +14790,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -14528,7 +14834,10 @@ export interface operations {
     patientAssessmentSubmissionResult: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14549,7 +14858,10 @@ export interface operations {
     patientMezajResultGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14568,7 +14880,10 @@ export interface operations {
     patientBookingEligibilityGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14587,7 +14902,10 @@ export interface operations {
     patientGetSelfProfile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14624,7 +14942,10 @@ export interface operations {
     patientUpdateSelfProfile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14674,7 +14995,10 @@ export interface operations {
     patientGetOnboardingStatus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14715,7 +15039,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14790,7 +15117,10 @@ export interface operations {
             query?: {
                 consentPolicyVersionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -14868,7 +15198,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -14945,6 +15278,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 assessmentVersionId: string;
@@ -15026,6 +15361,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 assessmentVersionId: string;
@@ -15108,7 +15445,10 @@ export interface operations {
             query?: {
                 consentPolicyVersionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -15168,7 +15508,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -15227,6 +15570,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -15309,7 +15654,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15382,7 +15730,10 @@ export interface operations {
     adminGuidanceContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15457,7 +15808,10 @@ export interface operations {
     adminGuidanceContentDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15537,7 +15891,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15610,7 +15967,10 @@ export interface operations {
     clinicalGuidanceContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15685,7 +16045,10 @@ export interface operations {
     clinicalGuidanceContentApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15764,7 +16127,10 @@ export interface operations {
     clinicalGuidanceContentRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15839,7 +16205,10 @@ export interface operations {
     patientGuidanceContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15896,7 +16265,10 @@ export interface operations {
     patientWalletGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15918,7 +16290,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15940,6 +16315,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -15966,6 +16343,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -15992,6 +16371,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -16015,7 +16396,10 @@ export interface operations {
     patientBillingIntentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16039,6 +16423,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16063,6 +16449,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16087,6 +16475,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16111,6 +16501,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 patientId: string;
@@ -16136,7 +16528,10 @@ export interface operations {
     adminPatientWalletGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -16160,7 +16555,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -16184,6 +16582,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 patientId: string;
@@ -16212,6 +16612,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 patientId: string;
@@ -16243,7 +16645,10 @@ export interface operations {
                 purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM" | "ENTRY_ASSESSMENT";
                 status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16262,7 +16667,10 @@ export interface operations {
     adminBillingIntentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16286,7 +16694,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16305,7 +16716,10 @@ export interface operations {
     adminBillingSummaryGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16327,6 +16741,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16355,6 +16771,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16383,6 +16801,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16407,6 +16827,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16432,7 +16854,10 @@ export interface operations {
     patientJourneyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16489,6 +16914,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16577,7 +17004,10 @@ export interface operations {
     patientCoupleAssessmentPaidState: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16661,7 +17091,10 @@ export interface operations {
     patientCoupleJointResultGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16747,6 +17180,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16831,7 +17266,10 @@ export interface operations {
     patientCoupleAssessmentOfferingPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 publicationId: string;
             };
@@ -16888,7 +17326,10 @@ export interface operations {
     patientCoupleLinkPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16982,7 +17423,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17075,6 +17519,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -17170,7 +17616,10 @@ export interface operations {
     patientCoupleSessionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17265,6 +17714,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -17362,7 +17813,10 @@ export interface operations {
     patientCoupleInvitationPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17457,7 +17911,10 @@ export interface operations {
     patientCoupleInvitationAccept: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17552,7 +18009,10 @@ export interface operations {
     patientCoupleConsentWithdraw: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17649,7 +18109,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17733,6 +18196,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -17819,7 +18284,10 @@ export interface operations {
     patientCoupleAssessmentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17905,6 +18373,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -17995,6 +18465,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -18082,7 +18554,10 @@ export interface operations {
                 offeringVersionId: string;
                 termsPolicyVersionId: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18160,7 +18635,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18235,6 +18713,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -18312,7 +18792,10 @@ export interface operations {
     adminAssessmentCommercialGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18387,7 +18870,10 @@ export interface operations {
     adminAssessmentCommercialRetire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18464,6 +18950,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -18546,7 +19034,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18619,7 +19110,10 @@ export interface operations {
     adminCoupleResultProtocolGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18694,7 +19188,10 @@ export interface operations {
     adminCoupleResultProtocolDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18774,7 +19271,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18847,7 +19347,10 @@ export interface operations {
     clinicalCoupleResultProtocolGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18922,7 +19425,10 @@ export interface operations {
     clinicalCoupleResultProtocolApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19001,7 +19507,10 @@ export interface operations {
     clinicalCoupleResultProtocolRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19076,7 +19585,10 @@ export interface operations {
     patientGetConsentPolicy: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19126,6 +19638,8 @@ export interface operations {
             header: {
                 /** @description Stable key for this acceptance attempt. */
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -19198,6 +19712,8 @@ export interface operations {
             header: {
                 /** @description Stable key for this withdrawal attempt. */
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 consentRecordId: string;
@@ -19256,7 +19772,10 @@ export interface operations {
     patientGetMedicalIntake: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19294,7 +19813,10 @@ export interface operations {
     patientSaveMedicalIntakeDraft: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19357,6 +19879,8 @@ export interface operations {
             header: {
                 /** @description Stable key for this completion attempt. */
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -19417,7 +19941,10 @@ export interface operations {
     adminPatientsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19463,7 +19990,10 @@ export interface operations {
     adminPatientsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19522,7 +20052,10 @@ export interface operations {
     adminPatientsOnboardingSummary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19559,7 +20092,10 @@ export interface operations {
     adminPatientsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -19616,7 +20152,10 @@ export interface operations {
     adminPatientsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -19688,6 +20227,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 patientId: string;
@@ -19771,7 +20312,10 @@ export interface operations {
                 from?: string;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19790,7 +20334,10 @@ export interface operations {
     adminAssessmentDistributionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19811,7 +20358,10 @@ export interface operations {
     adminAssessmentDistributionUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19836,7 +20386,10 @@ export interface operations {
     adminAssessmentsMizajDraftPreset: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19855,7 +20408,10 @@ export interface operations {
     adminAssessmentsScoringPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19930,7 +20486,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "PUBLISHED" | "RETIRED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19967,7 +20526,10 @@ export interface operations {
     adminAssessmentsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19999,7 +20561,10 @@ export interface operations {
     adminAssessmentsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20022,7 +20587,10 @@ export interface operations {
             query: {
                 expectedContentHash: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20070,7 +20638,10 @@ export interface operations {
     adminAssessmentsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20095,7 +20666,10 @@ export interface operations {
     adminAssessmentsDuplicate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20116,7 +20690,10 @@ export interface operations {
     adminAssessmentsPublish: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20137,7 +20714,10 @@ export interface operations {
     adminAssessmentsArchive: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20158,7 +20738,10 @@ export interface operations {
     adminBookingAssessmentPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20195,7 +20778,10 @@ export interface operations {
     adminBookingAssessmentPolicyUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20242,7 +20828,10 @@ export interface operations {
                 patientId?: string;
                 state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20270,7 +20859,10 @@ export interface operations {
     adminAssessmentSubmissionsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20295,7 +20887,10 @@ export interface operations {
                 from?: string;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20317,7 +20912,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20394,7 +20992,10 @@ export interface operations {
             query: {
                 submissionId: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20481,7 +21082,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20567,6 +21171,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 appointmentId: string;
@@ -20657,6 +21263,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 appointmentId: string;
@@ -20744,6 +21352,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -20787,6 +21397,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -20815,7 +21427,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20834,7 +21449,10 @@ export interface operations {
     adminAssessmentOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20855,7 +21473,10 @@ export interface operations {
     adminAssessmentOfferingRetire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -20876,7 +21497,10 @@ export interface operations {
     adminClinicGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20904,7 +21528,10 @@ export interface operations {
     adminClinicUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20943,7 +21570,10 @@ export interface operations {
                 query?: string;
                 specialtyId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20962,7 +21592,10 @@ export interface operations {
     adminDoctorsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20985,7 +21618,10 @@ export interface operations {
     adminDoctorsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -21006,7 +21642,10 @@ export interface operations {
     adminDoctorsDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -21025,7 +21664,10 @@ export interface operations {
     adminDoctorsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -21056,7 +21698,10 @@ export interface operations {
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21075,7 +21720,10 @@ export interface operations {
     adminSpecialtiesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21098,7 +21746,10 @@ export interface operations {
     adminSpecialtiesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 specialtyId: string;
             };
@@ -21119,7 +21770,10 @@ export interface operations {
     adminSpecialtiesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 specialtyId: string;
             };
@@ -21138,7 +21792,10 @@ export interface operations {
     adminSpecialtiesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 specialtyId: string;
             };
@@ -21169,7 +21826,10 @@ export interface operations {
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21188,7 +21848,10 @@ export interface operations {
     adminServicesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21211,7 +21874,10 @@ export interface operations {
     adminServicesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 serviceId: string;
             };
@@ -21232,7 +21898,10 @@ export interface operations {
     adminServicesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 serviceId: string;
             };
@@ -21251,7 +21920,10 @@ export interface operations {
     adminServicesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 serviceId: string;
             };
@@ -21285,7 +21957,10 @@ export interface operations {
                 serviceId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21304,7 +21979,10 @@ export interface operations {
     adminDoctorServicesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21327,7 +22005,10 @@ export interface operations {
     adminDoctorServicesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -21348,7 +22029,10 @@ export interface operations {
     adminDoctorServicesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -21367,7 +22051,10 @@ export interface operations {
     adminDoctorServicesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -21399,7 +22086,10 @@ export interface operations {
                 specialtyId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21418,7 +22108,10 @@ export interface operations {
     patientDirectoryDoctorGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -21445,7 +22138,10 @@ export interface operations {
                 query?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21471,7 +22167,10 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21490,7 +22189,10 @@ export interface operations {
     adminAvailabilityRulesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21513,7 +22215,10 @@ export interface operations {
     adminAvailabilityRulesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 ruleId: string;
             };
@@ -21534,7 +22239,10 @@ export interface operations {
     adminAvailabilityRulesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 ruleId: string;
             };
@@ -21553,7 +22261,10 @@ export interface operations {
     adminAvailabilityRulesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 ruleId: string;
             };
@@ -21584,7 +22295,10 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21603,7 +22317,10 @@ export interface operations {
     adminClinicClosuresCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21626,7 +22343,10 @@ export interface operations {
     adminClinicClosuresGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 closureId: string;
             };
@@ -21647,7 +22367,10 @@ export interface operations {
     adminClinicClosuresDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 closureId: string;
             };
@@ -21666,7 +22389,10 @@ export interface operations {
     adminClinicClosuresUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 closureId: string;
             };
@@ -21700,7 +22426,10 @@ export interface operations {
                 to?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21719,7 +22448,10 @@ export interface operations {
     adminDoctorAvailabilityExceptionsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21742,7 +22474,10 @@ export interface operations {
     adminDoctorAvailabilityExceptionsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exceptionId: string;
             };
@@ -21763,7 +22498,10 @@ export interface operations {
     adminDoctorAvailabilityExceptionsDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exceptionId: string;
             };
@@ -21782,7 +22520,10 @@ export interface operations {
     adminDoctorAvailabilityExceptionsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exceptionId: string;
             };
@@ -21812,7 +22553,10 @@ export interface operations {
                 pageSize?: number;
                 toDate: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -21836,7 +22580,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21855,7 +22602,10 @@ export interface operations {
     patientAppointmentsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21892,7 +22642,10 @@ export interface operations {
     patientAppointmentsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21916,7 +22669,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21937,7 +22693,10 @@ export interface operations {
     patientAppointmentsCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21962,7 +22721,10 @@ export interface operations {
     patientAppointmentsReschedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21995,7 +22757,10 @@ export interface operations {
                 status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22014,7 +22779,10 @@ export interface operations {
     adminAppointmentsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22042,7 +22810,10 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
                 patientId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22061,7 +22832,10 @@ export interface operations {
     adminAppointmentsQueueList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22080,7 +22854,10 @@ export interface operations {
     adminAppointmentsDashboardSummary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22099,7 +22876,10 @@ export interface operations {
     adminAppointmentDetail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22123,7 +22903,10 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22144,7 +22927,10 @@ export interface operations {
     adminAppointmentsConfirm: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22165,7 +22951,10 @@ export interface operations {
     adminAppointmentsCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22190,7 +22979,10 @@ export interface operations {
     adminAppointmentsReschedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22215,7 +23007,10 @@ export interface operations {
     adminAppointmentsCheckIn: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22236,7 +23031,10 @@ export interface operations {
     adminAppointmentsQueue: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22257,7 +23055,10 @@ export interface operations {
     adminAppointmentsStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22278,7 +23079,10 @@ export interface operations {
     adminAppointmentsComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22299,7 +23103,10 @@ export interface operations {
     adminAppointmentsNoShow: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22320,7 +23127,10 @@ export interface operations {
     adminAppointmentsCallNext: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -22347,7 +23157,10 @@ export interface operations {
                 limit?: number;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22372,7 +23185,10 @@ export interface operations {
                 status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22454,7 +23270,10 @@ export interface operations {
     assignedConsultationContext: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22538,7 +23357,10 @@ export interface operations {
     assignedConsultationStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22622,7 +23444,10 @@ export interface operations {
     assignedConsultationComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -22708,6 +23533,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -22799,7 +23626,10 @@ export interface operations {
                 programKey?: string;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22881,7 +23711,10 @@ export interface operations {
     adminProgramDefinitionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22965,7 +23798,10 @@ export interface operations {
     adminProgramDefinitionDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23054,7 +23890,10 @@ export interface operations {
                 programKey?: string;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23136,7 +23975,10 @@ export interface operations {
     clinicalProgramDefinitionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23220,7 +24062,10 @@ export interface operations {
     clinicalProgramDefinitionApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23308,7 +24153,10 @@ export interface operations {
     clinicalProgramDefinitionRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23392,7 +24240,10 @@ export interface operations {
     adminProgramOfferingSetup: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23476,7 +24327,10 @@ export interface operations {
     adminProgramOfferingPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23567,7 +24421,10 @@ export interface operations {
                 programKey?: string;
                 status?: "ACTIVE" | "RETIRED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23651,6 +24508,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -23737,7 +24596,10 @@ export interface operations {
     adminProgramOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23821,7 +24683,10 @@ export interface operations {
     adminProgramOfferingRetire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23908,7 +24773,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23981,7 +24849,10 @@ export interface operations {
     patientProgramOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24058,6 +24929,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -24137,6 +25010,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -24217,7 +25092,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24290,7 +25168,10 @@ export interface operations {
     patientProgramPurchaseGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24365,7 +25246,10 @@ export interface operations {
     patientProgramContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24440,7 +25324,10 @@ export interface operations {
     adminProgramMezajGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24461,7 +25348,10 @@ export interface operations {
     adminProgramMezajSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24488,7 +25378,10 @@ export interface operations {
             query?: {
                 submissionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24510,7 +25403,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24532,7 +25428,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24605,7 +25504,10 @@ export interface operations {
     patientCustomProgramOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24683,7 +25585,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24758,6 +25663,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -24835,7 +25742,10 @@ export interface operations {
     patientCustomProgramRequestGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -24913,7 +25823,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -24990,6 +25903,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 requestId: string;
@@ -25071,6 +25986,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -25149,6 +26066,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 requestId: string;
@@ -25249,7 +26168,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -25342,7 +26264,10 @@ export interface operations {
     patientCustomProgramPlanGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
                 requestId: string;
@@ -25439,7 +26364,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25530,7 +26458,10 @@ export interface operations {
     clinicalCustomProgramContext: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -25626,7 +26557,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -25721,6 +26655,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 requestId: string;
@@ -25818,7 +26754,10 @@ export interface operations {
     clinicalCustomProgramPlanGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
                 requestId: string;
@@ -25914,6 +26853,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -26014,6 +26955,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -26118,7 +27061,10 @@ export interface operations {
                 metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26137,7 +27083,10 @@ export interface operations {
     patientHealthObservationCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26166,7 +27115,10 @@ export interface operations {
                 metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -26187,7 +27139,10 @@ export interface operations {
     ContentController_patientArticles: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26204,7 +27159,10 @@ export interface operations {
     ContentController_patientArticle: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 slug: string;
             };
@@ -26223,7 +27181,10 @@ export interface operations {
     ContentController_patientBanners: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26240,7 +27201,10 @@ export interface operations {
     ContentController_categories: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26257,7 +27221,10 @@ export interface operations {
     ContentController_createCategory: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26278,7 +27245,10 @@ export interface operations {
     ContentController_articles: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26295,7 +27265,10 @@ export interface operations {
     ContentController_createArticle: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26316,7 +27289,10 @@ export interface operations {
     ContentController_updateArticle: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -26339,7 +27315,10 @@ export interface operations {
     ContentController_banners: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26358,7 +27337,10 @@ export interface operations {
     ContentController_createBanner: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26383,6 +27365,8 @@ export interface operations {
             query?: never;
             header?: {
                 "If-Match"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -26411,6 +27395,8 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 "If-Match": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 bannerId: string;
@@ -26442,6 +27428,8 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 "If-Match": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 bannerId: string;
@@ -26461,7 +27449,10 @@ export interface operations {
     adminContentBannerImagePreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 bannerId: string;
             };
@@ -26480,7 +27471,10 @@ export interface operations {
     publicContentBanners: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26499,7 +27493,10 @@ export interface operations {
     publicContentBannerImage: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 bannerId: string;
             };
@@ -26518,7 +27515,10 @@ export interface operations {
     adminCommerceMezajCollectionsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26539,7 +27539,10 @@ export interface operations {
             query?: {
                 page?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26558,7 +27561,10 @@ export interface operations {
     adminCommerceMezajCollectionSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 primary: "damavi" | "safravi" | "balgami" | "sodavi";
                 secondary: "damavi" | "safravi" | "balgami" | "sodavi";
@@ -26586,7 +27592,10 @@ export interface operations {
             query?: {
                 submissionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26605,7 +27614,10 @@ export interface operations {
     adminProductContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26662,7 +27674,10 @@ export interface operations {
     adminProductContentUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26750,7 +27765,10 @@ export interface operations {
     adminProductContentApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26838,7 +27856,10 @@ export interface operations {
     adminCommerceProductImageGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26908,6 +27929,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "If-Match": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 productId: string;
@@ -27030,6 +28053,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "If-Match": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 productId: string;
@@ -27130,7 +28155,10 @@ export interface operations {
     adminCommerceProductImagePreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -27197,7 +28225,10 @@ export interface operations {
     commerceProductImageContent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 imageId: string;
                 productId: string;
@@ -27253,7 +28284,10 @@ export interface operations {
                 query?: string;
                 status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27272,7 +28306,10 @@ export interface operations {
     adminCommerceProductsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27322,7 +28359,10 @@ export interface operations {
     adminCommerceCategoriesList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27341,7 +28381,10 @@ export interface operations {
     adminCommerceCategoriesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27364,7 +28407,10 @@ export interface operations {
     adminCommerceCategoriesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 categoryId: string;
             };
@@ -27389,7 +28435,10 @@ export interface operations {
     adminCommerceProductsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -27450,7 +28499,10 @@ export interface operations {
     adminCommerceSkusCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -27475,7 +28527,10 @@ export interface operations {
     adminCommerceSkusUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 skuId: string;
             };
@@ -27500,7 +28555,10 @@ export interface operations {
     adminCommerceInventoryUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 skuId: string;
             };
@@ -27530,7 +28588,10 @@ export interface operations {
                 pageSize?: number;
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27549,7 +28610,10 @@ export interface operations {
     patientCommerceProductGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -27579,7 +28643,10 @@ export interface operations {
     patientCommerceCartGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27598,7 +28665,10 @@ export interface operations {
     patientCommerceCartUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27621,7 +28691,10 @@ export interface operations {
     patientCommerceWishlistGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27640,7 +28713,10 @@ export interface operations {
     patientCommerceWishlistUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27663,7 +28739,10 @@ export interface operations {
     adminCommerceCourierShippingRateGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27682,7 +28761,10 @@ export interface operations {
     adminCommerceCourierShippingRateUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27705,7 +28787,10 @@ export interface operations {
     patientCommerceDiscountPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27728,7 +28813,10 @@ export interface operations {
     patientCommerceAddressesList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27747,7 +28835,10 @@ export interface operations {
     patientCommerceAddressesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27770,7 +28861,10 @@ export interface operations {
     patientCommerceAddressesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 addressId: string;
             };
@@ -27789,7 +28883,10 @@ export interface operations {
     patientCommerceAddressesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 addressId: string;
             };
@@ -27814,7 +28911,10 @@ export interface operations {
     patientCommerceShippingOptionsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27833,7 +28933,10 @@ export interface operations {
     patientCommerceOrdersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27852,7 +28955,10 @@ export interface operations {
     patientCommerceOrdersCheckout: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27875,7 +28981,10 @@ export interface operations {
     patientCommerceOrderReceiptGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27896,7 +29005,10 @@ export interface operations {
     patientCommerceOrdersGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27917,7 +29029,10 @@ export interface operations {
     patientCommerceOrderCancelPendingPayment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27936,7 +29051,10 @@ export interface operations {
     adminCommerceDiscountsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27955,7 +29073,10 @@ export interface operations {
     adminCommerceDiscountsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27978,7 +29099,10 @@ export interface operations {
     adminCommerceDiscountsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 discountId: string;
             };
@@ -28010,7 +29134,10 @@ export interface operations {
                 status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
                 until?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -28031,7 +29158,10 @@ export interface operations {
     adminPaymentGatewayRequestDetail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 attemptId: string;
                 providerCode: string;
@@ -28054,7 +29184,10 @@ export interface operations {
     adminCommercePaymentProvidersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28073,7 +29206,10 @@ export interface operations {
     adminCommercePaymentProviderRevisionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -28098,7 +29234,10 @@ export interface operations {
     adminCommercePaymentProviderUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -28123,7 +29262,10 @@ export interface operations {
     patientPaymentAttemptCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28144,7 +29286,10 @@ export interface operations {
     patientPaymentAttemptGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 attemptId: string;
             };
@@ -28165,7 +29310,10 @@ export interface operations {
     sadadPaymentBrowserStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28192,7 +29340,10 @@ export interface operations {
     sadadPaymentCallback: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28223,7 +29374,10 @@ export interface operations {
     adminCommerceOrdersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28246,7 +29400,10 @@ export interface operations {
                 shippingMethod?: "PICKUP" | "COURIER";
                 status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28265,7 +29422,10 @@ export interface operations {
     adminCommerceOrderGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28288,7 +29448,10 @@ export interface operations {
     adminCommerceReconciliationList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28305,7 +29468,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_fulfillment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28328,7 +29494,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_tracking: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28351,7 +29520,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_cancelBeforePayment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28370,7 +29542,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_cancellation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28393,7 +29568,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_returns: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28416,7 +29594,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_rejection: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28435,7 +29616,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_returnRejection: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28454,7 +29638,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_refund: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -28477,7 +29664,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_refundAction: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 action: string;
                 refundId: string;
@@ -28501,7 +29691,10 @@ export interface operations {
     AdminCommerceOrderOperationsController_reconcile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 attemptId: string;
             };
@@ -28532,7 +29725,10 @@ export interface operations {
                 /** @description Clinic-local inclusive ISO date. */
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28561,7 +29757,10 @@ export interface operations {
                 segment?: "POTENTIAL" | "ONE_TIME" | "RETURNING" | "VIP";
                 sort?: "NET_SPEND" | "SUCCESSFUL_PURCHASE_COUNT" | "LAST_PURCHASE_AT" | "DISPLAY_NAME";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28582,6 +29781,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -28664,7 +29865,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28737,7 +29941,10 @@ export interface operations {
     adminAssessmentGuidanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28812,7 +30019,10 @@ export interface operations {
     adminAssessmentGuidanceDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28892,7 +30102,10 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28965,7 +30178,10 @@ export interface operations {
     clinicalAssessmentGuidanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29040,7 +30256,10 @@ export interface operations {
     clinicalAssessmentGuidanceApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29119,7 +30338,10 @@ export interface operations {
     clinicalAssessmentGuidanceRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29194,7 +30416,10 @@ export interface operations {
     patientAssessmentGuidanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29251,7 +30476,10 @@ export interface operations {
     patientMarriageSettings: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29275,7 +30503,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -29296,6 +30527,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -29319,7 +30552,10 @@ export interface operations {
     patientMarriageRequestGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29340,7 +30576,10 @@ export interface operations {
     patientMarriageRequestReview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29361,7 +30600,10 @@ export interface operations {
     patientMarriageRequestAccept: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29388,6 +30630,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -29413,7 +30657,10 @@ export interface operations {
     patientMarriageRequestCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29436,6 +30683,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -29463,7 +30712,10 @@ export interface operations {
                 pageSize?: number;
                 servicePurpose?: "MARRIAGE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -29536,7 +30788,10 @@ export interface operations {
     patientEducationalAssessmentOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -29613,6 +30868,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -29696,7 +30953,10 @@ export interface operations {
                 pageSize?: number;
                 servicePurpose?: "MARRIAGE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -29769,7 +31029,10 @@ export interface operations {
     patientPaidAssessmentOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 publicationId: string;
             };
@@ -29846,6 +31109,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -29925,6 +31190,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -30002,6 +31269,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -30085,7 +31354,10 @@ export interface operations {
                 pageSize?: number;
                 servicePurpose?: "MARRIAGE";
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -30158,7 +31430,10 @@ export interface operations {
     patientAssessmentPurchaseGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -30233,7 +31508,10 @@ export interface operations {
     patientPaidAssessmentStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -30312,7 +31590,10 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -30378,6 +31659,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -30446,7 +31729,10 @@ export interface operations {
     patientEducationalCoupleGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -30514,6 +31800,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -30586,6 +31874,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -30654,6 +31944,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -30722,6 +32014,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -30792,7 +32086,10 @@ export interface operations {
     patientEducationalCoupleResult: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };

@@ -66,12 +66,13 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
-    exposedHeaders: ['ETag', 'x-request-id'],
+    exposedHeaders: ['ETag', 'x-request-id', 'Retry-After'],
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.setGlobalPrefix('v1');
   const openApiConfig = new DocumentBuilder()
+    .addGlobalParameters({ in: 'header', name: 'X-Marriage-Request-Id', required: false, description: 'Invitation context locator; grants no access without server identity and resource checks.', schema: { type: 'string', format: 'uuid' } })
     .setTitle('Sabz Zendegi API')
     .setDescription('REST API for Sabz Zendegi clinic services.')
     .setVersion('1.0.0')

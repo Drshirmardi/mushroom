@@ -19,12 +19,13 @@ export function WebExperience({ children, initialLocale }: { children: React.Rea
     const pathname = usePathname();
     const routeLocale = pathname.split("/")[1];
     const locale: Locale = isLocale(routeLocale) ? routeLocale : /^\/(?:login|signup)(?:\/|$)/.test(pathname) ? initialLocale : "fa";
+    const authPage = /^\/(?:fa\/|en\/|ar\/|zh-CN\/)?login$/.test(pathname);
     const direction = isRtlLocale(locale) ? "rtl" : "ltr";
     useEffect(() => {
         document.documentElement.lang = locale;
         document.documentElement.dir = direction;
     }, [locale, direction]);
     return <NextIntlClientProvider locale={locale} messages={messages[locale]} timeZone="Asia/Tehran">
-        <Header />{children}<Footer /><Toaster dir={direction} position="top-center" richColors closeButton />
+        {!authPage && <Header />}{children}{!authPage && <Footer />}<Toaster dir={direction} position="top-center" richColors closeButton />
     </NextIntlClientProvider>;
 }

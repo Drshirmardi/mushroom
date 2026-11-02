@@ -120,3 +120,15 @@
     .landing-auth-dialog *, .landing-auth-dialog *::before, .landing-auth-dialog *::after { animation: none !important; transition: none !important; }
     .is-success .landing-success-check svg { stroke-dashoffset: 0; }
 }
+
+.invitation-login { min-height: 70dvh; display: grid; place-items: center; padding: 2rem 1rem; }
+.invitation-login > section { width: 100%; max-width: 28rem; min-width: 0; }
+.invitation-login-context { margin-block-end: 1.5rem; line-height: 1.9; overflow-wrap: anywhere; }
+
+.invitation-login h1 { margin-block-end: 1rem; font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 600; line-height: 1.6; }
+
+.invitation-login { --auth-green: var(--primary); --auth-muted: var(--muted-foreground); --digit-width: clamp(34px, 10vw, 48px); font-family: var(--web-font), sans-serif; color-scheme: light; }
+.invitation-login button, .invitation-login input { font: inherit; }
+.invitation-login button { cursor: pointer; }
+.invitation-login button:disabled { cursor: default; opacity: .48; }
+.invitation-login button:focus-visible { outline: 2px solid var(--auth-green); outline-offset: 4px; }

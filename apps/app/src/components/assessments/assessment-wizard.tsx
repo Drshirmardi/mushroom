@@ -1,5 +1,6 @@
 "use client";
 
+import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
@@ -59,7 +60,7 @@ export function AssessmentWizard({ entry }: { entry?: { submissionId: string; on
       try {
         const attempt = submissionId ? await getAssessmentSubmission(accessToken.current, submissionId) : grantId ? await startPaidAssessment(accessToken.current, grantId) : assessmentVersionId ? await startAssessment(accessToken.current, assessmentVersionId) : null;
         if (!attempt) throw new Error("ASSESSMENT_NOT_FOUND");
-        if (attempt.state === "COMPLETE") { if (!cancelled) { if (entry) entry.onComplete(); else router.replace(`/assessment/result?submissionId=${attempt.id}`); } return; }
+        if (attempt.state === "COMPLETE") { if (!cancelled) { if (entry) entry.onComplete(); else router.replace(marriageHref(`/assessment/result?submissionId=${attempt.id}`)); } return; }
         const questionnaire = await getAssessmentQuestionnaire(accessToken.current, attempt.id);
         if (!questionnaire.resumeAvailable) throw new Error("ASSESSMENT_UNAVAILABLE");
         if (!cancelled) { setAssessment(questionnaire); setSubmission(attempt); setAnswers(attempt.answers); { const pending = questions(questionnaire.structure).findIndex(question => !answered(question, attempt.answers[question.id])); setStep(pending < 0 ? Math.max(0, questions(questionnaire.structure).length - 1) : pending); } }
@@ -95,7 +96,7 @@ export function AssessmentWizard({ entry }: { entry?: { submissionId: string; on
       const command = submitCommand ?? { revision: saved.revision, key: crypto.randomUUID() };
       setSubmitCommand(command);
       const completed = await submitAssessment(accessToken.current, saved.id, command.key, command.revision);
-      if (entry) entry.onComplete(); else router.push(`/assessment/result?submissionId=${completed.id}`);
+      if (entry) entry.onComplete(); else router.push(marriageHref(`/assessment/result?submissionId=${completed.id}`));
     } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); if (reason instanceof AssessmentRequestError && (reason.status === 400 || reason.status === 422)) setSubmitCommand(null); setError(assessmentErrorMessage(reason)); }
     finally { setBusy(false); }
   };
@@ -103,7 +104,7 @@ export function AssessmentWizard({ entry }: { entry?: { submissionId: string; on
   const saveAndExit = async () => {
     if (busy || conflict || submitCommand) return;
     setBusy(true); setError(null);
-    try { await persist(); router.push("/assessment"); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(assessmentErrorMessage(reason)); } finally { setBusy(false); }
+    try { await persist(); router.push(currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment"); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(assessmentErrorMessage(reason)); } finally { setBusy(false); }
   };
 
   if (!assessment && !error) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;

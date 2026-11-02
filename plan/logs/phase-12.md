@@ -6337,3 +6337,26 @@ Verification:
 - Graphify AST refresh completed (existing missing SQL/Erlang/HCL parsers and template warnings); no full test suite run.
 
 Next: MZ10 invitation-scoped entry and server access boundary; then MZ11 responsive journey. Neither task implemented in this commit. Unrelated installer/AGENTS/web changes preserved.
+
+## F12-FE01-MZ10 — Invitation-scoped entry
+
+Completed: 2026-11-03. Sole coordinator/reviewer Codex /root. Depends MZ09. Single-task batch review PASS, claim RELEASED. ADR-0048 records the owner-approved entry exception.
+
+Implementation:
+- Existing PatientEntryGuard admits only verified invited recipients and exact sources related to this request; optional X-Marriage-Request-Id is only a locator. Incomplete names/gender/birth date block acceptance and downstream actions. Existing endpoint authority, eligibility, version, consent, financial and submission checks remain.
+- Pending read/review/accept; accepted own participation, versioned consent, own grant/submission/result/guidance/provenance, own related purchase/payment are explicitly matched. Unrelated APIs remain gated; no independent top-up path in invited payment.
+- After acceptance the recipient patient ID governs request ownership/listing. Later number holders cannot read/list previous invitations; original recipient ownership survives a phone change with new verification.
+- MarriageRequestDto adds continuation.profileRequired/nextPath. Global optional-header OpenAPI and generated SDK refreshed; normalized comparison found no operation drift beyond the header. Retry-After exposed to browser.
+- Dedicated compact invitation login reuses existing OTP, validates the exact patient origin/path, supports existing sessions, and reveals no identities before login. General login retains existing landing behavior. Mobile primary-button token inheritance corrected after screenshot review.
+- App preserves invitation context through profile, consent, payment and assessment. Return storage is scoped to account AND billing intent, not unrelated purchases. General entry is never completed/deferred by this path; leaving the service restores its gate. Questionnaire save/exit returns to this service; paid results return through the invitation.
+
+Verification:
+- PostgreSQL17 temporary Docker on127.0.0.1:55419/patient_journey_test:112 existing migrations from empty, no new migration. One expanded real HTTP integration in assessment-educational-access.integration.spec.ts PASS, seven unrelated cases filtered. It verifies missing/foreign header, unverified session, incomplete-profile acceptance refusal/profile save, general entry remaining required, unrelated lists/submission refusal, independent consent, one repeated/concurrent wallet payment by the incomplete-entry recipient, two real independent submissions and role-aware shared results, withdrawal, and number reassignment/list privacy/retained original ownership. Initial fixture attempts to undo completed entry or insert completion after enforcement were rejected by retained DB invariants; corrected fixtures create an incomplete recipient initially and reuse the existing completed stranger for reassignment.
+- Targeted units: API entry rules/recommendation guard5, web navigation4, app context2:11 PASS. API source/test, app, web and generated SDK types/build contract check PASS.
+- App and web production builds PASS. New app context/gate/request/API and web login/navigation source ESLint PASS. Wider touched-file lint still reports three unchanged HEAD baseline errors (runtime synchronous bootstrap script; existing wizard render-ref/effect reset), plus pre-existing warnings; stdin comparison against HEAD confirms zero new errors. Broader F12-FE01/MZ11 retains those concerns; no blanket lint-success claim.
+- Playwright CLI with intercepted APIs: app profile-to-invitation-to-participation/payment and bank-return context PASS (10 context-bearing checks, zero general entry starts); leaving to Home restores the required entry. OTP guest login and exact invitation destination PASS375/1440; one intercepted OTP challenge, no actual SMS; primary action visible. Existing-session branch reuses the existing session manager. Screenshots reviewed under ignored .local/mz10-login-mobile.png and desktop.png. Browser mocks and real HTTP/PostgreSQL are separate proofs; no full UX-audit verdict, real carrier/bank or hardware keyboard claim.
+- Graphify AST update and scoped diff review PASS; known missing parser/template warnings remain. Full test suite not run. Owned temporary servers/browser/DB stopped; primary DB and existing user changes untouched.
+
+Changed areas: API entry/requests/contracts; patient app entry/navigation/payment/assessment context; web invitation login; generated SDK; scoped tests and this evidence. No dashboard, schema, pricing, scoring or OTP transport changes.
+
+Next eligible task: F12-FE01-MZ11 responsive assessment presentation and adjacent UI refinement. Not implemented by this commit. Commit/push to dev authorized by owner plan; no manual deployment.

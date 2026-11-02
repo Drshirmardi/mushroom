@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { currentInvitationContext } from '@/lib/marriage-context';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
@@ -155,7 +156,7 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled }: Pro
         )}
       </div>
 
-      {deficit && (
+      {deficit && !currentInvitationContext() && (
         <Button variant="secondary" className="w-full" onClick={() => setTopupOpen(true)}>
           <CreditCard size={17} aria-hidden="true" />افزایش موجودی کیف پول
         </Button>

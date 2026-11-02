@@ -1,5 +1,6 @@
 "use client";
 
+import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
 import { Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Clock, Info, ShieldQuestion, XCircle } from "lucide-react";
@@ -44,12 +45,13 @@ function PaymentResult() {
   const view: View = intent ? intentResultView(intent) : error ? "error" : "loading";
   useEffect(() => {
     if (view === "paid" && intent?.purpose === "ORDER" && intent.orderId) {
-      router.replace(`/store/order-success?orderId=${encodeURIComponent(intent.orderId)}`);
+      router.replace(marriageHref(`/store/order-success?orderId=${encodeURIComponent(intent.orderId)}`));
     }
   }, [intent, router, view]);
   const retry = intent ? retryHref(intent) : null;
 
-  const primaryTarget = intent
+  const invitation = currentInvitationContext();
+  const primaryTarget = invitation ? { href: `/assessment/marriage/requests/${invitation}`, label: 'ادامه خدمت دعوت‌شده' } : intent
     ? intent.purpose === "ORDER" && intent.orderId
       ? { href: `/store/order-tracking?orderId=${encodeURIComponent(intent.orderId)}`, label: "پیگیری سفارش" }
       : intent.purpose === "APPOINTMENT"
@@ -65,7 +67,7 @@ function PaymentResult() {
 
   return (
     <div className="profile-scope">
-      <PageHeader title="نتیجهٔ پرداخت" onBack={() => router.push("/profile/wallet")} />
+      <PageHeader title="نتیجهٔ پرداخت" onBack={() => router.push(invitation ? `/assessment/marriage/requests/${invitation}` : "/profile/wallet")} />
       <div className="space-y-4 px-4 pb-6 pt-4">
         {view === "loading" && (
           <div role="status" className="flex items-center justify-center gap-3 rounded-2xl border border-border bg-white p-8 text-sm text-muted-foreground">

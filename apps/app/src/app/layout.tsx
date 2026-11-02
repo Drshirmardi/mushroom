@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/auth/session-gate";
 import { PatientEntryGate } from "@/components/auth/patient-entry-gate";
@@ -25,7 +26,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
-        <SessionProvider><PatientEntryGate>{children}</PatientEntryGate></SessionProvider>
+        <SessionProvider><Suspense fallback={<main role="status">در حال آماده‌سازی…</main>}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
       </body>
     </html>
   );

@@ -29,15 +29,20 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     const record = await db.role.upsert({ where: { code: role }, create: { code: role }, update: {} });
     await db.userRole.create({ data: { userId: auth.userId, roleId: record.id } }); return auth;
   }
-  async function patient(adult = true) {
+  async function patient(adult = true, complete = true) {
     const auth = await actor('PATIENT');
-    const profile = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
+    const profile = complete ? await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } }) : await db.patientProfile.create({ data: { userId: auth.userId, clinicId } });
+    if (!complete) {
+      await db.userProfile.upsert({ where: { userId:auth.userId }, create: { userId:auth.userId,firstName:'Synthetic',lastName:'Invitee',gender:'FEMALE' }, update: { firstName:'Synthetic',lastName:'Invitee',gender:'FEMALE' } });
+      await db.patientEntry.create({ data: { patientId:profile.id,clinicId,birthDate:new Date('1990-01-01') } });
+    }
     const intake = await db.patientMedicalIntake.create({ data: { patientId: profile.id, clinicId, currentRevisionNumber: 1 } });
     await db.patientMedicalIntakeRevision.create({ data: { intakeId: intake.id, revisionNumber: 1, assignedSchemaVersion: 1, revisionState: 'DRAFT', birthDate: new Date(adult ? '1990-01-01' : '2020-01-01'), recordingMode: 'PATIENT_ENTRY', reportedPatientId: profile.id, payloadHash: 'a'.repeat(64) } });
     return { ...auth, profile };
   }
+  const invitationContexts = new Map<string,string>();
   function request(who: Awaited<ReturnType<typeof actor>>, method: 'GET' | 'POST' | 'PUT', path: string, payload?: object, key = randomUUID()) {
-    return app.inject({ method, url: `/v1${path}`, headers: { authorization: `Bearer ${who.token}`, origin: 'http://localhost:3000', 'idempotency-key': key, ...(payload ? { 'content-type': 'application/json' } : {}) }, ...(payload ? { payload: JSON.stringify(payload) } : {}) });
+    return app.inject({ method, url: `/v1${path}`, headers: { authorization: `Bearer ${who.token}`, origin: 'http://localhost:3000', ...(invitationContexts.has(who.userId) ? { 'x-marriage-request-id': invitationContexts.get(who.userId)! } : {}), 'idempotency-key': key, ...(payload ? { 'content-type': 'application/json' } : {}) }, ...(payload ? { payload: JSON.stringify(payload) } : {}) });
   }
   async function offering(algorithmVersion = 1, priceMode = 'FREE', kind = 'INDIVIDUAL', pairText = false, marriage = false) {
     const base = structuredClone(MIZAJ_DRAFT_PRESET.structure), dimensions = base.scoring.dimensions;
@@ -84,11 +89,24 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
   }
   it('marriage request completes two real independent assessments with one wallet payment and role-aware fallback', async () => {
     const algorithmVersion=2,offer=await offering(2,'PAID','COUPLES',false,true);
-    const a=await patient(),b=await patient(),stranger=await patient();
+    const a=await patient(),b=await patient(true,false),stranger=await patient();
     await db.userProfile.update({where:{userId:a.userId},data:{gender:'MALE'}});
     const peer=await db.user.findUniqueOrThrow({where:{id:b.userId}});await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:peer.phone}});
     const linking=await request(a,'GET','/patients/me/couple-link-policy');expect(linking.statusCode,linking.body).toBe(200);
     const invited=await request(a,'POST','/patients/me/marriage-requests',{publicationId:offer.row.adminPublicationId,initiatorRole:'SECOND',recipientPhone:peer.phone,consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(invited.statusCode,invited.body).toBe(201);
+    const requestId = invited.json().id as string;
+    invitationContexts.set(b.userId,requestId);
+    await db.patientEntryPolicy.upsert({ where: { clinicId }, create: { clinicId, enabled:true, assessmentVersionId:offer.source.id, enforcedFrom:new Date('2000-01-01') }, update: { enabled:true, assessmentVersionId:offer.source.id, enforcedFrom:new Date('2000-01-01') } });
+    const entry=await request(b,'GET','/patients/me/entry');expect(entry.json().required).toBe(true);
+    for (const path of ['/patients/me/wallet','/patients/me/marriage-requests','/patients/me/educational-couple-assessments']) expect((await request(b,'GET',path)).statusCode).toBe(403);
+    const noContext=await app.inject({method:'GET',url:`/v1/patients/me/marriage-requests/${requestId}`,headers:{authorization:`Bearer ${b.token}`}});expect(noContext.statusCode).toBe(403);
+    invitationContexts.set(b.userId,randomUUID());expect((await request(b,'GET',`/patients/me/marriage-requests/${requestId}`)).statusCode).toBe(403);invitationContexts.set(b.userId,requestId);
+    await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:null}});expect((await request(b,'GET',`/patients/me/marriage-requests/${requestId}`)).statusCode).toBe(403);await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:peer.phone}});
+    await db.userProfile.update({where:{userId:b.userId},data:{lastName:''}});
+    expect((await request(b,'GET',`/patients/me/marriage-requests/${requestId}`)).json().continuation.profileRequired).toBe(true);
+    expect((await request(b,'POST',`/patients/me/marriage-requests/${requestId}/accept`,{consentPolicyVersionId:linking.json().id,consentAccepted:true})).statusCode).toBe(403);
+    const completedProfile=await request(b,'POST','/patients/me/entry/profile',{firstName:'Synthetic',lastName:'Invitee',gender:'FEMALE',birthDate:'1990-01-01'});expect(completedProfile.statusCode,completedProfile.body).toBe(200);expect(completedProfile.json().required).toBe(true);
+    const preview=await request(b,'GET',`/patients/me/marriage-requests/${requestId}`);expect(preview.statusCode,preview.body).toBe(200);expect(preview.json().continuation.profileRequired).toBe(false);
     const accepted=await request(b,'POST',`/patients/me/marriage-requests/${invited.json().id}/accept`,{consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(accepted.statusCode,accepted.body).toBe(201);
     const id=accepted.json().educationalId as string,base='/patients/me/educational-couple-assessments',pair={a,b};
     const pub=await request(a,'GET',`/patients/me/educational-assessment-offerings/${offer.row.adminPublicationId}`);expect(pub.statusCode,pub.body).toBe(200);
@@ -104,16 +122,16 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     const second=await request(pair.b,'POST',`${base}/${id}/consent`,agreement(bConsent));expect(second.statusCode,second.body).toBe(201);expect(second.json().mutualConsentComplete).toBe(true);
     let grantIds:string[];
     {
-      expect((await request(pair.a,'POST',`${base}/${id}/free-access`)).statusCode).toBe(409);
-      const terms=pub.json().termsPolicy, acceptedTerms=await request(pair.a,'POST','/patients/me/assessment-consents',{policyVersionId:terms.id,contentHash:terms.contentHash,accepted:true});expect(acceptedTerms.statusCode,acceptedTerms.body).toBe(201);
+      expect((await request(pair.b,'POST',`${base}/${id}/free-access`)).statusCode).toBe(409);
+      const terms=pub.json().termsPolicy, acceptedTerms=await request(pair.b,'POST','/patients/me/assessment-consents',{policyVersionId:terms.id,contentHash:terms.contentHash,accepted:true});expect(acceptedTerms.statusCode,acceptedTerms.body).toBe(201);
       const key=randomUUID(), body={contextHash:d.contextHash,termsConsentRecordId:acceptedTerms.json().id};
-      const intents=await Promise.all([request(pair.a,'POST',`${base}/${id}/billing-intents`,body,key),request(pair.a,'POST',`${base}/${id}/billing-intents`,body,key)]);expect(intents.map(r=>r.statusCode),intents.map(r=>r.body).join('\n')).toEqual([201,201]);expect(intents[0].json().id).toBe(intents[1].json().id);const intent=intents[0].json();
-      const receipt=await request(pair.a,'GET',`/patients/me/assessment-purchases/${intent.assessmentPurchaseId}`);expect(receipt.statusCode,receipt.body).toBe(200);expect(receipt.json().managementHref).toBe(`/assessment/couples/educational/${id}`);
+      const intents=await Promise.all([request(pair.b,'POST',`${base}/${id}/billing-intents`,body,key),request(pair.b,'POST',`${base}/${id}/billing-intents`,body,key)]);expect(intents.map(r=>r.statusCode),intents.map(r=>r.body).join('\n')).toEqual([201,201]);expect(intents[0].json().id).toBe(intents[1].json().id);const intent=intents[0].json();
+      const receipt=await request(pair.b,'GET',`/patients/me/assessment-purchases/${intent.assessmentPurchaseId}`);expect(receipt.statusCode,receipt.body).toBe(200);expect(receipt.json().managementHref).toBe(`/assessment/couples/educational/${id}`);
       expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(0);
-      const wallet=app.get(WalletService), balance=await wallet.summary(pair.a.profile);
-      await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},pair.a.profile.id,{type:'CREDIT',amountToman:'100000',expectedVersion:balance.version,reason:'Synthetic educational couple fixture'},randomUUID());
-      const payKey=randomUUID(),pays=await Promise.all([request(pair.a,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey),request(pair.a,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey)]);expect(pays.map(r=>r.statusCode),pays.map(r=>r.body).join('\n')).toEqual([201,201]);
-      expect((await wallet.summary(pair.a.profile)).balanceRial).toBe('900000');expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(2);
+      const wallet=app.get(WalletService), balance=await wallet.summary(pair.b.profile);
+      await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},pair.b.profile.id,{type:'CREDIT',amountToman:'100000',expectedVersion:balance.version,reason:'Synthetic educational couple fixture'},randomUUID());
+      const payKey=randomUUID(),pays=await Promise.all([request(pair.b,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey),request(pair.b,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey)]);expect(pays.map(r=>r.statusCode),pays.map(r=>r.body).join('\n')).toEqual([201,201]);
+      expect((await wallet.summary(pair.b.profile)).balanceRial).toBe('900000');expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(2);
       grantIds=[];for(const who of [pair.a,pair.b]){const state=await request(who,'GET',`${base}/${id}`);expect(state.statusCode,state.body).toBe(200);grantIds.push(state.json().ownAccessGrantId);}
     }
     const submissions=[];
@@ -125,6 +143,10 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
       const completed=await request(who,'POST',`/assessment-submissions/${sid}/submit`,{expectedRevision:saved.json().revision});expect(completed.statusCode,completed.body).toBe(201);submissions.push(sid);
       if(index===0)expect((await request(who,'GET',`${base}/${id}/result`)).statusCode).toBe(404);
     }
+    expect((await request(b,'GET','/patients/me/entry')).json().required).toBe(true);
+    expect((await db.patientEntry.findUniqueOrThrow({where:{patientId:b.profile.id}})).completedAt).toBeNull();
+    const unrelated=await request(b,'GET',`/assessment-submissions/${submissions[0]}`);expect(unrelated.statusCode).toBe(403);
+    const recipientJoint=await request(b,'GET',`${base}/${id}/result`);expect(recipientJoint.statusCode,recipientJoint.body).toBe(200);
     const joint=await request(pair.a,'GET',`${base}/${id}/result`);expect(joint.statusCode,joint.body).toBe(200);expect(joint.json().results).toHaveLength(2);expect(joint.json().jointText).toBe('Synthetic role-aware fallback');
     for(const result of joint.json().results){expect(result.resultSnapshot.algorithmVersion).toBe(algorithmVersion);expect(result.resultSnapshot.scores).toBeTruthy();expect(result.resultSnapshot.answers).toBeUndefined();}
     for(const privateValue of [pair.a.profile.id,pair.b.profile.id,'compatibilityScore','answerPayloadHash']) expect(joint.body).not.toContain(privateValue);
@@ -132,6 +154,12 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     expect(joint.json().results.map((result:{roleId:string;isSelf:boolean})=>[result.roleId,result.isSelf])).toEqual([['FIRST',false],['SECOND',true]]);
     const withdrawal=await request(pair.a,'POST',`${base}/${id}/sharing-withdrawal`);expect(withdrawal.statusCode,withdrawal.body).toBe(201);
     expect((await request(pair.b,'GET',`${base}/${id}/result`)).statusCode).toBe(404);
+    // Once accepted, a later holder of the same number never becomes this recipient.
+    await db.user.update({where:{id:b.userId},data:{phone:`+989${Math.floor(Math.random()*900000000+100000000)}`}});
+    const laterHolder=stranger;await db.user.update({where:{id:laterHolder.userId},data:{phone:peer.phone}});await db.session.update({where:{id:laterHolder.sessionId},data:{verifiedPhone:peer.phone}});
+    expect((await request(laterHolder,'GET',`/patients/me/marriage-requests/${requestId}`)).statusCode).toBe(404);
+    expect((await request(laterHolder,'GET','/patients/me/marriage-requests')).json().items.some((item:{id:string})=>item.id===requestId)).toBe(false);
+    const moved=await db.user.findUniqueOrThrow({where:{id:b.userId}});await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:moved.phone}});expect((await request(b,'GET',`/patients/me/marriage-requests/${requestId}`)).statusCode).toBe(200);
   }, 30000);
 
   it.each([[1,'PAID'],[2,'PAID']] as [number,string][])('couple v%s %s retains two real charts and independent disclosure without a complete text matrix',async (algorithmVersion,priceMode)=>{

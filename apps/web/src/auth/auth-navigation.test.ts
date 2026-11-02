@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { landingLoginUrl, postAuthenticationUrl } from "./auth-navigation";
+import { invitationDestination, landingLoginUrl, postAuthenticationUrl } from "./auth-navigation";
 
 describe("landing authentication navigation", () => {
+    it('recognizes only exact invitation destinations on the patient app origin', () => {
+        const path = '/assessment/marriage/requests/11111111-1111-4111-8111-111111111111';
+        expect(invitationDestination('http://localhost:3001'+path)).toBe('http://localhost:3001'+path);
+        for (const candidate of ['https://evil.test'+path,'http://localhost:3002'+path,'http://localhost:3001/assessment','javascript:alert(1)','http://attacker@localhost:3001'+path]) expect(invitationDestination(candidate)).toBeNull();
+    });
     it("keeps patient and operational roles on their existing destinations", () => {
         expect(postAuthenticationUrl(["PATIENT"], null)).toBe("http://localhost:3001");
         for (const role of ["ADMIN", "DOCTOR", "STAFF"]) {

@@ -58,7 +58,7 @@ export class MarriageRequestService {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(tx, ctx);
       const verified = await this.verified(tx, patient.user.phone, ctx);
-      const where = { clinicId: patient.clinicId, OR: [{ initiatorPatientId: patient.id }, ...(verified ? [{ recipientHash: { in: this.crypto.phoneFingerprints(patient.user.phone) } }] : [])] };
+      const where = { clinicId: patient.clinicId, OR: [{ initiatorPatientId: patient.id }, ...(verified ? [{ recipientPatientId: patient.id }, { recipientPatientId: null, recipientHash: { in: this.crypto.phoneFingerprints(patient.user.phone) } }] : [])] };
       const [rows, total] = await Promise.all([tx.marriageServiceRequest.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: (page - 1) * 20, take: 20 }), tx.marriageServiceRequest.count({ where })]);
       const items = [];
       for (const row of rows) items.push(await this.project(tx, row, patient.id, ctx));
@@ -141,7 +141,7 @@ export class MarriageRequestService {
     const patient = await this.patient(tx, ctx);
     if (lock) await tx.$queryRaw(Prisma.sql`SELECT id FROM marriage_service_requests WHERE id=${id}::uuid AND clinic_id=${patient.clinicId}::uuid FOR UPDATE`);
     const row = await tx.marriageServiceRequest.findFirst({ where: { id, clinicId: patient.clinicId } });
-    if (!row || row.initiatorPatientId !== patient.id && (!await this.verified(tx, patient.user.phone, ctx) || !this.crypto.phoneFingerprints(patient.user.phone).includes(row.recipientHash))) throw missing();
+    if (!row || row.initiatorPatientId !== patient.id && (!await this.verified(tx, patient.user.phone, ctx) || (row.recipientPatientId !== null ? row.recipientPatientId !== patient.id : !this.crypto.phoneFingerprints(patient.user.phone).includes(row.recipientHash)))) throw missing();
     return { row, patient };
   }
 
@@ -190,7 +190,10 @@ export class MarriageRequestService {
     const initiator = await tx.userProfile.findFirst({ where: { user: { patientProfile: { id: row.initiatorPatientId } } }, select: { firstName: true,lastName: true } });
     const initiatorName = [initiator?.firstName,initiator?.lastName].filter(Boolean).join(' ') || null;
     const deliveries = isInitiator ? await tx.marriageInvitationDelivery.findFirst({ where: { requestId: row.id }, orderBy: { createdAt: 'desc' } }) : null;
-    return { id: row.id, status: row.status, isInitiator, initiatorName, ownIneligibilityReason, ownEligible: (await this.eligible(tx, patientId, definition)).includes(ownRole), eligibilityNotConfirmed: row.recipientIneligible, ownRole, service: { publicationId: row.publicationId, title: source.offeringVersion.title, amountRial: source.offeringVersion.amountRial!.toString(), definition, eligibleRoles: await this.eligible(tx, patientId, definition), linkingPolicy: { id: policy.id, versionNumber: policy.versionNumber, policyKey: policy.policyKey, locale: policy.locale, title: policy.title, body: policy.body, contentHash: policy.contentHash } }, invitationPath: `/assessment/marriage/requests/${row.id}`, educationalId: row.educationalId, smsStatus: deliveries?.status ?? null, createdAt: row.createdAt };
+    const ownProfile = await tx.userProfile.findFirst({ where: { user: { patientProfile: { id: patientId } } }, select: { firstName: true, lastName: true } });
+    const profileRequired = ownIneligibilityReason === 'PROFILE_INCOMPLETE' || !ownProfile?.firstName?.trim() || !ownProfile.lastName?.trim();
+    const nextPath = profileRequired ? `/welcome?marriageRequestId=${row.id}` : row.status === 'ACCEPTED' && row.educationalId ? `/assessment/couples/educational/${row.educationalId}?marriageRequestId=${row.id}` : `/assessment/marriage/requests/${row.id}`;
+    return { continuation: { profileRequired, nextPath }, id: row.id, status: row.status, isInitiator, initiatorName, ownIneligibilityReason, ownEligible: (await this.eligible(tx, patientId, definition)).includes(ownRole), eligibilityNotConfirmed: row.recipientIneligible, ownRole, service: { publicationId: row.publicationId, title: source.offeringVersion.title, amountRial: source.offeringVersion.amountRial!.toString(), definition, eligibleRoles: await this.eligible(tx, patientId, definition), linkingPolicy: { id: policy.id, versionNumber: policy.versionNumber, policyKey: policy.policyKey, locale: policy.locale, title: policy.title, body: policy.body, contentHash: policy.contentHash } }, invitationPath: `/assessment/marriage/requests/${row.id}`, educationalId: row.educationalId, smsStatus: deliveries?.status ?? null, createdAt: row.createdAt };
   }
   private async audit(tx: Tx, action: string, subjectId: string, ctx: Context) { await tx.auditEvent.create({ data: { action, subjectType: 'MARRIAGE_SERVICE_REQUEST', subjectId, actorUserId: ctx.actorUserId, actorSessionId: ctx.actorSessionId, requestId: ctx.requestId.slice(0,128), ipAddress: ctx.ipAddress, metadata: {} } }); }
 }
