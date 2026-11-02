@@ -489,3 +489,14 @@ WEB02 footer/motion acceptance (2026-10-27): owner approved the local commit of 
 - [x] `F12-FE01-MZ04` — Secondary elimination paths and percentage charts DONE/software, sole /root review PASS/claim RELEASED. Existing unit/type/OpenAPI/browser checks plus3 focused actual PostgreSQL HTTP cases PASS on disposable Docker database (2026-10-30); direct/two-step patient completion, persisted resume, privacy/off-path/premature guards, primary/count preservation, replay and legacy compatibility. Container removed; main DB untouched. Owner explicitly forbids commit; no next batch. Evidence: phase12 log MZ04 PostgreSQL acceptance.
 
 - [x] `F12-FE01-MZ05` — DONE/software under owner-final2026-10-31 entry/public plan, sole /root review PASS, scoped claim RELEASED. One required entry with editable introduction/independent free-or-paid price, optional deferral/Home reminder, atomic owned entry origin, shared verified billing, paid-only public distribution, repeated purchases and latest valid Mizaj profile delivered. Historical free rights/results and mutual couple privacy preserved; original public FREE matrix superseded by explicit owner decision.109 fresh/upgraded disposable migrations,33 targeted PG/rules tests,16 intercepted responsive browser cases, contracts/SDK/types/diff PASS. No stage/commit/deploy; broader F12-FE01 stays REWORK and no next batch starts. Evidence: logs/phase-12.md#mz05-owner-final-entrypublic-workflow-acceptance--2026-10-31.
+
+
+## MZ06 — Marriage service (owner approved2026-11-01)
+
+- [x] F12-FE01-MZ06-C01 — Accepted ADR0047, marriage-service-v1 and user-flow diagram; documentation review PASS2026-11-02. Evidence: phase12 log MZ06-C01 contract and user-flow review.
+- [ ] F12-FE01-MZ06-C02 — Versioned roles/eligibility, dashboard authoring and role-aware interpretation.
+- [ ] F12-FE01-MZ06-C03 — Phone-bound request, account/no-account join, app flow and privacy.
+- [ ] F12-FE01-MZ06-C04 — Separate durable invitation SMS and sender controls.
+- [ ] F12-FE01-MZ06-C05 — Existing payment/access integration, migrations and full targeted acceptance.
+
+Sole /root ownership; schema/contracts serialized. C01 accepted independently; C02–C05 remain active and uncommitted until their gates pass. Owner authorizes independent completed-task commits2026-11-02; no push/deploy. Preserve unrelated installer/user changes.
