@@ -1,3 +1,4 @@
+import { marriageDefinition } from '../../domain/marriage-service';
 import { createHash, randomUUID } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../database/prisma/prisma.service';
@@ -20,9 +21,9 @@ type Tx = Prisma.TransactionClient;
 @Injectable()
 export class EducationalCoupleService {
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly access: AssessmentAccessService, private readonly clinicalAudit: ClinicalAccessAuditService) {}
-  async create(body: EducationalCoupleCreateDto, rawKey: string | undefined, ctx: Context) {
+  async create(body: EducationalCoupleCreateDto, rawKey: string | undefined, ctx: Context, transaction?: Tx) {
     const key = financialKey(rawKey), payloadHash = hash({ ...body, coupleSessionId: body.coupleSessionId.toLowerCase(), publicationId: body.publicationId.toLowerCase() });
-    return this.prisma.$transaction(async tx => {
+    const execute = async (tx: Tx) => {
       const patient = await this.patient(tx, ctx);
       await lockFinancial(tx, `educational-couple-create:${patient.id}:${key}`);
       const prior = await tx.educationalCoupleSession.findUnique({ where: { createdByPatientId_idempotencyKey: { createdByPatientId: patient.id, idempotencyKey: key } }, include });
@@ -34,6 +35,7 @@ export class EducationalCoupleService {
       const publication = await tx.assessmentAdminPublication.findFirst({ where: { id: body.publicationId, status: 'ACTIVE', offeringVersion: { clinicId: patient.clinicId, kind: 'COUPLES', priceMode:'PAID',status: 'DRAFT', assessmentVersion: { status: 'PUBLISHED' } } }, include: { offeringVersion: { include: { assessmentVersion: true } } } });
       if (publication && !(await tx.$queryRaw<{ visible: boolean }[]>(Prisma.sql`SELECT assessment_publicly_available(${publication.offeringVersion.assessmentVersionId}::uuid) AS visible`))[0]?.visible) throw missing();
       if (!publication || adminPublicationHash(publication) !== body.publicationHash) throw conflict();
+      if (marriageDefinition(publication.offeringVersion.authoringTexts) && (!transaction || !await tx.marriageServiceRequest.count({ where: { linkId: link.id, publicationId: publication.id, recipientPatientId: patient.id, status: 'PENDING' } }))) throw conflict();
       const existing = await tx.educationalCoupleSession.findFirst({ where: { coupleSessionId: link.id, publicationId: publication.id }, orderBy:[{createdAt:'desc'},{id:'desc'}],include });
       if (existing && !existing.participants.every(p=>p.accessGrant?.submission?.state==='COMPLETE')) { await this.audit(tx, 'COUPLE_ASSESSMENT_READ', existing.id, ctx); return this.project(existing, patient.id, await this.mutual(tx, existing.id), await this.isCurrent(tx, existing.publication.offeringVersionId)); }
       if (!await this.isCurrent(tx, publication.offeringVersionId)) throw conflict();
@@ -43,7 +45,8 @@ export class EducationalCoupleService {
       await tx.educationalCoupleParticipant.createMany({ data: link.participants.map(p => ({ sessionId: id, clinicId: patient.clinicId, patientId: p.patientId, slot: p.slot })) });
       const row = await tx.educationalCoupleSession.findUniqueOrThrow({ where: { id }, include });
       await this.audit(tx, 'COUPLE_ASSESSMENT_CREATED', id, ctx); return this.project(row, patient.id, false, true);
-    }, { maxWait: 30_000, timeout: 15_000 });
+    };
+    return transaction ? execute(transaction) : this.prisma.$transaction(execute, { maxWait: 30_000, timeout: 15_000 });
   }
   async list(query: EducationalCoupleQueryDto, ctx: Context) {
     return this.prisma.$transaction(async tx => {

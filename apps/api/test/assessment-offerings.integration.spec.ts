@@ -1,3 +1,4 @@
+import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -35,6 +36,38 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
   async function questionnaire(options: { clinicId?: string; key?: string; locale?: string; draft?: boolean } = {}) {
     return db.assessmentVersion.create({ data: { clinicId: options.clinicId ?? clinicId, assessmentKey: options.key ?? 'MEZAJ', locale: options.locale ?? `x-${randomUUID().slice(0, 8)}`, versionNumber: 1, title: 'Synthetic offering questionnaire', contentHash: 'a'.repeat(64), structure: { schemaVersion: 1, sections: [] }, status: options.draft ? 'DRAFT' : 'PUBLISHED', ...(options.draft ? {} : { publishedAt: new Date() }) } });
   }
+  it('marriage phone request supports a future account, rejects mismatched identity and binds independent roles', async () => {
+    const definition = { version: 1, purpose: 'MARRIAGE', roles: [{ id: 'FIRST', title: 'Man', genders: ['MALE'], minimumAgeYears: 18 }, { id: 'SECOND', title: 'Woman', genders: ['FEMALE'], minimumAgeYears: 18 }], genericJointText: 'Synthetic generic interpretation' };
+    const source = await db.assessmentVersion.create({ data: { clinicId, assessmentKey: `MARRIAGE_${randomUUID()}`, locale: 'fa-IR', versionNumber: 1, title: 'Synthetic', contentHash: 'a'.repeat(64), structure: { schemaVersion: 1, sections: [{ id: 'main', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 1, falseScore: 0 }] }] }, status: 'PUBLISHED', publishedAt: new Date() } });
+    const offer = await request('POST','/inline-versions',{ assessmentVersionId: source.id, title: 'Synthetic marriage', kind: 'COUPLES', priceMode: 'PAID', amountRial: '100000', texts: { processing: 'Synthetic processing', retention: 'Synthetic retention', visibility: 'Synthetic visibility', disclosure: 'Synthetic disclosure', terms: 'Synthetic terms', marriage: definition } });
+    expect(offer.statusCode,offer.body).toBe(201);
+    const policy = await db.consentPolicyVersion.findFirst({ where: { clinicId, policyKey: 'COUPLES_ACCOUNT_LINKING', status: 'ACTIVE' } }) ?? await db.consentPolicyVersion.create({ data: { clinicId, policyKey: 'COUPLES_ACCOUNT_LINKING', locale: 'fa-IR', versionNumber: 1, title: 'Synthetic linking', body: 'Synthetic linking fixture', contentHash: createHash('sha256').update('Synthetic linking fixture').digest('hex'), status: 'ACTIVE', activatedAt: new Date() } });
+    const sender = await actor('PATIENT'); await createCompleteTestPatient(db,{data:{ userId: sender.userId,clinicId }}); await db.userProfile.update({ where: { userId: sender.userId }, data: { gender: 'MALE' } });
+    const http = (who:typeof sender,method:'GET'|'POST',path:string,body?:object,key=randomUUID()) => app.inject({ method,url:'/v1/patients/me/marriage-requests'+path,headers:{authorization:`Bearer ${who.token}`,origin:'http://localhost:3000','idempotency-key':key},...(body?{payload:body}:{}) });
+    const phone = `+989${Math.floor(Math.random()*900000000+100000000)}`; const before = await db.user.count(); const key=randomUUID();
+    const body = { publicationId: offer.json().adminPublicationId, initiatorRole:'FIRST',recipientPhone:phone,consentPolicyVersionId:policy.id,consentAccepted:true };
+    const created=await http(sender,'POST','',body,key); expect(created.statusCode,created.body).toBe(201); expect(await db.user.count()).toBe(before); let id=created.json().id;
+    expect(created.json()).not.toHaveProperty('recipientHash'); expect(created.json()).not.toHaveProperty('recipientPatientId');
+    expect((await http(sender,'POST','',body,key)).json().id).toBe(id);
+    const oldId=id,replacementKey=randomUUID();const replacement=await http(sender,'POST',`/${oldId}/replace`,body,replacementKey);expect(replacement.statusCode,replacement.body).toBe(201);id=replacement.json().id;expect(id).not.toBe(oldId);expect((await http(sender,'GET',`/${oldId}`)).json().status).toBe('REPLACED');expect((await http(sender,'POST',`/${oldId}/replace`,body,replacementKey)).json().id).toBe(id);
+    const user=await db.user.create({data:{phone}});const receiver=await createTestAccessToken(db,app.get(AccessTokenService),['PATIENT'],user.id);await db.userRole.create({data:{userId:user.id,roleId:(await db.role.findUniqueOrThrow({where:{code:'PATIENT'}})).id}});await createCompleteTestPatient(db,{data:{userId:user.id,clinicId}});
+    expect((await http(receiver,'GET',`/${id}`)).statusCode).toBe(404);
+    await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:phone}});
+    const accept={consentPolicyVersionId:policy.id,consentAccepted:true};
+    await db.userProfile.update({where:{userId:user.id},data:{gender:'MALE'}});
+    const ineligible=await http(receiver,'POST',`/${id}/accept`,accept);expect(ineligible.statusCode,ineligible.body).toBe(201);expect(ineligible.json().eligibilityNotConfirmed).toBe(true);expect(ineligible.json().educationalId).toBeNull();expect(ineligible.json().ownIneligibilityReason).toBe('GENDER_NOT_ALLOWED');const privateView=(await http(sender,'GET',`/${id}`)).json();expect(privateView.ownIneligibilityReason).toBeNull();expect(privateView).not.toHaveProperty('recipientGender');
+    await db.userProfile.update({where:{userId:user.id},data:{gender:'FEMALE'}});
+    const patientId=(await db.patientProfile.findUniqueOrThrow({where:{userId:user.id}})).id;
+    await db.patientEntry.update({where:{patientId},data:{birthDate:new Date('2015-01-01')}});
+    const minor=await http(receiver,'POST',`/${id}/accept`,accept);expect(minor.json().ownIneligibilityReason).toBe('AGE_BELOW_MINIMUM');expect(minor.json().educationalId).toBeNull();
+    await db.patientEntry.update({where:{patientId},data:{birthDate:new Date('1990-01-01')}});
+    const responses=await Promise.all([http(receiver,'POST',`/${id}/accept`,accept),http(receiver,'POST',`/${id}/accept`,accept)]);
+    for(const response of responses)expect(response.statusCode,response.body).toBe(201);
+    expect(responses[0]!.json().status).toBe('ACCEPTED');expect(responses[1]!.json().educationalId).toBe(responses[0]!.json().educationalId);
+    const saved=await db.marriageServiceRequest.findUniqueOrThrow({where:{id}});expect(saved.recipientPatientId).toBe((await db.patientProfile.findUniqueOrThrow({where:{userId:user.id}})).id);expect(Buffer.from(saved.encryptedPayload).toString()).not.toContain(phone);
+    expect((await db.educationalCoupleParticipant.count({where:{sessionId:saved.educationalId!}}))).toBe(2);
+  });
+
   it.each(['INDIVIDUAL', 'COUPLES'])('inline offering saves all modes with owned documents and retry safety: %s', async kind => {
     const structure = { schemaVersion: 1, sections: [{ id: 'main', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 1, falseScore: 0 }] }] };
     const source = await db.assessmentVersion.create({ data: { clinicId, assessmentKey: `INLINE_${randomUUID()}`, locale: 'fa-IR', versionNumber: 1, title: 'Synthetic inline', contentHash: 'a'.repeat(64), structure, status: 'PUBLISHED', publishedAt: new Date() } });

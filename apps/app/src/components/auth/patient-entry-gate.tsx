@@ -1,4 +1,5 @@
 'use client';
+import { rememberMarriageReturn, marriageReturn, clearMarriageReturn } from '@/lib/marriage-return';
 import { createContext, useCallback, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthSessionSnapshot, useOptionalAuthSession } from './session-gate';
@@ -23,8 +24,9 @@ export function PatientEntryGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!patient && session && pathname === '/welcome') { router.replace('/'); return; }
     if (!patient || resource.loading || resource.error || !resource.data) return;
-    if (required && pathname !== '/welcome') router.replace('/welcome');
-    if (!required && pathname === '/welcome') router.replace('/');
+    if (required && pathname !== '/welcome') { if (userId) rememberMarriageReturn(userId, pathname); router.replace('/welcome'); }
+    if (!required && pathname === '/welcome') router.replace(userId ? marriageReturn(userId) ?? '/' : '/');
+    if (!required && userId) clearMarriageReturn(userId,pathname);
   }, [patient, session, resource.loading, resource.error, resource.data, required, pathname, router]);
   if (!snapshot || snapshot.status === 'checking') return <EntryWait />;
   if (snapshot.status === 'unavailable') return <EntryWait error="unavailable" retry={() => window.location.reload()} />;

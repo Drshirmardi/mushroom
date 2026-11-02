@@ -6235,3 +6235,16 @@ Immutable offering JSON now carries two adult semantic roles, editable genders/m
 Verification: Three domain boundaries and the complete offering HTTP/PostgreSQL suite PASS within the 58-test final review; dashboard390/1440 real-browser authoring with intercepted HTTP verifies emitted roles, age21 and fallback. Dashboard types/build/scoped ESLint and generated-client checks PASS.
 
 Commit boundary: only task-owned source/tests/generated artifacts and these acceptance records. Existing installer/ADR0046/AGENTS/fa.json remain outside the index. No primary migration, extra real SMS or manual deployment. Owner explicitly authorizes task commits and origin/dev push; live invitation pattern approval and actual carrier receipt are operational acceptance, deferred by owner.
+
+## MZ06-C03 — Accepted software
+
+Task ID: F12-FE01-MZ06-C03
+Date: 2026-11-02
+Coordinator/reviewer: Codex /root, sole writer; same owner-authorized MZ06 serialized batch.
+Status: DONE (software); scoped review PASS.
+
+Phone-only requests work before the recipient exists; encrypted/HMAC-bound identity, independent verified-phone sessions, self/foreign-account refusal, atomic acceptance/replacement/cancellation and retained clinic/publication bindings connect to existing couple participation. Requester name is visible only after recipient authentication; own gender/age refusal reason never exposes the other profile. Server rechecks eligibility for payment/access. App discovery/history, consent and login/entry return are connected. Shared request/initial queue storage belongs here; claim/provider pin storage follows only in C04.
+
+Verification: HTTP/PostgreSQL existing/future-account, no phantom account, wrong phone, minor/gender refusal, corrected profile, concurrent acceptance/replay and replacement PASS. Actual production-built app plus disposable API/PostgreSQL browser create and second-account acceptance PASS. Intercepted390/1440 UI save/reload/replace/cancel/history and entry/login return PASS. OTP persistence and ownership-proof checks PASS; source/test/app types and app build PASS. Populated migration preserves143 old tables (17 populated); final schema drift zero.
+
+Commit boundary: only task-owned source/tests/generated artifacts and these acceptance records. Existing installer/ADR0046/AGENTS/fa.json remain outside the index. No primary migration, extra real SMS or manual deployment. Owner explicitly authorizes task commits and origin/dev push; live invitation pattern approval and actual carrier receipt are operational acceptance, deferred by owner.

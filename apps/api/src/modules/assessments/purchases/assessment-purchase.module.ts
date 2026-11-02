@@ -1,3 +1,7 @@
+import { MarriageRequestController } from '../couples/marriage-request.controller';
+import { MarriageRequestService } from '../couples/marriage-request.service';
+import { CoupleLinkModule } from '../couples/couple-link.module';
+import { SmsModule } from '../../communications/sms/sms.module';
 import { Module } from '@nestjs/common';
 import { BillingModule } from '../../billing/billing.module';
 import { IdentityModule } from '../../identity/identity.module';
@@ -15,5 +19,5 @@ import { AssessmentAdminPurchaseService } from './assessment-admin-purchase.serv
 import { EducationalCoupleService } from '../couples/educational/educational-couple.service';
 import { EducationalCoupleController } from '../couples/educational/educational-couple.controller';
 import { ClinicalModule } from '../../clinical/clinical.module';
-@Module({ imports: [BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule, AssessmentAccessModule, ClinicalModule], controllers: [AssessmentPurchaseController, EducationalCoupleController], providers: [AssessmentPurchaseService, AssessmentEducationalAccessService, AssessmentAdminPurchaseService, AssessmentBillingTarget, EducationalCoupleService] })
+@Module({ imports: [SmsModule, CoupleLinkModule, BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule, AssessmentAccessModule, ClinicalModule], controllers: [MarriageRequestController, AssessmentPurchaseController, EducationalCoupleController], providers: [MarriageRequestService, AssessmentPurchaseService, AssessmentEducationalAccessService, AssessmentAdminPurchaseService, AssessmentBillingTarget, EducationalCoupleService] })
 export class AssessmentPurchaseModule {}

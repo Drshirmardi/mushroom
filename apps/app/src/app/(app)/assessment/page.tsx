@@ -1,4 +1,5 @@
 "use client";
+import { MarriageOffers } from '@/components/assessments/marriage-service';
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ClipboardList, Users } from "lucide-react";
@@ -28,7 +29,7 @@ export default function AssessmentPage() {
   const educational = usePatientResource(useCallback(() => listEducationalAssessmentOfferings(token, educationalPage), [token, educationalPage]));
   return <ServicePage title="ارزیابی سلامت" description="آزمون مناسب را انتخاب کنید یا پاسخ‌های قبلی و نتیجهٔ ارزیابی خود را ببینید." icon={ClipboardList}>
     <ServiceTabs<View> value={view} onChange={changeView} options={[{value:"start",label:"آزمون جدید"},{value:"history",label:"سوابق و نتایج"},{value:"purchases",label:"خریدهای من"}]} />
-    {view === "start" && <>
+    {view === "start" && <><MarriageOffers />
       <ServiceSection title="ارزیابی‌های آموزشی" description="شرایط هر آزمون را بخوانید و با رضایت خود شروع کنید.">
         <PatientResourceState {...educational} retry={() => void educational.reload()} />
         {educational.data?.items.map(item => <Link key={item.id} href={`/assessment/educational/${item.id}`} className="service-card"><h3>{item.title}</h3><strong className="service-price">{item.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(item.amountRial ?? '0'))} تومان`}</strong><span className="service-text-action">شرایط و شروع ارزیابی<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
@@ -41,7 +42,7 @@ export default function AssessmentPage() {
       </ServiceSection>
       <ServiceSection title="ارزیابی‌های قابل خرید" description="هزینه و رضایت‌نامه پیش از خرید نمایش داده می‌شوند.">
         <PatientResourceState {...offerings} retry={() => void offerings.reload()} />
-        {offerings.data?.items.map(item => <Link key={item.id} href={item.kind === "COUPLES" ? `/assessment/couples?publicationId=${item.id}` : `/assessment/offerings/${item.id}`} className="service-card"><div className="service-card-top"><h3>{item.title}</h3><span className="service-badge">{item.kind === "COUPLES" ? "دو نفره" : "فردی"}</span></div><strong className="service-price">{formatRial(BigInt(item.amountRial))} تومان</strong><span className="service-text-action">جزئیات و شرایط ارزیابی<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
+        <Link href="/assessment/marriage" className="service-card block">پیگیری دعوت‌های ازدواج</Link>{offerings.data?.items.map(item => <Link key={item.id} href={item.kind === "COUPLES" ? `/assessment/couples?publicationId=${item.id}` : `/assessment/offerings/${item.id}`} className="service-card"><div className="service-card-top"><h3>{item.title}</h3><span className="service-badge">{item.kind === "COUPLES" ? "دو نفره" : "فردی"}</span></div><strong className="service-price">{formatRial(BigInt(item.amountRial))} تومان</strong><span className="service-text-action">جزئیات و شرایط ارزیابی<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
         {offerings.data?.items.length === 0 && <ServiceEmpty title="ارزیابی قابل خریدی منتشر نشده" description="پس از فعال‌شدن خدمات جدید، جزئیات و هزینهٔ آن‌ها در این بخش نمایش داده می‌شود." />}
         {offerings.data && <PatientPagination page={offerPage} total={offerings.data.total} onChange={setOfferPage} />}
       </ServiceSection>

@@ -13,7 +13,7 @@ import {
   type Authentication,
   type AuthSessionSnapshot,
 } from "@/auth/session";
-import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
+import { authApiClient, marriageLoginUrl, setAccessTokenProvider } from "@/lib/api";
 import { RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -88,7 +88,7 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (snapshot?.status === "anonymous") {
-      window.location.replace(loginUrl);
+      window.location.replace(marriageLoginUrl());
     }
   }, [snapshot?.status]);
 

@@ -10,6 +10,7 @@ export interface SessionUser {
 }
 
 export interface CreateSession {
+  verifiedPhone?: string;
   id: string;
   userId: string;
   refreshTokenHash: string;

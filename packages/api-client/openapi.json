@@ -28008,6 +28008,308 @@
         ]
       }
     },
+    "/v1/patients/me/marriage-requests/settings/{id}": {
+      "get": {
+        "operationId": "patientMarriageSettings",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageSettingsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests": {
+      "get": {
+        "operationId": "patientMarriageRequestsList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      },
+      "post": {
+        "operationId": "patientMarriageRequestCreate",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarriageRequestCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests/{id}": {
+      "get": {
+        "operationId": "patientMarriageRequestGet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests/{id}/accept": {
+      "post": {
+        "operationId": "patientMarriageRequestAccept",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarriageRequestAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests/{id}/replace": {
+      "post": {
+        "operationId": "patientMarriageRequestReplace",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarriageRequestCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests/{id}/cancel": {
+      "post": {
+        "operationId": "patientMarriageRequestCancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
     "/v1/patients/me/educational-assessment-offerings": {
       "get": {
         "operationId": "patientEducationalAssessmentOfferingsList",
@@ -37032,6 +37334,80 @@
           "processingConsentRecordId",
           "jointDisclosureAccepted",
           "linkedPartnerAcknowledged"
+        ]
+      },
+      "MarriageRoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "FIRST",
+              "SECOND"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "genders": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "enum": [
+                "MALE",
+                "FEMALE"
+              ]
+            }
+          },
+          "minimumAgeYears": {
+            "type": "number",
+            "minimum": 18,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "genders",
+          "minimumAgeYears"
+        ]
+      },
+      "MarriageDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "MARRIAGE"
+            ]
+          },
+          "roles": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarriageRoleDto"
+            }
+          },
+          "genericJointText": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "version",
+          "purpose",
+          "roles",
+          "genericJointText"
         ]
       },
       "AssessmentCouplePairTextDto": {
@@ -48001,9 +48377,221 @@
           "recommendConsultation"
         ]
       },
+      "MarriageSettingsDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "amountRial": {
+            "type": "string"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/MarriageDefinitionDto"
+          },
+          "eligibleRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "linkingPolicy": {
+            "$ref": "#/components/schemas/CoupleLinkPolicyDto"
+          }
+        },
+        "required": [
+          "publicationId",
+          "title",
+          "amountRial",
+          "definition",
+          "eligibleRoles",
+          "linkingPolicy"
+        ]
+      },
+      "MarriageRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "CANCELLED",
+              "REPLACED"
+            ]
+          },
+          "isInitiator": {
+            "type": "boolean"
+          },
+          "initiatorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownIneligibilityReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "PROFILE_INCOMPLETE",
+              "GENDER_NOT_ALLOWED",
+              "AGE_BELOW_MINIMUM"
+            ]
+          },
+          "ownEligible": {
+            "type": "boolean"
+          },
+          "eligibilityNotConfirmed": {
+            "type": "boolean"
+          },
+          "ownRole": {
+            "type": "string",
+            "enum": [
+              "FIRST",
+              "SECOND"
+            ]
+          },
+          "service": {
+            "$ref": "#/components/schemas/MarriageSettingsDto"
+          },
+          "invitationPath": {
+            "type": "string"
+          },
+          "educationalId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "smsStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "QUEUED",
+              "SENDING",
+              "ACCEPTED",
+              "FAILED",
+              "UNKNOWN"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "isInitiator",
+          "initiatorName",
+          "ownIneligibilityReason",
+          "ownEligible",
+          "eligibilityNotConfirmed",
+          "ownRole",
+          "service",
+          "invitationPath",
+          "educationalId",
+          "smsStatus",
+          "createdAt"
+        ]
+      },
+      "MarriageRequestPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarriageRequestDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "MarriageRequestCreateDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "initiatorRole": {
+            "type": "string",
+            "enum": [
+              "FIRST",
+              "SECOND"
+            ]
+          },
+          "recipientPhone": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "publicationId",
+          "initiatorRole",
+          "recipientPhone",
+          "consentPolicyVersionId",
+          "consentAccepted"
+        ]
+      },
+      "MarriageRequestAcceptDto": {
+        "type": "object",
+        "properties": {
+          "consentPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "consentPolicyVersionId",
+          "consentAccepted"
+        ]
+      },
       "EducationalAssessmentOfferingDto": {
         "type": "object",
         "properties": {
+          "servicePurpose": {
+            "type": "string",
+            "enum": [
+              "MARRIAGE"
+            ],
+            "nullable": true
+          },
           "publicationHash": {
             "type": "string"
           },
@@ -48097,6 +48685,13 @@
       "EducationalAssessmentOfferingDetailDto": {
         "type": "object",
         "properties": {
+          "servicePurpose": {
+            "type": "string",
+            "enum": [
+              "MARRIAGE"
+            ],
+            "nullable": true
+          },
           "publicationHash": {
             "type": "string"
           },
@@ -48997,80 +49592,6 @@
         "required": [
           "results",
           "jointText"
-        ]
-      },
-      "MarriageRoleDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "enum": [
-              "FIRST",
-              "SECOND"
-            ]
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "genders": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 2,
-            "items": {
-              "type": "string",
-              "enum": [
-                "MALE",
-                "FEMALE"
-              ]
-            }
-          },
-          "minimumAgeYears": {
-            "type": "number",
-            "minimum": 18,
-            "maximum": 120
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "genders",
-          "minimumAgeYears"
-        ]
-      },
-      "MarriageDefinitionDto": {
-        "type": "object",
-        "properties": {
-          "version": {
-            "type": "number",
-            "enum": [
-              1
-            ]
-          },
-          "purpose": {
-            "type": "string",
-            "enum": [
-              "MARRIAGE"
-            ]
-          },
-          "roles": {
-            "minItems": 2,
-            "maxItems": 2,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MarriageRoleDto"
-            }
-          },
-          "genericJointText": {
-            "type": "string",
-            "maxLength": 20000
-          }
-        },
-        "required": [
-          "version",
-          "purpose",
-          "roles",
-          "genericJointText"
         ]
       }
     }

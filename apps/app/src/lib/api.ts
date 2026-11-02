@@ -14,3 +14,5 @@ export const apiClient = createApiClient({
 });
 export const setAccessTokenProvider = sessionTransport.setAccessTokenProvider;
 export const loginUrl = new URL("/login", webBaseUrl).toString();
+
+export function marriageLoginUrl() { const url = new URL(loginUrl); if (/^\/assessment\/marriage(?:\/|$)/.test(window.location.pathname)) url.searchParams.set('next', window.location.href); return url.toString(); }

@@ -49,6 +49,7 @@ export class PrismaSessionRepository extends SessionRepository {
           id: input.id,
           userId: input.userId,
           refreshTokenHash: input.refreshTokenHash,
+          verifiedPhone: input.verifiedPhone,
           remembered: input.remembered,
           userAgent: limitUserAgent(input.userAgent),
           ipAddress: input.ipAddress,

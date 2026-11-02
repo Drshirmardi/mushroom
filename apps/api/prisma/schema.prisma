@@ -842,6 +842,7 @@ model Credential {
 }
 
 model Session {
+  verifiedPhone String? @map("verified_phone") @db.VarChar(13)
   educationalCoupleCreations EducationalCoupleSession[] @relation("EducationalCoupleCreation")
   educationalCoupleAcceptances EducationalCoupleParticipant[] @relation("EducationalCoupleAcceptance")
   educationalCoupleWithdrawals EducationalCoupleParticipant[] @relation("EducationalCoupleWithdrawal")
@@ -993,6 +994,7 @@ model AuditEvent {
 }
 
 model Clinic {
+  marriageRequests MarriageServiceRequest[]
   educationalCoupleSessions EducationalCoupleSession[]
   educationalCoupleParticipants EducationalCoupleParticipant[]
   entryPolicy PatientEntryPolicy?
@@ -1098,6 +1100,8 @@ model UserProfile {
 }
 
 model PatientProfile {
+  marriageInitiated MarriageServiceRequest[] @relation("MarriageInitiator")
+  marriageReceived MarriageServiceRequest[] @relation("MarriageRecipient")
   educationalCouplesCreated EducationalCoupleSession[] @relation("EducationalCoupleCreator")
   educationalCoupleParticipations EducationalCoupleParticipant[]
   assessmentFreeAccessCommands AssessmentFreeAccessCommand[]
@@ -2331,6 +2335,7 @@ model AssessmentVersion {
 }
 
 model CoupleSession {
+  marriageRequest MarriageServiceRequest?
   educationalAssessments EducationalCoupleSession[]
   assessmentSessions CoupleAssessmentSession[]
   id                       String   @id @default(uuid()) @db.Uuid
@@ -3959,6 +3964,7 @@ model PatientEntry {
 }
 
 model EducationalCoupleSession {
+  marriageRequest MarriageServiceRequest?
   purchases AssessmentPurchase[]
   id String @id @default(uuid()) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -4023,6 +4029,7 @@ model AssessmentFreeAccessCommand {
 }
 
 model AssessmentAdminPublication {
+  marriageRequests MarriageServiceRequest[]
   coupleSessions EducationalCoupleSession[]
   purchases AssessmentPurchase[]
   freeGrants AssessmentAccessGrant[]
@@ -4046,4 +4053,54 @@ model AssessmentDistributionSetting {
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
   assessmentVersion AssessmentVersion @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   @@map("assessment_distribution_settings")
+}
+
+
+model MarriageServiceRequest {
+  replacesId String? @unique @map("replaces_id") @db.Uuid
+  replaces MarriageServiceRequest? @relation("MarriageReplacement", fields: [replacesId], references: [id], onDelete: Restrict)
+  replacement MarriageServiceRequest? @relation("MarriageReplacement")
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  initiatorPatientId String @map("initiator_patient_id") @db.Uuid
+  recipientPatientId String? @map("recipient_patient_id") @db.Uuid
+  initiatorRole String @map("initiator_role") @db.VarChar(16)
+  recipientHash String @map("recipient_hash") @db.Char(64)
+  encryptedPayload Bytes @map("encrypted_payload")
+  encryptionNonce Bytes @map("encryption_nonce")
+  authenticationTag Bytes @map("authentication_tag")
+  encryptionKeyVersion String @map("encryption_key_version") @db.VarChar(40)
+  linkId String @unique @map("link_id") @db.Uuid
+  educationalId String? @unique @map("educational_id") @db.Uuid
+  status String @default("PENDING") @db.VarChar(24)
+  recipientIneligible Boolean @default(false) @map("recipient_ineligible")
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  publication AssessmentAdminPublication @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  initiator PatientProfile @relation("MarriageInitiator", fields: [initiatorPatientId], references: [id], onDelete: Restrict)
+  recipient PatientProfile? @relation("MarriageRecipient", fields: [recipientPatientId], references: [id], onDelete: Restrict)
+  link CoupleSession @relation(fields: [linkId], references: [id], onDelete: Restrict)
+  educational EducationalCoupleSession? @relation(fields: [educationalId], references: [id], onDelete: Restrict)
+  deliveries MarriageInvitationDelivery[]
+  @@unique([initiatorPatientId, idempotencyKey])
+  @@index([recipientHash, createdAt, id])
+  @@index([initiatorPatientId, createdAt, id], map: "marriage_requests_initiator_created_idx")
+  @@map("marriage_service_requests")
+}
+model MarriageInvitationDelivery {
+  id String @id @default(uuid()) @db.Uuid
+  requestId String @map("request_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(200)
+  status String @default("QUEUED") @db.VarChar(16)
+  providerReference String? @map("provider_reference") @db.VarChar(256)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(3)
+  request MarriageServiceRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  @@unique([requestId, idempotencyKey])
+  @@index([status, createdAt])
+  @@map("marriage_invitation_deliveries")
 }

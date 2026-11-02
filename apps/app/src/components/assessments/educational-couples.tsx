@@ -28,6 +28,7 @@ export function EducationalCoupleOffers({ token, userId, linkId }: { token: stri
   const resource = usePatientResource(useCallback(() => listEducationalAssessmentOfferings(token, page, 'COUPLES'), [token, page]));
   const key = useOperationKey(`${userId}:educational-couple-select:${linkId}`);
   return <><EducationalCoupleHistory token={token} linkId={linkId} /><ServiceSection title="انتخاب ارزیابی آموزشی زوجین" description="هر نفر از حساب خودش رضایت می‌دهد و پاسخ‌های خودش را ثبت می‌کند."><PatientResourceState {...resource} retry={() => void resource.reload()} />{resource.data?.items.map(item => <article key={item.id} className="service-card"><h3>{item.title}</h3><strong className="service-price">{item.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(item.amountRial ?? '0'))} تومان برای هر دو نفر`}</strong><button type="button" disabled={busy} className={primary} onClick={async () => {
+    if (item.servicePurpose === 'MARRIAGE') { router.push(`/assessment/marriage/new/${item.id}`); return; }
     if (lock.current) return; lock.current = true; setBusy(true); setError('');
     try { const body = { coupleSessionId: linkId, publicationId: item.id, publicationHash: item.publicationHash }; const result = await createEducationalCouple(token, body, await key(body)); await finishOperation(`${userId}:educational-couple-select:${linkId}`,body); router.push(`/assessment/couples/educational/${result.id}`); }
     catch (reason) { setError(patientErrorMessage(reason)); lock.current = false; setBusy(false); }

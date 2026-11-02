@@ -1,3 +1,4 @@
+import { marriageDefinition } from '../domain/marriage-service';
 import { createHash } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
@@ -110,7 +111,7 @@ export class AssessmentEducationalAccessService {
     }
     return blockers;
   }
-  private summary(row: Publication) { const offer = row.offeringVersion; return { id: row.id, publicationHash: adminPublicationHash(row), offeringVersionId: offer.id, title: offer.title, kind: offer.kind, priceMode: offer.priceMode, amountRial: offer.amountRial?.toString() ?? null, currency: offer.currency, algorithmId: offer.algorithmId, algorithmVersion: offer.algorithmVersion, publicationAuthority: 'ADMIN_PUBLISHED' as const }; }
+  private summary(row: Publication) { const offer = row.offeringVersion; return { servicePurpose: marriageDefinition(offer.authoringTexts)?.purpose ?? null, id: row.id, publicationHash: adminPublicationHash(row), offeringVersionId: offer.id, title: offer.title, kind: offer.kind, priceMode: offer.priceMode, amountRial: offer.amountRial?.toString() ?? null, currency: offer.currency, algorithmId: offer.algorithmId, algorithmVersion: offer.algorithmVersion, publicationAuthority: 'ADMIN_PUBLISHED' as const }; }
   private async patient(tx: Prisma.TransactionClient, ctx: Context) { const clinicId = await this.authority.scope(tx, 'patient', ctx); const patient = await tx.patientProfile.findUniqueOrThrow({ where: { userId: ctx.actorUserId } }); if (patient.clinicId !== clinicId) throw missing(); await this.access.self(tx, patient, ctx); return patient; }
   private async audit(tx: Prisma.TransactionClient, action: string, id: string, ctx: Context) { await tx.auditEvent.create({ data: { action, actorUserId: ctx.actorUserId, actorSessionId: ctx.actorSessionId, subjectType: 'ASSESSMENT_ACCESS', subjectId: id, requestId: ctx.requestId.slice(0, 128), ipAddress: ctx.ipAddress, metadata: {} } }); }
 }

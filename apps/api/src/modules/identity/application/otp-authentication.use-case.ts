@@ -67,7 +67,7 @@ export class OtpAuthenticationUseCase {
       return { user: { id: user.id, phone: user.phone, roles: user.roles.map(({ role }) => role.code) }, remember: challenge.remember };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     if ('error' in result) { if (result.error === 'EXPIRED') throw this.expired(); if (result.error === 'EXHAUSTED') throw this.tooMany('OTP_ATTEMPTS_EXHAUSTED', 'OTP verification attempts are exhausted.'); throw this.invalid(); }
-    return this.sessions.execute({ user: result.user, remember: result.remember, ipAddress: context.ipAddress, userAgent: context.userAgent, requestId: context.requestId });
+    return this.sessions.execute({ phoneVerified: true, user: result.user, remember: result.remember, ipAddress: context.ipAddress, userAgent: context.userAgent, requestId: context.requestId });
   }
 
   private policy() { return this.prisma.otpPolicy.upsert({ where: { id: 'default' }, create: { id: 'default' }, update: {} }); }

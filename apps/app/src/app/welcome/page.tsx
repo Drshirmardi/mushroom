@@ -1,4 +1,5 @@
 'use client';
+import { marriageReturn } from '@/lib/marriage-return';
 import { PaymentChooser } from '@/components/billing/payment-chooser';
 import { getBillingIntent } from '@/lib/wallet-billing-api';
 import { createEntryPayment, deferEntry } from '@/lib/patient-entry-api';
@@ -78,7 +79,7 @@ function Welcome() {
   const labels = status.assessmentRequired ? entryLabels : entryLabels.slice(0, 1);
   const phase = status.phase === 'PROFILE' ? 0 : status.phase === 'RESULT' ? 2 : 1;
   const start = async () => { if (busy) return; setBusy(true); setError(''); try { await startEntryAssessment(token); await reload(); } catch { setError(errorMessage); } finally { setBusy(false); } };
-  const enter = async (href?: string) => { await finishPatientEntry(token); if (href) { window.location.assign(href); return; } await reload(); router.replace('/'); };
+  const enter = async (href?: string) => { await finishPatientEntry(token); if (href) { window.location.assign(href); return; } await reload(); router.replace(marriageReturn(authentication.user.id) ?? '/'); };
   return <main className="entry-screen" dir="rtl"><div className="entry-container"><header className="entry-header"><span className="entry-brand"><span className="entry-mark" aria-hidden="true"><Leaf size={19} strokeWidth={1.7} /></span>سبز زندگی</span><span className="entry-step-count">شروع همراهی شما</span></header>
     <ol className="entry-progress" aria-label="مراحل شروع">{labels.map((label, index) => <li key={label} data-active={index === phase} data-done={index < phase} aria-current={index === phase ? 'step' : undefined}><span aria-hidden="true">{index < phase ? <Check size={15} /> : toP(index + 1)}</span><span className="entry-progress-label">{label}</span></li>)}</ol>
     <section aria-label="تکمیل ورود" className={`entry-card ${status.submissionId && status.phase === 'ASSESSMENT' ? 'entry-card--quiz' : ''}`}>

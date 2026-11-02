@@ -29,10 +29,10 @@ export class CoupleLinkService {
       return policy;
     });
   }
-  async create(userId: string, body: CoupleLinkConsentDto, rawKey: string | undefined, context: Context) {
+  async create(userId: string, body: CoupleLinkConsentDto, rawKey: string | undefined, context: Context, transaction?: Prisma.TransactionClient) {
     this.explicitConsent(body.consentAccepted);
     const key = commandKey(rawKey); const payloadHash = hash(JSON.stringify({ policyId: body.consentPolicyVersionId.toLowerCase(), consentAccepted: true }));
-    return this.prisma.$transaction(async tx => {
+    const execute = async (tx: Prisma.TransactionClient) => {
       const patient = await this.patient(tx, userId);
       await this.lockCommand(tx, `couple-create:${patient.id}:${key}`);
       const previous = await tx.coupleSession.findUnique({ where: { initiatorPatientId_idempotencyKey: { initiatorPatientId: patient.id, idempotencyKey: key } } });
@@ -43,7 +43,8 @@ export class CoupleLinkService {
       await this.join(tx, session, patient.id, 'INITIATOR', context);
       await this.audit(tx, 'COUPLE_SESSION_CREATED', session.id, context);
       return this.summary(tx, session.id, patient.id, context);
-    }, { maxWait: 30_000, timeout: 15_000 });
+    };
+    return transaction ? execute(transaction) : this.prisma.$transaction(execute, { maxWait: 30_000, timeout: 15_000 });
   }
   async list(userId: string, query: CoupleSessionListQueryDto, context: Context) {
     return this.prisma.$transaction(async tx => {
@@ -121,6 +122,20 @@ export class CoupleLinkService {
       await this.audit(tx, 'COUPLE_INVITATION_ACCEPTED', invitation.id, context);
       return this.summary(tx, session.id, patient.id, context);
     }, { maxWait: 30_000, timeout: 15_000 });
+  }
+  async acceptServiceRequest(tx: Prisma.TransactionClient, linkId: string, userId: string, policyId: string, context: Context) {
+    const patient = await this.patient(tx, userId);
+    await this.lockSession(tx, linkId, patient.clinicId);
+    const session = await tx.coupleSession.findUniqueOrThrow({ where: { id: linkId } });
+    if (session.state !== 'AWAITING_PARTNER' || session.initiatorPatientId === patient.id) throw stateConflict();
+    await this.adult(tx, patient.id);
+    const policy = await this.activePolicy(tx, patient.clinicId);
+    this.assertPolicy(session.consentPolicyVersionId, policyId); this.assertPolicy(policy.id, policyId);
+    const invitation = await tx.coupleInvitation.create({ data: { sessionId: linkId, clinicId: patient.clinicId, issuerPatientId: session.initiatorPatientId, recipientPatientId: patient.id, tokenHash: hash(randomBytes(32).toString('base64url')), idempotencyKey: `marriage:${linkId}`, payloadHash: hash(`${linkId}:${patient.id}`) } });
+    await this.join(tx, session, patient.id, 'PARTNER', context);
+    await tx.coupleInvitation.update({ where: { id: invitation.id }, data: { status: 'ACCEPTED', acceptedAt: new Date() } });
+    await tx.coupleSession.update({ where: { id: linkId }, data: { state: 'LINKED' } });
+    await this.audit(tx, 'COUPLE_SERVICE_LINK_ACCEPTED', linkId, context);
   }
   async withdraw(userId: string, id: string, context: Context) {
     return this.prisma.$transaction(async tx => {

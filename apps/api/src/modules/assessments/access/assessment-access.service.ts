@@ -19,6 +19,10 @@ export class AssessmentAccessService {
     const grant = await tx.assessmentAccessGrant.findFirst({ where: { ...ownedAssessmentGrantWhere, id, patientId: patient.id, clinicId: patient.clinicId },
       include: { purchase: { include: { publication: { include: { offeringVersion: true } } } }, submission: { select: { id: true } } } });
     if (!grant) throw new NotFoundException({ code: 'ASSESSMENT_PURCHASE_NOT_FOUND', message: 'Owned assessment access was not found.', details: {} });
+    if (grant.educationalCoupleParticipantId) {
+      const [eligibility] = await tx.$queryRaw<{ allowed: boolean }[]>(Prisma.sql`SELECT marriage_link_eligible(s.couple_session_id) AS allowed FROM educational_couple_participants p JOIN educational_couple_sessions s ON s.id=p.session_id WHERE p.id=${grant.educationalCoupleParticipantId}::uuid`);
+      if (!eligibility?.allowed) throw assessmentAccessUnavailable();
+    }
     const locked = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT id FROM patient_consent_records WHERE id=${grant.processingConsentRecordId}::uuid AND withdrawn_at IS NULL FOR SHARE`);
     if (!locked.length) throw assessmentAccessUnavailable();
     await tx.$queryRaw(Prisma.sql`SELECT i.id FROM patient_medical_intakes i JOIN patient_medical_intake_revisions r ON r.intake_id=i.id AND r.revision_number=i.current_revision_number WHERE i.patient_id=${patient.id}::uuid FOR SHARE OF i,r`);

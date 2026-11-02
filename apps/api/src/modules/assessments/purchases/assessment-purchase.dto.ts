@@ -16,6 +16,7 @@ export class AssessmentFreeGrantDto {
   @ApiProperty({ format: 'date-time' }) grantedAt!: Date;
 }
 export class EducationalAssessmentOfferingDto {
+  @ApiPropertyOptional({ enum: ['MARRIAGE'], nullable: true }) servicePurpose?: string | null;
   @ApiProperty() publicationHash!: string;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) offeringVersionId!: string;

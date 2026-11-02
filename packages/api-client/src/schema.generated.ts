@@ -5996,6 +5996,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/marriage-requests/settings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientMarriageSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientMarriageRequestsList"];
+        put?: never;
+        post: operations["patientMarriageRequestCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientMarriageRequestGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestReplace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/educational-assessment-offerings": {
         parameters: {
             query?: never;
@@ -8189,6 +8285,21 @@ export interface components {
             jointDisclosureAccepted: true;
             /** @enum {boolean} */
             linkedPartnerAcknowledged: true;
+        };
+        MarriageRoleDto: {
+            /** @enum {string} */
+            id: "FIRST" | "SECOND";
+            title: string;
+            genders: ("MALE" | "FEMALE")[];
+            minimumAgeYears: number;
+        };
+        MarriageDefinitionDto: {
+            /** @enum {number} */
+            version: 1;
+            /** @enum {string} */
+            purpose: "MARRIAGE";
+            roles: components["schemas"]["MarriageRoleDto"][];
+            genericJointText: string;
         };
         AssessmentCouplePairTextDto: {
             firstProfileId: string;
@@ -11115,7 +11226,63 @@ export interface components {
             services: components["schemas"]["PatientServiceDto"][];
             recommendConsultation: boolean;
         };
+        MarriageSettingsDto: {
+            /** Format: uuid */
+            publicationId: string;
+            title: string;
+            amountRial: string;
+            definition: components["schemas"]["MarriageDefinitionDto"];
+            eligibleRoles: string[];
+            linkingPolicy: components["schemas"]["CoupleLinkPolicyDto"];
+        };
+        MarriageRequestDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "PENDING" | "ACCEPTED" | "CANCELLED" | "REPLACED";
+            isInitiator: boolean;
+            initiatorName: string | null;
+            /** @enum {string|null} */
+            ownIneligibilityReason: "PROFILE_INCOMPLETE" | "GENDER_NOT_ALLOWED" | "AGE_BELOW_MINIMUM" | null;
+            ownEligible: boolean;
+            eligibilityNotConfirmed: boolean;
+            /** @enum {string} */
+            ownRole: "FIRST" | "SECOND";
+            service: components["schemas"]["MarriageSettingsDto"];
+            invitationPath: string;
+            /** Format: uuid */
+            educationalId: string | null;
+            /** @enum {string|null} */
+            smsStatus: "QUEUED" | "SENDING" | "ACCEPTED" | "FAILED" | "UNKNOWN" | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MarriageRequestPageDto: {
+            items: components["schemas"]["MarriageRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        MarriageRequestCreateDto: {
+            /** Format: uuid */
+            publicationId: string;
+            /** @enum {string} */
+            initiatorRole: "FIRST" | "SECOND";
+            recipientPhone: string;
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            /** @enum {boolean} */
+            consentAccepted: true;
+        };
+        MarriageRequestAcceptDto: {
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            /** @enum {boolean} */
+            consentAccepted: true;
+        };
         EducationalAssessmentOfferingDto: {
+            /** @enum {string|null} */
+            servicePurpose?: "MARRIAGE" | null;
             publicationHash: string;
             /** Format: uuid */
             id: string;
@@ -11140,6 +11307,8 @@ export interface components {
             pageSize: number;
         };
         EducationalAssessmentOfferingDetailDto: {
+            /** @enum {string|null} */
+            servicePurpose?: "MARRIAGE" | null;
             publicationHash: string;
             /** Format: uuid */
             id: string;
@@ -11388,21 +11557,6 @@ export interface components {
         EducationalCoupleResultDto: {
             results: components["schemas"]["EducationalCoupleIndividualResultDto"][];
             jointText: string | null;
-        };
-        MarriageRoleDto: {
-            /** @enum {string} */
-            id: "FIRST" | "SECOND";
-            title: string;
-            genders: ("MALE" | "FEMALE")[];
-            minimumAgeYears: number;
-        };
-        MarriageDefinitionDto: {
-            /** @enum {number} */
-            version: 1;
-            /** @enum {string} */
-            purpose: "MARRIAGE";
-            roles: components["schemas"]["MarriageRoleDto"][];
-            genericJointText: string;
         };
     };
     responses: never;
@@ -29055,6 +29209,168 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientMarriageSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageSettingsDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestPageDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriageRequestCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestAccept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriageRequestAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestReplace: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriageRequestCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
                 };
             };
         };
