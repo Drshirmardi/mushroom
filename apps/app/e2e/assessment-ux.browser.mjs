@@ -103,6 +103,7 @@ const scenarios = [
  if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{...headers,'access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'authorization,content-type,x-marriage-request-id'}});
  if(p==='/v1/auth/refresh')return send({accessToken:'test',expiresIn:600,user:{id:publication,roles:['PATIENT']}});
  if(p==='/v1/patients/me/entry')return send({required:false});
+ if(p.includes('/marriage-requests/settings/'))return send(settings);
  if(p.endsWith('/review'))reviews++;
  return send({id,status:'PENDING',isInitiator:false,ownEligible:true,ownRole:'SECOND',service:settings,invitationPath:`/assessment/marriage/requests/${id}`,continuation:{profileRequired:false,nextPath:`/assessment/marriage/requests/${id}`}});
  });
@@ -114,7 +115,17 @@ const scenarios = [
  const violations=await page.evaluate(async()=>{const r=await window.axe.run();return r.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id);});assert(!violations.length,JSON.stringify(violations));
  await accept.scrollIntoViewIfNeeded();const button=await accept.boundingBox(), nav=await page.getByRole('navigation',{name:'ناوبری اصلی'}).boundingBox();assert(button.y+button.height<=nav.y+1,'button under navigation');
  for(const width of [320,375,414,768,1024,1280,1440]){await page.setViewportSize({width,height:812});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'consent overflow '+width);}
- assert(reviews===1,'review loop');assert(errors.length===0,JSON.stringify(errors));return {PASS:true,reviews,axeCriticalSerious:0};
+ assert(reviews===1,'review loop');
+ await page.setViewportSize({width:320,height:812});await page.goto(`${baseUrl}/assessment/marriage/new/${publication}`);
+ const create=page.getByRole('button',{name:'ساخت دعوت و دریافت لینک',exact:true});await create.waitFor();
+ const ownConsent=page.getByRole('region',{name:'شرایط اتصال حساب‌ها'});
+ await ownConsent.getByText(settings.linkingPolicy.body,{exact:true}).waitFor();
+ assert(await page.locator('details').count()===0,'required initiator consent hidden');
+ assert(!await create.isEnabled(),'initiator consent auto accepted');
+ await page.getByLabel('شماره همراه شخص موردنظر').fill('09120000000');
+ await ownConsent.getByRole('checkbox').check();assert(await create.isEnabled(),'initiator consent not actionable');
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'initiator consent overflow');
+ assert(errors.length===0,JSON.stringify(errors));return {PASS:true,reviews,initiatorConsentVisible:true,axeCriticalSerious:0};
 } },
 { name: 'zoom', run: async page => {
  const id='11111111-1111-4111-8111-111111111111';
@@ -155,9 +166,10 @@ const scenarios = [
  assert(errors.length===0,JSON.stringify(errors));return {PASS:true,textScale:'200%',questionFocusVisible:true};
 } }
 ];
+if (process.env.UX_SCENARIO && !scenarios.some(item => item.name === process.env.UX_SCENARIO)) throw new Error('Unknown UX_SCENARIO');
 const browser = await chromium.launch();
 try {
- for (const scenario of scenarios) {
+ for (const scenario of scenarios.filter(item => !process.env.UX_SCENARIO || item.name === process.env.UX_SCENARIO)) {
   const page = await browser.newPage(); const consoleErrors=[];
   page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text());});
   try {const result=await scenario.run(page);if(consoleErrors.length)throw new Error(JSON.stringify(consoleErrors));console.log(JSON.stringify({scenario:scenario.name,...result}));}

@@ -6380,3 +6380,28 @@ Verification (targeted only):
 - Graphify AST update completed with existing missing SQL/Erlang/HCL parser and extraction/community-label warnings; no paid LLM relabel requested. Diff review preserves unrelated installer/AGENTS/fa changes. No schema/API/pricing/score changes; no real SMS/payment or manual deployment.
 
 Accepted task-level commit/push to `dev` authorized by user. MZ09-MZ11 requested software scope complete; broader F12-FE01 remains REWORK. No next batch selected.
+
+
+## F12-FE01-MZ12 — Final journey audit
+
+2026-11-03; sole /root coordinator/reviewer. Depends MZ11 DONE. User authorized completing the approved assessment-journey plan, finding/fixing consequential adjacent process problems, targeted checks and isolated dev commit/push. Final manual acceptance explicitly stays with user.
+
+Found: MarriageNew still hid required linking terms in a closed details element while recipient terms were natural-flow and visible. Product UX Expert (recognition/error prevention), Mobile Responsive (long text/touch target) and current Web Design Guidelines (semantic labelled controls, focus, content handling) guided reusing PolicyAcceptance, preserving exact terms/explicit independent consent and server command. No new visual framework, backend rule, schema, pricing or consent shortcut.
+
+Changed: marriage-service.tsx initiator terms use the existing shared accessible component. assessment-ux.browser.mjs extends the consent scenario to creation at320px and allows explicit scenario selection (unknown names rejected). No invitation is actually created by the test.
+
+Targeted verification: app tsc --noEmit PASS; scoped marriage-service ESLint zero errors/warnings PASS; browser script syntax PASS. `UX_SCENARIO=consent PATIENT_APP_TEST_URL=http://127.0.0.1:3017 AXE_SOURCE=<local axe> node apps/app/e2e/assessment-ux.browser.mjs` PASS: recipient long terms/checkbox/review1 and seven widths retained; initiator long terms visible without disclosure, unchecked disables creation, typing phone then checking enables it, no horizontal overflow320; console/page errors zero. Local fixture log .local/mz12-browser.log. Initial lint invocation omitted the existing dashboard config; corrected explicit config invocation PASS. No full suite or redundant app rebuild for component reuse; MZ11 app build remains evidence for the broader presentation change.
+
+Completion audit of the approved MZ09-MZ11 plan (current sources plus task-specific evidence inspected, no claim about all app features):
+
+| Requirement | Authoritative implementation and evidence |
+| --- | --- |
+| One review per request/account; retained data/checkbox; bounded visible pending polling and429 recovery | marriage-service, marriage-request-loader, use-patient-resource; MZ09 ten units and polling browser evidence |
+| Existing/new account OTP continuation without pre-auth identity disclosure | web InvitationLogin/auth-navigation and app session gate; MZ10 login/continuation browser and PostgreSQL existing/future account evidence |
+| Profile/role/independent consent before payment and tests; unrelated general entry remains gated | MarriageEntryAccess, continuation DTO and app context; MZ10 actual PostgreSQL paid two-person/ownership/profile tests and generated contracts |
+| Account/request/intent return through profile, gateway route, grant/submission/result; no independent top-up | marriage-context/return, PaymentChooser, welcome, assessment and result links; MZ10 context units/browser plus HTTP owned payment flow. No real bank transaction claimed |
+| Flat mobile questionnaire without top entry stepper; long answers, labelled cards, focus, natural scroll, adaptive back/change/save/submit | assessment-wizard/CSS and welcome; MZ11 seven-width,200%-text/five-input browser plus actual server-domain sequential projection script |
+| Readable explicit consent, clear actions and result chart with accessible textual guide/zero handling | PolicyAcceptance, marriage-service, MizajChart, welcome result; MZ11 consent/result/browser/chart units plus MZ12 initiator correction |
+| Skills applied, limited checks, evidence, isolated commits and dev push | MZ09-MZ12 task records and individual commits; all seven requested skills were used in the execution recorded by prior tasks; this pass uses Product UX Expert/Mobile Responsive/current Web Guidelines. No blanket UX-audit verdict |
+
+Software completion covers the approved assessment journey. User owns final manual review on deployed dev; approved SMS pattern/carrier receipt and real bank acceptance are separately deferred operational work, not claimed as tested here. Broader F12-FE01 and unrelated installer/AGENTS/fa changes remain untouched. No next batch selected.

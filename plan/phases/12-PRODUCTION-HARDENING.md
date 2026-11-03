@@ -510,3 +510,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ10 — Invitation-scoped entry/access, OTP login and payment return connected; PostgreSQL paid two-person/ownership, 11 units, browser continuation/login, builds/types/contracts PASS2026-11-03. Evidence: phase12 MZ10; next MZ11.
 
 - [x] F12-FE01-MZ11 — Responsive assessment journey; app build/types/scoped lint, chart units, local browser seven-width/200%-text/consent/result and sequential follow-up PASS2026-11-03. Evidence: phase12 MZ11.
+
+- [x] F12-FE01-MZ12 — Final journey audit: visible initiator linking consent; types/scoped lint and focused mobile consent browser PASS2026-11-03. Evidence: phase12 MZ12.
