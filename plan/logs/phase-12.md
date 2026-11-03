@@ -6405,3 +6405,19 @@ Completion audit of the approved MZ09-MZ11 plan (current sources plus task-speci
 | Skills applied, limited checks, evidence, isolated commits and dev push | MZ09-MZ12 task records and individual commits; all seven requested skills were used in the execution recorded by prior tasks; this pass uses Product UX Expert/Mobile Responsive/current Web Guidelines. No blanket UX-audit verdict |
 
 Software completion covers the approved assessment journey. User owns final manual review on deployed dev; approved SMS pattern/carrier receipt and real bank acceptance are separately deferred operational work, not claimed as tested here. Broader F12-FE01 and unrelated installer/AGENTS/fa changes remain untouched. No next batch selected.
+
+
+## F12-FE01-MZ13 — Invitation and profile round-trip
+
+2026-11-03; sole /root, single-task review PASS; claim RELEASED. Implements first task of owner-approved MZ13-MZ15 plan. Next MZ14 then MZ15; no second task in this commit.
+
+Changed: educational-couples own-grant/submission link now uses existing marriageHref, retaining invitation context for unfinished general entry. MarriageNew profile link includes exact service publication/replacement destination. New pure marriageProfileReturn accepts only exact internal UUIDv4 request/new routes with at most one valid replaceRequestId; foreign origins, fragments, unrelated/duplicate/malformed query values rejected. Profile save, unchanged return and discard/save-exit dialog use this destination; ordinary profile flow retains fallback. Conditions reload on service remount. No general entry completion/defer, API/schema, financial or privacy rule changes.
+
+Skills: approved Product UX Expert round-trip recovery; Responsive/Mobile keeps existing components/touch layout; Context7 Next16 Link query documentation consulted during planning. UX Audit live verdict remains Incomplete: no usable deployed session in previous preflight; this is scoped local intercepted-HTTP functional verification, not full audit.
+
+Evidence:
+- `vitest run src/lib/marriage-profile-return.spec.ts src/lib/marriage-context.spec.ts`:4 tests PASS. App tsc --noEmit PASS after final changes.
+- Scoped ESLint of three changed components/profile page and helper: zero errors; existing unchanged no-img-element avatar warning retained. No full suite or unrelated formatting.
+- `node apps/app/e2e/marriage-profile-return.browser.mjs`: PASS375px. Actual navigation/typing/save: creation and replacement -> edit -> unchanged back, then edit firstName/save -> original service.2 PATCH,12 settings reads, no pageerror. Screenshots .local/mz13-profile-before.png and after.png. Fixture APIs only; no real accounts/SMS/payment.
+- Existing marriage-entry-continuation.browser.js executed via isolated Playwright Node harness:PASS,10 scope checks,0 general assessment starts; invited profile/consent/payment return and unrelated-route gate retained. Initial harness import path was wrong; root package import corrected and test PASS.
+- Graphify AST update completed (existing parser warnings); diff review PASS. User-owned installer/AGENTS/fa and associated plan changes excluded from commit. Owner final manual acceptance remains pending by request.

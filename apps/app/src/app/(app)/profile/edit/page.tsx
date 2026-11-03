@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Check, MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { marriageProfileReturn } from "@/lib/marriage-profile-return";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { ProfileFields, validateEmail, type ProfileDraft } from "@/components/onboarding/profile-fields";
 import { BottomSheet } from "@/components/shared/bottom-sheet";
@@ -25,8 +26,9 @@ export default function EditProfilePage() {
   useEffect(() => { void (async () => { try { const result = await loadSelfProfile(authentication.accessToken); const draft = { firstName: typeof result.firstName === "string" ? result.firstName : "", lastName: typeof result.lastName === "string" ? result.lastName : "", email: typeof result.email === "string" ? result.email : "", cityName: typeof result.cityName === "string" ? result.cityName : "", gender: result.gender === "FEMALE" || result.gender === "MALE" ? result.gender : "" as const }; setProfile(draft); setInitial(draft); setPhone(result.phone); } catch (cause) { setError(onboardingErrorMessage(cause, "load")); } finally { setLoading(false); } })(); }, [authentication.accessToken]);
   useEffect(() => { if (!confirmLeave) return; const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setConfirmLeave(false); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); }, [confirmLeave]);
   const dirty = !same(profile, initial);
-  const save = async (navigate = true): Promise<boolean> => { if (saving || justSaved || !dirty) return false; const emailMessage = validateEmail(profile.email); if (emailMessage) { setEmailError(emailMessage); document.getElementById("email")?.focus(); return false; } setSaving(true); setError(null); try { await updateSelfProfile(authentication.accessToken, profile); setInitial(profile); if (navigate) { setJustSaved(true); pushTimer.current = window.setTimeout(() => router.push((() => { const next = new URLSearchParams(window.location.search).get("returnTo"); return next && /^\/assessment\/marriage\/requests\/[a-f0-9-]{36}$/i.test(next) ? next : "/profile"; })()), 750); } return true; } catch (cause) { setError(onboardingErrorMessage(cause)); return false; } finally { setSaving(false); } };
-  const goBack = () => { if (dirty && !saving) setConfirmLeave(true); else router.back(); };
+  const save = async (navigate = true): Promise<boolean> => { if (saving || justSaved || !dirty) return false; const emailMessage = validateEmail(profile.email); if (emailMessage) { setEmailError(emailMessage); document.getElementById("email")?.focus(); return false; } setSaving(true); setError(null); try { await updateSelfProfile(authentication.accessToken, profile); setInitial(profile); if (navigate) { setJustSaved(true); pushTimer.current = window.setTimeout(() => router.push((() => { const next = new URLSearchParams(window.location.search).get("returnTo"); return marriageProfileReturn(next) ?? "/profile"; })()), 750); } return true; } catch (cause) { setError(onboardingErrorMessage(cause)); return false; } finally { setSaving(false); } };
+  const returnFromProfile = () => { const next = marriageProfileReturn(new URLSearchParams(window.location.search).get("returnTo")); if (next) router.push(next); else router.back(); };
+  const goBack = () => { if (dirty && !saving) setConfirmLeave(true); else returnFromProfile(); };
   const liveName = [profile.firstName.trim(), profile.lastName.trim()].filter(Boolean).join(" ");
   return <div className="profile-scope"><PageHeader title="ویرایش پروفایل" onBack={goBack} /><div className="space-y-4 px-4 pb-4 pt-4">{loading ? <FieldsSkeleton /> : <form onSubmit={(event) => { event.preventDefault(); void save(true); }} className="space-y-4">
     <div className="rounded-2xl border border-border bg-white p-5 text-center" aria-label="پیش‌نمایش پروفایل">
@@ -54,8 +56,8 @@ export default function EditProfilePage() {
   <AnimatePresence>{confirmLeave && <BottomSheet title="تغییرات ذخیره نشده" onClose={() => setConfirmLeave(false)}>
     <p className="text-sm leading-6 text-muted-foreground">تغییراتی دارید که هنوز ذخیره نشده است. می‌خواهید چه کار کنید؟</p>
     <div className="mt-4 space-y-2">
-      <button type="button" disabled={saving} onClick={() => void save(false).then((ok) => { if (ok) router.back(); })} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره و خروج"}</button>
-      <button type="button" onClick={() => router.back()} className="w-full rounded-2xl bg-muted py-3.5 text-sm font-bold text-foreground transition-colors active:bg-border">خروج بدون ذخیره</button>
+      <button type="button" disabled={saving} onClick={() => void save(false).then((ok) => { if (ok) returnFromProfile(); })} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره و خروج"}</button>
+      <button type="button" onClick={returnFromProfile} className="w-full rounded-2xl bg-muted py-3.5 text-sm font-bold text-foreground transition-colors active:bg-border">خروج بدون ذخیره</button>
       <button type="button" onClick={() => setConfirmLeave(false)} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground transition-colors active:bg-muted">انصراف</button>
     </div>
   </BottomSheet>}</AnimatePresence></div>;

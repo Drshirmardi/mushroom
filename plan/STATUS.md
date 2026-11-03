@@ -4408,3 +4408,6 @@ MZ11 DONE/software (2026-11-03): F12-FE01-MZ11 sole /root review PASS, single-ta
 
 
 MZ12 DONE/software (2026-11-03): F12-FE01-MZ12 sole /root review PASS, single-task claim RELEASED. Final approved journey audit aligned initiator consent with recipient consent: required full text visible, explicit checkbox and mobile touch/focus. Types/scoped lint and focused intercepted-browser consent PASS; no API/schema/payment changes. Approved assessment-journey software scope complete, owner final manual check remains by request. No next batch. Evidence: logs/phase-12.md#f12-fe01-mz12--final-journey-audit.
+
+
+MZ13 DONE/software (2026-11-03): sole /root review PASS, single-task claim RELEASED. Invitation assessment links retain scope; safe profile return preserves creation/replacement and request destinations, including unchanged/discard/save exits. Four targeted units, app types, scoped lint (zero errors; one unchanged avatar warning) and local profile/entry browser PASS. No API/schema/general entry changes. Next eligible MZ14, then MZ15; neither started.
