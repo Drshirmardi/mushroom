@@ -523,3 +523,7 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ18 — Catalogue empty groups/currency clarity; targeted production-browser,9 wallet units/types/build and lint delta PASS2026-11-04; final deployed acceptance pending.
 
 - [x] F12-FE01-MZ19 — Native assessment Back/Forward guard; baseline/after Chromium dev+production, save rejection/busy/stay/discard/final/cross-document and unchanged-history tests PASS2026-11-04; physical-device/other-engine/online review pending.
+
+- [x] F12-FE01-VP01 — Responsive shell/flow navigation; baseline/after eight-size200%-text/end-action browser, types/lint/build and assessment regressions PASS; physical-device acceptance pending.
+- [ ] F12-FE01-VP02 — Visible viewport, keyboard and shared action footer; depends VP01.
+- [ ] F12-FE01-VP03 — Standalone manifest/icons and install guide; depends VP02.

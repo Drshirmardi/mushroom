@@ -41,7 +41,7 @@ export function BottomTabBar() {
   const visible = TAB_ITEMS.filter((item) => !item.hidden);
 
   return (
-    <nav aria-label="ناوبری اصلی" className="patient-shell-nav absolute bottom-0 left-0 right-0 z-20">
+    <nav aria-label="ناوبری اصلی" className="patient-shell-nav relative shrink-0 z-20">
       <div className="patient-shell-nav__dock">
         {visible.map((item) => {
           const Icon = item.icon;

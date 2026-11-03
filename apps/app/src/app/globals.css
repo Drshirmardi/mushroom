@@ -1563,3 +1563,22 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
 .mezaj-recommendations :is(a,button):focus-visible, .mezaj-library :is(a,button):focus-visible { outline: 2px solid var(--service-action); outline-offset: 3px; }
 @media(min-width:600px) { .mezaj-service-grid, .mezaj-owned-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(prefers-reduced-motion:reduce) { .mezaj-service-card__footer a { transition: none; } }
+
+/* Shell owns the available height; the dock reserves its actual layout height. */
+.patient-viewport-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.patient-viewport-shell > .patient-app-frame {
+  height: 100%;
+  min-height: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.patient-shell-content { min-width: 0; scroll-padding-block: 1rem; }
+.patient-shell-nav { width: 100%; }
+.patient-shell-nav__item { min-width: 0; min-height: 44px; padding-block: .375rem; }
+.patient-shell-nav__label { font-size: .6875rem; line-height: 1.5; overflow-wrap: anywhere; text-align: center; }

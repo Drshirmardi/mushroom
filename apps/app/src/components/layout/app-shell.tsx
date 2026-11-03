@@ -6,7 +6,7 @@ import { GlobalSheet } from "@/components/shared/global-sheet";
 import { useUiStore } from "@/stores/ui";
 
 /**
- * Phone-sized app shell shared by all migrated routes: fixed header,
+ * Phone-sized app shell shared by all migrated routes: page headers,
  * scrollable content area, bottom tab bar and global sheet.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -18,10 +18,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const immersive = useUiStore((state) => state.immersive);
 
     return (
-        <div className={`patient-app-shell min-h-screen flex items-center justify-center ${isStore ? "patient-store-shell" : ""} ${isHome ? "patient-home-shell" : ""} ${isStorefront ? "patient-storefront-shell" : ""}`}>
-            <div className="patient-app-frame relative w-full max-w-[720px] h-[100dvh] bg-background flex flex-col shadow-2xl overflow-hidden">
+        <div className={`patient-app-shell patient-viewport-shell flex justify-center ${isStore ? "patient-store-shell" : ""} ${isHome ? "patient-home-shell" : ""} ${isStorefront ? "patient-storefront-shell" : ""}`}>
+            <div className="patient-app-frame relative w-full max-w-[720px] bg-background flex flex-col shadow-2xl overflow-hidden">
                 {/* Screen content */}
-                <div className={`flex-1 scrollbar-hide ${immersive ? "min-h-0 overflow-hidden" : "overflow-y-auto pb-[calc(96px+env(safe-area-inset-bottom,0px))]"}`}>{children}</div>
+                <div className={`patient-shell-content min-h-0 flex-1 scrollbar-hide ${immersive ? "overflow-hidden" : "overflow-y-auto"}`}>{children}</div>
 
                 {!isProduct && !immersive && <BottomTabBar />}
                 <GlobalSheet />
