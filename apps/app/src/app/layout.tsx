@@ -1,3 +1,4 @@
+import { AssessmentHistoryTracking } from '@/lib/assessment-history';
 import { Suspense } from 'react';
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/auth/session-gate";
@@ -26,7 +27,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
-        <SessionProvider><Suspense fallback={<main role="status">در حال آماده‌سازی…</main>}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
+        <AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<main role="status">در حال آماده‌سازی…</main>}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
       </body>
     </html>
   );

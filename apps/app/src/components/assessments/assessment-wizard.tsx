@@ -1,5 +1,6 @@
 "use client";
 
+import { registerAssessmentHistoryGuard } from '@/lib/assessment-history';
 import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -13,6 +14,7 @@ import { startPaidAssessment } from "@/lib/digital-services-api";
 import styles from './assessment-wizard.module.css';
 import { toP } from "@/lib/format";
 
+type ExitDestination = string | { traverse: () => void };
 type JsonObject = Record<string, unknown>;
 type Question = JsonObject & { id: string; type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "BOOLEAN" | "NUMBER" | "TEXT"; text: string; required: boolean };
 const object = (value: unknown): JsonObject => value !== null && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : {};
@@ -64,7 +66,8 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const operation = useRef(false);
-  const [exitTo,setExitTo] = useState<string|null>(null);
+  const leaving = useRef(false);
+  const [exitTo,setExitTo] = useState<ExitDestination|null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
@@ -83,7 +86,7 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
   const adaptive = assessment?.structure.schemaVersion === 3;
   const dirty = !!submission && JSON.stringify(answers) !== JSON.stringify(submission.answers);
   useEffect(() => {
-    const unload = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
+    const unload = (event: BeforeUnloadEvent) => { if (dirty && !leaving.current) { event.preventDefault(); event.returnValue = ''; } };
     const click = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const link = event.target instanceof Element ? event.target.closest('a[href]') as HTMLAnchorElement | null : null;
@@ -91,8 +94,12 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       if (operation.current || submitCommand) { event.preventDefault(); event.stopPropagation(); return; }
       if (dirty) { event.preventDefault(); event.stopPropagation(); setExitTo(link.pathname+link.search+link.hash); }
     };
+    const unregister = registerAssessmentHistoryGuard({
+      shouldBlock: () => !leaving.current && (dirty || operation.current || !!submitCommand),
+      onBlocked: traverse => { if (dirty && !operation.current && !submitCommand) setExitTo({ traverse }); },
+    });
     window.addEventListener('beforeunload',unload);document.addEventListener('click',click,true);
-    return () => { window.removeEventListener('beforeunload',unload);document.removeEventListener('click',click,true); };
+    return () => { unregister(); window.removeEventListener('beforeunload',unload);document.removeEventListener('click',click,true); };
   }, [dirty,submitCommand]);
 
 
@@ -145,15 +152,23 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       const command = submitCommand ?? { revision: saved.revision, key: crypto.randomUUID() };
       setSubmitCommand(command);
       const completed = await submitAssessment(accessToken.current, saved.id, command.key, command.revision);
+      leaving.current = true;
       if (entry) entry.onComplete(); else router.push(marriageHref(`/assessment/result?submissionId=${completed.id}`));
     } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); if (reason instanceof AssessmentRequestError && (reason.status === 400 || reason.status === 422)) setSubmitCommand(null); setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); }
     finally { operation.current = false; setBusy(false); }
   };
 
-  const saveAndExit = async (destination?: string) => {
+  const leave = (destination: ExitDestination) => {
+    if (leaving.current) return;
+    leaving.current = true;
+    setExitTo(null);
+    if (typeof destination === 'string') router.push(destination);
+    else destination.traverse();
+  };
+  const saveAndExit = async (destination?: ExitDestination) => {
     if (operation.current || busy || conflict || submitCommand) return;
     operation.current = true; setBusy(true); setError(null);
-    try { await persist(); router.push(destination ?? (currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment")); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); } finally { operation.current = false; setBusy(false); }
+    try { const saved = await persist(); if (!saved) return; leave(destination ?? (currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment")); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); } finally { operation.current = false; setBusy(false); }
   };
 
   if (!assessment && !error) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;
@@ -188,7 +203,7 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       </div>
       {(!entry || error || conflict) && <button className={styles.quiet} disabled={busy} onClick={reloadSaved}>دریافت آخرین وضعیت ذخیره‌شده</button>}
     </div>
-    {exitTo && <BottomSheet title="پاسخ ذخیره‌نشده" onClose={() => { if (!operation.current) setExitTo(null); }}><p className="text-sm leading-8">انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.</p><button className={styles.primary} disabled={busy || conflict || !!submitCommand} onClick={() => void saveAndExit(exitTo)}>ذخیره و خروج</button><button className={styles.secondary} disabled={busy} onClick={() => router.push(exitTo)}>خروج بدون ذخیره</button><button className={styles.secondary} disabled={busy} onClick={() => setExitTo(null)}>ماندن در آزمون</button>{error && <p role="alert" className={styles.error}>{error}</p>}</BottomSheet>}
+    {exitTo && <BottomSheet title="پاسخ ذخیره‌نشده" onClose={() => { if (!operation.current) setExitTo(null); }}><p className="text-sm leading-8">انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.</p><button className={styles.primary} disabled={busy || conflict || !!submitCommand} onClick={() => void saveAndExit(exitTo)}>ذخیره و خروج</button><button className={styles.secondary} disabled={busy} onClick={() => leave(exitTo)}>خروج بدون ذخیره</button><button className={styles.secondary} disabled={busy} onClick={() => setExitTo(null)}>ماندن در آزمون</button>{error && <p role="alert" className={styles.error}>{error}</p>}</BottomSheet>}
   </Container>;
 }
 

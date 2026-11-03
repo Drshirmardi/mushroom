@@ -521,3 +521,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ16 — Requester-only original destination mask/date and historical vs new consent; scoped PostgreSQL/contracts/types/build/browser PASS2026-11-03.
 - [x] F12-FE01-MZ17 — Shared result/numeric/app-exit reproduction and fix; browser/regression/types/lint/build PASS2026-11-04; native Back limitation recorded.
 - [x] F12-FE01-MZ18 — Catalogue empty groups/currency clarity; targeted production-browser,9 wallet units/types/build and lint delta PASS2026-11-04; final deployed acceptance pending.
+
+- [x] F12-FE01-MZ19 — Native assessment Back/Forward guard; baseline/after Chromium dev+production, save rejection/busy/stay/discard/final/cross-document and unchanged-history tests PASS2026-11-04; physical-device/other-engine/online review pending.
