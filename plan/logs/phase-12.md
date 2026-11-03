@@ -6482,3 +6482,23 @@ Verification:
 - Graphify AST refresh completed with existing missing-parser/extraction warnings; final diff review isolates this task. Related report .local/audits/assessment-ux-2026-11-03.md marks A1/A2 implemented/software pending deployed manual review; remaining B1/B2/C1/A3/A4 unchanged.
 
 No full test suite, manual deployment or whole-app quality claim. Unrelated installer/AGENTS/fa and associated plan hunks preserved. Independent task commit/push dev authorized by owner.
+
+
+## F12-FE01-MZ17 — Assessment continuity
+
+2026-11-04; sole /root coordinator/reviewer. Depends MZ16 DONE; single-task review PASS, claim RELEASED. MZ18 remains next and not implemented here.
+
+Baseline reproduction: `MZ17_BEFORE=1 node apps/app/e2e/assessment-continuity.browser.mjs` PASS as defect reproduction: out-of-range11 withmax10 reached mocked PUT, changed selection left via bottom Home without dialog, and result text disappeared while the next15s GET was held. Initial one-question fixture prematurely submitted; corrected to two questions before baseline acceptance. No real answers or accounts changed.
+
+Implementation: shared-result page wraps its exact account/request loader in existing single-flight/backoff helper and uses quiet refresh;15s visible+online permission checks continue, preserving mounted authorized content during GET.401/403/404 produces an explicit denied state and removes shared content, with manual retry; automatic checks stop once denied. Network errors retain existing data with recoverable error;429/network cooldown applies to explicit retry as well. Global usePatientResource unchanged.
+
+Wizard numeric answers show contract min/max; required empties focus numeric input. Finite/min/max validation runs before advance and before draft persistence, including save/exit; errors are associated with input and preserve server validation. Decimal allowed per existing assessment-scoring finite-number rule; step=any matches it. No score/contract rule changes.
+
+Dirty answers remain explicit-save only. App same-origin link clicks are captured only while this attempt is mounted, with native BottomSheet choices stay/save-and-exit/discard; top exit uses the same choice. Operation/submission locks block app link navigation during commands. Failed save stays in modal, successful save navigates to chosen destination. beforeunload warns on dirty reload/close. No localStorage/sessionStorage answer cache or auto-save introduced. Native same-document browser-history Back is not guaranteed by this mechanism: separate harness investigation was inconclusive (re-entry locator timeout), not claimed as passing. No history sentinel/rewrite was added. This is the limitation explicitly allowed to be documented in the approved plan; app links and reload were actually verified.
+
+Verification:
+- Final continuity browser PASS with0 invalid-answer PUT,1 failed-save PUT and1 successful-save PUT; number error focuses input, seven widths320/375/414/768/1024/1280/1440 no horizontal overflow. Modal stay retains value; reload beforeunload dismissed; save failure stays; retry success exits. Shared result remains visible during held GET,403 hides it. Expected mocked422/403 responses are rejection fixtures, not clean live audit. Screenshots .local/mz17-number.png and mz17-exit.png. All APIs intercepted; no actual payment/SMS/consent.
+- Existing mizaj-sequential.browser.mjs PASS320/390/1440 (back/resume/direct early completion/primary preservation). participation-loader.spec6 PASS for coalescing and429/network backoff. App tsc PASS; scoped wizard/result ESLint zero errors/warnings; app production build PASS (.local/mz17-build.log). Full suite not run.
+- Graphify final AST update and diff review PASS with existing parser warnings. Product UX Expert error recovery/status, Mobile/Responsive existing layout, React practices scoped effects/cleanup/state used. Live UX Audit remains Incomplete; no physical-device/screen-reader or full live-matrix certification.
+
+Only task-owned source/browser proof and evidence included. Unrelated installer/AGENTS/fa and associated plan hunks preserved. Owner authorizes independent commit/push dev; no schema/API/primary database/manual deployment.

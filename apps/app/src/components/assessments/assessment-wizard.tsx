@@ -1,5 +1,6 @@
 "use client";
 
+import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Check } from "lucide-react";
@@ -31,6 +32,15 @@ function questions(structure: JsonObject): Question[] {
 
 const answered = (question: Question, answer: unknown) => answer !== undefined && answer !== null && (question.type !== "TEXT" || typeof answer === "string" && answer.trim() !== "") && (question.type !== "MULTIPLE_CHOICE" || Array.isArray(answer) && answer.length > 0);
 
+class NumericAnswerError extends Error {}
+function numericError(question: Question, value: unknown): string | null {
+ if (value === undefined || value === null || value === '') return null;
+ if (typeof value !== 'number' || !Number.isFinite(value)) return 'عدد معتبر وارد کنید.';
+ if (typeof question.min === 'number' && value < question.min) return `مقدار باید حداقل ${toP(question.min)} باشد.`;
+ if (typeof question.max === 'number' && value > question.max) return `مقدار باید حداکثر ${toP(question.max)} باشد.`;
+ return null;
+}
+
 export function AssessmentWizard({ entry }: { entry?: { submissionId: string; onComplete: () => void } } = {}) {
   const params = useParams<{ type?: string }>();
   const search = useSearchParams();
@@ -54,6 +64,7 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const operation = useRef(false);
+  const [exitTo,setExitTo] = useState<string|null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
@@ -68,7 +79,22 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
     questionArea.current?.scrollIntoView({ block: 'start' });
     entryQuestion.current?.focus({ preventScroll: true });
   }, [current?.id]);
+  useEffect(() => { if (error && current?.type === 'NUMBER') questionArea.current?.querySelector<HTMLInputElement>('input')?.focus(); }, [error,current?.id,current?.type]);
   const adaptive = assessment?.structure.schemaVersion === 3;
+  const dirty = !!submission && JSON.stringify(answers) !== JSON.stringify(submission.answers);
+  useEffect(() => {
+    const unload = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
+    const click = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target instanceof Element ? event.target.closest('a[href]') as HTMLAnchorElement | null : null;
+      if (!link || link.target === '_blank' || link.hasAttribute('download') || link.origin !== window.location.origin || link.href === window.location.href) return;
+      if (operation.current || submitCommand) { event.preventDefault(); event.stopPropagation(); return; }
+      if (dirty) { event.preventDefault(); event.stopPropagation(); setExitTo(link.pathname+link.search+link.hash); }
+    };
+    window.addEventListener('beforeunload',unload);document.addEventListener('click',click,true);
+    return () => { window.removeEventListener('beforeunload',unload);document.removeEventListener('click',click,true); };
+  }, [dirty,submitCommand]);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -80,7 +106,7 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
         const questionnaire = await getAssessmentQuestionnaire(accessToken.current, attempt.id);
         if (!questionnaire.resumeAvailable) throw new Error("ASSESSMENT_UNAVAILABLE");
         if (!cancelled) { setAssessment(questionnaire); setSubmission(attempt); setAnswers(attempt.answers); { const pending = questions(questionnaire.structure).findIndex(question => !answered(question, attempt.answers[question.id])); setStep(pending < 0 ? Math.max(0, questions(questionnaire.structure).length - 1) : pending); } }
-      } catch (reason) { if (!cancelled) setError(assessmentErrorMessage(reason)); }
+      } catch (reason) { if (!cancelled) setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); }
     })();
     return () => { cancelled = true; };
   }, [assessmentVersionId, submissionId, grantId, authentication.user.id, reload, router, onComplete]);
@@ -88,13 +114,20 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
   const persist = async () => {
     if (!submission || conflict) return null;
     if (typeof submission.revision !== "number") throw new Error("ASSESSMENT_REVISION_UNAVAILABLE");
+    const invalid = items.findIndex(question => question.type === 'NUMBER' && numericError(question,answers[question.id]));
+    if (invalid >= 0) { setStep(invalid); throw new NumericAnswerError(numericError(items[invalid],answers[items[invalid].id])!); }
     const saved = await saveAssessmentAnswers(accessToken.current, submission.id, { answers, expectedRevision: submission.revision });
     setSubmission(saved); setAnswers(saved.answers); return saved;
   };
 
   const continueFlow = async () => {
     if (operation.current || busy || conflict) return;
-    if (!submitCommand && (!current || current.required && !answered(current, answers[current.id]))) { setError("پاسخ این سؤال ضروری است."); entryQuestion.current?.focus(); return; }
+    if (!submitCommand && (!current || current.required && !answered(current, answers[current.id]))) { setError("پاسخ این سؤال ضروری است."); if (current?.type === "NUMBER") questionArea.current?.querySelector<HTMLInputElement>('input')?.focus(); else entryQuestion.current?.focus(); return; }
+    if (!submitCommand && current?.type === 'NUMBER') {
+      const value = answers[current.id];
+      const message = numericError(current,value);
+      if (message) { setError(message); questionArea.current?.querySelector<HTMLInputElement>('input')?.focus(); return; }
+    }
     operation.current = true; setBusy(true); setError(null);
     try {
       const saved = submitCommand ? submission : await persist();
@@ -113,14 +146,14 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       setSubmitCommand(command);
       const completed = await submitAssessment(accessToken.current, saved.id, command.key, command.revision);
       if (entry) entry.onComplete(); else router.push(marriageHref(`/assessment/result?submissionId=${completed.id}`));
-    } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); if (reason instanceof AssessmentRequestError && (reason.status === 400 || reason.status === 422)) setSubmitCommand(null); setError(assessmentErrorMessage(reason)); }
+    } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); if (reason instanceof AssessmentRequestError && (reason.status === 400 || reason.status === 422)) setSubmitCommand(null); setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); }
     finally { operation.current = false; setBusy(false); }
   };
 
-  const saveAndExit = async () => {
+  const saveAndExit = async (destination?: string) => {
     if (operation.current || busy || conflict || submitCommand) return;
     operation.current = true; setBusy(true); setError(null);
-    try { await persist(); router.push(currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment"); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(assessmentErrorMessage(reason)); } finally { operation.current = false; setBusy(false); }
+    try { await persist(); router.push(destination ?? (currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment")); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); } finally { operation.current = false; setBusy(false); }
   };
 
   if (!assessment && !error) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;
@@ -132,7 +165,7 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
   };
   const Container = entry ? 'div' : 'main';
   return <Container className={styles.wizard} data-entry={!!entry}>
-    {!entry && <PageHeader title={assessment.title} onBack={() => { if (operation.current || busy || submitCommand) return; if (step > 0) { setStep(value => value - 1); return; } if (JSON.stringify(answers) === JSON.stringify(submission.answers) || window.confirm('پاسخ ذخیره‌نشده دارید. بدون ذخیره از این صفحه خارج شوید؟')) router.back(); }} />}
+    {!entry && <PageHeader title={assessment.title} onBack={() => { if (operation.current || busy || submitCommand) return; if (step > 0) { setStep(value => value - 1); return; } if (dirty) setExitTo(currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : '/assessment'); else router.back(); }} />}
     <div ref={questionArea} className={styles.body} aria-busy={busy}>
       <div className={styles.progress}>
         <div className={styles.counter}><span>{adaptive && step >= 11 ? 'سؤال تکمیلی برای روشن‌شدن نتیجه' : <>سؤال {toP(step + 1)} از {toP(adaptive ? 11 : items.length)}</>}</span>{!entry && <span>تلاش {toP(submission.attemptNumber)}</span>}</div>
@@ -140,8 +173,9 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       </div>
       <h2 id="assessment-question" ref={entryQuestion} tabIndex={-1} className={styles.question}>{current.text}</h2>
       {current.type === 'MULTIPLE_CHOICE' && <p className={styles.hint}>می‌توانید بیش از یک گزینه را انتخاب کنید.</p>}
+      {current.type === 'NUMBER' && <p id="assessment-number-hint" className={styles.hint}>{typeof current.min === 'number' ? `حداقل: ${toP(current.min)}` : ''}{typeof current.min === 'number' && typeof current.max === 'number' ? '؛ ' : ''}{typeof current.max === 'number' ? `حداکثر: ${toP(current.max)}` : ''}</p>}
       <fieldset className={styles.answers} aria-labelledby="assessment-question" aria-describedby={error ? 'assessment-answer-error' : undefined} disabled={busy || conflict || submitCommand !== null}>
-        <AnswerInput question={current} value={answers[current.id]} onChange={value => {
+        <AnswerInput invalid={!!error} question={current} value={answers[current.id]} onChange={value => {
           setAnswers(all => ({ ...(adaptive && current.phase !== 'FOLLOW_UP' ? Object.fromEntries(Object.entries(all).filter(([id]) => items.some(question => question.phase !== 'FOLLOW_UP' && question.id === id))) : adaptive ? Object.fromEntries(Object.entries(all).filter(([id]) => items.findIndex(question => question.id === id) <= step)) : all), [current.id]: value }));
           setError(null);
         }} />
@@ -154,15 +188,16 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       </div>
       {(!entry || error || conflict) && <button className={styles.quiet} disabled={busy} onClick={reloadSaved}>دریافت آخرین وضعیت ذخیره‌شده</button>}
     </div>
+    {exitTo && <BottomSheet title="پاسخ ذخیره‌نشده" onClose={() => { if (!operation.current) setExitTo(null); }}><p className="text-sm leading-8">انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.</p><button className={styles.primary} disabled={busy || conflict || !!submitCommand} onClick={() => void saveAndExit(exitTo)}>ذخیره و خروج</button><button className={styles.secondary} disabled={busy} onClick={() => router.push(exitTo)}>خروج بدون ذخیره</button><button className={styles.secondary} disabled={busy} onClick={() => setExitTo(null)}>ماندن در آزمون</button>{error && <p role="alert" className={styles.error}>{error}</p>}</BottomSheet>}
   </Container>;
 }
 
-function AnswerInput({ question, value, onChange }: { question: Question; value: unknown; onChange: (value: unknown) => void }) {
+function AnswerInput({ question, value, onChange, invalid }: { invalid?: boolean; question: Question; value: unknown; onChange: (value: unknown) => void }) {
   const options = Array.isArray(question.options) ? question.options.map(object).sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)) : [];
   if (question.type === "SINGLE_CHOICE") return <div className={styles.options}>{options.map((option, index) => <button key={String(option.id)} aria-pressed={value === option.id} onClick={() => onChange(option.id)} className={styles.option}><span className={styles.letter}>{["الف", "ب", "ج", "د", "ه", "و", "ز", "ح", "ط", "ی"][index] ?? toP(index + 1)}</span><span className={styles.optionText}>{String(option.label ?? option.title ?? "گزینه")}</span><span className={styles.mark} aria-hidden="true">{value === option.id && <Check size={18} />}</span></button>)}</div>;
   if (question.type === "MULTIPLE_CHOICE") { const selected = Array.isArray(value) ? value : []; return <div className={styles.options}>{options.map((option, index) => { const active = selected.includes(option.id); return <button key={String(option.id)} aria-pressed={active} onClick={() => onChange(active ? selected.filter((id) => id !== option.id) : [...selected, option.id])} className={styles.option}><span className={styles.letter}>{["الف", "ب", "ج", "د", "ه", "و", "ز", "ح", "ط", "ی"][index] ?? toP(index + 1)}</span><span className={styles.optionText}>{String(option.label ?? option.title ?? "گزینه")}</span><span className={styles.mark} aria-hidden="true">{active && <Check size={18} />}</span></button>; })}</div>; }
   if (question.type === "BOOLEAN") return <div className={styles.boolean}>{[[true, "بله"], [false, "خیر"]].map(([answer, label], index) => <button key={String(answer)} aria-pressed={value === answer} onClick={() => onChange(answer)} className={styles.option}><span className={styles.letter}>{index === 0 ? 'الف' : 'ب'}</span><span className={styles.optionText}>{String(label)}</span><span className={styles.mark} aria-hidden="true">{value === answer && <Check size={18} />}</span></button>)}</div>;
-  if (question.type === "NUMBER") return <input aria-label={question.text} type="number" min={typeof question.min === "number" ? question.min : undefined} max={typeof question.max === "number" ? question.max : undefined} value={typeof value === "number" && Number.isFinite(value) ? value : ""} onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))} className={styles.input} />;
+  if (question.type === "NUMBER") return <input aria-invalid={invalid} aria-label={question.text} aria-describedby="assessment-number-hint assessment-answer-error" type="number" step="any" min={typeof question.min === "number" ? question.min : undefined} max={typeof question.max === "number" ? question.max : undefined} value={typeof value === "number" && Number.isFinite(value) ? value : ""} onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))} className={styles.input} />;
   return <textarea aria-label={question.text} maxLength={typeof question.maxLength === "number" ? question.maxLength : undefined} value={typeof value === "string" ? value : ""} onChange={(event) => onChange(event.target.value)} rows={5} className={styles.input} />;
 }
 

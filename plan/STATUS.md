@@ -4420,3 +4420,6 @@ MZ15 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Pending
 
 
 MZ16 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Requester-only original-destination masked phone/date and independent historical/new purchase consent display delivered. One expanded actual PostgreSQL ownership/privacy/phone-change test, generated contract build, API test/app types, scoped lint/app build and seven-width/200%-text/keyboard/axe local browser PASS. No schema/primary-DB/provider action. Next eligible MZ17, then MZ18; neither started. Evidence: logs/phase-12.md#f12-fe01-mz16--invitation-identity-and-consent-display.
+
+
+MZ17 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Shared-result quiet bounded reads with immediate denial hiding; pre-send numeric range guidance; explicit unsaved app-exit modal and reload warning implemented. Baseline/after local browser, adaptive320/390/1440 regression,6 loader units/types/lint/app build PASS. Native browser Back not certified; limitation recorded per approved plan. No API/schema/scoring/provider change. Next MZ18; not started. Evidence: logs/phase-12.md#f12-fe01-mz17--assessment-continuity.
