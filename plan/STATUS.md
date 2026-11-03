@@ -4411,3 +4411,6 @@ MZ12 DONE/software (2026-11-03): F12-FE01-MZ12 sole /root review PASS, single-ta
 
 
 MZ13 DONE/software (2026-11-03): sole /root review PASS, single-task claim RELEASED. Invitation assessment links retain scope; safe profile return preserves creation/replacement and request destinations, including unchanged/discard/save exits. Four targeted units, app types, scoped lint (zero errors; one unchanged avatar warning) and local profile/entry browser PASS. No API/schema/general entry changes. Next eligible MZ14, then MZ15; neither started.
+
+
+MZ14 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Actionable private phone/SMS/recovery errors, role/consent hints, busy controls and modal cancellation connected.13 targeted units, app types/scoped lint and local browser phone focus/cancel-abort/one cancellation PASS. No API/schema/provider mutation. Next eligible MZ15, not started; overall MZ13-MZ15 goal remains active.
