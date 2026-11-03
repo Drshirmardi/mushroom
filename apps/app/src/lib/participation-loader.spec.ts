@@ -1,0 +1,11 @@
+import {describe,it,expect,vi} from 'vitest';
+import {participationLoader,participationWaiting} from './participation-loader';
+import {PatientRequestError} from './patient-request';
+import type {components} from '@sabz-zendegi/api-client';
+const data={participants:[{consentState:'PENDING'}],mutualConsentComplete:false} as components['schemas']['EducationalCoupleDetailDto'];
+describe('participation refresh boundaries',()=>{
+ it('only polls changing states and stops at withdrawal/result',()=>{expect(participationWaiting(null)).toBe(false);expect(participationWaiting(data)).toBe(true);expect(participationWaiting({...data,mutualConsentComplete:true})).toBe(false);expect(participationWaiting({...data,mutualConsentComplete:true,paymentPending:true})).toBe(true);expect(participationWaiting({...data,jointResultAvailable:true})).toBe(false);expect(participationWaiting({...data,participants:[{...data.participants[0],consentState:'WITHDRAWN'}]})).toBe(false);});
+ it('coalesces overlapping reads',async()=>{let done!:(value:number)=>void;const get=vi.fn(()=>new Promise<number>(resolve=>{done=resolve;}));const loader=participationLoader(get);const a=loader.load('one'),b=loader.load('one');expect(a).toBe(b);expect(get).toHaveBeenCalledTimes(1);done(1);await a;expect(loader.pending).toBeNull();});
+ it.each([0,20000,90000])('honours shared 429 cooldown %i for explicit refresh too',async delay=>{let clock=0;const get=vi.fn().mockRejectedValueOnce(new PatientRequestError(429,null,delay)).mockResolvedValue(1);const loader=participationLoader(get,()=>clock);await expect(loader.load('one')).rejects.toMatchObject({status:429});clock=(delay||60000)-1;await expect(loader.load('one')).rejects.toMatchObject({status:429});expect(get).toHaveBeenCalledTimes(1);clock++;await loader.load('one');expect(get).toHaveBeenCalledTimes(2);});
+ it('backs off network failures for30s but refreshes after successful mutation',async()=>{let clock=0;const get=vi.fn().mockRejectedValueOnce(new PatientRequestError(0,null)).mockResolvedValue(1);const loader=participationLoader(get,()=>clock);await expect(loader.load('one')).rejects.toThrow();clock=29999;await expect(loader.load('one')).rejects.toThrow();loader.mutationSucceeded();await loader.load('one');expect(get).toHaveBeenCalledTimes(2);});
+});

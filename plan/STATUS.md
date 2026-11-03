@@ -4414,3 +4414,6 @@ MZ13 DONE/software (2026-11-03): sole /root review PASS, single-task claim RELEA
 
 
 MZ14 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Actionable private phone/SMS/recovery errors, role/consent hints, busy controls and modal cancellation connected.13 targeted units, app types/scoped lint and local browser phone focus/cancel-abort/one cancellation PASS. No API/schema/provider mutation. Next eligible MZ15, not started; overall MZ13-MZ15 goal remains active.
+
+
+MZ15 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Pending-only30s visible/online participation reads, single-flight/cooldown, mutation coordination and quiet state retention implemented.6 loader units plus13 focused regression units, types/scoped lint/app build and local browser seven widths/200%-text/axe/focus/counts PASS. MZ13-MZ15 software plan complete; final manual deployed review remains user-owned; live UX audit Incomplete. No next batch, API/schema/provider action or manual deployment. Evidence: logs/phase-12.md#f12-fe01-mz15--bounded-participation-and-final-review.

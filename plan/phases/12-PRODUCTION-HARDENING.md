@@ -514,7 +514,6 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ12 — Final journey audit: visible initiator linking consent; types/scoped lint and focused mobile consent browser PASS2026-11-03. Evidence: phase12 MZ12.
 
 - [x] F12-FE01-MZ13 — Preserve invitation test links and safe profile round-trip. Targeted units/types/browser PASS2026-11-03.
-- [ ] F12-FE01-MZ14 — Actionable invitation errors and guarded cancellation; depends MZ13.
-- [ ] F12-FE01-MZ15 — Bounded participation polling and responsive verification; depends MZ14.
+- [x] F12-FE01-MZ15 — Bounded participation polling and responsive verification; targeted units/types/lint/build/seven-width local browser PASS2026-11-03. MZ13-MZ15 software complete; live audit Incomplete.
 
 - [x] F12-FE01-MZ14 — Actionable invitation errors and guarded cancellation; targeted13 units/types/scoped lint/local browser PASS2026-11-03.
