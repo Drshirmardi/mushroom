@@ -134,3 +134,9 @@ export function topupValidationMessage(reason: "EMPTY" | "INVALID" | "TOO_SMALL"
       return `بیشترین مبلغ شارژ ${formatToman(MAX_TOPUP_TOMAN)} تومان است.`;
   }
 }
+
+/** Exact assessment amount with the unit attached to the toman portion. */
+export function formatRialWithUnit(rial: bigint): string {
+  const remainder = rialRemainderLabel(rial);
+  return `${formatToman(rialToToman(rial))} تومان${remainder === null ? '' : ` و ${remainder}`}`;
+}

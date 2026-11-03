@@ -6502,3 +6502,18 @@ Verification:
 - Graphify final AST update and diff review PASS with existing parser warnings. Product UX Expert error recovery/status, Mobile/Responsive existing layout, React practices scoped effects/cleanup/state used. Live UX Audit remains Incomplete; no physical-device/screen-reader or full live-matrix certification.
 
 Only task-owned source/browser proof and evidence included. Unrelated installer/AGENTS/fa and associated plan hunks preserved. Owner authorizes independent commit/push dev; no schema/API/primary database/manual deployment.
+
+
+## F12-FE01-MZ18 — Catalogue and cost clarity
+
+2026-11-04; sole /root coordinator/reviewer. Depends MZ17 DONE; single-task review PASS, claim RELEASED.
+
+A3: clinic and legacy paid catalogue sections are hidden only after successful empty results. Loading and errors remain visible; paid total>0 retains pagination and a page-scoped empty message. Published version grouping/history links unchanged. Educational and marriage service sections are retained.
+
+A4: purchase detail, legacy offering detail, couple participation and legacy couple-link preview use explicit toman units. New additive formatter preserves the existing exact rial remainder (10001 rial => ۱٬۰۰۰ تومان و ۱ ریال); existing formatter/conversion/contract/amounts remain unchanged. No database/API/generated client/pricing changes.
+
+Verification: node apps/app/e2e/assessment-catalog-price.browser.mjs PASS against the local production build, intercepted synthetic API only: educational item visible with empty legacy groups;503 remains visible with successful retry;21-item pagination moves to an empty page and back; purchase10000/10001 amounts exact; catalogue and purchase at320/375/414/768/1024/1280/1440 without horizontal overflow; catalogue200% CSS zoom and actual Tab focus PASS. Zero unexpected mutation calls; screenshots .local/mz18-catalog.png and mz18-amount.png inspected. Initial cold dev run timed out before catalogue mount; reruns on warmed dev and production passed. No real accounts/SMS/payment/consents touched.
+
+Existing wallet-money.spec.ts9 tests PASS; app tsc --noEmit and production build PASS (.local/mz18-build.log). Scoped ESLint compared every changed TS/TSX against HEAD: no introduced diagnostics; four pre-existing findings retained, so this is not a clean full lint claim. Graphify AST refresh PASS with existing parser warnings; final owned diff reviewed. Full suite not run. No live/device/screen-reader/full mobile interaction certification: deployed UX Audit remains Incomplete. Existing MZ17 native browser Back limitation remains explicit. MZ16-MZ18 implementation complete; final manual online acceptance pending.
+
+Unrelated AGENTS/installer/fa/plan hunks preserved. Task-owned implementation, browser proof and evidence only committed; no next batch begun or manual deployment.

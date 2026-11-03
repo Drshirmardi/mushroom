@@ -4423,3 +4423,6 @@ MZ16 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Request
 
 
 MZ17 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Shared-result quiet bounded reads with immediate denial hiding; pre-send numeric range guidance; explicit unsaved app-exit modal and reload warning implemented. Baseline/after local browser, adaptive320/390/1440 regression,6 loader units/types/lint/app build PASS. Native browser Back not certified; limitation recorded per approved plan. No API/schema/scoring/provider change. Next MZ18; not started. Evidence: logs/phase-12.md#f12-fe01-mz17--assessment-continuity.
+
+
+MZ18 DONE/software (2026-11-04): sole /root review PASS, single-task claim RELEASED. Empty legacy catalogue groups hidden while loading/error/pagination and old access remain; four legacy assessment cost pages show exact toman units. Intercepted production-browser catalogue/purchase seven widths, catalogue200%/keyboard, error/retry/pagination and exact remainder PASS;9 wallet units, app types/build and scoped lint delta PASS (four unchanged baseline findings). MZ16-MZ18 software plan complete; deployed manual acceptance remains pending and native Back limitation from MZ17 remains. No next task selected. Evidence: logs/phase-12.md#f12-fe01-mz18--catalogue-and-cost-clarity.

@@ -35,17 +35,17 @@ export default function AssessmentPage() {
         {educational.data?.items.map(item => <Link key={item.id} href={`/assessment/educational/${item.id}`} className="service-card"><h3>{item.title}</h3><strong className="service-price">{item.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(item.amountRial ?? '0'))} تومان`}</strong><span className="service-text-action">شرایط و شروع ارزیابی<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
         {educational.data && <PatientPagination page={educationalPage} total={educational.data.total} onChange={setEducationalPage} />}
       </ServiceSection>
-      <ServiceSection title="آزمون‌های کلینیک" description="پیش از شروع، توضیحات و شرایط آزمون را بررسی کنید.">
+      {(published.loading || !!published.error || !!published.data?.items.length) && <ServiceSection title="آزمون‌های کلینیک" description="پیش از شروع، توضیحات و شرایط آزمون را بررسی کنید.">
         <PatientResourceState {...published} retry={() => void published.reload()} />
         {published.data && groupAssessmentCatalog(published.data.items).map(group => group.versions.length === 1 ? <Link key={group.key} href={`/assessment/${group.versions[0].id}`} className="service-card"><h3>{group.title}</h3><span className="service-text-action">شروع یا ادامهٔ آزمون<ArrowLeft size={17} aria-hidden="true" /></span></Link> : <article className="service-card" key={group.key}><h3>{group.title}</h3><p>{toP(group.versions.length)} نسخهٔ منتشرشده برای این آزمون در دسترس است. نسخهٔ موردنظر خود را انتخاب کنید؛ پاسخ‌های قبلی از بخش «سوابق و نتایج» ادامه داده می‌شوند.</p><details className="service-disclosure mt-2"><summary>انتخاب نسخهٔ آزمون</summary><div className="service-stack">{group.versions.map(item => <Link key={item.id} href={`/assessment/${item.id}`} className="service-catalog-version"><span>نسخهٔ {toP(item.versionNumber)}</span><ArrowLeft size={17} aria-hidden="true" /></Link>)}</div></details></article>)}
         {published.data?.items.length === 0 && <ServiceEmpty title="فعلاً آزمونی در این بخش فعال نیست" description="آزمون‌های کلینیک پس از انتشار در اینجا قرار می‌گیرند. نتیجه‌ها و پاسخ‌های قبلی را از «سوابق و نتایج» ببینید." icon={ClipboardList} />}
-      </ServiceSection>
-      <ServiceSection title="ارزیابی‌های قابل خرید" description="هزینه و رضایت‌نامه پیش از خرید نمایش داده می‌شوند.">
+      </ServiceSection>}
+      {(offerings.loading || !!offerings.error || !!offerings.data?.total) && <ServiceSection title="ارزیابی‌های قابل خرید" description="هزینه و رضایت‌نامه پیش از خرید نمایش داده می‌شوند.">
         <PatientResourceState {...offerings} retry={() => void offerings.reload()} />
         {offerings.data?.items.map(item => <Link key={item.id} href={item.kind === "COUPLES" ? `/assessment/couples?publicationId=${item.id}` : `/assessment/offerings/${item.id}`} className="service-card"><div className="service-card-top"><h3>{item.title}</h3><span className="service-badge">{item.kind === "COUPLES" ? "دو نفره" : "فردی"}</span></div><strong className="service-price">{formatRial(BigInt(item.amountRial))} تومان</strong><span className="service-text-action">جزئیات و شرایط ارزیابی<ArrowLeft size={17} aria-hidden="true" /></span></Link>)}
-        {offerings.data?.items.length === 0 && <ServiceEmpty title="ارزیابی قابل خریدی منتشر نشده" description="پس از فعال‌شدن خدمات جدید، جزئیات و هزینهٔ آن‌ها در این بخش نمایش داده می‌شود." />}
+        {offerings.data?.items.length === 0 && <ServiceEmpty title="در این صفحه ارزیابی قابل خریدی نیست" description="صفحهٔ دیگری را از صفحه‌بندی همین بخش انتخاب کنید." />}
         {offerings.data && <PatientPagination page={offerPage} total={offerings.data.total} onChange={setOfferPage} />}
-      </ServiceSection>
+      </ServiceSection>}
       <Link href="/assessment/couples" className="service-callout"><Users size={26} aria-hidden="true" /><div><h2>می‌خواهید همراه هم ارزیابی شوید؟</h2><p>دعوت همراه، رضایت مستقل و پیگیری آزمون زوجین</p></div><ArrowLeft size={18} aria-hidden="true" /></Link>
     </>}
     {view === "history" && <ServiceSection title="پاسخ‌ها و نتایج من" description="پاسخ‌های ذخیره‌شده را ادامه دهید؛ نتایج تکمیل‌شده همیشه از همین بخش در دسترس‌اند.">

@@ -520,4 +520,4 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 
 - [x] F12-FE01-MZ16 — Requester-only original destination mask/date and historical vs new consent; scoped PostgreSQL/contracts/types/build/browser PASS2026-11-03.
 - [x] F12-FE01-MZ17 — Shared result/numeric/app-exit reproduction and fix; browser/regression/types/lint/build PASS2026-11-04; native Back limitation recorded.
-- [ ] F12-FE01-MZ18 — Clear empty assessment groups and currency units; depends MZ17.
+- [x] F12-FE01-MZ18 — Catalogue empty groups/currency clarity; targeted production-browser,9 wallet units/types/build and lint delta PASS2026-11-04; final deployed acceptance pending.
