@@ -4417,3 +4417,6 @@ MZ14 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Actiona
 
 
 MZ15 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Pending-only30s visible/online participation reads, single-flight/cooldown, mutation coordination and quiet state retention implemented.6 loader units plus13 focused regression units, types/scoped lint/app build and local browser seven widths/200%-text/axe/focus/counts PASS. MZ13-MZ15 software plan complete; final manual deployed review remains user-owned; live UX audit Incomplete. No next batch, API/schema/provider action or manual deployment. Evidence: logs/phase-12.md#f12-fe01-mz15--bounded-participation-and-final-review.
+
+
+MZ16 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Requester-only original-destination masked phone/date and independent historical/new purchase consent display delivered. One expanded actual PostgreSQL ownership/privacy/phone-change test, generated contract build, API test/app types, scoped lint/app build and seven-width/200%-text/keyboard/axe local browser PASS. No schema/primary-DB/provider action. Next eligible MZ17, then MZ18; neither started. Evidence: logs/phase-12.md#f12-fe01-mz16--invitation-identity-and-consent-display.

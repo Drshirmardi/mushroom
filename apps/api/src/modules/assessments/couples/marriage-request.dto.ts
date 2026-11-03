@@ -31,6 +31,7 @@ export class MarriageRequestDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: ['PENDING','ACCEPTED','CANCELLED','REPLACED'] }) status!: string;
   @ApiProperty() isInitiator!: boolean;
+  @ApiProperty({ type: String, nullable: true, description: 'Original invitation destination masked for the requester only; null for recipient.' }) recipientPhoneMasked!: string|null;
   @ApiProperty({ type: String, nullable: true }) initiatorName!: string|null;
   @ApiProperty({ type: String, nullable: true, enum: ['PROFILE_INCOMPLETE','GENDER_NOT_ALLOWED','AGE_BELOW_MINIMUM'] }) ownIneligibilityReason!: string|null;
   @ApiProperty() ownEligible!: boolean;

@@ -11278,6 +11278,8 @@ export interface components {
             /** @enum {string} */
             status: "PENDING" | "ACCEPTED" | "CANCELLED" | "REPLACED";
             isInitiator: boolean;
+            /** @description Original invitation destination masked for the requester only; null for recipient. */
+            recipientPhoneMasked: string | null;
             initiatorName: string | null;
             /** @enum {string|null} */
             ownIneligibilityReason: "PROFILE_INCOMPLETE" | "GENDER_NOT_ALLOWED" | "AGE_BELOW_MINIMUM" | null;

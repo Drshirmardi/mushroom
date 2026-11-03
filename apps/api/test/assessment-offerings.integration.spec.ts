@@ -47,6 +47,8 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     const phone = `+989${Math.floor(Math.random()*900000000+100000000)}`; const before = await db.user.count(); const key=randomUUID();
     const body = { publicationId: offer.json().adminPublicationId, initiatorRole:'FIRST',recipientPhone:phone,consentPolicyVersionId:policy.id,consentAccepted:true };
     const created=await http(sender,'POST','',body,key); expect(created.statusCode,created.body).toBe(201); expect(await db.user.count()).toBe(before); let id=created.json().id;
+    expect(created.json().recipientPhoneMasked).toBe('09•••••'+phone.slice(-4)); expect(created.body).not.toContain(phone);
+    expect((await http(sender,'GET','')).json().items.find((item:{id:string})=>item.id===id).recipientPhoneMasked).toBe('09•••••'+phone.slice(-4));
     expect(created.json()).not.toHaveProperty('recipientHash'); expect(created.json()).not.toHaveProperty('recipientPatientId');
     expect((await http(sender,'POST','',body,key)).json().id).toBe(id);
     const catalog=await app.inject({method:'GET',url:'/v1/patients/me/educational-assessment-offerings?kind=COUPLES&servicePurpose=MARRIAGE&pageSize=1',headers:{authorization:`Bearer ${sender.token}`}});expect(catalog.statusCode,catalog.body).toBe(200);expect(catalog.json().items).toHaveLength(1);expect(catalog.json().items[0].servicePurpose).toBe('MARRIAGE');
@@ -56,7 +58,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:phone}});
     const accept={consentPolicyVersionId:policy.id,consentAccepted:true};
     await db.userProfile.update({where:{userId:user.id},data:{gender:'MALE'}});
-    const ineligible=await http(receiver,'POST',`/${id}/review`);expect(ineligible.statusCode,ineligible.body).toBe(201);expect(ineligible.json().eligibilityNotConfirmed).toBe(true);expect(ineligible.json().educationalId).toBeNull();expect(ineligible.json().ownIneligibilityReason).toBe('GENDER_NOT_ALLOWED');const privateView=(await http(sender,'GET',`/${id}`)).json();expect(privateView.ownIneligibilityReason).toBeNull();expect(privateView).not.toHaveProperty('recipientGender');
+    const ineligible=await http(receiver,'POST',`/${id}/review`);expect(ineligible.statusCode,ineligible.body).toBe(201);expect(ineligible.json().recipientPhoneMasked).toBeNull();expect(ineligible.json().eligibilityNotConfirmed).toBe(true);expect(ineligible.json().educationalId).toBeNull();expect(ineligible.json().ownIneligibilityReason).toBe('GENDER_NOT_ALLOWED');const privateView=(await http(sender,'GET',`/${id}`)).json();expect(privateView.ownIneligibilityReason).toBeNull();expect(privateView).not.toHaveProperty('recipientGender');
     expect((await http(sender,'POST',`/${id}/review`)).statusCode).toBe(404);expect((await http(sender,'GET',`/${id}`)).json().eligibilityNotConfirmed).toBe(true);
     await db.userProfile.update({where:{userId:user.id},data:{gender:'FEMALE'}});
     const patientId=(await db.patientProfile.findUniqueOrThrow({where:{userId:user.id}})).id;
@@ -68,6 +70,10 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     expect(responses[0]!.json().status).toBe('ACCEPTED');expect(responses[1]!.json().educationalId).toBe(responses[0]!.json().educationalId);
     const saved=await db.marriageServiceRequest.findUniqueOrThrow({where:{id}});expect(saved.recipientPatientId).toBe((await db.patientProfile.findUniqueOrThrow({where:{userId:user.id}})).id);expect(Buffer.from(saved.encryptedPayload).toString()).not.toContain(phone);
     expect((await db.educationalCoupleParticipant.count({where:{sessionId:saved.educationalId!}}))).toBe(2);
+    const changedPhone = `+989${Math.floor(Math.random()*900000000+100000000)}`;
+    await db.user.update({where:{id:user.id},data:{phone:changedPhone}});await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:changedPhone}});
+    expect((await http(sender,'GET',`/${id}`)).json().recipientPhoneMasked).toBe('09•••••'+phone.slice(-4));
+    const recipientView=await http(receiver,'GET',`/${id}`);expect(recipientView.statusCode,recipientView.body).toBe(200);expect(recipientView.json().recipientPhoneMasked).toBeNull();expect(recipientView.body).not.toContain(phone);expect(recipientView.body).not.toContain(changedPhone);
   });
 
   it.each(['INDIVIDUAL', 'COUPLES'])('inline offering saves all modes with owned documents and retry safety: %s', async kind => {

@@ -53215,6 +53215,11 @@
           "isInitiator": {
             "type": "boolean"
           },
+          "recipientPhoneMasked": {
+            "type": "string",
+            "nullable": true,
+            "description": "Original invitation destination masked for the requester only; null for recipient."
+          },
           "initiatorName": {
             "type": "string",
             "nullable": true
@@ -53273,6 +53278,7 @@
           "id",
           "status",
           "isInitiator",
+          "recipientPhoneMasked",
           "initiatorName",
           "ownIneligibilityReason",
           "ownEligible",

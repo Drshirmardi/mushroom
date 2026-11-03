@@ -517,3 +517,7 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ15 — Bounded participation polling and responsive verification; targeted units/types/lint/build/seven-width local browser PASS2026-11-03. MZ13-MZ15 software complete; live audit Incomplete.
 
 - [x] F12-FE01-MZ14 — Actionable invitation errors and guarded cancellation; targeted13 units/types/scoped lint/local browser PASS2026-11-03.
+
+- [x] F12-FE01-MZ16 — Requester-only original destination mask/date and historical vs new consent; scoped PostgreSQL/contracts/types/build/browser PASS2026-11-03.
+- [ ] F12-FE01-MZ17 — Reproduce/fix shared result refresh, numeric guidance and unsaved-answer exit; depends MZ16.
+- [ ] F12-FE01-MZ18 — Clear empty assessment groups and currency units; depends MZ17.
