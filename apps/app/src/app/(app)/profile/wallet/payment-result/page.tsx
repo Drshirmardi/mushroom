@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { getBillingIntent, type BillingIntent } from "@/lib/wallet-billing-api";
 import { billingMethodLabel, billingPurposeLabel, billingStatusLabel, intentResultView, type IntentResultView } from "@/lib/wallet-labels";
 import { usePatientResource } from "@/lib/use-patient-resource";
+import { returnFromPayment } from "@/lib/payment-return";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { formatRial } from "@/lib/wallet-money";
 
@@ -67,7 +68,7 @@ function PaymentResult() {
 
   return (
     <div className="profile-scope">
-      <PageHeader title="نتیجهٔ پرداخت" onBack={() => router.push(invitation ? `/assessment/marriage/requests/${invitation}` : "/profile/wallet")} />
+      <PageHeader title="نتیجهٔ پرداخت" onBack={() => returnFromPayment(router, intent, invitation)} />
       <div className="space-y-4 px-4 pb-6 pt-4">
         {view === "loading" && (
           <LoadingState variant="payment" />

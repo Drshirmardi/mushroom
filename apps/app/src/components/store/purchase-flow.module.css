@@ -1,0 +1,58 @@
+.page {
+  padding-top: 0;
+  min-width: 0;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-inline: calc(-1 * var(--patient-space-4));
+  margin-bottom: var(--patient-space-4);
+  background: var(--patient-surface);
+}
+
+.cartAction,
+.checkoutAction {
+  min-width: 0;
+  padding: var(--patient-space-4);
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--patient-divider);
+  background: var(--patient-surface);
+}
+
+.cartAction {
+  display: flex;
+  align-items: center;
+  gap: var(--patient-space-3);
+}
+
+.checkoutAction {
+  display: grid;
+  gap: var(--patient-space-3);
+}
+
+.payable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--patient-space-2);
+  min-width: 0;
+}
+
+.payable > span {
+  color: var(--patient-muted);
+  font-size: .75rem;
+  line-height: 1.5rem;
+}
+
+.payable :global(.store-price) {
+  font-size: 1rem;
+  line-height: 1.625rem;
+}
+
+.submit {
+  width: 100%;
+  min-width: 0;
+}

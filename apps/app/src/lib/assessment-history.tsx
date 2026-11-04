@@ -96,6 +96,12 @@ export function registerAssessmentHistoryGuard(guard: Guard) {
   return tracker().register(guard);
 }
 
+/** Only entries created in this document are safe to traverse from app controls. */
+export function canGoBackInApp() {
+  if (typeof window === 'undefined') return false;
+  return (readPosition(window.history.state)?.index ?? 0) > 0;
+}
+
 export function AssessmentHistoryTracking() {
   useEffect(() => { tracker(); }, []);
   return null;

@@ -11,6 +11,7 @@ import { PaymentChooser } from "@/components/billing/payment-chooser";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api";
 import { createOrderIntent, getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
+import { returnFromPayment } from "@/lib/payment-return";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { formatPrice, toP } from "@/lib/format";
 
@@ -108,7 +109,7 @@ function PaymentScreen() {
 
   return (
     <div>
-      <PageHeader title="پرداخت" onBack={() => router.back()} />
+      <PageHeader title="پرداخت" onBack={() => returnFromPayment(router, intent, null, resolvedOrderId ? `/store/order-tracking?orderId=${encodeURIComponent(resolvedOrderId)}` : "/store/cart")} />
       <div className="space-y-4 px-4 pb-6">
         {state === "loading" && (
           <LoadingState variant="payment" />

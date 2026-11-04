@@ -1230,7 +1230,7 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
 /* Shared patient service screens: the same blue foundations as Home. */
 .service-page { padding: 20px 20px 32px; color: var(--patient-ink); font-family: var(--font-vazirmatn), sans-serif; font-size: 14px; line-height: 26px; }
 .service-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
-.service-navigation > a { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; font-weight: 600; color: var(--patient-muted); }
+.service-navigation > :is(a,button) { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; font-weight: 600; color: var(--patient-muted); }
 .service-navigation > :is(button,a:last-child:not(:first-child)) { min-height: 44px; color: var(--patient-action); font-weight: 700; }
 .service-intro { position: relative; padding-inline-end: 60px; min-height: 60px; margin-bottom: 24px; }
 .service-intro-icon { position: absolute; inset-inline-end: 0; top: 0; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; color: var(--patient-action); background: var(--patient-soft); }

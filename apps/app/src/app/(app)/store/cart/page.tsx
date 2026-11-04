@@ -8,7 +8,9 @@ import { AnimatePresence, MotionConfig } from "motion/react";
 
 import { useAuthSession } from "@/components/auth/session-gate";
 import { Button } from "@/components/ui/button";
-import { CartItem, ProductPrice, StoreHeader, StoreState } from "@/components/store/store-ui";
+import { CartItem, ProductPrice, StoreState } from "@/components/store/store-ui";
+import { PageHeader } from "@/components/shared/page-header";
+import styles from "@/components/store/purchase-flow.module.css";
 
 import { commerceErrorMessage, getCommerceCart, updateCommerceCart, type CommerceCart } from "@/lib/commerce-catalog-api";
 
@@ -76,7 +78,7 @@ export default function CartPage() {
   }, [loading, error, items.length]);
   const tax = cartTax(items);
   const total = cartTotal(items) + tax;
-  return <main className="store-page"><StoreHeader title="سبد خرید" onBack={() => router.back()} />
+  return <main className={`store-page ${styles.page}`}><div className={styles.header}><PageHeader title="سبد خرید" onBack={() => router.back()} /></div>
     {refreshing && <RefreshIndicator />}{loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
     {error && <StoreState title="سبد به‌روزرسانی نشد" description={error} error action="تلاش دوباره" onAction={() => void load()} />}
     {!loading && !error && emptyVisible && <div className="store-empty">
@@ -86,7 +88,7 @@ export default function CartPage() {
       <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>
     </div>}
     {!loading && (!error || hasLoaded) && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
-    {!loading && !error && items.length > 0 && <ShellAction><div className="store-cart-bar" aria-label="خلاصهٔ سبد">
+    {!loading && !error && items.length > 0 && <ShellAction><div className={styles.cartAction} aria-label="خلاصهٔ سبد">
       <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy || removingIds.length > 0} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
       <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا{tax > BigInt(0) ? "، با مالیات" : ""}</span><ProductPrice amount={total} /></div>
     </div></ShellAction>}

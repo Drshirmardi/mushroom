@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { X } from "lucide-react";
+import styles from "./receipt-page.module.css";
 import { Button } from "@/components/ui/button";
 import type { CommerceOrder, CommerceReceipt } from "@/lib/commerce-catalog-api";
 import { formatPrice, toP } from "@/lib/format";
@@ -46,8 +47,8 @@ export function OrderPaymentSuccess({ order, receipt, onClose, onTrack }: {
         {receipt.method && <div className="flex justify-between gap-3"><dt className="text-muted-foreground">روش پرداخت</dt><dd>{receipt.method === "WALLET" ? "کیف پول" : receipt.method === "FREE" ? "بدون نیاز به پرداخت" : "درگاه بانکی"}</dd></div>}
         <div className="flex justify-between gap-3"><dt className="text-muted-foreground">روش دریافت</dt><dd>{order.shippingMethod === "PICKUP" ? "دریافت حضوری" : "ارسال با پیک"}</dd></div>
       </dl>
-      <Button className="w-full" onClick={onTrack}>پیگیری سفارش</Button>
-      <Button variant="ghost" className="mt-2 w-full" onClick={onClose}>مشاهده جزئیات سفارش</Button>
+      <div className={styles.dialogActions}><Button className="w-full" onClick={onTrack}>پیگیری سفارش</Button>
+      <Button variant="ghost" className="mt-2 w-full" onClick={onClose}>مشاهده جزئیات سفارش</Button></div>
     </motion.div>
   </dialog>;
 }

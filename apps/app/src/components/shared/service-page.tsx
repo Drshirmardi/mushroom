@@ -3,8 +3,9 @@ import { ArrowRight, ArrowLeft, Info, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { toP } from "@/lib/format";
 
-export function ServicePage({ title, description, icon: Icon, children, action, backHref = "/", backLabel = "خانه" }: { title: string; description: string; icon: LucideIcon; children: ReactNode; action?: ReactNode; backHref?: string; backLabel?: string }) {
-  return <main className="service-page" dir="rtl"><nav className="service-navigation" aria-label="مسیر صفحه"><Link href={backHref}><ArrowRight size={18} aria-hidden="true" />{backLabel}</Link>{action}</nav><header className="service-intro"><span className="service-intro-icon"><Icon size={26} aria-hidden="true" /></span><h1>{title}</h1><p>{description}</p></header>{children}</main>;
+export function ServicePage({ title, description, icon: Icon, children, action, backHref = "/", backLabel = "خانه", onBack }: { title: string; description: string; icon: LucideIcon; children: ReactNode; action?: ReactNode; backHref?: string; backLabel?: string; onBack?: () => void }) {
+  const backContent = <><ArrowRight size={18} aria-hidden="true" />{backLabel}</>;
+  return <main className="service-page" dir="rtl"><nav className="service-navigation" aria-label="مسیر صفحه">{onBack ? <button type="button" onClick={onBack}>{backContent}</button> : <Link href={backHref}>{backContent}</Link>}{action}</nav><header className="service-intro"><span className="service-intro-icon"><Icon size={26} aria-hidden="true" /></span><h1>{title}</h1><p>{description}</p></header>{children}</main>;
 }
 
 export function ServiceSection({ title, description, action, children }: { title: string; description?: string; action?: ReactNode; children: ReactNode }) {

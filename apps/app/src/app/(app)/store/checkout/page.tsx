@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { MapPin, Package, Plus, Truck } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
-import { StoreHeader, StoreState, ProductPrice } from "@/components/store/store-ui";
+import { StoreState, ProductPrice } from "@/components/store/store-ui";
+import { PageHeader } from "@/components/shared/page-header";
+import { ShellAction } from "@/components/layout/shell-slots";
+import styles from "@/components/store/purchase-flow.module.css";
 import { ProductImage } from "@/components/store/product-image";
 import { AddressFormSheet } from "@/components/profile/address-form-sheet";
 import { Button } from "@/components/ui/button";
@@ -93,7 +96,7 @@ export default function CheckoutPage() {
     } catch (cause) { setError(commerceErrorMessage(cause)); }
     finally { setSaving(false); }
   };
-  return <main className="store-page store-checkout"><StoreHeader title="تکمیل خرید" onBack={() => router.back()} />
+  return <main className={`store-page store-checkout ${styles.page}`}><div className={styles.header}><PageHeader title="تکمیل خرید" onBack={() => router.back()} /></div>
     {loading && <StoreState title="در حال آماده‌سازی سفارش…" pending variant="form" />}
     {error && <StoreState title="اطلاعات سفارش کامل نشد" description={error} error action="دریافت دوباره" onAction={() => void load()} />}
     {!loading && !items.length && !error && <div className="store-empty"><Package size={42} strokeWidth={1.5} aria-hidden="true" /><h2>سبد خریدتان خالی است</h2><p>برای ثبت سفارش، ابتدا یک محصول انتخاب کنید.</p><Link href="/store" className="patient-button">مشاهدهٔ محصولات</Link></div>}
@@ -129,10 +132,13 @@ export default function CheckoutPage() {
         </div>
         <dl><div><dt>جمع کالاها</dt><dd>{formatPrice(subtotal)} تومان</dd></div>{tax > BigInt(0) && <div><dt>مالیات کالاها</dt><dd>{formatPrice(tax)} تومان</dd></div>}<div><dt>هزینهٔ دریافت</dt><dd>{shippingAmount === BigInt(0) ? "بدون هزینه" : `${formatPrice(shippingAmount)} تومان`}</dd></div>{appliedDiscount && <div className="text-emerald-700"><dt>تخفیف کد {appliedDiscount.code}</dt><dd>{formatPrice(discountAmount)} تومان</dd></div>}<div className="store-checkout__total"><dt>مبلغ قابل پرداخت</dt><dd>{formatPrice(total)} تومان</dd></div></dl>
         <p className="store-help">تخفیف روی مبلغ کالاها اعمال می‌شود. مبلغ نهایی هنگام ثبت سفارش دوباره بررسی خواهد شد.</p>
-        <Button busy={saving} disabled={saving || applyingDiscount || !shipping || (method === "COURIER" && !selectedAddress)} onClick={() => void checkout()}>{saving ? "در حال ثبت سفارش…" : "ثبت سفارش و ادامهٔ پرداخت"}</Button>
         <Link href="/store/orders" className="store-checkout__orders">سفارش‌های من</Link>
       </aside>
     </div>}
+    {!loading && items.length > 0 && <ShellAction><div className={styles.checkoutAction} role="region" aria-label="ثبت سفارش">
+      <div className={styles.payable}><span>مبلغ قابل پرداخت</span><ProductPrice amount={total} /></div>
+      <Button className={styles.submit} busy={saving} disabled={saving || applyingDiscount || !shipping || (method === "COURIER" && !selectedAddress)} onClick={() => void checkout()}>{saving ? "در حال ثبت سفارش…" : "ثبت سفارش و ادامهٔ پرداخت"}</Button>
+    </div></ShellAction>}
     <AnimatePresence>{showAddressForm && <AddressFormSheet accessToken={authentication.accessToken} onClose={() => setShowAddressForm(false)} onCreated={created => { setAddresses(current => [created, ...current]); setAddressId(created.id); storeDelivery(authentication.user.id, created.id); setShowAddressForm(false); }} />}</AnimatePresence>
   </main>;
 }
