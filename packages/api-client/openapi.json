@@ -32442,6 +32442,18 @@
             }
           },
           {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SENT",
+                "RECEIVED"
+              ]
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -32461,6 +32473,20 @@
               "maximum": 50,
               "default": 20,
               "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "ACCEPTED",
+                "CANCELLED",
+                "REPLACED"
+              ]
             }
           }
         ],

@@ -30502,8 +30502,10 @@ export interface operations {
     patientMarriageRequestsList: {
         parameters: {
             query?: {
+                direction?: "SENT" | "RECEIVED";
                 page?: number;
                 pageSize?: number;
+                status?: "PENDING" | "ACCEPTED" | "CANCELLED" | "REPLACED";
             };
             header?: {
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */

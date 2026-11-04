@@ -10,7 +10,7 @@ import { canonicalAssessmentJson } from '../domain/assessment-canonical-json';
 import { adminPublicationHash } from '../purchases/assessment-admin-purchase.service';
 import { CoupleLinkService } from './couple-link.service';
 import { EducationalCoupleService } from './educational/educational-couple.service';
-import type { MarriageRequestAcceptDto, MarriageRequestCreateDto } from './marriage-request.dto';
+import type { MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestListQueryDto } from './marriage-request.dto';
 
 type Tx = Prisma.TransactionClient;
 const missing = () => new NotFoundException({ code: 'MARRIAGE_REQUEST_NOT_FOUND', message: 'This service request is unavailable for this account.', details: {} });
@@ -54,11 +54,16 @@ export class MarriageRequestService {
     return transaction ? execute(transaction) : this.prisma.$transaction(execute, { maxWait: 30000, timeout: 15000 });
   }
 
-  async list(page: number, ctx: Context) {
+  async list(page: number, ctx: Context, filters: Pick<MarriageRequestListQueryDto,'status'|'direction'> = {}) {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(tx, ctx);
       const verified = await this.verified(tx, patient.user.phone, ctx);
-      const where = { clinicId: patient.clinicId, OR: [{ initiatorPatientId: patient.id }, ...(verified ? [{ recipientPatientId: patient.id }, { recipientPatientId: null, recipientHash: { in: this.crypto.phoneFingerprints(patient.user.phone) } }] : [])] };
+      const recipient = verified ? [{ recipientPatientId: patient.id }, { recipientPatientId: null, recipientHash: { in: this.crypto.phoneFingerprints(patient.user.phone) } }] : [];
+      const where: Prisma.MarriageServiceRequestWhereInput = {
+        clinicId: patient.clinicId,
+        ...(filters.status ? { status: filters.status } : {}),
+        OR: filters.direction === 'SENT' ? [{ initiatorPatientId: patient.id }] : filters.direction === 'RECEIVED' ? recipient : [{ initiatorPatientId: patient.id }, ...recipient],
+      };
       const [rows, total] = await Promise.all([tx.marriageServiceRequest.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: (page - 1) * 20, take: 20 }), tx.marriageServiceRequest.count({ where })]);
       const items = [];
       for (const row of rows) items.push(await this.project(tx, row, patient.id, ctx));

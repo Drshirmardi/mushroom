@@ -1,7 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Equals, IsIn, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
+import { Equals, IsIn, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { MarriageDefinitionDto } from '../offerings/assessment-offerings.dto';
-import { CoupleLinkPolicyDto } from './couple-link.dto';
+import { CoupleSessionListQueryDto, CoupleLinkPolicyDto } from './couple-link.dto';
+
+export class MarriageRequestListQueryDto extends CoupleSessionListQueryDto {
+  @ApiPropertyOptional({ enum: ['PENDING','ACCEPTED','CANCELLED','REPLACED'] }) @IsOptional() @IsIn(['PENDING','ACCEPTED','CANCELLED','REPLACED']) status?: 'PENDING'|'ACCEPTED'|'CANCELLED'|'REPLACED';
+  @ApiPropertyOptional({ enum: ['SENT','RECEIVED'] }) @IsOptional() @IsIn(['SENT','RECEIVED']) direction?: 'SENT'|'RECEIVED';
+}
 
 export class MarriageRequestCreateDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') publicationId!: string;

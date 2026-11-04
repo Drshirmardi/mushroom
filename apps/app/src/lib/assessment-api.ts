@@ -49,7 +49,7 @@ export const submitAssessment = (accessToken: string, id: string, idempotencyKey
 );
 
 export const getAssessmentQuestionnaire = (accessToken: string, id: string) => expectData<AssessmentQuestionnaire>(apiClient.GET("/v1/assessment-submissions/{id}/questionnaire", { headers: authorization(accessToken), params: { path: { id } } }));
-export const listAssessmentHistory = (accessToken: string, page = 1) => expectData<components["schemas"]["PatientAssessmentHistoryResponseDto"]>(apiClient.GET("/v1/patients/me/assessment-submissions", { headers: authorization(accessToken), params: { query: { page, pageSize: 20 } } }));
+export const listAssessmentHistory = (accessToken: string, page = 1, state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED") => expectData<components["schemas"]["PatientAssessmentHistoryResponseDto"]>(apiClient.GET("/v1/patients/me/assessment-submissions", { headers: authorization(accessToken), params: { query: { page, pageSize: 20, state } } }));
 export const getAssessmentGuidance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentGuidanceDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/guidance", { headers: authorization(accessToken), params: { path: { id } } }));
 export const getAssessmentProvenance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentProvenanceResponseDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/provenance", { headers: authorization(accessToken), params: { path: { id } } }));
 

@@ -1,3 +1,4 @@
+import { CoupleLinkService } from '../src/modules/assessments/couples/couple-link.service';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
@@ -55,7 +56,31 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     const oldId=id,replacementKey=randomUUID();const replacement=await http(sender,'POST',`/${oldId}/replace`,body,replacementKey);expect(replacement.statusCode,replacement.body).toBe(201);id=replacement.json().id;expect(id).not.toBe(oldId);expect((await http(sender,'GET',`/${oldId}`)).json().status).toBe('REPLACED');expect((await http(sender,'POST',`/${oldId}/replace`,body,replacementKey)).json().id).toBe(id);
     const user=await db.user.create({data:{phone}});const receiver=await createTestAccessToken(db,app.get(AccessTokenService),['PATIENT'],user.id);await db.userRole.create({data:{userId:user.id,roleId:(await db.role.findUniqueOrThrow({where:{code:'PATIENT'}})).id}});await createCompleteTestPatient(db,{data:{userId:user.id,clinicId}});
     expect((await http(receiver,'GET',`/${id}`)).statusCode).toBe(404);
+    expect((await http(receiver,'GET','?status=PENDING&direction=RECEIVED')).json().total).toBe(0);
     await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:phone}});
+    // Older pending invitation must survive pages filled with newer closed requests.
+    const original = await db.marriageServiceRequest.findUniqueOrThrow({where:{id}});
+    const {id: _id, ...copy} = original;
+    for(let i=0;i<21;i++){
+      const link=await app.get(CoupleLinkService).create(sender.userId,{consentPolicyVersionId:policy.id,consentAccepted:true},randomUUID(),{actorUserId:sender.userId,actorSessionId:sender.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'});
+      await db.marriageServiceRequest.create({data:{...copy,id:randomUUID(),replacesId:null,linkId:link.id,idempotencyKey:randomUUID(),status:'CANCELLED',createdAt:new Date(original.createdAt.getTime()+1000+i)}});
+    }
+    expect((await http(receiver,'GET','')).json().items.map((x:{id:string})=>x.id)).not.toContain(id);
+    const filtered=await http(receiver,'GET','?status=PENDING&direction=RECEIVED');expect(filtered.statusCode,filtered.body).toBe(200);expect(filtered.json().items.map((x:{id:string})=>x.id)).toEqual([id]);expect(filtered.json().total).toBe(1);expect(filtered.json().items[0].recipientPhoneMasked).toBeNull();
+    expect((await http(receiver,'GET','?direction=SENT')).json().total).toBe(0);
+    expect((await http(sender,'GET','?direction=RECEIVED')).json().total).toBe(0);
+    expect((await http(sender,'GET','?status=PENDING&direction=SENT')).json().total).toBe(1);
+    expect((await http(receiver,'GET','?direction=UNKNOWN')).statusCode).toBe(400);
+    expect((await http(receiver,'GET','?status=UNKNOWN')).statusCode).toBe(400);
+    const stranger=await actor('PATIENT');await createCompleteTestPatient(db,{data:{userId:stranger.userId,clinicId}});
+    expect((await http(stranger,'GET','?status=PENDING&direction=RECEIVED')).json().total).toBe(0);
+    const anotherClinic=await db.clinic.create({data:{name:'Synthetic isolation clinic',status:'INACTIVE'}});
+    const outsider=await actor('PATIENT');await createCompleteTestPatient(db,{data:{userId:outsider.userId,clinicId:anotherClinic.id}});
+    const outsidePhone=(await db.user.findUniqueOrThrow({where:{id:outsider.userId}})).phone;
+    await db.user.update({where:{id:user.id},data:{phone:`+989${Math.floor(Math.random()*900000000+100000000)}`}});
+    await db.user.update({where:{id:outsider.userId},data:{phone}});await db.session.update({where:{id:outsider.sessionId},data:{verifiedPhone:phone}});
+    const outsideList=await http(outsider,'GET','?status=PENDING&direction=RECEIVED');expect(outsideList.statusCode,outsideList.body).toBe(404);expect(outsideList.body).not.toContain(id);
+    await db.user.update({where:{id:outsider.userId},data:{phone:outsidePhone}});await db.user.update({where:{id:user.id},data:{phone}});
     const accept={consentPolicyVersionId:policy.id,consentAccepted:true};
     await db.userProfile.update({where:{userId:user.id},data:{gender:'MALE'}});
     const ineligible=await http(receiver,'POST',`/${id}/review`);expect(ineligible.statusCode,ineligible.body).toBe(201);expect(ineligible.json().recipientPhoneMasked).toBeNull();expect(ineligible.json().eligibilityNotConfirmed).toBe(true);expect(ineligible.json().educationalId).toBeNull();expect(ineligible.json().ownIneligibilityReason).toBe('GENDER_NOT_ALLOWED');const privateView=(await http(sender,'GET',`/${id}`)).json();expect(privateView.ownIneligibilityReason).toBeNull();expect(privateView).not.toHaveProperty('recipientGender');
@@ -74,7 +99,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     await db.user.update({where:{id:user.id},data:{phone:changedPhone}});await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:changedPhone}});
     expect((await http(sender,'GET',`/${id}`)).json().recipientPhoneMasked).toBe('09•••••'+phone.slice(-4));
     const recipientView=await http(receiver,'GET',`/${id}`);expect(recipientView.statusCode,recipientView.body).toBe(200);expect(recipientView.json().recipientPhoneMasked).toBeNull();expect(recipientView.body).not.toContain(phone);expect(recipientView.body).not.toContain(changedPhone);
-  });
+  },30_000);
 
   it.each(['INDIVIDUAL', 'COUPLES'])('inline offering saves all modes with owned documents and retry safety: %s', async kind => {
     const structure = { schemaVersion: 1, sections: [{ id: 'main', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 1, falseScore: 0 }] }] };

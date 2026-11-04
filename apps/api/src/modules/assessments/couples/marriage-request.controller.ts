@@ -4,8 +4,7 @@ import type { AuthenticatedRequest } from '../../../common/auth/access-token.gua
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { CoupleLinkRateGuard } from './couple-link.controller';
-import { CoupleSessionListQueryDto } from './couple-link.dto';
-import { MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestDto, MarriageRequestPageDto, MarriageSettingsDto } from './marriage-request.dto';
+import { MarriageRequestListQueryDto, MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestDto, MarriageRequestPageDto, MarriageSettingsDto } from './marriage-request.dto';
 import { MarriageRequestService } from './marriage-request.service';
 import { MarriageSmsService } from './marriage-sms.service';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
@@ -17,7 +16,7 @@ export class MarriageRequestController {
   @Header('Cache-Control','private, no-store') @Get('settings/:id') @ApiOperation({ operationId: 'patientMarriageSettings' }) @ApiOkResponse({ type: MarriageSettingsDto })
   settings(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.settings(id,context(r)); }
   @Header('Cache-Control','private, no-store') @Get() @ApiOperation({ operationId: 'patientMarriageRequestsList' }) @ApiOkResponse({ type: MarriageRequestPageDto })
-  list(@Query() q:CoupleSessionListQueryDto,@Req() r:AuthenticatedRequest) { return this.requests.list(q.page,context(r)); }
+  list(@Query() q:MarriageRequestListQueryDto,@Req() r:AuthenticatedRequest) { return this.requests.list(q.page,context(r),q); }
   @Header('Cache-Control','private, no-store') @Post() @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiHeader({ name:'Idempotency-Key',required:true }) @ApiOperation({ operationId:'patientMarriageRequestCreate' }) @ApiCreatedResponse({ type: MarriageRequestDto })
   create(@Body() body:MarriageRequestCreateDto,@Headers('idempotency-key') key:string|undefined,@Req() r:AuthenticatedRequest) { return this.requests.create(body,key,context(r)); }
   @Header('Cache-Control','private, no-store') @Get(':id') @ApiOperation({ operationId:'patientMarriageRequestGet' }) @ApiOkResponse({ type: MarriageRequestDto })
