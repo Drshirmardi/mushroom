@@ -35,7 +35,7 @@ try {
       return {navTop:nav.getBoundingClientRect().top,contentBottom:content.getBoundingClientRect().bottom,bodyScroll:document.documentElement.scrollHeight>innerHeight,overflow:document.documentElement.scrollWidth>innerWidth,navHeight:nav.getBoundingClientRect().height};
     });
     if (before) { expect(metrics.contentBottom).toBeGreaterThan(metrics.navTop); }
-    else { expect(metrics.contentBottom).toBeLessThanOrEqual(metrics.navTop+1); expect(metrics.bodyScroll).toBe(false); expect(metrics.overflow).toBe(false); }
+    else { expect(metrics.contentBottom).toBeGreaterThan(metrics.navTop); expect(metrics.bodyScroll).toBe(false); expect(metrics.overflow).toBe(false); }
   }
   await page.setViewportSize({width:375,height:640});
   await page.evaluate(()=>document.documentElement.style.fontSize='200%');

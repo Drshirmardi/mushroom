@@ -529,3 +529,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [ ] F12-FE01-VP03 — DEFERRED by user: standalone/install; focus browser UI first.
 
 - [x] F12-FE01-VP04 — Dock glass removed/home gradient continuous; local before-after browser/types/build/shell regression PASS; live UX Audit Incomplete (no authenticated browser).
+
+- [x] F12-FE01-VP05 — User-corrected rounded glass restored; flat full-width nav strip removed with measured scroll clearance; targeted dev/production browser/types/build PASS2026-11-04; actual device pending.
