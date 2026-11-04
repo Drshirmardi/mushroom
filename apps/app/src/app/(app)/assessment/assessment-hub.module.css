@@ -29,3 +29,15 @@
 .empty { padding:1.5rem 1rem; color:var(--patient-muted); text-align:center; font-size:.875rem; }
 .hub :is(a,button,summary):focus-visible { outline:2px solid var(--patient-focus); outline-offset:3px; }
 @media(min-width:768px) { .hub { padding:1.5rem 2rem; } }
+
+.placeholder { min-width:0; pointer-events:none; }
+.placeholderRow { padding-block:.75rem; }
+.placeholderHead { display:flex; gap:.75rem; align-items:center; }
+.placeholderLines { display:grid; flex:1; min-width:0; gap:.625rem; }
+.placeholderIcon,.placeholderTitle,.placeholderLine,.placeholderAction,.placeholderButton { display:block; background:var(--patient-divider); border-radius:.375rem; max-width:100%; }
+.placeholderIcon { width:2.75rem; height:2.75rem; border-radius:1rem; flex-shrink:0; }
+.placeholderTitle { width:12rem; height:1rem; }
+.placeholderLine { width:7rem; height:.75rem; }
+.placeholderAction { width:4.5rem; height:.875rem; }
+.placeholderButton { width:100%; height:2.75rem; border-radius:.875rem; }
+.placeholderFoot { display:flex; justify-content:space-between; gap:1rem; margin-top:1.25rem; padding-block:.5rem; }

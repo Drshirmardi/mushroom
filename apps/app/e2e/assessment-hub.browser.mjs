@@ -43,6 +43,6 @@ try{
  await page.getByRole('link',{name:'ادامه',exact:true}).click();await expect(page).toHaveURL(new RegExp('marriageRequestId='+second));await page.getByRole('textbox').waitFor();
  mode='long';await page.goto(base+'/assessment');await page.getByRole('link',{name:/عنوانطولانی/}).first().waitFor();for(const width of [320,375,414,768,1024,1280,1440]){await page.setViewportSize({width,height:812});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
  mode='empty';await page.goto(base+'/assessment');await page.getByText('فعلاً آزمونی برای شروع در دسترس نیست.',{exact:true}).waitFor();await expect(page.getByRole('link',{name:'بررسی دعوت',exact:true})).toHaveCount(0);await expect(page.getByRole('link',{name:'ادامه',exact:true})).toHaveCount(0);
- mode='error';await page.reload();await page.getByRole('alert').first().waitFor();await expect(page.getByText('فعلاً آزمونی برای شروع در دسترس نیست.',{exact:true})).toHaveCount(0);
+ mode='error';await page.reload();await page.locator('main').getByRole('alert').first().waitFor();await expect(page.getByText('فعلاً آزمونی برای شروع در دسترس نیست.',{exact:true})).toHaveCount(0);
  expect(writes).toBe(0);expect(errors).toEqual([]);console.log(JSON.stringify({PASS:true,invitation:true,counts:true,dedup:true,realPrices:true,legacyViews:true,back:true,context:true,widths:7,empty:true,error:true,writes}));
 }finally{await browser.close();}

@@ -534,3 +534,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 
 - [x] F12-FE01-AH01 — Additive invitation filters/history-state helper/OpenAPI client; actual disposable PostgreSQL privacy/older-pending/clinic and types/contracts PASS2026-11-04.
 - [x] F12-FE01-AH02 — Real-data action-first page/two tabs, exact invitation context, independent histories/legacy access; scoped unit/types/contracts/lint/build/local browser PASS2026-11-04; online/device acceptance pending.
+
+- [x] F12-FE01-AH03 — Assessment skeletons (initial/tabs/Suspense), hidden accessible status/error retry; held-response production browser/reduced-motion/seven widths/hub/types/lint/build PASS2026-11-04.

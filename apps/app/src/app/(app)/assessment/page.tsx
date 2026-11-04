@@ -9,7 +9,7 @@ import { listAssessmentHistory, listPublishedAssessments } from '@/lib/assessmen
 import { listAssessmentOfferings, listAssessmentPurchases, listEducationalAssessmentOfferings } from '@/lib/digital-services-api';
 import { listMarriageRequests } from '@/lib/marriage-api';
 import { groupAssessmentCatalog } from '@/lib/assessment-catalog';
-import { PatientResourceState } from '@/components/shared/patient-resource-state';
+import { AssessmentResourceState, AssessmentPageSkeleton } from './assessment-loading';
 import { PatientPagination } from '@/components/shared/patient-pagination';
 import { formatRialWithUnit } from '@/lib/wallet-money';
 import { billingStatusLabel } from '@/lib/wallet-labels';
@@ -26,7 +26,7 @@ function Panel({ label, children }: { label: string; children: ReactNode }) {
   return <section aria-label={label} className={styles.stack}>{children}</section>;
 }
 export default function AssessmentPage() {
-  return <Suspense fallback={<p role="status">در حال دریافت آزمون‌ها…</p>}><AssessmentHub /></Suspense>;
+  return <Suspense fallback={<AssessmentPageSkeleton />}><AssessmentHub /></Suspense>;
 }
 function AssessmentHub() {
   const { authentication } = useAuthSession(); const token = authentication.accessToken;
@@ -40,14 +40,14 @@ function AssessmentHub() {
   return <main className={styles.hub} dir="rtl">
     <Link href="/" className={styles.back}><ArrowRight size={18} aria-hidden="true" />خانه</Link>
     <header className={styles.header}><h1>آزمون‌ها</h1><span className={styles.icon}><ClipboardList size={24} aria-hidden="true" /></span></header>
-    <Panel label="دعوت‌های منتظر شما"><PatientResourceState {...invitations} retry={() => void invitations.reload()} />
+    <Panel label="دعوت‌های منتظر شما"><AssessmentResourceState shape="invite" {...invitations} retry={() => void invitations.reload()} />
       {invitation && <article className={styles.invite}>
         <p className={styles.kicker}><Mail size={16} aria-hidden="true" />یک دعوت جدید دارید</p><h2>{invitation.service.title}</h2><p className={styles.muted}>منتظر پاسخ شما</p>
         <Link className={styles.primary} href={invitation.invitationPath}>بررسی دعوت</Link>
         {invitations.data!.total > 1 && <button type="button" className={styles.textAction} onClick={() => go('mine','incoming')}>{toP(invitations.data!.total - 1)} دعوت دیگر<ArrowLeft size={16} aria-hidden="true" /></button>}
       </article>}
     </Panel>
-    <Panel label="آزمون‌های در جریان"><PatientResourceState {...ongoing} retry={() => void ongoing.reload()} />
+    <Panel label="آزمون‌های در جریان"><AssessmentResourceState shape="row" {...ongoing} retry={() => void ongoing.reload()} />
       {draft && <article className={styles.draft}><CirclePlay size={22} aria-hidden="true" /><div><h2>{draft.title}</h2><p className={styles.muted}>نیمه‌تمام</p></div><Link className={styles.textAction} href={attemptHref(draft)}>ادامه<ArrowLeft size={16} aria-hidden="true" /></Link></article>}
       {!!ongoing.data && ongoing.data.total > (draft ? 1 : 0) && <button className={styles.textAction} type="button" onClick={() => go('mine','ongoing')}>همهٔ آزمون‌های در جریان ({toP(ongoing.data.total)})</button>}
     </Panel>
@@ -66,18 +66,18 @@ function NewAssessments({ token }: { token: string }) {
   const hasData = !!(individual.data?.total || marriage.data?.total || legacy.data?.total || published.data?.items.length);
   return <div className={styles.stack}>
     {([{resource:individual,page:individualPage,set:setIndividualPage,label:'آزمون‌های فردی'}, {resource:marriage,page:marriagePage,set:setMarriagePage,label:'آزمون‌های دو نفره'}]).map(({resource,page,set,label}) => <Panel key={label} label={label}>
-      <PatientResourceState {...resource} retry={() => void resource.reload()} />
+      <AssessmentResourceState {...resource} retry={() => void resource.reload()} />
       {resource.data?.items.filter((item,index,all) => all.findIndex(other => other.id === item.id) === index).map(item => <Link key={item.id} className={styles.test} href={item.servicePurpose === 'MARRIAGE' ? `/assessment/marriage/new/${item.id}` : `/assessment/educational/${item.id}`}>
         <div className={styles.testHead}><span className={styles.icon}>{item.kind === 'COUPLES' ? <HeartHandshake aria-hidden="true" size={22} /> : <Leaf aria-hidden="true" size={22} />}</span><h2>{item.title}</h2></div>
         <div className={styles.testFoot}><span>{item.priceMode === 'FREE' ? 'رایگان' : formatRialWithUnit(BigInt(item.amountRial ?? '0'))}{item.kind === 'COUPLES' && ' · دو نفر'}</span><span className={styles.textAction}>مشاهده آزمون<ArrowLeft size={16} aria-hidden="true" /></span></div>
       </Link>)}
       {resource.data && <PatientPagination page={page} total={resource.data.total} onChange={set} />}
     </Panel>)}
-    <Panel label="سایر عرضه‌های آزمون"><PatientResourceState {...legacy} retry={() => void legacy.reload()} />
+    <Panel label="سایر عرضه‌های آزمون"><AssessmentResourceState {...legacy} retry={() => void legacy.reload()} />
       {legacy.data?.items.map(item => <Link className={styles.test} key={item.id} href={item.kind === 'COUPLES' ? `/assessment/couples?publicationId=${item.id}` : `/assessment/offerings/${item.id}`}><div className={styles.testHead}><span className={styles.icon}>{item.kind === 'COUPLES' ? <HeartHandshake size={22} aria-hidden="true" /> : <Leaf size={22} aria-hidden="true" />}</span><h2>{item.title}</h2></div><div className={styles.testFoot}><span>{formatRialWithUnit(BigInt(item.amountRial))}</span><span className={styles.textAction}>مشاهده آزمون<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>)}
       {legacy.data && <PatientPagination page={legacyPage} total={legacy.data.total} onChange={setLegacyPage} />}
     </Panel>
-    <Panel label="نسخه‌های دیگر آزمون‌ها"><PatientResourceState {...published} retry={() => void published.reload()} />
+    <Panel label="نسخه‌های دیگر آزمون‌ها"><AssessmentResourceState shape="row" {...published} retry={() => void published.reload()} />
       {!!published.data?.items.length && <details className={styles.versions}><summary>سایر آزمون‌ها و نسخه‌ها</summary><div className={styles.stack}>{groupAssessmentCatalog(published.data.items).map(group => <details key={group.key} className={styles.test}><summary>{group.title}</summary>{group.versions.map(item => <div className={styles.testFoot} key={item.id}><span className={styles.muted}>نسخهٔ {toP(item.versionNumber)}</span><Link className={styles.textAction} href={`/assessment/${item.id}`}>شروع آزمون<ArrowLeft size={16} aria-hidden="true" /></Link></div>)}</details>)}</div></details>}
     </Panel>
     {!hasData && [individual,marriage,legacy,published].every(r=>!r.loading&&!r.error&&r.data) && <p className={styles.empty}>فعلاً آزمونی برای شروع در دسترس نیست.</p>}
@@ -89,9 +89,9 @@ function MyAssessments({token,section,invitationId,draftId}:{token:string;sectio
   const history=usePatientResource(useCallback(()=>listAssessmentHistory(token,historyPage,section==='ongoing'?'IN_PROGRESS':undefined),[token,historyPage,section]));
   const purchases=usePatientResource(useCallback(()=>listAssessmentPurchases(token,purchasePage),[token,purchasePage]));
   const statuses:Record<string,string>={PENDING:'منتظر پاسخ همراه',ACCEPTED:'دعوت پذیرفته شده',CANCELLED:'لغوشده',REPLACED:'جایگزین‌شده'};
-  const groups=[<Panel key="invitations" label="دعوت‌ها"><PatientResourceState {...requests} retry={()=>void requests.reload()} />{requests.data?.items.filter(item=>item.id!==invitationId).map(item=><Link className={styles.record} key={item.id} href={item.invitationPath}><h2>{item.service.title}</h2><p className={styles.muted}>{item.isInitiator?'دعوت ارسالی':'دعوت دریافتی'} · {item.status==='PENDING'&&!item.isInitiator?'منتظر پاسخ شما':statuses[item.status]}</p>{item.isInitiator&&item.recipientPhoneMasked&&<p className={styles.muted}>همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi></p>}<div className={styles.testFoot}><time className={styles.muted}>{new Date(item.createdAt).toLocaleDateString('fa-IR',{timeZone:'Asia/Tehran'})}</time><span className={styles.textAction}>مشاهده دعوت<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>)}{requests.data&&<PatientPagination page={requestPage} total={requests.data.total} onChange={setRequestPage} />}</Panel>,
-    <Panel key="records" label="پاسخ‌ها و نتایج"><PatientResourceState {...history} retry={()=>void history.reload()} />{history.data?.items.filter(item=>item.id!==draftId).map(item=><article className={styles.record} key={item.id}><h2>{item.title}</h2><div className={styles.testFoot}><span className={styles.muted}>{item.state==='COMPLETE'?'نتیجه آماده است':item.resumeAvailable?'نیمه‌تمام':'قابل ادامه نیست'}</span>{(item.state==='COMPLETE'||item.resumeAvailable)&&<Link className={styles.textAction} href={attemptHref(item)}>{item.state==='COMPLETE'?'مشاهده نتیجه':'ادامه'}<ArrowLeft size={16} aria-hidden="true" /></Link>}</div><details className={styles.meta}><summary>جزئیات آزمون</summary>نسخهٔ {toP(item.versionNumber)} · تلاش {toP(item.attemptNumber)}</details></article>)}{history.data&&<PatientPagination page={historyPage} total={history.data.total} onChange={setHistoryPage} />}</Panel>,
-    <Panel key="purchases" label="خریدها"><PatientResourceState {...purchases} retry={()=>void purchases.reload()} />{purchases.data?.items.map(item=><Link className={styles.record} key={item.id} href={`/assessment/purchases/${item.id}`}><h2>{item.title}</h2>{item.intent&&<p className={styles.muted}>{billingStatusLabel(item.intent.status)}</p>}<div className={styles.testFoot}><span>{formatRialWithUnit(BigInt(item.amountRial))}</span><span className={styles.textAction}>پرداخت و دسترسی<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>)}{purchases.data&&<PatientPagination page={purchasePage} total={purchases.data.total} onChange={setPurchasePage} />}</Panel>];
+  const groups=[<Panel key="invitations" label="دعوت‌ها"><AssessmentResourceState {...requests} retry={()=>void requests.reload()} />{requests.data?.items.filter(item=>item.id!==invitationId).map(item=><Link className={styles.record} key={item.id} href={item.invitationPath}><h2>{item.service.title}</h2><p className={styles.muted}>{item.isInitiator?'دعوت ارسالی':'دعوت دریافتی'} · {item.status==='PENDING'&&!item.isInitiator?'منتظر پاسخ شما':statuses[item.status]}</p>{item.isInitiator&&item.recipientPhoneMasked&&<p className={styles.muted}>همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi></p>}<div className={styles.testFoot}><time className={styles.muted}>{new Date(item.createdAt).toLocaleDateString('fa-IR',{timeZone:'Asia/Tehran'})}</time><span className={styles.textAction}>مشاهده دعوت<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>)}{requests.data&&<PatientPagination page={requestPage} total={requests.data.total} onChange={setRequestPage} />}</Panel>,
+    <Panel key="records" label="پاسخ‌ها و نتایج"><AssessmentResourceState {...history} retry={()=>void history.reload()} />{history.data?.items.filter(item=>item.id!==draftId).map(item=><article className={styles.record} key={item.id}><h2>{item.title}</h2><div className={styles.testFoot}><span className={styles.muted}>{item.state==='COMPLETE'?'نتیجه آماده است':item.resumeAvailable?'نیمه‌تمام':'قابل ادامه نیست'}</span>{(item.state==='COMPLETE'||item.resumeAvailable)&&<Link className={styles.textAction} href={attemptHref(item)}>{item.state==='COMPLETE'?'مشاهده نتیجه':'ادامه'}<ArrowLeft size={16} aria-hidden="true" /></Link>}</div><details className={styles.meta}><summary>جزئیات آزمون</summary>نسخهٔ {toP(item.versionNumber)} · تلاش {toP(item.attemptNumber)}</details></article>)}{history.data&&<PatientPagination page={historyPage} total={history.data.total} onChange={setHistoryPage} />}</Panel>,
+    <Panel key="purchases" label="خریدها"><AssessmentResourceState {...purchases} retry={()=>void purchases.reload()} />{purchases.data?.items.map(item=><Link className={styles.record} key={item.id} href={`/assessment/purchases/${item.id}`}><h2>{item.title}</h2>{item.intent&&<p className={styles.muted}>{billingStatusLabel(item.intent.status)}</p>}<div className={styles.testFoot}><span>{formatRialWithUnit(BigInt(item.amountRial))}</span><span className={styles.textAction}>پرداخت و دسترسی<ArrowLeft size={16} aria-hidden="true" /></span></div></Link>)}{purchases.data&&<PatientPagination page={purchasePage} total={purchases.data.total} onChange={setPurchasePage} />}</Panel>];
   if(section==='purchases')groups.unshift(groups.splice(2,1)[0]);
   if(section==='ongoing')groups.unshift(groups.splice(1,1)[0]);
   const empty=[requests,history,purchases].every(r=>r.data?.total===0&&!r.loading&&!r.error);
