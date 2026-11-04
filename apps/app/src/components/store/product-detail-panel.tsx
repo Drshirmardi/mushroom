@@ -13,13 +13,15 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
   const [expanded, setExpanded] = useState(false);
   const prefersReducedMotion = () =>
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const detent = () => sheet.current?.offsetTop ?? 0;
+  const detent = () => {
+    const root = viewport.current;
+    const element = sheet.current;
+    return root && element ? root.scrollTop + element.getBoundingClientRect().top - root.getBoundingClientRect().top - root.clientTop : 0;
+  };
   const settleAt = (target: number) => {
     viewport.current?.scrollTo({ top: target, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };
 
-  // Section navigation: smooth in-panel scrolling offset by the sticky handle,
-  // plus a scroll-spy that marks the section currently in view (Digikala-style).
   useEffect(() => {
     const root = viewport.current;
     const container = sheet.current;
@@ -30,6 +32,11 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
       .map((link) => ({ link, target: container.querySelector<HTMLElement>(link.getAttribute("href") ?? "") }))
       .filter((entry): entry is { link: HTMLAnchorElement; target: HTMLElement } => entry.target !== null);
     if (entries.length === 0) return;
+    const handle = container.querySelector<HTMLElement>(".store-detail__handle-button");
+    const strip = container.querySelector<HTMLElement>(".store-content-nav");
+    let selected: typeof entries[number] | null = null;
+    const position = (element: HTMLElement) => root.scrollTop + element.getBoundingClientRect().top - root.getBoundingClientRect().top - root.clientTop;
+    const offset = () => Math.max(handle?.getBoundingClientRect().height ?? 0, strip ? parseFloat(getComputedStyle(strip).top) || 0 : 0) + (strip?.getBoundingClientRect().height ?? 0) + 8;
     const clear = () => entries.forEach(({ link }) => link.removeAttribute("aria-current"));
     const onClick = (event: MouseEvent) => {
       const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(".store-content-nav a[href^='#']");
@@ -37,43 +44,55 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
       const target = container.querySelector<HTMLElement>(link.getAttribute("href") ?? "");
       if (!target) return;
       event.preventDefault();
-      const handle = container.querySelector<HTMLElement>(".store-detail__handle-button");
-      const offset = (handle?.offsetHeight ?? 56) + 8;
-      root.scrollTo({ top: Math.max(0, target.offsetTop - offset), behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      selected = entries.find(entry => entry.target === target) ?? null;
+      root.scrollTo({ top: Math.max(0, position(target) - offset()), behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      sync();
     };
     const sync = () => {
-      const offset = (container.querySelector<HTMLElement>(".store-detail__handle-button")?.offsetHeight ?? 56) + 12;
       let current = entries[0];
-      // Bottom of the list: the final section can never cross the offset
-      // threshold, so treat reaching the end as "last section active".
       const atEnd = root.scrollTop + root.clientHeight >= root.scrollHeight - 2;
       if (atEnd) current = entries[entries.length - 1];
-      else for (const entry of entries) if (root.scrollTop >= entry.target.offsetTop - offset) current = entry;
+      else for (const entry of entries) if (root.scrollTop >= position(entry.target) - offset() - 4) current = entry;
+      // A short final section may clamp scrolling; retain the clicked destination until manual scrolling.
+      if (selected) current = selected;
       entries.forEach(({ link, target }) => {
         if (target === current.target) link.setAttribute("aria-current", "true");
         else link.removeAttribute("aria-current");
       });
-      // Keep the active chip reachable in the horizontal strip without touching panel scroll.
-      const strip = current.link.parentElement;
       if (strip) {
-        const left = current.link.offsetLeft;
-        const right = left + current.link.offsetWidth;
-        if (left < strip.scrollLeft) strip.scrollLeft = Math.max(0, left - 12);
-        else if (right > strip.scrollLeft + strip.clientWidth) strip.scrollLeft = right - strip.clientWidth + 12;
+        const bounds = strip.getBoundingClientRect();
+        const chip = current.link.getBoundingClientRect();
+        const delta = chip.left < bounds.left + 8 ? chip.left - bounds.left - 8 : chip.right > bounds.right - 8 ? chip.right - bounds.right + 8 : 0;
+        if (delta) strip.scrollBy({ left: delta, behavior: "instant" });
       }
     };
+    const manual = () => { selected = null; };
+    const keyboard = (event: KeyboardEvent) => { if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) manual(); };
+    const resize = new ResizeObserver(() => {
+      selected = null;
+      setExpanded(Boolean(handle?.getBoundingClientRect().height) && root.scrollTop >= position(container) - 2);
+      sync();
+    });
+    [root, container, handle, strip].forEach(element => { if (element) resize.observe(element); });
     container.addEventListener("click", onClick);
     root.addEventListener("scroll", sync, { passive: true });
+    root.addEventListener("wheel", manual, { passive: true });
+    root.addEventListener("pointerdown", manual);
+    root.addEventListener("keydown", keyboard);
     sync();
     return () => {
       container.removeEventListener("click", onClick);
       root.removeEventListener("scroll", sync);
+      root.removeEventListener("wheel", manual);
+      root.removeEventListener("pointerdown", manual);
+      root.removeEventListener("keydown", keyboard);
+      resize.disconnect();
       clear();
     };
   }, [children]);
   return <div ref={viewport} className="store-detail store-detail--panel" tabIndex={0} role="region" aria-label="جزئیات محصول و تصاویر"
     onScroll={() => {
-      if (viewport.current && sheet.current) setExpanded(viewport.current.scrollTop >= sheet.current.offsetTop - 2);
+      if (viewport.current && sheet.current) setExpanded(viewport.current.scrollTop >= detent() - 2);
     }}>
     {gallery}
     <section ref={sheet} className="store-detail__sheet" data-expanded={expanded} aria-label="اطلاعات محصول">

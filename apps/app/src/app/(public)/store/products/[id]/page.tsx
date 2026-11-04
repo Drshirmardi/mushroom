@@ -3,6 +3,7 @@ import { ShellAction } from '@/components/layout/shell-slots';
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Heart, Share2, ShoppingCart } from "lucide-react";
 import { useOptionalAuthSession } from "@/components/auth/session-gate";
 import { commerceErrorMessage, getCommerceCart, getCommerceProduct, getCommerceWishlist, listCommerceProducts, updateCommerceCart, updateCommerceWishlist, type CommerceCart, type CommerceProduct, type CommerceWishlist } from "@/lib/commerce-catalog-api";
@@ -15,7 +16,8 @@ import { ProductContentSections } from "@/components/store/product-content-secti
 import { productImageAlt, productImageUrl } from "@/lib/product-image";
 import { ProductPrice, QuantityControl, StoreHeader, StoreState } from "@/components/store/store-ui";
 import { useScreenNavigation } from "@/lib/navigation";
-import { useCartStore } from "@/stores/cart";
+import { cartCount, useCartStore } from "@/stores/cart";
+import { toP } from "@/lib/format";
 import { useWishlistStore } from "@/stores/wishlist";
 import { useRecentStore } from "@/stores/recently-viewed";
 
@@ -36,6 +38,9 @@ export default function ProductDetailPage() {
   const productRequest = useRef(0);
   const noticeTimer = useRef<number | null>(null);
   const toastTimer = useRef<number | null>(null);
+  const cartMutation = useRef(false);
+  const count = cartCount(cart);
+  const cartAction = <Link href="/store/cart" className="store-icon-button relative inline-flex items-center justify-center" aria-label={count ? `سبد خرید، ${toP(count)} کالا` : "سبد خرید"}><ShoppingCart size={20} aria-hidden="true" />{count > 0 && <span className="store-badge" aria-hidden="true">{toP(count)}</span>}</Link>;
   useEffect(() => () => { if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current); if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); }, []);
   const load = useCallback(async () => { const request = ++productRequest.current; setProduct(null); setError(null); try { const next = await getCommerceProduct(id); if (request === productRequest.current) setProduct(next); } catch (cause) { if (request === productRequest.current) setError(commerceErrorMessage(cause)); } }, [id]);
   useEffect(() => { void load(); return () => { ++productRequest.current; }; }, [load]);
@@ -62,16 +67,16 @@ export default function ProductDetailPage() {
     pushRecent({ productId: product.id, skuId: sku.id, title: product.title, price: sku.currentPriceToman, imageUrl: productImageUrl(product) });
   }, [product, sku, pushRecent]);
   useEffect(() => { if (product) document.title = `${product.title} | دکتر شیرمردی`; }, [product]);
-  if (!product) return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} variant="product" action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
-  if (!sku) return <main className="store-page"><StoreHeader title={product.title} onBack={() => router.back()} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
+  if (!product) return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} actions={cartAction} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} variant="product" action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
+  if (!sku) return <main className="store-page"><StoreHeader title={product.title} onBack={() => router.back()} actions={cartAction} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
   const saved = wishlist.includes(sku.id); const current = cart.find((item) => item.skuId === sku.id)?.qty ?? 0;
   const imageUrl = productImageUrl(product);
   const flashNotice = (message: string) => { setNotice(message); if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current); noticeTimer.current = window.setTimeout(() => setNotice(""), 4000); };
-  const setQty = async (next: number) => { if (!session) { navigateScreen("CartScreen"); return; } if (next < 0 || next > 100) return; const firstAdd = current === 0 && next > 0; setBusy(true); setError(null); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, sku.id, next)); if (firstAdd) { setToast(true); if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); toastTimer.current = window.setTimeout(() => setToast(false), 3500); } } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
+  const setQty = async (next: number) => { if (!session) { navigateScreen("CartScreen"); return; } if (next < 0 || next > 100 || cartMutation.current) return; cartMutation.current = true; const firstAdd = current === 0 && next > 0; setBusy(true); setError(null); try { cacheCart(await updateCommerceCart(session.authentication.accessToken, sku.id, next)); if (firstAdd) { setToast(true); if (toastTimer.current !== null) window.clearTimeout(toastTimer.current); toastTimer.current = window.setTimeout(() => setToast(false), 3500); } } catch (cause) { setError(commerceErrorMessage(cause)); } finally { cartMutation.current = false; setBusy(false); } };
   const toggle = async () => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); setError(null); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, sku.id, !saved)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
   const share = async () => { try { if (navigator.share) { await navigator.share({ title: product.title, url: window.location.href }); } else { await navigator.clipboard.writeText(window.location.href); flashNotice("پیوند محصول کپی شد."); } } catch (cause) { if (!(cause instanceof Error && cause.name === "AbortError")) flashNotice("اشتراک‌گذاری انجام نشد؛ نشانی این صفحه را کپی کنید."); } };
   const quickToggle = async (skuId: string) => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, skuId, !wishlist.includes(skuId))); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
-  return <main className="store-page store-product-page"><StoreHeader title={product.title} onBack={() => router.back()} />
+  return <main className="store-page store-product-page"><StoreHeader title={product.title} onBack={() => router.back()} actions={cartAction} />
     <ProductDetailPanel key={product.id} gallery={<ProductGallery official={imageUrl ? [imageUrl] : []} buyer={[]} title={productImageAlt(product.image, product.title)} />}>
         <div className="store-detail__title"><div><h2>{product.title}</h2></div><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
         {product.skus.length > 1 && <div className="store-variant"><label htmlFor="product-variant">انتخاب نوع محصول</label><select id="product-variant" value={sku.id} disabled={busy} onChange={event => { const url = new URL(window.location.href); url.searchParams.set("sku", event.target.value); window.history.replaceState(null, "", url.toString()); setError(null); }}>

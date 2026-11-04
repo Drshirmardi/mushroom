@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -9,8 +10,8 @@ import { HeartbeatLoader } from "../shared/heartbeat-loader";
 import { LoadingState, type SkeletonVariant } from "../shared/skeletons";
 import { ProductImage } from "./product-image";
 
-export function StoreHeader({ title, onBack }: { title: string; onBack: () => void }) {
-  return <header className="store-page-header"><Button variant="ghost" className="store-icon-button" onClick={onBack} aria-label="بازگشت"><ArrowRight aria-hidden="true" size={22} /></Button><h1>{title}</h1></header>;
+export function StoreHeader({ title, onBack, actions }: { title: string; onBack: () => void; actions?: ReactNode }) {
+  return <header className="store-page-header"><Button variant="ghost" className="store-icon-button" onClick={onBack} aria-label="بازگشت"><ArrowRight aria-hidden="true" size={22} /></Button><h1>{title}</h1>{actions && <div className="ms-auto flex shrink-0 items-center gap-2">{actions}</div>}</header>;
 }
 
 export function ProductPrice({ amount, large = false }: { amount: number | bigint; large?: boolean }) {
