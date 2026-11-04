@@ -26,7 +26,7 @@ const followUps = [
   { href: "/appointments", title: "نوبت‌های من", icon: CalendarDays },
   { href: "/treatment", title: "درمان من", icon: HeartPulse },
   { href: "/chat", title: "گفتگو با پزشک", icon: MessageCircle },
-  { href: "/profile/health-record", title: "پروندهٔ سلامت", icon: FileHeart },
+  { href: "/profile/medical?from=home", title: "پرونده پزشکی", icon: FileHeart },
   { href: "/profile/wallet", title: "کیف پول", icon: Wallet },
   { href: "/store/orders", title: "سفارش‌های من", icon: ShoppingBag },
 ];

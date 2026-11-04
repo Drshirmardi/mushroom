@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   Edit2,
   FileText,
-  HeartPulse,
   History,
   LogOut,
   MapPin,
@@ -110,7 +109,7 @@ export default function ProfilePage() {
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => { setAvatarFailed(false); }, [gender]);
   const doneSteps = complete ? 5 : Math.floor(percent / 20);
-  return <div className="profile-scope font-iranyekanx [--font-weight-medium:500] space-y-5 px-4 pb-6">
+  return <main className="profile-scope font-iranyekanx [--font-weight-medium:500] space-y-5 px-4 pb-6">
     <div className="pt-4 pb-1 text-center"><h1 className="text-lg font-medium text-foreground">پروفایل</h1></div>
     {loading ? <LoadingState variant="profile" className="rounded-3xl border border-border bg-white p-5" />
       : error ? <div role="alert" className="rounded-3xl bg-red-50 p-5 text-sm text-red-700">{error}</div> : <>
@@ -182,19 +181,16 @@ export default function ProfilePage() {
           </section>
         </div>
         <div className="space-y-2">
-          <Caption>پرونده سلامت</Caption>
-          <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="پرونده سلامت">
-            <MenuRow icon={Activity} label="پروفایل پزشکی خوداظهاری" hint={complete ? "تکمیل‌شده" : "نیازمند تکمیل"} tone="sky" onClick={() => router.push("/profile/medical")} />
+          <Caption>سلامت و مراقبت</Caption>
+          <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="سلامت و مراقبت">
             <MenuRow icon={History} label="سوابق درمانی" tone="sky" onClick={() => router.push("/profile/history")} />
             <MenuRow icon={FileText} label="برنامه‌های آموزشی و اختصاصی من" tone="sky" onClick={() => router.push("/programs")} />
             <MenuRow icon={Activity} label="ارزیابی‌های فردی و زوجین" tone="sky" onClick={() => router.push("/assessment")} />
-            <MenuRow icon={HeartPulse} label="پرونده سلامت" tone="sky" onClick={() => router.push("/profile/health-record")} />
           </section>
         </div>
         <div className="space-y-2">
           <Caption>حساب کاربری</Caption>
           <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="حساب کاربری">
-            {!complete && <MenuRow icon={FileText} label="تکمیل پرونده پزشکی" hint={`فقط ${toP(100 - percent)}٪ مانده`} tone="blue" onClick={() => router.push("/onboarding")} />}
             <MenuRow icon={Fingerprint} label="امنیت و حریم خصوصی" tone="slate" onClick={() => router.push("/profile/security")} />
             <MenuRow icon={Bell} label="اعلان‌ها" tone="sky" onClick={() => router.push("/profile/notifications")} />
           </section>
@@ -202,5 +198,5 @@ export default function ProfilePage() {
       </>}
     {logoutError && <p role="alert" className="text-sm text-red-700">خروج انجام نشد؛ دوباره تلاش کنید.</p>}
     <button type="button" disabled={loggingOut || loading} onClick={() => { if (loggingOut) return; setLoggingOut(true); setLogoutError(false); void logout().then(ok => { if (!ok) { setLoggingOut(false); setLogoutError(true); } }); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-medium text-red-600 transition-colors active:bg-red-50 disabled:opacity-60" aria-busy={Boolean(loggingOut)}><LogOut size={16} aria-hidden="true" />{loggingOut ? <><HeartbeatLoader />{"در حال خروج…"}</> : "خروج از حساب"}</button>
-  </div>;
+  </main>;
 }

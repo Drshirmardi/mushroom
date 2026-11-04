@@ -538,3 +538,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-AH03 — Assessment skeletons (initial/tabs/Suspense), hidden accessible status/error retry; held-response production browser/reduced-motion/seven widths/hub/types/lint/build PASS2026-11-04.
 
 - [x] F12-FE01-AH04 — EvilCharts-style full radial result/semi home and chart loading;8 units/types/build/scoped lint/local dev+production browser PASS2026-11-04; online/device unverified.
+
+- [x] F12-FE01-PR01 — Consolidated medical entry points, patient-friendly medical summary and edit return; scoped dev+production browser/four-route axe/responsive/types/build/lint delta PASS2026-11-05; exhaustive live audit Incomplete.

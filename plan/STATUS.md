@@ -4446,3 +4446,6 @@ AH03 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Assessm
 
 
 AH04 DONE/software (2026-11-04): sole /root review PASS, single-task claim RELEASED. EvilCharts-adapted full radial result and semi home chart, saved-score percentages, muted animated skeleton and reduced-motion support delivered with installed Recharts2; no dependency/API/scoring change. Eight units, app types/build, scoped lint delta and local dev+production seven-width/zero/loading/200%-text/reduced-motion browser PASS. Online/physical-device acceptance unverified. No next task selected.
+
+
+PR01 DONE/software (2026-11-05): sole /root review PASS, single-task claim RELEASED. Profile card preserved; home shortcut and card share medical summary, redundant lower medical entries removed, readable saved health/optional data and medical edit-return delivered. Local dev+production interaction/empty/error/retry, four-route seven-width/text200/axe, types/build/scoped lint delta PASS. Live baseline read-only observed; exhaustive UX Audit remains Incomplete and deployed/device final acceptance unverified. No next batch selected.
