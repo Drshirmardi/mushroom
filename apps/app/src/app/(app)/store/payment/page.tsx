@@ -3,7 +3,7 @@ import { LoadingState } from "@/components/shared/skeletons";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ReceiptText } from "lucide-react";
+import { ChevronDown, ReceiptText } from "lucide-react";
 import { OrderSummary } from "@/components/store/order-summary";
 import { orderStatusLabel } from "@/lib/order-labels";
 import { PageHeader } from "@/components/shared/page-header";
@@ -13,7 +13,8 @@ import { getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api
 import { createOrderIntent, getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
 import { returnFromPayment } from "@/lib/payment-return";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
-import { formatPrice, toP } from "@/lib/format";
+import { toP } from "@/lib/format";
+import styles from "@/components/billing/payment.module.css";
 
 type State = "loading" | "ready" | "error" | "notpayable";
 
@@ -108,9 +109,9 @@ function PaymentScreen() {
   const resolvedOrderId = order?.id ?? intent?.orderId ?? orderId;
 
   return (
-    <div>
+    <div className={styles.page}>
       <PageHeader title="پرداخت" onBack={() => returnFromPayment(router, intent, null, resolvedOrderId ? `/store/order-tracking?orderId=${encodeURIComponent(resolvedOrderId)}` : "/store/cart")} />
-      <div className="space-y-4 px-4 pb-6">
+      <div className={styles.content}>
         {state === "loading" && (
           <LoadingState variant="payment" />
         )}
@@ -141,17 +142,12 @@ function PaymentScreen() {
 
         {state === "ready" && intent && (
           <>
-            {order && (
-              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
-                <p className="text-sm text-muted-foreground">مبلغ سفارش</p>
-                <p className="mt-1 font-iransans-fanum text-2xl font-normal text-primary">{formatPrice(BigInt(order.totalAmountToman))} تومان</p>
-                <p className="mt-2 text-xs text-muted-foreground">شماره سفارش {toP(order.orderNumber)}</p>
-              </div>
-            )}
-            {order && <OrderSummary order={order} />}
             <PaymentChooser
+              key={intent.id}
               accessToken={authentication.accessToken}
               intent={intent}
+              context={order ? `سفارش شمارهٔ ${toP(order.orderNumber)}` : undefined}
+              details={order && <details className={styles.details}><summary>جزئیات سفارش<ChevronDown size={18} aria-hidden="true" /></summary><OrderSummary order={order} /></details>}
               onPaid={(paid) => {
                 const paidOrderId = paid.orderId ?? resolvedOrderId;
                 if (paidOrderId) router.replace(`/store/order-success?orderId=${encodeURIComponent(paidOrderId)}`);

@@ -1,0 +1,28 @@
+.page { min-width: 0; }
+.content { display: grid; gap: 1rem; padding: 1rem 1rem 1.5rem; }
+.chooser { display: grid; gap: 1rem; min-width: 0; }
+.amount { padding: 1.5rem 1rem; text-align: center; border-radius: 1.25rem; background: var(--patient-soft); color: var(--patient-ink); }
+.amount > p { color: var(--patient-muted); font-size: .875rem; line-height: 1.75; }
+.amount > strong { display: block; margin-block: .5rem; font-family: var(--font-price); font-size: 1.75rem; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.amount small { font-size: 1rem; font-weight: 400; }
+.context { font-size: .8125rem; line-height: 1.75; color: var(--patient-muted); }
+.methods { display: grid; gap: .75rem; min-width: 0; }
+.methods > h2 { font-size: .875rem; font-weight: 600; line-height: 1.75; }
+.method:global(.wallet-method) { align-items: center; padding: 1rem; gap: .75rem; border-width: 1px; min-height: 5rem; }
+.method :global(.wallet-method__title), .method :global(.wallet-method__hint) { display: block; }
+.method :global(.wallet-method__title) { line-height: 1.75; }
+.method :global(.wallet-method__hint) { margin-top: .25rem; font-size: .8125rem; line-height: 1.8; }
+.method > svg { flex-shrink: 0; color: var(--patient-action); }
+.method:enabled:hover { border-color: var(--patient-action); background: var(--patient-soft); }
+.method:enabled:active { background: var(--patient-soft); }
+.deficit { display: block; }
+.cancel { display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: .75rem; font-size: .875rem; color: var(--patient-muted); text-decoration: underline; text-underline-offset: .25rem; cursor: pointer; }
+.cancel:disabled { opacity: .5; cursor: not-allowed; }
+.details { min-width: 0; border: 1px solid var(--patient-divider); border-radius: 1rem; background: var(--patient-surface); }
+.details > summary { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .875rem 1rem; min-height: 3rem; cursor: pointer; font-size: .875rem; list-style: none; }
+.details > summary::-webkit-details-marker { display: none; }
+.details > summary svg { flex-shrink: 0; }
+.details[open] > summary svg { transform: rotate(180deg); }
+.details > :global(section) { border: 0; margin: 0; border-radius: 0 0 1rem 1rem; }
+.page :is(button, a, summary):focus-visible, .chooser :is(button, a, summary):focus-visible { outline: 2px solid var(--patient-action); outline-offset: 3px; }
+.page :is(button, a, summary) { scroll-margin-block: 5rem 7rem; }
