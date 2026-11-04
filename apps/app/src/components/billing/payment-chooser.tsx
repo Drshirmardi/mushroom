@@ -6,7 +6,7 @@ import { currentInvitationContext } from '@/lib/marriage-context';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
-import { ChevronLeft, CreditCard, Landmark, Wallet } from "lucide-react";
+import { ChevronLeft, CreditCard, Landmark, ReceiptText, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TopupSheet } from "@/components/billing/topup-sheet";
 import { BottomSheet } from "@/components/shared/bottom-sheet";
@@ -100,11 +100,12 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled, conte
   return (
     <div className={styles.chooser}>
       <section className={styles.amount} aria-label={isTopup ? "مبلغ افزایش موجودی" : "مبلغ قابل پرداخت"}>
+        <span className={styles.receiptIcon} aria-hidden="true">{isTopup ? <Wallet size={24} /> : <ReceiptText size={24} />}</span>
         <p>{isTopup ? "مبلغ افزایش موجودی" : "مبلغ قابل پرداخت"}</p>
-        <strong>{formatRial(amount)} <small>تومان</small></strong>
+        <strong><span>{formatRial(amount)}</span><small>تومان</small></strong>
         <div className={styles.context}>{context ?? billingPurposeLabel(intent.purpose)}</div>
+        {details}
       </section>
-      {details}
       {bankAttempt && <p role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">{bankAttempt.status === "REDIRECT_READY" ? "یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود." : "نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید."}</p>}
       {isTopup && <aside className="rounded-2xl border border-border bg-muted p-4 text-sm leading-7" aria-label="دربارهٔ افزایش موجودی">
         <p>این مبلغ به موجودی کیف پول شما اضافه می‌شود؛ پرداخت هزینهٔ خرید یا خدمت نیست.</p>
