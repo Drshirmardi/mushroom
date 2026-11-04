@@ -94,7 +94,7 @@ export default function CheckoutPage() {
     finally { setSaving(false); }
   };
   return <main className="store-page store-checkout"><StoreHeader title="تکمیل خرید" onBack={() => router.back()} />
-    {loading && <StoreState title="در حال آماده‌سازی سفارش…" pending />}
+    {loading && <StoreState title="در حال آماده‌سازی سفارش…" pending variant="form" />}
     {error && <StoreState title="اطلاعات سفارش کامل نشد" description={error} error action="دریافت دوباره" onAction={() => void load()} />}
     {!loading && !items.length && !error && <div className="store-empty"><Package size={42} strokeWidth={1.5} aria-hidden="true" /><h2>سبد خریدتان خالی است</h2><p>برای ثبت سفارش، ابتدا یک محصول انتخاب کنید.</p><Link href="/store" className="patient-button">مشاهدهٔ محصولات</Link></div>}
     {!loading && items.length > 0 && <div className="store-checkout__layout">
@@ -129,7 +129,7 @@ export default function CheckoutPage() {
         </div>
         <dl><div><dt>جمع کالاها</dt><dd>{formatPrice(subtotal)} تومان</dd></div>{tax > BigInt(0) && <div><dt>مالیات کالاها</dt><dd>{formatPrice(tax)} تومان</dd></div>}<div><dt>هزینهٔ دریافت</dt><dd>{shippingAmount === BigInt(0) ? "بدون هزینه" : `${formatPrice(shippingAmount)} تومان`}</dd></div>{appliedDiscount && <div className="text-emerald-700"><dt>تخفیف کد {appliedDiscount.code}</dt><dd>{formatPrice(discountAmount)} تومان</dd></div>}<div className="store-checkout__total"><dt>مبلغ قابل پرداخت</dt><dd>{formatPrice(total)} تومان</dd></div></dl>
         <p className="store-help">تخفیف روی مبلغ کالاها اعمال می‌شود. مبلغ نهایی هنگام ثبت سفارش دوباره بررسی خواهد شد.</p>
-        <Button disabled={saving || applyingDiscount || !shipping || (method === "COURIER" && !selectedAddress)} onClick={() => void checkout()}>{saving ? "در حال ثبت سفارش…" : "ثبت سفارش و ادامهٔ پرداخت"}</Button>
+        <Button busy={saving} disabled={saving || applyingDiscount || !shipping || (method === "COURIER" && !selectedAddress)} onClick={() => void checkout()}>{saving ? "در حال ثبت سفارش…" : "ثبت سفارش و ادامهٔ پرداخت"}</Button>
         <Link href="/store/orders" className="store-checkout__orders">سفارش‌های من</Link>
       </aside>
     </div>}

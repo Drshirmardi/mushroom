@@ -1,4 +1,6 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -32,7 +34,7 @@ function CurrentMezajCard({token}:{token:string}){
  const band=resource.data?.resultBand;
  const title=typeof band?.title==='string'?band.title:'نتیجهٔ ثبت‌شده';
  const router=useRouter();
- return <section aria-label="مزاج فعلی من" className="rounded-2xl border border-border bg-white p-4 space-y-2"><h2 className="text-sm font-medium">مزاج فعلی من</h2>{resource.data?<><p className="font-medium text-primary">{title}</p><p className="text-xs text-muted-foreground">بر اساس آخرین نتیجهٔ معتبر آزمون شما</p><button className="text-sm text-primary" onClick={()=>router.push(`/assessment/result?submissionId=${resource.data!.assessmentSubmissionId}`)}>مشاهدهٔ نتیجهٔ آزمون</button></>:resource.loading?<p role="status" className="text-xs">در حال دریافت نتیجه…</p>:resource.error?<button onClick={()=>void resource.reload()} className="text-xs text-primary">دریافت دوبارهٔ نتیجه</button>:<p className="text-xs text-muted-foreground">هنوز نتیجهٔ معتبر آزمون مزاج ثبت نشده است.</p>}</section>;
+ return <section aria-label="مزاج فعلی من" className="rounded-2xl border border-border bg-white p-4 space-y-2"><h2 className="text-sm font-medium">مزاج فعلی من</h2>{resource.data?<><p className="font-medium text-primary">{title}</p><p className="text-xs text-muted-foreground">بر اساس آخرین نتیجهٔ معتبر آزمون شما</p><button className="text-sm text-primary" onClick={()=>router.push(`/assessment/result?submissionId=${resource.data!.assessmentSubmissionId}`)}>مشاهدهٔ نتیجهٔ آزمون</button></>:resource.loading?<LoadingState label="در حال دریافت نتیجه…" variant="list" />:resource.error?<button onClick={()=>void resource.reload()} className="text-xs text-primary">دریافت دوبارهٔ نتیجه</button>:<p className="text-xs text-muted-foreground">هنوز نتیجهٔ معتبر آزمون مزاج ثبت نشده است.</p>}</section>;
 }
 
 /**
@@ -93,7 +95,7 @@ const AVATAR_SRC: Record<ProfileGender, string> = {
 
 export default function ProfilePage() {
   const router = useRouter(); const { authentication, logout } = useAuthSession();
-  const [profile, setProfile] = useState<SelfProfile | null>(null); const [status, setStatus] = useState<OnboardingStatus | null>(null); const [addresses, setAddresses] = useState<CommerceAddress[] | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [loggingOut, setLoggingOut] = useState(false);
+  const [profile, setProfile] = useState<SelfProfile | null>(null); const [status, setStatus] = useState<OnboardingStatus | null>(null); const [addresses, setAddresses] = useState<CommerceAddress[] | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [loggingOut, setLoggingOut] = useState(false); const [logoutError, setLogoutError] = useState(false);
   useEffect(() => { void (async () => { try { const [profileResponse, statusResponse] = await Promise.all([loadSelfProfile(authentication.accessToken), loadOnboardingStatus(authentication.accessToken)]); setProfile(profileResponse); setStatus(statusResponse); } catch (cause) { setError(onboardingErrorMessage(cause, "load")); } finally { setLoading(false); } })(); }, [authentication.accessToken]);
   useEffect(() => { void getCommerceAddresses(authentication.accessToken).then(setAddresses).catch(() => setAddresses(null)); }, [authentication.accessToken]);
   const defaultAddress = addresses?.find((address) => address.isDefault) ?? addresses?.[0] ?? null;
@@ -110,7 +112,7 @@ export default function ProfilePage() {
   const doneSteps = complete ? 5 : Math.floor(percent / 20);
   return <div className="profile-scope font-iranyekanx [--font-weight-medium:500] space-y-5 px-4 pb-6">
     <div className="pt-4 pb-1 text-center"><h1 className="text-lg font-medium text-foreground">پروفایل</h1></div>
-    {loading ? <div className="rounded-3xl border border-border bg-white p-5 shadow-sm" aria-hidden="true"><div className="flex items-center gap-4"><div className="h-[72px] w-[72px] animate-pulse rounded-2xl bg-muted" /><div className="flex-1 space-y-2"><div className="h-4 w-2/3 animate-pulse rounded bg-muted" /><div className="h-3 w-1/2 animate-pulse rounded bg-muted" /></div></div></div>
+    {loading ? <LoadingState variant="profile" className="rounded-3xl border border-border bg-white p-5" />
       : error ? <div role="alert" className="rounded-3xl bg-red-50 p-5 text-sm text-red-700">{error}</div> : <>
         <section className="rounded-3xl border border-border bg-white p-5 shadow-sm" aria-label="مشخصات حساب">
           <div className="flex items-center gap-4">
@@ -198,6 +200,7 @@ export default function ProfilePage() {
           </section>
         </div>
       </>}
-    <button type="button" disabled={loggingOut || loading} onClick={() => { setLoggingOut(true); void logout(); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-medium text-red-600 transition-colors active:bg-red-50 disabled:opacity-60"><LogOut size={16} aria-hidden="true" />{loggingOut ? "در حال خروج…" : "خروج از حساب"}</button>
+    {logoutError && <p role="alert" className="text-sm text-red-700">خروج انجام نشد؛ دوباره تلاش کنید.</p>}
+    <button type="button" disabled={loggingOut || loading} onClick={() => { if (loggingOut) return; setLoggingOut(true); setLogoutError(false); void logout().then(ok => { if (!ok) { setLoggingOut(false); setLogoutError(true); } }); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-medium text-red-600 transition-colors active:bg-red-50 disabled:opacity-60" aria-busy={Boolean(loggingOut)}><LogOut size={16} aria-hidden="true" />{loggingOut ? <><HeartbeatLoader />{"در حال خروج…"}</> : "خروج از حساب"}</button>
   </div>;
 }

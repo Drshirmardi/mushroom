@@ -1,4 +1,6 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
@@ -40,7 +42,7 @@ function ChatRoute() {
   return id ? <ChatRoom key={id} appointmentId={id} /> : <ChatAppointments />;
 }
 
-export default function ChatPage() { return <Suspense fallback={<p role="status" className="p-4">در حال دریافت گفتگو…</p>}><ChatRoute /></Suspense>; }
+export default function ChatPage() { return <Suspense fallback={<LoadingState variant="chat" className="p-4" />}><ChatRoute /></Suspense>; }
 
 function ChatRoom({ appointmentId }: { appointmentId: string }) {
   const router = useRouter();
@@ -195,15 +197,15 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
       <button type="button" aria-label="بازگشت" onClick={() => router.back()} className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><ChevronLeft size={20} aria-hidden="true" /></button>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-bold text-foreground">گفتگوی مشاوره</p>
-        <p role="status" className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground"><span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${dotTone}`} aria-hidden="true" />{stateLabel}</p>
+        <p role="status" className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground">{connection === "loading" || connection === "reconnecting" ? <HeartbeatLoader /> : <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${dotTone}`} aria-hidden="true" />}{stateLabel}</p>
       </div>
       {(connection === "offline" || connection === "recovery-failed" || connection === "read-only") && <button type="button" onClick={() => setAttempt(value => value + 1)} className="flex-shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-primary hover:bg-primary/5">بررسی دوباره</button>}
     </header>
     {readOnlyNote && !isClosed && <p role="note" className="flex-shrink-0 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">{readOnlyNote}</p>}
     <div className="relative flex min-h-0 flex-1 flex-col">
       <main ref={scroll} onScroll={onMessagesScroll} className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3 [overflow-anchor:none]">
-        {chat?.olderCursor && <button type="button" onClick={() => void older()} disabled={loadingOlder} className="mx-auto mb-2 block rounded-full bg-white px-3 py-1.5 text-xs font-bold text-primary shadow-sm ring-1 ring-border disabled:opacity-60">{loadingOlder ? "در حال دریافت…" : "پیام‌های قبلی"}</button>}
-        {!chat && !error && <div role="status" className="space-y-2 py-4"><span className="sr-only">در حال دریافت گفتگو…</span>{[0, 1, 2].map(i => <div key={i} className={`h-10 max-w-[70%] animate-pulse rounded-2xl bg-white/80 motion-reduce:animate-none ${i % 2 ? "ms-auto" : ""}`} aria-hidden="true" />)}</div>}
+        {chat?.olderCursor && <button type="button" onClick={() => void older()} disabled={loadingOlder} className="mx-auto mb-2 block rounded-full bg-white px-3 py-1.5 text-xs font-bold text-primary shadow-sm ring-1 ring-border disabled:opacity-60" aria-busy={Boolean(loadingOlder)}>{loadingOlder ? <><HeartbeatLoader />{"در حال دریافت…"}</> : "پیام‌های قبلی"}</button>}
+        {!chat && !error && <LoadingState variant="chat" />}
         {error && <p role="alert" className="mx-auto max-w-md rounded-xl bg-red-50 px-3 py-2 text-center text-xs leading-5 text-red-700">{error}</p>}
         {chat?.messages.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">هنوز پیامی ثبت نشده است. اولین پیام را بفرستید.</p>}
         <div role="log" aria-label="پیام‌های گفتگو" aria-live="polite" className="space-y-2">
@@ -250,7 +252,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
           <textarea ref={composer} rows={1} aria-label="متن پیام" value={text} onChange={event => { setText(event.target.value); grow(event.currentTarget); }} onKeyDown={onComposerKeyDown} onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }} disabled={!canSend} maxLength={4000} placeholder={canSend ? "پیام متنی…" : "ارسال پیام در دسترس نیست"} className="block max-h-32 min-h-11 w-full resize-none rounded-2xl bg-muted px-3.5 py-2.5 text-base leading-6 text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-60" />
           {length > 0 && <p className={`mt-0.5 text-end text-[10px] ${length > 4000 ? "text-red-600" : "text-muted-foreground"}`}>{length.toLocaleString("fa-IR")} / ۴٬۰۰۰</p>}
         </div>
-        <button type="submit" aria-label="ارسال پیام" disabled={!canSend || sending || !text.trim()} className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40">{sending ? <span className="text-[10px]">…</span> : <Send size={18} aria-hidden="true" />}</button>
+        <button type="submit" aria-label={sending ? "در حال ارسال پیام…" : "ارسال پیام"} aria-busy={sending} disabled={!canSend || sending || !text.trim()} className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40">{sending ? <HeartbeatLoader className="m-0" /> : <Send size={18} aria-hidden="true" />}</button>
       </form>
     )}
   </div>;

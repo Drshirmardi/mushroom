@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -34,7 +35,7 @@ export default function OrderSuccessPage() {
     return () => { active = false; };
   }, [authentication.accessToken, orderId, receipt]);
   return <div><PageHeader title="وضعیت سفارش" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">
-    {loading && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت وضعیت معتبر سفارش…</p>}
+    {loading && <LoadingState label="در حال دریافت وضعیت معتبر سفارش…" variant="payment" />}
     {error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}<button onClick={() => void load()} className="mr-3 font-bold underline">تلاش دوباره</button></div>}
     {order ? <><section className="rounded-2xl border border-border bg-white p-4 shadow-sm"><div className="flex justify-between"><span className="text-sm text-muted-foreground">شماره سفارش</span><span className="font-black text-primary">{toP(order.orderNumber)}</span></div><div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{receipt ? "پرداخت شما تأیید شده است." : paymentLabel(order.paymentStatus)}</div><p className="mt-3 text-sm">مبلغ سفارش: <strong>{formatPrice(BigInt(order.totalAmountToman))} تومان</strong></p></section>
       <OrderSummary order={order} />

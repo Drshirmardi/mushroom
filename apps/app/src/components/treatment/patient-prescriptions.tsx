@@ -1,4 +1,6 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 import { useEffect, useRef, useState } from "react";
 import type { components } from "@sabz-zendegi/api-client";
 import { apiBaseUrl, sessionFetch } from "@/lib/api";
@@ -28,9 +30,9 @@ export function PatientPrescriptions({ token }: { token: string }) {
   };
   return <ServiceSection title="نسخه‌های صادرشدهٔ من" description="دستور مصرف ثبت‌شده توسط پزشک را اینجا می‌بینید.">
     {error && <p role="alert" className="service-note">{error}<button onClick={() => setAttempt(n => n + 1)} className="service-text-action">تلاش دوباره</button></p>}
-    {!data && !error && <p role="status" className="service-note">در حال دریافت نسخه‌ها…</p>}
+    {!data && !error && <LoadingState label="در حال دریافت نسخه‌ها…" variant="list" />}
     {data?.items.length === 0 && <p className="service-note">هنوز نسخه‌ای برای شما صادر نشده است.</p>}
     {data?.items.map(record => <details key={record.id} className="service-card service-disclosure" open><summary>نسخهٔ صادرشده · {record.revision?.issuedAt ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeZone: "Asia/Tehran" }).format(new Date(record.revision.issuedAt)) : ""}</summary><div className="service-stack">{record.revision?.items.map(item => <article key={item.id} className="service-treatment-item"><h3>{item.medicationName}</h3><dl className="mt-2 grid gap-2 text-sm">{([["مقدار یا دوز", item.doseText], ["دفعات مصرف", item.frequencyText], ["مدت مصرف", item.durationText]] as const).filter(([, value]) => value).map(([label, value]) => <div key={label}><dt className="inline font-semibold">{label}: </dt><dd className="inline">{value}</dd></div>)}</dl>{item.instructions && <p className="mt-2 whitespace-pre-wrap break-words">{item.instructions}</p>}</article>)}</div></details>)}
-    {data?.nextCursor && <button disabled={busy} onClick={() => void older()} className="service-text-action disabled:opacity-40">{busy ? "در حال دریافت…" : "نسخه‌های قبلی"}</button>}
+    {data?.nextCursor && <button disabled={busy} onClick={() => void older()} className="service-text-action disabled:opacity-40" aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{"در حال دریافت…"}</> : "نسخه‌های قبلی"}</button>}
   </ServiceSection>;
 }

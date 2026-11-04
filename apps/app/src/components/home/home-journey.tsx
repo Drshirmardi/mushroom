@@ -9,6 +9,8 @@ import { HomeOrderProgress } from './home-order-progress';
 import { homePendingAction, homeResultSummary } from '@/lib/home-status';
 import type { PatientJourney } from '@/lib/patient-journey-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
+import { LoadingState, SkeletonBox } from '@/components/shared/skeletons';
+import { RefreshIndicator } from '@/components/shared/heartbeat-loader';
 
 function Hero({ label, title, children, action, footer, busy = false }: { label: string; title: string; children: ReactNode; action?: ReactNode; footer?: ReactNode; busy?: boolean }) {
   return <div className="home-hero-frame"><section className="home-next" aria-labelledby="home-next-title" aria-busy={busy}>
@@ -35,7 +37,7 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
   const summary = result.data ? homeResultSummary(result.data.resultSnapshot) : null;
   return <Hero label="وضعیت شما" title={summary?.title ?? 'ارزیابی شما ثبت شده است'} busy={result.loading}
     action={heroLink(`/assessment/result?submissionId=${encodeURIComponent(latest.id)}`, 'مشاهدهٔ نتیجه')} footer={<StatusFooter data={data} />}>
-    <p className="home-next-description">{result.loading ? 'در حال دریافت آخرین نتیجهٔ ارزیابی…' : result.error ? 'خلاصهٔ نتیجه دریافت نشد. برای بررسی وضعیت دسترسی، صفحهٔ نتیجه را باز کنید.' : summary?.description}</p>
+    {result.loading ? <LoadingState variant="card"><SkeletonBox className="my-3 h-5 w-full" /><SkeletonBox className="h-4 w-4/5" /></LoadingState> : <p className="home-next-description">{result.error ? 'خلاصهٔ نتیجه دریافت نشد. برای بررسی وضعیت دسترسی، صفحهٔ نتیجه را باز کنید.' : summary?.description}</p>}
     <p className="home-result-meta">{latest.title} · {new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(new Date(latest.completedAt))}</p>
     {result.error && <button type="button" className="home-inline-action" onClick={() => void result.reload()}>دریافت دوبارهٔ نتیجه</button>}
   </Hero>;
@@ -58,7 +60,7 @@ function PendingActions({ actions, token }: { actions: PatientJourney['home']['a
 }
 
 export function HomeJourney({ journey, token }: { journey: ReturnType<typeof usePatientResource<PatientJourney>>; token: string }) {
-  const reload = journey.reload;
+  const reload = journey.refresh;
   useEffect(() => {
     const visible = () => { if (document.visibilityState === 'visible') void reload(); };
     const restored = (event: PageTransitionEvent) => { if (event.persisted) void reload(); };
@@ -67,9 +69,11 @@ export function HomeJourney({ journey, token }: { journey: ReturnType<typeof use
     return () => { document.removeEventListener('visibilitychange', visible); window.removeEventListener('pageshow', restored); };
   }, [reload]);
   const data = journey.data;
-  if (journey.loading) return <Hero label="همراه شما" title="در حال دریافت وضعیت شما" busy action={<span className="home-next-loading-action" aria-hidden="true" />}><p className="home-next-description" role="status">پرونده و پیگیری‌های شما در حال بررسی است…</p></Hero>;
-  if (journey.error || !data?.home) return <Hero label="وضعیت شما" title="اطلاعات شما دریافت نشد" action={<button type="button" className="home-next-link" onClick={() => void journey.reload()}>دریافت دوباره</button>}><p className="home-next-description" role="alert">فعلاً امکان نمایش وضعیت پرونده و پیگیری‌ها وجود ندارد. دوباره تلاش کنید.</p></Hero>;
+  if (journey.loading) return <div className="home-hero-frame"><LoadingState variant="card" label="در حال دریافت وضعیت شما…" className="home-next"><div className="home-section-heading"><SkeletonBox className="h-4 w-1/4" /></div><div className="home-next-stage"><div className="home-next-copy space-y-4"><SkeletonBox className="h-7 w-3/4" /><SkeletonBox className="h-4 w-full" /><SkeletonBox className="h-4 w-4/5" /><SkeletonBox className="h-12 w-1/2" /></div><div className="home-brain"><SkeletonBox className="aspect-square w-full" /></div></div></LoadingState></div>;
+  if (!data?.home) return <Hero label="وضعیت شما" title="اطلاعات شما دریافت نشد" action={<button type="button" className="home-next-link" onClick={() => void journey.reload()}>دریافت دوباره</button>}><p className="home-next-description" role="alert">فعلاً امکان نمایش وضعیت پرونده و پیگیری‌ها وجود ندارد. دوباره تلاش کنید.</p></Hero>;
   return <>
+    {journey.refreshing && <RefreshIndicator />}
+    {journey.error && <div role="alert" className="home-pending"><p>به‌روزرسانی انجام نشد؛ اطلاعات قبلی نمایش داده می‌شود.</p><button className="home-inline-action" onClick={() => void journey.reload()}>تلاش دوباره</button></div>}
     {data.home.latestAssessment ? <AssessmentStatus key={data.home.latestAssessment.id} data={data} token={token} /> : <Hero label="وضعیت شما" title="خانهٔ سلامت شما" action={heroLink('/assessment?view=history', 'ارزیابی‌های من')} footer={<StatusFooter data={data} />}><p className="home-next-description">نتیجهٔ ارزیابی‌ها و پیگیری خدماتتان را اینجا ببینید.</p></Hero>}
     <PendingActions actions={data.home.actions} token={token} />
   </>;

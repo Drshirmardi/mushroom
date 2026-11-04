@@ -80,7 +80,7 @@ export async function verifyStoreImages(page, origin) {
 
   // Product switching: card A -> PDP A (real), then card B -> PDP B (fallback, no stale A image).
   await page.getByRole("link", { name: "مشاهدهٔ محصول دارای تصویر" }).first().click();
-  await page.waitForURL(`**/store/products/${productA.id}`, { timeout: 30_000 });
+  await page.waitForURL(url => url.pathname === `/store/products/${productA.id}`, { timeout: 30_000 });
   const mainA = page.locator(".store-gallery__slide img").first();
   await page.waitForFunction(
     (selector) => { const img = document.querySelector(selector); return img && img.complete && img.naturalWidth > 0; },
@@ -91,7 +91,7 @@ export async function verifyStoreImages(page, origin) {
   await page.goto(`${origin}/store`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => [...document.querySelectorAll(".store-product__image")].length >= 3, null, { timeout: 60_000 });
   await page.getByRole("link", { name: "مشاهدهٔ محصول بدون تصویر" }).first().click();
-  await page.waitForURL(`**/store/products/${productB.id}`, { timeout: 30_000 });
+  await page.waitForURL(url => url.pathname === `/store/products/${productB.id}`, { timeout: 30_000 });
   await page.waitForFunction(
     () => [...document.querySelectorAll(".store-gallery__slide img")].every((img) => (img.getAttribute("src") || "").startsWith("data:image/svg+xml,")),
     null,

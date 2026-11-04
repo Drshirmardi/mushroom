@@ -1,4 +1,6 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -82,7 +84,7 @@ function BookStep2() {
         <input type="date" dir="ltr" min={today} value={date} onChange={(event) => changeDate(event.target.value)} className="mt-2 block min-h-12 w-full min-w-0 rounded-xl border border-border bg-white px-3 text-foreground" />
         <span className="mt-2 block text-xs font-normal text-muted-foreground">{selectedDay} · به وقت تهران</span>
       </label>
-      {!items && !error && <p role="status" className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ساعت‌های آزاد این روز…</p>}
+      {!items && !error && <LoadingState label="در حال دریافت ساعت‌های آزاد این روز…" variant="rows" />}
       {error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}</p>}
       {error && <Link href="/appointments/book" className="service-text-action">برگشت به انتخاب پزشک و خدمت</Link>}
       {items?.length === 0 && <ServiceEmpty title="برای این روز ساعت آزادی پیدا نشد" description="روز دیگری را انتخاب کنید یا بعداً ساعت‌های آزاد را دوباره بررسی کنید." />}
@@ -90,11 +92,11 @@ function BookStep2() {
         <legend className="mb-3 text-sm font-bold text-foreground">ساعت‌های آزاد {selectedDay}</legend>
         <div className="grid grid-cols-3 gap-2">{items.map((slot) => <button type="button" key={slot.startsAt} aria-pressed={selected?.startsAt === slot.startsAt} onClick={() => setSelected(slot)} className={`rounded-xl border py-3 text-sm font-bold transition-all ${selected?.startsAt === slot.startsAt ? "border-primary bg-primary text-white" : "border-border bg-white text-foreground shadow-sm"}`}>{toP(slot.localStartTime)}</button>)}</div>
       </fieldset>}
-      {items && items.length < total && <button type="button" className="service-text-action" disabled={loadingMore} onClick={() => void loadMore()}>{loadingMore ? "در حال دریافت…" : "نمایش ساعت‌های بیشتر"}</button>}
+      {items && items.length < total && <button type="button" className="service-text-action" disabled={loadingMore} onClick={() => void loadMore()} aria-busy={Boolean(loadingMore)}>{loadingMore ? <><HeartbeatLoader />{"در حال دریافت…"}</> : "نمایش ساعت‌های بیشتر"}</button>}
       {moreError && <p role="alert" className="text-sm text-red-700">{moreError}</p>}
       <button type="button" disabled={!selected || !doctorId || !doctorServiceId} onClick={() => selected && navigateScreen("BookStep3", { doctorId, doctorServiceId, appointmentId, date: selected.localDate, time: selected.localStartTime, startsAt: selected.startsAt })} className={`w-full rounded-2xl py-4 text-sm font-bold transition-all ${selected && doctorId && doctorServiceId ? "bg-primary text-white shadow-md shadow-primary/20" : "bg-muted text-muted-foreground"}`}>{appointmentId ? "بررسی تغییر زمان" : "بررسی نوبت و هزینه"}</button>
     </div>
   </ServicePage>;
 }
 
-export default function BookStep2Page() { return <Suspense fallback={<p className="p-4 text-sm text-muted-foreground">در حال دریافت ساعت‌های آزاد…</p>}><BookStep2 /></Suspense>; }
+export default function BookStep2Page() { return <Suspense fallback={<LoadingState variant="rows" className="p-4" />}><BookStep2 /></Suspense>; }

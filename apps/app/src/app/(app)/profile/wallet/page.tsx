@@ -1,4 +1,5 @@
 "use client";
+import { HeartbeatLoader, RefreshIndicator } from "@/components/shared/heartbeat-loader";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -92,7 +93,7 @@ export default function WalletPage() {
         }
       />
       <div className="px-4 space-y-4 pb-4 pt-4">
-        {loading && !summary && <LoadingState label="در حال دریافت موجودی کیف پول…" />}
+        {loading && summary && <RefreshIndicator />}{loading && !summary && <LoadingState label="در حال دریافت موجودی کیف پول…" variant="payment" />}
 
         {error && !summary && (
           <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -194,8 +195,8 @@ export default function WalletPage() {
                   disabled={loadingMore}
                   onClick={() => void loadMore()}
                   className="mt-3 w-full rounded-2xl border border-border bg-white py-3 text-sm font-medium text-foreground disabled:opacity-50"
-                >
-                  {loadingMore ? "در حال دریافت…" : "نمایش تراکنش‌های بیشتر"}
+                 aria-busy={Boolean(loadingMore)}>
+                  {loadingMore ? <><HeartbeatLoader />{"در حال دریافت…"}</> : "نمایش تراکنش‌های بیشتر"}
                 </button>
               )}
             </div>

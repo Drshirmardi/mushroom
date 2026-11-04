@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -6,7 +7,6 @@ import { ReceiptText } from "lucide-react";
 import { OrderSummary } from "@/components/store/order-summary";
 import { orderStatusLabel } from "@/lib/order-labels";
 import { PageHeader } from "@/components/shared/page-header";
-import { Spinner } from "@/components/shared/skeletons";
 import { PaymentChooser } from "@/components/billing/payment-chooser";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api";
@@ -111,9 +111,7 @@ function PaymentScreen() {
       <PageHeader title="پرداخت" onBack={() => router.back()} />
       <div className="space-y-4 px-4 pb-6">
         {state === "loading" && (
-          <div role="status" className="flex items-center justify-center gap-3 rounded-2xl border border-border bg-white p-8 text-sm text-muted-foreground">
-            <Spinner />در حال آماده‌سازی پرداخت…
-          </div>
+          <LoadingState variant="payment" />
         )}
 
         {state === "error" && (
@@ -169,7 +167,7 @@ function PaymentScreen() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoadingState variant="payment" className="p-4" />}>
       <PaymentScreen />
     </Suspense>
   );

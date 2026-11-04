@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
 import { Suspense, useCallback, useEffect } from "react";
@@ -6,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Clock, Info, ShieldQuestion, XCircle } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
-import { Spinner } from "@/components/shared/skeletons";
 import { getBillingIntent, type BillingIntent } from "@/lib/wallet-billing-api";
 import { billingMethodLabel, billingPurposeLabel, billingStatusLabel, intentResultView, type IntentResultView } from "@/lib/wallet-labels";
 import { usePatientResource } from "@/lib/use-patient-resource";
@@ -70,9 +70,7 @@ function PaymentResult() {
       <PageHeader title="نتیجهٔ پرداخت" onBack={() => router.push(invitation ? `/assessment/marriage/requests/${invitation}` : "/profile/wallet")} />
       <div className="space-y-4 px-4 pb-6 pt-4">
         {view === "loading" && (
-          <div role="status" className="flex items-center justify-center gap-3 rounded-2xl border border-border bg-white p-8 text-sm text-muted-foreground">
-            <Spinner />در حال بررسی وضعیت معتبر پرداخت…
-          </div>
+          <LoadingState variant="payment" />
         )}
 
         {view === "error" && (
@@ -152,7 +150,7 @@ function PaymentResult() {
 
 export default function PaymentResultPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoadingState variant="payment" className="p-4" />}>
       <PaymentResult />
     </Suspense>
   );

@@ -1,6 +1,9 @@
 "use client";
+import { RefreshIndicator } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Line,
@@ -37,9 +40,10 @@ export default function MoodTrackerPage() {
     (history ?? []).slice().reverse().forEach((item) => { const key = new Date(item.observedAt).toLocaleDateString("en-CA"); const day = days.get(key) ?? { day: new Intl.DateTimeFormat("fa-IR", { weekday: "short" }).format(new Date(item.observedAt)) }; if (item.metric === "MOOD") day.mood = item.value; if (item.metric === "SLEEP_HOURS") day.sleep = item.value; if (item.metric === "ENERGY") day.energy = item.value; days.set(key, day); });
     return [...days.values()].slice(-7);
   }, [history]);
-  const reload = () => { setHistory(null); setError(null); void listHealthObservations(authentication.accessToken).then((value) => setHistory(value.items.filter((item) => ["MOOD", "SLEEP_HOURS", "STRESS", "ENERGY"].includes(item.metric))), (reason: unknown) => setError(followUpErrorMessage(reason))); };
-  useEffect(reload, [authentication.accessToken]);
-  const save = async () => { setSaving(true); setError(null); const observedAt = new Date().toISOString(); try { const saved = await Promise.all([createHealthObservation(authentication.accessToken, { metric: "MOOD", value: selected, observedAt }), createHealthObservation(authentication.accessToken, { metric: "SLEEP_HOURS", value: sleep, observedAt }), createHealthObservation(authentication.accessToken, { metric: "STRESS", value: stress, observedAt }), createHealthObservation(authentication.accessToken, { metric: "ENERGY", value: energy, observedAt })]); setHistory((current) => [...saved, ...(current ?? [])]); } catch (reason) { setError(followUpErrorMessage(reason, "ثبت حال امروز ممکن نشد؛ دوباره تلاش کنید.")); } finally { setSaving(false); } };
+  const readGeneration = useRef(0); const [refreshing, setRefreshing] = useState(false);
+  const reload = useCallback(() => { const request = ++readGeneration.current; setRefreshing(true); setError(null); void listHealthObservations(authentication.accessToken).then((value) => { if (request === readGeneration.current) setHistory(value.items.filter((item) => ["MOOD", "SLEEP_HOURS", "STRESS", "ENERGY"].includes(item.metric))); }, (reason: unknown) => { if (request === readGeneration.current) setError(followUpErrorMessage(reason)); }).finally(() => { if (request === readGeneration.current) setRefreshing(false); }); }, [authentication.accessToken]);
+  useEffect(() => { const requests = readGeneration; setHistory(null); reload(); return () => { requests.current++; }; }, [reload]);
+  const save = async () => { if (saving) return; setSaving(true); setError(null); const observedAt = new Date().toISOString(); try { const saved = await Promise.all([createHealthObservation(authentication.accessToken, { metric: "MOOD", value: selected, observedAt }), createHealthObservation(authentication.accessToken, { metric: "SLEEP_HOURS", value: sleep, observedAt }), createHealthObservation(authentication.accessToken, { metric: "STRESS", value: stress, observedAt }), createHealthObservation(authentication.accessToken, { metric: "ENERGY", value: energy, observedAt })]); setHistory((current) => [...saved, ...(current ?? [])]); } catch (reason) { setError(followUpErrorMessage(reason, "ثبت حال امروز ممکن نشد؛ دوباره تلاش کنید.")); } finally { setSaving(false); } };
   return (
     <div>
       <PageHeader title="ردیابی خلق‌وخو" onBack={() => router.back()} />
@@ -63,7 +67,7 @@ export default function MoodTrackerPage() {
         ))}
         <div className="bg-white rounded-3xl border border-border shadow-sm p-5">
           <div className="mb-3 flex items-center justify-between"><p className="text-sm font-bold text-foreground">روند ثبت‌شده</p><button onClick={reload} className="text-xs font-semibold text-primary">به‌روزرسانی</button></div>
-          {!history && !error && <p className="py-8 text-center text-sm text-muted-foreground">در حال دریافت روند…</p>}
+          {refreshing && history && <RefreshIndicator />}{!history && !error && <LoadingState label="در حال دریافت روند…" variant="card" />}
           {error && <p role="alert" className="py-3 text-center text-sm text-red-700">{error}</p>}
           {history?.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">هنوز موردی ثبت نشده است.</p>}
           {chartData.length > 0 && <ResponsiveContainer width="100%" height={110}>
@@ -76,7 +80,7 @@ export default function MoodTrackerPage() {
             </LineChart>
           </ResponsiveContainer>}
         </div>
-        <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-60">{saving ? "در حال ثبت…" : "ثبت حال امروز"}</button>
+        <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ثبت…"}</> : "ثبت حال امروز"}</button>
       </div>
     </div>
   );

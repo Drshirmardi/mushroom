@@ -1,3 +1,4 @@
+import { AppLoading } from "@/components/shared/heartbeat-loader";
 import { VisibleViewport } from '@/components/layout/visible-viewport';
 import { AssessmentHistoryTracking } from '@/lib/assessment-history';
 import { Suspense } from 'react';
@@ -28,7 +29,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
-        <VisibleViewport /><AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<main role="status">در حال آماده‌سازی…</main>}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
+        <VisibleViewport /><AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<AppLoading />}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
       </body>
     </html>
   );

@@ -1,11 +1,11 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CalendarClock } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { PageHeader } from "@/components/shared/page-header";
-import { Spinner } from "@/components/shared/skeletons";
 import { PaymentChooser } from "@/components/billing/payment-chooser";
 import { getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
 
@@ -50,9 +50,7 @@ function AppointmentPayment() {
       <PageHeader title="پرداخت نوبت" onBack={() => router.back()} />
       <div className="space-y-4 px-4 pb-6">
         {state === "loading" && (
-          <div role="status" className="flex items-center justify-center gap-3 rounded-2xl border border-border bg-white p-8 text-sm text-muted-foreground">
-            <Spinner />در حال آماده‌سازی پرداخت…
-          </div>
+          <LoadingState variant="payment" />
         )}
 
         {state === "error" && (
@@ -96,7 +94,7 @@ function AppointmentPayment() {
 
 export default function AppointmentPaymentPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoadingState variant="payment" className="p-4" />}>
       <AppointmentPayment />
     </Suspense>
   );

@@ -1,4 +1,5 @@
 'use client';
+import { LoadingState } from '@/components/shared/skeletons';
 
 import Link from 'next/link';
 import { useCallback } from 'react';
@@ -16,6 +17,7 @@ export function HomeOrderProgress({ orderId, token }: { orderId: string; token: 
     && ['VERIFIED', 'PARTIALLY_REFUNDED'].includes(order.paymentStatus ?? '');
   if (order && !paid && !['PENDING_PAYMENT', 'PAYMENT_PROCESSING'].includes(order.status)) return null;
 
+  if (resource.loading) return <LoadingState variant="card" />;
   return <Link href={`/store/order-tracking?orderId=${encodeURIComponent(orderId)}`} className="home-order-card" aria-label={order ? `پیگیری سفارش شماره ${toP(order.orderNumber)}` : 'پیگیری سفارش فروشگاه'}>
     <div className="home-order-heading">
       <span className="home-pending-icon"><ShoppingBag size={20} strokeWidth={1.6} aria-hidden="true" /></span>

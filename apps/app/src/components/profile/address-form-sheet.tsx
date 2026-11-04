@@ -1,4 +1,5 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import { useEffect, useState, type ChangeEvent } from "react";
 import { User } from "lucide-react";
@@ -75,7 +76,7 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
             ? "آدرس کامل شده و آماده ذخیره است."
             : "برای ذخیره، همه فیلدهای ضروری را کامل کن؛ در غیر این صورت نوشته‌هایت از بین می‌رود."}
         </p>
-        {complete && <button type="button" disabled={saving} onClick={() => void save()} className="mt-4 w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "سیوش کن"}</button>}
+        {complete && <button type="button" disabled={saving} onClick={() => void save()} className="mt-4 w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ذخیره…"}</> : "سیوش کن"}</button>}
         <div className="mt-2 space-y-2">
           {complete
             ? <button type="button" onClick={onClose} className="w-full rounded-2xl bg-muted py-3.5 text-sm font-bold text-foreground transition-colors active:bg-border">خارج شو بدون ذخیره</button>
@@ -96,7 +97,7 @@ export function AddressFormSheet({ accessToken, onCreated, onClose }: Props) {
           {field.key === "phone" && phoneError && <p id="profile-address-phone-error" role="alert" className="mt-1.5 text-[11px] font-bold text-red-600">{phoneError}</p>}
         </div>)}
         {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        <button type="submit" disabled={saving} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره آدرس"}</button>
+        <button type="submit" disabled={saving} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ذخیره…"}</> : "ذخیره آدرس"}</button>
       </form>
     )}
   </BottomSheet>;

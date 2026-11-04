@@ -1,9 +1,9 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "motion/react";
-import { RotateCcw } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { CalendarDays } from "lucide-react";
 import { ServicePage, ServiceSteps } from "@/components/shared/service-page";
@@ -74,8 +74,8 @@ function BookStep3() {
           onClick={() => void submit()}
           disabled={loading || !doctorServiceId || !startsAt}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-white shadow-md shadow-primary/20 disabled:opacity-50"
-        >
-          {loading ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><RotateCcw size={18} /></motion.div> : appointmentId ? "ثبت تغییر زمان" : "ادامه و پرداخت"}
+         aria-busy={Boolean(loading)}>
+          {loading ? <><HeartbeatLoader />{<>در حال ثبت نوبت…</>}</> : appointmentId ? "ثبت تغییر زمان" : "ادامه و پرداخت"}
         </button>
       </div>
     </ServicePage>
@@ -83,5 +83,5 @@ function BookStep3() {
 }
 
 export default function BookStep3Page() {
-  return <Suspense fallback={<p role="status" className="p-6 text-sm text-muted-foreground">در حال دریافت اطلاعات نوبت…</p>}><BookStep3 /></Suspense>;
+  return <Suspense fallback={<LoadingState variant="detail" className="p-4" />}><BookStep3 /></Suspense>;
 }

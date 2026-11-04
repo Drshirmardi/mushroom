@@ -1,9 +1,10 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Copy, LoaderCircle } from "lucide-react";
+import { ArrowLeft, Check, Copy } from "lucide-react";
 import type { components } from "@sabz-zendegi/api-client";
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { createCoupleSession, createCoupleInvitation, getCoupleLinkPolicy, previewCoupleInvitation, acceptCoupleInvitation } from "@/lib/couples-api";
@@ -122,7 +123,7 @@ function InviteConsent({ token, busy, onConfirm }: { token: string; busy: boolea
 }
 function ConfirmPolicy({ policy, busy, onConfirm }: { policy: Schema["CoupleLinkPolicyDto"]; busy: boolean; onConfirm: (policy: Schema["CoupleLinkPolicyDto"]) => Promise<void> }) {
   const [accepted, setAccepted] = useState(false);
-  return <><Consent policy={policy} accepted={accepted} onChange={setAccepted} disabled={busy} /><p className={styles.hint}>این رضایت فقط برای اتصال حساب‌هاست؛ شرایط و هزینه آزمون را بعد از پذیرش همراه بررسی می‌کنید.</p><div className={styles.formActions}><button type="button" className={styles.primary} disabled={busy || !accepted} onClick={() => { if (accepted) void onConfirm(policy); }}>{busy ? <><LoaderCircle size={18} className="animate-spin" aria-hidden="true" />در حال ساخت دعوت…</> : "تأیید و ساخت کد دعوت"}</button></div></>;
+  return <><Consent policy={policy} accepted={accepted} onChange={setAccepted} disabled={busy} /><p className={styles.hint}>این رضایت فقط برای اتصال حساب‌هاست؛ شرایط و هزینه آزمون را بعد از پذیرش همراه بررسی می‌کنید.</p><div className={styles.formActions}><button type="button" className={styles.primary} disabled={busy || !accepted} onClick={() => { if (accepted) void onConfirm(policy); }} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />در حال ساخت دعوت…</> : "تأیید و ساخت کد دعوت"}</button></div></>;
 }
 
 export function CoupleAcceptFlow({ token, publicationId, onBusyChange }: Pick<FlowProps, "token" | "publicationId" | "onBusyChange">) {
@@ -157,6 +158,6 @@ export function CoupleAcceptFlow({ token, publicationId, onBusyChange }: Pick<Fl
     <p className={styles.note}>دعوت را با همان حسابی بپذیر که همراهت برایش کد ساخته است.</p>
     {!preview ? <div className={styles.field}><label htmlFor="couple-received-code">کد دعوت <span aria-hidden="true">*</span></label><textarea ref={input} id="couple-received-code" className={styles.input} value={secret} onChange={event => setSecret(event.target.value)} disabled={busy} rows={2} spellCheck={false} autoComplete="off" autoCapitalize="none" dir="ltr" required aria-invalid={Boolean(fieldError)} aria-describedby="couple-received-code-help" /><p id="couple-received-code-help" role={fieldError ? "alert" : undefined} className={fieldError ? styles.error : styles.hint}>{fieldError ?? "همه کد را کپی کن؛ بعد از بررسی، شرایط پذیرش را می‌بینی. این مرحله هنوز حساب‌ها را متصل نمی‌کند."}</p></div> : <Consent policy={preview.policy} accepted={accepted} onChange={setAccepted} disabled={busy} />}
     {error && <p role="alert" className={styles.errorBox}>{error}</p>}
-    <div className={styles.formActions}><button className={styles.primary} type="submit" disabled={busy || (Boolean(preview) && !accepted)}>{busy ? <><LoaderCircle size={18} className="animate-spin" aria-hidden="true" />در حال بررسی…</> : preview ? "تأیید شرایط و اتصال به همراه" : "بررسی کد دعوت"}</button>{preview && <button type="button" className={styles.secondary} disabled={busy} onClick={() => { setPreview(null); setAccepted(false); setError(null); }}>تغییر کد</button>}</div>
+    <div className={styles.formActions}><button className={styles.primary} type="submit" disabled={busy || (Boolean(preview) && !accepted)} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />در حال بررسی…</> : preview ? "تأیید شرایط و اتصال به همراه" : "بررسی کد دعوت"}</button>{preview && <button type="button" className={styles.secondary} disabled={busy} onClick={() => { setPreview(null); setAccepted(false); setError(null); }}>تغییر کد</button>}</div>
   </form>;
 }

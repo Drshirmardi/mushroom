@@ -62,7 +62,7 @@ export default function ProductDetailPage() {
     pushRecent({ productId: product.id, skuId: sku.id, title: product.title, price: sku.currentPriceToman, imageUrl: productImageUrl(product) });
   }, [product, sku, pushRecent]);
   useEffect(() => { if (product) document.title = `${product.title} | سبز زندگی`; }, [product]);
-  if (!product) return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
+  if (!product) return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} variant="product" action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
   if (!sku) return <main className="store-page"><StoreHeader title={product.title} onBack={() => router.back()} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
   const saved = wishlist.includes(sku.id); const current = cart.find((item) => item.skuId === sku.id)?.qty ?? 0;
   const imageUrl = productImageUrl(product);

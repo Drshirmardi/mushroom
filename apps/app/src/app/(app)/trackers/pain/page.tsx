@@ -1,6 +1,9 @@
 "use client";
+import { RefreshIndicator } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Area,
@@ -26,9 +29,10 @@ export default function PainTrackerPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const chartData = useMemo(() => (history ?? []).slice(0, 7).reverse().map((item) => ({ day: new Intl.DateTimeFormat("fa-IR", { weekday: "short" }).format(new Date(item.observedAt)), value: item.value })), [history]);
-  const reload = () => { setHistory(null); setError(null); void listHealthObservations(authentication.accessToken, "PAIN").then((value) => setHistory(value.items), (reason: unknown) => setError(followUpErrorMessage(reason))); };
-  useEffect(reload, [authentication.accessToken]);
-  const save = async () => { setSaving(true); setError(null); try { const item = await createHealthObservation(authentication.accessToken, { metric: "PAIN", value: pain, observedAt: new Date().toISOString() }); setHistory((current) => [item, ...(current ?? [])]); setSaved(true); } catch (reason) { setError(followUpErrorMessage(reason, "ثبت درد ممکن نشد؛ دوباره تلاش کنید.")); } finally { setSaving(false); } };
+  const readGeneration = useRef(0); const [refreshing, setRefreshing] = useState(false);
+  const reload = useCallback(() => { const request = ++readGeneration.current; setRefreshing(true); setError(null); void listHealthObservations(authentication.accessToken, "PAIN").then((value) => { if (request === readGeneration.current) setHistory(value.items); }, (reason: unknown) => { if (request === readGeneration.current) setError(followUpErrorMessage(reason)); }).finally(() => { if (request === readGeneration.current) setRefreshing(false); }); }, [authentication.accessToken]);
+  useEffect(() => { const requests = readGeneration; setHistory(null); reload(); return () => { requests.current++; }; }, [reload]);
+  const save = async () => { if (saving) return; setSaving(true); setError(null); try { const item = await createHealthObservation(authentication.accessToken, { metric: "PAIN", value: pain, observedAt: new Date().toISOString() }); setHistory((current) => [item, ...(current ?? [])]); setSaved(true); } catch (reason) { setError(followUpErrorMessage(reason, "ثبت درد ممکن نشد؛ دوباره تلاش کنید.")); } finally { setSaving(false); } };
   if (saved) return <div><PageHeader title="ثبت درد" onBack={() => setSaved(false)} /><SuccessScreen title="درد ثبت شد!" desc="اطلاعات درد برای دکتر شیرمردی ارسال شد." onDone={() => router.back()} /></div>;
   return (
     <div>
@@ -56,7 +60,7 @@ export default function PainTrackerPage() {
         </div>
         <div className="bg-white rounded-3xl border border-border shadow-sm p-5">
           <div className="mb-3 flex items-center justify-between"><p className="text-sm font-bold text-foreground">روند ثبت‌شده</p><button onClick={reload} className="text-xs font-semibold text-primary">به‌روزرسانی</button></div>
-          {!history && !error && <p className="py-8 text-center text-sm text-muted-foreground">در حال دریافت روند درد…</p>}
+          {refreshing && history && <RefreshIndicator />}{!history && !error && <LoadingState label="در حال دریافت روند درد…" variant="card" />}
           {error && <p role="alert" className="py-3 text-center text-sm text-red-700">{error}</p>}
           {history?.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">هنوز دردی ثبت نشده است.</p>}
           {chartData.length > 0 && <ResponsiveContainer width="100%" height={120}>
@@ -69,7 +73,7 @@ export default function PainTrackerPage() {
             </AreaChart>
           </ResponsiveContainer>}
         </div>
-        <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-60">{saving ? "در حال ثبت…" : "ثبت درد امروز"}</button>
+        <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ثبت…"}</> : "ثبت درد امروز"}</button>
       </div>
     </div>
   );

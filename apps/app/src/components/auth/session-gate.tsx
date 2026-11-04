@@ -1,4 +1,5 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import {
   createContext,
@@ -37,14 +38,14 @@ function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "
   const unavailable = status === "unavailable";
   return (
     <main className="patient-app-shell session-screen" data-state={status}>
-      <section className="session-screen__content" role={unavailable ? "alert" : "status"} aria-atomic="true">
+      <section className="session-screen__content" role={unavailable ? "alert" : "status"} aria-atomic="true" aria-busy={!unavailable}>
         {unavailable ? <>
           <div className="session-screen__illustration" aria-hidden="true"><WifiOff size={28} strokeWidth={1.5} /></div>
           <h1>یه کوچولو به مشکل خوردیم</h1>
           <p>فعلاً نتونستیم اطلاعات حسابت رو بگیریم. یه بار دیگه امتحان کن؛ اگه نشد، اینترنتت رو هم چک کن.</p>
           <Button onClick={retry}><RefreshCw size={18} aria-hidden="true" />دوباره امتحان کنیم</Button>
         </> : <>
-          <div className="session-screen__dots" aria-hidden="true"><span /><span /><span /></div>
+          <HeartbeatLoader size="screen" />
           <span className="sr-only">{status === "anonymous" ? "در حال باز کردن صفحهٔ ورود…" : "در حال آماده‌سازی…"}</span>
         </>}
       </section>

@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -18,7 +19,7 @@ export function PersonalizedProducts({ accessToken, renderProduct }: { accessTok
   }, [accessToken, retry]);
   if (!accessToken) return null;
   if (error) return <aside className="store-personal-hint" aria-label="پیشنهادهای مخصوص شما"><p>پیشنهادهای مرتبط با شما دریافت نشد.</p><button type="button" onClick={() => setRetry(value => value + 1)}>تلاش دوباره</button></aside>;
-  if (!data) return <p className="store-personal-loading" role="status">در حال دریافت پیشنهادهای شما…</p>;
+  if (!data) return <LoadingState label="در حال دریافت پیشنهادهای شما…" variant="grid" />;
   if (data.status === "READY" && data.items.length > 0) return <section className="store-personal" aria-label="محصولات مرتبط با مزاج شما">
     <div className="store-personal__intro"><Leaf size={18} aria-hidden="true" /><p>بر اساس نتیجهٔ ارزیابی شما{data.primary && data.secondary ? `؛ مزاج اول ${labels[data.primary]}، مزاج دوم ${labels[data.secondary]}` : ""}</p><Link href="/mezaj">مشاهدهٔ نتیجه</Link></div>
     <StoreCollection title="محصولات مرتبط با شما" id="store-personal-products">{data.items.map(renderProduct)}</StoreCollection>

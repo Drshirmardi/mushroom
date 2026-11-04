@@ -1,4 +1,7 @@
 "use client";
+import { AsyncButton } from "@/components/shared/async-button";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { registerAssessmentHistoryGuard } from '@/lib/assessment-history';
 import { BottomSheet } from '@/components/shared/bottom-sheet';
@@ -171,7 +174,7 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
     try { const saved = await persist(); if (!saved) return; leave(destination ?? (currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment")); } catch (reason) { if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true); setError(reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason)); } finally { operation.current = false; setBusy(false); }
   };
 
-  if (!assessment && !error) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="status" className="m-4 rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">در حال دریافت ارزیابی و پیش‌نویس شما…</p></div>;
+  if (!assessment && !error) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<LoadingState label="در حال دریافت ارزیابی و پیش‌نویس شما…" variant="form" /></div>;
   if (!assessment || !submission || items.length === 0 || !current) return <div>{!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}<p role="alert" className="m-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error ?? "ساختار این ارزیابی قابل نمایش نیست."}</p><button type="button" className={styles.primary} onClick={() => { setAssessment(null); setSubmission(null); setAnswers({}); setError(null); setConflict(false); setSubmitCommand(null); setStep(0); setReload(value => value + 1); }}>تلاش دوباره</button></div>;
 
   const reloadSaved = () => {
@@ -197,13 +200,13 @@ function AssessmentAttempt({ entry }: { entry?: { submissionId: string; onComple
       </fieldset>
       {error && <p id="assessment-answer-error" role="alert" className={styles.error}>{error}</p>}
       <div className={styles.actions}>
-        <button className={styles.primary} disabled={busy || conflict} onClick={() => void continueFlow()}>{busy ? 'در حال ذخیره…' : submitCommand ? 'پیگیری ثبت نهایی' : adaptive ? 'ذخیره و ادامه' : step === items.length - 1 ? 'ثبت نهایی و مشاهده نتیجه' : 'ذخیره و ادامه'}</button>
+        <button className={styles.primary} disabled={busy || conflict} onClick={() => void continueFlow()} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{'در حال ذخیره…'}</> : submitCommand ? 'پیگیری ثبت نهایی' : adaptive ? 'ذخیره و ادامه' : step === items.length - 1 ? 'ثبت نهایی و مشاهده نتیجه' : 'ذخیره و ادامه'}</button>
         {step > 0 && <button className={styles.secondary} disabled={busy || conflict || submitCommand !== null} onClick={() => setStep(value => value - 1)}>سؤال قبل</button>}
-        {!entry && <button className={styles.secondary} disabled={busy || conflict || submitCommand !== null} onClick={() => void saveAndExit()}>ذخیره و خروج</button>}
+        {!entry && <AsyncButton className={styles.secondary} disabled={busy || conflict || submitCommand !== null} onClick={() => saveAndExit()}>ذخیره و خروج</AsyncButton>}
       </div>
       {(!entry || error || conflict) && <button className={styles.quiet} disabled={busy} onClick={reloadSaved}>دریافت آخرین وضعیت ذخیره‌شده</button>}
     </div>
-    {exitTo && <BottomSheet title="پاسخ ذخیره‌نشده" onClose={() => { if (!operation.current) setExitTo(null); }}><p className="text-sm leading-8">انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.</p><button className={styles.primary} disabled={busy || conflict || !!submitCommand} onClick={() => void saveAndExit(exitTo)}>ذخیره و خروج</button><button className={styles.secondary} disabled={busy} onClick={() => leave(exitTo)}>خروج بدون ذخیره</button><button className={styles.secondary} disabled={busy} onClick={() => setExitTo(null)}>ماندن در آزمون</button>{error && <p role="alert" className={styles.error}>{error}</p>}</BottomSheet>}
+    {exitTo && <BottomSheet title="پاسخ ذخیره‌نشده" onClose={() => { if (!operation.current) setExitTo(null); }}><p className="text-sm leading-8">انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.</p><AsyncButton className={styles.primary} disabled={busy || conflict || !!submitCommand} onClick={() => saveAndExit(exitTo)}>ذخیره و خروج</AsyncButton><button className={styles.secondary} disabled={busy} onClick={() => leave(exitTo)}>خروج بدون ذخیره</button><button className={styles.secondary} disabled={busy} onClick={() => setExitTo(null)}>ماندن در آزمون</button>{error && <p role="alert" className={styles.error}>{error}</p>}</BottomSheet>}
   </Container>;
 }
 
@@ -216,4 +219,4 @@ function AnswerInput({ question, value, onChange, invalid }: { invalid?: boolean
   return <textarea aria-label={question.text} maxLength={typeof question.maxLength === "number" ? question.maxLength : undefined} value={typeof value === "string" ? value : ""} onChange={(event) => onChange(event.target.value)} rows={5} className={styles.input} />;
 }
 
-export default function AssessmentWizardPage() { return <Suspense fallback={<p role="status" className="p-4 text-sm">در حال دریافت ارزیابی…</p>}><AssessmentWizard /></Suspense>; }
+export default function AssessmentWizardPage() { return <Suspense fallback={<LoadingState variant="form" className="p-4" />}><AssessmentWizard /></Suspense>; }

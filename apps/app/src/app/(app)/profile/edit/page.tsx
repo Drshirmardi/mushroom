@@ -1,4 +1,5 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
@@ -15,7 +16,7 @@ const EMPTY: ProfileDraft = { firstName: "", lastName: "", email: "", cityName: 
 const same = (a: ProfileDraft, b: ProfileDraft) => a.firstName === b.firstName && a.lastName === b.lastName && a.email === b.email && a.cityName === b.cityName && a.gender === b.gender;
 
 function FieldsSkeleton() {
-  return <div aria-hidden="true"><p className="rounded-2xl bg-muted p-4"><span className="block h-4 w-3/4 animate-pulse rounded bg-border" /><span className="mt-2 block h-4 w-1/2 animate-pulse rounded bg-border" /></p><div className="mt-4 rounded-2xl border border-border bg-white p-4"><div className="space-y-3">{[0, 1, 2, 3, 4].map((row) => <div key={row}><span className="mb-1 block h-3 w-20 animate-pulse rounded bg-muted" /><span className="flex h-[52px] items-center rounded-lg border border-border bg-white px-4" aria-hidden="true"><span className="block h-3 w-1/2 animate-pulse rounded bg-muted" /></span></div>)}</div></div><div className="mt-4 h-[56px] animate-pulse rounded-2xl bg-muted" /></div>;
+  return <div role="status" aria-busy="true"><span className="sr-only">در حال دریافت مشخصات…</span><p className="rounded-2xl bg-muted p-4"><span className="block h-4 w-3/4 skeleton rounded bg-border" /><span className="mt-2 block h-4 w-1/2 skeleton rounded bg-border" /></p><div className="mt-4 rounded-2xl border border-border bg-white p-4"><div className="space-y-3">{[0, 1, 2, 3, 4].map((row) => <div key={row}><span className="mb-1 block h-3 w-20 skeleton rounded bg-muted" /><span className="flex h-[52px] items-center rounded-lg border border-border bg-white px-4" aria-hidden="true"><span className="block h-3 w-1/2 skeleton rounded bg-muted" /></span></div>)}</div></div><div className="mt-4 h-[56px] skeleton rounded-2xl bg-muted" /></div>;
 }
 
 export default function EditProfilePage() {
@@ -51,12 +52,12 @@ export default function EditProfilePage() {
     </div>
     {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     <div className="rounded-2xl border border-border bg-white p-4"><ProfileFields value={profile} onChange={setProfile} phone={phone} tone="blue" grouped inlineEdit showGender hiddenFields={["cityName"]} emailError={emailError} onEmailError={setEmailError} phoneAction={{ label: "رفتن به امنیت حساب", onClick: () => router.push("/profile/security") }} /></div>
-    <button type="submit" disabled={saving || justSaved || !dirty} className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-blue-700 py-4 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60">{saving ? "در حال ذخیره…" : justSaved ? <><Check size={16} strokeWidth={3} aria-hidden="true" />ذخیره شد</> : dirty ? "ذخیره تغییرات" : "بدون تغییر"}</button>
+    <button type="submit" disabled={saving || justSaved || !dirty} className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-blue-700 py-4 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ذخیره…"}</> : justSaved ? <><Check size={16} strokeWidth={3} aria-hidden="true" />ذخیره شد</> : dirty ? "ذخیره تغییرات" : "بدون تغییر"}</button>
   </form>}</div>
   <AnimatePresence>{confirmLeave && <BottomSheet title="تغییرات ذخیره نشده" onClose={() => setConfirmLeave(false)}>
     <p className="text-sm leading-6 text-muted-foreground">تغییراتی دارید که هنوز ذخیره نشده است. می‌خواهید چه کار کنید؟</p>
     <div className="mt-4 space-y-2">
-      <button type="button" disabled={saving} onClick={() => void save(false).then((ok) => { if (ok) returnFromProfile(); })} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{saving ? "در حال ذخیره…" : "ذخیره و خروج"}</button>
+      <button type="button" disabled={saving} onClick={() => void save(false).then((ok) => { if (ok) returnFromProfile(); })} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ذخیره…"}</> : "ذخیره و خروج"}</button>
       <button type="button" onClick={returnFromProfile} className="w-full rounded-2xl bg-muted py-3.5 text-sm font-bold text-foreground transition-colors active:bg-border">خروج بدون ذخیره</button>
       <button type="button" onClick={() => setConfirmLeave(false)} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground transition-colors active:bg-muted">انصراف</button>
     </div>

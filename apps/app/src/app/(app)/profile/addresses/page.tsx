@@ -1,4 +1,5 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
@@ -11,7 +12,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { commerceErrorMessage, getCommerceAddresses, updateCommerceAddress, type CommerceAddress } from "@/lib/commerce-catalog-api";
 
 function AddressSkeleton() {
-  return <div aria-hidden="true" className="space-y-3">{[0, 1].map((row) => <div key={row} className="rounded-2xl border border-border bg-white p-4"><span className="block h-4 w-1/3 animate-pulse rounded bg-muted" /><span className="mt-2 block h-3 w-full animate-pulse rounded bg-muted" /><span className="mt-2 block h-3 w-2/3 animate-pulse rounded bg-muted" /></div>)}</div>;
+  return <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">در حال دریافت آدرس‌ها…</span>{[0, 1].map((row) => <div key={row} className="rounded-2xl border border-border bg-white p-4"><span className="block h-4 w-1/3 skeleton rounded bg-muted" /><span className="mt-2 block h-3 w-full skeleton rounded bg-muted" /><span className="mt-2 block h-3 w-2/3 skeleton rounded bg-muted" /></div>)}</div>;
 }
 
 function AddressCard({ address, onPick }: { address: CommerceAddress; onPick: (address: CommerceAddress) => void }) {
@@ -82,7 +83,7 @@ export default function ProfileAddressesPage() {
     <p className="mt-1 text-xs text-muted-foreground">{confirming.province}، {confirming.city}، {confirming.line1}</p>
     {confirmError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{confirmError}</p>}
     <div className="mt-4 space-y-2">
-      <button type="button" disabled={confirmingBusy} onClick={() => void confirmDefault()} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">{confirmingBusy ? "در حال ذخیره…" : "تأیید و انتخاب"}</button>
+      <button type="button" disabled={confirmingBusy} onClick={() => void confirmDefault()} className="w-full rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60" aria-busy={Boolean(confirmingBusy)}>{confirmingBusy ? <><HeartbeatLoader />{"در حال ذخیره…"}</> : "تأیید و انتخاب"}</button>
       <button type="button" onClick={() => setConfirming(null)} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground transition-colors active:bg-muted">انصراف</button>
     </div>
   </BottomSheet>}</AnimatePresence></div>;

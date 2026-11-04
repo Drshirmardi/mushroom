@@ -13,7 +13,7 @@ import { AddressSheet } from "@/components/store/address-sheet";
 import { StoreHeroSlider } from "@/components/store/store-hero-slider";
 import { StoreShortcuts } from "@/components/store/store-shortcuts";
 import styles from "@/components/store/store-home.module.css";
-import { LoadingState } from "@/components/shared/skeletons";
+import { LoadingState, SkeletonBox } from "@/components/shared/skeletons";
 import { AnimatedGroup } from "@/components/motion/animated-group";
 import { StoreCollection } from "@/components/store/store-collection";
 import { PatientPagination } from "@/components/shared/patient-pagination";
@@ -73,6 +73,9 @@ function StoreCatalog() {
   const [accountError, setAccountError] = useState<string | null>(null);
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
   const [accountRetry, setAccountRetry] = useState(0);
+  const [bannerLoading, setBannerLoading] = useState(true);
+  const [bannerError, setBannerError] = useState(false);
+  const [bannerRetry, setBannerRetry] = useState(0);
   const cart = useCartStore((state) => state.items);
   const wishlist = useWishlistStore((state) => state.ids);
   const count = cartCount(cart);
@@ -109,9 +112,9 @@ function StoreCatalog() {
           .filter((banner) => storeBannerImageUrl(banner) !== null)
           .map((banner) => ({ id: banner.id, image: storeBannerImageUrl(banner)!, alt: banner.title, href: banner.destinationUrl })),
       );
-    });
+    }).catch(() => { if (!cancelled) setBannerError(true); }).finally(() => { if (!cancelled) setBannerLoading(false); });
     return () => { cancelled = true; useBannerStore.getState().setSlides([]); };
-  }, []);
+  }, [bannerRetry]);
   useEffect(() => {
     if (!session) { setAddresses([]); setDelivery(null); setDeliveryError(null); return; }
     let cancelled = false;
@@ -200,7 +203,7 @@ function StoreCatalog() {
     </div>
     {(accountError || deliveryError) && <div className="wallet-notice wallet-notice--info" role="status"><div><p>{deliveryError ? "آدرس‌های شما دریافت نشدند." : "سبد و علاقه‌مندی‌ها دریافت نشدند."} {deliveryError ?? accountError}</p><Button variant="ghost" onClick={() => setAccountRetry(value => value + 1)}>دریافت دوبارهٔ اطلاعات حساب</Button></div></div>}
     {favoriteError && <div role="alert" className="store-state store-state--error"><p>ذخیرهٔ علاقه‌مندی انجام نشد. {favoriteError}</p></div>}
-    {!isFiltering && <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />}
+    {!isFiltering && (bannerLoading ? <LoadingState variant="card" label="در حال دریافت بنرهای فروشگاه…"><SkeletonBox className="my-4 h-[180px] w-full rounded-2xl" /></LoadingState> : bannerError ? <div role="alert" className="store-personal-hint"><p>بنرهای فروشگاه دریافت نشد.</p><Button variant="ghost" onClick={() => { setBannerLoading(true); setBannerError(false); setBannerRetry(value => value + 1); }}>تلاش دوباره</Button></div> : <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />)}
     {!isFiltering && <StoreShortcuts />}
     {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} />}
     {categoryId && <div className="store-catalog-tools"><span>نمایش یک دستهٔ محصول</span><Button variant="ghost" onClick={() => updateCatalog({ category: null, page: null })}>همهٔ دسته‌ها<X size={15} aria-hidden="true" /></Button></div>}

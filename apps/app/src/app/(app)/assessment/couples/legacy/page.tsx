@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import Link from "next/link";
 import { EducationalCoupleHistory } from "@/components/assessments/educational-couples";
@@ -60,9 +61,9 @@ function CouplesHub() {
     <Link href="/assessment" className={styles.back}><ArrowRight size={16} aria-hidden="true" />همه آزمون‌ها</Link>
     <header className={styles.heading}><span aria-hidden="true"><HeartHandshake size={28} strokeWidth={1.6} /></span><div><h1>آزمون زوجی</h1><p>یک مسیر مشترک، با حساب‌ها و پاسخ‌های مستقل</p></div></header>
 
-    <section className={styles.overview} aria-labelledby="couples-next-title" aria-busy={loading}>
+    <section className={styles.overview} aria-label={loading ? "وضعیت همراهی" : undefined} aria-labelledby={loading ? undefined : "couples-next-title"} aria-busy={loading}>
       <span className={styles.eyebrow}><Users size={16} aria-hidden="true" />{hasHistory ? "قدم بعدی شما" : "شروع همراهی"}</span>
-      <h2 id="couples-next-title">{nextTitle}</h2><p>{nextDescription}</p>
+      {loading ? <LoadingState variant="card" /> : <><h2 id="couples-next-title">{nextTitle}</h2><p>{nextDescription}</p></>}
       <div className={styles.overviewActions} hidden={startOpen && !hasHistory && !hasLoadError}>
         {!loading && (hasHistory || hasLoadError) ? <Link href="#couples-history" className={startOpen ? styles.secondary : styles.primary} onClick={() => setHistoryView(hasLoadError ? sessions.error ? "connections" : "assessments" : focusConnections ? "connections" : "assessments")}>{hasLoadError ? "بررسی وضعیت و تلاش دوباره" : focusConnections ? linked ? "انتخاب همراه و آزمون" : "پیگیری دعوت همراه" : "دیدن ارزیابی‌های من"}<ArrowLeft size={18} aria-hidden="true" /></Link> : <button type="button" className={styles.primary} onClick={() => openStart("invite")} disabled={busy}>دعوت همراهم<UserPlus size={18} aria-hidden="true" /></button>}
         <button type="button" className={styles.secondary} onClick={() => openStart("accept")} disabled={busy}><Mail size={18} aria-hidden="true" />کد دعوت دارم</button>
@@ -125,5 +126,5 @@ function InvitationIdentity({ token }: { token: string }) {
   return <div className={styles.flow}><PatientResourceState {...profile} retry={() => void profile.reload()} />{profile.data && <CopyValue value={profile.data.patientId} label="شناسه بیمار من" id="couples-own-id" />}</div>;
 }
 export default function CouplesPage() {
-  return <Suspense fallback={<p role="status" className="p-5 text-sm text-muted-foreground">در حال آماده‌سازی صفحه زوجی…</p>}><CouplesHub /></Suspense>;
+  return <Suspense fallback={<LoadingState variant="list" className="p-4" />}><CouplesHub /></Suspense>;
 }

@@ -1,8 +1,9 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, CreditCard, Info, RotateCcw, TriangleAlert } from "lucide-react";
+import { ChevronLeft, CreditCard, Info, TriangleAlert } from "lucide-react";
 import { BottomSheet } from "@/components/shared/bottom-sheet";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { createGatewayAttempt, createTopupIntent, walletErrorMessage } from "@/lib/wallet-billing-api";
@@ -143,8 +144,8 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
           disabled={busy}
           onClick={() => void submit()}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-        >
-          {busy ? <><RotateCcw size={17} className="animate-spin" aria-hidden="true" />در حال انتقال به درگاه…</> : <><CreditCard size={17} aria-hidden="true" />پرداخت و شارژ</>}
+         aria-busy={Boolean(busy)}>
+          {busy ? <><HeartbeatLoader />در حال انتقال به درگاه…</> : <><CreditCard size={17} aria-hidden="true" />پرداخت و شارژ</>}
         </button>
       </div>
     </BottomSheet>

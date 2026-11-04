@@ -5,7 +5,8 @@ import { motion } from "motion/react";
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { formatPrice, toP } from "../../lib/format";
-import { LoadingState } from "../shared/skeletons";
+import { HeartbeatLoader } from "../shared/heartbeat-loader";
+import { LoadingState, type SkeletonVariant } from "../shared/skeletons";
 import { ProductImage } from "./product-image";
 
 export function StoreHeader({ title, onBack }: { title: string; onBack: () => void }) {
@@ -25,8 +26,8 @@ export function QuantityControl({ value, min = 1, max = 100, busy = false, label
   </div>;
 }
 
-export function StoreState({ title, description, error = false, pending = false, action, onAction }: { title: string; description?: string; error?: boolean; pending?: boolean; action?: string; onAction?: () => void }) {
-  if (pending) return <LoadingState label={title} />;
+export function StoreState({ title, description, error = false, pending = false, variant = "list", action, onAction }: { title: string; description?: string; error?: boolean; pending?: boolean; variant?: SkeletonVariant; action?: string; onAction?: () => void }) {
+  if (pending) return <LoadingState label={title} variant={variant} />;
   return <div className={`store-state ${error ? "store-state--error" : ""}`} role={error ? "alert" : "status"}>
     {!error && <ShoppingBag aria-hidden="true" size={28} />}<h2>{title}</h2>{description && <p>{description}</p>}
     {action && <Button variant="secondary" onClick={onAction}>{action}</Button>}
@@ -50,7 +51,7 @@ export function CartItem({ item, busy, removing, onChange, onUndo }: { item: { n
       <Link href={href} className="store-cart-item__title"><h2>{item.name}</h2></Link>
       {item.variantTitle && <p className="text-xs text-muted-foreground">{item.variantTitle}</p>}
       <div className="store-cart-item__price"><ProductPrice amount={BigInt(item.price) * BigInt(item.qty)} /></div>
-      <span className="store-cart-item__status" role="status">{busy ? "در حال به‌روزرسانی…" : ""}</span>
+      <span className="store-cart-item__status" role="status">{busy ? <><HeartbeatLoader />در حال به‌روزرسانی…</> : ""}</span>
     </div>
     {removing && <div className="store-cart-item__removing" role="alert">
       <p>کالای موردنظر شما حذف شد</p>

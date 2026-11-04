@@ -340,15 +340,9 @@
 .session-screen { min-height: 100dvh; display: grid; place-items: center; padding: 32px 24px; }
 .session-screen__content { width: 100%; max-width: 340px; text-align: center; font-family: var(--font-vazirmatn), sans-serif; }
 .session-screen__illustration { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 50%; background: #f5f7f8; color: var(--patient-muted); }
-.session-screen__dots { display: flex; justify-content: center; gap: 6px; direction: ltr; }
-.session-screen__dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--patient-action); animation: session-dot 1.2s ease-in-out infinite; }
-.session-screen__dots span:nth-child(2) { animation-delay: .16s; }
-.session-screen__dots span:nth-child(3) { animation-delay: .32s; }
 .session-screen h1 { color: var(--patient-ink); font-size: 20px; line-height: 34px; font-weight: 700; }
 .session-screen p { margin-top: 12px; color: var(--patient-muted); font-size: 14px; line-height: 28px; text-wrap: pretty; }
 .session-screen .patient-button { margin-top: 24px; }
-@keyframes session-dot { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .session-screen__dots span { animation: none; } }
 .patient-store-shell .patient-shell-header :is(h1, p) { font-size: 18px; }
 .patient-store-shell .patient-shell-header button { width: 44px; height: 44px; }
 .patient-app-shell :is(a, button, input, select, textarea):focus-visible, .patient-button:focus-visible, .patient-input:focus-visible {
@@ -476,19 +470,9 @@
   from { translate: 100% 0; }
   to { translate: -100% 0; }
 }
-.spinner {
-  border: 3px solid var(--patient-soft);
-  border-top-color: var(--patient-action);
-  border-radius: 999px;
-  animation: skeleton-spin 0.8s linear infinite;
-}
-@keyframes skeleton-spin {
-  to { transform: rotate(360deg); }
-}
 @media (prefers-reduced-motion: reduce) {
   .skeleton::after,
   [dir="rtl"] .skeleton::after { animation: none; opacity: 0; }
-  .spinner { animation: none; }
 }
 .store-skip-link { position: absolute; inset-inline-start: 16px; top: 8px; transform: translateY(-200%); background: white; color: var(--patient-ink); padding: 12px; z-index: 30; border-radius: 8px; }
 .store-skip-link:focus { transform: none; }
@@ -731,11 +715,6 @@
 .store-toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); left: 50%; width: calc(100% - 32px); max-width: 688px; z-index: 40; display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--patient-divider); border-radius: 16px; background: white; box-shadow: 0 8px 24px rgb(23 60 83 / 15%); }
 .store-toast__close { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; border: 0; background: transparent; color: var(--patient-muted); cursor: pointer; }
 .store-toast__check { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 999px; background: var(--patient-success); color: white; }
-.store-toast__spinner { width: 28px; height: 28px; flex-shrink: 0; border-radius: 999px; border: 3px solid var(--patient-soft); border-top-color: var(--patient-success); animation: store-spin 0.8s linear infinite; }
-@keyframes store-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) {
-  .store-toast__spinner { animation: none; }
-}
 .store-toast__title { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--patient-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .store-toast__go { display: flex; align-items: center; gap: 2px; flex-shrink: 0; padding: 6px 10px; border: 0; border-radius: 999px; background: var(--patient-soft); color: var(--patient-ink); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; }
 /* Gallery direct-scroll affordance (strip behavior itself is untouched). */
@@ -1631,4 +1610,28 @@ html[data-keyboard-open="true"] .patient-sheet-panel { max-height: 100%; padding
 .patient-app-frame:not(:has(.patient-action-slot > *)) > .patient-shell-content {
   padding-block-end: var(--app-footer-height, 0px);
   scroll-padding-block-end: calc(var(--app-footer-height, 0px) + 1rem);
+}
+
+/* Loading feedback shares fixed geometry across server and client renders. */
+.heartbeat { display: inline-block; flex-shrink: 0; vertical-align: middle; direction: ltr; color: currentColor; overflow: hidden; }
+.heartbeat--inline { width: 1.75rem; height: 1rem; margin-inline-end: .35rem; }
+.heartbeat--screen { width: 7.5rem; height: 2.5rem; color: var(--patient-action); }
+.heartbeat path { stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.heartbeat__track { opacity: .18; }
+.heartbeat__trace { stroke-dasharray: 24 76; animation: heartbeat-trace 1.6s linear infinite; }
+@keyframes heartbeat-trace { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.loading-state { min-width: 0; width: 100%; }
+.loading-refresh { display: inline-flex; align-items: center; min-height: 1.5rem; color: var(--patient-action); }
+.product-image-frame { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.product-image-frame > img { width: 100%; height: 100%; }
+.product-image-placeholder { position: absolute; inset: 0; z-index: 1; background: var(--patient-soft); pointer-events: none; }
+.product-image-frame > .product-image-placeholder { margin: 0; }
+.store-checkout__item > .product-image-frame { width: 56px; height: 56px; }
+.product-image-frame[data-pending="true"] > img { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .heartbeat__trace { animation: none; stroke-dasharray: none; }
+}
+@media (forced-colors: active) {
+  .skeleton { background: CanvasText; opacity: .15; }
+  .skeleton::after { display: none; }
 }

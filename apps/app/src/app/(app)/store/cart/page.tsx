@@ -1,4 +1,5 @@
 "use client";
+import { RefreshIndicator } from "@/components/shared/heartbeat-loader";
 import { ShellAction } from '@/components/layout/shell-slots';
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -38,8 +39,17 @@ export default function CartPage() {
     removeTimers.current.forEach((timer) => window.clearTimeout(timer));
     removeTimers.current.clear();
   }, []);
-  const load = useCallback(async () => { setLoading(true); setError(null); try { cache(await getCommerceCart(authentication.accessToken)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setLoading(false); } }, [authentication.accessToken]);
-  useEffect(() => { void load(); }, [load]);
+  const loaded = useRef(false), generation = useRef(0);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const load = useCallback(async () => {
+    const request = ++generation.current;
+    setLoading(!loaded.current); setRefreshing(loaded.current); setError(null);
+    try { const cart = await getCommerceCart(authentication.accessToken); if (request === generation.current) { cache(cart); loaded.current = true; setHasLoaded(true); } }
+    catch (cause) { if (request === generation.current) setError(commerceErrorMessage(cause)); }
+    finally { if (request === generation.current) { setLoading(false); setRefreshing(false); } }
+  }, [authentication.accessToken]);
+  useEffect(() => { const requests = generation; loaded.current = false; setHasLoaded(false); void load(); return () => { requests.current++; }; }, [load]);
   const change = async (skuId: string, quantity: number) => { setBusy(skuId); setError(null); try { cache(await updateCommerceCart(authentication.accessToken, skuId, quantity)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(null); } };
   const requestRemove = (skuId: string) => {
     clearRemoveTimer(skuId);
@@ -67,7 +77,7 @@ export default function CartPage() {
   const tax = cartTax(items);
   const total = cartTotal(items) + tax;
   return <main className="store-page"><StoreHeader title="سبد خرید" onBack={() => router.back()} />
-    {loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
+    {refreshing && <RefreshIndicator />}{loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
     {error && <StoreState title="سبد به‌روزرسانی نشد" description={error} error action="تلاش دوباره" onAction={() => void load()} />}
     {!loading && !error && emptyVisible && <div className="store-empty">
       <ShoppingBag size={44} strokeWidth={1.25} className="text-primary" aria-hidden="true" />
@@ -75,7 +85,7 @@ export default function CartPage() {
       <p>اگر به فروشگاه سر بزنید، دست‌پر برمی‌گردید.</p>
       <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>
     </div>}
-    {!loading && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
+    {!loading && (!error || hasLoaded) && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
     {!loading && !error && items.length > 0 && <ShellAction><div className="store-cart-bar" aria-label="خلاصهٔ سبد">
       <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy || removingIds.length > 0} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
       <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا{tax > BigInt(0) ? "، با مالیات" : ""}</span><ProductPrice amount={total} /></div>

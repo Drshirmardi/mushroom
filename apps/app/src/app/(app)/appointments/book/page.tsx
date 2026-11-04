@@ -1,4 +1,5 @@
 "use client";
+import { LoadingState } from "@/components/shared/skeletons";
 import { Suspense, useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -46,4 +47,4 @@ function DoctorSelection({ token }: { token: string }) {
     <Link href="/appointments" className="service-text-action">نوبت‌های قبلی من</Link>
   </ServiceSection>;
 }
-export default function BookingPage() { return <Suspense fallback={<p role="status" className="p-6 text-sm text-muted-foreground">در حال دریافت شرایط رزرو…</p>}><BookStep1 /></Suspense>; }
+export default function BookingPage() { return <Suspense fallback={<LoadingState variant="list" className="p-4" />}><BookStep1 /></Suspense>; }
