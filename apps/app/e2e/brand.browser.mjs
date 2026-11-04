@@ -27,7 +27,10 @@ try {
   }
   for (const route of ['/', '/store']) {
     await page.goto(base + route);
-    await page.locator('.home-brand .app-brand-logo, .store-brand .app-brand-logo').first().waitFor();
+    if (route === '/') {
+      await page.getByRole('heading', { name: 'خانهٔ سلامت شما', exact: true }).waitFor();
+      expect(await page.locator('.home-header .app-brand-logo').count()).toBe(0);
+    } else await page.locator('.store-brand .app-brand-logo').waitFor();
     expect(await page.title()).toBe('دکتر شیرمردی');
     expect(await page.locator('body').innerText()).not.toContain('سبز زندگی');
     await page.screenshot({ path: `.local/brand/${route === '/' ? 'home' : 'store'}.png` });

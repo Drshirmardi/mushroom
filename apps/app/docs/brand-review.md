@@ -3,7 +3,7 @@
 Status: DONE/software; sole Codex /root implementation and review. Scope explicitly confirmed by owner: apps/app only; landing is the read-only asset source. No next task, push or deployment.
 
 - All patient-app display references to سبز زندگی now use دکتر شیرمردی, including metadata and product titles. Repeated store/search wording is shortened; the welcome helper now simply describes entering the app.
-- The approved landing SVG/PNG mark and square icon are copied unchanged into public/brand. BrandLogo renders the static mark in home, store, onboarding and entry recovery, and the original eight-second six-part assembly animation in welcome. Reduced-motion shows a complete static mark.
+- The approved landing SVG/PNG mark and square icon are copied unchanged into public/brand. BrandLogo renders the static mark in store, onboarding and entry recovery, and the original eight-second six-part assembly animation in welcome. Reduced-motion shows a complete static mark. Owner correction: home header retains its text identity without an added logo; the browser regression explicitly checks its absence.
 - icon.svg, multi-size favicon.ico and apple-icon.png are exact copies of the approved landing files. Next's metadata file conventions expose them automatically. Domain icons (health, products, etc.) keep their semantic purpose.
 - Technical package/import/storage identifiers and historical documentation are not product copy. No contracts, dependencies, authentication, landing or dashboard implementation changed. Existing unrelated edits, including app AGENTS.md, remain untouched.
 

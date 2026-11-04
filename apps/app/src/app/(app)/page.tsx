@@ -1,5 +1,4 @@
 "use client";
-import { BrandLogo } from "@/components/shared/brand-logo";
 import { AsyncButton } from "@/components/shared/async-button";
 
 import Link from "next/link";
@@ -45,7 +44,7 @@ export default function HomePage() {
 
   return <div className="home-page" dir="rtl">
     <header className="home-header">
-      <div><p className="home-brand"><BrandLogo />دکتر شیرمردی</p><h1>{entry?.status?.firstName ? `سلام، ${entry.status.firstName}` : 'سلام، خوش آمدید'}</h1></div>
+      <div><p>دکتر شیرمردی</p><h1>{entry?.status?.firstName ? `سلام، ${entry.status.firstName}` : 'سلام، خوش آمدید'}</h1></div>
       <button type="button" onClick={() => setNotificationsOpen(true)} aria-haspopup="dialog" aria-expanded={notificationsOpen} aria-label={unread ? "اعلان‌ها؛ پیام خوانده‌نشده دارید" : "اعلان‌ها"} className="home-icon-link"><Bell size={21} aria-hidden="true" />{unread && <span className="home-unread" />}</button>
     </header>
 
