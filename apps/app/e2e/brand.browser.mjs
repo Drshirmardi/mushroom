@@ -14,6 +14,7 @@ await page.route('**/v1/**', route => {
   if (p.endsWith('/auth/refresh')) return send({ accessToken: 'fixture', expiresIn: 3600, user: { id: '11111111-1111-4111-8111-111111111111', roles: ['PATIENT'] } });
   if (request.method() !== 'GET') throw new Error('Unexpected mutation');
   if (p.endsWith('/entry')) return send(entry);
+  if (p.includes('/assessment-submissions/')) return route.fulfill({ status: 503, headers, contentType: 'application/json', body: JSON.stringify({ code: 'FIXTURE_UNAVAILABLE' }) });
   if (p.endsWith('/addresses')) return send([]);
   if (p.endsWith('/journey')) return send({ onboarding: { isComplete: true }, home: { latestAssessment: null, activeTreatmentPlanId: null, actions: [] } });
   if (p.endsWith('/recommendations')) return send({ status: 'NO_RESULT', items: [] });
@@ -37,8 +38,8 @@ try {
   }
   entry = { required: true, phase: 'PROFILE', assessmentRequired: false };
   await page.goto(base + '/welcome');
-  await page.locator('.app-brand-logo--animated').waitFor();
-  expect(await page.locator('.app-brand-logo__part').count()).toBe(6);
+  await page.locator('.entry-brand img.app-brand-logo').waitFor();
+  expect(await page.locator('.app-brand-logo--animated').count()).toBe(0);
   for (const width of [320, 375, 414, 768, 1440]) {
     await page.setViewportSize({ width, height: 812 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -46,9 +47,12 @@ try {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.waitForTimeout(1100);
   await page.screenshot({ path: '.local/brand/welcome.png' });
-  expect(await page.locator('.app-brand-logo__part').first().evaluate(el => getComputedStyle(el).animationName)).toBe('app-brand-assemble');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  expect(await page.locator('.app-brand-logo__part').first().evaluate(el => getComputedStyle(el).animationName)).toBe('none');
+  await expect(page.locator('.entry-brand img.app-brand-logo')).toBeVisible();
+  entry = { required: true, phase: 'ASSESSMENT', submissionId: '11111111-1111-4111-8111-111111111111', assessmentRequired: true };
+  await page.goto(base + '/welcome');
+  await page.locator('.entry-screen--quiz').waitFor();
+  expect(await page.locator('.entry-header .app-brand-logo').count()).toBe(0);
   expect(errors).toEqual([]);
-  console.log('PASS: exact landing icons, static/animated marks, metadata, 5 widths, reduced motion; zero page exceptions/writes.');
+  console.log('PASS: exact landing icons, static marks, metadata, 5 widths, reduced motion; zero page exceptions/writes.');
 } finally { await browser.close(); }

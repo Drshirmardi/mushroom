@@ -1,5 +1,4 @@
 "use client";
-import { BrandLogo } from "@/components/shared/brand-logo";
 import { AsyncButton } from "@/components/shared/async-button";
 import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 import { LoadingState } from "@/components/shared/skeletons";
@@ -60,7 +59,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
   const date = draft.birthDate ? new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(draft.birthDate + 'T00:00:00Z')) : 'ثبت نشده';
   const gender = data.profile.gender === 'FEMALE' ? 'زن' : data.profile.gender === 'MALE' ? 'مرد' : 'ثبت نشده';
   return <main className={styles.page} dir="rtl">
-    <header className={styles.topbar}><button type="button" className={styles.back} disabled={busy} onClick={() => router.push(new URLSearchParams(window.location.search).get('from') === 'medical' ? '/profile/medical' : '/')}><ArrowRight size={18} aria-hidden="true" />بازگشت</button><span className={styles.brand}><BrandLogo />پروندهٔ سلامت</span></header>
+    <header className={styles.topbar}><button type="button" className={styles.back} disabled={busy} onClick={() => router.push(new URLSearchParams(window.location.search).get('from') === 'medical' ? '/profile/medical' : '/')}><ArrowRight size={18} aria-hidden="true" />بازگشت</button><span className={styles.brand}><HeartPulse size={20} aria-hidden="true" />پروندهٔ سلامت</span></header>
     <div className={styles.layout}>
       <aside className={styles.sidebar}><span className={styles.eyebrow}>یک قدم برای شناخت بهتر شما</span><h2>سلامت شما،<br />با نگاه به خود شما.</h2><p>پاسخ‌های شما کمک می‌کنند اطلاعات پرونده‌تان کامل‌تر باشد. فقط دربارهٔ وضعیت خودتان پاسخ دهید.</p><ol className={styles.steps} aria-label="مراحل اطلاعات سلامت">{steps.map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} data-active={step === index} data-done={index < step}><span className={styles.stepNumber}>{index < step ? <Check size={16} aria-hidden="true" /> : toP(index + 1)}</span><span>{label}{index === 1 && <small>اختیاری</small>}</span></li>)}</ol><div className={styles.note}><ShieldCheck size={20} aria-hidden="true" /><p>این پاسخ‌ها گزارش خود شما هستند و جایگزین تشخیص و نظر پزشک نیستند.</p></div></aside>
       <div className={styles.workspace}>

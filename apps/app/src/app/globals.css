@@ -1645,3 +1645,5 @@ html[data-keyboard-open="true"] .patient-sheet-panel { max-height: 100%; padding
 .app-brand-logo__part:nth-child(6) { animation-delay: 400ms; }
 @keyframes app-brand-assemble { 0%, 100% { transform: translateY(8px) scale(.08); opacity: 0; } 10%, 87% { transform: translateY(0) scale(1); opacity: 1; } 95% { transform: translateY(8px) scale(.08); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .app-brand-logo__part { animation: none; transform: none; opacity: 1; } }
+
+.entry-brand .entry-mark--brand, .entry-brand .app-brand-logo { width: 3rem; height: 1.5rem; }

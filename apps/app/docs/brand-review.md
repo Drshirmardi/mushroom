@@ -8,3 +8,6 @@ Status: DONE/software; sole Codex /root implementation and review. Scope explici
 - Technical package/import/storage identifiers and historical documentation are not product copy. No contracts, dependencies, authentication, landing or dashboard implementation changed. Existing unrelated edits, including app AGENTS.md, remain untouched.
 
 Verification: app typecheck, all 212 unit tests, optimized production build; brand.browser.mjs checks exact icon response bytes, home/store identity and title, six animated paths, five widths (320/375/414/768/1440), reduced motion and zero page exceptions. No actual patient/provider writes. Source search finds no old Persian brand in apps/app/src. Mobile welcome/store screenshots reviewed in .local/brand; physical devices and deployed icon caches remain unverified.
+
+
+Owner placement refinement (2026-11-05): onboarding restores its semantic health icon and contains no brand logo. Welcome uses a compact static 48×24 mark only in the existing header outside questionnaire mode; questionnaire mode omits the mark. This removes repeating motion from the data-entry flow. The home exclusion and icon assets remain intact. Updated browser regression covers static welcome branding, five widths, reduced motion and no questionnaire logo.
