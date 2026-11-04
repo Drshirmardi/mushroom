@@ -540,3 +540,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-AH04 — EvilCharts-style full radial result/semi home and chart loading;8 units/types/build/scoped lint/local dev+production browser PASS2026-11-04; online/device unverified.
 
 - [x] F12-FE01-PR01 — Consolidated medical entry points, patient-friendly medical summary and edit return; scoped dev+production browser/four-route axe/responsive/types/build/lint delta PASS2026-11-05; exhaustive live audit Incomplete.
+
+- [x] F12-FE01-PR02 — Repair saved Decimal weight serialization and intake step validation;2 API serializer +4 form tests, app/API types/scoped lint delta PASS2026-11-05.

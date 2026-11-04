@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { intakeBody, intakeDraft, intakeIssue } from './intake-form';
 
 describe('health intake draft', () => {
+  it('checks only health answers when advancing the first step, and still blocks invalid weight on save', () => {
+    const draft = { ...intakeDraft(null, '1990-01-02'), weightKg: '[object Object]', allergyReport: { status: 'NONE' as const, items: [] }, chronicConditionReport: { status: 'UNKNOWN' as const, items: [] }, currentMedicationReport: { status: 'NONE' as const, items: [] } };
+    expect(intakeIssue(draft, true, 'health')).toBeNull();
+    expect(intakeIssue(draft, false)).toContain('وزن');
+    draft.weightKg = '65.5';
+    expect(intakeIssue(draft, true)).toBeNull();
+    expect(intakeBody(draft, 7).weightKg).toBe(65.5);
+  });
   it('reuses entry birth date without inferring a medical sex answer from profile gender', () => {
     expect(intakeDraft(null, '1990-01-02')).toMatchObject({ birthDate: '1990-01-02', sexAtBirth: null });
   });

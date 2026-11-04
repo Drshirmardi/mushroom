@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { intakeSnapshot } from './intake-snapshot';
 
 import {
   ConflictException,
@@ -177,7 +178,7 @@ export class PatientIntakeService {
   private async audit(tx: Tx, audit: AuditContext, action: string, subjectType: string, subjectId: string, metadata: Record<string, unknown>) { await tx.auditEvent.create({ data: { action, actorUserId: audit.actorUserId, actorSessionId: audit.actorSessionId, subjectType, subjectId, requestId: audit.requestId.slice(0, 128), ipAddress: audit.ipAddress, metadata: metadata as Prisma.InputJsonObject } }); }
   private consentResponse(consent: { id: string; policyVersionId: string; contentHash: string; acceptedAt: Date; withdrawnAt: Date | null }) { return { id: consent.id, policyVersionId: consent.policyVersionId, contentHash: consent.contentHash, acceptedAt: consent.acceptedAt, withdrawnAt: consent.withdrawnAt }; }
   private intakeResponse(intake: { submissionState: unknown; currentRevisionNumber: number; completedRevisionNumber: number | null }, revision: { [key: string]: unknown }) { return { submissionState: intake.submissionState, currentRevision: intake.currentRevisionNumber, completedRevision: intake.completedRevisionNumber, snapshot: this.snapshot(revision) }; }
-  private snapshot(revision: Record<string, unknown>) { const keys = ['birthDate', 'sexAtBirth', 'heightCm', 'weightKg', 'bloodType', 'allergyReport', 'chronicConditionReport', 'currentMedicationReport', 'sleepDurationBand', 'exerciseFrequency', 'stressLevel', 'tobaccoUse']; return Object.fromEntries(keys.map((key) => [key, revision[key] ?? null])); }
+  private snapshot(revision: Record<string, unknown>) { return intakeSnapshot(revision); }
   private canonicalSnapshot(body: IntakeSnapshotDto) { try { const reports = ['allergyReport', 'chronicConditionReport', 'currentMedicationReport'] as const; const result: Record<string, unknown> = this.snapshot(body as unknown as Record<string, unknown>); if (result.birthDate) result.birthDate = new Date(`${canonicalizeBirthDate(String(result.birthDate))}T00:00:00.000Z`); for (const report of reports) result[report] = canonicalizeMedicalDeclaration(result[report] as MedicalDeclaration | null | undefined); return result; } catch (cause) { if (cause instanceof PatientDomainError) throw error(UnprocessableEntityException, cause.code, cause.message, cause.code === 'MEDICAL_INTAKE_INCOMPLETE' ? { missingFields: [] } : {}); throw cause; } }
   private missingFields(snapshot: Record<string, unknown>) { return ['birthDate', 'allergyReport', 'chronicConditionReport', 'currentMedicationReport'].filter((field) => snapshot[field] === null || snapshot[field] === undefined); }
 }

@@ -4449,3 +4449,6 @@ AH04 DONE/software (2026-11-04): sole /root review PASS, single-task claim RELEA
 
 
 PR01 DONE/software (2026-11-05): sole /root review PASS, single-task claim RELEASED. Profile card preserved; home shortcut and card share medical summary, redundant lower medical entries removed, readable saved health/optional data and medical edit-return delivered. Local dev+production interaction/empty/error/retry, four-route seven-width/text200/axe, types/build/scoped lint delta PASS. Live baseline read-only observed; exhaustive UX Audit remains Incomplete and deployed/device final acceptance unverified. No next batch selected.
+
+
+PR02 DONE/software (2026-11-05): sole /root review PASS, claim RELEASED. Database Decimal weight normalized before global serialization; first-step health validation scoped and save errors navigate to correct step. Actual Prisma Decimal/class-transformer2 tests, intake4 tests, app/API types and scoped lint delta PASS. No DB/API-schema/SDK change, no actual patient write. Live browser re-edit remains manual; next batch none.

@@ -37,7 +37,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
   const field = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => { setDraft(current => ({ ...current, [key]: value })); setError(null); setNotice(null); };
   const move = (next: number) => {
     if (busy) return;
-    const issue = next > step ? intakeIssue(draft, step === 0) : null;
+    const issue = next > step ? intakeIssue(draft, step === 0, step === 0 ? 'health' : 'all') : null;
     if (issue) { setError(issue); return; }
     setStep(next); setError(null); setNotice(null);
     requestAnimationFrame(() => heading.current?.focus());
@@ -45,7 +45,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
   const save = async (complete: boolean) => {
     if (pending.current) return;
     const issue = intakeIssue(draft, complete);
-    if (issue) { setError(issue); if (complete) setStep(intakeIssue({ ...draft, heightCm: '', weightKg: '' }, true) ? 0 : 1); return; }
+    if (issue) { setError(issue); setStep(intakeIssue(draft, complete, 'health') ? 0 : 1); requestAnimationFrame(() => heading.current?.focus()); return; }
     pending.current = true; setBusy(true); setError(null); setNotice(null);
     try {
       const saved = await saveMedicalIntake(token, intakeBody(draft, revision));
