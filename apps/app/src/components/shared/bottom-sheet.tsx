@@ -46,9 +46,9 @@ export function BottomSheet({ title, ariaLabel, onClose, children }: BottomSheet
   };
   return (
     <dialog ref={dialog} className="patient-bottom-sheet patient-app-shell" aria-label={ariaLabel ?? title ?? "پنجرهٔ گزینه‌ها"} onCancel={event => { event.preventDefault(); onClose(); }}>
-    <motion.div className="fixed inset-0 z-50 flex flex-col justify-end" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.div className="patient-sheet-viewport absolute inset-0 z-50 flex flex-col justify-end" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="absolute inset-0 bg-black/40" aria-hidden="true" onClick={onClose} />
-      <motion.div className="relative mx-auto w-full max-w-[720px] bg-white rounded-t-3xl px-4 pt-2 pb-[max(2rem,env(safe-area-inset-bottom))] max-h-[85dvh] overflow-y-auto overscroll-contain scrollbar-hide"
+      <motion.div className="relative mx-auto w-full max-w-[720px] bg-white rounded-t-3xl px-4 pt-2 pb-[max(2rem,env(safe-area-inset-bottom))] patient-sheet-panel overflow-y-auto overscroll-contain scrollbar-hide"
         style={{ y }}
         initial={reduceMotion ? false : { y: "100%" }} animate={{ y: 0 }} exit={reduceMotion ? { opacity: 0 } : { y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}>
         <button

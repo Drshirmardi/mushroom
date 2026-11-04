@@ -1,4 +1,5 @@
 "use client";
+import { ShellAction } from '@/components/layout/shell-slots';
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -75,10 +76,10 @@ export default function CartPage() {
       <Button variant="secondary" className="store-empty__action" onClick={() => router.push("/store")}>رفتن به فروشگاه</Button>
     </div>}
     {!loading && <MotionConfig reducedMotion="user"><div className="store-cart-list"><AnimatePresence initial={false}>{items.map(item => <CartItem key={item.id} item={item} busy={busy === item.skuId} removing={removingIds.includes(item.skuId)} onChange={quantity => onQty(item.skuId, quantity)} onUndo={() => undoRemove(item.skuId)} />)}</AnimatePresence></div></MotionConfig>}
-    {!loading && !error && items.length > 0 && <div className="store-cart-bar" aria-label="خلاصهٔ سبد">
+    {!loading && !error && items.length > 0 && <ShellAction><div className="store-cart-bar" aria-label="خلاصهٔ سبد">
       <div className="store-cart-bar__action"><Button className="store-full-button" disabled={!!busy || removingIds.length > 0} onClick={() => navigateScreen("CheckoutScreen")}>ثبت سفارش</Button></div>
       <div className="store-cart-bar__total"><span>جمع {toP(cartCount(items))} کالا{tax > BigInt(0) ? "، با مالیات" : ""}</span><ProductPrice amount={total} /></div>
-    </div>}
+    </div></ShellAction>}
     {recent.length > 0 && <>
       <div className="store-divider" aria-hidden="true" />
       <StoreCollection title="بازدیدهای اخیر" id="store-recent">

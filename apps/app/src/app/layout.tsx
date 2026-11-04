@@ -1,3 +1,4 @@
+import { VisibleViewport } from '@/components/layout/visible-viewport';
 import { AssessmentHistoryTracking } from '@/lib/assessment-history';
 import { Suspense } from 'react';
 import type { Metadata, Viewport } from "next";
@@ -27,7 +28,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
-        <AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<main role="status">در حال آماده‌سازی…</main>}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
+        <VisibleViewport /><AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<main role="status">در حال آماده‌سازی…</main>}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
       </body>
     </html>
   );

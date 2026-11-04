@@ -190,7 +190,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
   const closedAt = chat?.conversation.closedAt ?? access?.closedAt ?? null;
   const isClosed = closedAt !== null;
 
-  return <div ref={room} className="group fixed inset-x-0 top-0 z-30 mx-auto flex h-[100dvh] max-w-[720px] flex-col overflow-hidden bg-[#f6fafc]">
+  return <div ref={room} className="patient-chat-room group relative z-30 mx-auto flex h-full max-w-[720px] flex-col overflow-hidden bg-[#f6fafc]">
     <header className="flex flex-shrink-0 items-center gap-2 border-b border-border bg-white px-3 py-2">
       <button type="button" aria-label="بازگشت" onClick={() => router.back()} className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><ChevronLeft size={20} aria-hidden="true" /></button>
       <div className="min-w-0 flex-1">

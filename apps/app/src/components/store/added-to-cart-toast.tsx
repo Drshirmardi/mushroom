@@ -1,5 +1,6 @@
 "use client";
 
+import { ShellOverlay } from '@/components/layout/shell-slots';
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronLeft, X } from "lucide-react";
@@ -19,7 +20,7 @@ export function AddedToCartToast({ open, onClose, onGoCart }: Props) {
     const timer = window.setTimeout(() => setDone(true), 900);
     return () => window.clearTimeout(timer);
   }, [open]);
-  return <AnimatePresence>
+  return <ShellOverlay><AnimatePresence>
     {open && <motion.div
       role="status"
       className="store-toast"
@@ -37,5 +38,5 @@ export function AddedToCartToast({ open, onClose, onGoCart }: Props) {
         برو به سبد خرید<ChevronLeft size={16} aria-hidden="true" />
       </button>
     </motion.div>}
-  </AnimatePresence>;
+  </AnimatePresence></ShellOverlay>;
 }

@@ -1,4 +1,5 @@
 "use client";
+import { ShellAction } from '@/components/layout/shell-slots';
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -84,14 +85,14 @@ export default function ProductDetailPage() {
         <p className="store-inline-status" role="status">{saved ? "در علاقه‌مندی‌های شما ذخیره شده است" : notice || (current > 0 ? "این محصول در سبد شماست" : "")}</p>
         {related !== null && related.length > 0 && <section className="store-related" aria-label="محصولات مرتبط"><h3>محصولات مرتبط</h3><div className="store-grid">{related.map((item) => { const itemSku = item.skus[0]; if (!itemSku) return null; return <ProductCard key={item.id} product={item} saved={wishlist.includes(itemSku.id)} inCart={cart.some((entry) => entry.skuId === itemSku.id)} busy={busy} onFavorite={(id) => void quickToggle(id)} />; })}</div></section>}
     </ProductDetailPanel>
-        <div className="store-purchase-bar" role="group" aria-label={`خرید ${product.title}`}>
+        <ShellAction><div className="store-purchase-bar" role="group" aria-label={`خرید ${product.title}`}>
           <div className="store-purchase-bar__action">
             {current === 0
               ? <Button className="store-full-button" busy={busy} onClick={() => void setQty(1)}><ShoppingCart aria-hidden="true" size={20} />{busy ? "در حال انجام…" : session ? "افزودن به سبد" : "ورود برای خرید"}</Button>
               : <QuantityControl value={current} min={0} busy={busy} label={product.title} onChange={(value) => void setQty(value)} />}
           </div>
           <div className="store-purchase-bar__price"><span>{current > 1 ? `جمع ${new Intl.NumberFormat("fa-IR").format(current)} عدد` : "قیمت محصول"}</span><ProductPrice amount={BigInt(sku.currentPriceToman) * BigInt(Math.max(current, 1))} large /></div>
-        </div>
+        </div></ShellAction>
     <AddedToCartToast open={toast} onClose={() => setToast(false)} onGoCart={() => navigateScreen("CartScreen")} />
   </main>;
 }

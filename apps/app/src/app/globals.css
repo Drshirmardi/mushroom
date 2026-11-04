@@ -756,7 +756,7 @@
 .patient-store-shell .overflow-y-auto:has(> .store-product-page) { overflow: hidden; padding-bottom: 0; }
 .store-product-page { height: 100%; display: flex; flex-direction: column; padding-bottom: 0; container-type: inline-size; }
 .store-product-page > .store-page-header { flex-shrink: 0; }
-.store-detail--panel { position: relative; display: block; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; isolation: isolate; scrollbar-width: none; margin-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+.store-detail--panel { position: relative; display: block; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; isolation: isolate; scrollbar-width: none; margin-bottom: 0; }
 .store-detail--panel > .store-gallery { position: sticky; top: 0; height: min(calc(100% - 136px), calc(100cqi + 80px)); min-height: 120px; }
 .store-detail--panel > .store-gallery:has(.store-gallery__strip--single) { height: min(calc(100% - 136px), calc(100cqi - 8px)); grid-template-rows: minmax(0, 1fr); gap: 0; }
 .store-detail--panel > .store-detail__sheet { min-height: 100%; padding-top: 0; padding-bottom: 24px; border: 1px solid var(--patient-divider); }
@@ -771,7 +771,7 @@
   .store-detail__handle-button .store-detail__handle { transition: background-color 200ms ease, width 200ms ease; }
 }
 .store-detail--panel .store-related { margin-top: 16px; }
-.store-product-page {
+.store-product-page, .patient-product-actions {
   font-family: var(--font-vazirmatn), sans-serif;
   --patient-ink: #14213d;
   --patient-muted: #455473;
@@ -832,7 +832,7 @@
 .store-product-page .store-description p { max-width: 65ch; margin-top: 12px; color: #334363; font-size: clamp(14px, 4.1cqi, 16px); line-height: 1.95; font-weight: 400; }
 .store-product-page .store-related h3 { display: flex; align-items: center; gap: 8px; }
 .store-product-page .store-related h3::before { content: ""; width: 4px; height: 20px; border-radius: 999px; background: var(--patient-blue-600); flex-shrink: 0; }
-.store-product-page .store-purchase-bar__price .store-price { color: var(--patient-blue-600); font-size: clamp(17px, 5.5cqi, 22px); }
+:is(.store-product-page, .patient-product-actions) .store-purchase-bar__price .store-price { color: var(--patient-blue-600); font-size: clamp(17px, 5.5cqi, 22px); }
 .store-product-page .store-description[aria-label="دستور مصرف"] { margin-block: 16px; padding: clamp(12px, 4cqi, 18px); border: 0; border-radius: 16px; background: #ecf8f4; }
 .store-product-page .store-description[aria-label="دستور مصرف"] h3 { color: #126452; }
 .store-product-page .store-description[aria-label="دستور مصرف"] .store-section-icon { background: #d6eee4; color: #126452; }
@@ -1582,3 +1582,43 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
 .patient-shell-nav { width: 100%; }
 .patient-shell-nav__item { min-width: 0; min-height: 44px; padding-block: .375rem; }
 .patient-shell-nav__label { font-size: .6875rem; line-height: 1.5; overflow-wrap: anywhere; text-align: center; }
+
+/* Shared visible viewport and footer. No opaque plate around the dock. */
+.patient-viewport-shell {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--app-viewport-top, 0px);
+  height: var(--app-visible-height, 100dvh);
+}
+.patient-shell-footer, .patient-action-slot, .patient-shell-nav {
+  background: transparent;
+}
+.patient-shell-footer { position: relative; z-index: 20; min-width: 0; }
+.patient-shell-nav { border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.patient-shell-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+.patient-shell-overlay > * { pointer-events: auto; }
+.patient-action-slot > :is(.store-cart-bar, .store-purchase-bar) {
+  position: relative; inset: auto; transform: none; max-width: none;
+  padding: .75rem 1rem; flex-wrap: wrap;
+}
+.patient-app-frame[data-nav="false"] .patient-shell-footer:has(.patient-action-slot > *) {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--patient-surface);
+}
+html[data-keyboard-open="true"] .patient-shell-nav { display: none; }
+html[data-keyboard-open="true"] .patient-shell-footer { padding-bottom: 0; }
+.patient-shell-overlay .store-toast { position: absolute; bottom: calc(var(--app-footer-height, 0px) + .5rem); max-width: calc(100% - 2rem); }
+.patient-bottom-sheet {
+  top: var(--app-viewport-top, 0px); bottom: auto;
+  height: var(--app-visible-height, 100dvh);
+}
+.patient-sheet-panel { max-height: calc(var(--app-visible-height, 100dvh) * .85); }
+html[data-keyboard-open="true"] .patient-sheet-panel { max-height: 100%; padding-bottom: 1rem; }
+.patient-chat-room { min-height: 0; }
+
+.patient-product-actions { container-type: inline-size; }
+
+/* Avoid iOS focus auto-zoom being mistaken for a user's pinch gesture. */
+@media (pointer: coarse) and (hover: none) {
+  .patient-app-shell :is(input, textarea, select) { font-size: max(1rem, 16px); }
+}
