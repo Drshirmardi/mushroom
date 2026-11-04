@@ -542,3 +542,6 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-PR01 — Consolidated medical entry points, patient-friendly medical summary and edit return; scoped dev+production browser/four-route axe/responsive/types/build/lint delta PASS2026-11-05; exhaustive live audit Incomplete.
 
 - [x] F12-FE01-PR02 — Repair saved Decimal weight serialization and intake step validation;2 API serializer +4 form tests, app/API types/scoped lint delta PASS2026-11-05.
+
+
+- [x] F12-FE01-ST01 — Store header logo removed; app types/scoped lint delta PASS2026-11-05.

@@ -1,5 +1,4 @@
 "use client";
-import { BrandLogo } from "@/components/shared/brand-logo";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -171,7 +170,7 @@ function StoreCatalog() {
   return <main className={`store-catalog ${styles.catalog}`} aria-labelledby="store-heading" dir="rtl">
     <a href="#store-products" className="store-skip-link">رفتن به محصولات</a>
     <header className="store-heading">
-      <div><p className="store-brand"><BrandLogo />دکتر شیرمردی</p><h1 id="store-heading">فروشگاه</h1></div>
+      <div><p className="store-brand">دکتر شیرمردی</p><h1 id="store-heading">فروشگاه</h1></div>
       <div className="store-actions">
         <Link href="/store/wishlist" className="patient-button patient-button--ghost store-icon-button" aria-label="علاقه‌مندی‌ها">
           <Heart aria-hidden="true" size={22} />{wishlist.length > 0 && <span className="store-badge">{toP(wishlist.length)}</span>}

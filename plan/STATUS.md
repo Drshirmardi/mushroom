@@ -4452,3 +4452,6 @@ PR01 DONE/software (2026-11-05): sole /root review PASS, single-task claim RELEA
 
 
 PR02 DONE/software (2026-11-05): sole /root review PASS, claim RELEASED. Database Decimal weight normalized before global serialization; first-step health validation scoped and save errors navigate to correct step. Actual Prisma Decimal/class-transformer2 tests, intake4 tests, app/API types and scoped lint delta PASS. No DB/API-schema/SDK change, no actual patient write. Live browser re-edit remains manual; next batch none.
+
+
+ST01 DONE/software (2026-11-05): sole /root review PASS, claim RELEASED. Store header logo removed, brand text/store title retained; app types and scoped lint delta PASS. No next batch.
