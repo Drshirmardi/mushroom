@@ -11,6 +11,7 @@ import { PatientResourceState } from "@/components/shared/patient-resource-state
 import { GuidanceSafety } from "@/components/shared/policy-acceptance";
 import { getAssessmentResult, getAssessmentQuestionnaire, getAssessmentGuidance, getAssessmentProvenance } from "@/lib/assessment-api";
 import { usePatientResource } from "@/lib/use-patient-resource";
+import { MizajChart } from "@/components/assessments/mizaj-chart";
 import { MizajResult } from "@/components/assessments/mizaj-result";
 import { toP } from "@/lib/format";
 import { ResultRecommendations } from '@/components/programs/result-recommendations';
@@ -25,7 +26,7 @@ function Result({ id }: { id: string }) {
   const provenance = usePatientResource(useCallback(() => getAssessmentProvenance(token, id), [token, id]));
   const snapshot = result.data?.resultSnapshot;
   const band = snapshot?.resultBand && typeof snapshot.resultBand === "object" ? snapshot.resultBand as Record<string, unknown> : null;
-  return <ServicePage title="نتیجهٔ ارزیابی" description="نتیجهٔ ثبت‌شده و راهنمای آموزشی منتشرشدهٔ مربوط به ارزیابی خود را ببینید." icon={ClipboardList} backHref={currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment?view=history"} backLabel="ارزیابی‌ها"><div className="service-detail space-y-4"><PatientResourceState variant="detail" {...result} retry={() => void result.reload()} />{result.data && <>
+  return <ServicePage title="نتیجهٔ ارزیابی" description="نتیجهٔ ثبت‌شده و راهنمای آموزشی منتشرشدهٔ مربوط به ارزیابی خود را ببینید." icon={ClipboardList} backHref={currentInvitationContext() ? `/assessment/marriage/requests/${currentInvitationContext()}` : "/assessment?view=history"} backLabel="ارزیابی‌ها"><div className="service-detail space-y-4">{result.loading ? <MizajChart isLoading /> : <PatientResourceState variant="detail" {...result} retry={() => void result.reload()} />}{result.data && <>
     {snapshot?.algorithmId === "DIMENSION_TIEBREAK" ? <MizajResult snapshot={snapshot} /> : <section className="rounded-3xl bg-primary p-6 text-white"><h2 className="text-lg font-bold">{questionnaire.data?.title ?? "ارزیابی ثبت‌شده"}</h2><p className="mt-4 text-3xl font-bold">{result.data.score == null ? "امتیازی برای نمایش ثبت نشده است." : toP(result.data.score)}</p>{typeof band?.title === "string" && <p className="mt-3">{band.title}</p>}<p className="mt-3 text-xs leading-6 text-white/80">نتیجهٔ آموزشی ثبت‌شده؛ تفسیر و پیشنهادهای قابل نمایش فقط از محتوای تأییدشدهٔ کلینیک دریافت می‌شوند.</p></section>}
     {result.data.completedAt && <p className="text-xs text-muted-foreground">تاریخ تکمیل: {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.data.completedAt))}</p>}
     {band?.requiresReview === true && <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">این نتیجه نیاز به بررسی درمانگر دارد.</p>}

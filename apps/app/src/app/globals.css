@@ -1049,7 +1049,7 @@
 .home-next .home-section-heading { margin-bottom: 8px; color: var(--home-muted); font-size: 12px; }
 .home-next-stage {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "copy copy" "action brain"; align-items: center; gap: 6px 12px; min-height: 260px;
+  grid-template-areas: "copy copy" "brain brain" "action action"; align-items: center; gap: 6px 12px; min-height: 260px;
 }
 .home-next-copy { grid-area: copy; min-width: 0; padding-top: 2px; }
 .home-next h2 { font-size: 21px; line-height: 1.7; font-weight: 500; margin: 0; text-wrap: pretty; overflow-wrap: anywhere; }
@@ -1062,8 +1062,7 @@
   color: white; font-size: 13px; line-height: 24px; font-weight: 500; white-space: normal;
 }
 .home-next-link svg { flex-shrink: 0; }
-.home-brain { grid-area: brain; display: grid; place-items: center; min-width: 0; padding-block: 4px; }
-.home-brain img { display: block; width: 100%; max-width: 164px; height: auto; object-fit: contain; user-select: none; }
+.home-mizaj { grid-area: brain; width: 100%; max-width: 300px; justify-self: center; min-width: 0; padding-block: 12px; }
 .home-profile-status {
   display: flex; align-items: center; flex-wrap: wrap; gap: 7px; min-height: 42px; margin-top: 6px; padding-top: 12px;
   border-top: 1px solid var(--home-line); color: var(--home-muted); font-size: 11px; line-height: 23px;
@@ -1190,7 +1189,6 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
   .home-next-stage { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-areas: "copy brain" "action brain"; gap: 0 22px; min-height: 280px; grid-template-rows: 1fr auto; }
   .home-next-copy { align-self: end; padding-top: 16px; }
   .home-next-action { align-self: start; padding-block: 18px 28px; }
-  .home-brain img { max-width: 230px; }
   .home-next h2 { font-size: 23px; line-height: 1.8; }
   .home-next-description { font-size: 14px; line-height: 28px; }
   .home-access { padding: 22px; }
@@ -1202,7 +1200,6 @@ button.home-content-link { width: 100%; text-align: start; cursor: pointer; }
   .home-page { padding: 28px 40px 40px; }
   .home-page .home-next { padding: 16px 34px 20px; }
   .home-next-stage { min-height: 340px; gap: 0 40px; }
-  .home-brain img { max-width: 302px; }
   .home-next h2 { font-size: 25px; }
   .home-next-description { font-size: 15px; line-height: 30px; }
   .home-services { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }

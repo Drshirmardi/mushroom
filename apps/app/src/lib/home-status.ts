@@ -7,6 +7,15 @@ import { formatRial } from './wallet-money';
 const object = (value: unknown): Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 
+/** Percentages come only from the saved dimension result, never from its rank. */
+export function homeMizajData(snapshot: unknown) {
+  const value = object(snapshot);
+  if (value.algorithmId !== 'DIMENSION_TIEBREAK') return null;
+  const scores = Object.fromEntries(Object.entries(object(value.scores)).filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1])));
+  const dimensions = Array.isArray(value.dimensionTitles) ? value.dimensionTitles.map(object).map(item => ({ id: text(item.id), title: text(item.title) })).filter(item => item.id && item.title) : [];
+  return dimensions.length ? { scores, dimensions } : null;
+}
+
 /** Only show authored result text; no inferred diagnosis, score or synthetic progress. */
 export function homeResultSummary(snapshot: unknown) {
   const value = object(snapshot);
