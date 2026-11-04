@@ -1,4 +1,5 @@
 'use client';
+import { BrandLogo } from '@/components/shared/brand-logo';
 import { AppLoading } from '@/components/shared/heartbeat-loader';
 import { invitationContext, invitationServiceRoute, rememberInvitationActor, restoredInvitation, subscribeInvitation } from '@/lib/marriage-context';
 import { rememberMarriageReturn, marriageReturn, clearMarriageReturn } from '@/lib/marriage-return';
@@ -11,7 +12,7 @@ import { usePatientResource } from '@/lib/use-patient-resource';
 const EntryContext = createContext<{ status: PatientEntryStatus | null; reload: () => Promise<PatientEntryStatus | null>; refresh: () => Promise<PatientEntryStatus | null> } | null>(null);
 function EntryWait({ error, retry }: { error?: string | null; retry?: () => void }) {
   if (!error) return <AppLoading />;
-  return <main className="entry-screen" dir="rtl"><div className="entry-wait" role={error ? 'alert' : 'status'}><span className="entry-mark" aria-hidden="true" />{error ? <><p>اطلاعات ورود دریافت نشد.</p><button type="button" className="entry-primary" onClick={retry}>تلاش دوباره</button></> : null}</div></main>;
+  return <main className="entry-screen" dir="rtl"><div className="entry-wait" role={error ? 'alert' : 'status'}><span className="entry-mark entry-mark--brand"><BrandLogo /></span>{error ? <><p>اطلاعات ورود دریافت نشد.</p><button type="button" className="entry-primary" onClick={retry}>تلاش دوباره</button></> : null}</div></main>;
 }
 export function PatientEntryGate({ children }: { children: ReactNode }) {
   const session = useOptionalAuthSession(); const snapshot = useAuthSessionSnapshot();

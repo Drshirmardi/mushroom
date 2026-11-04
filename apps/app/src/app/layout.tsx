@@ -8,7 +8,7 @@ import { PatientEntryGate } from "@/components/auth/patient-entry-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "سبز زندگی",
+  title: "دکتر شیرمردی",
   description:
     "همراه بالینی طب سنتی — رزرو نوبت، پیگیری درمان و فروشگاه محصولات سلامت",
 };

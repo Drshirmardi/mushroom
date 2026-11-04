@@ -1,4 +1,5 @@
 "use client";
+import { BrandLogo } from "@/components/shared/brand-logo";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -170,7 +171,7 @@ function StoreCatalog() {
   return <main className={`store-catalog ${styles.catalog}`} aria-labelledby="store-heading" dir="rtl">
     <a href="#store-products" className="store-skip-link">رفتن به محصولات</a>
     <header className="store-heading">
-      <div><p>سبز زندگی</p><h1 id="store-heading">فروشگاه</h1></div>
+      <div><p className="store-brand"><BrandLogo />دکتر شیرمردی</p><h1 id="store-heading">فروشگاه</h1></div>
       <div className="store-actions">
         <Link href="/store/wishlist" className="patient-button patient-button--ghost store-icon-button" aria-label="علاقه‌مندی‌ها">
           <Heart aria-hidden="true" size={22} />{wishlist.length > 0 && <span className="store-badge">{toP(wishlist.length)}</span>}
@@ -181,11 +182,11 @@ function StoreCatalog() {
       </div>
     </header>
     <div className="store-search-panel">
-    <label className="sr-only" htmlFor="store-search">جستجو در فروشگاه سبز زندگی</label>
+    <label className="sr-only" htmlFor="store-search">جستجو در فروشگاه</label>
     <div className="store-search" role="search" aria-label="جست‌وجوی محصولات فروشگاه">
       <span className="store-search__icon"><Search aria-hidden="true" size={20} /></span>
       <Input id="store-search" name="product-search" type="search" autoComplete="off" dir="rtl" value={search}
-        onChange={(event) => { updateCatalog({ q: event.target.value, page: null, view: "all" }, true); }} placeholder="جستجو در فروشگاه سبز زندگی" />
+        onChange={(event) => { updateCatalog({ q: event.target.value, page: null, view: "all" }, true); }} placeholder="جستجو در فروشگاه" />
       {search ? <Button variant="ghost" className="store-icon-button" aria-label="پاک کردن جست‌وجو" onClick={() => { clearSearch(); }}><X aria-hidden="true" size={18} /></Button> : <span className="store-search__clear-space" aria-hidden="true" />}
     </div>
     <button

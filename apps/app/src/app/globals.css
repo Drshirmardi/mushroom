@@ -1632,3 +1632,16 @@ html[data-keyboard-open="true"] .patient-sheet-panel { max-height: 100%; padding
   .skeleton { background: CanvasText; opacity: .15; }
   .skeleton::after { display: none; }
 }
+
+/* Approved landing identity, including its existing eight-second assembly cycle. */
+.app-brand-logo { display: block; width: 4rem; height: 2rem; flex-shrink: 0; object-fit: contain; fill: #087c91; }
+.entry-mark.entry-mark--brand { width: 4rem; height: 2.25rem; background: transparent; border-radius: 0; }
+.home-brand, .store-brand { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.app-brand-logo__part { transform-box: view-box; transform-origin: 50% 50%; animation: app-brand-assemble 8s cubic-bezier(.22, 1, .36, 1) infinite both; }
+.app-brand-logo__part:nth-child(2) { animation-delay: 60ms; }
+.app-brand-logo__part:nth-child(3) { animation-delay: 120ms; }
+.app-brand-logo__part:nth-child(4) { animation-delay: 240ms; }
+.app-brand-logo__part:nth-child(5) { animation-delay: 320ms; }
+.app-brand-logo__part:nth-child(6) { animation-delay: 400ms; }
+@keyframes app-brand-assemble { 0%, 100% { transform: translateY(8px) scale(.08); opacity: 0; } 10%, 87% { transform: translateY(0) scale(1); opacity: 1; } 95% { transform: translateY(8px) scale(.08); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .app-brand-logo__part { animation: none; transform: none; opacity: 1; } }
