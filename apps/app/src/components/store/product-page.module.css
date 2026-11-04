@@ -1,0 +1,43 @@
+.page { min-width: 0; font-family: var(--font-iranyekanx); }
+.page:global(.store-product-page) { background: var(--patient-soft); padding-top: 0; }
+.page > :global(.store-page-header) { gap: .75rem; padding-block: .75rem; }
+.page > :global(.store-page-header h1) { flex: 1; min-width: 0; font-size: clamp(1rem, 4cqi, 1.25rem); line-height: 1.6; }
+.page :global(.store-detail--panel) { scroll-padding-block: 8rem 1rem; }
+.page :global(.store-detail--panel) > :global(.store-gallery),
+.page :global(.store-detail--panel) > :global(.store-gallery:has(.store-gallery__strip--single)) {
+  height: min(42svh, 24rem); background: transparent;
+}
+.page :global(.store-gallery__slide img) { max-width: none; object-fit: contain; object-position: center; padding: .75rem; }
+.page :global(.store-gallery__strip) { background: var(--patient-surface); border-color: var(--patient-divider); }
+.page :global(.store-detail__sheet) { --store-sheet-gutter: 1rem; box-shadow: none; }
+.page :global(.store-detail__handle-button) { min-height: 3rem; }
+.page :global(.store-detail__title h2) { font-size: clamp(1.25rem, 4.5cqi, 1.5rem); line-height: 1.6; }
+.page :global(.store-lede) { font-size: 1rem; line-height: 1.9; color: var(--patient-muted); }
+.page :global(.store-description p) { font-size: 1rem; line-height: 1.9; }
+.page :global(.store-facts > div) { flex-wrap: wrap; gap: .5rem 1rem; padding: .75rem 1rem; }
+.page :global(.store-facts dt) { font-size: .8125rem; }
+.page :global(.store-facts dd) { font-size: .875rem; text-align: end; }
+.page :global(.store-facts__code) { font-size: .75rem; font-weight: 400; color: var(--patient-muted); }
+.page :global(.store-content-nav) { top: 3rem; gap: .5rem; }
+.page :global(.store-content-nav a) { min-height: 2.75rem; font-size: .8125rem; }
+.page :global(.store-content-nav a[aria-current="true"]) { box-shadow: none; }
+.page :global(.store-detail--panel[data-compact="true"]) { scroll-padding-block-start: 1rem; }
+.page :global(.store-detail--panel[data-compact="true"] .store-detail__handle-button),
+.page :global(.store-detail--panel[data-compact="true"] .store-content-nav) { position: relative; top: auto; }
+.page :global(.store-related .store-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.page :is(a, button, select):focus-visible { outline: 2px solid var(--patient-focus); outline-offset: 3px; }
+.actions:global(.store-purchase-bar) { flex-wrap: wrap; gap: .75rem; padding: 1rem; padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); box-shadow: none; }
+.actions :global(.store-purchase-bar__action) { flex: 1 1 9rem; min-width: 0; }
+.actions :global(.store-purchase-bar__price) { flex: 0 1 auto; min-width: 0; max-width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; }
+.actions :global(.store-purchase-bar__price > span), .actions :global(.store-currency) { font-size: .75rem; line-height: 1.6; }
+.actions :global(.store-icon-button) { min-width: 2.75rem; min-height: 2.75rem; }
+.actions :global(.store-price) { flex-wrap: wrap; }
+.actions :global(.store-price bdi) { overflow-wrap: anywhere; white-space: normal; }
+@media (min-width: 1024px) {
+  .page :global(.store-detail--panel) { display: grid; grid-template-columns: minmax(0, .45fr) minmax(0, .55fr); align-items: start; gap: 1.5rem; padding-block: 1rem; scroll-padding-block-start: 5rem; }
+  .page :global(.store-detail--panel) > :global(.store-gallery),
+  .page :global(.store-detail--panel) > :global(.store-gallery:has(.store-gallery__strip--single)) { height: min(65svh, 30rem); padding-bottom: 0; }
+  .page:global(.store-product-page) :global(.store-detail__sheet[data-expanded]) { min-height: 0; margin-top: 0; padding: 1.5rem; border-radius: 1.5rem; }
+  .page:global(.store-product-page) :global(.store-detail__handle-button) { display: none; }
+  .page :global(.store-content-nav) { top: 0; }
+}

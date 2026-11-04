@@ -13,6 +13,7 @@ import { AddedToCartToast } from "@/components/store/added-to-cart-toast";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { ProductDetailPanel } from "@/components/store/product-detail-panel";
 import { ProductContentSections } from "@/components/store/product-content-sections";
+import styles from "@/components/store/product-page.module.css";
 import { productImageAlt, productImageUrl } from "@/lib/product-image";
 import { ProductPrice, QuantityControl, StoreHeader, StoreState } from "@/components/store/store-ui";
 import { useScreenNavigation } from "@/lib/navigation";
@@ -67,8 +68,8 @@ export default function ProductDetailPage() {
     pushRecent({ productId: product.id, skuId: sku.id, title: product.title, price: sku.currentPriceToman, imageUrl: productImageUrl(product) });
   }, [product, sku, pushRecent]);
   useEffect(() => { if (product) document.title = `${product.title} | دکتر شیرمردی`; }, [product]);
-  if (!product) return <main className="store-page"><StoreHeader title="جزئیات محصول" onBack={() => router.back()} actions={cartAction} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} variant="product" action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
-  if (!sku) return <main className="store-page"><StoreHeader title={product.title} onBack={() => router.back()} actions={cartAction} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
+  if (!product) return <main className={`store-page ${styles.page}`}><StoreHeader title="جزئیات محصول" onBack={() => router.back()} actions={cartAction} /><StoreState title={error ? "محصول در دسترس نیست" : "در حال دریافت محصول…"} description={error ?? undefined} error={!!error} pending={!error} variant="product" action={error ? "تلاش دوباره" : undefined} onAction={() => void load()} /></main>;
+  if (!sku) return <main className={`store-page ${styles.page}`}><StoreHeader title={product.title} onBack={() => router.back()} actions={cartAction} /><StoreState title="محصول قابل انتخاب نیست" description="برای مشاهدهٔ محصولات دیگر به فروشگاه برگردید." action="فروشگاه" onAction={() => router.push("/store")} /></main>;
   const saved = wishlist.includes(sku.id); const current = cart.find((item) => item.skuId === sku.id)?.qty ?? 0;
   const imageUrl = productImageUrl(product);
   const flashNotice = (message: string) => { setNotice(message); if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current); noticeTimer.current = window.setTimeout(() => setNotice(""), 4000); };
@@ -76,7 +77,7 @@ export default function ProductDetailPage() {
   const toggle = async () => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); setError(null); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, sku.id, !saved)); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
   const share = async () => { try { if (navigator.share) { await navigator.share({ title: product.title, url: window.location.href }); } else { await navigator.clipboard.writeText(window.location.href); flashNotice("پیوند محصول کپی شد."); } } catch (cause) { if (!(cause instanceof Error && cause.name === "AbortError")) flashNotice("اشتراک‌گذاری انجام نشد؛ نشانی این صفحه را کپی کنید."); } };
   const quickToggle = async (skuId: string) => { if (!session) { navigateScreen("WishlistScreen"); return; } setBusy(true); try { cacheWishlist(await updateCommerceWishlist(session.authentication.accessToken, skuId, !wishlist.includes(skuId))); } catch (cause) { setError(commerceErrorMessage(cause)); } finally { setBusy(false); } };
-  return <main className="store-page store-product-page"><StoreHeader title={product.title} onBack={() => router.back()} actions={cartAction} />
+  return <main className={`store-page store-product-page ${styles.page}`}><StoreHeader title="جزئیات محصول" onBack={() => router.back()} actions={cartAction} />
     <ProductDetailPanel key={product.id} gallery={<ProductGallery official={imageUrl ? [imageUrl] : []} buyer={[]} title={productImageAlt(product.image, product.title)} />}>
         <div className="store-detail__title"><div><h2>{product.title}</h2></div><div className="store-detail__actions"><Button variant="ghost" className="store-icon-button" aria-label="اشتراک‌گذاری محصول" onClick={() => void share()}><Share2 aria-hidden="true" size={20} /></Button><Button variant="secondary" className="store-icon-button" busy={busy} aria-pressed={saved} aria-label={saved ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"} onClick={() => void toggle()}><Heart aria-hidden="true" size={20} fill={saved ? "currentColor" : "none"} /></Button></div></div>
         {product.skus.length > 1 && <div className="store-variant"><label htmlFor="product-variant">انتخاب نوع محصول</label><select id="product-variant" value={sku.id} disabled={busy} onChange={event => { const url = new URL(window.location.href); url.searchParams.set("sku", event.target.value); window.history.replaceState(null, "", url.toString()); setError(null); }}>
@@ -90,7 +91,7 @@ export default function ProductDetailPage() {
         <p className="store-inline-status" role="status">{saved ? "در علاقه‌مندی‌های شما ذخیره شده است" : notice || (current > 0 ? "این محصول در سبد شماست" : "")}</p>
         {related !== null && related.length > 0 && <section className="store-related" aria-label="محصولات مرتبط"><h3>محصولات مرتبط</h3><div className="store-grid">{related.map((item) => { const itemSku = item.skus[0]; if (!itemSku) return null; return <ProductCard key={item.id} product={item} saved={wishlist.includes(itemSku.id)} inCart={cart.some((entry) => entry.skuId === itemSku.id)} busy={busy} onFavorite={(id) => void quickToggle(id)} />; })}</div></section>}
     </ProductDetailPanel>
-        <ShellAction><div className="store-purchase-bar" role="group" aria-label={`خرید ${product.title}`}>
+        <ShellAction><div className={`store-purchase-bar ${styles.actions}`} role="group" aria-label={`خرید ${product.title}`}>
           <div className="store-purchase-bar__action">
             {current === 0
               ? <Button className="store-full-button" busy={busy} onClick={() => void setQty(1)}><ShoppingCart aria-hidden="true" size={20} />{busy ? "در حال انجام…" : session ? "افزودن به سبد" : "ورود برای خرید"}</Button>

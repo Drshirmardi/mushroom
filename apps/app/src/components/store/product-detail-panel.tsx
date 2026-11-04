@@ -36,7 +36,10 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
     const strip = container.querySelector<HTMLElement>(".store-content-nav");
     let selected: typeof entries[number] | null = null;
     const position = (element: HTMLElement) => root.scrollTop + element.getBoundingClientRect().top - root.getBoundingClientRect().top - root.clientTop;
-    const offset = () => Math.max(handle?.getBoundingClientRect().height ?? 0, strip ? parseFloat(getComputedStyle(strip).top) || 0 : 0) + (strip?.getBoundingClientRect().height ?? 0) + 8;
+    const offset = () => {
+      const handleHeight = handle && getComputedStyle(handle).position === "sticky" ? handle.getBoundingClientRect().height : 0;
+      return strip && getComputedStyle(strip).position === "sticky" ? Math.max(handleHeight, parseFloat(getComputedStyle(strip).top) || 0) + strip.getBoundingClientRect().height + 8 : handleHeight + 8;
+    };
     const clear = () => entries.forEach(({ link }) => link.removeAttribute("aria-current"));
     const onClick = (event: MouseEvent) => {
       const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(".store-content-nav a[href^='#']");
@@ -70,6 +73,7 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
     const keyboard = (event: KeyboardEvent) => { if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) manual(); };
     const resize = new ResizeObserver(() => {
       selected = null;
+      root.dataset.compact = String(root.clientHeight < (handle?.getBoundingClientRect().height ?? 0) + (strip?.getBoundingClientRect().height ?? 0) + 96);
       setExpanded(Boolean(handle?.getBoundingClientRect().height) && root.scrollTop >= position(container) - 2);
       sync();
     });
@@ -87,6 +91,7 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
       root.removeEventListener("pointerdown", manual);
       root.removeEventListener("keydown", keyboard);
       resize.disconnect();
+      delete root.dataset.compact;
       clear();
     };
   }, [children]);

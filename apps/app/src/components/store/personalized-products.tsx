@@ -18,12 +18,13 @@ export function PersonalizedProducts({ accessToken, renderProduct }: { accessTok
     return () => { cancelled = true; };
   }, [accessToken, retry]);
   if (!accessToken) return null;
-  if (error) return <aside className="store-personal-hint" aria-label="پیشنهادهای مخصوص شما"><p>پیشنهادهای مرتبط با شما دریافت نشد.</p><button type="button" onClick={() => setRetry(value => value + 1)}>تلاش دوباره</button></aside>;
+  if (error) return <aside className="store-personal-hint store-personal-hint--compact" aria-label="پیشنهادهای مخصوص شما"><p>پیشنهادهای مرتبط با شما دریافت نشد.</p><button type="button" onClick={() => setRetry(value => value + 1)}>تلاش دوباره</button></aside>;
   if (!data) return <LoadingState label="در حال دریافت پیشنهادهای شما…" variant="grid" />;
   if (data.status === "READY" && data.items.length > 0) return <section className="store-personal" aria-label="محصولات مرتبط با مزاج شما">
     <div className="store-personal__intro"><Leaf size={18} aria-hidden="true" /><p>بر اساس نتیجهٔ ارزیابی شما{data.primary && data.secondary ? `؛ مزاج اول ${labels[data.primary]}، مزاج دوم ${labels[data.secondary]}` : ""}</p><Link href="/mezaj">مشاهدهٔ نتیجه</Link></div>
     <StoreCollection title="محصولات مرتبط با شما" id="store-personal-products">{data.items.map(renderProduct)}</StoreCollection>
   </section>;
   const missing = data.status === "NO_RESULT";
-  return <aside className="store-personal-hint" aria-label="پیشنهادهای مخصوص شما"><Leaf size={19} aria-hidden="true" /><p>{missing ? "برای دیدن محصولات مرتبط با مزاجت، ارزیابی‌ات را کامل کن." : data.status === "REVIEW_REQUIRED" ? "برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد." : "هنوز پیشنهاد محصولی برای مزاج شما آماده نشده است؛ می‌توانید همهٔ محصولات را ببینید."}</p>{missing && <Link href="/assessment">شروع ارزیابی</Link>}</aside>;
+  if (!missing && data.status !== "REVIEW_REQUIRED") return null;
+  return <aside className="store-personal-hint store-personal-hint--compact" aria-label="پیشنهادهای مخصوص شما"><Leaf size={19} aria-hidden="true" /><p>{missing ? "برای دیدن محصولات مرتبط با مزاجت، ارزیابی‌ات را کامل کن." : "برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد."}</p>{missing && <Link href="/assessment">شروع ارزیابی</Link>}</aside>;
 }

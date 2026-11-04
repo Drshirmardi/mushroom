@@ -1,8 +1,8 @@
 export async function installStoreProductFixture(page) {
-  const state = { quantities: {}, writes: [], rejectCart: false, long: false, failProduct: false, holdProduct: false, failImage: false, empty: false, recommendations: false };
+  const state = { quantities: {}, writes: [], rejectCart: false, long: false, longTitle: false, failProduct: false, holdProduct: false, failImage: false, empty: false, recommendations: false, recommendationStatus: 'READY', failRecommendations: false };
   const category = { id: 'cat1', name: 'محصولات سلامت', slug: 'health' };
   const sku = (id, title, price) => ({ id, code: id, title, currentPriceToman: price, currentTaxToman: '0' });
-  const product = () => ({ id: 'p1', title: 'روغن آزمایشی مراقبت و سلامت', slug: 'sample', category,
+  const product = () => ({ id: 'p1', title: 'روغن آزمایشی مراقبت و سلامت' + (state.longTitle ? ' با نام بسیار بلند برای بررسی خوانایی و حفظ اطلاعات مهم'.repeat(2) : ''), slug: 'sample', category,
     image: { contentPath: '/v1/commerce/products/p1/images/image1', altText: 'تصویر کالای آزمایشی' },
     skus: [sku('s1', 'بسته کوچک', '12500'), sku('s2', 'بسته بزرگ', '25000')],
     content: { brand: 'برند آزمایشی', manufacturer: 'تولیدکننده آزمایشی', shortDescription: 'معرفی کوتاه واقعی محصول',
@@ -27,7 +27,7 @@ export async function installStoreProductFixture(page) {
     if (path.endsWith('/cart')) return send(cart());
     if (path.endsWith('/wishlist')) return send({ items: [] });
     if (path.endsWith('/commerce/addresses')) return send([]);
-    if (path.endsWith('/commerce/recommendations')) return send({ status: 'READY', items: state.recommendations ? [product()] : [] });
+    if (path.endsWith('/commerce/recommendations')) return send({ status: state.recommendationStatus, items: state.recommendations ? [product()] : [] }, state.failRecommendations ? 503 : 200);
     if (path.endsWith('/content/banners')) return send({ items: [{ id: 'b1', title: 'بنر آزمایشی', altText: 'بنر آزمایشی', contentPath: '/v1/content/banners/b1/image', href: '/store?view=all' }] });
     if (path.endsWith('/images/image1') || path.endsWith('/b1/image')) return route.fulfill({ status: state.failImage ? 404 : 200, headers, contentType: 'image/svg+xml', body: state.failImage ? '' : picture });
     if (path.endsWith('/commerce/products/p1')) {

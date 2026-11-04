@@ -203,9 +203,6 @@ function StoreCatalog() {
     </div>
     {(accountError || deliveryError) && <div className="wallet-notice wallet-notice--info" role="status"><div><p>{deliveryError ? "آدرس‌های شما دریافت نشدند." : "سبد و علاقه‌مندی‌ها دریافت نشدند."} {deliveryError ?? accountError}</p><Button variant="ghost" onClick={() => setAccountRetry(value => value + 1)}>دریافت دوبارهٔ اطلاعات حساب</Button></div></div>}
     {favoriteError && <div role="alert" className="store-state store-state--error"><p>ذخیرهٔ علاقه‌مندی انجام نشد. {favoriteError}</p></div>}
-    {!isFiltering && (bannerLoading ? <LoadingState variant="card" label="در حال دریافت بنرهای فروشگاه…"><SkeletonBox className="my-4 h-[180px] w-full rounded-2xl" /></LoadingState> : bannerError ? <div role="alert" className="store-personal-hint"><p>بنرهای فروشگاه دریافت نشد.</p><Button variant="ghost" onClick={() => { setBannerLoading(true); setBannerError(false); setBannerRetry(value => value + 1); }}>تلاش دوباره</Button></div> : <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />)}
-    {!isFiltering && <StoreShortcuts />}
-    {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} />}
     {categoryId && <div className="store-catalog-tools"><span>نمایش یک دستهٔ محصول</span><Button variant="ghost" onClick={() => updateCatalog({ category: null, page: null })}>همهٔ دسته‌ها<X size={15} aria-hidden="true" /></Button></div>}
     {!products && !error && <LoadingState label="در حال دریافت محصولات…" variant="grid" />}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}
@@ -227,6 +224,9 @@ function StoreCatalog() {
         <PatientPagination page={page} pageSize={CATALOG_PAGE_SIZE} total={products.total} onChange={next => { focusResults.current = true; updateCatalog({ page: next > 1 ? String(next) : null }); }} />
       </div>}
     </div>
+    {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} />}
+    {!isFiltering && (bannerLoading ? <LoadingState variant="card" label="در حال دریافت بنرهای فروشگاه…"><SkeletonBox className="my-4 h-[180px] w-full rounded-2xl" /></LoadingState> : bannerError ? <div role="alert" className="store-personal-hint"><p>بنرهای فروشگاه دریافت نشد.</p><Button variant="ghost" onClick={() => { setBannerLoading(true); setBannerError(false); setBannerRetry(value => value + 1); }}>تلاش دوباره</Button></div> : <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />)}
+    {!isFiltering && <StoreShortcuts />}
     <AnimatePresence>
       {deliveryOpen && <AddressSheet
         authenticated={!!session}

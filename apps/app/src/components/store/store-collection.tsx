@@ -108,7 +108,7 @@ export function StoreCollection({ title, id, onViewAll, railClassName, header, c
       <div ref={rail} id={`${id}-rail`} className={`store-product-rail${dragging ? " store-product-rail--dragging" : ""}${railClassName ? ` ${railClassName}` : ""}`}
       onScroll={updateEdges} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag} onPointerLeave={endDrag} onWheel={cancelInertia}
       onDragStart={(event) => event.preventDefault()} onClickCapture={onClickCapture}
-      tabIndex={0} role="region" aria-labelledby={id}>{children}</div>
+      tabIndex={0} role="group" aria-labelledby={id}>{children}</div>
       {(edges.previous || edges.next) && <>
         <Button variant="ghost" className="store-collection__arrow store-collection__arrow--previous"
           aria-label={`محصولات قبلیِ ${title}`} aria-controls={`${id}-rail`} disabled={!edges.previous} onClick={() => move(false)}>

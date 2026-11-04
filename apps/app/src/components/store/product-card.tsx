@@ -37,7 +37,7 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, onFavor
     <div className="store-product__body">
       <Link href={href} className="store-product__title"><h2>{product.title}</h2></Link>
       {product.category?.name && <Link href={`/store?view=all&category=${encodeURIComponent(product.category.id)}`} className="store-category-link">{product.category.name}</Link>}
-      {skuOverride?.title && <p className="text-xs text-muted-foreground">{skuOverride.title}</p>}
+      {sku.title && <p className="store-product__variant">{sku.title}</p>}
       <div className="store-product__footer"><ProductPrice amount={BigInt(sku.currentPriceToman)} /><Link href={href} className="store-product__details" aria-label={`جزئیات و انتخاب ${product.title}`}><ArrowUpLeft size={18} strokeWidth={1.5} aria-hidden="true" /></Link></div>
     </div>
   </article>;
