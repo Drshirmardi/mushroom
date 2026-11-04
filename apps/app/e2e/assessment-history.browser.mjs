@@ -25,7 +25,7 @@ await page.route('**/v1/**', async route => {
 });
 try {
   await page.goto(base + '/assessment?view=history');
-  await page.getByRole('link', { name: 'ادامهٔ پاسخ‌ها', exact: true }).click();
+  await page.getByRole('link', { name: 'ادامه', exact: true }).click();
   await page.getByRole('textbox').fill('پاسخ ذخیره‌نشده');
   await page.goBack({ waitUntil: 'commit' });
   if (before) {

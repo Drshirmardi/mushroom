@@ -28,13 +28,13 @@ export class PatientAssessmentsService {
       const where = { ...accessibleAssessmentWhere, patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, ...(query.state ? { state: query.state } : {}) };
       const [rows, total] = await Promise.all([
         tx.patientAssessmentSubmission.findMany({ where, orderBy: [{ startedAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize,
-          select: { id: true, accessGrantId: true, assessmentVersionId: true, attemptNumber: true, revision: true, state: true, startedAt: true, updatedAt: true, completedAt: true, invalidatedAt: true,
+          select: { accessGrant: { select: { educationalCoupleParticipant: { select: { session: { select: { marriageRequest: { select: { id: true, clinicId: true } } } } } } } }, id: true, accessGrantId: true, assessmentVersionId: true, attemptNumber: true, revision: true, state: true, startedAt: true, updatedAt: true, completedAt: true, invalidatedAt: true,
             assessmentVersion: { select: { assessmentKey: true, versionNumber: true, locale: true, title: true, status: true } } } }),
         tx.patientAssessmentSubmission.count({ where }),
       ]);
       const processable = await processableAssessmentGrants(tx, rows.flatMap(row => row.accessGrantId ? [row.accessGrantId] : []));
       await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.HISTORY_READ, patient.id, context, 'PATIENT_ASSESSMENT_HISTORY');
-      return { items: rows.map(({ assessmentVersion: version, invalidatedAt, accessGrantId, ...row }) => ({ ...row, assessmentKey: version.assessmentKey,
+      return { items: rows.map(({ assessmentVersion: version, invalidatedAt, accessGrantId, accessGrant, ...row }) => ({ ...row, marriageRequestId: accessGrant?.educationalCoupleParticipant?.session.marriageRequest?.clinicId === patient.clinicId ? accessGrant.educationalCoupleParticipant.session.marriageRequest.id : null, assessmentKey: version.assessmentKey,
         versionNumber: version.versionNumber, locale: version.locale, title: version.title,
         resumeAvailable: row.state === 'IN_PROGRESS' && invalidatedAt === null && version.status !== 'DRAFT' && (!accessGrantId || processable.has(accessGrantId)),
       })), page: query.page, pageSize: query.pageSize, total };

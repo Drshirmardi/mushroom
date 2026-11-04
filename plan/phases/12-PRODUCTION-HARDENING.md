@@ -533,4 +533,4 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-VP05 — User-corrected rounded glass restored; flat full-width nav strip removed with measured scroll clearance; targeted dev/production browser/types/build PASS2026-11-04; actual device pending.
 
 - [x] F12-FE01-AH01 — Additive invitation filters/history-state helper/OpenAPI client; actual disposable PostgreSQL privacy/older-pending/clinic and types/contracts PASS2026-11-04.
-- [ ] F12-FE01-AH02 — Approved action-first assessment hub UI and scoped browser verification; depends AH01.
+- [x] F12-FE01-AH02 — Real-data action-first page/two tabs, exact invitation context, independent histories/legacy access; scoped unit/types/contracts/lint/build/local browser PASS2026-11-04; online/device acceptance pending.

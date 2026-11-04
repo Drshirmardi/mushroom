@@ -11,6 +11,7 @@ export class PatientAssessmentHistoryQueryDto {
   @IsOptional() @IsIn(['IN_PROGRESS', 'COMPLETE', 'INVALIDATED']) state?: 'IN_PROGRESS' | 'COMPLETE' | 'INVALIDATED';
 }
 export class PatientAssessmentHistoryItemDto {
+  @ApiProperty({ type: String, nullable: true, format: 'uuid', description: 'Exact marriage request context for this owned attempt, if any.' }) marriageRequestId!: string | null;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) assessmentVersionId!: string;
   @ApiProperty() assessmentKey!: string;

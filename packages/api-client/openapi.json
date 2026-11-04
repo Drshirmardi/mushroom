@@ -38664,6 +38664,12 @@
       "PatientAssessmentHistoryItemDto": {
         "type": "object",
         "properties": {
+          "marriageRequestId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Exact marriage request context for this owned attempt, if any."
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -38716,6 +38722,7 @@
           }
         },
         "required": [
+          "marriageRequestId",
           "id",
           "assessmentVersionId",
           "assessmentKey",

@@ -7370,6 +7370,11 @@ export interface components {
             expectedRevision: number;
         };
         PatientAssessmentHistoryItemDto: {
+            /**
+             * Format: uuid
+             * @description Exact marriage request context for this owned attempt, if any.
+             */
+            marriageRequestId: string | null;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
