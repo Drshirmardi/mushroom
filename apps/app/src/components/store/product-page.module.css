@@ -26,8 +26,11 @@
 .page :global(.store-detail--panel[data-compact="true"] .store-content-nav) { position: relative; top: auto; }
 .page :global(.store-related .store-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .page :is(a, button, select):focus-visible { outline: 2px solid var(--patient-focus); outline-offset: 3px; }
-.actions:global(.store-purchase-bar) { flex-wrap: wrap; gap: .75rem; padding: 1rem; padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); box-shadow: none; }
-.actions :global(.store-purchase-bar__action) { flex: 1 1 9rem; min-width: 0; }
+.actions:global(.store-purchase-bar) { flex-wrap: wrap; justify-content: space-between; gap: .75rem; padding: 1rem; padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); box-shadow: none; }
+.actions :global(.store-purchase-bar__action) { flex: 1 1 9rem; min-width: 0; max-width: 15rem; }
+.actions .addButton { min-height: 2.75rem; padding: .5rem 1rem; border-radius: .875rem; font-size: .875rem; line-height: 1.5rem; }
+.actions .addButton[aria-busy="true"] { background: color-mix(in srgb, var(--patient-action) 22%, var(--patient-surface)); color: var(--patient-action); cursor: wait; }
+.actions .addButton :global([data-heartbeat]) { margin: 0; width: 2.75rem; height: 1rem; }
 .actions :global(.store-purchase-bar__price) { flex: 0 1 auto; min-width: 0; max-width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; }
 .actions :global(.store-purchase-bar__price > span), .actions :global(.store-currency) { font-size: .75rem; line-height: 1.6; }
 .actions :global(.store-icon-button) { min-width: 2.75rem; min-height: 2.75rem; }

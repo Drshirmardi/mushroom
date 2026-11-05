@@ -94,7 +94,7 @@ export default function ProductDetailPage() {
         <ShellAction><div className={`store-purchase-bar ${styles.actions}`} role="group" aria-label={`خرید ${product.title}`}>
           <div className="store-purchase-bar__action">
             {current === 0
-              ? <Button className="store-full-button" busy={busy} onClick={() => void setQty(1)}><ShoppingCart aria-hidden="true" size={20} />{busy ? "در حال انجام…" : session ? "افزودن به سبد" : "ورود برای خرید"}</Button>
+              ? <Button className={`store-full-button ${styles.addButton}`} busy={busy} aria-label={session ? "افزودن به سبد" : "ورود برای خرید"} onClick={() => void setQty(1)}><ShoppingCart aria-hidden="true" size={20} />{session ? "افزودن به سبد" : "ورود برای خرید"}</Button>
               : <QuantityControl value={current} min={0} busy={busy} label={product.title} onChange={(value) => void setQty(value)} />}
           </div>
           <div className="store-purchase-bar__price"><span>{current > 1 ? `جمع ${new Intl.NumberFormat("fa-IR").format(current)} عدد` : "قیمت محصول"}</span><ProductPrice amount={BigInt(sku.currentPriceToman) * BigInt(Math.max(current, 1))} large /></div>

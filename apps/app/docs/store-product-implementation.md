@@ -1,5 +1,7 @@
 # Approved storefront implementation
 
+F12-FE01-ST04 DONE/software, sole /root review PASS, claim released: owner-requested compact add-to-cart button (44px minimum,240px maximum width), lighter busy background and decorative ECG only. Existing shared Button behavior used through accessible aria-label; no shared-button or other-operation changes. Held-response production browser verifies stable size, no visible text/cart icon while busy, one ECG, lighter background, disabled/single-flight behavior, retry and accessible name. Behavior7 scenarios, seven-width layout/zoom/axe regression, optimized build/types, scoped lint delta and diff check PASS. Busy screenshot: `.local/store-product-implementation/add-button-busy.png`. Existing user billing/AGENTS changes preserved. Deployed/physical-device final appearance remains unverified; no next task.
+
 Scope: apps/app only. User-approved plan and skills: Product UX Expert, UI Styling, UI UX Pro Max, Mobile Responsive, Responsive Design. Preserve mobile draggable panel and current light-blue identity. No API/backend/dependency/price/content changes. Preserve pre-existing billing, AGENTS and other worktree changes; protected slider-data.ts and justforcheck.md excluded.
 
 Sequential ownership: sole /root. F12-FE01-ST02 and F12-FE01-ST03 DONE/software; claims released. Each package received targeted verification, evidence, review and its own commit. This app-local ledger follows the owner's explicit apps/app-only boundary; root plan files are already user-modified and remain untouched.

@@ -18,7 +18,8 @@ export async function installStoreProductFixture(page) {
     if (request.method() !== 'GET') {
       if (!path.endsWith('/cart') || request.method() !== 'PUT') throw Error(`Unexpected fixture mutation ${path}`);
       const body = request.postDataJSON(); state.writes.push(body);
-      await new Promise(resolve => setTimeout(resolve, 150));
+      if (state.holdCart) await new Promise(resolve => { state.releaseCart = resolve; });
+      else await new Promise(resolve => setTimeout(resolve, 150));
       if (state.rejectCart) return send({ code: 'INVALID_QUANTITY' }, 422);
       state.quantities[body.skuId] = body.quantity; return send(cart());
     }
