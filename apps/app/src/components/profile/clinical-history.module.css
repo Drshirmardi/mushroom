@@ -1,0 +1,113 @@
+.content {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  min-width: 0;
+}
+.intro {
+  color: var(--patient-muted);
+  font-size: 0.875rem;
+  line-height: 1.9;
+}
+.treatment {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  min-height: 2.75rem;
+  border: 1px solid var(--patient-divider);
+  border-radius: 1rem;
+  color: var(--patient-action);
+  background: var(--patient-soft);
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+.treatment span {
+  flex: 1;
+  min-width: 0;
+}
+.treatment svg {
+  flex-shrink: 0;
+}
+.heading {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.list {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--patient-divider);
+  border-radius: 1rem;
+  background: var(--patient-surface);
+}
+.card header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.card header > svg {
+  flex-shrink: 0;
+  color: var(--patient-action);
+}
+.card h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.8;
+}
+.summary {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  line-height: 1.9;
+  max-width: 65ch;
+}
+.card summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  color: var(--patient-action);
+  font-size: 0.875rem;
+}
+.card summary::marker {
+  content: '';
+}
+.card summary svg {
+  flex-shrink: 0;
+}
+.card details[open] summary svg {
+  transform: rotate(180deg);
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--patient-divider);
+  border-radius: 1rem;
+  text-align: center;
+}
+.empty > svg {
+  color: var(--patient-action);
+}
+.empty p {
+  font-size: 0.875rem;
+  line-height: 1.9;
+  color: var(--patient-muted);
+}
+.content :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--patient-focus);
+  outline-offset: 3px;
+}
+.content :is(a, button, summary) {
+  scroll-margin-block: 5rem 7rem;
+}
