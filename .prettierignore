@@ -1,0 +1,39 @@
+# Dependencies, build output, caches and reports
+**/node_modules/**
+**/.next/**
+**/.turbo/**
+**/dist/**
+**/dist-ssr/**
+**/out/**
+**/.output/**
+**/coverage/**
+**/test-results/**
+**/playwright-report/**
+**/*.tsbuildinfo
+.pnpm-store/**
+.playwright-mcp/**
+.local/**
+artifacts/**
+
+# Generated API contracts and clients
+apps/api/generated/**
+apps/api/src/generated/**
+packages/api-client/openapi.json
+**/*.generated.*
+**/next-env.d.ts
+pnpm-lock.yaml
+
+# Historical SQL must retain its original contents
+apps/api/prisma/migrations/**
+
+# Archived content and local tooling
+Archive/**
+data-for/**
+graphify-out/**
+.agents/**
+.codex/**
+.cursor/**
+
+# Repository-protected files
+apps/app/src/components/home/slider-data.ts
+justforcheck.md
