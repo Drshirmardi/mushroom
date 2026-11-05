@@ -591,5 +591,73 @@ class InstallationTests(unittest.TestCase):
         self.assertNotEqual(corrupted.returncode, 0)
 
 
+    def test_panel_refuses_non_interactive_terminal_without_running_actions(self):
+        with patch.object(manager.sys, 'stdin', io.StringIO('1\nq\n')), \
+                patch.object(manager, 'run_panel') as runner:
+            with self.assertRaisesRegex(manager.InstallationError, 'interactive terminal'):
+                manager.panel(self.config)
+            runner.assert_not_called()
+
+    def test_panel_renders_state_without_exposing_secret_values(self):
+        environment_root = Path(self.config['environments']['dev']['home']) / 'mushroom/dev'
+        manager.write_environment(self.config, 'dev', base=environment_root)
+        secret = (environment_root / 'secrets/jwt_access_secret').read_text().strip()
+        text = manager.render_panel(self.config, manager.panel_menu(self.config))
+        self.assertIn('dev', text)
+        self.assertIn('prepared', text)
+        self.assertIn('[q] quit', text)
+        self.assertIn('Doctor checks', text)
+        self.assertNotIn(secret, text)
+
+    def test_panel_menu_keys_are_unique_and_storage_needs_dev(self):
+        menu = manager.panel_menu(self.config)
+        self.assertEqual(len({action.key for action in menu}), len(menu))
+        self.assertTrue(all(callable(action.handler) and action.label for action in menu))
+        self.assertTrue(any(action.handler is manager.panel_storage for action in menu))
+        production_only = {'environments': {'production': self.config['environments']['production']}}
+        self.assertFalse(any(action.handler is manager.panel_storage
+                             for action in manager.panel_menu(production_only)))
+
+    def test_panel_dispatches_only_listed_actions_and_writes_audit_log(self):
+        calls = []
+        action = manager.PanelAction('1', 'fixture action',
+                                     lambda config, environment=None: calls.append(environment))
+        answers = iter(['9', '1', 'q'])
+        output = io.StringIO()
+        with patch.object(manager, 'STATE', self.root):
+            manager.run_panel(self.config, actions=[action], reader=lambda prompt: next(answers),
+                              emit=lambda text: output.write(text))
+        self.assertEqual(calls, [None])
+        self.assertIn('Unknown selection: 9', output.getvalue())
+        log = (self.root / 'panel.log').read_text(encoding='utf-8')
+        self.assertIn('action=1 environment=-', log)
+        self.assertNotIn('jwt', log)
+        if os.name != 'nt':
+            self.assertEqual((self.root / 'panel.log').stat().st_mode & 0o777, 0o600)
+
+    def test_panel_destructive_action_needs_exact_typed_confirmation(self):
+        calls = []
+        action = manager.PanelAction('7', 'fixture restart',
+                                     lambda config, environment=None: calls.append(environment), True, True)
+        answers = iter(['7', 'dev', 'wrong', '7', 'dev', 'dev', 'q'])
+        with patch.object(manager, 'STATE', self.root), patch.object(manager, 'panel_audit') as audit:
+            manager.run_panel(self.config, actions=[action], reader=lambda prompt: next(answers),
+                              emit=lambda text: None)
+        self.assertEqual(calls, ['dev'])
+        self.assertEqual(audit.call_count, 1)
+
+    def test_panel_environment_choice_is_canonical_and_rejects_injection(self):
+        self.assertEqual(manager.choose_environment(self.config, lambda prompt: 'DEV'), 'dev')
+        self.assertIsNone(manager.choose_environment(self.config, lambda prompt: ''))
+        with self.assertRaises(manager.InstallationError):
+            manager.choose_environment(self.config, lambda prompt: 'dev; rm -rf /')
+
+    def test_panel_exits_cleanly_on_end_of_input(self):
+        def reader(prompt):
+            raise EOFError()
+        with patch.object(manager, 'STATE', self.root):
+            manager.run_panel(self.config, actions=[], reader=reader, emit=lambda text: None)
+
+
 if __name__ == '__main__':
     unittest.main()

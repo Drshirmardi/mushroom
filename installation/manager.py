@@ -2,6 +2,7 @@
 """Server preparation and operations. Python standard library only; Ubuntu 24.04."""
 import argparse
 import base64
+from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import getpass
@@ -870,6 +871,220 @@ def configure(config, environment=None):
     print('Configuration saved. Rerun install if preparation is pending, then run the corresponding GitHub workflow to apply runtime changes.')
 
 
+PanelAction = namedtuple('PanelAction', 'key label handler needs_environment destructive', defaults=(False, False))
+
+
+def setup_chat(config, environment=None):
+    """Install the current bundle copy, then prepare one or every registered chat engine."""
+    persist_bundle()
+    for name in ([environment] if environment else list(config['environments'])):
+        require(name in config['environments'], 'Select an installed --environment.')
+        prepare_chat(config, name)
+    configure_proxy(config)
+    print('Chat prepared. Rerun the environment deployment, then mushroom verify.')
+
+
+def setup_storage(config):
+    """Install the current bundle copy, then save the dev object-storage profile."""
+    require('dev' in config['environments'], 'Object storage configuration needs an installed dev environment.')
+    persist_bundle()
+    configure_storage(config, 'dev')
+
+
+def panel_audit(action, environment=None):
+    """Record only the requested action; values, paths and secrets are never written."""
+    path = STATE / 'panel.log'
+    require(not path.is_symlink(), 'Panel log cannot be a symlink.')
+    STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
+    stamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    line = f'{stamp} action={action} environment={environment or "-"}\n'
+    existed = path.exists()
+    descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+    try:
+        os.write(descriptor, line.encode('utf-8'))
+    finally:
+        os.close(descriptor)
+    if not existed:
+        os.chmod(path, 0o600)
+
+
+def environment_state(config, environment):
+    """Read prepared/deployed/chat markers for display; secrets are never loaded."""
+    spec = config['environments'][environment]
+    root = Path(spec['home']) / 'mushroom' / environment
+    prepared = False
+    values = {}
+    runtime = root / 'runtime.env'
+    if runtime.is_file() and not runtime.is_symlink():
+        try:
+            values = load_env(runtime)
+            prepared = (values.get('MUSHROOM_ENV_ROOT') == str(root)
+                        and values.get('COMPOSE_PROJECT_NAME') == f'mushroom-{environment}')
+        except (InstallationError, OSError, UnicodeDecodeError):
+            prepared = False
+    return {'prepared': prepared, 'deployed': (root / 'state/current').is_file(),
+            'chat': (root / 'state/chat.initialized').is_file(),
+            'firstAdmin': (root / 'bootstrap/first-run.json').is_file(),
+            'media': values.get('PRODUCT_MEDIA_STORAGE_MODE', 'disabled') if prepared else 'unknown'}
+
+
+def render_panel(config, actions, note=None):
+    """Pure rendering: state comes from files, never from secret values."""
+    steps = config.get('steps') or {}
+    lines = [f'Mushroom panel - {config.get("domain", "unconfigured host")}',
+             'server ready: ' + ('yes' if steps.get('serverReady') else 'no')
+             + '   host packages: ' + ('yes' if steps.get('packages') else 'no'), '']
+    for environment in config['environments']:
+        state = environment_state(config, environment)
+        flags = [name for name, active in (
+            ('prepared', state['prepared']), ('deployed', state['deployed']), ('chat', state['chat']),
+            ('first-admin-pending', state['firstAdmin']),
+            ('backup', bool((config['environments'][environment] or {}).get('backupEnabled')))) if active]
+        flags.append('media=' + str(state['media']))
+        lines.append(f'  {environment:<12} ' + ' '.join(flags))
+    lines.append('')
+    lines.extend('  [' + action.key + '] ' + action.label
+                 + ('  (typed confirmation)' if action.destructive else '') for action in actions)
+    lines.append('  [q] quit')
+    if note:
+        lines.extend(['', '* ' + str(note)])
+    return '\n'.join(lines) + '\n'
+
+
+def choose_environment(config, reader):
+    names = list(config['environments'])
+    answer = reader('Environment (' + '/'.join(names) + '): ').strip().lower()
+    if not answer:
+        return None
+    require(answer in names, 'Unknown environment: ' + answer)
+    return answer
+
+
+def typed_confirmation(prompt, expected, reader):
+    return reader(f'{prompt} Type "{expected}" to continue: ').strip() == expected
+
+
+def panel_status(config, environment=None):
+    run(compose_command(config, environment) + ['ps'])
+
+
+def panel_logs(config, environment=None):
+    run(compose_command(config, environment) + ['logs', '--tail', '100'])
+
+
+def panel_doctor(config, environment=None):
+    doctor(config)
+
+
+def panel_restart(config, environment=None):
+    run(compose_command(config, environment) + ['restart'])
+
+
+def panel_chat(config, environment=None):
+    setup_chat(config, environment)
+
+
+def panel_configure(config, environment=None):
+    configure(config, environment)
+
+
+def panel_storage(config, environment=None):
+    setup_storage(config)
+
+
+def panel_backup(config, environment=None):
+    backup(config, environment)
+
+
+def panel_github(config, environment=None):
+    github_handoff(config)
+
+
+def panel_proxy(config, environment=None):
+    configure_proxy(config)
+
+
+def panel_install(config, environment=None):
+    install(config)
+
+
+def panel_menu(config):
+    """Every entry calls an existing operation; the panel adds no new behaviour."""
+    actions = [
+        PanelAction('1', 'Environment status (docker compose ps)', panel_status, True),
+        PanelAction('2', 'Recent container logs', panel_logs, True),
+        PanelAction('3', 'Doctor checks (DNS/TLS/secrets/deployment)', panel_doctor),
+        PanelAction('4', 'Restart environment', panel_restart, True, True),
+        PanelAction('5', 'Prepare chat engine and proxy', panel_chat, True, True),
+        PanelAction('6', 'Configure domains/runtime', panel_configure, True),
+        PanelAction('7', 'Configure dev object storage', panel_storage),
+        PanelAction('8', 'Run encrypted backup now', panel_backup, True),
+        PanelAction('9', 'Print GitHub handoff summary', panel_github),
+        PanelAction('10', 'Re-apply proxy/TLS configuration', panel_proxy, False, True),
+        PanelAction('11', 'Resume full installation', panel_install, False, True),
+    ]
+    if 'dev' not in config['environments']:
+        actions = [action for action in actions if action.handler is not panel_storage]
+    return actions
+
+
+def run_panel(config, *, actions=None, reader=None, confirm=None, emit=print):
+    """Menu loop with injectable input/output so it is testable without a terminal."""
+    actions = panel_menu(config) if actions is None else actions
+    reader = reader or terminal_input
+    confirm = confirm or (lambda prompt, expected: typed_confirmation(prompt, expected, reader))
+    by_key = {str(action.key): action for action in actions}
+    note = None
+    while True:
+        emit(render_panel(config, actions, note))
+        note = None
+        try:
+            selection = reader('Select: ').strip().lower()
+        except EOFError:
+            return
+        if selection in ('q', 'quit', 'exit'):
+            return
+        action = by_key.get(selection)
+        if action is None:
+            note = 'Unknown selection: ' + (selection or '(empty)')
+            continue
+        environment = None
+        if action.needs_environment:
+            try:
+                environment = choose_environment(config, reader)
+            except EOFError:
+                return
+            except InstallationError as error:
+                note = str(error)
+                continue
+            if environment is None:
+                continue
+        if action.destructive and not confirm(f'{action.label} ({environment or "all environments"}).',
+                                              environment or 'install'):
+            note = 'Cancelled; nothing changed.'
+            continue
+        panel_audit(action.key, environment)
+        try:
+            action.handler(config, environment)
+        except InstallationError as error:
+            note = f'{action.label} failed: {error}'
+        except KeyboardInterrupt:
+            note = 'Cancelled.'
+        else:
+            note = None
+
+
+def panel(config):
+    """Interactive terminal panel; non-interactive callers must use a subcommand."""
+    require(sys.stdin.isatty() and sys.stdout.isatty(),
+            'The panel needs an interactive terminal. Use "sudo mushroom status|doctor|logs" for non-interactive checks.')
+    try:
+        run_panel(config)
+    except KeyboardInterrupt:
+        print('\nPanel closed.')
+    print()
+
+
 def compose_command(config, environment):
     spec = config['environments'][environment]
     root = Path(spec['home']) / 'mushroom' / environment
@@ -1123,7 +1338,7 @@ def lock():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['install', 'setup-chat', 'setup-storage', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
+    parser.add_argument('command', nargs='?', choices=['install', 'panel', 'setup-chat', 'setup-storage', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
     parser.add_argument('--environment', choices=ENVIRONMENTS)
     parser.add_argument('--repository', default=str(BUNDLE))
     parser.add_argument('--current', action='store_true', help='Audit existing .env key names without displaying values')
@@ -1139,6 +1354,8 @@ def main():
             'Only Ubuntu 24.04 is supported.')
     with lock():
         path = STATE / 'installation.json'
+        if args.command is None:
+            args.command = 'panel' if path.exists() else 'install'
         if path.exists():
             config = json.loads(path.read_text())
             require(config.get('version') == 1, 'Unsupported installation state version.')
@@ -1148,17 +1365,13 @@ def main():
             save(config)
         if args.command == 'install':
             install(config)
+        elif args.command == 'panel':
+            panel(config)
         elif args.command == 'setup-chat':
-            persist_bundle()
-            for environment in ([args.environment] if args.environment else config['environments']):
-                require(environment in config['environments'], 'Select an installed --environment.')
-                prepare_chat(config, environment)
-            configure_proxy(config)
-            print('Chat prepared. Rerun the environment deployment, then mushroom verify.')
+            setup_chat(config, args.environment)
         elif args.command == 'setup-storage':
             require(args.environment == 'dev', 'Use setup-storage --environment dev; production storage remains disabled.')
-            persist_bundle()
-            configure_storage(config, args.environment)
+            setup_storage(config)
         elif args.command == 'configure':
             configure(config, args.environment)
         elif args.command in ('doctor', 'verify'):

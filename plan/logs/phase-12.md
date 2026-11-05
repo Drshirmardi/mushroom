@@ -6216,6 +6216,44 @@ Current verification: API source/test, app and dashboard types PASS; app/dashboa
 
 Operational boundaries: no manual server/database operation performed. Dev rollout must back up its database, apply pending migrations before the new API and preserve existing seeded marker; rerunning development seed against edited physician schedules can still fail its exclusion constraint. Live bank-provider acceptance remains pending. Push to dev can activate the configured shared-dev CD workflow; remote execution/result is separate from local verification. Broader F12-FE01 remains REWORK, no next task started.
 
+## F12-T02-I07 — Interactive installer panel
+
+Task ID: F12-T02-I07
+Completed at: 2026-11-01 01:55 +03:30
+Agent/Thread: Codex /root (sole agent)
+Batch ID: F12-B16
+Depends on: F12-T02-I01…I06 DONE
+Reviewed by: Codex /root; source/combined-diff and acceptance review PASS
+Authority: direct owner request ("calling the tool should open a panel and everything is controlled from that terminal"); owner selected the plain ANSI menu over the current core instead of a curses TUI. ADR-0046.
+
+Changed files:
+- installation/manager.py — `panel`, `run_panel`, `render_panel`, `environment_state`, `choose_environment`, `typed_confirmation`, `panel_menu`, `panel_audit`, eleven thin action handlers, and extraction of `setup_chat`/`setup_storage` from `main`; `command` is now optional and defaults to `panel` when an installation exists, otherwise `install`.
+- installation/test_installation.py — seven panel cases: non-TTY refusal, rendering without secret values, unique keys/storage hidden without dev, dispatch plus audit log, exact typed confirmation, canonical environment choice, EOF exit.
+- installation/README.md — Persian panel section with the key-to-CLI mapping and safety rules.
+- plan/decisions/ADR-0046-installer-interactive-panel.md; plan/phases/12-PRODUCTION-HARDENING.md; plan/STATUS.md; this log.
+Migrations: none. Bundle allowlist, secrets, Compose, Caddy templates and application source: unchanged.
+
+Implementation:
+- The panel is a thin shell: every entry calls an existing operation (`compose_command`, `doctor`, `restart`, `setup_chat`, `configure`, `setup_storage`, `backup`, `github_handoff`, `configure_proxy`, `install`). No new operational logic, service, port or dependency (standard library only, no curses/whiptail).
+- State display reads only markers: `runtime.env` boundary keys, `state/current`, `state/chat.initialized`, `bootstrap/first-run.json` and `PRODUCT_MEDIA_STORAGE_MODE`. Secret files are never opened for display.
+- TTY-only: a non-interactive invocation raises with the exact CLI alternatives instead of half-rendering.
+- Destructive entries (`restart`, `setup-chat`, proxy re-apply, full install) require the exact typed environment name or `install`; a wrong token changes nothing.
+- Every selection is appended to `/etc/mushroom/panel.log` (mode `0600`) as timestamp/action/environment only; UUIDs, values and paths are deliberately excluded.
+- Loop is testable via injected `reader`/`confirm`/`emit`; `render_panel` is pure.
+
+Verification:
+- `python -B -m unittest discover -s installation -p "test_*.py"` → PASS, 53 cases: 45 passed, 8 pre-existing platform skips (real caddy/age/POSIX-container cases executed by the hosted `installation.yml` job).
+- `python -B installation/manager.py --help` → PASS (optional command, `panel` listed, exit 0); `bash -n installation/install.sh` was not executed on this host (file unchanged, empty `git diff`; the hosted installer job runs it); `git diff --check` → PASS.
+- Disposable render of `render_panel(panel_menu(config))` with prepared dev/staging/production fixtures → PASS; output showed only environments, markers, media mode and menu, no secret value.
+- Existing CLI paths preserved: `setup-chat`/`setup-storage` messages and ordering unchanged; `install.sh` still passes `install` explicitly.
+
+Known limitations:
+- Hosted installer workflow has not yet run for this change; the 8 local skips are exactly the cases it covers.
+- Panel navigation was verified with injected input/output, not a real VPS TTY; no live server, DNS, Docker or provider operation was performed.
+- Redraw is print-based (no cursor addressing); the ADR records this trade-off and its revisit trigger.
+
+Result: DONE (software), review gate PASS, claim released. `sudo mushroom` on an installed host now opens the panel; a fresh host still starts `install`. No commit/push/deploy performed by this task. Next eligible action: owner reviews the panel on the target VPS, then decides commit/push; no next batch started.
+
 ## MZ06 marriage requests continuation — 2026-11-02
 
 Owner-authorized continue; same sole /root, no stage/commit/deploy. Existing installer/ADR0046, AGENTS and fa.json changes preserved. ADR0047 and marriage-service-v1 contract added; no task checkbox accepted yet. Optional immutable offering-scoped marriage roles/age/gender/generic text, ordered pair validation, dashboard editor, generated contracts, new phone-encrypted requests, independent verified-phone session proof (only OTP issuer sets it), authenticated sender/recipient list/details/accept/cancel, legacy invitation materialization preserving SQL consent constraints, role-aware result/fallback and dynamic processing eligibility implemented. SMS-specific durable queue/worker/limits/provider pattern added, not yet accepted. App new/request/history routes, catalogue navigation, explicit SMS/copy controls and return-through-login/required-entry implemented. Old offer/invitation semantics retained.
