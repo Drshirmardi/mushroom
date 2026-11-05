@@ -394,10 +394,11 @@ def write_environment(config, environment, *, base=None, owner=None, first_run=N
 
 
 def install_packages():
+    engine_absent = shutil.which('docker') is None
     run(['apt-get', 'update'])
     run(['apt-get', 'install', '-y', '--no-install-recommends', 'ca-certificates', 'curl', 'gnupg',
          'jq', 'rsync', 'openssl', 'openssh-server', 'ufw', 'caddy', 'python3'])
-    if shutil.which('docker') is None:
+    if engine_absent:
         require(not any(shutil.which(name) for name in ('dockerd', 'podman')), 'Existing container runtime needs operator review.')
         Path('/etc/apt/keyrings').mkdir(exist_ok=True, mode=0o755)
         run(['curl', '--fail', '--silent', '--show-error', '--location', '--proto', '=https',
@@ -422,6 +423,26 @@ def install_packages():
         require(installed, 'No compatible Compose v2 package available from configured apt repositories; existing engine preserved.')
     run(['docker', 'compose', 'version'], capture=True)
     run(['systemctl', 'enable', '--now', 'docker', 'ssh'])
+    if engine_absent:
+        configure_docker_logging()
+    else:
+        print('Existing Docker engine preserved; container log rotation stays with its operator.')
+
+
+def configure_docker_logging(path=None, *, restart=True):
+    """Bound container logs on the engine this installer owns; never rewrite operator ownership."""
+    path = Path(path) if path else Path('/etc/docker/daemon.json')
+    require(not path.is_symlink(), 'Docker daemon configuration cannot be a symlink.')
+    if path.exists():
+        print(f'{path} already exists; preserved. Confirm max-size/max-file rotation there.')
+        return False
+    atomic_write(path, json.dumps({'log-driver': 'json-file',
+                                   'log-opts': {'max-size': '10m', 'max-file': '5'}}, indent=2) + '\n', 0o644)
+    if restart:
+        run(['systemctl', 'restart', 'docker'])
+    else:
+        print(f'{path} written; restart Docker when it is safe so new containers use the log rotation.')
+    return True
 
 
 def provision_user(name):
@@ -517,6 +538,21 @@ def check_dns(config):
                 missing.append(domain)
     require(not missing, 'DNS pending: set DNS-only A records to ' + config['publicIp'] +
             '; remove unrelated AAAA/proxying for: ' + ', '.join(missing) + '. Then rerun install.')
+
+
+def wait_for_chat_schema(command, probe, attempts=15, delay=2):
+    """Retry the TCP auth/schema probe; a failed exec is retried instead of aborting the step."""
+    for attempt in range(attempts):
+        try:
+            tables = run(command + ['exec', '-T', 'chat-postgres', 'sh', '-c', probe],
+                         capture=True, sensitive=True).strip()
+        except InstallationError:
+            tables = ''
+        if tables.isdigit() and int(tables) > 0:
+            return int(tables)
+        if attempt == attempts - 1:
+            raise InstallationError('Chat SQL schema not ready; inspect the engine and rerun setup-chat. Credentials retained.')
+        time.sleep(delay)
 
 
 def prepare_chat(config, environment, *, root=None, owner=None):
@@ -644,13 +680,7 @@ def prepare_chat(config, environment, *, root=None, owner=None):
     if managed_database:
         # Check TCP authentication and real engine schema, not only pg_isready/process liveness.
         probe = 'PGPASSWORD="$POSTGRES_PASSWORD" exec psql -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_tables WHERE schemaname=\'public\'"'
-        for attempt in range(15):
-            tables = run(command + ['exec', '-T', 'chat-postgres', 'sh', '-c', probe], capture=True, sensitive=True).strip()
-            if tables.isdigit() and int(tables) > 0:
-                break
-            if attempt == 14:
-                raise InstallationError('Chat SQL schema not ready; inspect the engine and rerun setup-chat. Credentials retained.')
-            time.sleep(2)
+        wait_for_chat_schema(command, probe)
     print(f'{environment}: chat engine ready; existing keys and data retained.')
 
 

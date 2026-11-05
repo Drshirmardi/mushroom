@@ -6254,6 +6254,40 @@ Known limitations:
 
 Result: DONE (software), review gate PASS, claim released. `sudo mushroom` on an installed host now opens the panel; a fresh host still starts `install`. No commit/push/deploy performed by this task. Next eligible action: owner reviews the panel on the target VPS, then decides commit/push; no next batch started.
 
+## F12-T02-I08 — Server-readiness hardening
+
+Task ID: F12-T02-I08
+Completed at: 2026-11-01 02:50 +03:30
+Agent/Thread: Codex /root (sole agent)
+Batch ID: F12-B16 (same coordinator; follow-up task)
+Depends on: F12-T02-I07 DONE
+Reviewed by: Codex /root; source/combined-diff and acceptance review PASS
+Authority: direct owner request to finish the installer completely before deploying it on a real Ubuntu 24.04 server.
+
+Changed files:
+- installation/manager.py — new `wait_for_chat_schema` and `configure_docker_logging`; `install_packages` records whether it installed the engine; the chat probe loop now calls the bounded helper.
+- installation/test_installation.py — three regressions for retry, bounded attempts and idempotent log configuration.
+- installation/README.md — log-rotation behaviour on fresh versus pre-existing engines.
+- plan/phases/12-PRODUCTION-HARDENING.md; plan/STATUS.md; this log.
+Migrations: none. Bundle allowlist, secrets, Compose, Caddy and application source: unchanged.
+
+Problems and fixes:
+1. Chat preparation aborted on the first transient probe failure. `prepare_chat`'s 15-attempt loop called `run()`, which raises on any non-zero exit, so a not-yet-ready TCP/socket/psql attempt ended the whole step with `sh failed (exit N)` and no retry — exactly the slow-first-boot case on a real VPS. The probe now lives in `wait_for_chat_schema`: it catches `InstallationError` per attempt, keeps the 15×2s window, returns the table count, and raises the existing "Chat SQL schema not ready … Credentials retained" message only after the last attempt.
+2. Container logs were unbounded (`json-file` defaults) on a 2–4 GiB host with a 10 GiB disk floor. When this installer installs Docker it now writes `/etc/docker/daemon.json` (`log-driver=json-file`, `max-size=10m`, `max-file=5`) and restarts Docker once, before any project container exists. An existing `daemon.json` is preserved with a notice, and a pre-existing engine is never restarted or reconfigured by the installer.
+
+Verification:
+- `python -B -m unittest discover -s installation -p "test_*.py"` → PASS, 56 cases: 48 passed, 8 pre-existing platform skips (real caddy/age/POSIX-container cases run in the hosted job).
+- New regressions: two transient failures then a count returns `4` after 3 calls; permanent failure raises after exactly the configured attempts with `sleep` called attempts-1 times; log configuration writes the expected JSON and restarts once, preserves an operator file without restarting, and defers the restart when asked.
+- `python -B installation/manager.py --help` and `git diff --check` → PASS.
+- Existing `install_packages` tests still pass unchanged: they model an already-present engine, so no rotation write or restart occurs.
+
+Known limitations:
+- Log rotation applies to containers created after the write; containers that already exist keep their driver until recreated by the next deployment.
+- Hosted installer workflow for this change and any real VPS run remain external; no server, DNS or Docker operation was performed here.
+
+Result: DONE (software), review gate PASS. Both changes harden the same installer/panel surfaces without altering CLI semantics. Next eligible action: owner rebuilds the bundle (`python installation/build.py`) and runs the installer on the chosen Ubuntu 24.04 server; no next batch started.
+
+
 ## MZ06 marriage requests continuation — 2026-11-02
 
 Owner-authorized continue; same sole /root, no stage/commit/deploy. Existing installer/ADR0046, AGENTS and fa.json changes preserved. ADR0047 and marriage-service-v1 contract added; no task checkbox accepted yet. Optional immutable offering-scoped marriage roles/age/gender/generic text, ordered pair validation, dashboard editor, generated contracts, new phone-encrypted requests, independent verified-phone session proof (only OTP issuer sets it), authenticated sender/recipient list/details/accept/cancel, legacy invitation materialization preserving SQL consent constraints, role-aware result/fallback and dynamic processing eligibility implemented. SMS-specific durable queue/worker/limits/provider pattern added, not yet accepted. App new/request/history routes, catalogue navigation, explicit SMS/copy controls and return-through-login/required-entry implemented. Old offer/invitation semantics retained.

@@ -659,5 +659,44 @@ class InstallationTests(unittest.TestCase):
             manager.run_panel(self.config, actions=[], reader=reader, emit=lambda text: None)
 
 
+    def test_chat_schema_probe_retries_transient_exec_failures(self):
+        results = iter([manager.InstallationError('not ready'), manager.InstallationError('auth'), '4\n'])
+
+        def command(args, **kwargs):
+            value = next(results)
+            if isinstance(value, Exception):
+                raise value
+            return value
+
+        with patch.object(manager, 'run', side_effect=command) as run, patch.object(manager.time, 'sleep'):
+            self.assertEqual(manager.wait_for_chat_schema(['docker', 'compose'], 'probe'), 4)
+        self.assertEqual(run.call_count, 3)
+
+    def test_chat_schema_probe_stops_after_bounded_attempts(self):
+        with patch.object(manager, 'run', side_effect=manager.InstallationError('unavailable')) as run, \
+                patch.object(manager.time, 'sleep') as sleep:
+            with self.assertRaisesRegex(manager.InstallationError, 'Chat SQL schema not ready'):
+                manager.wait_for_chat_schema(['docker', 'compose'], 'probe', attempts=3, delay=0)
+        self.assertEqual(run.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_docker_log_rotation_defaults_and_preserves_existing_file(self):
+        target = self.root / 'daemon.json'
+        with patch.object(manager, 'run') as run:
+            self.assertTrue(manager.configure_docker_logging(target))
+        self.assertEqual(run.call_args.args[0], ['systemctl', 'restart', 'docker'])
+        self.assertEqual(json.loads(target.read_text(encoding='utf-8')),
+                         {'log-driver': 'json-file', 'log-opts': {'max-size': '10m', 'max-file': '5'}})
+        target.write_text('{"operator": true}', encoding='utf-8')
+        with patch.object(manager, 'run') as run:
+            self.assertFalse(manager.configure_docker_logging(target))
+        self.assertEqual(target.read_text(encoding='utf-8'), '{"operator": true}')
+        run.assert_not_called()
+        deferred = self.root / 'daemon-deferred.json'
+        with patch.object(manager, 'run') as run, redirect_stdout(io.StringIO()):
+            self.assertTrue(manager.configure_docker_logging(deferred, restart=False))
+        run.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()
