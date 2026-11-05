@@ -6784,3 +6784,26 @@ Acceptance: first real two-consumer browser boundary implemented, no empty futur
 
 Limitations: full app semantic events, CTA/campaign continuity, domain-confirmed outcomes and server Outbox are AN02/AN03. No claim of completed original analytics plan, complete app browser journey, live GA4 ingestion or performance load test. Runtime gate does not obtain visitor consent; collection policy must be integrated before production activation. Opt-out tested at dispatch time; vendor automatic measurement must be disabled per operator guide. Referrer/campaign intentionally absent until AN02. No push/deploy.
 Next: AN02, not started (per-task commit boundary).
+
+## Analytics AN02 behavior and attribution
+
+Task ID: F12-FE01-AN02
+Completed at: 2026-11-06 Asia/Tehran
+Agent/Reviewer: Codex /root, single agent
+Batch ID: ANALYTICS-02; depends AN01 accepted. Branch codex/analytics-ga4.
+
+Changed files: config/analytics{,-browser}.ts and browser tests; new config/analytics-context.ts, analytics-operations.ts, analytics-context.test.mjs, analytics-journey.test.mjs; config/ANALYTICS.md; frontend analytics components, app api/commerce API helpers, web api/landing/header; contract/status/checklist/log. Existing user product-page change in original X:/Git/mushroom checkout untouched. No Prisma/OpenAPI/migration/actual financial or clinical data change.
+
+Verification:
+- Failing-first new context test: expected missing-module failure, then implementation.
+- node --experimental-strip-types --test config/analytics-context.test.mjs config/analytics.test.mjs:10 PASS. TTL, sanitization/invalid stored fields, registered endpoints, response identity/body not consumed, original rejection preserved, telemetry exceptions isolated, accepted/rejected/unavailable/no-observation semantics.
+- node --test config/analytics-browser.test.mjs config/analytics-journey.test.mjs:3 PASS. Actual Chromium compiled SDK with intercepted remote script: denied dispatch, sanitized views, first landing CTA and UTM across two origins, preservation of next/product/hash, ma_* cleanup, arbitrary destination refusal; real unchanged one-request bearer/body/response through analyticsFetch. Corrected old browser assertion to count events (the newly queued asynchronous GA getter commands are not events).
+- pnpm --filter @sabz/web exec vitest run src/lib/api.test.ts src/auth/auth-navigation.test.ts src/services/auth.test.ts:10 PASS.
+- pnpm --filter @sabz/app exec vitest run src/lib/commerce-catalog-api.spec.ts src/lib/assessment-api.spec.ts src/lib/appointment-api.spec.ts src/stores/cart.spec.ts:15 PASS.
+- Both frontend typechecks and production builds PASS.
+- graphify update .: PASS (AST only, existing extractor PDF/SQL/partial-chat warnings retained). Generated graph artifacts ignored by repository configuration.
+- Main-agent combined scope/security/transport review and git diff --check PASS.
+
+Outcome: no extra application API call or database write; existing request, auth/marriage headers and response/body ownership preserved. Request outcome is not a medical/financial completion. Context is tab-scoped metadata,30-minute bounded handoff, no raw activity archive; only explicit public product/SKU IDs, no patient IDs/body/text/results. Missing GA getter never delays login/navigation; same-property identifiers optional, native cross-domain continuity not guaranteed until live acceptance. No source claims from fabricated identity.
+
+Limitations: browser tests exercise SDK and transport, not a fully authenticated deployed product/GA4. Runtime collection remains denied by default; real consent policy/operator property custom definitions/domain configuration and receipt still external. AN03 owns actual server conversion and Outbox, AN04 full integration/activation/performance acceptance. No push/deploy/new service/production configuration. Next AN03 eligible, not started under per-task boundary.

@@ -1,8 +1,8 @@
 # Browser analytics — AN01
 
-This is the first delivery of the original browser-first analytics plan, not the
-completed analytics feature. AN02–AN04 track attribution, semantic domain events,
-server conversions/Outbox and end-to-end acceptance. Do not enable production
+AN01 and AN02 deliver the browser foundation, attribution and request-level UX events.
+AN03–AN04 still own confirmed server conversions/Outbox and end-to-end acceptance.
+This is not yet the completed analytics feature. Do not enable production
 analytics until those gates and the collection/consent policy are accepted.
 
 ## Runtime configuration
@@ -32,8 +32,16 @@ Browser events make no application API request and perform no database write.
 Google's loader is asynchronous, once per document, and its pre-load buffer is
 bounded to 100 commands if the script is blocked. This does not guarantee delivery.
 
-AN01 deliberately strips referrer/query data: acquisition and entry-CTA continuity
-are AN02 work, not verified capabilities of this first commit. No purchase is
+AN02 preserves only validated source/medium/campaign slugs, first explicit landing
+CTA and HTTPS referrer origin; raw referrer paths/queries remain excluded. Context
+is tab-scoped sessionStorage with a 30-minute handoff validity window. Only the
+configured app origin receives ma_* handoff parameters; they are removed upon app
+initialization while product query/hash parameters stay unchanged. GA4 client/session
+IDs come from the documented gtag get callback and are accepted only for the same
+measurement ID. Missing/blocked SDK callbacks never delay navigation; in that case
+native GA4 cross-domain identity is not guaranteed, although CTA/campaign context
+still survives. Same-origin cookie-domain and cross-domain property settings require
+operator validation with real GA4 in AN04. No purchase is
 emitted from the success page. Nothing is installed on the staff dashboard.
 
 ## Verification
@@ -49,3 +57,27 @@ into a real GA4 property or the complete authenticated app journey.
 Sources:
 - https://developers.google.com/analytics/devguides/collection/ga4/views
 - https://developers.google.com/tag-platform/gtagjs/reference
+
+## AN02 behavior semantics
+
+- page_view: logical route including home/checkout/schedule; query-only changes do not count.
+- cta_impression: explicit CTA at least 50% intersecting the viewport, once per observer/route.
+- cta_click / navigation_click: explicit action or internal known-origin link, never DOM labels.
+- feature_engagement: visible intervals >=1s, flushed on visibility loss, pagehide and route cleanup.
+- action_attempt / action_result: registered existing request, duration, HTTP status and accepted,
+  rejected, unavailable or network_error outcome. Accepted HTTP is NOT purchase/assessment
+  completion. Retries are separate attempts. No response or request body is read for observation.
+- cart_quantity_set: after a successful cart mutation, opaque public SKU and absolute quantity;
+  zero represents removal. It is not an invented add-to-cart quantity delta.
+- Public catalogue/product reads expose registered operation and opaque catalogue product ID;
+  no product titles, searches, prices, diagnoses or private patient resource identifiers.
+
+The existing app session-aware transport, auth headers, marriage context, response object and
+body ownership are preserved. No additional application API call, database write, server
+collector or new infrastructure is introduced. GA4 reports need custom definitions for custom
+metadata. This slice does not add generic DOM/form capture, session replay, monetary conversions,
+or server-side purchase events. New app endpoint categories require explicit registry entries.
+
+Tests: analytics-context.test.mjs (pure sanitization/outcomes), analytics-journey.test.mjs
+(actual Chromium cross-origin handoff and unchanged request transport), existing API/auth
+regressions. Remote GA4 script/API are intercepted; live ingestion is not asserted.

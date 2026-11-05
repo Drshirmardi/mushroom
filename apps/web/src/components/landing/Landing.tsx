@@ -1,5 +1,7 @@
 "use client";
 
+import { decorateAnalyticsUrl } from '../../../../../config/analytics-browser';
+
 import { useMemo, useState, type KeyboardEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronDown, CircleDot, HeartHandshake, Layers3, Leaf, ScanFace, ShieldCheck, ShoppingBag, Sparkles, Stethoscope, Utensils, Weight } from "lucide-react";
@@ -11,7 +13,7 @@ type Path = { label: string; title: string; text: string; cta: string };
 type Service = { title: string; subtitle: string; text: string; tags: string[] };
 const destinations = ["/assessment", "/assessment/couples", "/appointments/book"];
 const serviceIcons = [ScanFace, Utensils, Weight, Sparkles, HeartHandshake, Stethoscope];
-const patientUrl = (path: string) => new URL(path.replace(/^\/+/, ""), `${appUrl.replace(/\/+$/, "")}/`).toString();
+const patientUrl = (path: string) => decorateAnalyticsUrl(new URL(path.replace(/^\/+/, ""), `${appUrl.replace(/\/+$/, "")}/`).toString(), appUrl);
 
 function begin(path: string) {
     window.dispatchEvent(new CustomEvent("landing-auth-request", { detail: { next: patientUrl(path) } }));

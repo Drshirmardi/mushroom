@@ -18,3 +18,13 @@ activation, push, or deployment is authorized by the implementation request.
 
 Sources: https://developers.google.com/analytics/devguides/collection/ga4/views
 and https://developers.google.com/tag-platform/gtagjs/reference.
+
+
+AN02 frozen implementation contract (2026-11-06): browser operation registry reports
+request attempts/results, not authoritative financial/medical completion. First CTA,
+validated campaign slugs and origin-only HTTPS referrer travel in tab-scoped, bounded
+30-minute context to the configured app origin. GA identifiers are optional and property-
+scoped; missing SDK never blocks navigation. Only opaque public catalogue/SKU identifiers
+are allowed in commerce metadata. Existing API request/body/response ownership and
+invitation/session headers must remain unchanged. See config/ANALYTICS.md for event names
+and limits. AN03/AN04 remain separate, dependent tasks; no original architecture change.

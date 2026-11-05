@@ -547,6 +547,6 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-ST01 — Store header logo removed; app types/scoped lint delta PASS2026-11-05.
 
 - [x] F12-FE01-AN01 — Browser foundation/landing CTA tracking DONE/software, sole /root review PASS2026-11-06; five units, Chromium transport test, app/web types/builds and runtime regressions PASS. No live GA4 activation; evidence phase12 analytics-an01-browser-foundation.
-- [ ] F12-FE01-AN02 — App/commerce behavioral events and attribution context; depends AN01.
+- [x] F12-FE01-AN02 — Browser behavior/attribution DONE/software2026-11-06, sole /root review PASS;38 targeted tests, frontend types/production builds PASS. Live GA4 acceptance pending AN04; evidence phase12 analytics-an02-behavior-and-attribution.
 - [ ] F12-FE01-AN03 — Authoritative conversions and bounded Outbox; depends AN02.
 - [ ] F12-FE01-AN04 — Integration/browser/operator acceptance; depends AN03.
