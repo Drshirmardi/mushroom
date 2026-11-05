@@ -36,7 +36,7 @@ export class SadadCallbackController {
       .header('Cache-Control', 'no-store')
       .header('Referrer-Policy', 'origin')
       .header('X-Content-Type-Options', 'nosniff')
-      .header('Content-Security-Policy', "default-src 'none'; script-src 'nonce-" + nonce + "'; base-uri 'none'; frame-ancestors 'none'; form-action https://sadad.shaparak.ir")
+      .header('Content-Security-Policy', "default-src 'none'; script-src 'nonce-" + nonce + "'; style-src 'nonce-" + nonce + "'; base-uri 'none'; frame-ancestors 'none'; form-action https://sadad.shaparak.ir")
       .send(html);
   }
   @Public()

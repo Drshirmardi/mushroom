@@ -31,6 +31,8 @@ describe('merchant-origin Sadad browser start', () => {
     expect(headers['Referrer-Policy']).toBe('origin');
     const nonce = headers['Content-Security-Policy'].match(/nonce-([^']+)/)![1];
     expect(reply.send).toHaveBeenCalledWith(expect.stringContaining(`nonce="${nonce}"`));
+    expect(headers['Content-Security-Policy']).toContain(`style-src 'nonce-${nonce}'`);
+    expect(sadadStartDocument('PHP_VPG_PURCHASE', nonce)).toContain(`<style nonce="${nonce}">`);
     await controller.start({ ip: '127.0.0.1' } as never, reply as never);
     expect(headers['Content-Security-Policy']).not.toContain(nonce);
     consume.mockResolvedValue(false);
