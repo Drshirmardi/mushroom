@@ -6758,3 +6758,29 @@ Targeted verification: API intake-snapshot.spec.ts2 tests PASS using actual gene
 ## F12-FE01-ST01 — Remove store header logo
 
 2026-11-05, sole /root review PASS. Removed BrandLogo render/import only from public store page header at user request. Existing brand text, heading, controls, responsive styles and shared logo on other pages preserved. App tsc and existing scoped ESLint delta PASS (0 new diagnostics;5 baseline errors/1 baseline warning untouched). Source diff reviewed; no behavior/test/API/dependency changes and no unnecessary new tests or broad suite. Graphify AST refreshed (.local/st01-graph.log). No new browser/online/device certification claimed. Unrelated changes excluded; no next batch.
+
+## Analytics AN01 browser foundation
+
+Task ID: F12-FE01-AN01
+Completed at: 2026-11-06 Asia/Tehran
+Agent/Reviewer: Codex /root (single agent)
+Batch ID: ANALYTICS-01
+Branch: codex/analytics-ga4 (isolated managed worktree, baseline dev8278608)
+
+Changed files: config/analytics{,-browser}.{ts,test.mjs}, config/ANALYTICS.md; both frontend root layouts and analytics-tracking components; landing/header explicit CTA attributes; Docker next-entrypoint, VPS dev-service, both compose manifests; contract/checklist/status/evidence; generated graphify-out artifacts.
+Migrations/API: none. No primary database or external analytics property changed.
+
+Verification:
+- Failing-first node test: expected ERR_MODULE_NOT_FOUND before implementation.
+- node --experimental-strip-types --test config/analytics.test.mjs: 5 PASS.
+- node --test config/analytics-browser.test.mjs: Chromium actual compiled SDK, intercepted external scripts; 1 PASS. One initialization, sanitized metadata, one repeated route view, CTA, no application API requests and dispatch-time opt-out verified.
+- pnpm api-client build; app/web typecheck; app/web production build: PASS.
+- node scripts/test-runtime-config-loading.mjs: PASS.
+- node scripts/test-sadad-runtime-config.mjs: PASS.
+- graphify update .: PASS, AST-only; existing extractor PDF/SQL/partial TS warnings reported, not suppressed.
+- git diff --check and main-agent combined scope/metadata/SSR review: PASS.
+
+Acceptance: first real two-consumer browser boundary implemented, no empty future adapters, no database calls for page/click events, once-per-document async loader with bounded pre-load queue. Explicit runtime config gates default denied; no staff dashboard instrumentation. Actual product IDs remain only in transient route dedup state, never payload.
+
+Limitations: full app semantic events, CTA/campaign continuity, domain-confirmed outcomes and server Outbox are AN02/AN03. No claim of completed original analytics plan, complete app browser journey, live GA4 ingestion or performance load test. Runtime gate does not obtain visitor consent; collection policy must be integrated before production activation. Opt-out tested at dispatch time; vendor automatic measurement must be disabled per operator guide. Referrer/campaign intentionally absent until AN02. No push/deploy.
+Next: AN02, not started (per-task commit boundary).

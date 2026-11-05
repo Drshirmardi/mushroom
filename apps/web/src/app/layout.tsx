@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AnalyticsTracking } from '@/components/analytics-tracking';
 import { getLocale } from "next-intl/server";
 import { WebExperience } from "@/components/landing/WebExperience";
 import { isLocale, isRtlLocale } from "@/i18n/routing";
@@ -33,6 +34,7 @@ export default async function RootLayout({
                 <script src="/runtime-config.js" />
             </head>
             <body>
+                <AnalyticsTracking />
                 <WebExperience initialLocale={locale}>{children}</WebExperience>
             </body>
         </html>

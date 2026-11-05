@@ -21,8 +21,11 @@ const values = {
   appUrl: process.env.PUBLIC_APP_URL || '',
   dashboardUrl: process.env.PUBLIC_DASHBOARD_URL || '',
   sadadReturnUrl: process.env.SADAD_RETURN_URL || '',
+  analyticsMeasurementId: process.env.PUBLIC_GA4_MEASUREMENT_ID || '',
+  analyticsConsent: process.env.PUBLIC_ANALYTICS_CONSENT || 'denied',
 };
 for (const [name, value] of Object.entries(values)) {
+  if (name.startsWith('analytics')) continue;
   if (!value && name === 'sadadReturnUrl') continue;
   if (!value) throw new Error(`${name} is required for the shared dev runtime`);
   const url = new URL(value);

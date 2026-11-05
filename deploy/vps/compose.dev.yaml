@@ -57,6 +57,8 @@ services:
       DEV_COMPILE_API: "${DEV_COMPILE_API:-false}"
       DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
       DEV_WRITE_RUNTIME_CONFIG: "${DEV_WRITE_RUNTIME_CONFIG:-false}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
@@ -103,6 +105,8 @@ services:
       SMS_TRANSPORT_MODE: "${SMS_TRANSPORT_MODE:-disabled}"
       SMS_REQUEST_TIMEOUT_MS: "${SMS_REQUEST_TIMEOUT_MS:-5000}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
       SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
@@ -135,6 +139,8 @@ services:
     command: ["bash", "deploy/vps/dev-service.sh", "web"]
     environment:
       <<: *node-environment
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
@@ -146,6 +152,8 @@ services:
     command: ["bash", "deploy/vps/dev-service.sh", "app"]
     environment:
       <<: *node-environment
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
     ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
@@ -156,6 +164,8 @@ services:
     command: ["bash", "deploy/vps/dev-service.sh", "dashboard"]
     environment:
       <<: *node-environment
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"

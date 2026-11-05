@@ -50,7 +50,7 @@ export function Landing() {
     const ServiceIcon = serviceIcons[service];
     const selectedService = services[service];
     const enter = (destination = "/assessment") => begin(destination);
-    const action = (label: string, destination = "/assessment", secondary = false) => <button className={`landing-button ${secondary ? "landing-button-secondary" : ""}`} type="button" onClick={() => enter(destination)}>{label}<Arrow size={18} aria-hidden="true" /></button>;
+    const action = (label: string, destination = "/assessment", secondary = false) => <button className={`landing-button ${secondary ? "landing-button-secondary" : ""}`} type="button" data-analytics-action={"enter_" + destination.replace(/[^a-z0-9]+/g, "_")} onClick={() => enter(destination)}>{label}<Arrow size={18} aria-hidden="true" /></button>;
     const note = locale !== "fa" && <small className="app-language-note">{common("appNotice")}</small>;
 
     return <main id="main-content" className="landing-main">
@@ -76,7 +76,7 @@ export function Landing() {
 
         <section id="consultation" className="site-container landing-section consultation-section"><div className="consultation-copy"><p className="section-kicker">{t("visitLabel")}</p><h2>{t("visitTitle")}</h2><p>{t("visitText")}</p>{action(t("visitCta"), "/appointments/book")}{note}</div><div className="consultation-panel"><span className="consultation-icon"><Stethoscope size={30} strokeWidth={1.4} aria-hidden="true" /></span><h3>{t("visitPanel")}</h3><ul>{(t.raw("visitChecks") as string[]).map((item, i) => <li key={item}><span>{new Intl.NumberFormat(locale).format(i + 1)}</span>{item}<Check size={16} aria-hidden="true" /></li>)}</ul></div></section>
 
-        <section id="shop" className="site-container shop-section"><div className="shop-banner"><div><span className="section-kicker">{t("shopLabel")}</span><h2>{t("shopTitle")}</h2><p>{t("shopText")}</p><div className="shop-buttons"><button className="landing-button" type="button" onClick={() => window.location.assign(patientUrl("/store"))}>{t("shopCta")}<Arrow size={18} aria-hidden="true" /></button>{action(t("shopSecondary"), "/assessment", true)}</div>{note}</div><div className="shop-art" aria-hidden="true"><ShoppingBag size={90} strokeWidth={.85} /><span /><i /></div></div></section>
+        <section id="shop" className="site-container shop-section"><div className="shop-banner"><div><span className="section-kicker">{t("shopLabel")}</span><h2>{t("shopTitle")}</h2><p>{t("shopText")}</p><div className="shop-buttons"><button className="landing-button" type="button" data-analytics-action="open_store" onClick={() => window.location.assign(patientUrl("/store"))}>{t("shopCta")}<Arrow size={18} aria-hidden="true" /></button>{action(t("shopSecondary"), "/assessment", true)}</div>{note}</div><div className="shop-art" aria-hidden="true"><ShoppingBag size={90} strokeWidth={.85} /><span /><i /></div></div></section>
 
         <section id="faq" className="site-container landing-section faq-section"><div className="section-heading"><p className="section-kicker">{t("faqLabel")}</p><h2>{t("faqTitle")}</h2></div><div className="faq-list">{faqs.map(({ q, a }) => <details key={q}><summary>{q}<ChevronDown size={18} aria-hidden="true" /></summary><p>{a}</p></details>)}</div></section>
     </main>;

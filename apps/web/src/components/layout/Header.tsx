@@ -56,7 +56,7 @@ export function Header() {
             <div className="site-header-actions">
                 <LocaleSwitcher />
                 {session.status === "authenticated" ? <a className="site-login" href={dashboardUrlFor(session.authentication)}>{t("dashboard")}<ArrowUpLeft size={16} aria-hidden="true" /></a>
-                    : <button type="button" className="site-login" aria-haspopup="dialog" onClick={() => openLogin()}>{t("login")}<ArrowUpLeft size={16} aria-hidden="true" /></button>}
+                    : <button type="button" className="site-login" aria-haspopup="dialog" data-analytics-action="header_login" onClick={() => openLogin()}>{t("login")}<ArrowUpLeft size={16} aria-hidden="true" /></button>}
                 <details className="site-mobile-menu"><summary aria-label={t("menu")}><Menu size={21} aria-hidden="true" /></summary><nav aria-label={t("menu")}>{sections.map((id, i) => <a href={`#${id}`} key={id} onClick={event => event.currentTarget.closest("details")?.removeAttribute("open")}>{labels[i]}</a>)}</nav></details>
             </div>
         </header>
