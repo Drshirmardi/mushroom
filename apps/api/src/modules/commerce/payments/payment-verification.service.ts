@@ -1,3 +1,4 @@
+import { AnalyticsService } from '../../analytics/analytics.service';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client';
 import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
@@ -8,7 +9,7 @@ const failed = () => new ConflictException({ code: 'PAYMENT_VERIFICATION_FAILED'
 
 @Injectable()
 export class PaymentVerificationService {
-  constructor(private readonly inventory: CommerceInventoryService) {}
+  constructor(private readonly inventory: CommerceInventoryService, private readonly analytics: AnalyticsService) {}
   /** Non-success outcomes are persisted without creating Payment or changing Order to PAID. */
   async recordNonSuccess(tx: Prisma.TransactionClient, input: { attemptId: string; resultCode: '-1' | '101' | 'TIMEOUT'; verifiedAt: Date }) {
     const status = input.resultCode === '-1' ? 'FAILED' : input.resultCode === '101' ? 'EXPIRED' : 'REQUIRES_RECONCILIATION';
@@ -32,6 +33,7 @@ export class PaymentVerificationService {
     const order = await tx.commerceOrder.updateMany({ where: { id: attempt.orderId, status: 'PENDING_PAYMENT' }, data: { status: 'PAID' } });
     if (order.count !== 1) throw mismatch();
     await settleOrderCart(tx, attempt.orderId);
+    await this.analytics.orderPaid(tx, attempt.orderId, input.verifiedAt, attempt.commerceAmountToman * 10n);
     return payment;
   }
 }

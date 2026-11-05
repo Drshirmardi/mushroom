@@ -97,14 +97,21 @@ export function decorateAnalyticsUrl(candidate: string, allowedAppOrigin: string
 }
 
 export function analyticsFetch(input: RequestInfo | URL, init: RequestInit | undefined,
-  run: () => Promise<Response>, apiOrigin: string, surface: 'web' | 'app') {
+  run: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>, apiOrigin: string, surface: 'web' | 'app') {
   let operation: string | undefined;
   let itemId: string | undefined;
+  let forwarded = init;
   if (permitted()) {
     try {
       const url = new URL(input instanceof Request ? input.url : String(input), location.origin);
       if (url.origin === new URL(apiOrigin).origin) {
-        operation = analyticsOperation(init?.method || (input instanceof Request ? input.method : 'GET'), url.pathname);
+        const method = init?.method || (input instanceof Request ? input.method : 'GET');
+        operation = analyticsOperation(method, url.pathname);
+        if (method.toUpperCase() === 'POST' && context?.client_id && context.session_id && Date.now() - context.at <= 30 * 60 * 1000) {
+          const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
+          headers.set('X-Analytics-Context', JSON.stringify({ ...context, referrer_origin: undefined, consent: 'granted' }));
+          forwarded = { ...init, headers };
+        }
         if (operation === 'product_load') {
           const id = url.pathname.split('/').pop() || '';
           if (/^[a-f0-9-]{36}$/i.test(id)) itemId = id;
@@ -112,7 +119,7 @@ export function analyticsFetch(input: RequestInfo | URL, init: RequestInit | und
       }
     } catch { /* Invalid product inputs are handled by its existing transport. */ }
   }
-  return observeOperation(operation, run, (event, params) => browserAnalyticsEvent(event, { ...params, item_id: itemId, surface }));
+  return observeOperation(operation, () => run(input, forwarded), (event, params) => browserAnalyticsEvent(event, { ...params, item_id: itemId, surface }));
 }
 
 export function trackBrowserPage(path: string, surface: 'web' | 'app') {

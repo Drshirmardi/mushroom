@@ -77,3 +77,29 @@ test('Chromium request observer sends attempts/results once and never reads or c
     for (const secret of ['test-secret', 'private-sku', 'PRIVATE_REASON']) assert.ok(!JSON.stringify(result.commands).includes(secret));
   } finally { await browser.close(); }
 });
+
+test('Chromium forwards optional server context only with consent to the configured API', async () => {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage(); const headers = [];
+    await page.route('**/*', route => {
+      if (route.request().url().includes('/v1/')) headers.push(route.request().headers());
+      return route.fulfill({ status: 200, contentType: route.request().resourceType() === 'document' ? 'text/html' : 'application/json', body: route.request().resourceType() === 'document' ? '<html></html>' : '{}' });
+    });
+    const query = new URLSearchParams({ ma_at: String(Date.now()), ma_client_id: '123.456', ma_session_id: String(Math.floor(Date.now()/1000)-5), ma_measurement_id: 'G-TEST123', ma_entry_cta: 'home_enter' });
+    await page.goto(`https://app.example.test/store?${query}`); await sdk(page);
+    await page.evaluate(async () => {
+      window.__MUSHROOM_RUNTIME_CONFIG__ = { analyticsMeasurementId: 'G-TEST123', analyticsConsent: 'granted' };
+      trackBrowserPage('/store', 'app');
+      const run = () => analyticsFetch(new Request(location.origin + '/v1/patients/me/orders', { method: 'POST', headers: { authorization: 'Bearer synthetic', 'content-type': 'application/json' }, body: '{}' }), undefined,
+        (input, init) => fetch(input, init), location.origin, 'app');
+      await run();
+      localStorage.setItem('mushroom.analytics', 'denied'); await run();
+    });
+    assert.equal(headers.length, 2);
+    const context = JSON.parse(headers[0]['x-analytics-context']);
+    assert.equal(context.client_id, '123.456'); assert.equal(context.consent, 'granted'); assert.equal(context.entry_cta, 'home_enter');
+    assert.equal(headers[0].authorization, 'Bearer synthetic');
+    assert.equal(headers[1]['x-analytics-context'], undefined);
+  } finally { await browser.close(); }
+});

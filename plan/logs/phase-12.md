@@ -6807,3 +6807,28 @@ Verification:
 Outcome: no extra application API call or database write; existing request, auth/marriage headers and response/body ownership preserved. Request outcome is not a medical/financial completion. Context is tab-scoped metadata,30-minute bounded handoff, no raw activity archive; only explicit public product/SKU IDs, no patient IDs/body/text/results. Missing GA getter never delays login/navigation; same-property identifiers optional, native cross-domain continuity not guaranteed until live acceptance. No source claims from fabricated identity.
 
 Limitations: browser tests exercise SDK and transport, not a fully authenticated deployed product/GA4. Runtime collection remains denied by default; real consent policy/operator property custom definitions/domain configuration and receipt still external. AN03 owns actual server conversion and Outbox, AN04 full integration/activation/performance acceptance. No push/deploy/new service/production configuration. Next AN03 eligible, not started under per-task boundary.
+
+## Analytics AN03 authoritative conversions
+
+Task ID: F12-FE01-AN03
+Completed at: 2026-11-06 Asia/Tehran
+Agent/Reviewer: Codex /root, single agent
+Batch ID: ANALYTICS-03; depends AN02 accepted. Branch codex/analytics-ga4.
+
+Changed files: new apps/api/src/modules/analytics/{analytics.protocol,analytics.service,analytics.worker,analytics.interceptor,analytics.module,ga4.transport}.ts; billing and commerce settlement/module wiring; Outbox claim partition/locking; app.factory OpenAPI optional header, environment validation and request redaction; analytics protocol/transport tests, wallet-billing integration, identity redaction and payment constructor regression; both frontend API transports and config/analytics-browser.ts, analytics-journey.test.mjs; deploy API entrypoint/dev launcher, compose dev/production and explicit compose.analytics.yaml overlay; generated OpenAPI/client; analytics operator guide/contract and plan evidence/status/checklist.
+Migrations: none; existing 112 migrations deployed into a fresh disposable PostgreSQL17 database on 127.0.0.1:55423/wallet_test, synthetic seed only. No primary database or real Google/bank/SMS request.
+
+Verification:
+- Protocol + actual loopback HTTP transport + environment validation + payment-provider contract:21 tests PASS. Actual Google target remains fixed in production; only test fetch boundary redirects to loopback. Tests distinguish 204 submission,400 permanent,503/network retry, disabled consent and exact large integer fallback.
+- wallet-billing.integration.spec.ts:27 PASS (24 existing +3 analytics cases), real PostgreSQL/app, fake PSP. Valid owned header and paid wallet/gateway create one purchase despite replay; compensated payment/top-up excluded; capture/payment race serialized; transaction rollback creates no delivery; concurrent claims disjoint and operational partition excludes analytics; retries/payload purge/tombstones/expiry; completed refunds after expiry remain financially successful with no analytics row. Actual registration and restricted COMPLETE projection preserve response/private fields; invalid/disabled context ignored.
+- outbox.integration.spec.ts + identity-security-boundaries.spec.ts:11 PASS; identity nine cases rerun PASS after explicit analytics-header redaction assertion.
+- Browser pure context/core:10 PASS; actual Chromium SDK/transport/handoff:4 PASS including optional header, original bearer/body/response and opt-out. Remote Google resources intercepted.
+- Existing frontend targeted API/auth regressions: app12 and web10 PASS.
+- API source/build and test TypeScript checks, generated SDK build, both frontend production builds:PASS.
+- OpenAPI export/regeneration PASS. Recursive comparison after removing only the additive X-Analytics-Context header found zero unrelated contract differences; generated whole-document diff is expected.
+- Three compose YAML parses and both runtime-config/Sadad regression scripts PASS.
+- Main-agent settlement/ownership/concurrency/security/retention/scope review and git diff --check PASS. graphify update . PASS (AST only, existing extractor/dependency warnings retained); generated graph artifacts remain ignored.
+
+Acceptance: real event times and property-scoped GA IDs, no account user_id/private content; local idempotency and bounded 24-hour/session-window delivery on the existing API/PostgreSQL infrastructure. Financial enqueue is in the actual settlement/refund transaction, no external HTTP inside it. Existing operations retain authorization and financial evidence. Owner explicitly chose no long-term attribution: expired-context refunds stay only in financial records. Source/operator details in config/ANALYTICS.md.
+
+Limits: software acceptance only, not live GA4 ingestion. HTTP2xx is submission; ambiguous failures can duplicate external custom/refund events despite local dedup. Signup/assessment/immediate appointment capture is post-handler best-effort with a crash gap. Missing/stale browser IDs skip conversions; snapshot consent does not revoke already queued context. Custom rial metric, item cap100, generic paid-service count and eventual bounded physical cleanup are documented. AN04 must verify real property/domain/session behavior, full authenticated journey and applicable consent/revocation policy before activation. No new schema/service/activity archive, push/deploy or production secret. Next AN04 eligible, not started under per-task boundary.

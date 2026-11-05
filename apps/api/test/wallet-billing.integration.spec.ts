@@ -20,6 +20,12 @@ import { OrderBillingTarget } from '../src/modules/commerce/payments/order-billi
 import { PatientAvailabilityService } from '../src/modules/scheduling/patient-availability.service';
 import { PatientAppointmentsService } from '../src/modules/appointments/patient-appointments.service';
 import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
+import { AnalyticsWorker } from '../src/modules/analytics/analytics.worker';
+import { AnalyticsService } from '../src/modules/analytics/analytics.service';
+import { Ga4Transport } from '../src/modules/analytics/ga4.transport';
+import { OutboxService } from '../src/modules/outbox/outbox.service';
+import { AnalyticsInterceptor } from '../src/modules/analytics/analytics.interceptor';
+import { lastValueFrom, of } from 'rxjs';
 import { createTestAccessToken } from './auth-test-support';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 
@@ -480,4 +486,134 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     for (let i = 0; i < 10 && !(await db.notification.count({ where: { recipientId: p.userId, category: 'FINANCIAL' } })); i++) await app.get(OutboxWorker).tick();
     expect(await db.notification.count({ where: { recipientId: p.userId, category: 'FINANCIAL' } })).toBe(1);
   });
+  it('AN03: consented wallet purchase/refund, rollback, partition leases, bounded retry and privacy TTL use real PostgreSQL', async () => {
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    const send = vi.spyOn(transport, 'send').mockResolvedValue('submitted');
+    const worker = app.get(AnalyticsWorker); worker.onModuleDestroy();
+    app.get(OutboxWorker).onModuleDestroy();
+    const outbox = app.get(OutboxService);
+    const analytics = app.get(AnalyticsService);
+    try {
+      const p = await patient(); await credit(p, '2000');
+      const purchase = await order(p);
+      const ctx = { consent: 'granted' as const, measurement_id: 'G-TEST123', client_id: '123.456', session_id: String(Math.floor(Date.now()/1000)-10), at: Date.now(), entry_cta: 'home_enter', phone: 'private-not-allowed' };
+      const requestHeaders = { ...headers(p.token), 'x-analytics-context': JSON.stringify(ctx) };
+      const created = await app.inject({ method: 'POST', url: '/v1/patients/me/billing/order-intents', headers: requestHeaders, payload: { orderId: purchase.id } });
+      expect(created.statusCode).toBe(201); const intentId = created.json().id;
+      const metadata = await db.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: `analytics:context:${purchase.id}` } });
+      expect(JSON.stringify(metadata.payload)).not.toContain('private-not-allowed');
+      const key = randomUUID(); const path = `/v1/patients/me/billing/intents/${intentId}/wallet-payment`;
+      const paid = await app.inject({ method: 'POST', url: path, headers: { ...requestHeaders, 'idempotency-key': key } });
+      expect(paid.statusCode).toBe(201); expect(paid.json().status).toBe('PAID');
+      const replays = await Promise.all([0,1].map(() => app.inject({ method: 'POST', url: path, headers: { ...requestHeaders, 'idempotency-key': key } })));
+      expect(replays.every(response => response.statusCode === 201)).toBe(true);
+      const eventKey = `analytics:ga4:purchase:${purchase.id}`;
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: eventKey } })).toBe(1);
+      const stored = await db.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: eventKey } });
+      expect(stored.payload).toMatchObject({ event: 'purchase', transactionId: purchase.id, amountRial: '10000' });
+      expect(JSON.stringify(stored.payload)).not.toContain(p.userId);
+      const foreign = await patient();
+      const refused = await app.inject({ method: 'POST', url: path, headers: { ...headers(foreign.token), 'x-analytics-context': JSON.stringify(ctx) } });
+      expect(refused.statusCode).toBe(404);
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: eventKey } })).toBe(1);
+      const rollback = randomUUID();
+      await expect(db.$transaction(async tx => { await analytics.enqueue(tx, 'assessment_completed', rollback, new Date(), ctx); throw Error('synthetic rollback'); })).rejects.toThrow('synthetic rollback');
+      expect(await db.outboxEvent.count({ where: { aggregateId: rollback } })).toBe(0);
+      const operational = await outbox.claim();
+      expect(operational.some(row => row.eventType.startsWith('ANALYTICS_'))).toBe(false);
+      const claims = (await Promise.all([outbox.claim(5, 'analytics'), outbox.claim(5, 'analytics')])).flat();
+      expect(new Set(claims.map(row => row.id)).size).toBe(claims.length);
+      expect(claims.some(row => row.id === stored.id)).toBe(true);
+      await db.outboxEvent.update({ where: { id: stored.id }, data: { status: 'PENDING', availableAt: new Date(), lockedAt: null } });
+      await worker.tick();
+      expect(await db.outboxEvent.findUnique({ where: { id: stored.id } })).toMatchObject({ status: 'DELIVERED', payload: {} });
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(send.mock.calls[0][0]).toMatchObject({ client_id: '123.456', events: [{ name: 'purchase', params: { transaction_id: purchase.id, amount_rial: 10000 } }] });
+      const refund = await billing.refund(context(), intentId, '5000', 'Synthetic refund', randomUUID());
+      const refundEvent = await db.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: `analytics:ga4:refund:${refund.id}` } });
+      send.mockResolvedValueOnce('retry'); await worker.tick();
+      expect(await db.outboxEvent.findUnique({ where: { id: refundEvent.id } })).toMatchObject({ status: 'PENDING', attempts: 1, lastError: 'ANALYTICS_RETRY' });
+      await db.outboxEvent.update({ where: { id: refundEvent.id }, data: { availableAt: new Date() } });
+      send.mockResolvedValueOnce('permanent'); await worker.tick();
+      expect(await db.outboxEvent.findUnique({ where: { id: refundEvent.id } })).toMatchObject({ status: 'FAILED', payload: {} });
+      await db.outboxEvent.update({ where: { id: metadata.id }, data: { availableAt: new Date(0) } });
+      const lateRefund = await billing.refund(context(), intentId, '5000', 'Synthetic later refund', randomUUID());
+      expect(lateRefund.status).toBe('COMPLETED');
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:refund:${lateRefund.id}` } })).toBe(0);
+      await db.outboxEvent.updateMany({ where: { id: { in: [stored.id, refundEvent.id] } }, data: { availableAt: new Date(0) } });
+      await worker.tick();
+      expect(await db.outboxEvent.count({ where: { id: { in: [metadata.id, stored.id, refundEvent.id] } } })).toBe(0);
+      expect(await db.billingIntent.findUnique({ where: { id: intentId } })).toMatchObject({ status: 'PAID' });
+    } finally { send.mockRestore(); property.mockRestore(); mode.mockRestore(); }
+  }, 30000);
+
+  it('AN03: verified gateway and capture/payment race yield one purchase; top-up and compensation never count as sales', async () => {
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    app.get(AnalyticsWorker).onModuleDestroy(); app.get(OutboxWorker).onModuleDestroy();
+    const analytics = app.get(AnalyticsService);
+    const ctx = { consent: 'granted' as const, measurement_id: 'G-TEST123', client_id: '123.456', session_id: String(Math.floor(Date.now()/1000)-10), at: Date.now() };
+    try {
+      const p = await patient(); const checkout = await order(p);
+      const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+      await analytics.captureIntent(intent.id, p.userId, ctx);
+      const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${checkout.id}` } })).toBe(0);
+      await gateway.verify(attempt.id); await gateway.verify(attempt.id);
+      expect(await db.billingIntent.findUnique({ where: { id: intent.id } })).toMatchObject({ status: 'PAID' });
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${checkout.id}` } })).toBe(1);
+      const racePatient = await patient(); await credit(racePatient, '2000');
+      const raceOrder = await order(racePatient);
+      const raceIntent = await billing.create(racePatient.userId, 'ORDER', { orderId: raceOrder.id }, randomUUID(), context(racePatient.userId));
+      await Promise.all([analytics.captureIntent(raceIntent.id, racePatient.userId, ctx), billing.payWallet(racePatient.userId, raceIntent.id, randomUUID(), context(racePatient.userId))]);
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${raceOrder.id}` } })).toBe(1);
+      const topup = await billing.create(p.userId, 'TOPUP', { amountToman: '10' }, randomUUID(), context(p.userId));
+      await analytics.captureIntent(topup.id, p.userId, ctx);
+      const topupAttempt = await gateway.create(p.userId, topup.id, randomUUID(), context(p.userId));
+      await gateway.verify(topupAttempt.id);
+      expect(await db.billingIntent.findUnique({ where: { id: topup.id } })).toMatchObject({ status: 'PAID' });
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${topup.id}` } })).toBe(0);
+      const lateOrder = await order(p);
+      const lateIntent = await billing.create(p.userId, 'ORDER', { orderId: lateOrder.id }, randomUUID(), context(p.userId));
+      await analytics.captureIntent(lateIntent.id, p.userId, ctx);
+      const lateAttempt = await gateway.create(p.userId, lateIntent.id, randomUUID(), context(p.userId));
+      await db.billingIntent.update({ where: { id: lateIntent.id }, data: { status: 'CANCELLED' } });
+      await gateway.verify(lateAttempt.id);
+      expect(await db.billingIntent.findUnique({ where: { id: lateIntent.id } })).toMatchObject({ status: 'COMPENSATED' });
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${lateOrder.id}` } })).toBe(0);
+    } finally { property.mockRestore(); mode.mockRestore(); }
+  }, 30000);
+
+  it('AN03: registration and completed-only response projection queue no private clinical fields; disabled/invalid context fails open', async () => {
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    app.get(AnalyticsWorker).onModuleDestroy();
+    const ctx = { consent: 'granted' as const, measurement_id: 'G-TEST123', client_id: '123.456', session_id: String(Math.floor(Date.now()/1000)-10), at: Date.now() };
+    try {
+      const phone = `+989${Math.floor(Math.random()*900000000+100000000)}`;
+      const signup = await app.inject({ method: 'POST', url: '/v1/auth/register', headers: { origin: 'http://localhost:3000', 'x-analytics-context': JSON.stringify(ctx) }, payload: { phone, password: 'An03syntheticPassword!47' } });
+      expect(signup.statusCode).toBe(201);
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:sign_up:${signup.json().id}` } })).toBe(1);
+      const id = randomUUID();
+      const interceptor = new AnalyticsInterceptor(app.get(AnalyticsService), db);
+      const execution = { switchToHttp: () => ({ getRequest: () => ({ method: 'POST', url: `/v1/assessment-submissions/${id}/submit`, headers: { 'x-analytics-context': JSON.stringify(ctx) } }) }) };
+      const incomplete = { id, state: 'IN_PROGRESS', answers: { private: 'private-medical' }, completedAt: null };
+      expect(await lastValueFrom(interceptor.intercept(execution as never, { handle: () => of(incomplete) }))).toBe(incomplete);
+      expect(await db.outboxEvent.count({ where: { aggregateId: id } })).toBe(0);
+      const complete = { ...incomplete, state: 'COMPLETE', completedAt: new Date(), resultSnapshot: { private: 'private-result' } };
+      for (let i=0;i<2;i++) expect(await lastValueFrom(interceptor.intercept(execution as never, { handle: () => of(complete) }))).toBe(complete);
+      const rows = await db.outboxEvent.findMany({ where: { aggregateId: id } });
+      expect(rows).toHaveLength(1); expect(JSON.stringify(rows[0].payload)).not.toContain('private-');
+      const invalid = app.get(AnalyticsService).context('x'.repeat(1025)); expect(invalid).toBeNull();
+      mode.mockReturnValue(false);
+      const blocked = randomUUID();
+      await db.$transaction(tx => app.get(AnalyticsService).enqueue(tx, 'assessment_completed', blocked, new Date(), ctx));
+      expect(await db.outboxEvent.count({ where: { aggregateId: blocked } })).toBe(0);
+    } finally { property.mockRestore(); mode.mockRestore(); }
+  }, 30000);
+
 });

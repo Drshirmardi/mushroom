@@ -81,6 +81,11 @@ case "$command_name" in
     fi
     ;;
   api)
+    if [[ ${ANALYTICS_SERVER_ENABLED:-false} == true ]]; then
+      [[ -r ${GA4_API_SECRET_FILE:-} ]] || { printf 'Analytics secret file is not readable\n' >&2; exit 1; }
+      GA4_API_SECRET=$(<"$GA4_API_SECRET_FILE")
+      export GA4_API_SECRET
+    fi
     if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == arvancloud ]]; then
       [[ -r $ARVAN_ACCESS_KEY_ID_FILE && -r $ARVAN_SECRET_ACCESS_KEY_FILE ]] || {
         printf 'Development Arvan credentials are not readable\n' >&2

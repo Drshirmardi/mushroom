@@ -81,6 +81,8 @@ services:
     environment:
       <<: *node-environment
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      ANALYTICS_SERVER_ENABLED: "${ANALYTICS_SERVER_ENABLED:-false}"
+      GA4_API_SECRET_FILE: "${GA4_API_SECRET_FILE:-/run/optional-secrets/ga4_api_secret}"
       JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
       JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
       COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"

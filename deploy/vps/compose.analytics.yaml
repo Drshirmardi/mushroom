@@ -1,0 +1,13 @@
+# Explicit production opt-in overlay, applied in addition to compose.yaml.
+# No new service. The private secret is never delivered to any frontend container.
+services:
+  api:
+    environment:
+      ANALYTICS_SERVER_ENABLED: "true"
+      GA4_API_SECRET_FILE: /run/secrets/ga4_api_secret
+    secrets:
+      - ga4_api_secret
+
+secrets:
+  ga4_api_secret:
+    file: "${GA4_API_SECRET_PATH:?set the absolute path to the private GA4 API secret}"

@@ -28,3 +28,15 @@ scoped; missing SDK never blocks navigation. Only opaque public catalogue/SKU id
 are allowed in commerce metadata. Existing API request/body/response ownership and
 invitation/session headers must remain unchanged. See config/ANALYTICS.md for event names
 and limits. AN03/AN04 remain separate, dependent tasks; no original architecture change.
+
+AN03 implementation contract (2026-11-06): optional validated, redacted context rides
+existing requests; financial conversions enqueue only with authoritative settlement
+inside its transaction. Actual GA identifiers and event times are required; missing
+context skips analytics. Existing PostgreSQL Outbox owns partitioned bounded retries,
+payload purge and short-lived attribution/tombstones; no schema or service added.
+Owner explicitly chose short retention: refunds after context expiry remain financial
+records only and are not forwarded to GA4. No long-term order attribution is added.
+At-least-once HTTP submission is not proof of ingestion or exactly-once reporting.
+Signup/completion capture after successful handlers is best-effort with a crash gap.
+See config/ANALYTICS.md for the precise event, rial, retention, consent and operator limits.
+AN04 remains a separate acceptance gate; no real property/production activation.

@@ -4,7 +4,7 @@ import { runtimePublicUrl } from "./runtime-config";
 
 const apiBaseUrl = runtimePublicUrl("apiUrl", "http://localhost:3003");
 
-export const apiClient = createApiClient({ baseUrl: apiBaseUrl, fetch: (input, init) => analyticsFetch(input, init, () => fetch(input, init), apiBaseUrl, "web") });
+export const apiClient = createApiClient({ baseUrl: apiBaseUrl, fetch: (input, init) => analyticsFetch(input, init, (nextInput, nextInit) => fetch(nextInput, nextInit), apiBaseUrl, "web") });
 
 export const appUrl = runtimePublicUrl("appUrl", "http://localhost:3001");
 export const dashboardUrl =

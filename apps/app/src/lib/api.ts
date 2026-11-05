@@ -8,10 +8,10 @@ const webBaseUrl = runtimePublicUrl("webUrl", "http://localhost:3000");
 
 const sessionTransport = createSessionAwareFetch();
 export const sessionFetch: typeof fetch = (input, init) => analyticsFetch(input, init,
-  () => sessionTransport.fetch(input, init), apiBaseUrl, 'app');
+  (nextInput, nextInit) => sessionTransport.fetch(nextInput, nextInit), apiBaseUrl, 'app');
 
 export const authApiClient = createApiClient({ baseUrl: apiBaseUrl,
-  fetch: (input, init) => analyticsFetch(input, init, () => fetch(input, init), apiBaseUrl, 'app') });
+  fetch: (input, init) => analyticsFetch(input, init, (nextInput, nextInit) => fetch(nextInput, nextInit), apiBaseUrl, 'app') });
 export const apiClient = createApiClient({
   baseUrl: apiBaseUrl,
   fetch: (input, init) => {
