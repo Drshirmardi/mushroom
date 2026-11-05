@@ -510,17 +510,14 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-MZ08 — Nullable age draft and actionable publication validation; save-to-offering focus, targeted12 validation/render tests/types/lint PASS2026-11-02. Evidence: phase12 MZ08.
 
 - [x] F12-FE01-MZ09 — Bounded invitation review/polling and recoverable read errors; 10 targeted tests, app types/scoped lint and intercepted browser lifecycle PASS2026-11-03. Evidence: phase12 MZ09.
-
 - [x] F12-FE01-MZ10 — Invitation-scoped entry/access, OTP login and payment return connected; PostgreSQL paid two-person/ownership, 11 units, browser continuation/login, builds/types/contracts PASS2026-11-03. Evidence: phase12 MZ10; next MZ11.
-
 - [x] F12-FE01-MZ11 — Responsive assessment journey; app build/types/scoped lint, chart units, local browser seven-width/200%-text/consent/result and sequential follow-up PASS2026-11-03. Evidence: phase12 MZ11.
 
 - [x] F12-FE01-MZ12 — Final journey audit: visible initiator linking consent; types/scoped lint and focused mobile consent browser PASS2026-11-03. Evidence: phase12 MZ12.
 
 - [x] F12-FE01-MZ13 — Preserve invitation test links and safe profile round-trip. Targeted units/types/browser PASS2026-11-03.
-- [x] F12-FE01-MZ15 — Bounded participation polling and responsive verification; targeted units/types/lint/build/seven-width local browser PASS2026-11-03. MZ13-MZ15 software complete; live audit Incomplete.
-
 - [x] F12-FE01-MZ14 — Actionable invitation errors and guarded cancellation; targeted13 units/types/scoped lint/local browser PASS2026-11-03.
+- [x] F12-FE01-MZ15 — Bounded participation polling and responsive verification; targeted units/types/lint/build/seven-width local browser PASS2026-11-03. MZ13-MZ15 software complete; live audit Incomplete.
 
 - [x] F12-FE01-MZ16 — Requester-only original destination mask/date and historical vs new consent; scoped PostgreSQL/contracts/types/build/browser PASS2026-11-03.
 - [x] F12-FE01-MZ17 — Shared result/numeric/app-exit reproduction and fix; browser/regression/types/lint/build PASS2026-11-04; native Back limitation recorded.
@@ -546,6 +543,5 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-PR01 — Consolidated medical entry points, patient-friendly medical summary and edit return; scoped dev+production browser/four-route axe/responsive/types/build/lint delta PASS2026-11-05; exhaustive live audit Incomplete.
 
 - [x] F12-FE01-PR02 — Repair saved Decimal weight serialization and intake step validation;2 API serializer +4 form tests, app/API types/scoped lint delta PASS2026-11-05.
-
 
 - [x] F12-FE01-ST01 — Store header logo removed; app types/scoped lint delta PASS2026-11-05.

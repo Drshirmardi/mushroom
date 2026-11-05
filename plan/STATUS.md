@@ -4399,63 +4399,80 @@ MZ06-C05 DONE/software (2026-11-02): sole /root review PASS; Final integration r
 
 MZ06 FINAL SOFTWARE ACCEPTANCE (2026-11-02): C01–C05 DONE/software, main review PASS; same /root claim RELEASED. Owner authorizes scoped task commits and origin/dev push. Approved invitation pattern and live receipt deferred to operator; provider acceptance never means delivery. No new batch, primary migration or manual deployment. Next: operator configures an approved invitation pattern and performs one explicit delivery acceptance. Broad F12-FE01 remains REWORK. Evidence: logs/phase-12.md#mz06-c05--accepted-software.
 
+MZ07 IN_PROGRESS (2026-11-02): owner authorizes scoped UX repair and push to dev; sole /root. Own couples entry/legacy history, marriage catalogue/review contract, dashboard defaults/role labels and focused checks. Preserve installer/AGENTS/fa.json. No live invitation, provider send or primary migration.
+
 MZ07 DONE/software (2026-11-02): F12-FE01-MZ07 sole /root review PASS, claim RELEASED. Couples service-first entry/legacy compatibility, clear dashboard defaults/semantic roles, server-filtered catalogue and independent private eligibility review connected. One expanded real PostgreSQL/HTTP test, types/SDK/scoped lint/diff PASS; no migration or provider send. Owner authorizes scoped commit and push to dev. Live browser acceptance and invitation pattern remain operator follow-up. No next batch. Evidence: logs/phase-12.md#f12-fe01-mz07--service-first-couples-navigation.
+MZ08 IN_PROGRESS (2026-11-02): sole /root; owner-approved nullable age draft, unified publication validation and save-to-offering guidance. Dashboard-only, no API/DB changes. Targeted tests/types/lint then scoped commit and push dev; preserve unrelated changes.
 
 MZ08 DONE/software (2026-11-02): F12-FE01-MZ08 sole /root review PASS; claim RELEASED. Nullable age drafts, one publication validator with actionable field errors, numeric-only payload and focus after questionnaire save implemented.12 targeted validation/React-render cases, dashboard types/scoped ESLint and Graphify/diff PASS. No API/DB changes; no live publication. Owner authorizes task commit and push dev; no next batch. Evidence: logs/phase-12.md#f12-fe01-mz08--publication-form-validation.
 
 MZ09 DONE (2026-11-03): F12-FE01-MZ09 sole /root review PASS, single-task claim RELEASED. Invitation review/loading bounded; 30s visible pending polling, retained consent/data, Retry-After recovery. 10 targeted tests, app types, scoped lint and intercepted browser lifecycle PASS. No DB/API contract change. Next eligible task MZ10; MZ11 follows MZ10. Broader F12-FE01 unchanged.
 
+
 MZ10 DONE/software (2026-11-03): F12-FE01-MZ10 sole /root review PASS, single-task claim RELEASED. Invitation-scoped profile/consent/payment/assessment continuation, dedicated OTP login, per-account/per-intent return recovery and accepted-recipient binding connected. Real PostgreSQL HTTP paid two-person flow and ownership checks, 11 targeted units, app/web builds and API/app/web/SDK types PASS. New-code lint PASS; unchanged baseline lint errors documented. No migration, provider send or deployment. Next eligible MZ11; broader F12-FE01 unchanged. Evidence: logs/phase-12.md#f12-fe01-mz10--invitation-scoped-entry.
+
 
 
 MZ11 DONE/software (2026-11-03): F12-FE01-MZ11 sole /root review PASS, single-task claim RELEASED. Flat responsive questionnaire, adaptive continuation labels, explicit selection/focus, long consent and readable result legend connected. App build/types/scoped lint, two chart units and local browser scenarios PASS (seven widths, 200% text, five input types, save/resume, duplicate-click and sequential follow-up). No API/schema/scoring change, real SMS/payment or deployment. Approved MZ09-MZ11 scope complete; broader F12-FE01 unchanged. No next batch started. Evidence: logs/phase-12.md#f12-fe01-mz11--responsive-assessment-journey.
 
 
+
 MZ12 DONE/software (2026-11-03): F12-FE01-MZ12 sole /root review PASS, single-task claim RELEASED. Final approved journey audit aligned initiator consent with recipient consent: required full text visible, explicit checkbox and mobile touch/focus. Types/scoped lint and focused intercepted-browser consent PASS; no API/schema/payment changes. Approved assessment-journey software scope complete, owner final manual check remains by request. No next batch. Evidence: logs/phase-12.md#f12-fe01-mz12--final-journey-audit.
+
 
 
 MZ13 DONE/software (2026-11-03): sole /root review PASS, single-task claim RELEASED. Invitation assessment links retain scope; safe profile return preserves creation/replacement and request destinations, including unchanged/discard/save exits. Four targeted units, app types, scoped lint (zero errors; one unchanged avatar warning) and local profile/entry browser PASS. No API/schema/general entry changes. Next eligible MZ14, then MZ15; neither started.
 
 
+
 MZ14 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Actionable private phone/SMS/recovery errors, role/consent hints, busy controls and modal cancellation connected.13 targeted units, app types/scoped lint and local browser phone focus/cancel-abort/one cancellation PASS. No API/schema/provider mutation. Next eligible MZ15, not started; overall MZ13-MZ15 goal remains active.
+
 
 
 MZ15 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Pending-only30s visible/online participation reads, single-flight/cooldown, mutation coordination and quiet state retention implemented.6 loader units plus13 focused regression units, types/scoped lint/app build and local browser seven widths/200%-text/axe/focus/counts PASS. MZ13-MZ15 software plan complete; final manual deployed review remains user-owned; live UX audit Incomplete. No next batch, API/schema/provider action or manual deployment. Evidence: logs/phase-12.md#f12-fe01-mz15--bounded-participation-and-final-review.
 
 
+
 MZ16 DONE/software (2026-11-03): sole /root review PASS, claim RELEASED. Requester-only original-destination masked phone/date and independent historical/new purchase consent display delivered. One expanded actual PostgreSQL ownership/privacy/phone-change test, generated contract build, API test/app types, scoped lint/app build and seven-width/200%-text/keyboard/axe local browser PASS. No schema/primary-DB/provider action. Next eligible MZ17, then MZ18; neither started. Evidence: logs/phase-12.md#f12-fe01-mz16--invitation-identity-and-consent-display.
+
 
 
 MZ17 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Shared-result quiet bounded reads with immediate denial hiding; pre-send numeric range guidance; explicit unsaved app-exit modal and reload warning implemented. Baseline/after local browser, adaptive320/390/1440 regression,6 loader units/types/lint/app build PASS. Native browser Back not certified; limitation recorded per approved plan. No API/schema/scoring/provider change. Next MZ18; not started. Evidence: logs/phase-12.md#f12-fe01-mz17--assessment-continuity.
 
 
+
 MZ18 DONE/software (2026-11-04): sole /root review PASS, single-task claim RELEASED. Empty legacy catalogue groups hidden while loading/error/pagination and old access remain; four legacy assessment cost pages show exact toman units. Intercepted production-browser catalogue/purchase seven widths, catalogue200%/keyboard, error/retry/pagination and exact remainder PASS;9 wallet units, app types/build and scoped lint delta PASS (four unchanged baseline findings). MZ16-MZ18 software plan complete; deployed manual acceptance remains pending and native Back limitation from MZ17 remains. No next task selected. Evidence: logs/phase-12.md#f12-fe01-mz18--catalogue-and-cost-clarity.
+
+
 
 
 MZ19 DONE/software (2026-11-04): sole /root review PASS; single-task claim RELEASED. Follow-up to MZ17 native Back limitation implemented with document-scoped history positions, capture rollback and exact destination replay; no sentinel entries/auto-save. Stay/save/discard, Forward, busy Back, failed save, final submit and native cross-document warning PASS in local Chromium dev and production. Existing MZ17 regression/types/build/lint delta PASS. Previous native same-document Back limitation is superseded for tested scenarios; physical mobile/Safari/Firefox and final online acceptance remain unverified. No API/schema/provider action or next task selected. Evidence: logs/phase-12.md#f12-fe01-mz19--native-assessment-history-guard.
 
+
 VP01 DONE/software: sole /root review PASS, single-task claim RELEASED. Flow-based dock/actual-height reservation, one bounded content scroller, safe-area frame and scalable nav labels. Local baseline overlap reproduced; eight-size/200%-text/end-action production-browser, types/lint/build and MZ17/MZ19 regressions PASS. Exact Android device report and physical iOS/Android unverified. Next eligible VP02 (keyboard/action footer), then VP03 (installation); neither implemented.
+
 
 VP02 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Shared visible viewport/keyboard observer, action/overlay portals, dynamic sheet/chat height, transparent nav outer backing and removal of frame paint implemented. Desktop resize false-positive fixed. Injected viewport + touch fallback production-browser, eight-size shell/cart, zoom/text200%, saved-answer/history regressions, types/build and scoped lint delta PASS. Physical iOS/Android/real browser chrome remain unverified. Next eligible VP03 (standalone/install), not started.
 
+
 VP04 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Removed nested dock glass/blur/shadow and moved home gradient to frame for continuous backing. Supplied screenshot + local baseline/after production interactions/seven widths/44px nav targets, existing shell regression/types/build PASS. Full UX Audit verdict Incomplete: authenticated live connection unavailable, no live gates/perf/axe certification. VP03 explicitly DEFERRED by user; no install work. Remaining: live home journey error diagnosis and real-device acceptance.
+
 
 VP05 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. User correction supersedes VP04 dock-removal choice. Original rounded glass restored; nav-only footer overlaps page transparently instead of reserving a flat full-width band, with measured scroll/focus clearance. Action-bar footers remain normal flow. Local dev+production home/nav/shell, viewport keyboard/cart/product regression, types/build PASS. Live/device audit remains unverified; VP03 deferred.
 
+
 AH01 DONE/software (2026-11-04): sole /root review PASS, single-task claim RELEASED. Additive status/direction marriage-list filter, state-aware assessment history helper and regenerated OpenAPI/client ready. Expanded actual disposable PostgreSQL older-pending/ownership/verified-phone/clinic/privacy and invalid-query test PASS; API/test/app types and generated client build PASS. No page UI change yet. Next eligible AH02: implement approved action-first assessment UI, preserving exact invitation context and legacy records. VP03 remains deferred.
+
 
 AH02 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Approved action-first assessment hub connected to real pending/ongoing/catalogue/history/purchase reads, two URL-driven tabs, scoped styles and legacy access. Exact owned marriage context added to history projection; OpenAPI/client regenerated. Unit projection/API test types/client build, app types/lint/build, production hub/catalogue and dev history/continuity browser PASS. Live/device audit remains unverified. No next task selected; installation deferred.
 
-AH03 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Assessment hub initial/Suspense/tab text loaders replaced with invite/card/row skeletons using existing shimmer and reduced-motion primitive. Screen-reader-only status retained; shared error/retry untouched. Held-response dev+production skeleton/error/retry/seven-width/reduced-motion and hub browser, types/lint/build PASS. No API/other-page changes or live/device certification. No next task selected.
 
+AH03 DONE/software (2026-11-04): sole /root review PASS, claim RELEASED. Assessment hub initial/Suspense/tab text loaders replaced with invite/card/row skeletons using existing shimmer and reduced-motion primitive. Screen-reader-only status retained; shared error/retry untouched. Held-response dev+production skeleton/error/retry/seven-width/reduced-motion and hub browser, types/lint/build PASS. No API/other-page changes or live/device certification. No next task selected.
 
 AH04 DONE/software (2026-11-04): sole /root review PASS, single-task claim RELEASED. EvilCharts-adapted full radial result and semi home chart, saved-score percentages, muted animated skeleton and reduced-motion support delivered with installed Recharts2; no dependency/API/scoring change. Eight units, app types/build, scoped lint delta and local dev+production seven-width/zero/loading/200%-text/reduced-motion browser PASS. Online/physical-device acceptance unverified. No next task selected.
 
-
 PR01 DONE/software (2026-11-05): sole /root review PASS, single-task claim RELEASED. Profile card preserved; home shortcut and card share medical summary, redundant lower medical entries removed, readable saved health/optional data and medical edit-return delivered. Local dev+production interaction/empty/error/retry, four-route seven-width/text200/axe, types/build/scoped lint delta PASS. Live baseline read-only observed; exhaustive UX Audit remains Incomplete and deployed/device final acceptance unverified. No next batch selected.
 
-
 PR02 DONE/software (2026-11-05): sole /root review PASS, claim RELEASED. Database Decimal weight normalized before global serialization; first-step health validation scoped and save errors navigate to correct step. Actual Prisma Decimal/class-transformer2 tests, intake4 tests, app/API types and scoped lint delta PASS. No DB/API-schema/SDK change, no actual patient write. Live browser re-edit remains manual; next batch none.
-
 
 ST01 DONE/software (2026-11-05): sole /root review PASS, claim RELEASED. Store header logo removed, brand text/store title retained; app types and scoped lint delta PASS. No next batch.
