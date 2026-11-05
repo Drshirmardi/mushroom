@@ -18,8 +18,8 @@ const render = (value: BillingIntent) => renderToStaticMarkup(createElement(Paym
 describe("payment method context", () => {
   it("explains a top-up independently of the user's existing balance and shows the disabled bank method", () => {
     const html = render(intent("TOPUP", [{ code: "GATEWAY", available: false, balanceRial: null }]));
-    expect(html).toContain("هزینهٔ خرید، نوبت یا آزمون نیست");
-    expect(html).toContain("از موجودی همین کیف پول قابل پرداخت نیست");
+    expect(html).toContain("پرداخت هزینهٔ خرید یا خدمت نیست");
+    expect(html).toContain("افزایش موجودی فقط از درگاه بانکی انجام می‌شود.");
     expect(html).toContain('href="/profile/wallet"');
     expect(html).toContain("مبلغ افزایش موجودی");
     expect(html).toContain("افزایش موجودی فعلاً ممکن نیست");
@@ -33,7 +33,7 @@ describe("payment method context", () => {
     expect(html).toContain("۱٬۹۰۰٬۰۰۰");
     expect(html).not.toContain("دربارهٔ افزایش موجودی");
     expect(html).toContain("مبلغ قابل پرداخت");
-    const walletButton = html.match(/<button[^>]*class="wallet-method"[^>]*>/)?.[0];
+    const walletButton = html.match(/<button[^>]*class="wallet-method(?: [^"\n]*)?"[^>]*>/)?.[0];
     expect(walletButton).toBeDefined();
     expect(walletButton).not.toContain("disabled");
   });
@@ -42,7 +42,7 @@ describe("payment method context", () => {
     const html = render(intent("ASSESSMENT", [{ code: "WALLET", available: false, balanceRial: "1000000" }]));
     expect(html).toContain("کسری موجودی");
     expect(html).toContain("افزایش موجودی کیف پول");
-    expect(html.match(/<button[^>]*class="wallet-method"[^>]*>/)?.[0]).toContain("disabled");
-    expect(html).not.toContain("هزینهٔ خرید، نوبت یا آزمون نیست");
+    expect(html.match(/<button[^>]*class="wallet-method(?: [^"\n]*)?"[^>]*>/)?.[0]).toContain("disabled");
+    expect(html).not.toContain("پرداخت هزینهٔ خرید یا خدمت نیست");
   });
 });

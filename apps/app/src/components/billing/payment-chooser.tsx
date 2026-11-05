@@ -131,7 +131,6 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled, conte
               <span className="wallet-method__title">پرداخت از کیف پول</span>
               <span className="wallet-method__hint">
                 {balance === null ? "موجودی در دسترس نیست." : <>موجودی: {formatRial(balance)} تومان</>}
-                <br />برداشت پس از تأیید نهایی شما
                 {deficit && <span className={styles.deficit}>کسری موجودی: {formatRial(deficit)} تومان</span>}
               </span>
             </span>
@@ -200,7 +199,6 @@ export function PaymentChooser({ accessToken, intent, onPaid, onCancelled, conte
               <Button className="w-full" busy={busy !== null} disabled={!canPayFromWallet} onClick={() => void payFromWallet()}>
                 {busy === "wallet" ? <>در حال پرداخت…</> : "تأیید پرداخت"}
               </Button>
-              <Button variant="ghost" className="w-full" disabled={busy !== null} onClick={() => setWalletConfirmation(null)}>فعلاً پرداخت نمی‌کنم</Button>
             </div>
           </BottomSheet>
         )}
