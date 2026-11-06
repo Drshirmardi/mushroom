@@ -107,6 +107,18 @@ export class PatientAssessmentsService {
         await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.SUBMISSION_READ, active.id, context);
         return this.response(active);
       }
+      if (!entryPatientId) {
+        // The owned initial entry is the only free attempt origin. Reuse it when it is
+        // already exactly bound to this source, instead of reopening a public free start.
+        const entry = await tx.patientEntry.findUnique({
+          where: { patientId: patient.id },
+          select: { clinicId: true, assessmentVersionId: true, submissionId: true, completedAt: true },
+        });
+        if (entry?.clinicId === patient.clinicId && entry.assessmentVersionId === versionId && entry.submissionId === null && entry.completedAt === null) {
+          const consumed = await tx.patientAssessmentSubmission.count({ where: { entryPatientId: patient.id } });
+          if (consumed === 0) entryPatientId = patient.id;
+        }
+      }
       const [visibility] = await tx.$queryRaw<{ visible: boolean }[]>(Prisma.sql`SELECT assessment_publicly_available(${versionId}::uuid) AS visible`);
       if (!visibility?.visible && !entryPatientId) throw notFound();
       if (!entryPatientId) throw new ConflictException({code:'ASSESSMENT_PAYMENT_REQUIRED',message:'Start a new public attempt through a paid offering.',details:{}});

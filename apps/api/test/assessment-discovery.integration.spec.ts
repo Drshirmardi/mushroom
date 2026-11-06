@@ -34,7 +34,14 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment d
   async function attempt(p: Actor, status: 'DRAFT' | 'PUBLISHED' | 'RETIRED' = 'PUBLISHED', otherClinic = clinicId) {
     const version = await db.assessmentVersion.create({ data: { clinicId: otherClinic, assessmentKey: 'MEZAJ', locale: `x-${randomUUID().slice(0, 8)}`, versionNumber: 1, title: 'Synthetic questionnaire', structure, contentHash: 'a'.repeat(64), status,
       ...(status !== 'DRAFT' ? { publishedAt: new Date() } : {}), ...(status === 'RETIRED' ? { retiredAt: new Date() } : {}) } });
-    const submission = await db.patientAssessmentSubmission.create({ data: { patientId: p.patientId, assessmentVersionId: version.id, answers: { q: true } } });
+    // Only the single owned initial entry may create a new free attempt. Later history
+    // rows are completed legacy attempts, while a cross-clinic row is retained as
+    // completed legacy data so it cannot fabricate a new free start.
+    const ownEntry = otherClinic === clinicId && await db.patientAssessmentSubmission.count({ where: { patientId: p.patientId } }) === 0;
+    if (ownEntry) await db.patientEntry.update({ where: { patientId: p.patientId }, data: { assessmentVersionId: version.id } });
+    const submission = await db.patientAssessmentSubmission.create({ data: ownEntry
+      ? { patientId: p.patientId, assessmentVersionId: version.id, entryPatientId: p.patientId, answers: { q: true } }
+      : { patientId: p.patientId, assessmentVersionId: version.id, state: 'COMPLETE', completedAt: new Date(), resultSnapshot: { snapshotVersion: 1 }, completionIdempotencyKey: randomUUID(), completionPayloadHash: 'd'.repeat(64), answers: { q: true } } });
     return { submission, version };
   }
 

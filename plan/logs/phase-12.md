@@ -7099,3 +7099,48 @@ Verification:
 No trigger, access predicate, test skip, dependency, migration, schema, runtime scan,
 analytics architecture or Production setting changed. CI02 remains deferred and the
 runtime image scan remains disabled. Hosted PR37 rerun is the remaining gate.
+
+## PR37 isolated assessment suite repair
+
+Task: F12-FE01-AN04-CI03 (same batch F12-B17); 2026-11-06 Asia/Tehran; sole Codex
+/root. The first hosted rerun, run42146937593 / verify job127660577535, passed lint,
+TypeScript, the full `pnpm test` step and all later build/smoke steps up to the isolated
+assessment database step. That previously skipped step then failed because eleven
+pre-existing files still created new attempts without the owned initial-entry or paid
+access required by the current database contract; the isolated step also lacked a
+synthetic `SMS_CREDENTIAL_ENCRYPTION_KEY` needed by the marriage-phone fixture.
+
+No access rule, trigger or test was disabled. The fixtures were adapted to the current
+contract:
+- `patient-entry-test-support` now leaves the shared synthetic entry uncompleted so the
+  same row can serve as the exact owned initial-entry origin. No trigger bypass is used.
+- `PatientAssessmentsService.start` can reuse only an entry already bound to the exact
+  source, uncompleted/unsubmitted and not consumed by any submission. A consumed entry
+  does not reopen a second free attempt, so the public free-start boundary is retained.
+- Reporting, Mezaj migration, discovery, guidance, protocol, purchase, care,
+  assigned-consultation, reliability and patient-journey fixtures now use owned entry
+  provenance, completed legacy rows for historical/capped data, and the real paid grant
+  paths where those already existed.
+- Second free attempts in the reliability suite are now asserted as rejected
+  (`ASSESSMENT_PAYMENT_REQUIRED`), and completion-key scoping is verified across
+  independent patients instead of an impossible second free same-patient attempt.
+- The two stale adult-fallback assertions now exercise an under-18 birth date from both
+  intake and initial-entry fallback.
+- The isolated CI step exports a generated non-secret test-only SMS encryption key
+  alongside the existing payment key.
+
+Changed paths:
+- `apps/api/src/modules/assessments/patient/patient-assessments.service.ts`
+- `.github/workflows/ci.yml`
+- `apps/api/test/patient-entry-test-support.ts`
+- `apps/api/test/{assessment-care,assessment-discovery,assessment-guidance,assessment-protocol,assessment-purchase,assessment-reliability,assigned-consultation,couple-assessment,couple-link,patient-journey}.integration.spec.ts`
+
+Verification:
+- Full isolated 22-file command equivalent to the hosted step: 22 files passed;
+  435 tests passed.
+- `pnpm --filter @sabz-zendegi/api test`: 118 files passed / 34 skipped; 582 tests
+  passed / 611 skipped.
+- `tsc -p tsconfig.test.json --noEmit`, `pnpm lint` (same 9 existing warnings) and
+  `git diff --check`: PASS.
+- The runtime image scan remains disabled and CI02 remains deferred. Hosted PR37 rerun
+  is the remaining gate before marking the task accepted.

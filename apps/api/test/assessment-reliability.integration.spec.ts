@@ -40,6 +40,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment r
       title: 'Synthetic assessment', contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(),
       structure: { schemaVersion: 1, sections: [{ id: 's', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 2, falseScore: 0 }] }], resultBands: [{ id: 'only', title: 'Synthetic band', minInclusive: 0, requiresReview: false }] },
     } });
+    await db.patientEntry.update({ where: { patientId: patient.id }, data: { assessmentVersionId: version.id } });
     return { ...auth, patientId: patient.id, versionId: version.id };
   }
 
@@ -81,24 +82,24 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment r
     expect(await db.auditEvent.count({ where: { subjectId: id, action: 'PATIENT_ASSESSMENT_SUBMISSION_COMPLETED' } })).toBe(1);
   });
 
-  it('never replays a completion key onto a different submission with identical answers', async () => {
+  it('closes a second free attempt and never rebinds its completion key', async () => {
     const p = await fixture(); const key = randomUUID(); const first = await answered(p);
     expect((await submit(p, first, key)).statusCode).toBe(201);
-    const second = await answered(p);
-    const response = await submit(p, second, key);
-    expect(response.statusCode).toBe(409);
-    expect(response.json().code).toBe('IDEMPOTENCY_KEY_REUSED');
-    expect((await db.patientAssessmentSubmission.findUniqueOrThrow({ where: { id: second } })).state).toBe('IN_PROGRESS');
+    const second = await start(p);
+    expect(second.statusCode).toBe(409);
+    expect(second.json().code).toBe('ASSESSMENT_PAYMENT_REQUIRED');
+    expect(await db.patientAssessmentSubmission.count({ where: { patientId: p.patientId, assessmentVersionId: p.versionId } })).toBe(1);
+    expect((await submit(p, first, randomUUID())).statusCode).toBe(409);
+    expect((await submit(p, first, key)).statusCode).toBe(201);
   });
 
-  it('serializes a shared completion key across two distinct in-progress submissions', async () => {
-    const p = await fixture(); const other = await fixture('MAIN');
-    const first = await answered(p); const second = await answered({ ...p, versionId: other.versionId });
+  it('scopes a completion key per patient instead of serializing unrelated patients', async () => {
+    const firstPatient = await fixture(); const secondPatient = await fixture('MAIN');
+    const first = await answered(firstPatient); const second = await answered(secondPatient);
     const key = randomUUID();
-    const replies = await Promise.all([submit(p, first, key), submit(p, second, key)]);
-    expect(replies.map(r => r.statusCode).sort()).toEqual([201, 409]);
-    expect(await db.patientAssessmentSubmission.count({ where: { patientId: p.patientId, completionIdempotencyKey: key } })).toBe(1);
-    expect(await db.patientAssessmentSubmission.count({ where: { patientId: p.patientId, state: 'IN_PROGRESS' } })).toBe(1);
+    const replies = await Promise.all([submit(firstPatient, first, key), submit(secondPatient, second, key)]);
+    expect(replies.map(r => r.statusCode)).toEqual([201, 201]);
+    expect(await db.patientAssessmentSubmission.count({ where: { completionIdempotencyKey: key, state: 'COMPLETE' } })).toBe(2);
   });
 
   it('rejects stale changing saves and accepts equal draft retries without advancing revision', async () => {
@@ -143,7 +144,9 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment r
       structure: {}, contentHash: 'b'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(),
     } });
     expect((await start({ ...p, versionId: version.id })).statusCode).toBe(404);
-    const row = await db.patientAssessmentSubmission.create({ data: { patientId: p.patientId, assessmentVersionId: version.id, answers: {} } });
+    // A cross-clinic attempt cannot own this patient's entry; retain a completed legacy
+    // row to exercise the API resource checks without fabricating a new free attempt.
+    const row = await db.patientAssessmentSubmission.create({ data: { patientId: p.patientId, assessmentVersionId: version.id, state: 'COMPLETE', completedAt: new Date(), resultSnapshot: { snapshotVersion: 1 }, completionIdempotencyKey: randomUUID(), completionPayloadHash: 'd'.repeat(64), answers: {} } });
     for (const reply of [
       await request(p, 'GET', `/v1/assessment-submissions/${row.id}`),
       await save(p, row.id, { q: true }), await submit(p, row.id),
