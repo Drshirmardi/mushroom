@@ -9,19 +9,23 @@ on:
       - 'deploy/vps/**'
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
+      - 'scripts/*installation*.py'
+      - 'apps/*/.env.example'
       - 'scripts/deploy-vps.mjs'
       - 'apps/api/prisma/bootstrap-installation.mjs'
       - 'apps/api/src/config/environment.validation.ts'
       - '.github/workflows/installation.yml'
       - '.github/workflows/production*.yml'
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'installation/**'
       - 'deploy/ejabberd/**'
       - 'deploy/vps/**'
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
+      - 'scripts/*installation*.py'
+      - 'apps/*/.env.example'
       - 'scripts/deploy-vps.mjs'
       - 'apps/api/prisma/bootstrap-installation.mjs'
       - 'apps/api/src/config/environment.validation.ts'
@@ -44,17 +48,28 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+      - name: Read pinned public installer revision
+        id: installer
+        run: python3 -c "import json,os; p=json.load(open('installation/source.lock.json')); print('revision='+p['revision'],file=open(os.environ['GITHUB_OUTPUT'],'a'))"
+      - uses: actions/checkout@v4
+        with:
+          repository: Drshirmardi/mushroom-installer
+          ref: ${{ steps.installer.outputs.revision }}
+          path: .installer
+          persist-credentials: false
       - name: Standard-library installer, environment and package checks
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends age caddy
-          python3 -B -m unittest discover -s installation -p 'test_*.py' -v
-          python3 -B installation/manager.py audit-env
-          python3 -B installation/build.py
-          bash -n installation/install.sh
+          python3 -B -m unittest discover -s .installer/installation -p 'test_*.py' -v
+          python3 -B scripts/test-installation-contract.py
+          python3 -B .installer/installation/manager.py audit-env --repository .
+          python3 -B .installer/scripts/check-shared-assets.py --repository .
+          python3 -B .installer/installation/build.py
+          bash -n .installer/installation/install.sh
           bash scripts/test-vps-deploy.sh
       - name: Real standalone chat engine and retained database rehearsal
-        run: sudo env INSTALLER_CHAT_DOCKER_TEST=1 INSTALLER_TEST_USER="$USER" python3 -B -m unittest discover -s installation -p 'test_chat_docker.py' -v
+        run: sudo env INSTALLER_CHAT_DOCKER_TEST=1 INSTALLER_TEST_USER="$USER" python3 -B -m unittest discover -s .installer/installation -p 'test_chat_docker.py' -v
       - run: pnpm install --frozen-lockfile
       - name: Build the actual API used by the first-administrator helper
         env:
@@ -65,4 +80,4 @@ jobs:
       - name: Fresh PostgreSQL first-run and retry behavior
         run: node scripts/test-installation-postgres.mjs
       - name: Real PostgreSQL encrypted backup and separate restore drill
-        run: node scripts/test-installation-restore.mjs
+        run: node .installer/scripts/test-installation-restore.mjs
