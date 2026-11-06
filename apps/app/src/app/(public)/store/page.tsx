@@ -13,6 +13,7 @@ import { AddressSheet } from "@/components/store/address-sheet";
 import { StoreHeroSlider } from "@/components/store/store-hero-slider";
 import { StoreShortcuts } from "@/components/store/store-shortcuts";
 import styles from "@/components/store/store-home.module.css";
+import { useStoreBrowse } from "@/lib/store-browse";
 import { StoreGridLoading, StorePageLoading } from "@/components/store/store-loading";
 import { AnimatedGroup } from "@/components/motion/animated-group";
 
@@ -64,6 +65,10 @@ function StoreCatalog() {
     window.history[replace ? "replaceState" : "pushState"](null, "", `${url.pathname}${url.search}`);
   };
   const clearSearch = () => updateCatalog({ q: null, page: null }, true);
+  const browseKey = `${session?.authentication.user.id ?? "guest"}:${params.toString()}`;
+  const [personalSettled, setPersonalSettled] = useState(false);
+  const settlePersonal = useCallback(() => setPersonalSettled(true), []);
+  const [refreshing, setRefreshing] = useState(true);
   const requestVersion = useRef(0);
   const focusResults = useRef(false);
   const [products, setProducts] = useState<Awaited<ReturnType<typeof listCommerceProducts>> | null>(null);
@@ -82,16 +87,16 @@ function StoreCatalog() {
 
   const loadCatalog = useCallback(async () => {
     const version = ++requestVersion.current;
-    setProducts(null); setError(null);
+    setRefreshing(true); setError(null);
     try {
       const next = await listCommerceProducts({ query: search.trim() || undefined, page, pageSize: CATALOG_PAGE_SIZE, categoryId });
-      if (version === requestVersion.current) setProducts(next);
-    } catch (cause) { if (version === requestVersion.current) setError(commerceErrorMessage(cause)); }
+      if (version === requestVersion.current) { setProducts(next); setRefreshing(false); }
+    } catch (cause) { if (version === requestVersion.current) { setError(commerceErrorMessage(cause)); setRefreshing(false); } }
   }, [search, page, categoryId]);
 
   useEffect(() => {
     ++requestVersion.current;
-    setProducts(null); setError(null);
+    setRefreshing(true); setError(null);
     const timer = window.setTimeout(() => { void loadCatalog(); }, search ? 250 : 0);
     return () => { window.clearTimeout(timer); ++requestVersion.current; };
   }, [loadCatalog, search]);
@@ -158,6 +163,7 @@ function StoreCatalog() {
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const selectDelivery = (address: CommerceAddress) => { setDelivery(address); storeDelivery(session?.authentication.user.id ?? null, address.id); };
   const isFiltering = catalogView || !!categoryId || page > 1 || search.trim().length > 0;
+  useStoreBrowse(browseKey, !!products && !refreshing && (isFiltering || personalSettled));
   const shown = products?.items ?? [];
   const renderProduct = (product: NonNullable<typeof products>["items"][number]) => {
     const sku = product.skus[0];
@@ -204,11 +210,12 @@ function StoreCatalog() {
     {(accountError || deliveryError) && <div className="wallet-notice wallet-notice--info" role="status"><div><p>{deliveryError ? "آدرس‌های شما دریافت نشدند." : "سبد و علاقه‌مندی‌ها دریافت نشدند."} {deliveryError ?? accountError}</p><Button variant="ghost" onClick={() => setAccountRetry(value => value + 1)}>دریافت دوبارهٔ اطلاعات حساب</Button></div></div>}
     {favoriteError && <div role="alert" className="store-state store-state--error"><p>ذخیرهٔ علاقه‌مندی انجام نشد. {favoriteError}</p></div>}
     {categoryId && <div className="store-catalog-tools"><span>نمایش یک دستهٔ محصول</span><Button variant="ghost" onClick={() => updateCatalog({ category: null, page: null })}>همهٔ دسته‌ها<X size={15} aria-hidden="true" /></Button></div>}
+    {products && refreshing && <p role="status" className="store-help">در حال به‌روزرسانی محصولات…</p>}
     {isFiltering && !products && !error && <StoreGridLoading />}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}
     {products && shown.length === 0 && <div className="store-state"><Search aria-hidden="true" size={28} /><h2>{search.trim() ? "محصولی یافت نشد" : "هنوز محصولی در این صفحه نیست"}</h2><p>{search.trim() ? "با کلمات دیگری جست‌وجو کنید یا جست‌وجو را پاک کنید." : "بعداً دوباره سر بزنید یا محصولات صفحهٔ قبل را ببینید."}</p>{search && <Button variant="secondary" onClick={() => { clearSearch(); }}>پاک کردن جست‌وجو</Button>}</div>}
     <div id={isFiltering ? "store-products" : "store-content"} tabIndex={-1} aria-label="محصولات">
-      {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} fallback={products ? <>
+      {!isFiltering && <PersonalizedProducts key={browseKey} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} browseKey={browseKey} onSettled={settlePersonal} fallback={products ? <>
         <section id="store-products" className="store-collection"><header className="store-collection__header"><h2>محصولات فروشگاه</h2><Button variant="ghost" onClick={() => updateCatalog({ view: "all", page: null })}>مشاهده همه</Button></header><div className="store-grid">
           {shown.slice(0, 8).map(renderProduct)}
         </div></section>

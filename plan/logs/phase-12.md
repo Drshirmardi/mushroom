@@ -7197,3 +7197,6 @@ Review: scoped combined diff accepted; pre-existing product page edits excluded.
 
 ## F12-FE01-ST03 — Personalized-first storefront
 2026-11-06; /root review PASS. Shared shaped loading, grid composition, four initial recommendations with expansion, general fallback and optional trailing banners. Types/218 units PASS; four desktop/mobile personalization/browser scenarios PASS after updating stale entry-status fixture (no production gate bypass). Guest white-grid browser smoke PASS. Physical devices pending.
+
+## F12-FE01-ST04 — Retained browsing and refresh
+2026-11-06; /root review PASS. Memory-only bounded per-user/query anchor/offset/expanded snapshots; stale-response guard retained; previous products stay visible during refresh. Types/218 units PASS. Intercepted browser roundtrip scroll420→420 and8 retained cards during delayed search PASS. No persistent patient cache.
