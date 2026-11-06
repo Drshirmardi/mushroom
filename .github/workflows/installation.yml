@@ -10,6 +10,7 @@ on:
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
       - 'scripts/*installation*.py'
+      - 'scripts/test-dev-runtime-image.sh'
       - 'apps/*/.env.example'
       - 'scripts/deploy-vps.mjs'
       - 'apps/api/prisma/bootstrap-installation.mjs'
@@ -25,6 +26,7 @@ on:
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
       - 'scripts/*installation*.py'
+      - 'scripts/test-dev-runtime-image.sh'
       - 'apps/*/.env.example'
       - 'scripts/deploy-vps.mjs'
       - 'apps/api/prisma/bootstrap-installation.mjs'
@@ -68,6 +70,8 @@ jobs:
           python3 -B .installer/installation/build.py
           bash -n .installer/installation/install.sh
           bash scripts/test-vps-deploy.sh
+      - name: Real Dev runtime HTTPS package installation
+        run: bash scripts/test-dev-runtime-image.sh
       - name: Real standalone chat engine and retained database rehearsal
         run: sudo env INSTALLER_CHAT_DOCKER_TEST=1 INSTALLER_TEST_USER="$USER" python3 -B -m unittest discover -s .installer/installation -p 'test_chat_docker.py' -v
       - run: pnpm install --frozen-lockfile

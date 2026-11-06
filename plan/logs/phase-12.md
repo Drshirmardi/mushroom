@@ -7178,3 +7178,16 @@ Verified local shell/actionlint/private contract/hash checks PASS; hosted run421
 Anonymous public download of archive/checksum/manifest PASS. Manifest version/source SHA matched; archive SHA256 d3eac5e21fde353acb1ac2a309167dd567a8870c4ea125a939db26938e388914. Real anonymous bootstrap in a disposable Ubuntu24.04 container, --version, update --check and repeated update PASS. Publish-only rerun127731682342 PASS and original archive digest unchanged, with no duplicate release. Relevant main source changes publish automatically; documentation-only pushes do not trigger release. Readme kept short.
 
 No live VPS operation, secrets entered, application deployment or unrelated product-page staging. Source extraction/application integration is delivered on codex/public-installer for review against dev; merging dev and the owner's actual server bootstrap remain separate operational steps. Next eligible scope: AN05 after owner Dev analytics configuration; do not start automatically.
+
+
+## F12-T02-D01 — Dev runtime HTTPS APT connectivity
+
+2026-11-06; batch F12-B21; sole coordinator/implementer/reviewer Codex /root; review PASS, claim released.
+
+Problem: Dev sync run42171169901 stalled on HTTP Debian package indexes. Host Ubuntu APT worked; container host networking reproduced the Debian timeout. Owner tested Fama HTTPS Debian plus official HTTPS security with the host public CA bundle:9.4MB in2s.
+
+Implementation: Dev Compose selects these two archives and supplies the host public CA bundle only as a required BuildKit secret. Dockerfile uses that temporary trust to install Debian ca-certificates/OpenSSL, retains Signed-By metadata verification, fails incomplete updates, and limits requests to20seconds/one retry. Standalone Dockerfile uses official HTTPS defaults for portable CI. Existing Dockerfile/Compose fingerprint triggers rebuild on next Dev sync. No production, application secret or installer-release change. Added operational note and actual-image CI gate.
+
+Verification: actual Docker image builds/package installation using official HTTPS defaults and the selected Fama archive PASS (signed indexes, installed ca-certificates/OpenSSL, Node/corepack usable). Final image contains Debian CA bundle and no temporary trust mount; missing required CA input fails uncached build. Compose model proves CA is build-only and absent from runtime service secrets. scripts/test-dev-runtime-image.sh PASS; scripts/test-vps-dev.sh PASS including analytics/fingerprint regressions; private installation contracts2 PASS; public shared-asset hashes18 PASS; bash syntax, actionlint and git diff --check PASS. Final selected-mirror cached rebuild/runtime OpenSSL probe also PASS.
+
+Review: scoped combined diff accepted; pre-existing product page edits excluded. One task commit/PR to dev; no automatic merge/live VPS operation. Owner must merge this new commit and verify the resulting Dev deployment; rerunning the old workflow revision would retain its old Dockerfile. GA4 runtime receipt/AN05 remains operational and unverified. No next batch started.
