@@ -7158,3 +7158,12 @@ Completed: 2026-11-06. Batch F12-B18. Coordinator/implementer/reviewer: Codex /r
 Public source: Drshirmardi/mushroom-installer, initial accepted commit 9bb617e61c86289200458445ae29d42cfe5401e6. Fresh history; only explicit bundle files, installer tests/build and standalone restore harness. Shared runtime assets retained in Mushroom and compared using 18 normalized-LF hashes and upstream provenance. Mushroom owns private environment/production-Compose assertions and existing API/bootstrap checks, and now consumes the pinned public source in CI.
 
 Verification: Windows60 cases (52 PASS/8 platform or opt-in skips), disposable Ubuntu24.04 suite68 (66 PASS/2 opt-in drills) including real RSA/Caddy/Compose, real isolated PostgreSQL encrypted backup/restore PASS; private application contracts2 PASS, all38 API environment keys/3 frontend examples PASS; build/relocation/hash checks/actionlint/diff review PASS. Hosted chat engine remains a required I11 publication gate. No application/API/schema change or live VPS operation. Pre-existing product-page changes preserved and excluded. New installer source commit and monorepo extraction commit are separate repository commits for the same task. Next I10.
+
+
+## F12-T02-I10 — Versioned installer update
+
+Batch F12-B19, 2026-11-06. Codex /root sole implementer/reviewer; review PASS, claim released. Public commit51751ecbae2a151f846132e5ee6ac6cea0e6f50e; private compatibility pin synchronized.
+
+Added --version/update/check/pinned release selection and explicit downgrade, public Bash bootstrap, manifest and archive validation, checked version directories and atomic current/previous links with activation rollback. Existing manager installation lock serializes updates. Panel alone checks cached release metadata (six hours including failures), confirms and re-execs after update; automated status/backup do not check network. Tool updates never provision/restart services or change runtime state/secrets.
+
+Checks: Ubuntu full regression88 (86 PASS/2 opt-in), final22 updater tests PASS including local package persistence/status-no-network; two disposable bootstrap variants (fresh and legacy), repeat and corrupted-download rejection PASS; private application assertions2 PASS; shell syntax/build/diff review PASS. Prior hosted extraction run42166707841 PASS including real chat engine retention and PostgreSQL encrypted restore. No live VPS update or application deployment. Next I11 automatic release and anonymous install acceptance.
