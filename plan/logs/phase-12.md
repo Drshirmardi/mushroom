@@ -7142,5 +7142,10 @@ Verification:
   passed / 611 skipped.
 - `tsc -p tsconfig.test.json --noEmit`, `pnpm lint` (same 9 existing warnings) and
   `git diff --check`: PASS.
-- The runtime image scan remains disabled and CI02 remains deferred. Hosted PR37 rerun
-  is the remaining gate before marking the task accepted.
+- The runtime image scan remains disabled and CI02 remains deferred.
+
+Hosted result: PR37 run42156349184 at head84b2115 completed all eight checks with
+success: verify127691312043, security, installer, release-contract and the four artifact
+jobs. The formerly skipped isolated assessment step and browser/access smoke step are
+included in that successful verify job. Task accepted; claim released. No merge,
+deployment, Production activation or runtime-scan re-enable was performed.
