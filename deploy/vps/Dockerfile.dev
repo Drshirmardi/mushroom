@@ -1,10 +1,14 @@
+FROM alpine:3.20 AS ca-bundle
 FROM node:24-bookworm-slim
 
 ARG DEBIAN_MIRROR=https://deb.debian.org/debian
 ARG DEBIAN_SECURITY_MIRROR=https://security.debian.org/debian-security
 
-# The slim base has no CA bundle yet. Use host trust only while installing Debian's bundle.
-RUN --mount=type=secret,id=dev_apt_ca,target=/run/secrets/dev-apt-ca,required=true,mode=0444 \
+# The slim Node base has no CA bundle. Copy the public Mozilla bundle from a tiny
+# build stage; no host path, BuildKit secret or fs.read entitlement is required.
+COPY --from=ca-bundle /etc/ssl/certs/ca-certificates.crt /tmp/dev-apt-ca.crt
+
+RUN \
   set -eu; \
   sed -i -E \
     -e "s|^URIs: https?://deb.debian.org/debian/?$|URIs: ${DEBIAN_MIRROR}|" \
@@ -13,11 +17,12 @@ RUN --mount=type=secret,id=dev_apt_ca,target=/run/secrets/dev-apt-ca,required=tr
   grep -Fxq "URIs: ${DEBIAN_MIRROR}" /etc/apt/sources.list.d/debian.sources; \
   grep -Fxq "URIs: ${DEBIAN_SECURITY_MIRROR}" /etc/apt/sources.list.d/debian.sources; \
   apt_get() { apt-get \
-    -o Acquire::https::CaInfo=/run/secrets/dev-apt-ca \
+    -o Acquire::https::CaInfo=/tmp/dev-apt-ca.crt \
     -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 \
     -o Acquire::Retries=1 -o APT::Update::Error-Mode=any "$@"; }; \
   apt_get update; \
   apt_get install -y --no-install-recommends ca-certificates openssl; \
+  rm -f /tmp/dev-apt-ca.crt; \
   rm -rf /var/lib/apt/lists/*; \
   corepack enable
 
